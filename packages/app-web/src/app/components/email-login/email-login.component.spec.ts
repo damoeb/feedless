@@ -10,7 +10,7 @@ describe('EmailLoginComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [EmailLoginModule, AppTestModule.withDefaults()]
+      imports: [EmailLoginModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmailLoginComponent);

@@ -24,7 +24,7 @@
     <ion-row>
       <ion-col class="builder-label" size="2">
         <span [ngClass]="{ error: feedBuilderFg.controls.source.invalid }"
-        >FROM</span
+          >FROM</span
         >
       </ion-col>
       <ion-col size="10">
@@ -41,7 +41,7 @@
               <span>{{ getRequestLabel(sourceFc) }}</span>
               <ion-note class="ion-margin-start">{{
                 getResponseLabel(sourceFc)
-                }}</ion-note>
+              }}</ion-note>
               <ion-icon
                 class="ion-padding-horizontal"
                 name="arrow-forward-outline"
@@ -182,7 +182,7 @@
     >
       <ion-col class="builder-label" size="2">
         <span [ngClass]="{ error: feedBuilderFg.controls.filters.invalid }"
-        >WHERE</span
+          >WHERE</span
         >
       </ion-col>
       <ion-col size="10">
@@ -281,10 +281,10 @@
                 color="light"
               >
                 <span *ngIf="feedBuilderFg.value.sink.isSegmented"
-                >Segmented</span
+                  >Segmented</span
                 >
                 <span *ngIf="!feedBuilderFg.value.sink.isSegmented"
-                >Everything</span
+                  >Everything</span
                 >
               </ion-button>
 
@@ -399,7 +399,7 @@
           [ngClass]="{
             error: feedBuilderFg.controls.sink.controls.title.invalid
           }"
-        >ABOUT</span
+          >ABOUT</span
         >
       </ion-col>
       <ion-col size="10">

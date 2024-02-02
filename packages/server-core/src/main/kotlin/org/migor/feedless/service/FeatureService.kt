@@ -35,18 +35,14 @@ class FeatureService {
     return this.featureDAO.findAllByPlanId(id)
   }
 
-  fun isEnabled(name: FeatureName): Boolean {
-    val feature = featureDAO.findByPlanNameAndFeatureName(PlanName.system, name)
-    assert(feature.valueType == FeatureValueType.bool)
-    return feature.valueBoolean!!
-  }
-
-  fun isDisabled(name: FeatureName): Boolean {
-    return !this.isEnabled(name)
-  }
-
   fun findAllByProduct(productName: ProductName): List<FeatureEntity> {
     return featureDAO.findAllByPlanAndProductAndScope(PlanName.minimal, productName, FeatureScope.frontend)
+  }
+
+  fun isDisabled(featureName: FeatureName, productName: ProductName): Boolean {
+    val feature = featureDAO.findByProductNameAndFeatureName(productName, PlanName.minimal, featureName)
+    assert(feature.valueType == FeatureValueType.bool)
+    return !feature.valueBoolean!!
   }
 
 }

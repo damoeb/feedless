@@ -8,7 +8,12 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 @NgModule({
   declarations: [NewsletterComponent],
   exports: [NewsletterComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, SearchbarModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    FormsModule,
+    SearchbarModule,
+  ],
 })
-export class NewsletterModule {
-}
+export class NewsletterModule {}

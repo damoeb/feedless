@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { RemoteFeedItem } from '../../graphql/types';
 import { FeedService } from '../../services/feed.service';
@@ -8,7 +14,7 @@ import { dateFormat } from '../../services/profile.service';
   selector: 'app-remote-feed',
   templateUrl: './remote-feed.component.html',
   styleUrls: ['./remote-feed.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteFeedComponent implements OnInit {
   @Input({ required: true })
@@ -24,9 +30,8 @@ export class RemoteFeedComponent implements OnInit {
 
   constructor(
     private readonly feedService: FeedService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     return this.refresh();
@@ -46,7 +51,7 @@ export class RemoteFeedComponent implements OnInit {
     this.changeRef.detectChanges();
     try {
       this.feedItems = await this.feedService.remoteFeedContent({
-        nativeFeedUrl
+        nativeFeedUrl,
       });
     } catch (e) {
       this.errorMessage = e.message;

@@ -5,7 +5,6 @@ import { ProductHeadlineComponent } from './product-headline.component';
 @NgModule({
   declarations: [ProductHeadlineComponent],
   exports: [ProductHeadlineComponent],
-  imports: [CommonModule]
+  imports: [CommonModule],
 })
-export class ProductHeadlineModule {
-}
+export class ProductHeadlineModule {}

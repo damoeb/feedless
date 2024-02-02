@@ -21,5 +21,4 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
   ],
   declarations: [FeedlessProductPage],
 })
-export class FeedlessProductModule {
-}
+export class FeedlessProductModule {}

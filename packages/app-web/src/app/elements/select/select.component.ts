@@ -17,13 +17,14 @@ export interface KeyLabelOption<T> {
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => SelectComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class SelectComponent<T>
   extends ControlValueAccessorDirective<T>
-  implements OnInit {
+  implements OnInit
+{
   @Input()
   hideFilter: boolean = false;
 

@@ -1,6 +1,5 @@
 package org.migor.feedless.plugins
 
-import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -14,9 +13,7 @@ import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.*
 
 data class FulltextPluginParams(val readability: Boolean)
 

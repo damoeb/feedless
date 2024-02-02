@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { RepositorySettingsPageRoutingModule } from './repository-delivery-routing.module';
+import { RepositorySettingsPageRoutingModule } from './repository-settings-routing.module';
 
 import { RepositorySettingsPage } from './repository-settings-page.component';
 
@@ -15,7 +15,6 @@ import { RepositorySettingsPage } from './repository-settings-page.component';
     IonicModule,
     RepositorySettingsPageRoutingModule,
   ],
-  declarations: [RepositorySettingsPage]
+  declarations: [RepositorySettingsPage],
 })
-export class RepositorySettingsPageModule {
-}
+export class RepositorySettingsPageModule {}

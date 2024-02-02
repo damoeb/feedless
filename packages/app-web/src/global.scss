@@ -25,6 +25,8 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
+@import "mixins";
+
 app-bubble {
   margin-right: 35px;
 }
@@ -197,4 +199,8 @@ p-splitter {
   --width: 200px;
   text-align: center;
   opacity: 0.8;
+}
+
+.limited-width-pane {
+  @include limited-width-pane;
 }

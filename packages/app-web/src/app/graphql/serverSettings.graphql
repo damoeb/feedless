@@ -1,5 +1,7 @@
 query serverSettings($data: ServerSettingsContextInput!) {
   serverSettings(data: $data) {
+    appUrl
+    gatewayUrl
     features {
       ...BasicFeature
     }

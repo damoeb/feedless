@@ -16,7 +16,6 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.testcontainers.shaded.com.github.dockerjava.core.MediaType
 
 
 const val actuatorPassword = "password"

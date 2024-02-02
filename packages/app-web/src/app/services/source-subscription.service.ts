@@ -5,7 +5,8 @@ import {
   GqlCreateSourceSubscriptionsMutation,
   GqlCreateSourceSubscriptionsMutationVariables,
   GqlDeleteSourceSubscriptionMutation,
-  GqlDeleteSourceSubscriptionMutationVariables, GqlFeatureName,
+  GqlDeleteSourceSubscriptionMutationVariables,
+  GqlFeatureName,
   GqlListSourceSubscriptionsQuery,
   GqlListSourceSubscriptionsQueryVariables,
   GqlSourceSubscriptionByIdQuery,
@@ -14,7 +15,7 @@ import {
   GqlSourceSubscriptionsInput,
   GqlSourceSubscriptionUniqueWhereInput,
   ListSourceSubscriptions,
-  SourceSubscriptionById
+  SourceSubscriptionById,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
@@ -23,19 +24,23 @@ import { ProfileService } from './profile.service';
 import { Router } from '@angular/router';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SourceSubscriptionService {
-  constructor(private readonly apollo: ApolloClient<any>,
-              private readonly serverSetting: ServerSettingsService,
-              private readonly router: Router,
-              private readonly profileService: ProfileService) {
-  }
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly serverSetting: ServerSettingsService,
+    private readonly router: Router,
+    private readonly profileService: ProfileService,
+  ) {}
 
   async createSubscriptions(
-    data: GqlSourceSubscriptionsCreateInput
+    data: GqlSourceSubscriptionsCreateInput,
   ): Promise<SourceSubscription[]> {
-    if (this.profileService.isAuthenticated() || this.serverSetting.isEnabled(GqlFeatureName.CanCreateAsAnonymous)) {
+    if (
+      this.profileService.isAuthenticated() ||
+      this.serverSetting.isEnabled(GqlFeatureName.CanCreateAsAnonymous)
+    ) {
       return this.apollo
         .mutate<
           GqlCreateSourceSubscriptionsMutation,
@@ -43,25 +48,25 @@ export class SourceSubscriptionService {
         >({
           mutation: CreateSourceSubscriptions,
           variables: {
-            data
-          }
+            data,
+          },
         })
         .then((response) => response.data.createSourceSubscriptions);
     } else {
       // todo mag handle
       // if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList) && !this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
       if (this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
-        await this.router.navigateByUrl('/login')
+        await this.router.navigateByUrl('/login');
       } else {
         if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList)) {
-          await this.router.navigateByUrl('/join')
+          await this.router.navigateByUrl('/join');
         }
       }
     }
   }
 
   deleteSubscription(
-    data: GqlSourceSubscriptionUniqueWhereInput
+    data: GqlSourceSubscriptionUniqueWhereInput,
   ): Promise<void> {
     return this.apollo
       .mutate<
@@ -70,15 +75,15 @@ export class SourceSubscriptionService {
       >({
         mutation: DeleteSourceSubscription,
         variables: {
-          data
-        }
+          data,
+        },
       })
       .then();
   }
 
   listSourceSubscriptions(
     data: GqlSourceSubscriptionsInput,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<SourceSubscription[]> {
     return this.apollo
       .query<
@@ -87,16 +92,16 @@ export class SourceSubscriptionService {
       >({
         query: ListSourceSubscriptions,
         variables: {
-          data
+          data,
         },
-        fetchPolicy
+        fetchPolicy,
       })
       .then((response) => response.data.sourceSubscriptions);
   }
 
   async getSubscriptionById(
     id: string,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<SourceSubscription> {
     return this.apollo
       .query<
@@ -108,10 +113,10 @@ export class SourceSubscriptionService {
         variables: {
           data: {
             where: {
-              id
-            }
-          }
-        }
+              id,
+            },
+          },
+        },
       })
       .then((response) => response.data.sourceSubscription);
   }

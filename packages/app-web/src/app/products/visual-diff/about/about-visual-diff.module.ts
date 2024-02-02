@@ -17,9 +17,8 @@ import { NewsletterModule } from '../../../components/newsletter/newsletter.modu
     AboutVisualDiffPageRoutingModule,
     SearchbarModule,
     ProductHeadlineModule,
-    NewsletterModule
+    NewsletterModule,
   ],
-  declarations: [AboutVisualDiffPage]
+  declarations: [AboutVisualDiffPage],
 })
-export class AboutVisualDiffModule {
-}
+export class AboutVisualDiffModule {}

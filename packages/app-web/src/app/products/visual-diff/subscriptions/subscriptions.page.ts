@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { Router } from '@angular/router';
@@ -7,7 +13,7 @@ import { Router } from '@angular/router';
   selector: 'app-visual-diff-list',
   templateUrl: './subscriptions.page.html',
   styleUrls: ['./subscriptions.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionsPage implements OnInit, OnDestroy {
   busy = false;
@@ -16,9 +22,8 @@ export class SubscriptionsPage implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly sourceSubscriptionService: SourceSubscriptionService
-  ) {
-  }
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+  ) {}
 
   ngOnInit() {
     this.subscriptions.push();

@@ -14,8 +14,8 @@ describe('ProfilePage', () => {
       imports: [
         ProfilePageModule,
         AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([])
-      ]
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfilePage);

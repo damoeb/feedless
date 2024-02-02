@@ -15,9 +15,8 @@ import { EmptyRepositoryModule } from '../../../../components/empty-repository/e
     FormsModule,
     IonicModule,
     RepositoryDeliveryPageRoutingModule,
-    EmptyRepositoryModule
+    EmptyRepositoryModule,
   ],
-  declarations: [RepositoryDeliveryPage]
+  declarations: [RepositoryDeliveryPage],
 })
-export class RepositoryDeliveryPageModule {
-}
+export class RepositoryDeliveryPageModule {}

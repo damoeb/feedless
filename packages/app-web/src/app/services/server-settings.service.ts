@@ -3,7 +3,7 @@ import {
   GqlFeatureName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings
+  ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -17,36 +17,39 @@ export interface Config {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ServerSettingsService {
-  apiUrl: string;
+  apiUrl: string; // todo merge api and gateway
+  gatewayUrl: string;
+  appUrl: string;
   private features: Array<Feature>;
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController
-  ) {
-  }
+    private readonly alertCtrl: AlertController,
+  ) {}
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<Config>('/config.json')
+        this.httpClient.get<Config>('/config.json'), // todo here?
       );
       this.apiUrl = config.apiUrl;
-      const { features } = await this.createApolloClient()
+      const response = await this.createApolloClient()
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
           variables: {
             data: {
               host: location.host,
-              product: environment.product()
-            }
-          }
+              product: environment.product(),
+            },
+          },
         })
         .then((response) => response.data.serverSettings);
-      this.features = features;
+      this.features = response.features;
+      this.gatewayUrl = response.gatewayUrl;
+      this.appUrl = response.appUrl;
     } catch (e) {
       this.showOfflineAlert();
       throw e;
@@ -56,7 +59,7 @@ export class ServerSettingsService {
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({
       link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
-      cache: new InMemoryCache()
+      cache: new InMemoryCache(),
     });
   }
 
@@ -80,9 +83,9 @@ export class ServerSettingsService {
           role: 'confirm',
           handler: () => {
             location.reload();
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();

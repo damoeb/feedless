@@ -7,7 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [VisualDiffMenuComponent],
   exports: [VisualDiffMenuComponent],
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink],
 })
-export class VisualDiffMenuModule {
-}
+export class VisualDiffMenuModule {}

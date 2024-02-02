@@ -5,7 +5,6 @@ import { TermsComponent } from './terms.component';
 @NgModule({
   declarations: [TermsComponent],
   exports: [TermsComponent],
-  imports: [CommonModule]
+  imports: [CommonModule],
 })
-export class TermsModule {
-}
+export class TermsModule {}

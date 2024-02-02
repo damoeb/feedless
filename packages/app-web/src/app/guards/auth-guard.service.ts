@@ -3,11 +3,10 @@ import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuardService {
-  constructor(private readonly authService: AuthService) {
-  }
+  constructor(private readonly authService: AuthService) {}
 
   canActivate(): Observable<boolean> {
     // await this.authService.requireAnyAuthToken();

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ProfileService } from '../../services/profile.service';
 
@@ -6,7 +11,7 @@ import { ProfileService } from '../../services/profile.service';
   selector: 'app-terms-modal',
   templateUrl: './terms-modal.component.html',
   styleUrls: ['./terms-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TermsModalComponent implements OnInit {
   loading = false;
@@ -15,9 +20,8 @@ export class TermsModalComponent implements OnInit {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: ProfileService
-  ) {
-  }
+    private readonly profileService: ProfileService,
+  ) {}
 
   ngOnInit() {
     this.changeRef.detectChanges();

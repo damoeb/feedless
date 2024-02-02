@@ -92,7 +92,7 @@ class SourceSubscriptionHarvester internal constructor() {
     } catch (it: Exception) {
       log.error(it.message)
 //      if (log.isDebugEnabled) {
-        it.printStackTrace()
+//        it.printStackTrace()
 //      }
       updateNextHarvestDateAfterError(corrId, subscription, it)
     }

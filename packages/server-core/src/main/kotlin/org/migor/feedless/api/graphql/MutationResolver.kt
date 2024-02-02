@@ -81,21 +81,6 @@ class MutationResolver {
   @Autowired
   lateinit var currentUser: CurrentUser
 
-  @Throttled
-  @DgsMutation
-  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
-                            dfe: DataFetchingEnvironment,
-  ): AuthenticationDto = coroutineScope {
-    val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] authAnonymous")
-    val jwt = tokenProvider.createJwtForAnonymous()
-    addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
-    AuthenticationDto.newBuilder()
-      .token(jwt.tokenValue)
-      .corrId(CryptUtil.newCorrId())
-      .build()
-  }
-
   private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {
     ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
       cookie

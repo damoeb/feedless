@@ -10,7 +10,7 @@ describe('ContactPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ContactPageModule, AppTestModule.withDefaults()]
+      imports: [ContactPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactPage);

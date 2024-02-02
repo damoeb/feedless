@@ -13,6 +13,32 @@ fragment BasicSourceSubscription on SourceSubscription {
   description
   visibility
   createdAt
+  plugins {
+    pluginId
+    params {
+      genericFeed {
+        extendContext
+        linkXPath
+        contextXPath
+        dateIsStartOfEvent
+        dateXPath
+      }
+      diffEmailForward {
+        emailRecipients
+        inlineDiffImage
+        inlineLatestImage
+        inlinePreviousImage
+      }
+      enforceItemIncrement {
+        compareBy
+        nextItemMinIncrement
+      }
+      fulltext {
+        readability
+      }
+      rawJson
+    }
+  }
   segmented {
     digest
     scheduleExpression
@@ -21,6 +47,7 @@ fragment BasicSourceSubscription on SourceSubscription {
     sortBy
   }
   disabledFrom
+  archived
   retention {
     maxAgeDays
     maxItems

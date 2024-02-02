@@ -13,38 +13,40 @@ const routes: Routes = [
         path: '',
         loadChildren: () =>
           import('./about/about-rss-builder.module').then(
-            (m) => m.AboutRssBuilderModule)
+            (m) => m.AboutRssBuilderModule,
+          ),
       },
       {
         path: 'builder',
         loadChildren: () =>
           import('../../pages/feed-builder/feed-builder.module').then(
-            (m) => m.FeedBuilderPageModule)
+            (m) => m.FeedBuilderPageModule,
+          ),
       },
       {
         path: 'feeds/:feedId',
         loadChildren: () =>
           import('./feed-details/feed-details.module').then(
-            (m) => m.FeedDetailsPageModule)
+            (m) => m.FeedDetailsPageModule,
+          ),
       },
       {
         path: 'plans',
         data: { title: 'Plans' },
         loadChildren: () =>
-          import('./plans/plans.module').then((m) => m.PlansPageModule)
-      }
-    ]
+          import('./plans/plans.module').then((m) => m.PlansPageModule),
+      },
+    ],
   },
   ...ProductService.defaultRoutes,
   {
     path: '**',
-    redirectTo: '/'
-  }
+    redirectTo: '/',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class RssBuilderPageRoutingModule {
-}
+export class RssBuilderPageRoutingModule {}

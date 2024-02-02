@@ -202,6 +202,7 @@ private fun FeedlessPlugin.toDto(): Plugin {
   return Plugin.newBuilder()
     .id(id())
     .name(name())
+    .listed(listed())
     .description(description())
     .type(
       if (this is FragmentTransformerPlugin) {

@@ -6,14 +6,24 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
-import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
-import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapedFeeds,
+} from '../../../generated/graphql';
+import {
+  ScrapedReadability,
+  ScrapeResponse,
+  Selectors,
+} from '../../graphql/types';
+import {
+  Embeddable,
+  transformXpathToCssPath,
+} from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
@@ -47,7 +57,7 @@ export interface ReaderOptions {
   templateUrl: './reader-product.page.html',
   styleUrls: ['./reader-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class ReaderProductPage implements OnInit, OnDestroy {
   url: string;
@@ -64,7 +74,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     textTransform: 'normal',
     fontSize: 18,
     verboseLink: true,
-    lineHeight: 2
+    lineHeight: 2,
   };
   isDarkMode: boolean;
   contentWidthStepSize: number = 20;
@@ -80,9 +90,8 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     private readonly scrapeService: ScrapeService,
     private readonly router: Router,
     readonly profile: ProfileService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     const urlInParams = this.activatedRoute.snapshot.params.url;
@@ -99,7 +108,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
         this.profile.watchColorScheme().subscribe((isDarkMode) => {
           this.isDarkMode = isDarkMode;
           this.changeRef.detectChanges();
-        })
+        }),
       );
     }
   }
@@ -118,33 +127,33 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
     this.scrapeResponse = await this.scrapeService.scrape({
       page: {
-        url: this.url
+        url: this.url,
       },
       emit: [
         {
           selectorBased: {
             xpath: {
-              value: '/'
+              value: '/',
             },
             expose: {
               transformers: [
                 {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
                 },
                 {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds
-                }
-              ]
-            }
-          }
-        }
-      ]
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+                },
+              ],
+            },
+          },
+        },
+      ],
     });
 
     this.embedWebsite = {
       mimeType: 'text/html',
       data: this.scrapeResponse.elements[0].selector.html.data,
-      url: this.url
+      url: this.url,
     };
 
     this.groupsOfArticles = this.parseArticles();
@@ -169,13 +178,13 @@ export class ReaderProductPage implements OnInit, OnDestroy {
       const data = this.scrapeResponse.elements[0].selector;
       const feeds = JSON.parse(
         data.fields.find(
-          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds
-        ).value.one.data
+          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
+        ).value.one.data,
       ) as GqlScrapedFeeds;
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
-        'contextXPath'
+        'contextXPath',
       );
 
       const raw = data.html.data;
@@ -185,11 +194,11 @@ export class ReaderProductPage implements OnInit, OnDestroy {
       return selectors
         .map((it) =>
           Array.from(
-            document.querySelectorAll(transformXpathToCssPath(it.contextXPath))
+            document.querySelectorAll(transformXpathToCssPath(it.contextXPath)),
           )
             .map<InlineContent>((context) => {
               const linkElement = context.querySelector(
-                transformXpathToCssPath(it.linkXPath)
+                transformXpathToCssPath(it.linkXPath),
               );
               if (linkElement) {
                 const url = linkElement.getAttribute('href');
@@ -198,7 +207,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                   contentText: context.textContent,
                   url,
                   contentTitle: linkElement?.textContent,
-                  hostname
+                  hostname,
                 };
               }
             })
@@ -207,8 +216,8 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                 content &&
                 content.contentText &&
                 content.url &&
-                content.contentTitle
-            )
+                content.contentTitle,
+            ),
         )
         .filter((group) => group.length > 0);
     }
@@ -217,7 +226,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
   changeOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
     option: T,
-    value: V
+    value: V,
   ) {
     this.readerOptions[option] = value;
     this.changeRef.detectChanges();
@@ -232,16 +241,16 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   >(
     numOption: T,
     increment: number,
-    constraints: { min: number; max: number }
+    constraints: { min: number; max: number },
   ) {
     this.changeOption(
       numOption,
       parseFloat(
         Math.max(
           Math.min(this.readerOptions[numOption] + increment, constraints.max),
-          constraints.min
-        ).toFixed(1)
-      )
+          constraints.min,
+        ).toFixed(1),
+      ),
     );
   }
 
@@ -276,14 +285,14 @@ export class ReaderProductPage implements OnInit, OnDestroy {
         (100 * event.detail.scrollTop) /
         (this.readerContent.nativeElement.scrollHeight -
           document.defaultView.innerHeight)
-      ).toFixed(1)
+      ).toFixed(1),
     );
     this.changeRef.detectChanges();
   }
 
   ifActiveOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
     option: T,
-    value: V
+    value: V,
   ) {
     if (this.readerOptions[option] == value) {
       return 'primary';
@@ -294,8 +303,8 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   getReadability(): Maybe<ScrapedReadability> {
     return JSON.parse(
       this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext
-      ).value.one.data
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
+      ).value.one.data,
     ) as ScrapedReadability;
   }
 
@@ -303,8 +312,8 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     await this.router.navigate(['/'], {
       replaceUrl: true,
       queryParams: {
-        url: fixUrl(url)
-      }
+        url: fixUrl(url),
+      },
     });
   }
 }

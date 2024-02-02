@@ -6,15 +6,13 @@
 
     <div class="title">
       <div class="ion-hide-xl-up" routerLink="/" style="cursor: pointer">
-        <span [innerHtml]="productConfig.titleHtml"></span>
+        <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
     </div>
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button routerLink="/plans">
-        Pricing
-      </ion-button>
+      <ion-button routerLink="/plans"> Pricing </ion-button>
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>

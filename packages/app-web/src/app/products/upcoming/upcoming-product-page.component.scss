@@ -4,7 +4,7 @@
   flex-basis: 14%;
   min-height: 150px;
   border: 1px solid transparent;
-  padding:5px;
+  padding: 5px;
   border-radius: 8px;
 
   &--real:hover {
@@ -28,7 +28,7 @@ ion-datetime-button::part(time-target) {
 }
 
 app-bubble {
-  margin-right: 15px
+  margin-right: 15px;
 }
 
 ion-header {
@@ -54,4 +54,3 @@ ion-searchbar {
 //&:hover {
 //  --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
 //}
-

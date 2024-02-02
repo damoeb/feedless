@@ -17,8 +17,7 @@ import { ResponsiveColumnsModule } from '../responsive-columns/responsive-column
     RemoteFeedModule,
     ReactiveFormsModule,
     ResponsiveColumnsModule,
-    FormsModule
-  ]
+    FormsModule,
+  ],
 })
-export class TransformWebsiteToFeedModule {
-}
+export class TransformWebsiteToFeedModule {}

@@ -79,6 +79,8 @@ type SourceSubscription {
   visibility: Visibility!
   createdAt: Long!
   disabledFrom: Long
+  archived: Boolean!
+  plugins: [PluginExecution!]!
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]!
@@ -158,6 +160,7 @@ type Plugin {
   name: String!
   type: PluginType!
   description: String!
+  listed: Boolean!
 #  params: PluginParamsSchema
 }
 
@@ -481,6 +484,8 @@ type Selectors {
 }
 
 type ServerSettings {
+  gatewayUrl: String!
+  appUrl: String!
   features: [Feature!]!
   license: License!
 }
@@ -1168,6 +1173,7 @@ type DiffEmailForwardParams {
   emailRecipients: [String!]!
   inlineLatestImage: Boolean
   inlineDiffImage: Boolean
+  inlinePreviousImage: Boolean
 }
 
 type FulltextPluginParams {

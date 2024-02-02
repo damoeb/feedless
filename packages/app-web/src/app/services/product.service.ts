@@ -21,54 +21,56 @@ export interface ProductConfig {
   pageTitle: string;
   sideMenu?: SideMenuConfig;
   routes: Routes;
-  pages?: { title: string, url: string }[]
+  pages?: { title: string; url: string }[];
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductService {
   public static readonly defaultRoutes: Routes = [
     {
       path: 'login',
       loadChildren: () =>
-        import('../pages/login/login.module').then((m) => m.EmailLoginPageModule)
+        import('../pages/login/login.module').then(
+          (m) => m.EmailLoginPageModule,
+        ),
     },
     {
       path: 'contact',
       loadChildren: () =>
         import('../pages/contact/contact.module').then(
-          (m) => m.ContactPageModule
-        )
+          (m) => m.ContactPageModule,
+        ),
     },
     {
       path: 'join',
-      data: {title: 'Wait List'},
+      data: { title: 'Wait List' },
       loadChildren: () =>
         import('../pages/wait-list/wait-list-page.module').then(
-          (m) => m.WaitListPageModule
-        )
+          (m) => m.WaitListPageModule,
+        ),
     },
     {
       path: 'profile',
       canActivate: [AuthGuardService],
       loadChildren: () =>
         import('../pages/profile/profile.module').then(
-          (m) => m.ProfilePageModule
-        )
+          (m) => m.ProfilePageModule,
+        ),
     },
     {
       path: 'terms',
       loadChildren: () =>
-        import('../pages/terms/terms.module').then((m) => m.TermsPageModule)
+        import('../pages/terms/terms.module').then((m) => m.TermsPageModule),
     },
     {
       path: 'privacy',
       loadChildren: () =>
         import('../pages/privacy/privacy.module').then(
-          (m) => m.PrivacyPageModule
-        )
-    }
+          (m) => m.PrivacyPageModule,
+        ),
+    },
   ];
 
   private products: ProductConfig[] = [
@@ -79,17 +81,17 @@ export class ProductService {
       pageTitle: 'Reader',
       sideMenu: {
         width: 200,
-        breakpoint: 'md'
+        breakpoint: 'md',
       },
       routes: [
         {
           path: '',
           loadChildren: () =>
             import('../products/reader/reader-product.module').then(
-              (m) => m.ReaderProductModule
-            )
-        }
-      ]
+              (m) => m.ReaderProductModule,
+            ),
+        },
+      ],
     },
     {
       product: GqlProductName.Upcoming,
@@ -101,10 +103,10 @@ export class ProductService {
           path: '',
           loadChildren: () =>
             import('../products/upcoming/upcoming-product.module').then(
-              (m) => m.UpcomingProductModule
-            )
-        }
-      ]
+              (m) => m.UpcomingProductModule,
+            ),
+        },
+      ],
     },
     {
       product: GqlProductName.RssBuilder,
@@ -113,36 +115,36 @@ export class ProductService {
       pageTitle: 'RSS Builder',
       sideMenu: {
         width: 200,
-        breakpoint: 'xl'
+        breakpoint: 'xl',
       },
       routes: [
         {
           path: '',
           loadChildren: () =>
             import('../products/rss-builder/rss-builder-product.module').then(
-              (m) => m.RssBuilderProductModule
-            )
-        }
-      ]
+              (m) => m.RssBuilderProductModule,
+            ),
+        },
+      ],
     },
     {
       product: GqlProductName.Feedless,
       titlePlain: 'feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
-      sideMenu: {
-        width: 200,
-        breakpoint: 'xl'
-      },
+      // sideMenu: {
+      //   width: 200,
+      //   breakpoint: 'xl',
+      // },
       routes: [
         {
           path: '',
           loadChildren: () =>
             import('../products/feedless/feedless-product.module').then(
-              (m) => m.FeedlessProductModule
-            )
-        }
-      ]
+              (m) => m.FeedlessProductModule,
+            ),
+        },
+      ],
     },
     {
       product: GqlProductName.VisualDiff,
@@ -151,7 +153,7 @@ export class ProductService {
       pageTitle: 'VisualDiff',
       sideMenu: {
         width: 200,
-        breakpoint: 'lg'
+        breakpoint: 'lg',
       },
       routes: [
         {
@@ -159,34 +161,33 @@ export class ProductService {
           // canMatch: [() => true],
           loadChildren: () =>
             import('../products/visual-diff/visual-diff-product.module').then(
-              (m) => m.VisualDiffProductModule
-            )
-        }
-      ]
+              (m) => m.VisualDiffProductModule,
+            ),
+        },
+      ],
     },
   ];
 
-  private activeProductConfig = new ReplaySubject<ProductConfig>()
+  private activeProductConfig = new ReplaySubject<ProductConfig>();
 
   constructor(
     private readonly router: Router,
-    private readonly titleService: Title
-  ) {
-  }
+    private readonly titleService: Title,
+  ) {}
 
   activateProduct(product: GqlProductName) {
     console.log(`activateProduct ${product}`);
     environment.product = () => product;
     const config = this.products.find(
-      (productConfig) => productConfig.product === environment.product()
+      (productConfig) => productConfig.product === environment.product(),
     );
     this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);
-    this.activeProductConfig.next(config)
+    this.activeProductConfig.next(config);
   }
 
   getActiveProductConfigChange() {
-    return this.activeProductConfig.asObservable()
+    return this.activeProductConfig.asObservable();
   }
 
   // forceProduct(product: GqlProduct) {

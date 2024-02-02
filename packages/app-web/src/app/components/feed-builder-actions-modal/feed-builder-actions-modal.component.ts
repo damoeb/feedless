@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -10,7 +17,7 @@ import {
   GqlScrapeResponse,
   GqlViewPort,
   GqlXyPosition,
-  Maybe
+  Maybe,
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
@@ -18,7 +25,7 @@ import { ScrapeService } from '../../services/scrape.service';
 import { Router } from '@angular/router';
 import { ScrapedElement } from '../../graphql/types';
 
-type BrowserActionType = 'click'
+type BrowserActionType = 'click';
 
 interface BrowserAction {
   type: FormControl<BrowserActionType>;
@@ -29,7 +36,7 @@ interface BrowserAction {
   selector: 'app-feed-builder-actions-modal',
   templateUrl: './feed-builder-actions-modal.component.html',
   styleUrls: ['./feed-builder-actions-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   @Input({ required: true })
@@ -40,17 +47,28 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   additionalWait = new FormControl<number>(0, [
     Validators.required,
     Validators.min(0),
-    Validators.max(10)
+    Validators.max(10),
   ]);
   actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
   private subscriptions: Subscription[] = [];
-  private scrapeResponse: Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'> & {
-    debug: Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'> & {
+  private scrapeResponse: Pick<
+    GqlScrapeResponse,
+    'url' | 'failed' | 'errorMessage'
+  > & {
+    debug: Pick<
+      GqlScrapeDebugResponse,
+      | 'console'
+      | 'cookies'
+      | 'contentType'
+      | 'statusCode'
+      | 'screenshot'
+      | 'html'
+    > & {
       metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-      viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>
+      viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
     };
-    elements: Array<ScrapedElement>
+    elements: Array<ScrapedElement>;
   };
   errorMessage: string;
 
@@ -58,16 +76,16 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
     private readonly router: Router,
-    private readonly scrapeService: ScrapeService
-  ) {
-  }
+    private readonly scrapeService: ScrapeService,
+  ) {}
 
   ngOnInit() {
     this.subscriptions.push(
-      this.actions.valueChanges.pipe(debounce(() => interval(800)))
+      this.actions.valueChanges
+        .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           return this.scrape();
-        })
+        }),
     );
 
     this.scrape();
@@ -98,7 +116,9 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
     const url = this.url;
 
     try {
-      const scrapeResponse = await this.scrapeService.scrape(this.getScrapeRequest(true));
+      const scrapeResponse = await this.scrapeService.scrape(
+        this.getScrapeRequest(true),
+      );
 
       this.embedScreenshot = null;
       this.changeRef.detectChanges();
@@ -107,13 +127,13 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
         mimeType: 'image/png',
         data: scrapeResponse.debug.screenshot,
         url,
-        viewport: scrapeResponse.debug.viewport
+        viewport: scrapeResponse.debug.viewport,
       };
       this.embedMarkup = {
         mimeType: scrapeResponse.debug.contentType,
         data: scrapeResponse.debug.html,
         url,
-        viewport: scrapeResponse.debug.viewport
+        viewport: scrapeResponse.debug.viewport,
       };
       this.scrapeResponse = scrapeResponse;
     } catch (e) {
@@ -126,10 +146,14 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
 
   addAction() {
     if (this.actions.valid) {
-      this.actions.push(new FormGroup<BrowserAction>({
-        type: new FormControl<BrowserActionType>('click'),
-        clickParams: new FormControl<GqlXyPosition>(null, [Validators.required])
-      }));
+      this.actions.push(
+        new FormGroup<BrowserAction>({
+          type: new FormControl<BrowserActionType>('click'),
+          clickParams: new FormControl<GqlXyPosition>(null, [
+            Validators.required,
+          ]),
+        }),
+      );
     }
   }
 
@@ -169,7 +193,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   applyChanges() {
     return this.modalCtrl.dismiss({
       request: this.getScrapeRequest(),
-      response: this.scrapeResponse
+      response: this.scrapeResponse,
     });
   }
 
@@ -187,15 +211,15 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
 
   private getActionsRequestFragment(): GqlScrapeActionInput[] {
     return this.getActions()
-      .filter(action => action.valid)
-      .map(action => {
+      .filter((action) => action.valid)
+      .map((action) => {
         return {
           click: {
             position: {
               x: action.value.clickParams.x,
-              y: action.value.clickParams.y
-            }
-          }
+              y: action.value.clickParams.y,
+            },
+          },
         };
       });
   }
@@ -205,14 +229,14 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       page: {
         url: this.url,
         prerender: {
-          additionalWaitSec: this.additionalWait.value
+          additionalWaitSec: this.additionalWait.value,
         },
-        actions: this.getActionsRequestFragment()
+        actions: this.getActionsRequestFragment(),
       },
       emit: [],
       debug: {
-        screenshot: debug
-      }
+        screenshot: debug,
+      },
     };
   }
 }

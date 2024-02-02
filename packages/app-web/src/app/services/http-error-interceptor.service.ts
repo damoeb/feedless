@@ -3,23 +3,24 @@ import { ToastController } from '@ionic/angular';
 import { GraphQLError } from 'graphql/error';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HttpErrorInterceptorService {
-  constructor(private readonly toastCtrl: ToastController) {
-  }
+  constructor(private readonly toastCtrl: ToastController) {}
 
   interceptNetworkError(
     networkError:
       | Error
       | (Error & { response: Response; statusCode: number; bodyText: string })
       | (Error & {
-      response: Response;
-      result: Record<string, any>;
-      statusCode: number;
-    })
+          response: Response;
+          result: Record<string, any>;
+          statusCode: number;
+        }),
   ): void {
-    console.error(`[Network error]: ${networkError}`);
+    const message = `[Network error]: ${networkError}`;
+    console.error(message);
+    this.promptToast(message);
   }
 
   interceptGraphQLErrors(graphQLErrors: ReadonlyArray<GraphQLError>) {
@@ -28,18 +29,22 @@ export class HttpErrorInterceptorService {
       console.error(msg);
       return msg;
     });
+    this.promptToast(messages.join('\n'));
+  }
+
+  private promptToast(message: string) {
     this.toastCtrl
       .create({
-        message: messages.join('\n'),
+        message,
         color: 'danger',
         duration: 5000,
         buttons: [
           {
             icon: 'close-outline',
             side: 'end',
-            role: 'cancel'
-          }
-        ]
+            role: 'cancel',
+          },
+        ],
       })
       .then((toast) => toast.present());
   }

@@ -1,15 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { GqlFeatureName } from '../../../../generated/graphql';
 import { PlanService } from '../../../services/plan.service';
 import { Plan } from '../../../graphql/types';
-import { FeatureGroup, FeatureLabel } from '../../../components/plans/plans.component';
-
+import {
+  FeatureGroup,
+  FeatureLabel,
+} from '../../../components/plans/plans.component';
 
 @Component({
   selector: 'app-visual-diff-plans-page',
   templateUrl: './plans.page.html',
   styleUrls: ['./plans.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlansPage implements OnInit {
   plans: Plan[];
@@ -17,21 +24,22 @@ export class PlansPage implements OnInit {
   labels: FeatureLabel[] = [
     {
       featureName: GqlFeatureName.PublicScrapeSource,
-      title: 'Public Trackers'
+      title: 'Public Trackers',
     },
     {
       featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
-      title: 'Items per Tracker'
+      title: 'Items per Tracker',
     },
     {
       featureName: GqlFeatureName.ScrapeSourceMaxCountTotal,
-      title: 'Trackers'
+      title: 'Trackers',
     },
-  ]
+  ];
 
-  constructor(private readonly planService: PlanService,
-              private readonly changeRef: ChangeDetectorRef) {
-  }
+  constructor(
+    private readonly planService: PlanService,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     this.plans = await this.planService.fetchPlans();
@@ -42,27 +50,25 @@ export class PlansPage implements OnInit {
         features: [
           GqlFeatureName.RateLimit,
           GqlFeatureName.Plugins,
-          GqlFeatureName.PublicScrapeSource
-        ]
+          GqlFeatureName.PublicScrapeSource,
+        ],
       },
       {
         groupLabel: 'Storage',
         features: [
           GqlFeatureName.ScrapeSourceMaxCountTotal,
-          GqlFeatureName.ScrapeSourceRetentionMaxItems
-        ]
+          GqlFeatureName.ScrapeSourceRetentionMaxItems,
+        ],
       },
       {
         groupLabel: 'Integration',
         features: [
           GqlFeatureName.ItemWebhookForward,
           GqlFeatureName.Api,
-          GqlFeatureName.ItemEmailForward
-        ]
-      }
+          GqlFeatureName.ItemEmailForward,
+        ],
+      },
     ];
-
-
 
     this.changeRef.detectChanges();
   }

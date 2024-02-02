@@ -10,16 +10,16 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { FeedBuilderActionsModalModule } from '../../components/feed-builder-actions-modal/feed-builder-actions-modal.module';
 import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/generate-feed-modal.module';
 
-
 @NgModule({
-  imports: [CommonModule,
+  imports: [
+    CommonModule,
     IonicModule,
     FeedBuilderPageRoutingModule,
     TransformWebsiteToFeedModule,
     FeedBuilderActionsModalModule,
     GenerateFeedModalModule,
-    SearchbarModule],
-  declarations: [FeedBuilderPage]
+    SearchbarModule,
+  ],
+  declarations: [FeedBuilderPage],
 })
-export class FeedBuilderPageModule {
-}
+export class FeedBuilderPageModule {}

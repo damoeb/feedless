@@ -7,7 +7,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [InputComponent],
   exports: [InputComponent],
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule]
+  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
 })
-export class InputModule {
-}
+export class InputModule {}

@@ -4,7 +4,7 @@ import { AppTestModule, mockScrape } from '../../app-test.module';
 import { UpcomingProductModule } from './upcoming-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('ReaderPage', () => {
+describe('UpcomingProductPage', () => {
   let component: UpcomingProductPage;
   let fixture: ComponentFixture<UpcomingProductPage>;
 
@@ -15,8 +15,8 @@ describe('ReaderPage', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
         }),
-        RouterTestingModule.withRoutes([])
-      ]
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UpcomingProductPage);

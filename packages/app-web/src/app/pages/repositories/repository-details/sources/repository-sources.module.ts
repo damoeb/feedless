@@ -13,9 +13,8 @@ import { RepositorySourcesPage } from './repository-sources.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    RepositorySourcesPageRoutingModule
+    RepositorySourcesPageRoutingModule,
   ],
-  declarations: [RepositorySourcesPage]
+  declarations: [RepositorySourcesPage],
 })
-export class RepositorySourcesPageModule {
-}
+export class RepositorySourcesPageModule {}

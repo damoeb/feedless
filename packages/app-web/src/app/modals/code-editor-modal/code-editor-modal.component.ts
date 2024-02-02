@@ -9,17 +9,17 @@ export interface CodeEditorModalComponentProps {
 @Component({
   selector: 'app-code-editor-modal',
   templateUrl: './code-editor-modal.component.html',
-  styleUrls: ['./code-editor-modal.component.scss']
+  styleUrls: ['./code-editor-modal.component.scss'],
 })
 export class CodeEditorModalComponent
-  implements CodeEditorModalComponentProps, OnInit {
+  implements CodeEditorModalComponentProps, OnInit
+{
   @Input()
   code: string;
 
   codeFC: FormControl<string | null>;
 
-  constructor(private readonly modalCtrl: ModalController) {
-  }
+  constructor(private readonly modalCtrl: ModalController) {}
 
   dismissModal() {
     return this.modalCtrl.dismiss();

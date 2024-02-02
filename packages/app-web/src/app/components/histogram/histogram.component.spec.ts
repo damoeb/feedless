@@ -11,7 +11,7 @@ describe('HistogramComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [HistogramModule, AppTestModule.withDefaults()]
+      imports: [HistogramModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HistogramComponent);

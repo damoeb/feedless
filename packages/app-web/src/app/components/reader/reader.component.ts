@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { ReaderLinkTarget, ReaderTextTransform } from '../../products/reader/reader-product.page';
+import {
+  ReaderLinkTarget,
+  ReaderTextTransform,
+} from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
@@ -11,7 +22,7 @@ import { GqlFeedlessPlugins } from '../../../generated/graphql';
   templateUrl: './reader.component.html',
   styleUrls: ['./reader.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReaderComponent implements OnChanges {
   @Input()
@@ -31,8 +42,7 @@ export class ReaderComponent implements OnChanges {
   private openLinkInReader: boolean;
   private showLinksHostname: boolean;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {
-  }
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes.scrapeResponse && changes.scrapeResponse.currentValue) {
@@ -66,8 +76,8 @@ export class ReaderComponent implements OnChanges {
   private getReadability(): Maybe<ScrapedReadability> {
     return JSON.parse(
       this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext
-      ).value.one.data
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
+      ).value.one.data,
     ) as ScrapedReadability;
   }
 
@@ -75,7 +85,7 @@ export class ReaderComponent implements OnChanges {
     if (this.hasReadability()) {
       const document = new DOMParser().parseFromString(
         this.getReadability().content,
-        'text/html'
+        'text/html',
       );
       Array.from(document.body.querySelectorAll('a[href]')).forEach((ahref) => {
         ahref.setAttribute('referrerpolicy', 'no-referrer');
@@ -91,7 +101,7 @@ export class ReaderComponent implements OnChanges {
             try {
               ahref.insertAdjacentText(
                 'afterend',
-                ` (${new URL(url).hostname})`
+                ` (${new URL(url).hostname})`,
               );
             } catch (e) {
               // ignore
@@ -108,7 +118,7 @@ export class ReaderComponent implements OnChanges {
 
         Array.from(document.body.querySelectorAll('p,span,li,blockquote'))
           .flatMap((p) =>
-            Array.from(p.childNodes).filter((it) => it.nodeType === 3)
+            Array.from(p.childNodes).filter((it) => it.nodeType === 3),
           )
           .forEach((it) => {
             it.replaceWith(
@@ -119,9 +129,9 @@ export class ReaderComponent implements OnChanges {
                   .flatMap((text) => [
                     el('strong', text.substring(0, Math.ceil(text.length / 2))),
                     text.substring(Math.ceil(text.length / 2), text.length),
-                    ' '
-                  ])
-              )
+                    ' ',
+                  ]),
+              ),
             );
           });
       }

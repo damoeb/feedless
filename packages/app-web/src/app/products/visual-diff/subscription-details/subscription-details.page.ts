@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import pixelmatch from 'pixelmatch';
@@ -7,7 +13,6 @@ import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
-
 
 type ImageSize = {
   width: number;
@@ -18,7 +23,7 @@ type ImageSize = {
   selector: 'app-visual-diff-details',
   templateUrl: './subscription-details.page.html',
   styleUrls: ['./subscription-details.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionDetailsPage implements OnInit, OnDestroy {
   busy = false;
@@ -33,17 +38,16 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly domSanitizer: DomSanitizer,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly webDocumentService: WebDocumentService
-  ) {
-  }
+    private readonly webDocumentService: WebDocumentService,
+  ) {}
 
   ngOnInit() {
     this.subscriptions.push(
-      this.activatedRoute.params.subscribe(params => {
+      this.activatedRoute.params.subscribe((params) => {
         if (params.id) {
           this.fetch(params.id);
         }
-      })
+      }),
     );
   }
 
@@ -53,29 +57,34 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
   }
 
   private async fetch(id: string) {
-
     const page = 0;
     this.busy = true;
     this.changeRef.detectChanges();
 
-    this.subscription = await this.sourceSubscriptionService.getSubscriptionById(id);
+    this.subscription =
+      await this.sourceSubscriptionService.getSubscriptionById(id);
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
-        pageSize: 2
+        pageSize: 2,
       },
       where: {
         sourceSubscription: {
           where: {
-            id
-          }
-        }
-      }
+            id,
+          },
+        },
+      },
     });
 
     if (this.documents.length > 1) {
-      this.diffImageUrl = await this.createImageDiff(this.documents[0].contentRaw, this.documents[1].contentRaw);
-      this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.diffImageUrl);
+      this.diffImageUrl = await this.createImageDiff(
+        this.documents[0].contentRaw,
+        this.documents[1].contentRaw,
+      );
+      this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
+        this.diffImageUrl,
+      );
     }
 
     this.busy = false;
@@ -101,7 +110,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     }
     const size: ImageSize = {
       width: img.naturalWidth,
-      height: img.naturalHeight
+      height: img.naturalHeight,
     };
     canvas.width = canvasSize ? canvasSize.width : size.width;
     canvas.height = canvasSize ? canvasSize.height : size.height;
@@ -121,7 +130,10 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     });
   }
 
-  private async createImageDiff(img1Base64: string, img2Base64: string): Promise<string> {
+  private async createImageDiff(
+    img1Base64: string,
+    img2Base64: string,
+  ): Promise<string> {
     const image1 = await this.createCanvasContext(img1Base64);
     // Fits the size of image1
     const diffSize = image1.size;
@@ -136,7 +148,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     diffCanvas.height = diffSize.height;
     const outputDiff = diffContext.createImageData(
       diffSize.width,
-      diffSize.height
+      diffSize.height,
     );
 
     const numDiffPixels = pixelmatch(
@@ -147,21 +159,22 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
       diffSize.height,
       {
         threshold: 0,
-        diffColor: [255, 0, 0]
-      }
+        diffColor: [255, 0, 0],
+      },
     );
 
     console.log({
       numDiffPixels,
       width: diffSize.width,
       height: diffSize.height,
-      diffPercentage: (100 * numDiffPixels) / (diffSize.width * diffSize.height)
+      diffPercentage:
+        (100 * numDiffPixels) / (diffSize.width * diffSize.height),
     });
 
     diffContext.putImageData(outputDiff, 0, 0);
 
     return URL.createObjectURL(await this.getBlobByCanvas(diffCanvas));
-  };
+  }
 
   protected readonly dateFormat = dateFormat;
   protected readonly dateTimeFormat = dateTimeFormat;

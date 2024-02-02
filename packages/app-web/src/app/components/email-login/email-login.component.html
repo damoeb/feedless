@@ -1,4 +1,3 @@
-<h1 class="ion-margin-start">Login</h1>
 <ion-card>
   <ion-card-content>
     <ion-list>
@@ -16,7 +15,7 @@
         </ion-item>
         <ion-item *ngIf="errorMessage">
           <ion-label color="danger">
-            {{errorMessage}}
+            {{ errorMessage }}
           </ion-label>
         </ion-item>
         <ion-item
@@ -28,11 +27,18 @@
           type="submit"
         >
           Send Auth Code
-          <ion-icon *ngIf="!busy" name="arrow-forward-outline" slot="end"></ion-icon>
+          <ion-icon
+            *ngIf="!busy"
+            name="arrow-forward-outline"
+            slot="end"
+          ></ion-icon>
           <ion-spinner *ngIf="busy" name="dots" slot="end"></ion-spinner>
         </ion-item>
       </form>
-      <form (ngSubmit)="sendAuthCode()" *ngIf="mode === 'enterConfirmationCode'">
+      <form
+        (ngSubmit)="sendAuthCode()"
+        *ngIf="mode === 'enterConfirmationCode'"
+      >
         <ion-item>
           <ion-input
             [formControl]="confirmationCodeFc"
@@ -49,11 +55,14 @@
           color="primary"
         >
           Authenticate
-          <ion-icon *ngIf="!busy" name="arrow-forward-outline" slot="end"></ion-icon>
+          <ion-icon
+            *ngIf="!busy"
+            name="arrow-forward-outline"
+            slot="end"
+          ></ion-icon>
           <ion-spinner *ngIf="busy" name="dots" slot="end"></ion-spinner>
         </ion-item>
       </form>
     </ion-list>
   </ion-card-content>
 </ion-card>
-

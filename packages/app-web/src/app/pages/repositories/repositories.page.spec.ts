@@ -2,9 +2,14 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RepositoriesPage } from './repositories.page';
 import { RepositoriesPageModule } from './repositories.module';
-import { RouterTestingModule } from '@angular/router/testing';
+import { AppTestModule } from '../../app-test.module';
+import {
+  GqlListSourceSubscriptionsQuery,
+  GqlListSourceSubscriptionsQueryVariables,
+  ListSourceSubscriptions,
+} from '../../../generated/graphql';
 
-describe('SourcesPage', () => {
+describe('RepositoriesPage', () => {
   let component: RepositoriesPage;
   let fixture: ComponentFixture<RepositoriesPage>;
 
@@ -12,22 +17,21 @@ describe('SourcesPage', () => {
     TestBed.configureTestingModule({
       imports: [
         RepositoriesPageModule,
-        // AppTestModule.withDefaults((apolloMockController) => {
-        //   apolloMockController
-        //     .mockQuery<
-        //       GqlSearchBucketsOrFeedsQuery,
-        //       GqlSearchBucketsOrFeedsQueryVariables
-        //     >(SearchBucketsOrFeeds)
-        //     .and.resolveOnce(async () => {
-        //       return {
-        //         data: {
-        //           bucketsOrNativeFeeds: [],
-        //         },
-        //       };
-        //     });
-        // }),
-        RouterTestingModule.withRoutes([])
-      ]
+        AppTestModule.withDefaults((apolloMockController) => {
+          apolloMockController
+            .mockQuery<
+              GqlListSourceSubscriptionsQuery,
+              GqlListSourceSubscriptionsQueryVariables
+            >(ListSourceSubscriptions)
+            .and.resolveOnce(async () => {
+              return {
+                data: {
+                  sourceSubscriptions: [],
+                },
+              };
+            });
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RepositoriesPage);

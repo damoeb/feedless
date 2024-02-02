@@ -1,3 +1,5 @@
+@import "../../../mixins";
+
 .ion-list-header {
   font-weight: bold;
 }
@@ -5,16 +7,6 @@
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;
-}
-
-.feeds {
-  --app-border-radius: 8px;
-
-  ion-input {
-    --border-radius: var(--app-border-radius) !important;
-    --padding-start: 10px;
-    cursor: pointer;
-  }
 }
 
 ion-list:not(last-of-type) {
@@ -25,6 +17,14 @@ a,
 a:visited,
 a:active {
   color: var(--ion-color-primary);
+}
+
+ion-input,
+ion-textarea {
+  --app-border-radius: 8px;
+  --padding-start: 10px!important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+  @include control();
 }
 
 ion-input,

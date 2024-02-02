@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -7,12 +12,14 @@ import { SourceSubscription } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
 import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { GqlVisibility } from '../../../generated/graphql';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-sources-page',
   templateUrl: './repositories.page.html',
   styleUrls: ['./repositories.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RepositoriesPage implements OnInit {
   gridLayout = false;
@@ -26,12 +33,13 @@ export class RepositoriesPage implements OnInit {
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService,
     private readonly authService: AuthService,
+    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute
-  ) {
-  }
+    private readonly activatedRoute: ActivatedRoute,
+  ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('Repositories');
     this.activatedRoute.url.subscribe(async () => {
       this.entities = [];
       this.currentPage = 0;
@@ -42,7 +50,7 @@ export class RepositoriesPage implements OnInit {
   async handleExport() {
     const modal = await this.modalCtrl.create({
       component: ExportModalComponent,
-      showBackdrop: true
+      showBackdrop: true,
     });
     await modal.present();
   }
@@ -56,16 +64,16 @@ export class RepositoriesPage implements OnInit {
 
   private async fetch(
     page: number,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
     const entities =
       await this.sourceSubscriptionService.listSourceSubscriptions(
         {
           cursor: {
-            page
-          }
+            page,
+          },
         },
-        fetchPolicy
+        fetchPolicy,
       );
 
     this.isLast = entities.length < 10;
@@ -78,4 +86,10 @@ export class RepositoriesPage implements OnInit {
     await this.fetch(this.currentPage, fetchPolicy);
   }
 
+  toLabel(visibility: GqlVisibility) {
+    switch (visibility) {
+      case GqlVisibility.IsPrivate: return 'Private';
+      case GqlVisibility.IsPublic: return 'Public';
+    }
+  }
 }

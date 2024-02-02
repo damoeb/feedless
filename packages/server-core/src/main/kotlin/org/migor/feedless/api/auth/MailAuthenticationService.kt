@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.lang.IllegalArgumentException
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDateTime
@@ -66,7 +65,7 @@ class MailAuthenticationService {
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter -> run {
       try {
-        if (featureService.isDisabled(FeatureName.canLogin)) {
+        if (featureService.isDisabled(FeatureName.canLogin, data.product.fromDto())) {
           throw IllegalArgumentException("login is deactivated")
         }
 

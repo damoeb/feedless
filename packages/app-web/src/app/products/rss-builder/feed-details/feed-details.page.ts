@@ -1,18 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { SourceSubscription, WebDocument } from '../../../graphql/types';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
-
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 @Component({
   selector: 'app-feed-details',
   templateUrl: './feed-details.page.html',
   styleUrls: ['./feed-details.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = false;
@@ -26,17 +33,17 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly domSanitizer: DomSanitizer,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly webDocumentService: WebDocumentService
-  ) {
-  }
+    private readonly webDocumentService: WebDocumentService,
+  ) {}
 
   ngOnInit() {
+    dayjs.extend(relativeTime)
     this.subscriptions.push(
-      this.activatedRoute.params.subscribe(params => {
+      this.activatedRoute.params.subscribe((params) => {
         if (params.feedId) {
           this.fetch(params.feedId);
         }
-      })
+      }),
     );
   }
 
@@ -46,24 +53,24 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   }
 
   private async fetch(id: string) {
-
     const page = 0;
     this.busy = true;
     this.changeRef.detectChanges();
 
-    this.subscription = await this.sourceSubscriptionService.getSubscriptionById(id);
+    this.subscription =
+      await this.sourceSubscriptionService.getSubscriptionById(id);
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
-        pageSize: 10
+        pageSize: 10,
       },
       where: {
         sourceSubscription: {
           where: {
-            id
-          }
-        }
-      }
+            id,
+          },
+        },
+      },
     });
 
     this.busy = false;
@@ -72,4 +79,8 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   protected readonly dateFormat = dateFormat;
   protected readonly dateTimeFormat = dateTimeFormat;
+
+  fromNow(futureTimestamp: number): string {
+    return dayjs(futureTimestamp).toNow(true)
+  }
 }

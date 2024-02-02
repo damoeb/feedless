@@ -152,8 +152,7 @@ object DtoResolver {
     return when (extendContext) {
       ExtendContentOptions.NEXT -> ExtendContext.NEXT
       ExtendContentOptions.PREVIOUS -> ExtendContext.PREVIOUS
-      ExtendContentOptions.NONE -> ExtendContext.NONE
-      else -> throw RuntimeException("ExtendContentOptionsDto $extendContext is not supported")
+      else -> ExtendContext.NONE
     }
   }
 
@@ -192,8 +191,8 @@ object DtoResolver {
     return PluginExecutionParams.newBuilder()
       .genericFeed(genericFeed?.fromDto())
       .rawJson(rawJson)
-      .enforceItemIncrement(enforceItemIncrement.fromDto())
-      .fulltext(fulltext.fromDto())
+      .enforceItemIncrement(enforceItemIncrement?.fromDto())
+      .fulltext(fulltext?.fromDto())
       .build()
   }
 
@@ -216,7 +215,7 @@ return FulltextPluginParams.newBuilder()
       .linkXPath(linkXPath)
       .dateXPath(dateXPath)
       .extendContext(extendContext)
-      .dateIsStartOfEvent(dateIsStartOfEvent)
+      .dateIsStartOfEvent(BooleanUtils.isTrue(dateIsStartOfEvent))
       .build()
 
   }

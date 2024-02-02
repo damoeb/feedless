@@ -15,7 +15,6 @@ import { RepositoryPluginsPage } from './repository-plugins.page';
     IonicModule,
     RepositoryPluginsPageRoutingModule,
   ],
-  declarations: [RepositoryPluginsPage]
+  declarations: [RepositoryPluginsPage],
 })
-export class RepositoryPluginsPageModule {
-}
+export class RepositoryPluginsPageModule {}

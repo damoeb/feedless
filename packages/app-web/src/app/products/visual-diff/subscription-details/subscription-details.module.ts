@@ -7,13 +7,8 @@ import 'img-comparison-slider';
 import { SubscriptionDetailsRoutingModule } from './subscription-details-routing.module';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    IonicModule,
-    SubscriptionDetailsRoutingModule
-  ],
+  imports: [CommonModule, IonicModule, SubscriptionDetailsRoutingModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [SubscriptionDetailsPage]
+  declarations: [SubscriptionDetailsPage],
 })
-export class SubscriptionDetailsPageModule {
-}
+export class SubscriptionDetailsPageModule {}

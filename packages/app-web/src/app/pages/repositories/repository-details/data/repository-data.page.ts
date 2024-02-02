@@ -1,23 +1,29 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { FetchPolicy } from '@apollo/client/core';
-import { GqlVisibility } from '../../../../../generated/graphql';
 import { ServerSettingsService } from '../../../../services/server-settings.service';
-import { dateTimeFormat, ProfileService } from '../../../../services/profile.service';
+import {
+  dateTimeFormat,
+  ProfileService,
+} from '../../../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { SourceSubscription, WebDocument } from '../../../../graphql/types';
+import { WebDocument } from '../../../../graphql/types';
 import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
 import { ModalService } from '../../../../services/modal.service';
 import { WebDocumentService } from '../../../../services/web-document.service';
-import { isArray, isObject, without } from 'lodash-es';
-import { isDefined } from '../../../../modals/feed-builder-modal/scrape-builder';
 
 @Component({
   selector: 'app-repository-data-page',
   templateUrl: './repository-data.page.html',
   styleUrls: ['./repository-data.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RepositoryDataPage implements OnInit, OnDestroy {
   loadingSource: boolean;
@@ -38,16 +44,15 @@ export class RepositoryDataPage implements OnInit, OnDestroy {
     private readonly serverSettings: ServerSettingsService,
     private readonly modalService: ModalService,
     private readonly webDocumentService: WebDocumentService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         this.repositoryId = params.repositoryId;
-        this.fetch()
-      })
+        this.fetch();
+      }),
     );
   }
 
@@ -55,17 +60,17 @@ export class RepositoryDataPage implements OnInit, OnDestroy {
     const entities = await this.webDocumentService.findAllByStreamId(
       {
         cursor: {
-          page
+          page,
         },
         where: {
           sourceSubscription: {
             where: {
-              id: this.repositoryId
-            }
-          }
-        }
+              id: this.repositoryId,
+            },
+          },
+        },
       },
-      fetchPolicy
+      fetchPolicy,
     );
 
     this.isLast = entities.length < 10;

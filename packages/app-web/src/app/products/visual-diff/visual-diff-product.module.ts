@@ -19,7 +19,6 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     LoginButtonModule,
     SearchbarModule,
   ],
-  declarations: [VisualDiffProductPage]
+  declarations: [VisualDiffProductPage],
 })
-export class VisualDiffProductModule {
-}
+export class VisualDiffProductModule {}

@@ -15,8 +15,11 @@
 <!--</ion-header>-->
 <ion-content>
   <form (ngSubmit)="scrape()">
-    <p *ngIf="errorMessage">{{errorMessage}}</p>
-    <ion-row [ngClass]="{'busy-cursor': busy, 'website--pick-mode': isPickMode()}" class="website flex_column">
+    <p *ngIf="errorMessage">{{ errorMessage }}</p>
+    <ion-row
+      [ngClass]="{ 'busy-cursor': busy, 'website--pick-mode': isPickMode() }"
+      class="website flex_column"
+    >
       <div *ngIf="!embedScreenshot" style="margin: auto">
         <div *ngIf="busy">Loading Screenshot...</div>
       </div>
@@ -31,14 +34,18 @@
     </ion-row>
     <ion-row *ngIf="isPickMode()">
       <ion-item color="primary" style="width: 100%">
-        <ion-label>
-          Click on your element of choice
-        </ion-label>
-        <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel</ion-button>
+        <ion-label> Click on your element of choice </ion-label>
+        <ion-button (click)="cancelPickMode()" color="dark" slot="end"
+          >Cancel</ion-button
+        >
       </ion-item>
     </ion-row>
     <ion-row *ngIf="!isPickMode()" class="actions">
-      <ion-progress-bar *ngIf="busy" color="medium" type="indeterminate"></ion-progress-bar>
+      <ion-progress-bar
+        *ngIf="busy"
+        color="medium"
+        type="indeterminate"
+      ></ion-progress-bar>
       <ion-list class="flex__column">
         <ion-item *ngFor="let action of getActions(); let i = index">
           <div class="flex__row">
@@ -53,12 +60,14 @@
               </ion-select>
             </div>
 
-            <ion-button (click)="pickPosition(action)"
-                        [ngClass]="{ 'ng-invalid': action.invalid}"
-                        color="medium"
-                        expand="block"
-                        fill="outline"
-                        style="flex: 1">
+            <ion-button
+              (click)="pickPosition(action)"
+              [ngClass]="{ 'ng-invalid': action.invalid }"
+              color="medium"
+              expand="block"
+              fill="outline"
+              style="flex: 1"
+            >
               {{ getPositionLabel(action) }}
             </ion-button>
 
@@ -69,9 +78,7 @@
         </ion-item>
         <ion-item *ngIf="actions.length < 4" [disabled]="actions.invalid">
           <ion-label>
-            <a (click)="addAction()" href="javascript:void(0)"
-            >Add Action</a
-            >
+            <a (click)="addAction()" href="javascript:void(0)">Add Action</a>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -81,10 +88,14 @@
 <ion-footer *ngIf="!isPickMode()">
   <ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button (click)="dismissModal()">
-        Cancel
-      </ion-button>
-      <ion-button (click)="applyChanges()" [disabled]="actions.invalid" color="success" expand="full" fill="solid">
+      <ion-button (click)="dismissModal()"> Cancel </ion-button>
+      <ion-button
+        (click)="applyChanges()"
+        [disabled]="actions.invalid"
+        color="success"
+        expand="full"
+        fill="solid"
+      >
         Apply
       </ion-button>
     </ion-buttons>

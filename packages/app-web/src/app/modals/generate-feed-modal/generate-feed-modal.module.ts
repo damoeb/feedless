@@ -7,7 +7,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [GenerateFeedModalComponent],
   exports: [GenerateFeedModalComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
-export class GenerateFeedModalModule {
-}
+export class GenerateFeedModalModule {}

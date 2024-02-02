@@ -6,13 +6,12 @@ import { RepositoryDataPage } from './repository-data.page';
 const routes: Routes = [
   {
     path: '',
-    component: RepositoryDataPage
-  }
+    component: RepositoryDataPage,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class RepositoryDataPageRoutingModule {
-}
+export class RepositoryDataPageRoutingModule {}

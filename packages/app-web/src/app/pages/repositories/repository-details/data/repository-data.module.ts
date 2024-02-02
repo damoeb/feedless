@@ -15,9 +15,8 @@ import { EmptyRepositoryModule } from '../../../../components/empty-repository/e
     FormsModule,
     IonicModule,
     RepositoryDataPageRoutingModule,
-    EmptyRepositoryModule
+    EmptyRepositoryModule,
   ],
-  declarations: [RepositoryDataPage]
+  declarations: [RepositoryDataPage],
 })
-export class RepositoryDataPageModule {
-}
+export class RepositoryDataPageModule {}

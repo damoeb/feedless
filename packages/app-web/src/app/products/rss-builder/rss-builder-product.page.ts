@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
@@ -12,7 +18,7 @@ import { fixUrl } from '../../app.module';
   selector: 'app-rss-builder-product-page',
   templateUrl: './rss-builder-product.page.html',
   styleUrls: ['./rss-builder-product.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {
   isDarkMode: boolean;
@@ -29,17 +35,18 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
     readonly profile: ProfileService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService.getActiveProductConfigChange().subscribe(productConfig => {
-        this.productConfig = productConfig;
-        this.changeRef.detectChanges();
-      }),
-      this.activatedRoute.queryParams.subscribe(queryParams => {
+      this.productService
+        .getActiveProductConfigChange()
+        .subscribe((productConfig) => {
+          this.productConfig = productConfig;
+          this.changeRef.detectChanges();
+        }),
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.url) {
           this.url = queryParams.url;
         }
@@ -47,7 +54,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
       this.profile.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 
@@ -60,8 +67,8 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
       this.url = fixUrl(url);
       await this.router.navigate(['/builder'], {
         queryParams: {
-          url: this.url
-        }
+          url: this.url,
+        },
       });
     } catch (e) {
       console.warn(e);

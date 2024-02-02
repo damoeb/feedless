@@ -17,7 +17,6 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
     DarkModeButtonModule,
     LoginButtonModule,
   ],
-  declarations: [RssBuilderProductPage]
+  declarations: [RssBuilderProductPage],
 })
-export class RssBuilderProductModule {
-}
+export class RssBuilderProductModule {}

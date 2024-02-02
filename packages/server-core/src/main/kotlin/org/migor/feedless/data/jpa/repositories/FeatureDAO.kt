@@ -19,16 +19,7 @@ interface FeatureDAO : JpaRepository<FeatureEntity, UUID> {
   fun findAllByPlanId(id: UUID): List<FeatureEntity>
 
   fun findByPlanIdAndName(planId: UUID, featureName: FeatureName): FeatureEntity?
-  fun existsByPlanIdAndName(planId: UUID, featureName: FeatureName): Boolean
   fun findFirstByName(featureName: FeatureName): FeatureEntity
-
-  @Query("""
-    select f from FeatureEntity f
-    inner join PlanEntity p
-    on f.planId = p.id
-    where p.name=:plan and f.name=:feature
-  """)
-  fun findByPlanNameAndFeatureName(@Param("plan") plan: PlanName, @Param("feature") feature: FeatureName): FeatureEntity
 
   @Query("""
     select f from FeatureEntity f
@@ -37,5 +28,13 @@ interface FeatureDAO : JpaRepository<FeatureEntity, UUID> {
     where p.name=:plan and p.product=:product and f.scope=:scope
   """)
   fun findAllByPlanAndProductAndScope(@Param("plan") plan: PlanName, @Param("product") product: ProductName, @Param("scope") scope: FeatureScope): List<FeatureEntity>
+
+  @Query("""
+    select f from FeatureEntity f
+    inner join PlanEntity pl
+    on f.planId = pl.id
+    where pl.product=:product and pl.name = :plan and f.name=:feature
+  """)
+  fun findByProductNameAndFeatureName(@Param("product") product: ProductName, @Param("plan") plan: PlanName, @Param("feature") feature: FeatureName): FeatureEntity
 
 }

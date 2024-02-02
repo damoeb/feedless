@@ -2,6 +2,7 @@ fragment BasicPlugin on Plugin {
   id
   name
   description
+  listed
 }
 
 query listPlugins {
@@ -10,5 +11,6 @@ query listPlugins {
     name
     description
     type
+    listed
   }
 }

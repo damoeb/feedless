@@ -1,35 +1,30 @@
-<ion-header>
+<ion-header class="limited-width-pane">
   <ion-toolbar>
     <ion-title>
       {{ source?.title }}
       <ion-chip
         *ngIf="source?.visibility === entityVisibility.IsPrivate"
         [outline]="true"
-      >private
-      </ion-chip
-      >
-      <ion-note>
-        {{ source?.description }}
-      </ion-note>
+        >private
+      </ion-chip>
+      <ion-note> {{ source?.description }} </ion-note>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button
         [href]="feedUrl+'/atom'"
         referrerpolicy="no-referrer"
-        shape="round"
         size="small"
       >
-        <ion-icon name="logo-rss"></ion-icon>
-        RSS
+        <ion-icon name="logo-rss" slot="start"></ion-icon>
+        Atom
       </ion-button>
 
       <ion-button
         [href]="feedUrl+'/json'"
         referrerpolicy="no-referrer"
-        shape="round"
         size="small"
       >
-        <ion-icon name="logo-rss"></ion-icon>
+        <ion-icon name="logo-rss" slot="start"></ion-icon>
         JSON
       </ion-button>
 
@@ -41,14 +36,38 @@
       <!--          </ion-button>-->
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar>
+  <ion-toolbar class="menu" *ngIf="source">
     <ion-buttons>
-      <ion-button routerLink="./general" routerLinkActive="active">General</ion-button>
-      <ion-button routerLink="./sources" routerLinkActive="active">Sourcing</ion-button>
-      <ion-button routerLink="./plugins" routerLinkActive="active">Plugins</ion-button>
-      <ion-button routerLink="./delivery" routerLinkActive="active">Delivery</ion-button>
-      <ion-button routerLink="./settings" routerLinkActive="active">Settings</ion-button>
-<!--      <ion-button routerLink="./settings" routerLinkActive="active">Settings</ion-button>-->
+      <ion-button routerLink="./data" routerLinkActive="active"
+        >
+        <ion-icon name="file-tray-full-outline" slot="start"></ion-icon>
+        Data</ion-button
+      >
+      <ion-button routerLink="./sources" routerLinkActive="active"
+        >
+        <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+        Inputs
+        <ion-chip slot="end" *ngIf="source.sources.length > 0">{{source.sources.length}}</ion-chip>
+      </ion-button
+      >
+      <ion-button routerLink="./plugins" routerLinkActive="active"
+        >
+        <ion-icon name="extension-puzzle-outline" slot="start"></ion-icon>
+        Transformation
+        <ion-chip slot="end" *ngIf="source.plugins.length > 0">{{source.plugins.length}}</ion-chip>
+      </ion-button
+      >
+      <ion-button routerLink="./delivery" routerLinkActive="active"
+        >
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        Output</ion-button
+      >
+      <ion-button routerLink="./settings" routerLinkActive="active"
+        >
+        <ion-icon name="settings-outline" slot="start"></ion-icon>
+        Settings</ion-button
+      >
+      <!--      <ion-button routerLink="./settings" routerLinkActive="active">Settings</ion-button>-->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

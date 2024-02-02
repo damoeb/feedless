@@ -7,13 +7,8 @@ import 'img-comparison-slider';
 import { FeedDetailsRoutingModule } from './feed-details-routing.module';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    IonicModule,
-    FeedDetailsRoutingModule
-  ],
+  imports: [CommonModule, IonicModule, FeedDetailsRoutingModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [FeedDetailsPage]
+  declarations: [FeedDetailsPage],
 })
-export class FeedDetailsPageModule {
-}
+export class FeedDetailsPageModule {}

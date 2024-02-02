@@ -6,21 +6,20 @@ import { ReaderProductPage } from './reader-product.page';
 const routes: Routes = [
   {
     path: ':url',
-    component: ReaderProductPage
+    component: ReaderProductPage,
   },
   {
     path: '',
-    component: ReaderProductPage
+    component: ReaderProductPage,
   },
   {
     path: '**',
-    redirectTo: '/'
-  }
+    redirectTo: '/',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ReaderProductRoutingModule {
-}
+export class ReaderProductRoutingModule {}

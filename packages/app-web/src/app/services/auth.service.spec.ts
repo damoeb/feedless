@@ -8,7 +8,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), IonicModule.forRoot()]
+      imports: [AppTestModule.withDefaults(), IonicModule.forRoot()],
     });
     service = TestBed.inject(AuthService);
   });

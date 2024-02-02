@@ -12,7 +12,6 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.service.FeedParserService
-import org.migor.feedless.service.HttpService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize

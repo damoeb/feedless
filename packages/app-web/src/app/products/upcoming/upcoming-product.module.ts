@@ -19,9 +19,8 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     UpcomingProductRoutingModule,
     DarkModeButtonModule,
     SearchbarModule,
-    BubbleModule
+    BubbleModule,
   ],
-  declarations: [UpcomingProductPage]
+  declarations: [UpcomingProductPage],
 })
-export class UpcomingProductModule {
-}
+export class UpcomingProductModule {}

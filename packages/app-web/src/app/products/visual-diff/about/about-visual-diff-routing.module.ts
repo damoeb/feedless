@@ -6,12 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: AboutVisualDiffPage,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AboutVisualDiffPageRoutingModule {
-}
+export class AboutVisualDiffPageRoutingModule {}

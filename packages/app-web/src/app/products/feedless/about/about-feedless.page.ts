@@ -8,21 +8,19 @@ import { fixUrl } from '../../../app.module';
   selector: 'app-about-feedless',
   templateUrl: './about-feedless.page.html',
   styleUrls: ['./about-feedless.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutFeedlessPage implements OnInit {
   waitList: boolean;
 
-  constructor(private readonly router: Router) {
-
-  }
+  constructor(private readonly router: Router) {}
 
   async handleQuery(url: string) {
     try {
       await this.router.navigate(['/builder'], {
         queryParams: {
-          url: fixUrl(url)
-        }
+          url: fixUrl(url),
+        },
       });
     } catch (e) {
       console.warn(e);
@@ -30,6 +28,6 @@ export class AboutFeedlessPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.waitList = false ;
+    this.waitList = false;
   }
 }

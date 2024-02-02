@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { VisualDiffMenuComponent } from './visual-diff-menu.component';
+import { AppTestModule } from '../../app-test.module';
 
 describe('VisualDiffMenuComponent', () => {
   let component: VisualDiffMenuComponent;
@@ -10,7 +10,7 @@ describe('VisualDiffMenuComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [VisualDiffMenuComponent],
-      imports: [IonicModule.forRoot()]
+      imports: [AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VisualDiffMenuComponent);

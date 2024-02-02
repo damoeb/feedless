@@ -9,42 +9,51 @@ const routes: Routes = [
     component: RepositoryDetailsPage,
     children: [
       {
-        path: 'general',
+        path: 'data',
         loadChildren: () =>
-          import('./data/repository-data.module').then((m) => m.RepositoryDataPageModule)
+          import('./data/repository-data.module').then(
+            (m) => m.RepositoryDataPageModule,
+          ),
       },
       {
         path: 'sources',
         loadChildren: () =>
-          import('./sources/repository-sources.module').then((m) => m.RepositorySourcesPageModule)
+          import('./sources/repository-sources.module').then(
+            (m) => m.RepositorySourcesPageModule,
+          ),
       },
       {
         path: 'plugins',
         loadChildren: () =>
-          import('./plugins/repository-plugins.module').then((m) => m.RepositoryPluginsPageModule)
+          import('./plugins/repository-plugins.module').then(
+            (m) => m.RepositoryPluginsPageModule,
+          ),
       },
       {
         path: 'delivery',
         loadChildren: () =>
-          import('./delivery/repository-delivery.module').then((m) => m.RepositoryDeliveryPageModule)
+          import('./delivery/repository-delivery.module').then(
+            (m) => m.RepositoryDeliveryPageModule,
+          ),
       },
       {
         path: 'settings',
         loadChildren: () =>
-          import('./settings/repository-settings.module').then((m) => m.RepositorySettingsPageModule)
+          import('./settings/repository-settings.module').then(
+            (m) => m.RepositorySettingsPageModule,
+          ),
       },
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'general'
-      }
-    ]
-  }
+        redirectTo: 'data',
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class RepositoryDetailsPageRoutingModule {
-}
+export class RepositoryDetailsPageRoutingModule {}

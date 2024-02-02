@@ -1,28 +1,31 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { WebDocument } from '../../../../graphql/types';
+import { SubscriptionSource } from '../../../../graphql/types';
+import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-repository-sources-page',
   templateUrl: './repository-sources.page.html',
   styleUrls: ['./repository-sources.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RepositorySourcesPage implements OnInit, OnDestroy {
-  entities: WebDocument[] = [];
-
   private subscriptions: Subscription[] = [];
+  sources: SubscriptionSource[];
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-  ) {
-  }
+  constructor(private readonly activatedRoute: ActivatedRoute,
+              private readonly changeRef: ChangeDetectorRef,
+              private readonly modalCtrl: ModalController,
+              private readonly sourceSubscriptionService: SourceSubscriptionService) {}
 
   async ngOnInit() {
+    const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
+    const repository = await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+    this.sources = repository.sources;
+    this.changeRef.detectChanges();
     this.subscriptions.push(
-      this.activatedRoute.params.subscribe((params) => {
-        // this.fetchSources(params.id);
-      })
     );
   }
 
@@ -30,4 +33,7 @@ export class RepositorySourcesPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
+  addSource() {
+
+  }
 }

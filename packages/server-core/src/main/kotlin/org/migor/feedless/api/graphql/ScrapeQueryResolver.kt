@@ -10,6 +10,7 @@ import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
@@ -28,19 +29,20 @@ class ScrapeQueryResolver {
 
   @Throttled
   @DgsQuery
-  @PreAuthorize("hasAuthority('ANONYMOUS')")
+  @PreAuthorize("hasAnyAuthority('ANONYMOUS', 'READ', 'WRITE')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun scrape(
     @InputArgument data: ScrapeRequestInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
+    @RequestHeader(ApiParams.corrId, required = false) cid: String,
   ): ScrapeResponse = coroutineScope {
+    val corrId = handleCorrId(cid)
     log.info("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
     try {
       scrapeService.scrape(corrId, scrapeRequest).block()!!
     } catch (e: Exception) {
       log.error("[$corrId] ${e.message}")
-      throw RuntimeException("scrape exception ($corrId)", e)
+      throw e
     }
   }
 }

@@ -7,7 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [PlansComponent],
   exports: [PlansComponent],
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink],
 })
-export class PlansModule {
-}
+export class PlansModule {}

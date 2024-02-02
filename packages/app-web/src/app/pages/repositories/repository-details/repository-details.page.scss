@@ -1,9 +1,8 @@
-@import "../../../../mixins";
+.menu {
 
-.limited-width-pane {
-  @include limited-width-pane;
-}
-
-.active {
-  border-bottom: 1px solid var(--ion-color-dark);
+  ion-button {
+    &.active {
+      border-bottom: 2px solid var(--ion-color-primary);
+    }
+  }
 }

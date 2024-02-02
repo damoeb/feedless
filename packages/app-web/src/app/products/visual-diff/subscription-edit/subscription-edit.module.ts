@@ -16,9 +16,8 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     ReactiveFormsModule,
     EmbeddedImageModule,
     SubscriptionEditRoutingModule,
-    SearchbarModule
+    SearchbarModule,
   ],
-  declarations: [SubscriptionEditPage]
+  declarations: [SubscriptionEditPage],
 })
-export class SubscriptionEditPageModule {
-}
+export class SubscriptionEditPageModule {}

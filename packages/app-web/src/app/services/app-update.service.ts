@@ -4,16 +4,16 @@ import { AlertController } from '@ionic/angular';
 import { filter, interval, throttle } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppUpdateService {
   constructor(
     private readonly swUpdate: SwUpdate,
-    private readonly alertCtrl: AlertController
+    private readonly alertCtrl: AlertController,
   ) {
     this.swUpdate.versionUpdates
       .pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
       )
       .pipe(throttle(() => interval(3000)))
       .subscribe(async (event) => {
@@ -33,9 +33,9 @@ export class AppUpdateService {
           role: 'confirm',
           handler: () => {
             this.doAppUpdate();
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();

@@ -6,13 +6,12 @@ import { RepositoryPluginsPage } from './repository-plugins.page';
 const routes: Routes = [
   {
     path: '',
-    component: RepositoryPluginsPage
-  }
+    component: RepositoryPluginsPage,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class RepositoryPluginsPageRoutingModule {
-}
+export class RepositoryPluginsPageRoutingModule {}

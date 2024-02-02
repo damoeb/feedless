@@ -5,10 +5,13 @@
     </ion-buttons>
 
     <ion-title>
-      <span class="ion-hide-lg-up"
-            [innerHtml]="productConfig.titleHtml"></span>
-      <span *ngIf="activePageTitle"
-            class="ion-margin-horizontal">{{ activePageTitle }}</span>
+      <span
+        class="ion-hide-lg-up"
+        [innerHtml]="productConfig?.titleHtml"
+      ></span>
+      <span *ngIf="activePageTitle" class="ion-margin-horizontal"
+        >{{ activePageTitle }}</span
+      >
     </ion-title>
 
     <ion-buttons slot="end">

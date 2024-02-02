@@ -13,9 +13,8 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     IonicModule,
     AboutRssBuilderRoutingModule,
     ProductHeadlineModule,
-    SearchbarModule
+    SearchbarModule,
   ],
-  declarations: [AboutRssBuilderPage]
+  declarations: [AboutRssBuilderPage],
 })
-export class AboutRssBuilderModule {
-}
+export class AboutRssBuilderModule {}

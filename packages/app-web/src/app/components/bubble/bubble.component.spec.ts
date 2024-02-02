@@ -9,7 +9,7 @@ describe('BubbleComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [BubbleModule]
+      imports: [BubbleModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BubbleComponent);

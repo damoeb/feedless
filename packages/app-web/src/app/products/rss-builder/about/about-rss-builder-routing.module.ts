@@ -6,12 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: AboutRssBuilderPage,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AboutRssBuilderRoutingModule {
-}
+export class AboutRssBuilderRoutingModule {}

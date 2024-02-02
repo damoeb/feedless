@@ -32,8 +32,8 @@ class FeedsPlugin: FragmentTransformerPlugin {
   lateinit var genericFeedLocator: GenericFeedLocator
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
-  override fun description(): String = "Detect feeds in markup body"
-  override fun listed() = true
+  override fun description(): String = ""
+  override fun listed() = false
 
   override fun transformFragment(
     corrId: String,

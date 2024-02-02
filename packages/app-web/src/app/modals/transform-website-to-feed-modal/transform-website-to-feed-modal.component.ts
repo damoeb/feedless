@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { GqlNativeFeed, GqlScrapeRequestInput, GqlTransientGenericFeed } from '../../../generated/graphql';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
+import {
+  GqlNativeFeed,
+  GqlScrapeRequestInput,
+  GqlTransientGenericFeed,
+} from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
 import { ModalController } from '@ionic/angular';
 import { ComponentStatus } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
@@ -19,10 +28,11 @@ export interface TransformWebsiteToFeedModalComponentProps {
   selector: 'app-transform-website-to-feed-modal',
   templateUrl: './transform-website-to-feed-modal.component.html',
   styleUrls: ['./transform-website-to-feed-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransformWebsiteToFeedModalComponent
-  implements TransformWebsiteToFeedModalComponentProps {
+  implements TransformWebsiteToFeedModalComponentProps
+{
   @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
 
@@ -38,9 +48,8 @@ export class TransformWebsiteToFeedModalComponent
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController
-  ) {
-  }
+    private readonly modalCtrl: ModalController,
+  ) {}
 
   dismissModal() {
     return this.modalCtrl.dismiss();
@@ -51,10 +60,10 @@ export class TransformWebsiteToFeedModalComponent
   }
 
   handleStatusChange(status: ComponentStatus) {
-    this.isValid = status == 'valid'
+    this.isValid = status == 'valid';
   }
 
   handleFeedChange(feed: NativeOrGenericFeed) {
-    this.selectedFeed = feed
+    this.selectedFeed = feed;
   }
 }

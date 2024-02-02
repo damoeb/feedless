@@ -7,7 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [LoginButtonComponent],
   exports: [LoginButtonComponent],
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink],
 })
-export class LoginButtonModule {
-}
+export class LoginButtonModule {}

@@ -6,7 +6,6 @@ import { IonicModule } from '@ionic/angular';
 
 import { AgentsPage } from './agents.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
-import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { AgentsRoutingModule } from './agents-routing.module';
 import { AgentsModule } from '../../components/agents/agents.module';
 
@@ -17,11 +16,9 @@ import { AgentsModule } from '../../components/agents/agents.module';
     IonicModule,
     BubbleModule,
     AgentsRoutingModule,
-    FeatureToggleModule,
     ReactiveFormsModule,
-    AgentsModule
+    AgentsModule,
   ],
-  declarations: [AgentsPage]
+  declarations: [AgentsPage],
 })
-export class AgentsPageModule {
-}
+export class AgentsPageModule {}

@@ -6,12 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: SubscriptionsPage,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class SubscriptionsRoutingModule {
-}
+export class SubscriptionsRoutingModule {}

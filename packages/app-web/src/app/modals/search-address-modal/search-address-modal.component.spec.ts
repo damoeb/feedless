@@ -10,7 +10,7 @@ describe('SearchAddressModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SearchAddressModalModule, AppTestModule.withDefaults()]
+      imports: [SearchAddressModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchAddressModalComponent);

@@ -4,7 +4,11 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <app-searchbar (querySubmit)="handleQuery($event)" [value]="url"></app-searchbar>
+    <app-searchbar
+      (querySubmit)="handleQuery($event)"
+      [loading]="loading"
+      [value]="url"
+    ></app-searchbar>
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
@@ -35,17 +39,15 @@
                     [color]="ifActiveOption('font', 'serif')"
                     class="font-serif"
                     size="medium"
-                  >Serif
-                  </ion-button
-                  >
+                    >Serif
+                  </ion-button>
                   <ion-button
                     (click)="readerOptions.font = 'sans-serif'"
                     [color]="ifActiveOption('font', 'sans-serif')"
                     class="font-sans-serif"
                     size="medium"
-                  >Sans-Serif
-                  </ion-button
-                  >
+                    >Sans-Serif
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item-divider></ion-item-divider>
@@ -56,22 +58,20 @@
                 <ion-label> Size</ion-label>
                 <div class="controls">
                   <ion-text class="ion-padding-horizontal"
-                  >{{ readerOptions.fontSize }}</ion-text
+                    >{{ readerOptions.fontSize }}</ion-text
                   >
                   <ion-button
                     (click)="changeNumOption('fontSize', -2, {min: 16, max: 22})"
                     color="light"
                     size="medium"
-                  >-
-                  </ion-button
-                  >
+                    >-
+                  </ion-button>
                   <ion-button
                     (click)="changeNumOption('fontSize', 2, {min: 16, max: 22})"
                     color="light"
                     size="medium"
-                  >+
-                  </ion-button
-                  >
+                    >+
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item>
@@ -81,16 +81,14 @@
                     (click)="changeOption('textAlignment', 'left')"
                     [color]="ifActiveOption('textAlignment', 'left')"
                     size="medium"
-                  >Left
-                  </ion-button
-                  >
+                    >Left
+                  </ion-button>
                   <ion-button
                     (click)="changeOption('textAlignment', 'justify')"
                     [color]="ifActiveOption('textAlignment', 'justify')"
                     size="medium"
-                  >Justify
-                  </ion-button
-                  >
+                    >Justify
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item>
@@ -100,16 +98,14 @@
                     (click)="changeOption('textTransform', 'normal')"
                     [color]="ifActiveOption('textTransform', 'normal')"
                     size="medium"
-                  >Normal
-                  </ion-button
-                  >
+                    >Normal
+                  </ion-button>
                   <ion-button
                     (click)="changeOption('textTransform', 'bionic')"
                     [color]="ifActiveOption('textTransform', 'bionic')"
                     size="medium"
-                  ><strong>Bion</strong>ic
-                  </ion-button
-                  >
+                    ><strong>Bion</strong>ic
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item-divider></ion-item-divider>
@@ -117,22 +113,20 @@
                 <ion-label>Width</ion-label>
                 <div class="controls">
                   <ion-text class="ion-padding-horizontal"
-                  >{{ readerOptions.contentWidth }}</ion-text
+                    >{{ readerOptions.contentWidth }}</ion-text
                   >
                   <ion-button
                     (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 800})"
                     color="light"
                     size="medium"
-                  >-
-                  </ion-button
-                  >
+                    >-
+                  </ion-button>
                   <ion-button
                     (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 800})"
                     color="light"
                     size="medium"
-                  >+
-                  </ion-button
-                  >
+                    >+
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item>
@@ -142,16 +136,14 @@
                     (click)="changeOption('linkTarget', 'reader')"
                     [color]="ifActiveOption('linkTarget', 'reader')"
                     size="medium"
-                  >Reader
-                  </ion-button
-                  >
+                    >Reader
+                  </ion-button>
                   <ion-button
                     (click)="changeOption('linkTarget', 'blank')"
                     [color]="ifActiveOption('linkTarget', 'blank')"
                     size="medium"
-                  >Blank
-                  </ion-button
-                  >
+                    >Blank
+                  </ion-button>
                 </div>
               </ion-item>
               <ion-item>
@@ -161,16 +153,14 @@
                     (click)="changeOption('verboseLink', true)"
                     [color]="ifActiveOption('verboseLink', true)"
                     size="medium"
-                  >Yes
-                  </ion-button
-                  >
+                    >Yes
+                  </ion-button>
                   <ion-button
                     (click)="changeOption('verboseLink', false)"
                     [color]="ifActiveOption('verboseLink', false)"
                     size="medium"
-                  >No
-                  </ion-button
-                  >
+                    >No
+                  </ion-button>
                 </div>
               </ion-item>
 
@@ -203,10 +193,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content
-  (ionScroll)="handleScroll($event)"
-  [scrollEvents]="true"
->
+<ion-content (ionScroll)="handleScroll($event)" [scrollEvents]="true">
   <div *ngIf="loading" class="ion-margin">
     <ion-spinner name="dots"></ion-spinner>
   </div>

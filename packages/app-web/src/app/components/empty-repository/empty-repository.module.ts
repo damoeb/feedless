@@ -5,7 +5,6 @@ import { EmptyRepositoryComponent } from './empty-repository.component';
 @NgModule({
   declarations: [EmptyRepositoryComponent],
   exports: [EmptyRepositoryComponent],
-  imports: [CommonModule]
+  imports: [CommonModule],
 })
-export class EmptyRepositoryModule {
-}
+export class EmptyRepositoryModule {}

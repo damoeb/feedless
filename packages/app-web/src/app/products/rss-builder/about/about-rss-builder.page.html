@@ -1,22 +1,33 @@
 <ion-content>
   <div style="display: flex; justify-content: center">
-    <div>
-      <div
-        style="max-width: 600px; margin-top: 150px; margin-bottom: 100px"
-      >
-        <app-product-headline title="RSS Builder"></app-product-headline>
+    <div style="max-width: 600px; margin-top: 150px; margin-bottom: 100px">
+      <app-product-headline title="RSS Builder"></app-product-headline>
 
+      <p>
+        Easily generate feeds from many sources with just a few clicks, tailor
+        delivery with advanced filter criteria.
+      </p>
+
+      <app-searchbar
+        (querySubmit)="handleQuery($event)"
+        buttonText="Create Feed"
+        color="primary"
+        placeholder="Type a Url of a website"
+      ></app-searchbar>
+
+      <div style="margin-top: 150px">
+        <h2>Why choose RSS Builder?</h2>
         <p>
-          Easily generate feeds from many sources with just a few clicks, tailor delivery with advanced filter criteria.
+          Try it at no cost, no signup – just pure performance at your
+          fingertips. For maximum independence you can self-host or subscribe to
+          unleash its full potential.
         </p>
-
-        <app-searchbar (querySubmit)="handleQuery($event)"
-                       buttonText="Create Feed"
-                       color="primary"
-                       placeholder="Type a Url of a website"></app-searchbar>
-
       </div>
 
+      <div>
+        <h2>Let the Video speak for itself</h2>
+        <p>[video]</p>
+      </div>
     </div>
   </div>
 </ion-content>

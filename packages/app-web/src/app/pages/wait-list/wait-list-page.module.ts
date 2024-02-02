@@ -8,7 +8,6 @@ import { WaitListRoutingModule } from './wait-list-routing.module';
 @NgModule({
   declarations: [WaitListPage],
   exports: [WaitListPage],
-  imports: [CommonModule, IonicModule, NewsletterModule, WaitListRoutingModule]
+  imports: [CommonModule, IonicModule, NewsletterModule, WaitListRoutingModule],
 })
-export class WaitListPageModule {
-}
+export class WaitListPageModule {}

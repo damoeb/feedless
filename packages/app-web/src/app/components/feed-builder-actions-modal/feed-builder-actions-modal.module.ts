@@ -12,10 +12,9 @@ import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
-    EmbeddedImageModule
+    EmbeddedImageModule,
   ],
   declarations: [FeedBuilderActionsModalComponent],
-  exports: [FeedBuilderActionsModalComponent]
+  exports: [FeedBuilderActionsModalComponent],
 })
-export class FeedBuilderActionsModalModule {
-}
+export class FeedBuilderActionsModalModule {}

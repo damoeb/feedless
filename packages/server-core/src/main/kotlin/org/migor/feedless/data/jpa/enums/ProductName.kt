@@ -8,6 +8,7 @@ enum class ProductName {
   upcoming,
   digest,
   feedless,
+  custom,
   system
 }
 

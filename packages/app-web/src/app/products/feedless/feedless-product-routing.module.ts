@@ -14,55 +14,47 @@ const routes: Routes = [
         path: 'builder',
         loadChildren: () =>
           import('../../pages/feed-builder/feed-builder.module').then(
-            (m) => m.FeedBuilderPageModule)
+            (m) => m.FeedBuilderPageModule,
+          ),
+      },
+      {
+        path: 'agents',
+        loadChildren: () =>
+          import('../../pages/agents/agents.module').then((m) => m.AgentsPageModule),
       },
       {
         path: 'repositories',
-        data: {title: 'Repositories'},
         loadChildren: () =>
           import('../../pages/repositories/repositories.module').then(
-            (m) => m.RepositoriesPageModule
-          )
+            (m) => m.RepositoriesPageModule,
+          ),
       },
       {
         path: 'plans',
-        data: {title: 'Plans'},
         loadChildren: () =>
-          import('./plans/plans.module').then(
-            (m) => m.PlansPageModule
-          )
+          import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
       {
         path: '',
         loadChildren: () =>
           import('./about/about-feedless.module').then(
-            (m) => m.AboutFeedlessModule
-          )
+            (m) => m.AboutFeedlessModule,
+          ),
       },
       {
         path: '**',
-        redirectTo: ''
-      }
-      // {
-      //   path: 'agents',
-      //   loadChildren: () =>
-      //     import('../pages/agents/agents.module').then((m) => m.AgentsPageModule),
-      // },
-      // {
-      //   path: 'sources',
-      //
-      // }
-    ]
+        redirectTo: '',
+      },
+    ],
   },
   {
     path: '**',
-    redirectTo: '/'
-  }
+    redirectTo: '/',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class FeedlessProductRoutingModule {
-}
+export class FeedlessProductRoutingModule {}

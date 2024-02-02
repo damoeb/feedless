@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
-import { GqlFeedlessPlugins, GqlScrapeRequest, GqlScrapeRequestInput } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapeRequest,
+} from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,17 +19,17 @@ import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-moda
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps
+  GenerateFeedModalComponentProps,
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { FeedBuilderActionsModalComponent } from '../../components/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
-
+import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 
 @Component({
   selector: 'app-feed-builder',
   templateUrl: './feed-builder.page.html',
   styleUrls: ['./feed-builder.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
   url: string;
@@ -32,30 +41,33 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   selectedFeed: NativeOrGenericFeed;
   productConfig: ProductConfig;
   private subscriptions: Subscription[] = [];
+  errorMessage: string;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
+    private readonly apolloAbortController: ApolloAbortControllerService,
     private readonly scrapeService: ScrapeService,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService.getActiveProductConfigChange().subscribe(productConfig => {
-        this.productConfig = productConfig;
-        this.changeRef.detectChanges();
-      }),
+      this.productService
+        .getActiveProductConfigChange()
+        .subscribe((productConfig) => {
+          this.productConfig = productConfig;
+          this.changeRef.detectChanges();
+        }),
       this.activatedRoute.queryParams.subscribe(async (params) => {
         if (params.url?.length > 0) {
           this.url = fixUrl(params.url);
           await this.scrapeUrl();
         }
-      })
+      }),
     );
   }
 
@@ -66,40 +78,50 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
-    this.changeRef.detectChanges();
+    // await this.router.navigate(['/builder'], {
+    //   queryParams: {
+    //     url: this.url,
+    //   },
+    // });
 
-    console.log(`scrape ${this.url}`);
-    this.loading = true;
-    this.changeRef.detectChanges();
+    try {
+      console.log(`scrape ${this.url}`);
+      this.errorMessage = null;
+      this.loading = true;
+      this.scrapeResponse = null;
+      this.changeRef.detectChanges();
 
-    this.scrapeRequest = {
-      page: {
-        url: this.url
-      },
-      emit: [
-        {
-          selectorBased: {
-            xpath: {
-              value: '/'
+      this.scrapeRequest = {
+        page: {
+          url: this.url,
+        },
+        emit: [
+          {
+            selectorBased: {
+              xpath: {
+                value: '/',
+              },
+              expose: {
+                transformers: [
+                  {
+                    pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+                  },
+                ],
+              },
             },
-            expose: {
-              transformers: [
-                {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds
-                }
-              ]
-            }
-          }
-        }
-      ]
-    };
-    this.scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
+          },
+        ],
+      };
+      this.scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
 
-    this.embedWebsite = {
-      mimeType: 'text/html',
-      data: this.scrapeResponse.elements[0].selector.html.data,
-      url: this.url
-    };
+      this.embedWebsite = {
+        mimeType: 'text/html',
+        data: this.scrapeResponse.elements[0].selector.html.data,
+        url: this.url,
+      };
+    } catch (e) {
+      this.errorMessage = e.message;
+    }
 
     this.loading = false;
     this.changeRef.detectChanges();
@@ -111,45 +133,47 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
 
   async generateFeed() {
     if (!this.hasFeed) {
-      const toast = await this.toastCtrl
-        .create({
-          message: 'Pick a feed',
-          color: 'danger',
-          duration: 2000,
-          position: 'bottom',
-          cssClass: 'tiny-toast'
-        });
+      const toast = await this.toastCtrl.create({
+        message: 'Pick a feed',
+        color: 'danger',
+        duration: 2000,
+        position: 'bottom',
+        cssClass: 'tiny-toast',
+      });
       await toast.present();
       return;
     }
 
     const componentProps: GenerateFeedModalComponentProps = {
       scrapeRequest: this.scrapeRequest,
-      feed: this.selectedFeed
+      feed: this.selectedFeed,
     };
     const modal = await this.modalCtrl.create({
       component: GenerateFeedModalComponent,
-      componentProps
+      componentProps,
     });
 
     await modal.present();
-    const response = await modal.onDidDismiss<NativeOrGenericFeed>();
   }
 
   async showActionsModal() {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderActionsModalComponent,
       componentProps: {
-        url: this.url
-      }
+        url: this.url,
+      },
     });
 
     await modal.present();
-
   }
 
   handleQuery(url: string) {
     this.url = url;
     return this.scrapeUrl();
+  }
+
+  handleCancel() {
+    console.log('handleCancel')
+    this.apolloAbortController.abort('user canceled');
   }
 }

@@ -1,7 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { AgentsComponent } from './agents.component';
+import { AgentsModule } from './agents.module';
+import { AppTestModule } from '../../app-test.module';
+import {
+  Agents,
+  GqlAgentsQuery,
+  GqlAgentsQueryVariables,
+} from '../../../generated/graphql';
 
 describe('AgentsComponent', () => {
   let component: AgentsComponent;
@@ -9,8 +15,20 @@ describe('AgentsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AgentsComponent],
-      imports: [IonicModule.forRoot()]
+      imports: [
+        AgentsModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          apolloMockController
+            .mockQuery<GqlAgentsQuery, GqlAgentsQueryVariables>(Agents)
+            .and.resolveOnce(async () => {
+              return {
+                data: {
+                  agents: [],
+                },
+              };
+            });
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgentsComponent);

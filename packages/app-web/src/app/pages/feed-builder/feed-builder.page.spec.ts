@@ -10,7 +10,7 @@ describe('FeedBuilderPage', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FeedBuilderPage],
-      imports: [RssBuilderProductModule, AppTestModule.withDefaults()]
+      imports: [RssBuilderProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderPage);

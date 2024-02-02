@@ -8,7 +8,7 @@ type SortDirection = 'asc' | 'desc';
 @Component({
   selector: 'app-segmented-output',
   templateUrl: './segmented-output.component.html',
-  styleUrls: ['./segmented-output.component.scss']
+  styleUrls: ['./segmented-output.component.scss'],
 })
 export class SegmentedOutputComponent implements OnInit {
   @Input({ required: true })
@@ -24,18 +24,17 @@ export class SegmentedOutputComponent implements OnInit {
   sortDirection: KeyLabelOption<SortDirection>[] = [
     {
       key: 'asc',
-      label: 'Ascending'
+      label: 'Ascending',
     },
     {
       key: 'desc',
-      label: 'Descending'
-    }
+      label: 'Descending',
+    },
   ];
 
   timeSegments: KeyLabelOption<number>[] = this.getTimeSegments();
 
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit() {
     if (this.segmented) {
@@ -51,16 +50,16 @@ export class SegmentedOutputComponent implements OnInit {
     return [
       {
         key: day,
-        label: 'Every day'
+        label: 'Every day',
       },
       {
         key: 7 * day,
-        label: 'Every week'
+        label: 'Every week',
       },
       {
         key: 28 * day,
-        label: 'Every month'
-      }
+        label: 'Every month',
+      },
     ];
   }
 }

@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutVisualDiffPage } from './about-visual-diff.page';
 import { AppTestModule } from '../../../app-test.module';
-import { RssBuilderPageModule } from '../feedless.module';
+import { AboutVisualDiffModule } from './about-visual-diff.module';
 
-describe('FeedBuilderPage', () => {
+describe('AboutVisualDiffPage', () => {
   let component: AboutVisualDiffPage;
   let fixture: ComponentFixture<AboutVisualDiffPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AboutVisualDiffPage],
-      imports: [RssBuilderPageModule, AppTestModule.withDefaults()]
+      imports: [AboutVisualDiffModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AboutVisualDiffPage);

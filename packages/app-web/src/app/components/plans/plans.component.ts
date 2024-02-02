@@ -1,17 +1,21 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature, Plan } from '../../graphql/types';
-import { GqlFeatureName, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
+import {
+  GqlFeatureName,
+  GqlPlan,
+  GqlPlanAvailability,
+} from '../../../generated/graphql';
 
 export type PlanAction = {
   label: string;
   color?: string;
   redirectTo: string;
-}
+};
 
 export type FeatureGroup<T> = {
   groupLabel: string;
   features: T[];
-}
+};
 
 export type PlanForUi = Partial<GqlPlan> & {
   featureGroups: FeatureGroup<Feature>[];
@@ -23,22 +27,20 @@ export type FeatureLabel = {
   featureName: GqlFeatureName;
   title: string;
   subtitle?: string;
-}
-
+};
 
 export type PlanHeaders = { [planName: string]: string };
 
 @Component({
   selector: 'app-plans',
   templateUrl: './plans.component.html',
-  styleUrls: ['./plans.component.scss']
+  styleUrls: ['./plans.component.scss'],
 })
 export class PlansComponent implements OnInit {
-
-  @Input({required: true})
+  @Input({ required: true })
   plans: Plan[];
 
-  @Input({required: true})
+  @Input({ required: true })
   featureGroups: FeatureGroup<GqlFeatureName>[];
 
   @Input()
@@ -52,7 +54,7 @@ export class PlansComponent implements OnInit {
     {
       featureName: GqlFeatureName.RateLimit,
       title: 'Rate Limit',
-      subtitle: 'max requests/min'
+      subtitle: 'max requests/min',
     },
     // {
     //   featureName: GqlFeatureName.FeedsMaxRefreshRate,
@@ -61,39 +63,37 @@ export class PlansComponent implements OnInit {
     // },
     {
       featureName: GqlFeatureName.Api,
-      title: 'API'
+      title: 'API',
     },
     {
       featureName: GqlFeatureName.PublicScrapeSource,
-      title: 'Public Subscriptions'
+      title: 'Public Subscriptions',
     },
     {
       featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
-      title: 'Items per Subscription'
+      title: 'Items per Subscription',
     },
     {
       featureName: GqlFeatureName.ScrapeSourceMaxCountTotal,
-      title: 'Subscriptions'
+      title: 'Subscriptions',
     },
     {
       featureName: GqlFeatureName.Plugins,
       title: 'Plugins Support',
-      subtitle: 'e.g. Fulltext, Privacy'
+      subtitle: 'e.g. Fulltext, Privacy',
     },
     {
       featureName: GqlFeatureName.ItemEmailForward,
-      title: 'Email Forwards'
+      title: 'Email Forwards',
     },
     {
       featureName: GqlFeatureName.ItemWebhookForward,
-      title: 'Webhooks'
-    }
+      title: 'Webhooks',
+    },
   ];
   finalPlans: PlanForUi[];
 
-
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit() {
     const toFeatureGroups = (features: Feature[]): FeatureGroup<Feature>[] =>
@@ -107,19 +107,19 @@ export class PlansComponent implements OnInit {
         ? 'var(--ion-color-primary)'
         : 'var(--ion-color-dark)',
       action: this.getAction(plan.availability),
-      featureGroups: toFeatureGroups(plan.features)
+      featureGroups: toFeatureGroups(plan.features),
     }));
   }
 
   private toFeatureGroup(
     group: FeatureGroup<GqlFeatureName>,
-    features: Feature[]
+    features: Feature[],
   ): FeatureGroup<Feature> {
     return {
       groupLabel: group.groupLabel,
       features: group.features.map((featureName) =>
-        features.find((feature) => feature.name === featureName)
-      )
+        features.find((feature) => feature.name === featureName),
+      ),
     };
   }
 
@@ -167,19 +167,19 @@ export class PlansComponent implements OnInit {
         return {
           label: 'Join Public Beta',
           color: 'primary',
-          redirectTo: '/login'
+          redirectTo: '/login',
         };
       case GqlPlanAvailability.ByRequest:
         return {
           label: 'Contact Us',
           color: 'dark',
-          redirectTo: '/contact'
+          redirectTo: '/contact',
         };
     }
     return {
       label: 'Join Public Beta',
       color: 'primary',
-      redirectTo: '/signup'
+      redirectTo: '/signup',
     };
   }
 }

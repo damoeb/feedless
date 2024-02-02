@@ -5,27 +5,40 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+} from '@apollo/client/core/types';
 import {
   AuthAnonymous,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
+  GqlPlansQuery,
+  GqlPlansQueryVariables,
+  GqlProductName,
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
+  GqlScrapeResponse,
+  GqlServerSettings,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
+  Plans,
   Scrape,
-  ServerSettings
+  ServerSettings,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
-import { ScrapeResponse } from './graphql/types';
 import { TestBed } from '@angular/core/testing';
-import { Config, ServerSettingsService } from './services/server-settings.service';
+import {
+  Config,
+  ServerSettingsService,
+} from './services/server-settings.service';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ProductConfig, ProductService } from './services/product.service';
 
 export type MockedRequestResolver<R, V> = (
-  args: V
+  args: V,
 ) => Promise<Partial<ApolloQueryResult<R>>>;
 export type MockCondition<V> = (args: V) => boolean;
 
@@ -58,7 +71,7 @@ export class ApolloMockController {
         if (mock) {
           return mock.resolver(args);
         }
-      })
+      }),
       // subscribe: jasmine.createSpy('subscribe').and.callFake((args) => {
       //   if (args.mutate === AuthAnonymous) {
       //     return Promise.resolve({
@@ -81,17 +94,17 @@ export class ApolloMockController {
       and: {
         resolveOnce: (
           resolver: (
-            args: TVariables
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
+            args: TVariables,
+          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
         ) => {
           this.mockedRequests.push({
             query,
             condition,
-            resolver
+            resolver,
           });
           return this;
-        }
-      }
+        },
+      },
     };
   }
 
@@ -103,17 +116,17 @@ export class ApolloMockController {
       and: {
         resolveOnce: (
           resolver: (
-            args: TVariables
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
+            args: TVariables,
+          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
         ) => {
           this.mockedRequests.push({
             query,
             condition,
-            resolver
+            resolver,
           });
           return this;
-        }
-      }
+        },
+      },
     };
   }
 
@@ -127,92 +140,134 @@ export class ApolloMockController {
 }
 
 @NgModule({
-  imports: [HttpClientTestingModule, IonicModule.forRoot()],
-  providers: [{ provide: SwUpdate, useClass: SwUpdateMock }]
+  imports: [
+    HttpClientTestingModule,
+    RouterTestingModule.withRoutes([]),
+    IonicModule.forRoot(),
+  ],
+  providers: [{ provide: SwUpdate, useClass: SwUpdateMock }],
 })
 export class AppTestModule {
   static withDefaults(
-    configurer: (apolloMockController: ApolloMockController) => void = null
+    configurer: (apolloMockController: ApolloMockController) => void = null,
   ) {
     const apolloMockController = new ApolloMockController();
     apolloMockController
       .mockMutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>(
-        AuthAnonymous
+        AuthAnonymous,
       )
       .and.resolveOnce(async () => {
-      return {
-        data: {
-          authAnonymous: {
-            token:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-            corrId: ''
-          }
-        }
-      };
-    });
+        return {
+          data: {
+            authAnonymous: {
+              token:
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+              corrId: '',
+            },
+          },
+        };
+      });
 
     if (configurer) {
       configurer(apolloMockController);
     }
 
+    const productConfig: ProductConfig = {
+      product: GqlProductName.Feedless,
+      titlePlain: '',
+      pages: [],
+      titleHtml: '',
+      routes: [],
+      pageTitle: '',
+    };
+    const productServiceMock = {
+      getActiveProductConfigChange: () => new BehaviorSubject(productConfig),
+    } as any;
+
     return {
       ngModule: AppTestModule,
       providers: [
+        { provide: ProductService, useValue: productServiceMock },
         { provide: ApolloMockController, useValue: apolloMockController },
-        { provide: ApolloClient, useValue: apolloMockController.client() }
-      ]
+        { provide: ApolloClient, useValue: apolloMockController.client() },
+      ],
     };
   }
+}
+
+export function mockPlans(apolloMockController: ApolloMockController) {
+  apolloMockController
+    .mockQuery<GqlPlansQuery, GqlPlansQueryVariables>(Plans)
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          plans: [],
+        },
+      };
+    });
 }
 
 export function mockScrape(apolloMockController: ApolloMockController) {
   apolloMockController
     .mockQuery<GqlScrapeQuery, GqlScrapeQueryVariables>(Scrape)
     .and.resolveOnce(async () => {
-    return {
-      data: {
-        scrape: {
-          url: '',
-          failed: false,
-          debug: {
-            contentType: 'text/html'
+      const scrapeResponse: GqlScrapeResponse = {
+        url: '',
+        failed: false,
+        debug: {
+          corrId: '',
+          prerendered: false,
+          network: [],
+          contentType: 'text/html',
+          console: [],
+          cookies: [],
+          statusCode: 200,
+          html: '',
+          screenshot: '',
+          metrics: {
+            render: 1,
+            queue: 1,
           },
-          elements: []
-        } as ScrapeResponse
-      }
-    };
-  });
+        },
+        elements: [],
+      };
+      return {
+        data: {
+          scrape: scrapeResponse,
+        },
+      };
+    });
 }
 
 export async function mockServerSettings(
   apolloMockController: ApolloMockController,
   serverSettingsService: ServerSettingsService,
-  apolloClient: ApolloClient<any>
+  apolloClient: ApolloClient<any>,
 ) {
   apolloMockController
     .mockQuery<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>(
-      ServerSettings
+      ServerSettings,
     )
     .and.resolveOnce(async () => {
-    return {
-      data: {
-        serverSettings: {
-          features: [],
-          apiUrls: {
-            webToPageChange: '',
-            webToFeed: ''
-          }
-        }
-      }
-    };
-  });
+      const serverSettings: GqlServerSettings = {
+        appUrl: '',
+        gatewayUrl: '',
+        license: {},
+        features: [],
+      };
+      return {
+        data: {
+          serverSettings: serverSettings,
+        },
+      };
+    });
 
   serverSettingsService.createApolloClient = jasmine
     .createSpy()
     .and.returnValue(apolloClient);
   const httpClient = TestBed.inject(HttpClient);
   const mockConfig: Config = {
-    apiUrl: ''
+    apiUrl: '',
   };
   httpClient.get = jasmine
     .createSpy('mockHttpGet')

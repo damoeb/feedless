@@ -10,7 +10,7 @@ describe('TermsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TermsModule, AppTestModule.withDefaults()]
+      imports: [TermsModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TermsComponent);

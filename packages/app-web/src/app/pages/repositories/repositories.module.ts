@@ -20,9 +20,8 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     BubbleModule,
     ReactiveFormsModule,
     ExportModalModule,
-    SearchbarModule
+    SearchbarModule,
   ],
-  declarations: [RepositoriesPage]
+  declarations: [RepositoriesPage],
 })
-export class RepositoriesPageModule {
-}
+export class RepositoriesPageModule {}

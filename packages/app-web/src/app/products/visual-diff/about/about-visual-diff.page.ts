@@ -8,20 +8,17 @@ import { fixUrl } from '../../../app.module';
   selector: 'app-about-visual-diff',
   templateUrl: './about-visual-diff.page.html',
   styleUrls: ['./about-visual-diff.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutVisualDiffPage {
-
-  constructor(private readonly router: Router) {
-
-  }
+  constructor(private readonly router: Router) {}
 
   async handleQuery(url: string) {
     try {
       await this.router.navigate(['/builder'], {
         queryParams: {
-          url: fixUrl(url)
-        }
+          url: fixUrl(url),
+        },
       });
     } catch (e) {
       console.warn(e);

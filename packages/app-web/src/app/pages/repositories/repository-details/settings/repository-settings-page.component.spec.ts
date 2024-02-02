@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RepositorySettingsPage } from './repository-settings-page.component';
-import { RepositoryPluginsPageModule } from './repository-settings.module';
+import { RepositorySettingsPageModule } from './repository-settings.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('SourcePage', () => {
+describe('RepositorySettingsPage', () => {
   let component: RepositorySettingsPage;
   let fixture: ComponentFixture<RepositorySettingsPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        RepositoryPluginsPageModule,
+        RepositorySettingsPageModule,
         // AppTestModule.withDefaults((apolloMockController) => {
         //   apolloMockController
         //     .mockQuery<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>(
@@ -39,8 +39,8 @@ describe('SourcePage', () => {
         //       };
         //     });
         // }),
-        RouterTestingModule.withRoutes([])
-      ]
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RepositorySettingsPage);

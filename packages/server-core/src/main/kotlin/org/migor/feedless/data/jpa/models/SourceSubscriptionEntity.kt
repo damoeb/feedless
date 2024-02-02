@@ -16,6 +16,7 @@ import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
+import jakarta.validation.constraints.Size
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
@@ -23,9 +24,20 @@ import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.generated.types.DiffEmailForwardParams
+import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
+import org.migor.feedless.generated.types.EnforceItemIncrementParams
+import org.migor.feedless.generated.types.EnforceItemIncrementParamsInput
+import org.migor.feedless.generated.types.FulltextPluginParams
+import org.migor.feedless.generated.types.FulltextPluginParamsInput
+import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.Retention
+import org.migor.feedless.generated.types.Selectors
+import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
+import org.migor.feedless.generated.types.WebDocumentField
 import java.util.*
 
 data class PluginRef(val id: String, val params: PluginExecutionParamsInput?)
@@ -36,6 +48,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = StandardJpaFields.title, nullable = false)
+  @Size(min = 3, max = 50)
   open lateinit var title: String
 
   @Basic
@@ -115,6 +128,8 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     .id(id.toString())
     .ownerId(ownerId.toString())
     .disabledFrom(disabledFrom?.time)
+    .plugins(plugins.map { it.toDto() })
+    .archived(archived)
     .retention(Retention.newBuilder()
       .maxItems(retentionMaxItems)
       .maxAgeDays(retentionMaxAgeDays)
@@ -125,6 +140,55 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     .title(title)
     .segmented(segmentation?.toDto())
     .sources(sources.map { it.toDto() })
+    .build()
+}
+
+private fun PluginRef.toDto(): PluginExecution {
+  return PluginExecution.newBuilder()
+    .pluginId(id)
+    .params(params?.toDto())
+    .build()
+}
+
+private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
+  return PluginExecutionParams.newBuilder()
+    .fulltext(fulltext?.toDto())
+    .genericFeed(genericFeed?.toDto())
+    .enforceItemIncrement(enforceItemIncrement?.toDto())
+    .diffEmailForward(diffEmailForward?.toDto())
+    .rawJson(rawJson)
+    .build()
+}
+
+private fun DiffEmailForwardParamsInput.toDto(): DiffEmailForwardParams {
+  return DiffEmailForwardParams.newBuilder()
+    .emailRecipients(emailRecipients)
+    .inlineDiffImage(inlineDiffImage)
+    .inlineLatestImage(inlineLatestImage)
+    .inlinePreviousImage(inlinePreviousImage)
+    .build()
+}
+
+private fun EnforceItemIncrementParamsInput.toDto(): EnforceItemIncrementParams {
+  return EnforceItemIncrementParams.newBuilder()
+    .nextItemMinIncrement(nextItemMinIncrement)
+    .compareBy(compareBy)
+    .build()
+}
+
+private fun SelectorsInput.toDto(): Selectors {
+  return Selectors.newBuilder()
+    .contextXPath(contextXPath)
+    .dateXPath(dateXPath)
+    .extendContext(extendContext)
+    .linkXPath(linkXPath)
+    .dateIsStartOfEvent(dateIsStartOfEvent)
+    .build()
+}
+
+private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
+  return FulltextPluginParams.newBuilder()
+    .readability(readability)
     .build()
 }
 

@@ -14,9 +14,8 @@ import { RepositoryCreatePage } from './repository-create.page';
     FormsModule,
     IonicModule,
     RepositoryCreatePageRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
-  declarations: [RepositoryCreatePage]
+  declarations: [RepositoryCreatePage],
 })
-export class RepositoryCreatePageModule {
-}
+export class RepositoryCreatePageModule {}

@@ -5,7 +5,7 @@ import { PlansPageModule } from './plans.module';
 import { AppTestModule, mockPlans } from '../../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('PlansPage', () => {
+describe('VisualDiffPlansPage', () => {
   let component: PlansPage;
   let fixture: ComponentFixture<PlansPage>;
 
@@ -16,8 +16,8 @@ describe('PlansPage', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           mockPlans(apolloMockController);
         }),
-        RouterTestingModule.withRoutes([])
-      ]
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlansPage);

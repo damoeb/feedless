@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 
@@ -6,16 +12,16 @@ import { Authentication, AuthService } from '../../services/auth.service';
   selector: 'app-login-button',
   templateUrl: './login-button.component.html',
   styleUrls: ['./login-button.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
-
   authorization: Authentication;
   private subscriptions: Subscription[] = [];
 
-  constructor(private readonly authService: AuthService,
-              private readonly changeRef: ChangeDetectorRef) {
-  }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(
@@ -24,7 +30,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
         .subscribe(async (authorization) => {
           this.authorization = authorization;
           this.changeRef.detectChanges();
-        })
+        }),
     );
   }
 

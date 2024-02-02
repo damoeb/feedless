@@ -7,7 +7,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValue
@@ -16,6 +15,7 @@ import org.migor.feedless.generated.types.FeatureValue
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.service.FeatureService
+import org.migor.feedless.service.ProductService
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,6 +37,9 @@ class FeatureToggleResolver {
 
   @Autowired
   lateinit var featureService: FeatureService
+
+  @Autowired
+  lateinit var productService: ProductService
 
   @DgsQuery
   @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], keyGenerator = "cacheKeyGenerator") // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
@@ -62,6 +65,8 @@ class FeatureToggleResolver {
     }
 
     ServerSettings.newBuilder()
+      .appUrl(productService.getAppUrl(data.product.fromDto()))
+      .gatewayUrl(productService.getGatewayUrl(data.product.fromDto()))
       .features(features.plus(featureService.findAllByProduct(data.product.fromDto()).map { it.toDto() }))
       .build()
   }

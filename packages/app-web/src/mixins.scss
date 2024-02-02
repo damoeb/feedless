@@ -60,3 +60,24 @@
     }
   }
 }
+
+@mixin round-border {
+  --border-radius: var(--app-border-radius) !important;
+}
+
+@mixin control {
+  @include round-border();
+  --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2) !important;
+  --border-width: 2px !important;
+
+  --highlight-color-focused: var(--foreground);
+  --color: var(--foreground);
+
+  &:hover {
+    --border-color: var(--app-border-color-hover) !important;
+  }
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+}

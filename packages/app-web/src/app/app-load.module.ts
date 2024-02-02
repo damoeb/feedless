@@ -12,9 +12,8 @@ import { ServerSettingsService } from './services/server-settings.service';
       useFactory: (serverSettings: ServerSettingsService) => () =>
         serverSettings.fetchServerSettings(),
       deps: [ServerSettingsService],
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class AppLoadModule {
-}
+export class AppLoadModule {}

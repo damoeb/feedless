@@ -10,7 +10,6 @@ import { ContactPage } from './contact.page';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, ContactPageRoutingModule],
-  declarations: [ContactPage]
+  declarations: [ContactPage],
 })
-export class ContactPageModule {
-}
+export class ContactPageModule {}

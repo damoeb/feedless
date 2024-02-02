@@ -8,8 +8,8 @@ import { ProductService } from './services/product.service';
   imports: [
     RouterModule.forRoot([], {
       preloadingStrategy: PreloadAllModules,
-      paramsInheritanceStrategy: 'always'
-    })
+      paramsInheritanceStrategy: 'always',
+    }),
   ],
   providers: [
     {
@@ -18,9 +18,8 @@ import { ProductService } from './services/product.service';
         productService.activateProduct(environment.product());
       },
       deps: [ProductService],
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}

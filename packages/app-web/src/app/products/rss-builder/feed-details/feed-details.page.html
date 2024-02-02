@@ -1,8 +1,33 @@
-<ion-header *ngIf="subscription">
+<ion-header *ngIf="subscription?.disabledFrom">
   <ion-toolbar color="danger">
-    <ion-text style="font-size: 16px;" class="ion-padding-horizontal">This trial subscription will expire at <strong>{{subscription.disabledFrom | date: dateFormat}}</strong></ion-text>
-    <ion-button slot="end" color="primary" class="ion-margin-horizontal" shape="round">
-      Transfer Ownership
+    <ion-text style="font-size: 16px" class="ion-padding-horizontal"
+      >This feed will expire in
+      <strong
+        >{{fromNow(subscription.disabledFrom)}}</strong
+      ></ion-text
+    >
+    <ion-button
+      slot="end"
+      color="light"
+      class="ion-margin-horizontal"
+      shape="round"
+    >
+      Remove Expiry
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-header *ngIf="subscription?.archived">
+  <ion-toolbar color="medium">
+    <ion-text style="font-size: 16px" class="ion-padding-horizontal">
+      Feed is archived. It will not be updated.
+    </ion-text>
+    <ion-button
+      slot="end"
+      color="light"
+      class="ion-margin-horizontal"
+      shape="round"
+    >
+      Resume
     </ion-button>
   </ion-toolbar>
 </ion-header>
@@ -10,23 +35,31 @@
   <div *ngIf="busy">
     <ion-spinner name="dots"></ion-spinner>
   </div>
-  <div *ngIf="!busy">
-    <h2>{{ subscription.title }}</h2>
+  <div *ngIf="!busy" style="margin-top: 50px">
+    <div class="flex__row">
+      <h2 style="flex: 1">{{ subscription.title }}</h2>
+      <div class="ion-align-self-center">
+        <ion-button>
+          <ion-icon name="logo-rss" slot="start"></ion-icon>
+          Feed</ion-button>
+      </div>
+    </div>
     <p>{{ subscription.description }}</p>
+<!--    <p>{{ subscription.retention.maxItems }}{{ subscription.retention.maxAgeDays }}</p>-->
 
     <ion-list>
+      <ion-item *ngIf="documents.length === 0">
+        <ion-label>
+          Feed has no items.
+        </ion-label>
+      </ion-item>
       <ion-item *ngFor="let document of documents">
-<!--        todo add link -->
+        <!--        todo add link -->
         <ion-label>
           <h3>{{document.contentTitle}}</h3>
           <p class="ion-text-wrap">{{document.contentText}}</p>
         </ion-label>
       </ion-item>
     </ion-list>
-<!--    <div *ngIf="documents.length === 1">-->
-<!--      <p>Version from {{documents[0].createdAt | date: dateTimeFormat}}</p>-->
-<!--      <img [src]="'data:image/png;base64, '+documents[0].contentRaw" alt="" />-->
-<!--    </div>-->
   </div>
 </ion-content>
-

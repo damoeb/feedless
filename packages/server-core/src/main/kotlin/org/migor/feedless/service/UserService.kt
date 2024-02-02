@@ -58,8 +58,8 @@ class UserService {
     authSource: AuthSource,
     plan: PlanName,
   ): UserEntity {
-    if (featureService.isDisabled(FeatureName.canCreateUser)) {
-      throw IllegalArgumentException("login is deactivated")
+    if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
+      throw IllegalArgumentException("Sign Up is deactivated")
     }
 
 

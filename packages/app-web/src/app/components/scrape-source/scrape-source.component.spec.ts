@@ -11,7 +11,7 @@ describe('ScrapeSourceComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ScrapeSourceComponent],
-      imports: [ScrapeSourceModule, AppTestModule.withDefaults()]
+      imports: [ScrapeSourceModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScrapeSourceComponent);
@@ -22,7 +22,7 @@ describe('ScrapeSourceComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  fdescribe('#map-to FG', () => {
+  describe('#map-to FG', () => {
     it('', () => {
       component.source = {
         request: null,
@@ -33,16 +33,16 @@ describe('ScrapeSourceComponent', () => {
           debug: {
             metrics: {
               queue: 0,
-              render: 0
+              render: 0,
             },
             contentType: 'text/html',
             html: null,
             screenshot: null,
             statusCode: 200,
             cookies: [],
-            console: []
-          }
-        }
+            console: [],
+          },
+        },
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -57,11 +57,11 @@ describe('ScrapeSourceComponent', () => {
                 x: 0,
                 y: 0,
                 h: 0,
-                w: 0
-              }
-            }
-          }
-        }
+                w: 0,
+              },
+            },
+          },
+        },
       });
 
       // expect(component.mapperFg.valid).toBeFalse();

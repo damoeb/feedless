@@ -1,16 +1,14 @@
 <ion-list>
   <ion-item color="primary" routerLink="/builder">
-    <ion-label>
-      New Page Tracker
-    </ion-label>
+    <ion-label> New Page Tracker </ion-label>
   </ion-item>
   <ion-item *ngIf="subscriptions.length > 0" routerLink="/trackers/">
-    <ion-label>
-      Page Trackers
-    </ion-label>
+    <ion-label> Page Trackers </ion-label>
   </ion-item>
-  <ion-item *ngFor="let sub of subscriptions"
-            [routerLink]="'/trackers/'+sub.id">
+  <ion-item
+    *ngFor="let sub of subscriptions"
+    [routerLink]="'/trackers/' + sub.id"
+  >
     <ion-label>
       <h3>{{ sub.title }}</h3>
       <p>{{ getPageUrl(sub) }}</p>

@@ -1,15 +1,25 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-searchbar',
   templateUrl: './searchbar.component.html',
-  styleUrls: ['./searchbar.component.scss']
+  styleUrls: ['./searchbar.component.scss'],
 })
 export class SearchbarComponent implements OnInit, OnChanges {
-
   @Input()
   value: string;
+
+  @Input()
+  loading: boolean;
 
   @Input()
   buttonText: string;
@@ -23,10 +33,12 @@ export class SearchbarComponent implements OnInit, OnChanges {
   @Output()
   querySubmit: EventEmitter<string> = new EventEmitter<string>();
 
+  @Output()
+  cancelReceived: EventEmitter<void> = new EventEmitter<void>();
+
   queryFc = new FormControl<string>('', [Validators.required]);
 
-  constructor() {
-  }
+  constructor() {}
 
   triggerUpdate() {
     this.querySubmit.emit(this.queryFc.value);

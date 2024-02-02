@@ -1,19 +1,17 @@
-
 <div class="plans ion-margin">
   <div
     *ngFor="let plan of finalPlans"
-    [ngStyle]="{'--color': plan.color}"
+    [ngStyle]="{ '--color': plan.color }"
     class="plan"
   >
     <h2 class="plan__title">
-      <div *ngIf="planHeaders" [innerHtml]="planHeaders[plan.name]">
-      </div>
+      <div *ngIf="planHeaders" [innerHtml]="planHeaders[plan.name]"></div>
       <ng-container *ngIf="!planHeaders">
         {{ plan.name }}
       </ng-container>
     </h2>
     <div class="plan__price">
-      ${{formatPrice(plan.currentCosts)}}
+      ${{ formatPrice(plan.currentCosts) }}
       <span class="plan__price--info">/ Month</span>
     </div>
     <div class="plan__action ion-margin-vertical">
@@ -22,26 +20,21 @@
         [routerLink]="plan.action.redirectTo"
         expand="block"
       >
-        {{ plan.action.label}}
+        {{ plan.action.label }}
       </ion-button>
     </div>
     <div (scroll)="onScroll($event)" [scrollTop]="scrollTop" class="features">
       <ng-container *ngFor="let featureGroup of plan.featureGroups">
         <div class="feature__group">{{ featureGroup.groupLabel }}</div>
-        <ion-row
-          *ngFor="let feature of featureGroup.features"
-          class="feature"
-        >
+        <ion-row *ngFor="let feature of featureGroup.features" class="feature">
           <ion-col class="feature__name" size="8">
-              <span class="feature__title">
-                {{ getFeatureTitle(feature) }}
-                <sup *ngIf="isBeta(feature)">1</sup>
-                <sup *ngIf="isExperimental(feature)">2</sup>
-              </span>
-            <span
-              *ngIf="getFeatureSubTitle(feature)"
-              class="feature__subtitle"
-            >({{ getFeatureSubTitle(feature) }})</span
+            <span class="feature__title">
+              {{ getFeatureTitle(feature) }}
+              <sup *ngIf="isBeta(feature)">1</sup>
+              <sup *ngIf="isExperimental(feature)">2</sup>
+            </span>
+            <span *ngIf="getFeatureSubTitle(feature)" class="feature__subtitle"
+              >({{ getFeatureSubTitle(feature) }})</span
             >
           </ion-col>
           <ion-col class="feature__value" size="4">
@@ -55,9 +48,9 @@
               color="success"
               name="checkmark-outline"
             ></ion-icon>
-            <span *ngIf="!isBoolean(feature)"
-            >{{ getFeatureValue(feature) }}</span
-            >
+            <span *ngIf="!isBoolean(feature)">{{
+              getFeatureValue(feature)
+            }}</span>
           </ion-col>
         </ion-row>
       </ng-container>
@@ -68,7 +61,7 @@
         [routerLink]="plan.action.redirectTo"
         expand="block"
       >
-        {{ plan.action.label}}
+        {{ plan.action.label }}
       </ion-button>
     </div>
   </div>

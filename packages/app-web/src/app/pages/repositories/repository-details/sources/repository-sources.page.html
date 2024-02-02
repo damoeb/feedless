@@ -1,34 +1,19 @@
 <ion-content>
-  <ion-list>
-    <ion-item *ngIf="entities?.length === 0">
-      Not sources defined
-    </ion-item>
-<!--    <ion-row *ngFor="let entity of entities">-->
-<!--      <ion-col size="12">-->
-<!--        <ion-item-->
-<!--          [button]="true"-->
-<!--          class="cy-article-ref"-->
-<!--          style="&#45;&#45;background: transparent; &#45;&#45;background-hover: none"-->
-<!--        >-->
-<!--          <ion-label>-->
-<!--            <ion-note-->
-<!--            >{{ entity.createdAt | date: dateTimeFormat }}</ion-note-->
-<!--            >-->
-
-<!--            <h2 style="margin-top: 5px">-->
-<!--              <a [href]="entity.url" class="link">-->
-<!--                {{ entity.contentTitle ?? "[no title]" }}</a-->
-<!--              >-->
-<!--            </h2>-->
-
-<!--            <p>{{ entity.contentText }}</p>-->
-<!--          </ion-label>-->
-<!--        </ion-item>-->
-<!--      </ion-col>-->
-<!--    </ion-row>-->
-
-<!--    <ion-infinite-scroll (ionInfinite)="nextPage($event)" *ngIf="!isLast">-->
-<!--      <ion-infinite-scroll-content></ion-infinite-scroll-content>-->
-<!--    </ion-infinite-scroll>-->
-  </ion-list>
+  <div class="limited-width-pane">
+    <ion-list>
+      <ion-item class="ion-padding-bottom">
+        <ion-label>
+          <p>
+            Subscribe to websites or feeds and push into this repository
+          </p>
+        </ion-label>
+        <ion-button (click)="addSource()">Add Source</ion-button>
+      </ion-item>
+      <ion-item *ngFor="let source of sources">
+        <ion-label>
+          <h3>{{source.page.url}}</h3>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
 </ion-content>

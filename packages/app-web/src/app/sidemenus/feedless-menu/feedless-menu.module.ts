@@ -6,7 +6,6 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [FeedlessMenuComponent],
   exports: [FeedlessMenuComponent],
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule],
 })
-export class FeedlessMenuModule {
-}
+export class FeedlessMenuModule {}

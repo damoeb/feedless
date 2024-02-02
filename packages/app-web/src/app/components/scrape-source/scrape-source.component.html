@@ -76,7 +76,7 @@
                   scrapeRequestFG.controls.actions.invalid &&
                   scrapeRequestFG.controls.actions.enabled
               }"
-            >ACTIONS</span
+              >ACTIONS</span
             >
           </ion-col>
           <ion-col size="10">
@@ -124,9 +124,9 @@
                       size="small"
                     >
                       {{
-                      labelForXpath(
-                        action.value.oneOf.click.oneOf.element.xpath.value
-                      )
+                        labelForXpath(
+                          action.value.oneOf.click.oneOf.element.xpath.value
+                        )
                       }}
                     </ion-button>
                   </ng-container>
@@ -149,9 +149,9 @@
                       size="small"
                     >
                       {{
-                      labelForPosition(
-                        action.value.oneOf.click.oneOf.position
-                      )
+                        labelForPosition(
+                          action.value.oneOf.click.oneOf.position
+                        )
                       }}
                     </ion-button>
                   </ng-container>
@@ -372,9 +372,8 @@
               *ngIf="mapperFg.value.type === 'nativeFeed'"
               [disabled]="true"
               color="light"
-            >Native Feed
-            </ion-button
-            >
+              >Native Feed
+            </ion-button>
 
             <ng-container *ngIf="mapperFg.value.type === 'feed'">
               <ion-button
@@ -421,10 +420,10 @@
                     size="small"
                   >
                     {{
-                    labelForXpath(
-                      mapperFg.controls.oneOf.controls.fragment.value.oneOf
-                        .selector.xpath
-                    )
+                      labelForXpath(
+                        mapperFg.controls.oneOf.controls.fragment.value.oneOf
+                          .selector.xpath
+                      )
                     }}
                   </ion-button>
                   <span class="label">INCLUDE</span>
@@ -467,10 +466,10 @@
                     size="small"
                   >
                     {{
-                    labelForBoundingBox(
-                      mapperFg.controls.oneOf.controls.fragment.controls.oneOf
-                        .controls.boundingBox
-                    )
+                      labelForBoundingBox(
+                        mapperFg.controls.oneOf.controls.fragment.controls.oneOf
+                          .controls.boundingBox
+                      )
                     }}
                   </ion-button>
                 </ng-container>

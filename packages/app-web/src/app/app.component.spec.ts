@@ -5,7 +5,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { AppComponent } from './app.component';
 import { AppTestModule } from './app-test.module';
-import { GqlProfileQuery, GqlProfileQueryVariables, Profile as ProfileQuery } from '../generated/graphql';
+import {
+  GqlProfileQuery,
+  GqlProfileQueryVariables,
+  Profile as ProfileQuery,
+} from '../generated/graphql';
 
 describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {
@@ -18,14 +22,14 @@ describe('AppComponent', () => {
           apolloMockController
             .mockQuery<GqlProfileQuery, GqlProfileQueryVariables>(ProfileQuery)
             .and.resolveOnce(async () => {
-            return {
-              data: {
-                profile: {} as any
-              }
-            };
-          });
-        })
-      ]
+              return {
+                data: {
+                  profile: {} as any,
+                },
+              };
+            });
+        }),
+      ],
     }).compileComponents();
   }));
 

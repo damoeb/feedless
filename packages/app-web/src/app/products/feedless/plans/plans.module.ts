@@ -15,9 +15,8 @@ import { PlansModule } from '../../../components/plans/plans.module';
     FormsModule,
     IonicModule,
     PlansPageRoutingModule,
-    PlansModule
+    PlansModule,
   ],
-  declarations: [PlansPage]
+  declarations: [PlansPage],
 })
-export class PlansPageModule {
-}
+export class PlansPageModule {}

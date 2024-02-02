@@ -8,6 +8,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { EmailLoginModule } from '../../components/email-login/email-login.module';
+import { NewsletterModule } from '../../components/newsletter/newsletter.module';
 
 @NgModule({
   imports: [
@@ -15,9 +16,9 @@ import { EmailLoginModule } from '../../components/email-login/email-login.modul
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    EmailLoginModule
+    EmailLoginModule,
+    NewsletterModule,
   ],
-  declarations: [LoginPage]
+  declarations: [LoginPage],
 })
-export class EmailLoginPageModule {
-}
+export class EmailLoginPageModule {}

@@ -7,7 +7,6 @@ import { TransformWebsiteToFeedModule } from '../../components/transform-website
 @NgModule({
   declarations: [TransformWebsiteToFeedModalComponent],
   exports: [TransformWebsiteToFeedModalComponent],
-  imports: [CommonModule, IonicModule, TransformWebsiteToFeedModule]
+  imports: [CommonModule, IonicModule, TransformWebsiteToFeedModule],
 })
-export class TransformWebsiteToFeedModalModule {
-}
+export class TransformWebsiteToFeedModalModule {}

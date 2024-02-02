@@ -7,7 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [RssBuilderMenuComponent],
   exports: [RssBuilderMenuComponent],
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink],
 })
-export class RssBuilderMenuModule {
-}
+export class RssBuilderMenuModule {}

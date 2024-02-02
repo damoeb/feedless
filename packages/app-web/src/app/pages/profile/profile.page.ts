@@ -1,15 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { dateFormat, dateTimeFormat, ProfileService } from '../../services/profile.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { dateTimeFormat, ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage implements OnInit, OnDestroy {
   secrets: UserSecret[] = [];
@@ -21,9 +31,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
-    private readonly profileService: ProfileService
-  ) {
-  }
+    private readonly profileService: ProfileService,
+  ) {}
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
@@ -47,7 +56,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         //   };
         // });
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 
@@ -64,19 +73,19 @@ export class ProfilePage implements OnInit, OnDestroy {
           name: 'name',
           type: 'text',
           min: 3,
-          placeholder: 'Type name here'
-        }
+          placeholder: 'Type name here',
+        },
       ],
       buttons: [
         {
           role: 'cancel',
-          text: 'Cancel'
+          text: 'Cancel',
         },
         {
           text: 'Create Secret Key',
-          role: 'persist'
-        }
-      ]
+          role: 'persist',
+        },
+      ],
     });
     await promptName.present();
     const data = await promptName.onDidDismiss();
@@ -89,21 +98,21 @@ export class ProfilePage implements OnInit, OnDestroy {
   async deleteSecret(secret: UserSecret) {
     await this.profileService.deleteUserSecrets({
       where: {
-        in: [secret.id]
-      }
+        in: [secret.id],
+      },
     });
   }
 
   async deleteAccount() {
     await this.profileService.updateCurrentUser({
       purgeScheduledFor: {
-        assignNull: false
-      }
+        assignNull: false,
+      },
     });
     const toast = await this.toastCtrl.create({
       message: 'Account deletion scheduled',
       duration: 3000,
-      color: 'success'
+      color: 'success',
     });
 
     await toast.present();

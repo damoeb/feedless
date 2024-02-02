@@ -92,12 +92,14 @@ class SourceSubscriptionService {
     planConstraints.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId)
     sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
     sub.ownerId = ownerId
-    sub.plugins = subInput.sinkOptions.plugins.map { it.toPluginRef() }
+    subInput.sinkOptions.plugins?.let {
+      sub.plugins = it.map { plugin -> plugin.toPluginRef() }
+    }
     sub.schedulerExpression = subInput.sourceOptions?.let {
       planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
     } ?: ""
-    sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention.maxItems, ownerId)
-    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
+    sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
+    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays)
     sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
 
     return sourceSubscriptionDAO.save(sub)

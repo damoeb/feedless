@@ -10,7 +10,7 @@ describe('PrivacyPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [PrivacyPageModule, AppTestModule.withDefaults()]
+      imports: [PrivacyPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PrivacyPage);

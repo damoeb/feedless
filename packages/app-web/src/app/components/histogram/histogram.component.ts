@@ -7,7 +7,7 @@ import { scaleLinear } from 'd3-scale';
 @Component({
   selector: 'app-histogram',
   templateUrl: './histogram.component.html',
-  styleUrls: ['./histogram.component.scss']
+  styleUrls: ['./histogram.component.scss'],
 })
 export class HistogramComponent implements OnInit {
   @Input()
@@ -15,8 +15,7 @@ export class HistogramComponent implements OnInit {
   path: string;
   rate: number;
 
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit() {
     const currentDate = dayjs();
@@ -29,11 +28,11 @@ export class HistogramComponent implements OnInit {
       .map((offset) => currentDate.subtract(offset, 'days').format('YYYYMMDD'))
       .map((dateStr, index) => ({
         index,
-        count: this.data.items.find((i) => i.index === dateStr)?.count || 0
+        count: this.data.items.find((i) => i.index === dateStr)?.count || 0,
       }))
       .map(
         (v, index) =>
-          `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`
+          `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`,
       );
 
     this.path = 'M 0 0 ' + path.join(' ');

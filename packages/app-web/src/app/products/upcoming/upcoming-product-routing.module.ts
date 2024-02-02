@@ -6,21 +6,20 @@ import { UpcomingProductPage } from './upcoming-product-page.component';
 const routes: Routes = [
   {
     path: ':url',
-    component: UpcomingProductPage
+    component: UpcomingProductPage,
   },
   {
     path: '',
-    component: UpcomingProductPage
+    component: UpcomingProductPage,
   },
   {
     path: '**',
-    redirectTo: '/'
-  }
+    redirectTo: '/',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class UpcomingProductRoutingModule {
-}
+export class UpcomingProductRoutingModule {}

@@ -3,14 +3,13 @@ import { VisualDiffProductPage } from './visual-diff-product.page';
 import { AppTestModule } from '../../app-test.module';
 import { VisualDiffProductModule } from './visual-diff-product.module';
 
-describe('VisualDiffPage', () => {
+describe('VisualDiffProductPage', () => {
   let component: VisualDiffProductPage;
   let fixture: ComponentFixture<VisualDiffProductPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [VisualDiffProductPage],
-      imports: [VisualDiffProductModule, AppTestModule.withDefaults()]
+      imports: [VisualDiffProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VisualDiffProductPage);

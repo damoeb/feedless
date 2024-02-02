@@ -1,15 +1,13 @@
 <ion-content>
   <div class="limited-width-pane">
-    <ion-row style="margin-top: 200px">
-      <ion-col size="8">
-        <h1 class="ion-no-margin">Agents</h1>
-      </ion-col>
-      <ion-col class="actions" size="4">
-        <ion-buttons class="ion-float-end">
-          <ion-button (click)="createAgent()"> Register Agent</ion-button>
-        </ion-buttons>
-      </ion-col>
-    </ion-row>
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <p>Agents are responsible to render websites in a browser. You run an agent using docker and control source IP.</p>
+        </ion-label>
+        <ion-button (click)="createAgent()">New Agent</ion-button>
+      </ion-item>
+    </ion-list>
 
     <app-agents></app-agents>
   </div>

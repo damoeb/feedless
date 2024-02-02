@@ -11,7 +11,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
@@ -61,10 +61,11 @@ interface IframeMessage {
   selector: 'app-embedded-website',
   templateUrl: './embedded-website.component.html',
   styleUrls: ['./embedded-website.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmbeddedWebsiteComponent
-  implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy
+{
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -89,8 +90,7 @@ export class EmbeddedWebsiteComponent
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {
-  }
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>((resolve) => {
@@ -117,7 +117,7 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'show-boxes',
-        data: changes.showBoxes?.currentValue
+        data: changes.showBoxes?.currentValue,
       });
       this.changeRef.detectChanges();
     }
@@ -143,7 +143,7 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'xpath',
-        data: xpath
+        data: xpath,
       });
     }
   }
@@ -170,7 +170,7 @@ export class EmbeddedWebsiteComponent
 
   private postIframeMessage(message: IframeMessage) {
     return this.waitForDocument?.then(() =>
-      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*')
+      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'),
     );
   }
 
@@ -182,8 +182,8 @@ export class EmbeddedWebsiteComponent
 a, button { pointer-events: none; }
 body { cursor: pointer; }
         </style>`,
-        'text/html'
-      ).documentElement
+        'text/html',
+      ).documentElement,
     );
   }
 
@@ -283,7 +283,7 @@ window.addEventListener('message', (message) => {
 })
 
       </script>`,
-        'text/html'
+        'text/html',
       )
       .querySelector('#feedless-click-handler');
 
@@ -323,8 +323,8 @@ window.addEventListener('message', (message) => {
       const html = this.patchHtml(this.embed.data, this.embed.url);
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
-          type: 'text/html;charset=UTF-8'
-        })
+          type: 'text/html;charset=UTF-8',
+        }),
       );
       console.log('this.proxyUrl', this.proxyUrl);
       // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);

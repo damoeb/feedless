@@ -11,24 +11,31 @@
           <ion-grid>
             <ion-row>
               <ion-col size="12">
-                <app-searchbar [value]="form.value.url"
-                               placeholder="Enter a website: www.google.com"
-                               color="primary"
-                               buttonText="Go"
-                               (querySubmit)="handleQuery($event)"></app-searchbar>
+                <app-searchbar
+                  [value]="form.value.url"
+                  placeholder="Enter a website: www.google.com"
+                  color="primary"
+                  buttonText="Go"
+                  [loading]="busy"
+                  (querySubmit)="handleQuery($event)"
+                ></app-searchbar>
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col [ngClass]="{'busy-cursor': busy}" size="12">
-                <div [ngClass]="{'website--mark': isPickPositionMode()}" class="website">
-
+                <div
+                  [ngClass]="{'website--mark': isPickPositionMode()}"
+                  class="website"
+                >
                   <div *ngIf="errorMessage" style="margin: auto">
                     Error: {{errorMessage}}
                   </div>
 
                   <div *ngIf="!errorMessage" class="flex">
                     <div *ngIf="!embedScreenshot" style="margin: auto">
-                      <div *ngIf="!busy">A screenshot of your website will appear here</div>
+                      <div *ngIf="!busy">
+                        A screenshot of your website will appear here
+                      </div>
                       <div *ngIf="busy">Loading Screenshot...</div>
                     </div>
 
@@ -43,7 +50,11 @@
                     ></app-embedded-image>
                   </div>
                 </div>
-                <ion-progress-bar *ngIf="busy" color="primary" type="indeterminate"></ion-progress-bar>
+                <ion-progress-bar
+                  *ngIf="busy"
+                  color="primary"
+                  type="indeterminate"
+                ></ion-progress-bar>
               </ion-col>
             </ion-row>
             <ion-row class="actions ion-margin-bottom">
@@ -58,7 +69,9 @@
                         (ionItemReorder)="handleReorderActions($any($event))"
                         [disabled]="false"
                       >
-                        <ion-item *ngFor="let action of getActions(); let i = index">
+                        <ion-item
+                          *ngFor="let action of getActions(); let i = index"
+                        >
                           <div class="flex__row">
                             <div>
                               <ion-select
@@ -67,20 +80,28 @@
                                 interface="popover"
                                 placeholder="Action"
                               >
-                                <ion-select-option value="click">Click</ion-select-option>
+                                <ion-select-option value="click"
+                                  >Click</ion-select-option
+                                >
                               </ion-select>
                             </div>
 
-                            <ion-button (click)="pickPosition(action)"
-                                        [ngClass]="{ 'ng-invalid': action.invalid}"
-                                        color="medium"
-                                        expand="block"
-                                        fill="outline"
-                                        style="flex: 1">
+                            <ion-button
+                              (click)="pickPosition(action)"
+                              [ngClass]="{ 'ng-invalid': action.invalid}"
+                              color="medium"
+                              expand="block"
+                              fill="outline"
+                              style="flex: 1"
+                            >
                               {{ getPositionLabel(action) }}
                             </ion-button>
 
-                            <ion-button (click)="removeAction(i)" color="medium" fill="clear">
+                            <ion-button
+                              (click)="removeAction(i)"
+                              color="medium"
+                              fill="clear"
+                            >
                               <ion-icon name="trash-outline"></ion-icon>
                             </ion-button>
                           </div>
@@ -90,7 +111,7 @@
                       <ion-item [disabled]="actions.invalid">
                         <ion-label>
                           <a (click)="addAction()" href="javascript:void(0)"
-                          >Add Action</a
+                            >Add Action</a
                           >
                         </ion-label>
                       </ion-item>
@@ -102,12 +123,14 @@
                     </ion-item>
                     <ion-list slot="content">
                       <ion-item>
-                        <ion-input [formControl]="additionalWait"
-                                   fill="outline"
-                                   label="Wait additional seconds"
-                                   labelPlacement="start"
-                                   name="additionalWait"
-                                   type="number"></ion-input>
+                        <ion-input
+                          [formControl]="additionalWait"
+                          fill="outline"
+                          label="Wait additional seconds"
+                          labelPlacement="start"
+                          name="additionalWait"
+                          type="number"
+                        ></ion-input>
                       </ion-item>
                     </ion-list>
                   </ion-accordion>
@@ -122,12 +145,26 @@
             </ion-row>
             <ion-row>
               <ion-col class="flex" size="5">
-                <ion-radio-group [formControl]="form.controls.compareType" class="ion-hide-md-down">
-                  <ion-radio [value]="GqlWebDocumentField.Pixel" labelPlacement="end">
+                <ion-radio-group
+                  [formControl]="form.controls.compareType"
+                  class="ion-hide-md-down"
+                >
+                  <ion-radio
+                    [value]="GqlWebDocumentField.Pixel"
+                    labelPlacement="end"
+                  >
                     Visual
                   </ion-radio>
-                  <ion-radio [value]="GqlWebDocumentField.Text" labelPlacement="end"> Text</ion-radio>
-                  <ion-radio [value]="GqlWebDocumentField.Markup" labelPlacement="end">
+                  <ion-radio
+                    [value]="GqlWebDocumentField.Text"
+                    labelPlacement="end"
+                  >
+                    Text</ion-radio
+                  >
+                  <ion-radio
+                    [value]="GqlWebDocumentField.Markup"
+                    labelPlacement="end"
+                  >
                     Element
                   </ion-radio>
                 </ion-radio-group>
@@ -138,11 +175,16 @@
                   interface="popover"
                   placeholder="Compare Type"
                 >
-                  <ion-select-option [value]="GqlWebDocumentField.Pixel">Visual</ion-select-option>
-                  <ion-select-option [value]="GqlWebDocumentField.Text">Text</ion-select-option>
-                  <ion-select-option [value]="GqlWebDocumentField.Markup">Markup</ion-select-option>
+                  <ion-select-option [value]="GqlWebDocumentField.Pixel"
+                    >Visual</ion-select-option
+                  >
+                  <ion-select-option [value]="GqlWebDocumentField.Text"
+                    >Text</ion-select-option
+                  >
+                  <ion-select-option [value]="GqlWebDocumentField.Markup"
+                    >Markup</ion-select-option
+                  >
                 </ion-select>
-
               </ion-col>
               <ion-col class="flex__row" size="7" style="align-items: end">
                 <ion-select
@@ -155,10 +197,12 @@
                   <ion-select-option value="page">All page</ion-select-option>
                   <!--                <ion-select-option value="Mobile">Mobile</ion-select-option>-->
                 </ion-select>
-                <ion-button (click)="pickBoundingBox()"
-                            *ngIf="form.controls.areaBoundingBox.enabled"
-                            [ngClass]="{ 'ng-invalid': form.controls.areaBoundingBox.invalid}"
-                            color="light">
+                <ion-button
+                  (click)="pickBoundingBox()"
+                  *ngIf="form.controls.areaBoundingBox.enabled"
+                  [ngClass]="{ 'ng-invalid': form.controls.areaBoundingBox.invalid}"
+                  color="light"
+                >
                   <ion-icon name="scan-outline"></ion-icon>
                 </ion-button>
                 <ion-select
@@ -168,27 +212,26 @@
                   placeholder="Frequency"
                 >
                   <ion-select-option disabled value="0 */15 * * * *"
-                  >Every 15 min
-                  </ion-select-option
-                  >
+                    >Every 15 min
+                  </ion-select-option>
                   <ion-select-option disabled value="0 */30 * * * *"
-                  >Every 30 min
-                  </ion-select-option
-                  >
+                    >Every 30 min
+                  </ion-select-option>
                   <ion-select-option disabled value="0 0 * * * *"
-                  >Every hour
-                  </ion-select-option
-                  >
+                    >Every hour
+                  </ion-select-option>
                   <ion-select-option disabled value="0 0 */8 * * *"
-                  >Every 6 hours
-                  </ion-select-option
-                  >
+                    >Every 6 hours
+                  </ion-select-option>
                   <ion-select-option disabled value="0 0 */12 * * *"
-                  >Every 12 hours
-                  </ion-select-option
+                    >Every 12 hours
+                  </ion-select-option>
+                  <ion-select-option value="0 0 0 * * *"
+                    >Every Day</ion-select-option
                   >
-                  <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
-                  <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
+                  <ion-select-option value="0 0 0 * * 0"
+                    >Every Week</ion-select-option
+                  >
                 </ion-select>
               </ion-col>
             </ion-row>
@@ -204,8 +247,7 @@
                   fill="outline"
                   placeholder="email@domain.com"
                   type="email"
-                ></ion-input
-                >
+                ></ion-input>
               </ion-col>
               <ion-col size="3">
                 <ion-select
@@ -216,8 +258,12 @@
                 >
                   <ion-select-option [value]="0">Any change</ion-select-option>
                   <ion-select-option [value]="0.01">Tiny 1%</ion-select-option>
-                  <ion-select-option [value]="0.1">Medium 10%</ion-select-option>
-                  <ion-select-option [value]="0.25">Major 25%</ion-select-option>
+                  <ion-select-option [value]="0.1"
+                    >Medium 10%</ion-select-option
+                  >
+                  <ion-select-option [value]="0.25"
+                    >Major 25%</ion-select-option
+                  >
                 </ion-select>
               </ion-col>
             </ion-row>
@@ -228,8 +274,7 @@
                   fill="outline"
                   placeholder="Subject"
                   type="text"
-                ></ion-input
-                >
+                ></ion-input>
               </ion-col>
             </ion-row>
             <ion-row>

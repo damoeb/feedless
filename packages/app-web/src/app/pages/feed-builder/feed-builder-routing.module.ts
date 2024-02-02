@@ -5,13 +5,12 @@ import { FeedBuilderPage } from './feed-builder.page';
 const routes: Routes = [
   {
     path: '',
-    component: FeedBuilderPage
-  }
+    component: FeedBuilderPage,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class FeedBuilderPageRoutingModule {
-}
+export class FeedBuilderPageRoutingModule {}

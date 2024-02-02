@@ -3,13 +3,13 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { SearchbarComponent } from './searchbar.component';
 import { SearchbarModule } from './searchbar.module';
 
-describe('BubbleComponent', () => {
+describe('SearchbarComponent', () => {
   let component: SearchbarComponent;
   let fixture: ComponentFixture<SearchbarComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SearchbarModule]
+      imports: [SearchbarModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchbarComponent);

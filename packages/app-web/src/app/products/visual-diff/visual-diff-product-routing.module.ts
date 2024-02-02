@@ -12,48 +12,52 @@ const routes: Routes = [
       {
         path: '',
         data: { title: '' },
-          loadChildren: () =>
-            import('./about/about-visual-diff.module').then((m) => m.AboutVisualDiffModule)
+        loadChildren: () =>
+          import('./about/about-visual-diff.module').then(
+            (m) => m.AboutVisualDiffModule,
+          ),
       },
       {
         path: 'plans',
         data: { title: 'Plans' },
         loadChildren: () =>
-          import('./plans/plans.module').then((m) => m.PlansPageModule)
+          import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
       {
         path: 'builder',
         data: { title: 'Builder' },
         loadChildren: () =>
-          import('./subscription-edit/subscription-edit.module').then((m) => m.SubscriptionEditPageModule)
-
+          import('./subscription-edit/subscription-edit.module').then(
+            (m) => m.SubscriptionEditPageModule,
+          ),
       },
       {
         path: 'trackers',
         data: { title: 'Page Trackers' },
         loadChildren: () =>
-          import('./subscriptions/subscriptions.module').then((m) => m.SubscriptionsPageModule)
-
+          import('./subscriptions/subscriptions.module').then(
+            (m) => m.SubscriptionsPageModule,
+          ),
       },
       {
         path: 'trackers/:id',
         data: { title: 'Page Tracker' },
         loadChildren: () =>
-          import('./subscription-details/subscription-details.module').then((m) => m.SubscriptionDetailsPageModule)
-
+          import('./subscription-details/subscription-details.module').then(
+            (m) => m.SubscriptionDetailsPageModule,
+          ),
       },
       ...ProductService.defaultRoutes,
       {
         path: '**',
-        redirectTo: '/'
-      }
-    ]
-  }
+        redirectTo: '/',
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class VisualDiffProductRoutingModule {
-}
+export class VisualDiffProductRoutingModule {}

@@ -22,9 +22,8 @@
       <ion-item>
         <ion-select label="Feature State" value="stable">
           <ion-select-option value="experimental"
-          >Experimental
-          </ion-select-option
-          >
+            >Experimental
+          </ion-select-option>
           <ion-select-option value="beta">Beta</ion-select-option>
           <ion-select-option value="stable">Stable</ion-select-option>
         </ion-select>
@@ -34,7 +33,7 @@
           href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"
           referrerpolicy="no-referrer"
           target="_blank"
-        >Plugins</a
+          >Plugins</a
         ></ion-list-header
       >
       <!--      <ion-item>-->
@@ -84,9 +83,8 @@
             color="primary"
             fill="clear"
             size="small"
-          >Add User Secret
-          </ion-button
-          >
+            >Add User Secret
+          </ion-button>
         </ion-col>
       </ion-row>
       <ion-row *ngIf="secrets?.length > 0">
@@ -104,7 +102,7 @@
           <ion-col class="ion-padding-start" size="6">{{secret.value}}</ion-col>
           <ion-col size="2">{{secret.lastUsed || 'never'}}</ion-col>
           <ion-col size="2"
-          >{{secret.validUntil | date: dateTimeFormat}}</ion-col
+            >{{secret.validUntil | date: dateTimeFormat}}</ion-col
           >
           <ion-col class="ion-text-right" size="2">
             <ion-button
@@ -112,9 +110,8 @@
               color="danger"
               fill="clear"
               size="small"
-            >Delete
-            </ion-button
-            >
+              >Delete
+            </ion-button>
           </ion-col>
         </ion-row>
         <ion-row *ngIf="!secret.valueMasked">
@@ -122,13 +119,12 @@
             <ion-input [readonly]="true" [value]="secret.value"></ion-input>
           </ion-col>
           <ion-col size="2"
-          >{{secret.validUntil | date: dateTimeFormat}}</ion-col
+            >{{secret.validUntil | date: dateTimeFormat}}</ion-col
           >
           <ion-col class="ion-text-right" size="2">
             <ion-button color="success" fill="outline" size="small"
-            >Copy
-            </ion-button
-            >
+              >Copy
+            </ion-button>
           </ion-col>
         </ion-row>
       </ng-container>

@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [SearchbarComponent],
   exports: [SearchbarComponent],
-  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule],
 })
-export class SearchbarModule {
-}
+export class SearchbarModule {}

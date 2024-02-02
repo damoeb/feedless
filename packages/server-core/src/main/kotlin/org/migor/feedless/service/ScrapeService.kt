@@ -314,8 +314,3 @@ class ScrapeService {
     }
   }
 }
-
-fun ScrapeResponse.getRootElement(): ScrapedElement {
-  return this.elements.minByOrNull { it.selector?.xpath?.value?.length ?: 0 }
-    ?: throw IllegalArgumentException("no root element present")
-}

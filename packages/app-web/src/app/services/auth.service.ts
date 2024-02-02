@@ -13,10 +13,21 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables
+  GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
-import { ApolloClient, FetchResult, Observable as ApolloObservable } from '@apollo/client/core';
-import { BehaviorSubject, firstValueFrom, map, Observable, Subject, take } from 'rxjs';
+import {
+  ApolloClient,
+  FetchResult,
+  Observable as ApolloObservable,
+} from '@apollo/client/core';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  map,
+  Observable,
+  Subject,
+  take,
+} from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
@@ -37,7 +48,7 @@ export interface Authentication {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
@@ -45,7 +56,7 @@ export class AuthService {
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {
     this.authStatus = new BehaviorSubject(null);
   }
@@ -55,7 +66,7 @@ export class AuthService {
   }
 
   async authorizeUserViaMail(
-    email: string
+    email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.authorizeAnonymous();
     console.log(platform.description);
@@ -70,24 +81,24 @@ export class AuthService {
           token: authentication.token,
           product: environment.product(),
           osInfo: `${platform.description}`,
-          allowCreate: true
-        }
-      }
+          allowCreate: true,
+        },
+      },
     });
   }
 
-  async authorizeUser(data: GqlAuthUserInput): Promise<void> {
-    return this.apollo
-      .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
-        mutation: AuthUser,
-        variables: {
-          data
-        }
-      })
-      .then((response) =>
-        this.handleAuthenticationToken(response.data.authUser.token)
-      );
-  }
+  // async authorizeUser(data: GqlAuthUserInput): Promise<void> {
+  //   return this.apollo
+  //     .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
+  //       mutation: AuthUser,
+  //       variables: {
+  //         data,
+  //       },
+  //     })
+  //     .then((response) =>
+  //       this.handleAuthenticationToken(response.data.authUser.token),
+  //     );
+  // }
 
   sendConfirmationCode(confirmationCode: string, otpId: string) {
     return this.apollo.mutate<
@@ -98,9 +109,9 @@ export class AuthService {
       variables: {
         data: {
           code: confirmationCode,
-          otpId
-        }
-      }
+          otpId,
+        },
+      },
     });
   }
 
@@ -114,8 +125,8 @@ export class AuthService {
               const authentication = await this.authorizeAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }
-          })
-        )
+          }),
+        ),
     );
   }
 
@@ -124,13 +135,13 @@ export class AuthService {
     console.log('handleAuthenticationToken', decodedToken);
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
-      loggedIn: decodedToken.user_id?.length > 0
+      loggedIn: decodedToken.user_id?.length > 0,
     });
   }
 
   isAuthenticated(): Observable<boolean> {
     return this.authorizationChange().pipe(
-      map((status) => status?.loggedIn === true)
+      map((status) => status?.loggedIn === true),
     );
   }
 
@@ -146,7 +157,7 @@ export class AuthService {
       this.modalIsOpen = true;
       const modal = await this.modalCtrl.create({
         component: TermsModalComponent,
-        backdropDismiss: false
+        backdropDismiss: false,
       });
       await modal.present();
       await modal.onDidDismiss();
@@ -158,7 +169,7 @@ export class AuthService {
   private authorizeAnonymous(): Promise<ActualAuthentication> {
     return this.apollo
       .mutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>({
-        mutation: AuthAnonymous
+        mutation: AuthAnonymous,
       })
       .then((response) => response.data.authAnonymous);
   }

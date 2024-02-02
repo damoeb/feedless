@@ -6,12 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: WaitListPage,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class WaitListRoutingModule {
-}
+export class WaitListRoutingModule {}

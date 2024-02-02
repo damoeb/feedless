@@ -1,20 +1,21 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedDetailsPage } from './feed-details.page';
 import { AppTestModule } from '../../../app-test.module';
-import { VisualDiffProductModule } from '../visual-diff-product.module';
+import { FeedDetailsPageModule } from './feed-details.module';
 
-describe('VisualDiffPage', () => {
+describe('FeedDetailsPage', () => {
   let component: FeedDetailsPage;
   let fixture: ComponentFixture<FeedDetailsPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedDetailsPage],
-      imports: [VisualDiffProductModule, AppTestModule.withDefaults()]
+      imports: [FeedDetailsPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedDetailsPage);
     component = fixture.componentInstance;
+    component.subscription = {} as any;
+    component.documents = [];
     fixture.detectChanges();
   }));
 

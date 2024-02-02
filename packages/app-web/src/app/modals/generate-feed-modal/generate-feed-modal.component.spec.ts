@@ -2,14 +2,15 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { GenerateFeedModalComponent } from './generate-feed-modal.component';
 import { GenerateFeedModalModule } from './generate-feed-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('ExportModalComponent', () => {
+describe('GenerateFeedModalComponent', () => {
   let component: GenerateFeedModalComponent;
   let fixture: ComponentFixture<GenerateFeedModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [GenerateFeedModalModule]
+      imports: [AppTestModule.withDefaults(), GenerateFeedModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GenerateFeedModalComponent);

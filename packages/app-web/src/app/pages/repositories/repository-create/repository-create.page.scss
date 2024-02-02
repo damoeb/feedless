@@ -1,4 +1,12 @@
+@import "../../../../mixins";
+
 ion-input {
+  --app-border-radius: 8px;
+  --padding-start: 10px!important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+
+  @include control();
+
   &:hover {
     --border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;
   }

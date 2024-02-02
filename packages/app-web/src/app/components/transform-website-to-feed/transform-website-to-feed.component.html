@@ -13,7 +13,7 @@
           (click)="pickNativeFeed(nativeFeed)"
           *ngFor="let nativeFeed of nativeFeeds"
           [button]="true"
-          [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
+          [color]="currentNativeFeed === nativeFeed ? 'primary' : undefined"
           class="feed cy-feed-native"
         >
           <ion-label class="ion-margin-start">
@@ -36,12 +36,14 @@
             (click)="pickGenericFeed(genericFeed)"
             [button]="true"
             [color]="
-              currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
+              currentGenericFeed?.hash === genericFeed.hash
+                ? 'primary'
+                : undefined
             "
             class="feed cy-feed-generic"
           >
             <ion-label class="ion-margin-start"
-            >{{ genericFeed.count }} articles
+              >{{ genericFeed.count }} articles
               <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
             </ion-label>
             <ion-icon
@@ -114,9 +116,8 @@
             labelPlacement="end"
             name="dateIsStartOfEvent"
             slot="start"
-          >Date is Beginning of Event
-          </ion-checkbox
-          >
+            >Date is Beginning of Event
+          </ion-checkbox>
         </ion-item>
       </ng-container>
     </ion-list>

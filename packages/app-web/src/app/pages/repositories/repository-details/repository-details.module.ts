@@ -13,9 +13,8 @@ import { RepositoryDetailsPage } from './repository-details.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    RepositoryDetailsPageRoutingModule
+    RepositoryDetailsPageRoutingModule,
   ],
-  declarations: [RepositoryDetailsPage]
+  declarations: [RepositoryDetailsPage],
 })
-export class RepositoryDetailsPageModule {
-}
+export class RepositoryDetailsPageModule {}

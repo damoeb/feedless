@@ -1,7 +1,17 @@
 <ion-header *ngIf="subscription">
   <ion-toolbar color="danger">
-    <ion-text style="font-size: 16px;" class="ion-padding-horizontal">This trial subscription will expire at <strong>{{subscription.disabledFrom | date: dateFormat}}</strong></ion-text>
-    <ion-button slot="end" color="primary" class="ion-margin-horizontal" shape="round">
+    <ion-text style="font-size: 16px" class="ion-padding-horizontal"
+      >This trial subscription will expire at
+      <strong
+        >{{subscription.disabledFrom | date: dateFormat}}</strong
+      ></ion-text
+    >
+    <ion-button
+      slot="end"
+      color="primary"
+      class="ion-margin-horizontal"
+      shape="round"
+    >
       Transfer Ownership
     </ion-button>
   </ion-toolbar>
@@ -20,10 +30,13 @@
     </div>
     <div *ngIf="documents.length > 1">
       <img-comparison-slider style="width: auto; margin: auto">
-        <img [src]="'data:image/png;base64, '+documents[0].contentRaw" alt="" slot="first" />
+        <img
+          [src]="'data:image/png;base64, '+documents[0].contentRaw"
+          alt=""
+          slot="first"
+        />
         <img [src]="safeDiffImageUrl" alt="" slot="second" />
       </img-comparison-slider>
     </div>
   </div>
 </ion-content>
-

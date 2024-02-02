@@ -10,7 +10,6 @@ import { AgentsModule } from '../../components/agents/agents.module';
 import { SegmentedOutputModule } from '../../components/segmented-output/segmented-output.module';
 import { SelectModule } from '../../elements/select/select.module';
 import { InputModule } from '../../elements/input/input.module';
-import { AgentsModalModule } from '../agents-modal/agents-modal.module';
 import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.module';
 
 @NgModule({
@@ -28,9 +27,7 @@ import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.mo
     ReactiveFormsModule,
     SelectModule,
     InputModule,
-    AgentsModalModule,
-    CodeEditorModalModule
-  ]
+    CodeEditorModalModule,
+  ],
 })
-export class FeedBuilderModalModule {
-}
+export class FeedBuilderModalModule {}

@@ -6,12 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: AboutFeedlessPage,
-  }
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AboutFeedlessRoutingModule {
-}
+export class AboutFeedlessRoutingModule {}

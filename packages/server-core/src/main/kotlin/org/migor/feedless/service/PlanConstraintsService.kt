@@ -50,8 +50,8 @@ class PlanConstraintsService {
     }
   }
 
-  fun coerceRetentionMaxAgeDays(maxAge: Int?) = maxAge
-    ?.coerceAtLeast(2)
+  fun coerceRetentionMaxAgeDays(maxAge: Int?): Int = (maxAge ?: 0)
+    .coerceAtLeast(2)
 
   fun auditRefreshCron(cronString: String): String {
     CronExpression.isValidExpression(cronString)

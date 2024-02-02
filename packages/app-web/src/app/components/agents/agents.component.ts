@@ -5,13 +5,12 @@ import { dateTimeFormat } from '../../services/profile.service';
 @Component({
   selector: 'app-agents',
   templateUrl: './agents.component.html',
-  styleUrls: ['./agents.component.scss']
+  styleUrls: ['./agents.component.scss'],
 })
 export class AgentsComponent implements OnInit {
   agents: Agent[] = [];
 
-  constructor(private readonly agentService: AgentService) {
-  }
+  constructor(private readonly agentService: AgentService) {}
 
   async ngOnInit() {
     this.agents = await this.agentService.getAgents();

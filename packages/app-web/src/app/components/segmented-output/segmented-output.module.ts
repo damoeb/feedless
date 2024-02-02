@@ -7,7 +7,6 @@ import { InputModule } from '../../elements/input/input.module';
 @NgModule({
   declarations: [SegmentedOutputComponent],
   exports: [SegmentedOutputComponent],
-  imports: [CommonModule, IonicModule, InputModule]
+  imports: [CommonModule, IonicModule, InputModule],
 })
-export class SegmentedOutputModule {
-}
+export class SegmentedOutputModule {}

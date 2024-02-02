@@ -10,13 +10,14 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InputComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class InputComponent<T>
   extends ControlValueAccessorDirective<T>
-  implements OnInit {
+  implements OnInit
+{
   @Input()
   placeholder: string = '';
 

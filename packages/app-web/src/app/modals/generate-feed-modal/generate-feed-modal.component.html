@@ -11,34 +11,48 @@
 <ion-content>
   <ion-list>
     <ion-item>
+      <ion-label>Feed Title</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-input [formControl]="formFg.controls.title"
+                 fill="outline"
+                 placeholder="Type a title"
+                 aria-label="Title"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Description (optional)</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-textarea [autoGrow]="true"
+                    fill="outline"
+                    placeholder="#tags, urls,..."
+                    [formControl]="formFg.controls.description"
+                    aria-label="Describe the feed with #tags and urls"></ion-textarea>
+    </ion-item>
+    <ion-item>
       <ion-label>Fetch Frequency</ion-label>
     </ion-item>
     <ion-item>
       <ion-select
-        [formControl]="fetchFrequencyFc"
+        [formControl]="formFg.controls.fetchFrequency"
         fill="outline"
         interface="popover"
       >
         <ion-select-option disabled value="0 */15 * * * *"
-        >Every 15 min
-        </ion-select-option
-        >
+          >Every 15 min
+        </ion-select-option>
         <ion-select-option disabled value="0 */30 * * * *"
-        >Every 30 min
-        </ion-select-option
-        >
+          >Every 30 min
+        </ion-select-option>
         <ion-select-option disabled value="0 0 * * * *"
-        >Every hour
-        </ion-select-option
-        >
+          >Every hour
+        </ion-select-option>
         <ion-select-option disabled value="0 0 */8 * * *"
-        >Every 6 hours
-        </ion-select-option
-        >
+          >Every 6 hours
+        </ion-select-option>
         <ion-select-option disabled value="0 0 */12 * * *"
-        >Every 12 hours
-        </ion-select-option
-        >
+          >Every 12 hours
+        </ion-select-option>
         <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
         <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
       </ion-select>
@@ -49,32 +63,42 @@
       <ion-label>Filters</ion-label>
     </ion-item>
 
-    <ion-item *ngFor="let filter of filters; let i = index" class="ion-margin-bottom">
-      <ion-select [formControl]="filter.controls.type"
-                  fill="outline"
-                  interface="popover">
+    <ion-item
+      *ngFor="let filter of filters; let i = index"
+      class="ion-margin-bottom"
+    >
+      <ion-select
+        [formControl]="filter.controls.type"
+        fill="outline"
+        interface="popover"
+      >
         <ion-select-option value="include">include</ion-select-option>
         <ion-select-option value="exclude">exclude</ion-select-option>
       </ion-select>
-      <ion-text class="ion-padding-end">
-        if
-      </ion-text>
-      <ion-select [formControl]="filter.controls.field"
-                  fill="outline"
-                  interface="popover">
+      <ion-text class="ion-padding-end"> if </ion-text>
+      <ion-select
+        [formControl]="filter.controls.field"
+        fill="outline"
+        interface="popover"
+      >
         <ion-select-option value="link">link</ion-select-option>
         <ion-select-option value="title">title</ion-select-option>
         <ion-select-option value="content">content</ion-select-option>
       </ion-select>
-      <ion-select [formControl]="filter.controls.operator"
-                  fill="outline"
-                  interface="popover">
+      <ion-select
+        [formControl]="filter.controls.operator"
+        fill="outline"
+        interface="popover"
+      >
         <ion-select-option value="contains">contains</ion-select-option>
         <ion-select-option value="matches">matches</ion-select-option>
         <ion-select-option value="startsWith">starts with</ion-select-option>
         <ion-select-option value="endsWith">ends with</ion-select-option>
       </ion-select>
-      <ion-input [formControl]="filter.controls.value" fill="outline"></ion-input>
+      <ion-input
+        [formControl]="filter.controls.value"
+        fill="outline"
+      ></ion-input>
 
       <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
         <ion-icon name="trash-outline"></ion-icon>
@@ -82,63 +106,27 @@
     </ion-item>
 
     <ion-item *ngIf="filters.length < 4">
-      <a (click)="addFilter()" href="javascript:void(0)">
-        Add Filter
-      </a>
+      <a (click)="addFilter()" href="javascript:void(0)"> Add Filter </a>
     </ion-item>
   </ion-list>
-  <!--  <ion-list>-->
-  <!--    <ion-list-header color="warning">-->
-  <!--      <strong>Ownership</strong>-->
-
-  <!--      <ion-button class="ion-margin-start" size="small" color="primary" fill="solid">-->
-  <!--        Claim Ownership-->
-  <!--      </ion-button>-->
-  <!--    </ion-list-header>-->
-
-  <!--    <ion-item color="warning">-->
-  <!--      <ion-label>-->
-  <!--        This feed will expire in one week.-->
-  <!--      </ion-label>-->
-  <!--    </ion-item>-->
-
-  <!--  </ion-list>-->
 
   <div style="flex: 1"></div>
 
-  <ion-list class="ion-margin-bottom">
-    <ion-item class="ion-margin-bottom">
-      <ion-label class="ion-text-wrap ion-padding-vertical">
-        <strong>Important</strong>: The feed will <em>expire in one week</em>. When this happens, we will notify you
-        inside the feed.
-
-        Then you can decide if you want to keep it alive and manage it.
-      </ion-label>
+  <ion-list class="ion-no-margin ion-no-padding"
+            style="background: transparent">
+    <ion-item *ngIf="errorMessage"
+              style="--background: transparent">
+      <ion-label color="danger"><strong>{{errorMessage}}</strong></ion-label>
     </ion-item>
-    <ion-item (click)="createFeed()" [button]="true" color="success">
-      <ion-label>
-        Generate Feed
-      </ion-label>
+    <ion-item (click)="createFeed()"
+              *ngIf="!loading"
+              [button]="true"
+              color="success">
+      <ion-label> Generate Feed </ion-label>
     </ion-item>
-  </ion-list>
-  <ion-list class="ion-margin-bottom feeds hidden">
-    <ion-list-header>ATOM Feed</ion-list-header>
-    <ion-item>
-      <ion-input
-        (click)="copy(atomFeedUrl)"
-        [readonly]="true"
-        [value]="atomFeedUrl"
-        fill="outline"
-      ></ion-input>
-    </ion-item>
-    <ion-list-header>JSON Feed</ion-list-header>
-    <ion-item>
-      <ion-input
-        (click)="copy(jsonFeedUrl)"
-        [readonly]="true"
-        [value]="jsonFeedUrl"
-        fill="outline"
-      ></ion-input>
+    <ion-item color="danger" *ngIf="loading">
+      <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>
+      Cancel
     </ion-item>
   </ion-list>
 </ion-content>

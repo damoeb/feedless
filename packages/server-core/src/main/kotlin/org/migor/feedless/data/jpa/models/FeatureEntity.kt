@@ -57,11 +57,26 @@ fun featureScope(name: FeatureName): FeatureScope {
     FeatureName.canLogin,
     FeatureName.canCreateUser,
     FeatureName.canCreateAsAnonymous,
+    FeatureName.hasWaitList,
     FeatureName.authSSO,
     FeatureName.authMail,
     FeatureName.authentication -> FeatureScope.frontend
 
-    else -> FeatureScope.backend
+    FeatureName.database,
+    FeatureName.rateLimitInt,
+    FeatureName.minRefreshRateInMinutesInt,
+    FeatureName.publicScrapeSourceBool,
+    FeatureName.pluginsBool,
+    FeatureName.scrapeRequestTimeoutInt,
+    FeatureName.scrapeSourceRetentionMaxItemsInt,
+    FeatureName.itemEmailForwardBool,
+    FeatureName.itemWebhookForwardBool,
+    FeatureName.apiBool,
+    FeatureName.scrapeSourceExpiryInDaysInt,
+    FeatureName.scrapeSourceMaxCountActiveInt,
+    FeatureName.scrapeRequestMaxCountPerSourceInt,
+    FeatureName.scrapeRequestActionMaxCountInt,
+    FeatureName.scrapeSourceMaxCountTotalInt -> FeatureScope.backend
   }
 }
 

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.net.UnknownHostException
 import java.util.concurrent.CompletableFuture
 
 
@@ -19,10 +20,10 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
   private val log = LoggerFactory.getLogger(CustomExceptionHandler::class.simpleName)
 
   override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult> {
-    return when(handlerParameters?.exception) {
-      is RuntimeException, is IllegalAccessException -> run {
+    return when(handlerParameters?.exception?.cause) {
+      is RuntimeException, is IllegalAccessException, is UnknownHostException -> run {
         val corrId = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
-        handlerParameters.exception.printStackTrace()
+//        handlerParameters.exception.printStackTrace()
         log.warn("[$corrId] ${handlerParameters.exception.message}")
 //        handlerParameters.exception.printStackTrace();
 //        val debugInfo: MutableMap<String, Any> = HashMap()

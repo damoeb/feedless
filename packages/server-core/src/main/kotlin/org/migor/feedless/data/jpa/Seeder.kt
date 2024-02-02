@@ -209,15 +209,26 @@ class Seeder {
   }
 
   private fun persistFeatures(plan: PlanEntity, features: Map<FeatureName, FeatureEntity>) {
-    features.forEach { (featureName, featureEntity) -> run {
-        if (!featureDAO.existsByPlanIdAndName(plan.id, featureName)) {
+    features.forEach { (featureName, featureEntity) ->
+      featureDAO.findByPlanIdAndName(plan.id, featureName)
+        ?.let {
+          it.scope = featureScope(featureName)
+          val logValueMismatch = { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
+          if (it.valueBoolean != featureEntity.valueBoolean) {
+            logValueMismatch(featureEntity.valueBoolean!!, it.valueBoolean!!)
+          }
+          if (it.valueInt != featureEntity.valueInt) {
+            logValueMismatch(featureEntity.valueInt!!, it.valueInt!!)
+          }
+          featureDAO.save(it)
+        }
+        ?: run {
           featureEntity.name = featureName
           featureEntity.planId = plan.id
           featureEntity.scope = featureScope(featureName)
           featureDAO.save(featureEntity)
         }
       }
-    }
   }
 
   private fun asIntFeature(value: Int): FeatureEntity {

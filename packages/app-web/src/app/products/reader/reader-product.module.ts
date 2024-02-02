@@ -23,7 +23,6 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     DarkModeButtonModule,
     SearchbarModule,
   ],
-  declarations: [ReaderProductPage]
+  declarations: [ReaderProductPage],
 })
-export class ReaderProductModule {
-}
+export class ReaderProductModule {}

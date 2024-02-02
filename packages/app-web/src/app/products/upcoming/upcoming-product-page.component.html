@@ -2,14 +2,12 @@
   <ion-toolbar style="--background: transparent">
     <div class="flex__row ion-align-items-center ion-margin-horizontal">
       <div>
-      <ion-select placeholder="Filters" [multiple]="true">
-        <ion-select-option>Kultur</ion-select-option>
-        <ion-select-option>Sport</ion-select-option>
-      </ion-select>
+        <ion-select placeholder="Filters" [multiple]="true">
+          <ion-select-option>Kultur</ion-select-option>
+          <ion-select-option>Sport</ion-select-option>
+        </ion-select>
       </div>
-      <span class="ion-padding-horizontal">
-        near
-      </span>
+      <span class="ion-padding-horizontal"> near </span>
       <div>
         <ion-input></ion-input>
       </div>
@@ -19,12 +17,11 @@
       <!--      show-clear-button="never"-->
       <!--      slot="secondary"-->
       <!--    ></ion-searchbar>-->
-
     </div>
 
     <ion-buttons slot="end">
       <ion-title>
-        <span [innerHtml]="productConfig.titleHtml"></span>
+        <span [innerHtml]="productConfig?.titleHtml"></span>
       </ion-title>
       <app-dark-mode-button></app-dark-mode-button>
     </ion-buttons>
@@ -32,55 +29,53 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-<!--  <ion-button id="open-date-picker" expand="block">Date Picker</ion-button>-->
+  <!--  <ion-button id="open-date-picker" expand="block">Date Picker</ion-button>-->
 
-<!--  <ion-popover trigger="open-date-picker" triggerAction="click">-->
-<!--    <ng-template>-->
-<!--      <ion-datetime (ionChange)="popoverCtrl.dismiss()"></ion-datetime>-->
-<!--    </ng-template>-->
-<!--  </ion-popover>-->
-
+  <!--  <ion-popover trigger="open-date-picker" triggerAction="click">-->
+  <!--    <ng-template>-->
+  <!--      <ion-datetime (ionChange)="popoverCtrl.dismiss()"></ion-datetime>-->
+  <!--    </ng-template>-->
+  <!--  </ion-popover>-->
 
   <div *ngFor="let year of years | keyvalue" class="flex__column">
-    <h1>{{year.key}}</h1>
+    <h1>{{ year.key }}</h1>
     <div *ngFor="let month of year.value | keyvalue" class="flex__column">
-      <h2>{{getMonth(month.key)}}</h2>
+      <h2>{{ getMonth(month.key) }}</h2>
 
       <div class="flex__row ion-padding-horizontal" style="flex-wrap: wrap">
-          <div *ngFor="let day of month.value"
-               class="day"
-               [ngClass]="{
-                  'day--real': day.day,
-                  'day--today': day.today,
-                  'day--past': day.past
-               }">
-            <ng-container *ngIf="day.day">
-              <h2>
-                {{day.day.format('D')}}
-              </h2>
-              <div class="ion-margin-top">
-                <app-bubble color="blue"></app-bubble>
-                <app-bubble color="blue"></app-bubble>
-                <app-bubble color="blue"></app-bubble>
-                <app-bubble color="blue"></app-bubble>
-              </div>
-              <ul style="list-style: none;" class="ion-no-padding">
-                <li>1</li>
-                <li>2</li>
-                <li>3</li>
-                <li>4</li>
-                <li>5</li>
-              </ul>
-            </ng-container>
-          </div>
+        <div
+          *ngFor="let day of month.value"
+          class="day"
+          [ngClass]="{
+            'day--real': day.day,
+            'day--today': day.today,
+            'day--past': day.past
+          }"
+        >
+          <ng-container *ngIf="day.day">
+            <h2>
+              {{ day.day.format("D") }}
+            </h2>
+            <div class="ion-margin-top">
+              <app-bubble color="blue"></app-bubble>
+              <app-bubble color="blue"></app-bubble>
+              <app-bubble color="blue"></app-bubble>
+              <app-bubble color="blue"></app-bubble>
+            </div>
+            <ul style="list-style: none" class="ion-no-padding">
+              <li>1</li>
+              <li>2</li>
+              <li>3</li>
+              <li>4</li>
+              <li>5</li>
+            </ul>
+          </ng-container>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="ion-justify-content-center" style="display: flex">
-    <ion-button color="light"
-                size="small"
-                (click)="next()">After</ion-button>
+    <ion-button color="light" size="small" (click)="next()">After</ion-button>
   </div>
-
 </ion-content>

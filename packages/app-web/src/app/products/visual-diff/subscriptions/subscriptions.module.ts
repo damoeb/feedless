@@ -6,12 +6,7 @@ import { SubscriptionsPage } from './subscriptions.page';
 import { SubscriptionsRoutingModule } from './subscriptions-routing.module';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    IonicModule,
-    SubscriptionsRoutingModule
-  ],
-  declarations: [SubscriptionsPage]
+  imports: [CommonModule, IonicModule, SubscriptionsRoutingModule],
+  declarations: [SubscriptionsPage],
 })
-export class SubscriptionsPageModule {
-}
+export class SubscriptionsPageModule {}

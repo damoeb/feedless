@@ -33,7 +33,6 @@ class QueryResolverTest {
                 profile {
                     isAnonymous
                     dateFormat
-                    minimalFeatureState
                     userId
                 }
             }

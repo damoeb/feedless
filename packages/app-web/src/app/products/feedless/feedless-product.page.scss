@@ -9,3 +9,7 @@ ion-header {
 .active-link {
   border-bottom: 2px solid var(--ion-color-dark);
 }
+
+.active {
+  border-bottom: 2px solid var(--ion-color-primary);
+}

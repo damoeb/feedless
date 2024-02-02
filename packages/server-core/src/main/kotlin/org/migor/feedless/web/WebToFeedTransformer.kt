@@ -1,6 +1,7 @@
 package org.migor.feedless.web
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -382,7 +383,7 @@ class WebToFeedTransformer(
               }
               .orElse(now)
 
-          val (pubDate, startingDate) = if (selectors.dateIsStartOfEvent) {
+          val (pubDate, startingDate) = if (BooleanUtils.isTrue(selectors.dateIsStartOfEvent)) {
             if (now.before(date)) {
               Pair(now, date)
             } else {

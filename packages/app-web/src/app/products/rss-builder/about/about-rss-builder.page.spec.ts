@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import { AppTestModule } from '../../../app-test.module';
-import { RssBuilderProductModule } from '../rss-builder-product.module';
+import { AboutRssBuilderModule } from './about-rss-builder.module';
 
-describe('FeedBuilderPage', () => {
+describe('AboutRssBuilderPage', () => {
   let component: AboutRssBuilderPage;
   let fixture: ComponentFixture<AboutRssBuilderPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AboutRssBuilderPage],
-      imports: [RssBuilderProductModule, AppTestModule.withDefaults()]
+      imports: [AboutRssBuilderModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AboutRssBuilderPage);

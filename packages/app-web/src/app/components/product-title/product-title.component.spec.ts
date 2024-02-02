@@ -2,14 +2,15 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ProductTitleComponent } from './product-title.component';
 import { ProductTitleModule } from './product-title.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('BubbleComponent', () => {
+describe('ProductTitleComponent', () => {
   let component: ProductTitleComponent;
   let fixture: ComponentFixture<ProductTitleComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ProductTitleModule]
+      imports: [ProductTitleModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductTitleComponent);

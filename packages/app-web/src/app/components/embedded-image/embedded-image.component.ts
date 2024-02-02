@@ -10,7 +10,7 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
@@ -44,10 +44,11 @@ interface Box {
   selector: 'app-embedded-image',
   templateUrl: './embedded-image.component.html',
   styleUrls: ['./embedded-image.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmbeddedImageComponent
-  implements AfterViewInit, OnDestroy, OnChanges {
+  implements AfterViewInit, OnDestroy, OnChanges
+{
   @Input({ required: true })
   embed: Embeddable;
 
@@ -183,7 +184,7 @@ export class EmbeddedImageComponent
     const image = new Image();
     this.revokeImageUrl();
     this.imageUrl = URL.createObjectURL(
-      this.b64toBlob(this.embed.data, this.embed.mimeType)
+      this.b64toBlob(this.embed.data, this.embed.mimeType),
     );
     image.src = this.imageUrl;
 
@@ -202,7 +203,7 @@ export class EmbeddedImageComponent
   private b64toBlob(
     b64Data: string,
     contentType: string,
-    sliceSize: number = 512
+    sliceSize: number = 512,
   ) {
     const byteCharacters = atob(b64Data);
     const byteArrays: Uint8Array[] = [];

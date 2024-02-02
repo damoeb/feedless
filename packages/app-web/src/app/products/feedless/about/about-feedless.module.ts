@@ -13,9 +13,8 @@ import { NewsletterModule } from '../../../components/newsletter/newsletter.modu
     IonicModule,
     AboutFeedlessRoutingModule,
     ProductHeadlineModule,
-    NewsletterModule
+    NewsletterModule,
   ],
-  declarations: [AboutFeedlessPage]
+  declarations: [AboutFeedlessPage],
 })
-export class AboutFeedlessModule {
-}
+export class AboutFeedlessModule {}

@@ -15,9 +15,8 @@ import { TermsModule } from '../../components/terms/terms.module';
     FormsModule,
     IonicModule,
     TermsPageRoutingModule,
-    TermsModule
+    TermsModule,
   ],
-  declarations: [TermsPage]
+  declarations: [TermsPage],
 })
-export class TermsPageModule {
-}
+export class TermsPageModule {}

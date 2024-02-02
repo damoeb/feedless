@@ -4,6 +4,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.UserEntity
+import org.migor.feedless.service.ProductService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -20,6 +21,9 @@ class MailServiceImpl: MailService {
 
   @Autowired
   private lateinit var javaMailSender: JavaMailSender
+
+  @Autowired
+  private lateinit var productService: ProductService
 
   private fun send(to: String, body: Email) {
     val mailMessage = SimpleMailMessage()
@@ -41,11 +45,11 @@ class MailServiceImpl: MailService {
   }
 
   override fun getNoReplyAddress(product: ProductName): String {
-    return "no-reply@${getDomain(product)}"
+    return "no-reply@${productService.getDomain(product)}"
   }
 
   private fun createAuthCodeEmail(corrId: String, data: UserEntity, otp: OneTimePasswordEntity, description: String): Email {
-    val domain = getDomain(data.product)
+    val domain = productService.getDomain(data.product)
     val subject = "$domain: Access Code"
     val text = """
 Hi,
@@ -61,13 +65,4 @@ ${otp.password}
     return Email(subject, text, getNoReplyAddress(data.product))
   }
 
-  private fun getDomain(product: ProductName): String {
-    return when(product) {
-      ProductName.visualDiff -> "visualdiff.com"
-      ProductName.pageChangeTracker -> "pagechangetracker.com"
-      ProductName.rssBuilder -> "feedguru.com"
-      ProductName.reader -> throw IllegalArgumentException("not supported")
-      else -> "feedless.org"
-    }
-  }
 }

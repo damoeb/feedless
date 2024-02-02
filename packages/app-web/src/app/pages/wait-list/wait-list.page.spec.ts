@@ -4,13 +4,13 @@ import { WaitListPage } from './wait-list.page';
 import { WaitListPageModule } from './wait-list-page.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('TermsModalComponent', () => {
+describe('WaitListPage', () => {
   let component: WaitListPage;
   let fixture: ComponentFixture<WaitListPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [WaitListPageModule, AppTestModule.withDefaults()]
+      imports: [WaitListPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WaitListPage);

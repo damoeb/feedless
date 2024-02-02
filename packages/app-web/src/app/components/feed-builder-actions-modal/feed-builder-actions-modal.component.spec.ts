@@ -3,14 +3,14 @@ import { FeedBuilderActionsModalComponent } from './feed-builder-actions-modal.c
 import { AppTestModule } from '../../app-test.module';
 import { RssBuilderProductModule } from '../../products/rss-builder/rss-builder-product.module';
 
-describe('FeedBuilderActionsModal', () => {
+describe('FeedBuilderActionsModalComponent', () => {
   let component: FeedBuilderActionsModalComponent;
   let fixture: ComponentFixture<FeedBuilderActionsModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FeedBuilderActionsModalComponent],
-      imports: [RssBuilderProductModule, AppTestModule.withDefaults()]
+      imports: [RssBuilderProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderActionsModalComponent);

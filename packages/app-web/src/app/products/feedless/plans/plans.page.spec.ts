@@ -16,8 +16,8 @@ describe('PlansPage', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           mockPlans(apolloMockController);
         }),
-        RouterTestingModule.withRoutes([])
-      ]
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlansPage);
