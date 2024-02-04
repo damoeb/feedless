@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Embeddable } from '../embedded-website/embedded-website.component';
-import { XyPosition } from '../embedded-image/embedded-image.component';
+import { Embeddable } from '../../components/embedded-website/embedded-website.component';
+import { XyPosition } from '../../components/embedded-image/embedded-image.component';
 import {
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,

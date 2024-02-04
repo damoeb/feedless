@@ -11,11 +11,13 @@ import { ReaderModule } from '../../components/reader/reader.module';
 import { EmbeddedWebsiteModule } from '../../components/embedded-website/embedded-website.module';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+import { ReaderMenuModule } from './reader-menu/reader-menu.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
+    ReaderMenuModule,
     IonicModule,
     ReaderProductRoutingModule,
     ReaderModule,

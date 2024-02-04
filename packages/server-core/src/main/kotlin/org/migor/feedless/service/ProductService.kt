@@ -19,6 +19,7 @@ class ProductService {
       ProductName.pageChangeTracker -> "pagechangetracker.com"
       ProductName.rssBuilder -> "feedguru.com"
       ProductName.feedless -> "feedless.com"
+      ProductName.untoldNotes -> "untoldnotes.com"
       ProductName.custom -> propertyService.domain
       else -> throw IllegalArgumentException("not supported")
     }

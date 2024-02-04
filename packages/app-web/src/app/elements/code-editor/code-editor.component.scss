@@ -1,0 +1,11 @@
+.cm-line:has(.cm-blockquote) {
+  //": {paddingLeft: '1.5em'},
+  background: #efefef;
+  border-left: 4px solid #cccccc;
+}
+
+.cm-activeLine {
+  [class*="-mark"] {
+    color: blue;
+  }
+}

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
@@ -6,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps
+  GenerateFeedModalComponentProps,
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
@@ -59,6 +65,5 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     });
 
     await modal.present();
-
   }
 }

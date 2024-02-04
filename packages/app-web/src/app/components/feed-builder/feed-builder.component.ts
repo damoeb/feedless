@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, EventEmitter,
+  Component,
+  EventEmitter,
   OnDestroy,
-  OnInit, Output
+  OnInit,
+  Output,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -17,18 +19,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import {
-  GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import { FeedBuilderActionsModalComponent } from '../feed-builder-actions-modal/feed-builder-actions-modal.component';
+import { FeedBuilderActionsModalComponent } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 
 export type FeedWithRequest = {
-  scrapeRequest: GqlScrapeRequest
-  feed: NativeOrGenericFeed,
-}
+  scrapeRequest: GqlScrapeRequest;
+  feed: NativeOrGenericFeed;
+};
 
 @Component({
   selector: 'app-feed-builder',
@@ -49,7 +47,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   errorMessage: string;
 
   @Output()
-  selectedFeedChanged = new EventEmitter<FeedWithRequest>()
+  selectedFeedChanged = new EventEmitter<FeedWithRequest>();
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -155,7 +153,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.selectedFeedChanged.emit({
       scrapeRequest: this.scrapeRequest,
       feed: this.selectedFeed,
-    })
+    });
   }
 
   async showActionsModal() {
@@ -175,7 +173,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   handleCancel() {
-    console.log('handleCancel')
+    console.log('handleCancel');
     this.apolloAbortController.abort('user canceled');
   }
 }

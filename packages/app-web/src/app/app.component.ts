@@ -69,10 +69,6 @@ export class AppComponent implements OnDestroy, OnInit {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  isActiveProduct(product: GqlProductName): boolean {
-    return environment.product() === product;
-  }
-
   getBreakpointMinWidth(): SidemenuBreakpoint {
     return this.productConfig.sideMenu?.breakpoint ?? 'sm';
   }

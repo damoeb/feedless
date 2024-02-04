@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import { GqlFeedlessPlugins, GqlScrapePageInput, GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapePageInput,
+  GqlScrapeRequest,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
 
@@ -27,7 +38,7 @@ interface FilterData {
   selector: 'app-generate-feed-modal',
   templateUrl: './generate-feed-modal.component.html',
   styleUrls: ['./generate-feed-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GenerateFeedModalComponent
   implements GenerateFeedModalComponentProps, OnInit
@@ -40,7 +51,7 @@ export class GenerateFeedModalComponent
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
-    })
+    }),
   });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
 
@@ -58,8 +69,7 @@ export class GenerateFeedModalComponent
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
-  ) {
-  }
+  ) {}
 
   closeModal() {
     return this.modalCtrl.dismiss();
@@ -162,21 +172,20 @@ export class GenerateFeedModalComponent
   }
 
   async ngOnInit(): Promise<void> {
-    this.formFg.patchValue(this.getFeedTitle())
+    this.formFg.patchValue(this.getFeedTitle());
   }
 
   private getFeedTitle() {
     if (this.feed.nativeFeed) {
       return {
         title: this.feed.nativeFeed.title,
-        description: `Source: ${this.feed.nativeFeed.feedUrl}`
+        description: `Source: ${this.feed.nativeFeed.feedUrl}`,
       };
     } else {
       return {
         title: `Feed from ${this.scrapeRequest.page.url}`,
-        description: `Source: ${this.scrapeRequest.page.url}`
+        description: `Source: ${this.scrapeRequest.page.url}`,
       };
     }
-
   }
 }

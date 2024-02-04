@@ -2,9 +2,7 @@
   <ion-toolbar color="danger">
     <ion-text style="font-size: 16px" class="ion-padding-horizontal"
       >This feed will expire in
-      <strong
-        >{{fromNow(subscription.disabledFrom)}}</strong
-      ></ion-text
+      <strong>{{fromNow(subscription.disabledFrom)}}</strong></ion-text
     >
     <ion-button
       slot="end"
@@ -41,17 +39,16 @@
       <div class="ion-align-self-center">
         <ion-button>
           <ion-icon name="logo-rss" slot="start"></ion-icon>
-          Feed</ion-button>
+          Feed</ion-button
+        >
       </div>
     </div>
     <p>{{ subscription.description }}</p>
-<!--    <p>{{ subscription.retention.maxItems }}{{ subscription.retention.maxAgeDays }}</p>-->
+    <!--    <p>{{ subscription.retention.maxItems }}{{ subscription.retention.maxAgeDays }}</p>-->
 
     <ion-list>
       <ion-item *ngIf="documents.length === 0">
-        <ion-label>
-          Feed has no items.
-        </ion-label>
+        <ion-label> Feed has no items. </ion-label>
       </ion-item>
       <ion-item *ngFor="let document of documents">
         <!--        todo add link -->

@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { FeedlessMenuComponent } from './feedless-menu.component';
+import { UntoldNotesMenuComponent } from './untold-notes-menu.component';
 
-describe('FeedlessMenuComponent', () => {
-  let component: FeedlessMenuComponent;
-  let fixture: ComponentFixture<FeedlessMenuComponent>;
+describe('UntoldNotesMenuComponent', () => {
+  let component: UntoldNotesMenuComponent;
+  let fixture: ComponentFixture<UntoldNotesMenuComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedlessMenuComponent],
+      declarations: [UntoldNotesMenuComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FeedlessMenuComponent);
+    fixture = TestBed.createComponent(UntoldNotesMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

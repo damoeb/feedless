@@ -1,53 +1,57 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { ScrapeResponse } from '../../graphql/types';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapedFeeds,
+} from '../../../generated/graphql';
+import { TransformWebsiteToFeedModule } from './transform-website-to-feed.module';
 
-const markupResponse: ScrapeResponse = {
-  url: 'https://foo.bar',
-  debug: {
-    console: [],
-    cookies: [],
-    contentType: 'text/html; charset=UTF-8',
-    statusCode: 200,
-    screenshot: null,
-    html: '',
-    viewport: null,
-    metrics: {
-      queue: 0,
-      render: 239,
-      // '__typename': 'ScrapeDebugTimes'
-    },
-    // '__typename': 'ScrapeDebugResponse'
-  },
-  failed: false,
-  errorMessage: null,
-  elements: [
-    {
-      image: null,
-      selector: {
-        xpath: {
-          value: '/',
-          // '__typename': 'DOMElementByXPath'
-        },
-        html: {
-          data: '',
-          // '__typename': 'TextData'
-        },
-        pixel: null,
-        text: {
-          data: '',
-          // '__typename': 'TextData'
-        },
-        fields: [],
-        // '__typename': 'ScrapedBySelector'
-      },
-      // '__typename': 'ScrapedElement'
-    },
-  ],
-  // '__typename': 'ScrapeResponse'
-};
+// const markupResponse: ScrapeResponse = {
+//   url: 'https://foo.bar',
+//   debug: {
+//     console: [],
+//     cookies: [],
+//     contentType: 'text/html; charset=UTF-8',
+//     statusCode: 200,
+//     screenshot: null,
+//     html: '',
+//     viewport: null,
+//     metrics: {
+//       queue: 0,
+//       render: 239,
+//       // '__typename': 'ScrapeDebugTimes'
+//     },
+//     // '__typename': 'ScrapeDebugResponse'
+//   },
+//   failed: false,
+//   errorMessage: null,
+//   elements: [
+//     {
+//       image: null,
+//       selector: {
+//         xpath: {
+//           value: '/',
+//           // '__typename': 'DOMElementByXPath'
+//         },
+//         html: {
+//           data: '',
+//           // '__typename': 'TextData'
+//         },
+//         pixel: null,
+//         text: {
+//           data: '',
+//           // '__typename': 'TextData'
+//         },
+//         fields: [],
+//         // '__typename': 'ScrapedBySelector'
+//       },
+//       // '__typename': 'ScrapedElement'
+//     },
+//   ],
+//   // '__typename': 'ScrapeResponse'
+// };
 const jsonFeed = {
   description: 'Nachrichten nicht nur aus der Welt der Computer',
   expired: false,
@@ -72,6 +76,11 @@ const jsonFeed = {
   publishedAt: 1704458640000,
   title: 'heise online News',
   websiteUrl: 'https://www.heise.de/',
+};
+
+const feeds: GqlScrapedFeeds = {
+  nativeFeeds: [],
+  genericFeeds: [],
 };
 
 const feedResponse: ScrapeResponse = {
@@ -107,11 +116,26 @@ const feedResponse: ScrapeResponse = {
         fields: [
           {
             xpath: null,
-            name: 'feed',
+            name: GqlFeedlessPlugins.OrgFeedlessFeed,
             value: {
               one: {
                 mimeType: 'application/json',
                 data: JSON.stringify(jsonFeed),
+                // '__typename': 'ScrapedSingleFieldValue'
+              },
+              many: null,
+              nested: null,
+              // '__typename': 'ScrapedFieldValue'
+            },
+            // '__typename': 'ScrapedField'
+          },
+          {
+            xpath: null,
+            name: GqlFeedlessPlugins.OrgFeedlessFeeds,
+            value: {
+              one: {
+                mimeType: 'application/json',
+                data: JSON.stringify(feeds),
                 // '__typename': 'ScrapedSingleFieldValue'
               },
               many: null,
@@ -134,17 +158,18 @@ describe('TransformWebsiteToFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [TransformWebsiteToFeedComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [TransformWebsiteToFeedModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TransformWebsiteToFeedComponent);
     component = fixture.componentInstance;
-    // const feeds: GqlScrapedFeeds = {
-    //   genericFeeds: [],
-    //   nativeFeeds: [],
-    // };
-    component.scrapeResponse = markupResponse;
+    component.scrapeRequest = {
+      page: {
+        url: '',
+      },
+      emit: [],
+    };
+    component.scrapeResponse = feedResponse;
     fixture.detectChanges();
   }));
 

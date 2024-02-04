@@ -1,16 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ScrapeService } from '../../services/scrape.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { ProfileService } from '../../services/profile.service';
-import { ModalController, ToastController } from '@ionic/angular';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { fixUrl } from '../../app.module';
 
@@ -21,7 +12,6 @@ import { fixUrl } from '../../app.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {
-  isDarkMode: boolean;
   scrapeResponse: ScrapeResponse;
   productConfig: ProductConfig;
   url: string;
@@ -30,11 +20,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
-    private readonly scrapeService: ScrapeService,
-    private readonly modalCtrl: ModalController,
-    private readonly toastCtrl: ToastController,
     private readonly router: Router,
-    readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -50,10 +36,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
         if (queryParams.url) {
           this.url = queryParams.url;
         }
-      }),
-      this.profile.watchColorScheme().subscribe((isDarkMode) => {
-        this.isDarkMode = isDarkMode;
-        this.changeRef.detectChanges();
       }),
     );
   }

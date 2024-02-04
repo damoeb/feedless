@@ -42,10 +42,9 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.authService.authorizationChange()
-        .subscribe(authorization => {
-          this.authorization = authorization;
-        }),
+      this.authService.authorizationChange().subscribe((authorization) => {
+        this.authorization = authorization;
+      }),
       this.productService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {

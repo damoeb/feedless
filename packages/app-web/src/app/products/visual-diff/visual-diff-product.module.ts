@@ -9,11 +9,13 @@ import { VisualDiffProductPage } from './visual-diff-product.page';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+import { VisualDiffMenuModule } from './visual-diff-menu/visual-diff-menu.module';
 
 @NgModule({
   imports: [
     CommonModule,
     IonicModule,
+    VisualDiffMenuModule,
     VisualDiffProductRoutingModule,
     DarkModeButtonModule,
     LoginButtonModule,

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
+  GqlProductName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings,
+  ServerSettings
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -11,13 +12,22 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
 import { Feature } from '../graphql/types';
 import { environment } from '../../environments/environment';
+import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 
-export interface Config {
+export type FeedlessAppConfig = {
   apiUrl: string;
+  forceProduct?: GqlProductName
+}
+
+type ToastOptions = {
+  header: string;
+  message: string;
+  cssClass?: string;
+  buttons?: AlertButton[]
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ServerSettingsService {
   apiUrl: string; // todo merge api and gateway
@@ -27,31 +37,55 @@ export class ServerSettingsService {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController,
-  ) {}
+    private readonly alertCtrl: AlertController
+  ) {
+  }
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<Config>('/config.json'), // todo here?
+        this.httpClient.get<FeedlessAppConfig>('/config.json') // todo here?
       );
       this.apiUrl = config.apiUrl;
+
+      if (config.forceProduct) {
+        const product = config.forceProduct;
+        console.log(`forcing product ${product}`);
+        const products = Object.keys(GqlProductName).map(p => GqlProductName[p]);
+        console.log(`Know products ${products.join(', ')}`);
+        if (!products.some(otherProduct => otherProduct == product)) {
+          const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
+          console.error(message);
+          await this.showToast({ header: 'Invalid Config', message, cssClass: 'fatal-alert' });
+        }
+        environment.product = () => product;
+      }
       const response = await this.createApolloClient()
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
           variables: {
             data: {
               host: location.host,
-              product: environment.product(),
-            },
-          },
+              product: environment.product()
+            }
+          }
         })
         .then((response) => response.data.serverSettings);
       this.features = response.features;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
     } catch (e) {
-      this.showOfflineAlert();
+      await this.showToast({
+        header: 'Server is not reachable', message: 'Either you are offline or the server is down.', buttons: [
+          {
+            text: 'Ok',
+            role: 'confirm',
+            handler: () => {
+              location.reload();
+            }
+          }
+        ]
+      });
       throw e;
     }
   }
@@ -59,7 +93,7 @@ export class ServerSettingsService {
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({
       link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
-      cache: new InMemoryCache(),
+      cache: new InMemoryCache()
     });
   }
 
@@ -72,20 +106,13 @@ export class ServerSettingsService {
     return false;
   }
 
-  private async showOfflineAlert() {
+  private async showToast({ header, message, cssClass, buttons }: ToastOptions) {
     const alert = await this.alertCtrl.create({
-      header: 'Server is not reachable',
+      header,
       backdropDismiss: false,
-      message: 'Either you are offline or the server is down.',
-      buttons: [
-        {
-          text: 'Retry',
-          role: 'confirm',
-          handler: () => {
-            location.reload();
-          },
-        },
-      ],
+      message,
+      cssClass,
+      buttons
     });
 
     await alert.present();

@@ -1,0 +1,27 @@
+<ion-content>
+  <div *ngIf="busy">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+  <div *ngIf="!busy" class="flex__row">
+    <div style="width: 300px; position: relative; overflow-y: auto">
+      <ion-spinner *ngIf="busy" name="crescent"></ion-spinner>
+      <ion-list class="results" *ngIf="!busy">
+        <ion-item *ngFor="let searchResult of searchResults; let i = index"
+                  [button]="!searchResult.isGroup"
+                  (mouseenter)="focussedIndex = i"
+                  (click)="searchResult.onClick()"
+                  [ngClass]="{'in-focus': i === focussedIndex, 'is-group': searchResult.isGroup}">
+          <ion-label>
+            <h3>{{searchResult.label}}</h3>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div class="flex">
+      <div class="flex">
+        <app-code-editor #editor
+                         class="editor"></app-code-editor>
+      </div>
+    </div>
+  </div>
+</ion-content>

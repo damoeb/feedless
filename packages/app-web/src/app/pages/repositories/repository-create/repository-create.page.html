@@ -12,7 +12,10 @@
           placeholder="Enter a name"
           [formControl]="formFg.controls.title"
         ></ion-input>
-        <div class="ion-margin-bottom" *ngIf="showErrors && formFg.controls.title.invalid">
+        <div
+          class="ion-margin-bottom"
+          *ngIf="showErrors && formFg.controls.title.invalid"
+        >
           <ion-text color="danger">Please enter a name</ion-text>
         </div>
       </ion-col>
@@ -80,20 +83,24 @@
     <ion-row>
       <ion-col push="4" size="8" class="flex__row">
         <div style="width: 160px">
-          <ion-button color="success"
-                      expand="block"
-                      *ngIf="!loading"
-                      (click)="createRepository()">
+          <ion-button
+            color="success"
+            expand="block"
+            *ngIf="!loading"
+            (click)="createRepository()"
+          >
             Create Repository
           </ion-button>
-          <ion-button color="danger"
-                      expand="block"
-                      *ngIf="loading">
+          <ion-button color="danger" expand="block" *ngIf="loading">
             <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>
             Loading
           </ion-button>
         </div>
-        <ion-text color="danger" class="ion-margin-horizontal ion-align-self-center" *ngIf="errorMessage">
+        <ion-text
+          color="danger"
+          class="ion-margin-horizontal ion-align-self-center"
+          *ngIf="errorMessage"
+        >
           {{errorMessage}}!
         </ion-text>
       </ion-col>

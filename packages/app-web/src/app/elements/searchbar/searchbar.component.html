@@ -8,7 +8,12 @@
       slot="secondary"
     ></ion-searchbar>
 
-    <ion-button [color]="color ?? 'light'" *ngIf="!loading">
+    <ion-button
+      [color]="color ?? 'light'"
+      *ngIf="!loading"
+      type="submit"
+      (click)="triggerUpdate()"
+    >
       {{ buttonText }}
       <ion-icon
         [slot]="buttonText ? 'end' : ''"

@@ -1,0 +1,22 @@
+<ion-list class="flex__column">
+  <ion-item [button]="true" color="medium">
+    <ion-label>Create Notebook</ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>Notebooks</ion-label>
+  </ion-item>
+  <ion-menu-toggle
+    *ngFor="let notebook of notebooks; let i = index"
+    auto-hide="false"
+  >
+    <ion-item
+      [routerLink]="'/notebook/'+notebook.id"
+
+      detail="false"
+      lines="none"
+      routerDirection="root"
+    >
+      <ion-label>{{ notebook.name }}</ion-label>
+    </ion-item>
+  </ion-menu-toggle>
+</ion-list>

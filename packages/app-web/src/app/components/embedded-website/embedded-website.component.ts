@@ -317,7 +317,6 @@ window.addEventListener('message', (message) => {
   }
 
   private assignToIframe() {
-    console.log('assignToIframe');
     const document = this.embed;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.embed.data, this.embed.url);
@@ -326,7 +325,6 @@ window.addEventListener('message', (message) => {
           type: 'text/html;charset=UTF-8',
         }),
       );
-      console.log('this.proxyUrl', this.proxyUrl);
       // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
       this.iframeRef.nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();

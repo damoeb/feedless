@@ -60,54 +60,6 @@
             "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
-            "reader": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.reader.ts"
-                }
-              ]
-            },
-            "visual-diff": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.visual-diff.ts"
-                }
-              ]
-            },
-            "page-change-tracker": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.page-change-tracker.ts"
-                }
-              ]
-            },
-            "blog": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.blog.ts"
-                }
-              ]
-            },
-            "rss-builder": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.rss-builder.ts"
-                }
-              ]
-            },
-            "upcoming": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.upcoming.ts"
-                }
-              ]
-            },
             "production": {
               "fileReplacements": [
                 {
@@ -142,24 +94,6 @@
             "browserTarget": "app:build"
           },
           "configurations": {
-            "reader": {
-              "browserTarget": "app:build:reader"
-            },
-            "visual-diff": {
-              "browserTarget": "app:build:visual-diff"
-            },
-            "rss-builder": {
-              "browserTarget": "app:build:rss-builder"
-            },
-            "scrape-api": {
-              "browserTarget": "app:build:scrape-api"
-            },
-            "upcoming": {
-              "browserTarget": "app:build:upcoming"
-            },
-            "page-change-tracker": {
-              "browserTarget": "app:build:page-change-tracker"
-            },
             "production": {
               "browserTarget": "app:build:production"
             },

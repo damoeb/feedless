@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { ReaderProductPage } from './reader-product.page';
+import { ReaderMenuComponent } from './reader-menu/reader-menu.component';
 
 const routes: Routes = [
   {
@@ -15,6 +16,11 @@ const routes: Routes = [
   {
     path: '**',
     redirectTo: '/',
+  },
+  {
+    path: '**',
+    outlet: 'sidemenu',
+    component: ReaderMenuComponent
   },
 ];
 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
 
@@ -10,6 +10,13 @@ import { Subscription } from 'rxjs';
 export class DarkModeButtonComponent implements OnInit, OnDestroy {
   darkMode: boolean;
   private subscriptions: Subscription[] = [];
+
+  @Input()
+  label: string;
+  @Input()
+  expand: string;
+  @Input()
+  color: string;
 
   constructor(readonly profileService: ProfileService) {}
 

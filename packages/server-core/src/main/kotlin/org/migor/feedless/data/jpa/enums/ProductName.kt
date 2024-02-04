@@ -8,6 +8,7 @@ enum class ProductName {
   upcoming,
   digest,
   feedless,
+  untoldNotes,
   custom,
   system
 }
@@ -21,5 +22,6 @@ fun org.migor.feedless.generated.types.ProductName.fromDto(): ProductName {
     org.migor.feedless.generated.types.ProductName.upcoming -> ProductName.upcoming
     org.migor.feedless.generated.types.ProductName.digest -> ProductName.digest
     org.migor.feedless.generated.types.ProductName.feedless -> ProductName.feedless
+    org.migor.feedless.generated.types.ProductName.untoldNotes -> ProductName.untoldNotes
   }
 }

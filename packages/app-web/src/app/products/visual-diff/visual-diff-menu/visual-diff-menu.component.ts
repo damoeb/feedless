@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import { AuthService } from '../../services/auth.service';
-import { SourceSubscription } from '../../graphql/types';
+import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { AuthService } from '../../../services/auth.service';
+import { SourceSubscription } from '../../../graphql/types';
 
 @Component({
   selector: 'app-visual-diff-menu',

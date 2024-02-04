@@ -42,20 +42,15 @@ export class LoginPage implements OnInit, OnDestroy {
     this.hasWaitList = this.serverSettings.isEnabled(
       GqlFeatureName.HasWaitList,
     );
-    console.log('this.canLogin', this.canLogin);
-    console.log('this.canCreateUser', this.canCreateUser);
-    console.log('this.hasWaitList', this.hasWaitList);
     this.subscriptions.push(
       this.authSettings.isAuthenticated().subscribe(async (authenticated) => {
         if (authenticated) {
           await this.router.navigateByUrl('/');
         } else {
           this.showSSO = this.serverSettings.isEnabled(GqlFeatureName.AuthSso);
-          console.log('this.showSSO', this.showSSO);
           this.showMailLogin = this.serverSettings.isEnabled(
             GqlFeatureName.AuthMail,
           );
-          console.log('this.showMailLogin', this.showMailLogin);
         }
       }),
     );

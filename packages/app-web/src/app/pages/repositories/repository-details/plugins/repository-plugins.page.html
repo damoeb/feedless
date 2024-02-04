@@ -2,15 +2,13 @@
   <div class="limited-width-pane">
     <ion-list>
       <ion-item class="ion-padding-bottom">
-        <ion-label>
-          Use Plugins to transform items or markup.
-        </ion-label>
+        <ion-label> Use Plugins to transform items or markup. </ion-label>
         <ion-button>Install Plugin</ion-button>
       </ion-item>
       <ion-item *ngFor="let plugin of activePlugins">
         <ion-label>
           <h3>{{plugin.pluginId}}</h3>
-<!--          <p>{{plugin.description}}</p>-->
+          <!--          <p>{{plugin.description}}</p>-->
         </ion-label>
         <ion-button color="danger">Remove</ion-button>
       </ion-item>
@@ -22,5 +20,5 @@
         <ion-button color="primary">Activate</ion-button>
       </ion-item>
     </ion-list>
-</div>
+  </div>
 </ion-content>

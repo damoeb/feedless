@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RssBuilderMenuComponent } from './rss-builder-menu.component';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule } from '../../../app-test.module';
 
 describe('RssBuilderMenuComponent', () => {
   let component: RssBuilderMenuComponent;

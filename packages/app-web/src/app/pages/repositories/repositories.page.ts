@@ -88,8 +88,10 @@ export class RepositoriesPage implements OnInit {
 
   toLabel(visibility: GqlVisibility) {
     switch (visibility) {
-      case GqlVisibility.IsPrivate: return 'Private';
-      case GqlVisibility.IsPublic: return 'Public';
+      case GqlVisibility.IsPrivate:
+        return 'Private';
+      case GqlVisibility.IsPublic:
+        return 'Public';
     }
   }
 }

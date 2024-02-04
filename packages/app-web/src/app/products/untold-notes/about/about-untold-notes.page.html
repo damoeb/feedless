@@ -1,0 +1,36 @@
+<ion-content>
+  <div style="display: flex; justify-content: center">
+    <div style="max-width: 600px; margin-top: 150px; margin-bottom: 100px">
+      <app-product-headline title="Untold Notes"></app-product-headline>
+
+      <p>
+        Web-based, Searchable and Linkable markdown notes in the tradition of
+        <a href="https://en.wikipedia.org/wiki/Notational_Velocity"  target="_blank" referrerpolicy="no-referrer"
+          >Notational Velocity</a
+        > and <a href="https://zettelkasten.de/the-archive/" target="_blank" referrerpolicy="no-referrer">The Archive</a>. Untold Notes follows it's unopinionated approach and lifts it to an
+        open web platform.
+      </p>
+
+      <app-searchbar
+        (querySubmit)="createNotebook($event)"
+        buttonText="Create Notebook"
+        color="primary"
+        [loading]="busy"
+        placeholder="Name your Notebook"
+      ></app-searchbar>
+
+      <div style="margin-top: 150px">
+        <h2>Why choose Untold Notes?</h2>
+        <p>
+          For maximum independence you can self-host or subscribe for ultimate
+          comfort. Import and export data using common formats.
+        </p>
+      </div>
+
+      <div class="ion-padding-top">
+        <h2>Demo</h2>
+        <p>[video]</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

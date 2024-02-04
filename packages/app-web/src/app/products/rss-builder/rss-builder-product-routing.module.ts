@@ -3,8 +3,14 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { RssBuilderProductPage } from './rss-builder-product.page';
 import { ProductService } from '../../services/product.service';
+import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    outlet: 'sidemenu',
+    component: RssBuilderMenuComponent,
+  },
   {
     path: '',
     component: RssBuilderProductPage,

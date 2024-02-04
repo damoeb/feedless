@@ -8,32 +8,20 @@
       contentId="main-content"
       type="reveal"
     >
-      <ion-content class="ion-no-padding">
+      <ion-header style="box-shadow: none">
         <ion-toolbar>
           <ion-buttons slot="start">
             <ion-menu-button></ion-menu-button>
           </ion-buttons>
 
-          <app-product-title class="ion-padding-horizontal"></app-product-title>
+          <app-product-title class="ion-margin-horizontal"></app-product-title>
         </ion-toolbar>
-
-        <app-feedless-menu
-          *ngIf="isActiveProduct(GqlProductName.Feedless)"
-          style="flex: 1"
-        ></app-feedless-menu>
-        <app-reader-menu
-          *ngIf="isActiveProduct(GqlProductName.Reader)"
-          style="flex: 1"
-        ></app-reader-menu>
-        <app-visual-diff-menu
-          *ngIf="isActiveProduct(GqlProductName.VisualDiff)"
-          style="flex: 1"
-        ></app-visual-diff-menu>
-        <app-rss-builder-menu
-          *ngIf="isActiveProduct(GqlProductName.RssBuilder)"
-          style="flex: 1"
-        ></app-rss-builder-menu>
-
+      </ion-header>
+      <ion-content>
+        <ion-router-outlet name="sidemenu" style="margin-top: 10px"></ion-router-outlet>
+        <ion-note class="ion-padding"> Version 0.9-ebec6ca </ion-note>
+      </ion-content>
+      <ion-footer>
         <ion-list style="opacity: 0.8">
           <ion-menu-toggle
             *ngFor="let p of productConfig.pages; let i = index"
@@ -49,8 +37,7 @@
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
-        <ion-note class="ion-padding"> Version 0.9-ebec6ca </ion-note>
-      </ion-content>
+      </ion-footer>
     </ion-menu>
     <ion-router-outlet id="main-content"></ion-router-outlet>
   </ion-split-pane>

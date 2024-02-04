@@ -1,6 +1,8 @@
 <ion-button
   *ngIf="!authorization?.loggedIn"
   class="cy-login-button"
+  [expand]="expand"
+  [color]="color"
   routerLink="/login"
 >
   Login
@@ -9,7 +11,15 @@
 <ion-button
   *ngIf="authorization?.loggedIn"
   class="cy-profile-button"
+  [expand]="expand"
+  [color]="color"
   routerLink="/profile"
 >
-  <ion-icon name="person-outline"></ion-icon>
+  <ng-container *ngIf="label">
+    <ion-icon name="person-outline" slot="start"></ion-icon>
+    {{ label }}
+  </ng-container>
+  <ng-container *ngIf="!label">
+    <ion-icon name="person-outline"></ion-icon>
+  </ng-container>
 </ion-button>

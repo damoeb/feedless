@@ -22,14 +22,19 @@ import {
   GqlServerSettings,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
+  GqlSourceSubscription,
+  GqlSourceSubscriptionByIdQuery,
+  GqlSourceSubscriptionByIdQueryVariables,
+  GqlVisibility,
   Plans,
   Scrape,
   ServerSettings,
+  SourceSubscriptionById,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
 import {
-  Config,
+  FeedlessAppConfig,
   ServerSettingsService,
 } from './services/server-settings.service';
 import { HttpClient } from '@angular/common/http';
@@ -207,6 +212,35 @@ export function mockPlans(apolloMockController: ApolloMockController) {
     });
 }
 
+export function mockSourceSubscription(
+  apolloMockController: ApolloMockController,
+) {
+  apolloMockController
+    .mockQuery<
+      GqlSourceSubscriptionByIdQuery,
+      GqlSourceSubscriptionByIdQueryVariables
+    >(SourceSubscriptionById)
+    .and.resolveOnce(async () => {
+      const sourceSubscription: GqlSourceSubscription = {
+        id: '',
+        description: '',
+        title: '',
+        ownerId: '',
+        sources: [],
+        archived: false,
+        plugins: [],
+        visibility: GqlVisibility.IsPrivate,
+        createdAt: 0,
+        retention: {},
+      };
+      return {
+        data: {
+          sourceSubscription: sourceSubscription,
+        },
+      };
+    });
+}
+
 export function mockScrape(apolloMockController: ApolloMockController) {
   apolloMockController
     .mockQuery<GqlScrapeQuery, GqlScrapeQueryVariables>(Scrape)
@@ -266,7 +300,7 @@ export async function mockServerSettings(
     .createSpy()
     .and.returnValue(apolloClient);
   const httpClient = TestBed.inject(HttpClient);
-  const mockConfig: Config = {
+  const mockConfig: FeedlessAppConfig = {
     apiUrl: '',
   };
   httpClient.get = jasmine

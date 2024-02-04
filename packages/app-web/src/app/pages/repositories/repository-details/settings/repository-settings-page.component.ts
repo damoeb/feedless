@@ -19,12 +19,15 @@ export class RepositorySettingsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private repository: SourceSubscription;
 
-  constructor(private readonly activatedRoute: ActivatedRoute,
-              private readonly sourceSubscriptionService: SourceSubscriptionService) {}
+  constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+  ) {}
 
   async ngOnInit() {
     const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
-    this.repository = await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+    this.repository =
+      await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
 
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {}),

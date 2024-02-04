@@ -30,8 +30,6 @@
           <ion-col class="feature__name" size="8">
             <span class="feature__title">
               {{ getFeatureTitle(feature) }}
-              <sup *ngIf="isBeta(feature)">1</sup>
-              <sup *ngIf="isExperimental(feature)">2</sup>
             </span>
             <span *ngIf="getFeatureSubTitle(feature)" class="feature__subtitle"
               >({{ getFeatureSubTitle(feature) }})</span

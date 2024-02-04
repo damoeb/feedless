@@ -14,20 +14,24 @@
       <ion-label>Feed Title</ion-label>
     </ion-item>
     <ion-item>
-      <ion-input [formControl]="formFg.controls.title"
-                 fill="outline"
-                 placeholder="Type a title"
-                 aria-label="Title"></ion-input>
+      <ion-input
+        [formControl]="formFg.controls.title"
+        fill="outline"
+        placeholder="Type a title"
+        aria-label="Title"
+      ></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>Description (optional)</ion-label>
     </ion-item>
     <ion-item>
-      <ion-textarea [autoGrow]="true"
-                    fill="outline"
-                    placeholder="#tags, urls,..."
-                    [formControl]="formFg.controls.description"
-                    aria-label="Describe the feed with #tags and urls"></ion-textarea>
+      <ion-textarea
+        [autoGrow]="true"
+        fill="outline"
+        placeholder="#tags, urls,..."
+        [formControl]="formFg.controls.description"
+        aria-label="Describe the feed with #tags and urls"
+      ></ion-textarea>
     </ion-item>
     <ion-item>
       <ion-label>Fetch Frequency</ion-label>
@@ -112,16 +116,21 @@
 
   <div style="flex: 1"></div>
 
-  <ion-list class="ion-no-margin ion-no-padding"
-            style="background: transparent">
-    <ion-item *ngIf="errorMessage"
-              style="--background: transparent">
-      <ion-label color="danger"><strong>{{errorMessage}}</strong></ion-label>
+  <ion-list
+    class="ion-no-margin ion-no-padding"
+    style="background: transparent"
+  >
+    <ion-item *ngIf="errorMessage" style="--background: transparent">
+      <ion-label color="danger"
+        ><strong>{{ errorMessage }}</strong></ion-label
+      >
     </ion-item>
-    <ion-item (click)="createFeed()"
-              *ngIf="!loading"
-              [button]="true"
-              color="success">
+    <ion-item
+      (click)="createFeed()"
+      *ngIf="!loading"
+      [button]="true"
+      color="success"
+    >
       <ion-label> Generate Feed </ion-label>
     </ion-item>
     <ion-item color="danger" *ngIf="loading">

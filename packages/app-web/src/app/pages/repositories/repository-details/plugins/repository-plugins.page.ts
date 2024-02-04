@@ -1,12 +1,17 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   OnDestroy,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { FeedlessPlugin, FeedlessPluginExecution, SourceSubscription } from '../../../../graphql/types';
+import {
+  FeedlessPlugin,
+  FeedlessPluginExecution,
+  SourceSubscription,
+} from '../../../../graphql/types';
 import { PluginService } from '../../../../services/plugin.service';
 import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
 
@@ -24,29 +29,37 @@ export class RepositoryPluginsPage implements OnInit, OnDestroy {
   activePlugins: Array<FeedlessPluginExecution & FeedlessPlugin>;
   inactivePlugins: FeedlessPlugin[];
 
-  constructor(private readonly activatedRoute: ActivatedRoute,
-              private readonly pluginService: PluginService,
-              private readonly sourceSubscriptionService: SourceSubscriptionService,
-              private readonly changeRef: ChangeDetectorRef) {}
+  constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly pluginService: PluginService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     this.allPlugins = await this.pluginService.listPlugins();
     const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
-    const repository = await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
-    this.activePlugins = repository.plugins.map(plugin => {
+    const repository =
+      await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+    this.activePlugins = repository.plugins.map((plugin) => {
       return {
         ...plugin,
-        ...this.allPlugins.find(otherPlugin => otherPlugin.id === plugin.pluginId)
-      }
+        ...this.allPlugins.find(
+          (otherPlugin) => otherPlugin.id === plugin.pluginId,
+        ),
+      };
     });
 
     this.inactivePlugins = this.allPlugins
-      .filter(plugin => plugin.listed)
-      .filter(plugin => this.activePlugins.every(activePlugin => activePlugin.id != plugin.id))
+      .filter((plugin) => plugin.listed)
+      .filter((plugin) =>
+        this.activePlugins.every(
+          (activePlugin) => activePlugin.id != plugin.id,
+        ),
+      );
 
     this.changeRef.detectChanges();
-    this.subscriptions.push(
-    );
+    this.subscriptions.push();
   }
 
   ngOnDestroy(): void {

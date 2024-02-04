@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 import { FeedBuilderActionsModalComponent } from './feed-builder-actions-modal.component';
-import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
+import { EmbeddedImageModule } from '../../components/embedded-image/embedded-image.module';
 
 @NgModule({
   imports: [

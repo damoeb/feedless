@@ -137,6 +137,7 @@ class Seeder {
     seedPlansForProduct(ProductName.rssBuilder)
     seedPlansForProduct(ProductName.feedless)
     seedPlansForProduct(ProductName.visualDiff)
+    seedPlansForProduct(ProductName.untoldNotes)
   }
 
   private fun seedPlansForProduct(product: ProductName) {

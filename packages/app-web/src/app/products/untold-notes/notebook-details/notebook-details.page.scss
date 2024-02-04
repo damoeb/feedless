@@ -1,0 +1,32 @@
+@import "../untold-mixins";
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor {
+  @include unless-control();
+  flex: 1;
+  &.has-focus {
+    border-color: var(--app-border-color-focus);
+  }
+}
+
+ion-item.in-focus {
+  color: red;
+}
+
+.results {
+  width: 100%;
+  min-height: 100%;
+  position: absolute;
+
+  ion-item {
+    color: rgba(var(--ion-color-dark-rgb), 0.7);
+    &.in-focus {
+      color: var(--ion-color-dark);
+      --background: rgba(var(--ion-color-medium-rgb), 0.5);
+    }
+  }
+}

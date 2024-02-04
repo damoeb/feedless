@@ -3,8 +3,14 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { VisualDiffProductPage } from './visual-diff-product.page';
 import { ProductService } from '../../services/product.service';
+import { VisualDiffMenuComponent } from './visual-diff-menu/visual-diff-menu.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    outlet: 'sidemenu',
+    component: VisualDiffMenuComponent,
+  },
   {
     path: '',
     component: VisualDiffProductPage,

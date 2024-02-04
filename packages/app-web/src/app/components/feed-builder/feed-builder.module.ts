@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FeedBuilderComponent } from './feed-builder.component';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/transform-website-to-feed.module';
-import { FeedBuilderActionsModalModule } from '../feed-builder-actions-modal/feed-builder-actions-modal.module';
+import { FeedBuilderActionsModalModule } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.module';
 
 @NgModule({
   imports: [
@@ -13,11 +13,9 @@ import { FeedBuilderActionsModalModule } from '../feed-builder-actions-modal/fee
     IonicModule,
     TransformWebsiteToFeedModule,
     FeedBuilderActionsModalModule,
-    SearchbarModule
+    SearchbarModule,
   ],
   declarations: [FeedBuilderComponent],
-  exports: [
-    FeedBuilderComponent
-  ]
+  exports: [FeedBuilderComponent],
 })
 export class FeedBuilderModule {}

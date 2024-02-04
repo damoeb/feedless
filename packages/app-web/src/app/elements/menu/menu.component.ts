@@ -123,7 +123,7 @@ export class MenuComponent<T> implements OnInit {
     }
   }
 
-  pickInFocus($event: T) {
+  pickInFocus() {
     if (this.indexInFocus > -1) {
       return this.pick(this.items[this.indexInFocus]);
     }

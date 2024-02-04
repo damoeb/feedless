@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, Input,
   OnDestroy,
-  OnInit,
+  OnInit
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
@@ -17,6 +17,13 @@ import { Authentication, AuthService } from '../../services/auth.service';
 export class LoginButtonComponent implements OnInit, OnDestroy {
   authorization: Authentication;
   private subscriptions: Subscription[] = [];
+
+  @Input()
+  label: string;
+  @Input()
+  expand: string;
+  @Input()
+  color: string;
 
   constructor(
     private readonly authService: AuthService,

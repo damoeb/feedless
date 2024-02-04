@@ -4,13 +4,7 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client/core';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -24,14 +18,12 @@ import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
 import { ServerSettingsService } from './services/server-settings.service';
 import { TermsModalModule } from './modals/terms-modal/terms-modal.module';
-import { FeedlessMenuModule } from './sidemenus/feedless-menu/feedless-menu.module';
-import { ReaderMenuModule } from './sidemenus/reader-menu/reader-menu.module';
-import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-menu.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GqlProductName } from '../generated/graphql';
-import { RssBuilderMenuModule } from './sidemenus/rss-builder-menu/rss-builder-menu.module';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
+import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
+import { FeedBuilderModalModule } from './modals/feed-builder-modal/feed-builder-modal.module';
 
 export interface AppEnvironment {
   production: boolean;
@@ -108,21 +100,21 @@ export const fixUrl = (value: string): string => {
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    FeedlessMenuModule,
-    ReaderMenuModule,
-    VisualDiffMenuModule,
-    RssBuilderMenuModule,
     ProductTitleModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     {
       provide: ApolloClient,
-      deps: [HttpErrorInterceptorService, ServerSettingsService, ApolloAbortControllerService],
+      deps: [
+        HttpErrorInterceptorService,
+        ServerSettingsService,
+        ApolloAbortControllerService,
+      ],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
         serverSettings: ServerSettingsService,
-        abortController: ApolloAbortControllerService
+        abortController: ApolloAbortControllerService,
       ): ApolloClient<any> => {
         const wsUrl = `${serverSettings.apiUrl.replace(
           'http',
@@ -145,8 +137,8 @@ export const fixUrl = (value: string): string => {
                 fetchOptions: {
                   signal: abortController.signal,
                 },
-              }
-            }
+              },
+            },
           },
           link: split(
             ({ query }) => {

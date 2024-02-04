@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { VisualDiffMenuComponent } from './visual-diff-menu.component';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule } from '../../../app-test.module';
 
 describe('VisualDiffMenuComponent', () => {
   let component: VisualDiffMenuComponent;

@@ -128,6 +128,25 @@ export class ProductService {
       ],
     },
     {
+      product: GqlProductName.UntoldNotes,
+      titlePlain: 'Untold Notes',
+      titleHtml: '<strong>Un</strong><em>told</em>',
+      pageTitle: 'Untold Notes',
+      sideMenu: {
+        width: 200,
+        breakpoint: 'xl',
+      },
+      routes: [
+        {
+          path: '',
+          loadChildren: () =>
+            import('../products/untold-notes/untold-notes-product.module').then(
+              (m) => m.UntoldNotesProductModule,
+            ),
+        },
+      ],
+    },
+    {
       product: GqlProductName.Feedless,
       titlePlain: 'feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',

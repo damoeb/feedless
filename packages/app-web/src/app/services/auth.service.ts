@@ -2,14 +2,10 @@ import { Injectable } from '@angular/core';
 import platform from 'platform';
 import {
   AuthAnonymous,
-  AuthUser,
   AuthViaMail,
   ConfirmCode,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
-  GqlAuthUserInput,
-  GqlAuthUserMutation,
-  GqlAuthUserMutationVariables,
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,

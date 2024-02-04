@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { SelectComponent } from './select.component';
+import { SelectModule } from './select.module';
 
 describe('SelectComponent', () => {
   let component: SelectComponent<any>;
@@ -9,8 +9,7 @@ describe('SelectComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [SelectComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [SelectModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectComponent);

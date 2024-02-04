@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedBuilderComponent } from './feed-builder.component';
 import { AppTestModule } from '../../app-test.module';
-import { RssBuilderProductModule } from '../../products/rss-builder/rss-builder-product.module';
+import { FeedBuilderModule } from './feed-builder.module';
 
 describe('FeedBuilderPage', () => {
   let component: FeedBuilderComponent;
@@ -9,8 +9,7 @@ describe('FeedBuilderPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedBuilderComponent],
-      imports: [RssBuilderProductModule, AppTestModule.withDefaults()],
+      imports: [FeedBuilderModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderComponent);

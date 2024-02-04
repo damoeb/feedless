@@ -37,7 +37,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    dayjs.extend(relativeTime)
+    dayjs.extend(relativeTime);
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         if (params.feedId) {
@@ -81,6 +81,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   protected readonly dateTimeFormat = dateTimeFormat;
 
   fromNow(futureTimestamp: number): string {
-    return dayjs(futureTimestamp).toNow(true)
+    return dayjs(futureTimestamp).toNow(true);
   }
 }

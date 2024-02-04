@@ -3,6 +3,10 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RepositorySettingsPage } from './repository-settings-page.component';
 import { RepositorySettingsPageModule } from './repository-settings.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import {
+  AppTestModule,
+  mockSourceSubscription,
+} from '../../../../app-test.module';
 
 describe('RepositorySettingsPage', () => {
   let component: RepositorySettingsPage;
@@ -12,33 +16,9 @@ describe('RepositorySettingsPage', () => {
     TestBed.configureTestingModule({
       imports: [
         RepositorySettingsPageModule,
-        // AppTestModule.withDefaults((apolloMockController) => {
-        //   apolloMockController
-        //     .mockQuery<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>(
-        //       BucketById,
-        //     )
-        //     .and.resolveOnce(async () => {
-        //       return {
-        //         data: {
-        //           bucket: {
-        //             title: '',
-        //             websiteUrl: '',
-        //           } as Bucket,
-        //         },
-        //       };
-        //     })
-        //     .mockQuery<
-        //       GqlSearchBucketsOrFeedsQuery,
-        //       GqlSearchBucketsOrFeedsQueryVariables
-        //     >(SearchBucketsOrFeeds)
-        //     .and.resolveOnce(async () => {
-        //       return {
-        //         data: {
-        //           bucketsOrNativeFeeds: [],
-        //         },
-        //       };
-        //     });
-        // }),
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockSourceSubscription(apolloMockController);
+        }),
         RouterTestingModule.withRoutes([]),
       ],
     }).compileComponents();

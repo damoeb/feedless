@@ -15,7 +15,7 @@
         *ngIf="errorMessage"
         class="ion-margin-horizontal"
       >
-        We ran into a problem! {{errorMessage}}
+        We ran into a problem! {{ errorMessage }}
       </p>
     </ion-toolbar>
   </div>
@@ -49,7 +49,7 @@
       <ion-item
         (click)="finalizeFeed()"
         [button]="true"
-        [color]="hasFeed ? 'success': 'medium'"
+        [color]="hasFeed ? 'success' : 'medium'"
         bottomSlot
       >
         Finalize Feed
