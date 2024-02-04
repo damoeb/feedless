@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 @Component({
-  selector: 'app-feed-details',
+  selector: 'app-feed-details-page',
   templateUrl: './feed-details.page.html',
   styleUrls: ['./feed-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

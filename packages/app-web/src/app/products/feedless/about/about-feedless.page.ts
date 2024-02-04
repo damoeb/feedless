@@ -5,7 +5,7 @@ import '@justinribeiro/lite-youtube';
 import { fixUrl } from '../../../app.module';
 
 @Component({
-  selector: 'app-about-feedless',
+  selector: 'app-about-feedless-page',
   templateUrl: './about-feedless.page.html',
   styleUrls: ['./about-feedless.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -58,7 +58,7 @@ interface BrowserAction {
 }
 
 @Component({
-  selector: 'app-visual-diff-edit',
+  selector: 'app-visual-diff-edit-page',
   templateUrl: './subscription-edit.page.html',
   styleUrls: ['./subscription-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

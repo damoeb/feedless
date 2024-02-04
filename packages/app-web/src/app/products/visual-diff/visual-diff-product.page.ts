@@ -12,7 +12,7 @@ import { ProductConfig, ProductService } from '../../services/product.service';
 import { filter, map, Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-visual-diff-product',
+  selector: 'app-visual-diff-product-page',
   templateUrl: './visual-diff-product.page.html',
   styleUrls: ['./visual-diff-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

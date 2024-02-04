@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-login-page',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })

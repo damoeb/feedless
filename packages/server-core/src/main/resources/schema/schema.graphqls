@@ -120,6 +120,7 @@ enum ProductName {
   upcoming
   digest
   feedless
+  untoldNotes
 }
 
 type Agent {

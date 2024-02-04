@@ -20,7 +20,7 @@ type ImageSize = {
 };
 
 @Component({
-  selector: 'app-visual-diff-details',
+  selector: 'app-visual-diff-details-page',
   templateUrl: './subscription-details.page.html',
   styleUrls: ['./subscription-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

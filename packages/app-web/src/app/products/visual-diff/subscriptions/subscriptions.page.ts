@@ -10,7 +10,7 @@ import { SourceSubscriptionService } from '../../../services/source-subscription
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-visual-diff-list',
+  selector: 'app-visual-diff-list-page',
   templateUrl: './subscriptions.page.html',
   styleUrls: ['./subscriptions.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
