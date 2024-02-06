@@ -146,8 +146,8 @@ class SourceSubscriptionService {
       ?: emptyList())
   }
 
-  fun findById(corrId: String, id: String): SourceSubscriptionEntity {
-    val sub = sourceSubscriptionDAO.findById(UUID.fromString(id)).orElseThrow { RuntimeException("not found ($corrId)") }
+  fun findById(corrId: String, id: UUID): SourceSubscriptionEntity {
+    val sub = sourceSubscriptionDAO.findById(id).orElseThrow { RuntimeException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {

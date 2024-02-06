@@ -12,14 +12,14 @@ export const theme = EditorView.theme({
     backgroundColor: 'transparent', paddingTop: '3px',
     paddingBottom: '3px'
   },
-  '.cm-url': { color: 'blue' },
+  '.cm-url': { color: 'var(--ion-color-primary)' },
   '.cm-cursor': { borderRight: '2px solid var(--foreground)' },
   '.cm-open-link': { cursor: 'pointer', marginLeft: '3px', textDecoration: 'none', color: 'red' },
   '.cm-emphasis': { fontStyle: 'italic' },
+  '.cm-line:has(.cm-fenced-code)': { fontStyle: 'monospace', backgroundColor: 'rgba(var(--ion-color-dark-rgb), 0.2)' },
   '.cm-hashtag': { background: '#a8ffa5', color: 'var(--background)' },
   '.cm-strong-emphasis': { fontStyle: 'oblique' },
   '.cm-strikethrough': { textDecoration: 'line-through' },
-  '.cm-code-text': { fontFamily: 'monospace', borderLeft: '4px solid #cccccc' },
   '.cm-gutters': { backgroundColor: 'var(--background)', borderRight: 'none' },
   '[class*="-mark"]': { color: '#cccccc' }
 });

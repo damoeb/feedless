@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -18,6 +18,7 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
+  Completion,
   CompletionContext,
   completionKeymap,
   CompletionResult,
@@ -34,6 +35,7 @@ import { lintKeymap } from '@codemirror/lint';
 import { defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
+import { noteReferenceMatcher } from './note-reference.widget';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   if (true) {
@@ -77,6 +79,10 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
 })
 
 
+//   {label: "match", apply: 'karli'},
+//   {label: "hello", info: "(World)"},
+export type AutoSuggestionsProvider = (query: string) => Completion[]
+
 @Component({
   selector: 'app-code-editor',
   templateUrl: './code-editor.component.html',
@@ -87,6 +93,19 @@ export class CodeEditorComponent implements AfterViewInit
 {
   @ViewChild('editor')
   editor!: ElementRef<HTMLDivElement>
+
+  @Input({required: true})
+  text: string
+
+  @Input()
+  readOnly: boolean = false
+
+  @Output()
+  textChange = new EventEmitter<string>();
+
+  @Input()
+  autoSuggestionsProvider: AutoSuggestionsProvider = () => [];
+
   private editorView: EditorView;
 
   constructor() {
@@ -94,15 +113,22 @@ export class CodeEditorComponent implements AfterViewInit
   }
 
   ngAfterViewInit() {
-    this.setText('');
+    this.setText(this.text);
   }
 
   private getExtensions() {
+    const textChangeHook = this.textChange;
     const extensions: Extension[] = [
       gutter({
         renderEmptyElements: true
       }),
+      EditorView.updateListener.of(update => {
+        if (update.docChanged) {
+          textChangeHook.emit(this.getText())
+        }
+      }),
       lineNumbers(),
+      EditorState.readOnly.of(this.readOnly),
       highlightSpecialChars(),
       foldGutter(),
       drawSelection(),
@@ -114,6 +140,7 @@ export class CodeEditorComponent implements AfterViewInit
       // rectangularSelection(),
       highlightSelectionMatches(),
       hashtagMatcher,
+      noteReferenceMatcher,
       EditorView.lineWrapping,
       keymap.of([
         ...closeBracketsKeymap,
@@ -148,17 +175,25 @@ export class CodeEditorComponent implements AfterViewInit
         aboveCursor: true,
         closeOnBlur: true,
         override: [async (context: CompletionContext): Promise<CompletionResult | null> => {
-          const selection = context.state.wordAt(context.pos);
-          if (!selection) {
+          const firstToken = context.matchBefore(/[^ ]*/).text[0]
+
+          if (firstToken != '/') {
             return null;
           }
-          const word = context.state.sliceDoc(selection?.from, selection?.to);
-          console.log('word', word);
+
+          const selection = context.state.wordAt(context.pos);
+          function resolveQuery() {
+            if (selection) {
+              return context.state.sliceDoc(selection.from, selection.to)
+            } else {
+              return '';
+            }
+          }
 
           return {
-            from: selection.from,
+            from: (selection?.from || context.pos)-1,
             filter: false,
-            options: this.search(word)
+            options: this.autoSuggestionsProvider(resolveQuery())
           };
         }
         ]
@@ -176,106 +211,24 @@ export class CodeEditorComponent implements AfterViewInit
   }
 
   setFocus() {
-    this.editorView.dom.focus();
+    this.editorView.focus();
   }
 
-  private search(word: string) {
-    return [];
-  }
-
-  setText(text: string) {
+  private setText(text: string) {
     console.log('setText', text);
     if (this.editorView) {
       this.editorView.destroy();
     }
-
-    text = `
-
-## Headings
-# Heading level 1
-## Heading level 2
-### Heading level 3
-#### Heading level 4
-
-
-Heading level 1
-===============
-
-Heading level 2
----------------
-
-
-## Hashtag
-
-#stronly-typed
-
-## Urls
-https://example.org/foo/bar.html
-
-## Code
-At the command prompt, type \`nano\`.
-
-## Code Block
-\`\`\`
-  println('this')
-\`\`\`
-
-
-## Horizontal Rules
-***
-
----
-
-_________________
-
-## Bold
-I just love **bold text**.
-I just love __bold text__.
-Love**is**bold
-
-## Italic
-Italicized text is the *cat's meow*.
-Italicized text is the _cat's meow_.
-A*cat*meow
-
-## Blockquote
-> Dorothy followed her through many of the beautiful rooms in her castle.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
->> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-
-## Lists
-### Ordered Lists
-1. First item
-2. Second item
-3. Third item
-    1. Indented item
-    2. Indented item
-4. Fourth item
-
-### Unordered Lists
-- First item
-- Second item
-- Third item
-- Fourth item
-
-## Inline Image
-
-![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
-
-
-    `
 
     const state = EditorState.create({doc: text, extensions: this.getExtensions()});
     this.editorView = new EditorView({
       state,
       parent: this.editor.nativeElement,
     });
+    this.setFocus();
+  }
 
+  getText() {
+    return this.editorView.state.doc.toString()
   }
 }

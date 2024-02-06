@@ -1,5 +1,6 @@
 <div (keydown.enter)="$event.stopPropagation()"
      (keydown.arrowDown)="$event.stopPropagation()"
-     (keydown.arrowUp)="$event.stopPropagation()">
-  <div #editor></div>
+     (keydown.arrowUp)="$event.stopPropagation()"
+     class="editor-wrapper">
+  <div #editor class="editor"></div>
 </div>

@@ -103,6 +103,36 @@ type Mutation {
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
+
+  createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
+#  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
+  deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
+}
+
+input CreateWebDocumentInput {
+  contentRaw: String
+  contentRawMime: String
+  contentText: String
+  contentTitle: String!
+  createdAt: Long!
+  updatedAt: Long
+  url: String!
+}
+
+input DeleteWebDocumentInput {
+  where: WebDocumentUniqueWhereInput!
+}
+
+input UpdateWebDocumentInput {
+  where: WebDocumentUniqueWhereInput!
+  data: WebDocumentInput!
+}
+
+input WebDocumentInput {
+  contentRaw: NullableStringUpdateOperationsInput
+  contentRawMime: NullableStringUpdateOperationsInput
+  contentText: StringUpdateOperationsInput
+  contentTitle: StringUpdateOperationsInput
 }
 
 input CreateUserInput {
@@ -197,7 +227,6 @@ type Query {
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 
-  # todo secure
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
 }
@@ -209,6 +238,15 @@ input WebDocumentsInput {
 
 input WebDocumentsWhereInput {
   sourceSubscription: SourceSubscriptionWhereInput!
+  updatedAt: DatesWhereInput
+}
+
+input DatesWhereInput {
+  after: DateWhereInput!
+}
+
+input DateWhereInput {
+  value: DateTime!
 }
 
 input ServerSettingsContextInput {

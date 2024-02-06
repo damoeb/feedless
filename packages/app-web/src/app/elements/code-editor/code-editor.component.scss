@@ -9,3 +9,26 @@
     color: blue;
   }
 }
+
+.editor-wrapper {
+  --app-border-color: rgba(var(--ion-color-medium-rgb), 0.2);
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.5);
+  --app-border-color-focus: rgba(var(--ion-color-primary-rgb), 1);
+  border: 2px solid var(--app-border-color);
+  position: relative;
+  overflow-y: auto;
+  flex: 1;
+
+  &:hover {
+    border-color: var(--app-border-color-hover);
+  }
+  &:has(.cm-focused) {
+    border-color: var(--app-border-color-focus);
+  }
+}
+
+.editor {
+  min-height: 100%;
+  position: absolute;
+  width: 100%;
+}

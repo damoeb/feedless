@@ -1,8 +1,8 @@
 import {
+  AfterContentInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   HostListener,
   OnDestroy,
   OnInit,
@@ -13,7 +13,7 @@ import { debounce, interval, Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { FormControl } from '@angular/forms';
-import { Note, NotebookService } from './services/notebook.service';
+import { NotebookService } from './services/notebook.service';
 import { IonSearchbar } from '@ionic/angular';
 
 @Component({
@@ -51,9 +51,18 @@ export class UntoldNotesProductPage implements OnInit, OnDestroy {
         .subscribe(query => {
         this.notebookService.queryChanges.next(query)
       }),
-      this.notebookService.focusSearchbar.subscribe(() => {
-        this.searchbarElement.setFocus()
-      })
+      this.notebookService.focusSearchbar.subscribe(async () => {
+        await this.searchbarElement.setFocus();
+        const input = await this.searchbarElement.getInputElement();
+        input.select()
+      }),
+      this.notebookService.queryChanges
+        .pipe(debounce(() => interval(100)))
+        .subscribe(query => {
+          if (this.queryFc.value !== query) {
+            this.queryFc.setValue(query);
+          }
+        })
     );
   }
 

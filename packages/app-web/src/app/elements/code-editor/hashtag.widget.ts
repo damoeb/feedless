@@ -1,9 +1,17 @@
-import { Decoration, DecorationSet, EditorView, MatchDecorator, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  MatchDecorator,
+  ViewPlugin,
+  ViewUpdate
+} from "@codemirror/view";
+
+const hashtagMatchDecoration = Decoration.mark({class: "cm-hashtag", inclusive: true})
 
 const hashtagMatchDecorator = new MatchDecorator({
   regexp: /#([^ #]+)/g,
-  boundary: /#([^ #]+)/g,
-  decoration: Decoration.mark({class: `cm-hashtag`})
+  decoration: hashtagMatchDecoration
 })
 
 export const hashtagMatcher = ViewPlugin.fromClass(class {
@@ -16,7 +24,4 @@ export const hashtagMatcher = ViewPlugin.fromClass(class {
   }
 }, {
   decorations: instance => instance.decorations,
-  provide: plugin => EditorView.atomicRanges.of(view => {
-    return view.plugin(plugin)?.decorations || Decoration.none
-  })
 })

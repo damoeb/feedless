@@ -14,6 +14,7 @@ const urlMatchDecorator = new MatchDecorator({
   decoration: urlDecoration
 })
 
+
 export const urlDecorator = ViewPlugin.fromClass(class {
   decorations: DecorationSet
   constructor(view: EditorView) {

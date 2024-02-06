@@ -18,6 +18,7 @@ ion-content::part(scroll) {
 
 .title {
   display: flex;
+  padding-right: 15px;
 
   & > * {
     align-self: center;

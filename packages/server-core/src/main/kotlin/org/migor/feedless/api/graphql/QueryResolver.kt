@@ -92,7 +92,7 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): SourceSubscription = coroutineScope {
     log.info("[$corrId] sourceSubscription $data")
-    sourceSubscriptionService.findById(corrId, data.where.id).toDto()
+    sourceSubscriptionService.findById(corrId, UUID.fromString(data.where.id)).toDto()
   }
 
   @DgsQuery
@@ -171,6 +171,8 @@ class QueryResolver {
   ): List<WebDocument> = coroutineScope {
     log.info("[$corrId] webDocuments $data")
     val subscriptionId = UUID.fromString(data.where.sourceSubscription.where.id)
+    // authentication
+    sourceSubscriptionService.findById(corrId, subscriptionId)
     webDocumentService.findAllBySubscriptionId(subscriptionId, data.cursor?.page).map { it.toDto() }
   }
 

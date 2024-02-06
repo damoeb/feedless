@@ -1,14 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { SourceSubscription } from '../../../graphql/types';
-import { AppAction, Note, NotebookService } from '../services/notebook.service';
-import { FormControl } from '@angular/forms';
-import { CodeEditorComponent } from '../../../elements/code-editor/code-editor.component';
+import { AppAction, Note, NotebookService, SearchResultGroup } from '../services/notebook.service';
+import { ActivatedRoute, Params } from '@angular/router';
+import { debounce as debounceFn, DebouncedFunc, without } from 'lodash-es';
+import { AlertController } from '@ionic/angular';
+import { Completion } from '@codemirror/autocomplete';
 
 type SearchResult = {
+  id?: string,
   label: string
   isGroup?: boolean
   onClick?: () => void
+}
+
+interface OpenNote extends Note {
+  textChangeHandler: (text: string) => void;
+  dirty: boolean;
 }
 
 @Component({
@@ -22,72 +30,108 @@ export class NotebookDetailsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   subscription: SourceSubscription;
   searchResults: SearchResult[];
-  focussedIndex: number = 0;
-  private currentNote: Note;
+  focussedIndex: number = -1;
 
-  @ViewChild('editor')
-  editorElement: CodeEditorComponent;
-  noteFc = new FormControl<string>('');
   private query: string;
+  systemBusy: boolean;
+  openedNotes: OpenNote[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly notebookService: NotebookService
+    private readonly alertCtrl: AlertController,
+    private readonly notebookService: NotebookService,
+    private readonly activatedRoute: ActivatedRoute
   ) {
+    this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
   }
 
   ngOnInit() {
     this.subscriptions.push(
       this.notebookService.notesChanges
         .subscribe(groups => {
-          this.searchResults = [];
-          groups.forEach(group => {
-            this.searchResults.push({
-              label: group.name,
-              isGroup: true
-            });
-            group.notes?.forEach(note => {
-              this.searchResults.push({
-                label: note.name,
-                onClick: () => this.openNote(note)
-              });
-            });
-            group.actions?.forEach(action => {
-              this.searchResults.push({
-                label: action.name,
-                onClick: () => this.performAction(action)
-              });
-            });
-          });
-          if (this.focussedIndex !== 0 || this.busy) {
-            this.focussedIndex = 0;
-            this.busy = false;
-            this.changeRef.detectChanges();
-          }
+          this.handleSearchResults(groups);
         }),
+      this.activatedRoute.params.subscribe(async params => {
+        await this.handleParams(params);
+      }),
+      this.notebookService.systemBusyChanges.subscribe(systemBusy => {
+        this.systemBusy = systemBusy;
+        this.changeRef.detectChanges();
+      }),
       this.notebookService.openedNoteChanges.subscribe(note => {
-        this.currentNote = note;
-        this.noteFc.setValue(note.text);
-        console.log('focus');
-        this.editorElement.setFocus();
+        this.openNote(note);
       }),
       this.notebookService.queryChanges
-        .subscribe(() => {
-          this.busy = true;
-          this.changeRef.detectChanges();
-        }),
-      this.notebookService.queryChanges
-        .pipe(debounce(() => interval(300)))
+        // .pipe(debounce(() => interval(300)))
         .subscribe(query => {
-          this.query = query;
-          this.notebookService.search(query);
+          console.log('query', query);
+          if (this.query !== query) {
+            this.query = query;
+            this.notebookService.searchAsync(query);
+          }
         }),
-      this.noteFc.valueChanges.subscribe(text => {
-        if (this.currentNote) {
-          console.log(`patch ${this.currentNote.id} with ${text}`);
-        }
-      })
     );
+
+    // this.notebookService.createNote('New Note')
+  }
+
+  loadAutoSuggestions(query: string): Completion[] {
+    return this.notebookService.search(query).map(note => {
+      return {label: note.hint, apply: `[${note.name}]`}
+    });
+  }
+
+  private async handleParams(params: Params) {
+    if (params.notebookId) {
+      console.log('notebookId', params.notebookId);
+
+    try {
+      await this.notebookService.openNotebook(params.notebookId);
+    } catch (e) {
+      const alert = await this.alertCtrl.create({
+        header: 'Notebook',
+        backdropDismiss: false,
+        message: 'Looks like the requested notebook you requested does not exist',
+        cssClass: 'fatal-alert',
+        buttons: [
+          {
+            role: 'cancel',
+            text: 'OK'
+          }]
+      });
+
+      await alert.present();
+    }
+    }
+  }
+
+  private handleSearchResults(groups: SearchResultGroup[]) {
+    console.log('handleSearchResults', groups);
+    this.searchResults = [];
+    groups.forEach(group => {
+      this.searchResults.push({
+        label: group.name,
+        isGroup: true
+      });
+      group.notes?.forEach(note => {
+        this.searchResults.push({
+          id: note.id,
+          label: note.name,
+          onClick: () => this.openNote(note)
+        });
+      });
+      group.actions?.forEach(action => {
+        this.searchResults.push({
+          label: action.name,
+          onClick: () => this.performAction(action)
+        });
+      });
+    });
+    if (this.focussedIndex !== 0 || this.busy) {
+      this.focussedIndex = -1;
+      this.busy = false;
+      this.changeRef.detectChanges();
+    }
   }
 
   @HostListener('window:keydown.arrowup', ['$event'])
@@ -110,13 +154,15 @@ export class NotebookDetailsPage implements OnInit, OnDestroy {
 
   @HostListener('window:keydown.enter', ['$event'])
   async handleEnter() {
-    if (this.focussedIndex >= 0) {
+    console.log('handleEnter', this.focussedIndex);
+    if (this.focussedIndex >= 0 && this.searchResults?.length > 0) {
       const searchResult = this.searchResults[this.focussedIndex];
       if (!searchResult.isGroup) {
         searchResult.onClick();
       }
     } else {
-      await this.notebookService.createNote(this.query);
+      const note = await this.notebookService.createNote(this.query);
+      this.openNote(note);
     }
   }
 
@@ -126,10 +172,39 @@ export class NotebookDetailsPage implements OnInit, OnDestroy {
 
   openNote(note: Note) {
     console.log('open', note.id);
-    this.editorElement.setText(note.text);
+    const updateAsync = debounceFn((openNote: OpenNote) => {
+      this.notebookService.updateNode(openNote);
+      openNote.dirty = false;
+      this.changeRef.detectChanges();
+    }, 1000);
+
+    const openNote = {
+      ...note,
+      dirty: false,
+      textChangeHandler: (text: string) => {
+        note.text = text;
+        openNote.dirty = true;
+        // this.changeRef.detectChanges();
+        updateAsync(openNote);
+      }
+    };
+    this.openedNotes.push(openNote);
+    this.changeRef.detectChanges();
   }
 
   private performAction(action: AppAction) {
 
+  }
+
+  // private handleTextChange(note: Note) {
+  //   // if (this.openedNote) {
+  //     note.text = this.editorElement.getText();
+  //     this.notebookService.updateNode(note);
+  //   // } else {
+  //   //   this.openedNote = this.notebookService.createNote(`New Note ${new Date().toLocaleDateString("en-US")}`, text)
+  //   // }
+  // }
+  closeNote(note: OpenNote) {
+    this.openedNotes = without(this.openedNotes, note);
   }
 }
