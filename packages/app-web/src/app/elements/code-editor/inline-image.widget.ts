@@ -25,33 +25,18 @@ function inlineImages(view: EditorView) {
       from, to,
       enter: (node) => {
         if (node.name == "URL") {
-          console.log('add this image', node.name)
-          // let isTrue = view.state.doc.sliceString(node.from, node.to) == "true"
-          // let deco = Decoration.widget({
-          //   widget: new InlineImageWidget(isTrue),
-          //   side: 1
-          // })
-          // widgets.push(deco.range(node.to))
+          const url = view.state.doc.sliceString(node.from, node.to);
+          let deco = Decoration.widget({
+            widget: new InlineImageWidget(url),
+            side: 1
+          })
+          widgets.push(deco.range(node.to +1))
         }
       }
     })
   }
   return Decoration.set(widgets)
 }
-
-function toggleBoolean(view: EditorView, pos: number) {
-  let before = view.state.doc.sliceString(Math.max(0, pos - 5), pos)
-  let change
-  if (before == "false")
-    change = {from: pos - 5, to: pos, insert: "true"}
-  else if (before.endsWith("true"))
-    change = {from: pos - 4, to: pos, insert: "false"}
-  else
-    return false
-  view.dispatch({changes: change})
-  return true
-}
-
 
 export const inlineImagePlugin = ViewPlugin.fromClass(class {
   decorations: DecorationSet
@@ -67,15 +52,15 @@ export const inlineImagePlugin = ViewPlugin.fromClass(class {
 }, {
   decorations: v => v.decorations,
 
-  eventHandlers: {
-    mousedown: (e, view) => {
-      let target = e.target as HTMLElement
-      if (target.nodeName == "INPUT" &&
-        target.parentElement!.classList.contains("cm-boolean-toggle")) {
-        return toggleBoolean(view, view.posAtDOM(target))
-      }
-      return false
-    }
-  }
+  // eventHandlers: {
+  //   mousedown: (e, view) => {
+  //     let target = e.target as HTMLElement
+  //     if (target.nodeName == "INPUT" &&
+  //       target.parentElement!.classList.contains("cm-boolean-toggle")) {
+  //       return toggleBoolean(view, view.posAtDOM(target))
+  //     }
+  //     return false
+  //   }
+  // }
 })
 

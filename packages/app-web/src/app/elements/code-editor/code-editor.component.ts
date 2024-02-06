@@ -104,7 +104,7 @@ export class CodeEditorComponent implements AfterViewInit
       }),
       lineNumbers(),
       highlightSpecialChars(),
-      // foldGutter(),
+      foldGutter(),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),
@@ -153,7 +153,7 @@ export class CodeEditorComponent implements AfterViewInit
             return null;
           }
           const word = context.state.sliceDoc(selection?.from, selection?.to);
-          console.log(word);
+          console.log('word', word);
 
           return {
             from: selection.from,
@@ -188,6 +188,88 @@ export class CodeEditorComponent implements AfterViewInit
     if (this.editorView) {
       this.editorView.destroy();
     }
+
+    text = `
+
+## Headings
+# Heading level 1
+## Heading level 2
+### Heading level 3
+#### Heading level 4
+
+
+Heading level 1
+===============
+
+Heading level 2
+---------------
+
+
+## Hashtag
+
+#stronly-typed
+
+## Urls
+https://example.org/foo/bar.html
+
+## Code
+At the command prompt, type \`nano\`.
+
+## Code Block
+\`\`\`
+  println('this')
+\`\`\`
+
+
+## Horizontal Rules
+***
+
+---
+
+_________________
+
+## Bold
+I just love **bold text**.
+I just love __bold text__.
+Love**is**bold
+
+## Italic
+Italicized text is the *cat's meow*.
+Italicized text is the _cat's meow_.
+A*cat*meow
+
+## Blockquote
+> Dorothy followed her through many of the beautiful rooms in her castle.
+
+> Dorothy followed her through many of the beautiful rooms in her castle.
+>
+> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+
+> Dorothy followed her through many of the beautiful rooms in her castle.
+>
+>> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+
+## Lists
+### Ordered Lists
+1. First item
+2. Second item
+3. Third item
+    1. Indented item
+    2. Indented item
+4. Fourth item
+
+### Unordered Lists
+- First item
+- Second item
+- Third item
+- Fourth item
+
+## Inline Image
+
+![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
+
+
+    `
 
     const state = EditorState.create({doc: text, extensions: this.getExtensions()});
     this.editorView = new EditorView({

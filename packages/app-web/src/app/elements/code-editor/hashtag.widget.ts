@@ -1,25 +1,4 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  MatchDecorator,
-  ViewPlugin,
-  ViewUpdate,
-  WidgetType
-} from "@codemirror/view";
-
-class HashtagWidget extends WidgetType {
-  constructor(private readonly tag: string) { super() }
-
-  override toDOM(): HTMLElement {
-    const wrap = document.createElement("span")
-    wrap.textContent = '#'+this.tag
-    wrap.className = "cm-hashtag"
-    return wrap
-  }
-
-  override ignoreEvent(): boolean { return false }
-}
+import { Decoration, DecorationSet, EditorView, MatchDecorator, ViewPlugin, ViewUpdate } from '@codemirror/view';
 
 const hashtagMatchDecorator = new MatchDecorator({
   regexp: /#([^ #]+)/g,
