@@ -4,7 +4,7 @@ import {
   GqlProductName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings
+  ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -16,18 +16,18 @@ import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-inter
 
 export type FeedlessAppConfig = {
   apiUrl: string;
-  forceProduct?: GqlProductName
-}
+  forceProduct?: GqlProductName;
+};
 
 type ToastOptions = {
   header: string;
   message: string;
   cssClass?: string;
-  buttons?: AlertButton[]
-}
+  buttons?: AlertButton[];
+};
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ServerSettingsService {
   apiUrl: string; // todo merge api and gateway
@@ -37,26 +37,33 @@ export class ServerSettingsService {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController
-  ) {
-  }
+    private readonly alertCtrl: AlertController,
+  ) {}
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<FeedlessAppConfig>('/config.json') // todo here?
+        this.httpClient.get<FeedlessAppConfig>('/config.json'), // todo here?
       );
       this.apiUrl = config.apiUrl;
 
       if (config.forceProduct) {
         const product = config.forceProduct;
         console.log(`forcing product ${product}`);
-        const products = Object.keys(GqlProductName).map(p => GqlProductName[p]);
+        const products = Object.keys(GqlProductName).map(
+          (p) => GqlProductName[p],
+        );
         console.log(`Know products ${products.join(', ')}`);
-        if (!products.some(otherProduct => otherProduct == product)) {
-          const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
+        if (!products.some((otherProduct) => otherProduct == product)) {
+          const message = `Product '${product}' does not exist. Know products are ${products.join(
+            ', ',
+          )}`;
           console.error(message);
-          await this.showToast({ header: 'Invalid Config', message, cssClass: 'fatal-alert' });
+          await this.showToast({
+            header: 'Invalid Config',
+            message,
+            cssClass: 'fatal-alert',
+          });
         }
         environment.product = () => product;
       }
@@ -66,9 +73,9 @@ export class ServerSettingsService {
           variables: {
             data: {
               host: location.host,
-              product: environment.product()
-            }
-          }
+              product: environment.product(),
+            },
+          },
         })
         .then((response) => response.data.serverSettings);
       this.features = response.features;
@@ -76,15 +83,17 @@ export class ServerSettingsService {
       this.appUrl = response.appUrl;
     } catch (e) {
       await this.showToast({
-        header: 'Server is not reachable', message: 'Either you are offline or the server is down.', buttons: [
+        header: 'Server is not reachable',
+        message: 'Either you are offline or the server is down.',
+        buttons: [
           {
             text: 'Ok',
             role: 'confirm',
             handler: () => {
               location.reload();
-            }
-          }
-        ]
+            },
+          },
+        ],
       });
       throw e;
     }
@@ -93,7 +102,7 @@ export class ServerSettingsService {
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({
       link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
-      cache: new InMemoryCache()
+      cache: new InMemoryCache(),
     });
   }
 
@@ -106,13 +115,18 @@ export class ServerSettingsService {
     return false;
   }
 
-  private async showToast({ header, message, cssClass, buttons }: ToastOptions) {
+  private async showToast({
+    header,
+    message,
+    cssClass,
+    buttons,
+  }: ToastOptions) {
     const alert = await this.alertCtrl.create({
       header,
       backdropDismiss: false,
       message,
       cssClass,
-      buttons
+      buttons,
     });
 
     await alert.present();

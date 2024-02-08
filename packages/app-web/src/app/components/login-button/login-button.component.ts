@@ -1,9 +1,10 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, Input,
+  Component,
+  Input,
   OnDestroy,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';

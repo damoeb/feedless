@@ -1,10 +1,12 @@
-<ion-button (click)="profileService.setColorScheme(!darkMode)"
-            [expand]="expand"
-            [color]="color">
+<ion-button
+  (click)="profileService.setColorScheme(!darkMode)"
+  [expand]="expand"
+  [color]="color"
+>
   <ng-container *ngIf="label">
     <ion-icon *ngIf="darkMode" name="sunny-outline" slot="start"></ion-icon>
     <ion-icon *ngIf="!darkMode" name="moon-outline" slot="start"></ion-icon>
-    {{label}}
+    {{ label }}
   </ng-container>
   <ng-container *ngIf="!label">
     <ion-icon *ngIf="darkMode" name="sunny-outline"></ion-icon>

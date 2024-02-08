@@ -9,7 +9,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
 import { Subscription } from 'rxjs';
-import { environment } from '../environments/environment';
 import {
   ProductConfig,
   ProductService,

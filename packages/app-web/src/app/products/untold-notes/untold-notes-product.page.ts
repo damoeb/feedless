@@ -1,12 +1,11 @@
 import {
-  AfterContentInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   HostListener,
   OnDestroy,
   OnInit,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
@@ -47,28 +46,28 @@ export class UntoldNotesProductPage implements OnInit, OnDestroy {
           this.productConfig = productConfig;
           this.changeRef.detectChanges();
         }),
-      this.queryFc.valueChanges
-        .subscribe(query => {
-        this.notebookService.queryChanges.next(query)
+      this.queryFc.valueChanges.subscribe((query) => {
+        this.notebookService.queryChanges.next(query);
       }),
       this.notebookService.focusSearchbar.subscribe(async () => {
         await this.searchbarElement.setFocus();
         const input = await this.searchbarElement.getInputElement();
-        input.select()
+        input.select();
       }),
       this.notebookService.queryChanges
         .pipe(debounce(() => interval(100)))
-        .subscribe(query => {
+        .subscribe(async (query) => {
           if (this.queryFc.value !== query) {
             this.queryFc.setValue(query);
+            await this.searchbarElement.setFocus();
           }
-        })
+        }),
     );
   }
 
   @HostListener('window:keydown.esc', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
-    this.notebookService.focusSearchbar.next()
+    this.notebookService.focusSearchbar.next();
   }
 
   ngOnDestroy(): void {

@@ -327,7 +327,4 @@ export type UserSecret = Pick<
   'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
 >;
 
-export type FeedlessPlugin = Pick<
-  GqlPlugin,
-  'id' | 'description' | 'name' | 'type' | 'listed'
->;
+export type FeedlessPlugin = Pick<GqlPlugin, 'id' | 'name' | 'type' | 'listed'>;

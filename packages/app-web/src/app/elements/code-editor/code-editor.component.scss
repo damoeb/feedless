@@ -31,4 +31,15 @@
   min-height: 100%;
   position: absolute;
   width: 100%;
+
+  &--ctrl-pressed {
+    .cm-url,
+    .cm-hashtag {
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }

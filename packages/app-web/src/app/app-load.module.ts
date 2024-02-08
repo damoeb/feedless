@@ -11,10 +11,15 @@ import { environment } from '../environments/environment';
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: (serverSettings: ServerSettingsService, productService: ProductService) => async () => {
-        await serverSettings.fetchServerSettings();
-        productService.activateProduct(environment.product());
-      },
+      useFactory:
+        (
+          serverSettings: ServerSettingsService,
+          productService: ProductService,
+        ) =>
+        async () => {
+          await serverSettings.fetchServerSettings();
+          productService.activateProduct(environment.product());
+        },
       deps: [ServerSettingsService, ProductService],
       multi: true,
     },

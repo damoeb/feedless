@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: '**',
     outlet: 'sidemenu',
-    component: ReaderMenuComponent
+    component: ReaderMenuComponent,
   },
 ];
 

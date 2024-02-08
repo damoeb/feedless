@@ -23,7 +23,7 @@ export class AboutUntoldNotesPage {
     this.busy = true;
     try {
       const notebook = await this.notebookService.createNotebook(notebookName);
-      await this.router.navigateByUrl(`/notebook/${notebook.head.id}`)
+      await this.router.navigateByUrl(`/notebook/${notebook.head.id}`);
     } catch (e) {
       console.warn(e);
     }

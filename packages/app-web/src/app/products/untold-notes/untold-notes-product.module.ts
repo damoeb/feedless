@@ -23,11 +23,9 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     LoginButtonModule,
     ReactiveFormsModule,
     FormsModule,
-    SearchbarModule
+    SearchbarModule,
   ],
-  providers: [
-    NotebookService
-  ],
+  providers: [NotebookService],
   declarations: [UntoldNotesProductPage],
 })
 export class UntoldNotesProductModule {}

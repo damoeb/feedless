@@ -5,48 +5,50 @@ import { ProfileService } from '../../../services/profile.service';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { AlertController } from '@ionic/angular';
-import { uniq, uniqBy } from 'lodash-es';
-import {v4 as uuidv4} from 'uuid';
+import { debounce, DebouncedFunc, uniq, uniqBy } from 'lodash-es';
+import { v4 as uuidv4 } from 'uuid';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
+import { Completion } from '@codemirror/autocomplete';
 
 export type NotebookHead = {
-  id: string
-  name: string
+  id: string;
+  name: string;
   // lastOpened: Date
-}
+};
 
 export type Notebook = {
-  head: NotebookHead
-  lastSyncAt: Date|null
-  notes: Note[]
-}
+  head: NotebookHead;
+  lastSyncAt: Date | null;
+  notes: Note[];
+};
 
 export type Note = {
-  id: string
-  name: string
-  text: string
-  createdAt?: Date
-  updatedAt?: Date,
-  metadata?: string
-  fileType?: string
-}
+  id: string;
+  name: string;
+  text: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  metadata?: string;
+  fileType?: string;
+};
 
 export type AppAction = {
   id: string;
   name: string;
   hint?: string;
   callback: () => void;
-}
+};
 export type SearchResultGroup = {
   name: string;
-  notes?: Note[]
-  actions?: AppAction[]
-}
-
+  notes?: Note[];
+  actions?: AppAction[];
+};
 
 const firstNoteBody = `
+First Note
+====
 
 ## Headings
 # Heading level 1
@@ -126,22 +128,26 @@ A*cat*meow
 ![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
 
 
-    `
+    `;
 
+type IndexDocument = {
+  id: string;
+  note?: Note;
+  action?: AppAction;
+};
 
 @Injectable()
 export class NotebookService {
-
-  // private actions: AppAction[] = [
-  //   {
-  //     name: 'Delete Note',
-  //     callback: () => {}
-  //   },
-  //   {
-  //     name: 'Export Notebook',
-  //     callback: () => {}
-  //   }
-  // ].map(action => {})
+  private actions: AppAction[] = [
+    {
+      name: 'Close Note',
+      callback: () => {},
+    },
+    // {
+    // //     name: 'Export Notebook',
+    // //     callback: () => {}
+    // //   }
+  ].map((action, index) => ({ id: `${index}`, ...action }));
 
   private readonly LIMIT = 30;
 
@@ -154,18 +160,23 @@ export class NotebookService {
   queryChanges = new ReplaySubject<string>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
   focusSearchbar = new ReplaySubject<void>(1);
-  private index: Flexsearch.Document<Note>;
+  private index: Flexsearch.Document<IndexDocument>;
+  searchAsync: DebouncedFunc<(query: string) => void>;
 
-  constructor(private readonly profileService: ProfileService,
-              private readonly alertCtrl: AlertController,
-              private readonly router: Router,
-              private readonly sourceSubscriptionService: SourceSubscriptionService,
-              private readonly webDocumentService: WebDocumentService) {
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly alertCtrl: AlertController,
+    private readonly router: Router,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly webDocumentService: WebDocumentService,
+  ) {
     this.notebooks = this.loadLocalNotebooks();
+    this.notebooksChanges.next(this.notebooks);
+    this.searchAsync = debounce(this.searchAsyncInternal, 400);
   }
 
   async createNotebook(name: string) {
-    console.log('createNotebook')
+    console.log('createNotebook');
     const head: NotebookHead = {
       id: uuidv4(),
       name,
@@ -173,52 +184,53 @@ export class NotebookService {
     const notebook: Notebook = {
       head,
       lastSyncAt: null,
-      notes: []
+      notes: [],
     };
 
     this.persistLocalNotebook(notebook);
     await this.persistRemoteNotebook(notebook);
     this.notebooks.push(head);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     this.notebooksChanges.next(this.notebooks);
     return notebook;
   }
 
-  search(query: string): {name: string, hint: string}[] {
-    console.log('query',query);
-    if (query.length > 0) {
-      const results = this.index.search({
-        query,
-        limit: this.LIMIT
-      });
-      return uniq(results.flatMap(perField => {
-        return perField.result.map(id => this.store.find(note => note.id == id))
-          .map(note => ({name: note.name, hint: this.getHint(perField.field, query, note)}));
-      }))
-    } else {
-      return [
-        {hint: 'New Note ID', name: `${dayjs().format('YYYY-MM')}/${uuidv4().split('-')[0]}`}
-      ]
+  suggestByType(query: string, type: string): Completion[] {
+    console.log('query', query, type);
+    switch (type) {
+      case 'Hashtag':
+        return [
+          {
+            label: 'Resolve',
+            apply: () => console.log(query),
+          },
+        ];
+      default:
+        return this.suggestNotes(query);
     }
   }
 
-  searchAsync(query: string) {
+  protected searchAsyncInternal(query: string) {
     console.log('searchAsync', query);
     this.queryChanges.next(query);
     if (query.trim()) {
       const results = this.index.search({
         query,
-        limit: this.LIMIT
+        index: ['note:name', 'note:text'],
+        limit: this.LIMIT,
       });
-      const groups: SearchResultGroup[] = results.map(perField => {
+      console.log(results);
+      const groups: SearchResultGroup[] = results.map((perField) => {
         return {
           name: perField.field,
-          notes: perField.result.map(id => this.store.find(note => note.id == id))
-        }
-      })
+          notes: perField.result.map((id) =>
+            this.store.find((note) => note.id == id),
+          ),
+        };
+      });
       this.notesChanges.next(groups);
     } else {
-      this.propagateRecentNotes()
+      this.propagateRecentNotes();
     }
   }
 
@@ -226,13 +238,16 @@ export class NotebookService {
     console.log('create note');
     const note: Note = {
       id: uuidv4(),
-      name,
-      text,
-      createdAt: new Date()
+      name: this.createNoteId(),
+      text: `# ${name}\n\n${text}`,
+      createdAt: new Date(),
     };
     this.store.push(note);
-    this.index.add(note);
-    this.searchAsync(name);
+    this.index.add({
+      id: note.id,
+      note,
+    });
+    // this.searchAsync(name);
     return note;
   }
 
@@ -241,44 +256,53 @@ export class NotebookService {
     this.systemBusyChanges.next(true);
 
     const localNotebook: Notebook = this.loadLocalNotebook(notebookId);
-    const remoteNotebook = await this.loadRemoteNotebook(notebookId, localNotebook?.lastSyncAt);
+    const remoteNotebook = await this.loadRemoteNotebook(
+      notebookId,
+      localNotebook?.lastSyncAt,
+    );
 
     if (localNotebook || remoteNotebook) {
       this.createIndex();
 
       const notes = [
         ...(localNotebook?.notes ?? []),
-        ...(remoteNotebook?.notes ?? [])
+        ...(remoteNotebook?.notes ?? []),
       ];
 
-      notes.forEach(note => this.index.add(note));
+      notes.forEach((note) =>
+        this.index.add({
+          id: note.id,
+          note,
+        }),
+      );
       this.store = [];
       this.store.push(...notes);
 
       if (notes.length === 0) {
-        this.createNote('First Note', firstNoteBody)
+        this.createNote('First Note', firstNoteBody);
       }
 
       if (remoteNotebook) {
         remoteNotebook.notes.push(...(localNotebook?.notes ?? []));
         this.persistLocalNotebook(remoteNotebook);
       }
-      this.propagateRecentNotes()
+      this.propagateRecentNotes();
 
-      this.systemBusyChanges.next(false)
+      this.systemBusyChanges.next(false);
     } else {
       const alert = await this.alertCtrl.create({
         header: 'Notebook',
         backdropDismiss: false,
-        message: 'The requested notebook does not exist locally and cannot be fetched',
+        message:
+          'The requested notebook does not exist locally and cannot be fetched',
         cssClass: 'fatal-alert',
         buttons: [
           {
             role: 'cancel',
             text: 'OK',
-            handler: () => this.router.navigateByUrl('/')
-          }
-          ]
+            handler: () => this.router.navigateByUrl('/'),
+          },
+        ],
       });
 
       await alert.present();
@@ -289,29 +313,43 @@ export class NotebookService {
     this.notesChanges.next([
       {
         name: 'Recent',
-        notes: this.store.filter((_, index) => index < this.LIMIT)
-      }
-    ])
+        notes: this.store.filter((_, index) => index < this.LIMIT),
+      },
+    ]);
   }
 
   private createIndex() {
-    this.index = new Flexsearch.Document<Note>({
-      tokenize: "full",
-      language: "en",
-      preset: "match",
+    this.index = new Flexsearch.Document<IndexDocument>({
+      tokenize: 'full',
+      language: 'en',
+      preset: 'match',
       cache: true,
       context: true,
       document: {
-        id: "id",
-        index: ["name", 'text'],
-      }
+        id: 'id',
+        index: ['id', 'action:name', 'note:name', 'note:text'],
+      },
+    });
+
+    this.actions.forEach((action) => {
+      this.index.add({
+        id: action.id,
+        action,
+      });
     });
   }
+
   private persistLocalNotebook(notebook: Notebook) {
     const headIndex = this.loadLocalNotebooks();
     headIndex.push(notebook.head);
-    localStorage.setItem(`unless-notebook-index`, JSON.stringify(uniqBy(headIndex, 'head.id')));
-    localStorage.setItem(`unless-notebook-${notebook.head.id}`, JSON.stringify(notebook))
+    localStorage.setItem(
+      `unless-notebook-index`,
+      JSON.stringify(uniqBy(headIndex, 'head.id')),
+    );
+    localStorage.setItem(
+      `unless-notebook-${notebook.head.id}`,
+      JSON.stringify(notebook),
+    );
   }
 
   private loadLocalNotebooks(): NotebookHead[] {
@@ -328,26 +366,24 @@ export class NotebookService {
     // })
     this.webDocumentService.findAllByStreamId({
       cursor: {
-        page: 0
+        page: 0,
       },
       where: {
         sourceSubscription: {
           where: {
-            id: ''
-          }
+            id: '',
+          },
         },
         updatedAt: {
           after: {
-            value: ''
-          }
-        }
-      }
-    })
+            value: '',
+          },
+        },
+      },
+    });
   }
 
-  updateNode(openedNote: Note) {
-
-  }
+  updateNode(openedNote: Note) {}
 
   private loadLocalNotebook(notebookId: string): Notebook {
     const data = localStorage.getItem(`unless-notebook-${notebookId}`);
@@ -356,10 +392,14 @@ export class NotebookService {
     }
   }
 
-  private async loadRemoteNotebook(notebookId: string, lastSyncAt: Date): Promise<Notebook> {
+  private async loadRemoteNotebook(
+    notebookId: string,
+    lastSyncAt: Date,
+  ): Promise<Notebook> {
     if (this.profileService.isAuthenticated()) {
       // sync or create
-      const sourceSubscription = await this.sourceSubscriptionService.getSubscriptionById(notebookId);
+      const sourceSubscription =
+        await this.sourceSubscriptionService.getSubscriptionById(notebookId);
 
       return {
         head: {
@@ -367,12 +407,15 @@ export class NotebookService {
           name: sourceSubscription.title,
         },
         lastSyncAt: new Date(),
-        notes: await this.loadRemoteNotes(notebookId, lastSyncAt)
-      }
+        notes: await this.loadRemoteNotes(notebookId, lastSyncAt),
+      };
     }
   }
 
-  private async loadRemoteNotes(notebookId: string, since: Date): Promise<Note[]> {
+  private async loadRemoteNotes(
+    notebookId: string,
+    since: Date,
+  ): Promise<Note[]> {
     // this.webDocumentService.findAllByStreamId()
     return [];
   }
@@ -389,8 +432,8 @@ export class NotebookService {
               visibility: GqlVisibility.IsPrivate,
             },
           },
-        ]
-      })
+        ],
+      });
     }
   }
 
@@ -404,5 +447,36 @@ export class NotebookService {
     } else {
       return fieldValue;
     }
+  }
+
+  private suggestNotes(query: string) {
+    if (query.length > 0) {
+      const results = this.index.search({
+        query,
+        limit: this.LIMIT,
+      });
+      console.log(results);
+      return uniq(
+        results.flatMap((perField) => {
+          return perField.result
+            .map((id) => this.store.find((note) => note.id == id))
+            .map((note) => ({
+              apply: `[${note.name}]`,
+              label: this.getHint(perField.field, query, note),
+            }));
+        }),
+      );
+    } else {
+      return [
+        {
+          label: 'New Note ID',
+          apply: `[${this.createNoteId()}]`,
+        },
+      ];
+    }
+  }
+
+  private createNoteId(): string {
+    return `${dayjs().format('YYYY-MM')}/${uuidv4().split('-')[0]}`;
   }
 }

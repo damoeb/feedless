@@ -8,7 +8,13 @@ import { CodeEditorModule } from '../../../elements/code-editor/code-editor.modu
 import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
-  imports: [CommonModule, IonicModule, NotebookDetailsRoutingModule, CodeEditorModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    IonicModule,
+    NotebookDetailsRoutingModule,
+    CodeEditorModule,
+    ReactiveFormsModule,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [NotebookDetailsPage],
 })

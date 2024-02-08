@@ -5,16 +5,24 @@
       <ion-list class="results">
         <ion-spinner *ngIf="busy" name="dots"></ion-spinner>
         <ng-container *ngIf="!busy">
-          <ion-item *ngFor="let searchResult of searchResults; let i = index"
-                    [button]="!searchResult.isGroup"
-                    (mouseenter)="focussedIndex = i"
-                    (click)="searchResult.onClick()"
-                    [ngClass]="{
+          <ng-container *ngIf="searchResults.length === 0">
+            <ion-item>
+              <ion-label> No Results </ion-label>
+            </ion-item>
+          </ng-container>
+          <ion-item
+            *ngFor="let searchResult of searchResults; let i = index"
+            [button]="!searchResult.isGroup"
+            (mouseenter)="focussedIndex = i"
+            (click)="searchResult.onClick()"
+            [ngClass]="{
                     'in-focus': i === focussedIndex,
                     'is-group': searchResult.isGroup,
-                    }">
+                    }"
+          >
             <ion-label>
-              {{searchResult.label}}
+              <h3>{{searchResult.label}}</h3>
+              <!--              <p>{{searchResult.hint}}</p>-->
             </ion-label>
           </ion-item>
         </ng-container>
@@ -24,21 +32,27 @@
       <div class="flex__column">
         <div *ngFor="let note of openedNotes">
           <ion-toolbar>
-            <ion-title>{{note.name || 'New Note'}}<span *ngIf="note.dirty">*</span></ion-title>
+            <ion-title
+              >{{note.name || 'New Note'}}<span *ngIf="note.dirty"
+                >*</span
+              ></ion-title
+            >
             <ion-buttons slot="end">
-<!--              <ion-button>-->
-<!--                <ion-icon name="trash-outline"></ion-icon>-->
-<!--              </ion-button>-->
-              <ion-button>
-                <ion-icon name="close-outline"
-                          (click)="closeNote(note)"></ion-icon>
+              <!--              <ion-button>-->
+              <!--                <ion-icon name="trash-outline"></ion-icon>-->
+              <!--              </ion-button>-->
+              <ion-button (click)="closeNote(note)">
+                <ion-icon name="close-outline"></ion-icon>
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
-          <app-code-editor [autoSuggestionsProvider]="loadAutoSuggestions"
-                           style="min-height: 300px"
-                           [text]="note.text"
-                           (textChange)="note.textChangeHandler($event)"></app-code-editor>
+          <app-code-editor
+            [autoSuggestionsProvider]="loadAutoSuggestions"
+            style="min-height: 400px"
+            [text]="note.text"
+            (triggerQuery)="handleQuery($event)"
+            (textChange)="note.textChangeHandler($event)"
+          ></app-code-editor>
         </div>
       </div>
     </div>

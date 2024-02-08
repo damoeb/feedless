@@ -1,4 +1,13 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -10,9 +19,16 @@ import {
   keymap,
   lineNumbers,
   showTooltip,
-  Tooltip
+  Tooltip,
 } from '@codemirror/view';
-import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import {
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  syntaxTree,
+} from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 import {
   autocompletion,
@@ -22,95 +38,103 @@ import {
   CompletionContext,
   completionKeymap,
   CompletionResult,
-  startCompletion
+  startCompletion,
 } from '@codemirror/autocomplete';
 
-
-import { markdownLanguageSupport } from './markdown.lang';
+import {
+  markdownLanguageSupport,
+  NODE_HASHTAG,
+  NODE_LINK,
+} from './markdown.lang';
 import { theme } from './theme';
 import { markdownDecorator } from './markdown.decorator';
 import { hashtagMatcher } from './hashtag.widget';
 import { urlDecorator } from './url.decorator';
 import { lintKeymap } from '@codemirror/lint';
-import { defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
 import { noteReferenceMatcher } from './note-reference.widget';
+import { IterMode } from '@lezer/common';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
-  if (true) {
-    return []
-  }
-  return state.selection.ranges
-    .filter(range => range.empty)
-    .map(range => {
-      let line = state.doc.lineAt(range.head)
-      let text = line.number + ":" + (range.head - line.from)
-      return {
-        pos: range.head,
-        above: true,
-        strictSide: true,
-        arrow: true,
-        create: () => {
-          const dom = document.createElement("div")
-          dom.className = "cm-tooltip-cursor"
-          // dom.textContent = text
-          const ahref = document.createElement("a");
-          ahref.setAttribute("href", "");
-          ahref.text = "Link"
-
-          dom.append(ahref)
-          return {dom}
-        }
-      }
-    })
+  return [];
+  // return state.selection.ranges
+  //   .filter(range => range.empty)
+  //   .map(range => {
+  //     // let line = state.doc.lineAt(range.head)
+  //     // let text = line.number + ":" + (range.head - line.from)
+  //     const node = syntaxTree(state).resolve(range.from).node;
+  //     if (['Hashtag', 'Link'].includes(node.name)) {
+  //       return {
+  //         pos: range.head,
+  //         above: false,
+  //         strictSide: true,
+  //         arrow: false,
+  //         create: () => {
+  //           const div = document.createElement("div")
+  //           div.className = "cm-tooltip-cursor"
+  //           // dom.textContent = text
+  //           const element = document.createElement("span");
+  //           // ahref.setAttribute("href", "");
+  //           element.innerText = "Alt + Enter for options"
+  //
+  //           div.append(element)
+  //           return {dom: div}
+  //         }
+  //       }
+  //     }
+  //
+  //   })
+  //   .filter(t => t)
 }
-
 
 const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   create: getCursorTooltips,
 
   update(tooltips, tr) {
-    if (!tr.docChanged && !tr.selection) return tooltips
-    return getCursorTooltips(tr.state)
+    if (!tr.docChanged && !tr.selection) return tooltips;
+    return getCursorTooltips(tr.state);
   },
 
-  provide: f => showTooltip.computeN([f], state => state.field(f))
-})
-
+  provide: (f) => showTooltip.computeN([f], (state) => state.field(f)),
+});
 
 //   {label: "match", apply: 'karli'},
 //   {label: "hello", info: "(World)"},
-export type AutoSuggestionsProvider = (query: string) => Completion[]
+export type AutoSuggestionsProvider = (
+  query: string,
+  type: string,
+) => Completion[];
 
 @Component({
   selector: 'app-code-editor',
   templateUrl: './code-editor.component.html',
   styleUrls: ['./code-editor.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class CodeEditorComponent implements AfterViewInit
-{
+export class CodeEditorComponent implements AfterViewInit {
   @ViewChild('editor')
-  editor!: ElementRef<HTMLDivElement>
+  editor!: ElementRef<HTMLDivElement>;
 
-  @Input({required: true})
-  text: string
+  @Input({ required: true })
+  text: string;
 
   @Input()
-  readOnly: boolean = false
+  readOnly: boolean = false;
 
   @Output()
   textChange = new EventEmitter<string>();
+
+  @Output()
+  triggerQuery = new EventEmitter<string>();
 
   @Input()
   autoSuggestionsProvider: AutoSuggestionsProvider = () => [];
 
   private editorView: EditorView;
+  ctrlPressed: boolean;
 
-  constructor() {
-
-  }
+  constructor() {}
 
   ngAfterViewInit() {
     this.setText(this.text);
@@ -120,11 +144,11 @@ export class CodeEditorComponent implements AfterViewInit
     const textChangeHook = this.textChange;
     const extensions: Extension[] = [
       gutter({
-        renderEmptyElements: true
+        renderEmptyElements: true,
       }),
-      EditorView.updateListener.of(update => {
+      EditorView.updateListener.of((update) => {
         if (update.docChanged) {
-          textChangeHook.emit(this.getText())
+          textChangeHook.emit(this.getText());
         }
       }),
       lineNumbers(),
@@ -132,7 +156,7 @@ export class CodeEditorComponent implements AfterViewInit
       highlightSpecialChars(),
       foldGutter(),
       drawSelection(),
-      EditorState.allowMultipleSelections.of(true),
+      EditorState.allowMultipleSelections.of(false),
       indentOnInput(),
       bracketMatching(),
       closeBrackets(),
@@ -148,7 +172,7 @@ export class CodeEditorComponent implements AfterViewInit
         ...historyKeymap,
         ...foldKeymap,
         ...completionKeymap,
-        ...lintKeymap
+        ...lintKeymap,
       ]),
       // defaultHighlightStyle,
       cursorTooltipField.extension,
@@ -161,10 +185,36 @@ export class CodeEditorComponent implements AfterViewInit
       // }),
       EditorView.domEventHandlers({
         click: (event, editorView) => {
-          startCompletion(editorView);
-        }
+          if (!event.ctrlKey) {
+            return;
+          }
+          const ranges = editorView.state.selection.ranges;
+          if (!ranges) {
+            return;
+          }
+          const range = ranges[ranges.length - 1];
+          if (range.from === range.to) {
+            const node = syntaxTree(editorView.state).resolve(range.to).node;
+            if ([NODE_HASHTAG, NODE_LINK].includes(node.name)) {
+              const token = node.cursor(IterMode.ExcludeBuffers);
+              const query = editorView.state.sliceDoc(token.from, token.to);
+              this.triggerQuery.emit(query);
+            }
+          }
+        },
+      }),
+      EditorView.domEventObservers({
+        keydown: (event, editorView) => {
+          const keys = ['Enter'];
+          // const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
+          if (keys.includes(event.key) && event.altKey) {
+            startCompletion(editorView);
+          }
+        },
       }),
       theme,
+      history({ minDepth: 10 }),
       checkboxPlugin.extension,
       markdownDecorator,
       urlDecorator,
@@ -172,33 +222,51 @@ export class CodeEditorComponent implements AfterViewInit
       autocompletion({
         selectOnOpen: true,
         activateOnTyping: true,
-        aboveCursor: true,
-        closeOnBlur: true,
-        override: [async (context: CompletionContext): Promise<CompletionResult | null> => {
-          const firstToken = context.matchBefore(/[^ ]*/).text[0]
+        aboveCursor: false,
+        closeOnBlur: false,
+        override: [
+          async (
+            context: CompletionContext,
+          ): Promise<CompletionResult | null> => {
+            const firstToken = context.matchBefore(/[^ ]*/).text[0];
+            const node = syntaxTree(context.state).resolve(context.pos).node;
+            const token = node.cursor(IterMode.ExcludeBuffers);
 
-          if (firstToken != '/') {
-            return null;
-          }
-
-          const selection = context.state.wordAt(context.pos);
-          function resolveQuery() {
-            if (selection) {
-              return context.state.sliceDoc(selection.from, selection.to)
+            if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
+              const query = context.state.sliceDoc(token.from, token.to);
+              return {
+                from: token.from,
+                filter: false,
+                options: this.autoSuggestionsProvider(query, node.name),
+              };
             } else {
-              return '';
-            }
-          }
+              if (firstToken === '/') {
+                const selection = context.state.wordAt(context.pos);
+                function resolveQuery() {
+                  if (selection) {
+                    return context.state.sliceDoc(selection.from, selection.to);
+                  } else {
+                    return '';
+                  }
+                }
 
-          return {
-            from: (selection?.from || context.pos)-1,
-            filter: false,
-            options: this.autoSuggestionsProvider(resolveQuery())
-          };
-        }
-        ]
-      })
+                const from = selection?.from || context.pos;
+
+                return {
+                  from: firstToken === '/' ? from - 1 : from,
+                  filter: false,
+                  options: this.autoSuggestionsProvider(
+                    resolveQuery(),
+                    node.name,
+                  ),
+                };
+              }
+            }
+          },
+        ],
+      }),
       // EditorView.inputHandler.of((view, from, to, text) => {
+      //   console.log('text', text);
       //   if (text === ' ') {
       //     closeCompletion(view);
       //   } else {
@@ -215,12 +283,14 @@ export class CodeEditorComponent implements AfterViewInit
   }
 
   private setText(text: string) {
-    console.log('setText', text);
     if (this.editorView) {
       this.editorView.destroy();
     }
 
-    const state = EditorState.create({doc: text, extensions: this.getExtensions()});
+    const state = EditorState.create({
+      doc: text,
+      extensions: this.getExtensions(),
+    });
     this.editorView = new EditorView({
       state,
       parent: this.editor.nativeElement,
@@ -229,6 +299,16 @@ export class CodeEditorComponent implements AfterViewInit
   }
 
   getText() {
-    return this.editorView.state.doc.toString()
+    return this.editorView.state.doc.toString();
+  }
+
+  handleCtrlUp(event: KeyboardEvent) {
+    this.ctrlPressed = false;
+  }
+
+  handleCtrlDown(event: KeyboardEvent) {
+    if (event.ctrlKey) {
+      this.ctrlPressed = true;
+    }
   }
 }

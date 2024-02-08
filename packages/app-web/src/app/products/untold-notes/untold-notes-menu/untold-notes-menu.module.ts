@@ -9,6 +9,12 @@ import { LoginButtonModule } from '../../../components/login-button/login-button
 @NgModule({
   declarations: [UntoldNotesMenuComponent],
   exports: [UntoldNotesMenuComponent],
-  imports: [CommonModule, IonicModule, RouterLink, DarkModeButtonModule, LoginButtonModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterLink,
+    DarkModeButtonModule,
+    LoginButtonModule,
+  ],
 })
 export class UntoldNotesMenuModule {}
