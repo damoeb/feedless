@@ -102,6 +102,7 @@ class SecurityConfig {
       ApiUrls.webToFeedVerbose,
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
+      ApiUrls.mailForwardingAllow+"/**",
       "/api/legacy/**",
       "/stream/feed/**",
       "/stream/bucket/**",
@@ -122,7 +123,7 @@ class SecurityConfig {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
       urls.add("/**")
     }
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.testing))) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
       urls.add("/testing/**")
     }
 

@@ -79,8 +79,8 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
 
     if (this.documents.length > 1) {
       this.diffImageUrl = await this.createImageDiff(
-        this.documents[0].contentRaw,
-        this.documents[1].contentRaw,
+        this.documents[0].contentRawBase64,
+        this.documents[1].contentRawBase64,
       );
       this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
         this.diffImageUrl,

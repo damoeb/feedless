@@ -1,12 +1,12 @@
 <ion-content>
-  <div class="viewport">
+  <div class="viewport" [ngClass]="{'show-errors': showErrors}">
     <div class="pitch">
       <div>We keep an eye on modifications to websites</div>
       <div>...saving you the trouble!</div>
     </div>
 
     <form (ngSubmit)="scrape()">
-      <div class="main">
+      <div>
         <div>
           <ion-grid>
             <ion-row>
@@ -21,122 +21,126 @@
                 ></app-searchbar>
               </ion-col>
             </ion-row>
-            <ion-row>
-              <ion-col [ngClass]="{'busy-cursor': busy}" size="12">
-                <div
-                  [ngClass]="{'website--mark': isPickPositionMode()}"
-                  class="website"
-                >
-                  <div *ngIf="errorMessage" style="margin: auto">
-                    Error: {{errorMessage}}
-                  </div>
-
-                  <div *ngIf="!errorMessage" class="flex">
-                    <div *ngIf="!embedScreenshot" style="margin: auto">
-                      <div *ngIf="!busy">
-                        A screenshot of your website will appear here
-                      </div>
-                      <div *ngIf="busy">Loading Screenshot...</div>
+            <div style="position: relative">
+              <div *ngIf="busy"
+                   style="position: absolute; width: 100%; height: 100%; cursor: progress; z-index: 1"></div>
+              <ion-row>
+                <ion-col size="12">
+                  <div
+                    [ngClass]="{'website--mark': isPickPositionMode()}"
+                    class="website"
+                  >
+                    <div *ngIf="errorMessage" style="margin: auto">
+                      Error: {{errorMessage}}
                     </div>
 
-                    <app-embedded-image
-                      (pickedBoundingBox)="handlePickedBoundingBox($event)"
-                      (pickedPosition)="handlePickedPosition($event)"
-                      *ngIf="embedScreenshot"
-                      [embed]="embedScreenshot"
-                      [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
-                      [pickPosition]="isPickPositionMode()"
-                      strokeStyle="red"
-                    ></app-embedded-image>
+                    <div *ngIf="!errorMessage" class="flex">
+                      <div *ngIf="!embedScreenshot" style="margin: auto">
+                        <div *ngIf="!busy">
+                          A screenshot of your website will appear here
+                        </div>
+                        <div *ngIf="busy">Loading Screenshot...</div>
+                      </div>
+
+                      <app-embedded-image
+                        (pickedBoundingBox)="handlePickedBoundingBox($event)"
+                        (pickedPosition)="handlePickedPosition($event)"
+                        *ngIf="embedScreenshot"
+                        [embed]="embedScreenshot"
+                        [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
+                        [pickPosition]="isPickPositionMode()"
+                        strokeStyle="red"
+                      ></app-embedded-image>
+                    </div>
                   </div>
-                </div>
-                <ion-progress-bar
-                  *ngIf="busy"
-                  color="primary"
-                  type="indeterminate"
-                ></ion-progress-bar>
-              </ion-col>
-            </ion-row>
-            <ion-row class="actions ion-margin-bottom">
-              <ion-col>
-                <ion-accordion-group [multiple]="true" value="actions">
-                  <ion-accordion value="actions">
-                    <ion-item color="light" slot="header">
-                      <ion-label>Perform Actions</ion-label>
-                    </ion-item>
-                    <ion-list slot="content">
-                      <ion-reorder-group
-                        (ionItemReorder)="handleReorderActions($any($event))"
-                        [disabled]="false"
-                      >
-                        <ion-item
-                          *ngFor="let action of getActions(); let i = index"
+                  <ion-progress-bar
+                    *ngIf="busy"
+                    color="primary"
+                    type="indeterminate"
+                  ></ion-progress-bar>
+                </ion-col>
+              </ion-row>
+              <ion-row class="actions ion-margin-bottom">
+                <ion-col>
+                  <ion-accordion-group [multiple]="true" value="actions">
+                    <ion-accordion value="actions">
+                      <ion-item color="light" slot="header">
+                        <ion-label>Perform Actions</ion-label>
+                      </ion-item>
+                      <ion-list slot="content">
+                        <ion-reorder-group
+                          (ionItemReorder)="handleReorderActions($any($event))"
+                          [disabled]="false"
                         >
-                          <div class="flex__row">
-                            <div>
-                              <ion-select
-                                [formControl]="action.controls.type"
-                                fill="outline"
-                                interface="popover"
-                                placeholder="Action"
-                              >
-                                <ion-select-option value="click"
-                                  >Click</ion-select-option
-                                >
-                              </ion-select>
-                            </div>
-
-                            <ion-button
-                              (click)="pickPosition(action)"
-                              [ngClass]="{ 'ng-invalid': action.invalid}"
-                              color="medium"
-                              expand="block"
-                              fill="outline"
-                              style="flex: 1"
-                            >
-                              {{ getPositionLabel(action) }}
-                            </ion-button>
-
-                            <ion-button
-                              (click)="removeAction(i)"
-                              color="medium"
-                              fill="clear"
-                            >
-                              <ion-icon name="trash-outline"></ion-icon>
-                            </ion-button>
-                          </div>
-                          <ion-reorder slot="start"></ion-reorder>
-                        </ion-item>
-                      </ion-reorder-group>
-                      <ion-item [disabled]="actions.invalid">
-                        <ion-label>
-                          <a (click)="addAction()" href="javascript:void(0)"
-                            >Add Action</a
+                          <ion-item
+                            *ngFor="let action of getActions(); let i = index"
                           >
-                        </ion-label>
+                            <div class="flex__row">
+                              <div>
+                                <ion-select
+                                  [formControl]="action.controls.type"
+                                  fill="outline"
+                                  interface="popover"
+                                  placeholder="Action"
+                                >
+                                  <ion-select-option value="click"
+                                    >Click</ion-select-option
+                                  >
+                                </ion-select>
+                              </div>
+
+                              <ion-button
+                                (click)="pickPosition(action)"
+                                [ngClass]="{ 'ng-invalid': action.invalid}"
+                                color="medium"
+                                expand="block"
+                                fill="outline"
+                                style="flex: 1"
+                              >
+                                {{ getPositionLabel(action) }}
+                              </ion-button>
+
+                              <ion-button
+                                (click)="removeAction(i)"
+                                color="medium"
+                                fill="clear"
+                              >
+                                <ion-icon name="trash-outline"></ion-icon>
+                              </ion-button>
+                            </div>
+                            <ion-reorder slot="start"></ion-reorder>
+                          </ion-item>
+                        </ion-reorder-group>
+                        <ion-item [disabled]="actions.invalid">
+                          <ion-label>
+                            <a (click)="addAction()" href="javascript:void(0)"
+                              >Add Action</a
+                            >
+                          </ion-label>
+                        </ion-item>
+                      </ion-list>
+                    </ion-accordion>
+                    <ion-accordion value="advanced">
+                      <ion-item color="light" slot="header">
+                        <ion-label>Advanced Settings</ion-label>
                       </ion-item>
-                    </ion-list>
-                  </ion-accordion>
-                  <ion-accordion value="advanced">
-                    <ion-item color="light" slot="header">
-                      <ion-label>Advanced Settings</ion-label>
-                    </ion-item>
-                    <ion-list slot="content">
-                      <ion-item>
-                        <ion-input
-                          [formControl]="additionalWait"
-                          fill="outline"
-                          label="Wait additional seconds"
-                          labelPlacement="start"
-                          name="additionalWait"
-                          type="number"
-                        ></ion-input>
-                      </ion-item>
-                    </ion-list>
-                  </ion-accordion>
-                </ion-accordion-group>
-              </ion-col>
-            </ion-row>
+                      <ion-list slot="content">
+                        <ion-item>
+                          <ion-input
+                            [formControl]="additionalWait"
+                            fill="outline"
+                            label="Wait additional seconds"
+                            labelPlacement="start"
+                            name="additionalWait"
+                            type="number"
+                          ></ion-input>
+                        </ion-item>
+                      </ion-list>
+                    </ion-accordion>
+                  </ion-accordion-group>
+                </ion-col>
+              </ion-row>
+            </div>
             <ion-row class="ion-hide-md-down">
               <ion-col size="5">
                 <ion-label class="ion-text-left">Compare type</ion-label>
@@ -201,6 +205,7 @@
                   (click)="pickBoundingBox()"
                   *ngIf="form.controls.areaBoundingBox.enabled"
                   [ngClass]="{ 'ng-invalid': form.controls.areaBoundingBox.invalid}"
+                  class="ion-margin-end"
                   color="light"
                 >
                   <ion-icon name="scan-outline"></ion-icon>
@@ -245,6 +250,7 @@
                 <ion-input
                   [formControl]="form.controls.email"
                   fill="outline"
+                  class="cy-email-input"
                   placeholder="email@domain.com"
                   type="email"
                 ></ion-input>
@@ -272,6 +278,7 @@
                 <ion-input
                   [formControl]="form.controls.subject"
                   fill="outline"
+                  class="cy-subject-input"
                   placeholder="Subject"
                   type="text"
                 ></ion-input>
@@ -279,7 +286,7 @@
             </ion-row>
             <ion-row>
               <ion-col>
-                <ion-button (click)="startMonitoring()" expand="block">
+                <ion-button (click)="startMonitoring()" expand="block" class="cy-start-monitoring-button">
                   Start monitoring
                 </ion-button>
               </ion-col>

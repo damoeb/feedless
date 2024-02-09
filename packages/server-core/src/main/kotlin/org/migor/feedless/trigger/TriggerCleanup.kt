@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("${AppProfiles.database} && !${AppProfiles.testing}")
+@Profile(AppProfiles.database)
 @Transactional(propagation = Propagation.NEVER)
 class TriggerCleanup internal constructor() {
 

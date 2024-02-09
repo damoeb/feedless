@@ -191,7 +191,7 @@ object DtoResolver {
     return PluginExecutionParams.newBuilder()
       .genericFeed(genericFeed?.fromDto())
       .rawJson(rawJson)
-      .enforceItemIncrement(enforceItemIncrement?.fromDto())
+      .diffEmailForward(diffEmailForward?.fromDto())
       .fulltext(fulltext?.fromDto())
       .build()
   }
@@ -200,13 +200,6 @@ object DtoResolver {
 return FulltextPluginParams.newBuilder()
   .readability(readability)
   .build()
-  }
-
-  private fun EnforceItemIncrementParamsInput.fromDto(): EnforceItemIncrementParams {
-    return EnforceItemIncrementParams.newBuilder()
-      .nextItemMinIncrement(nextItemMinIncrement)
-      .compareBy(compareBy)
-      .build()
   }
 
   private fun SelectorsInput.fromDto(): Selectors {
@@ -415,11 +408,21 @@ return FulltextPluginParams.newBuilder()
     .id(UUID.randomUUID().toString())
     .url(it.url)
     .contentText(it.contentText)
-    .contentRaw(it.contentRaw)
+    .contentRawBase64(it.contentRawBase64)
     .contentRawMime(it.contentRawMime)
     .publishedAt(it.publishedAt.time)
     .updatedAt(it.publishedAt.time)
     .createdAt(Date().time)
     .build()
 
+}
+
+private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams {
+  return DiffEmailForwardParams.newBuilder()
+    .inlineLatestImage(inlineLatestImage)
+    .inlineDiffImage(inlineDiffImage)
+    .inlinePreviousImage(inlinePreviousImage)
+    .nextItemMinIncrement(nextItemMinIncrement)
+    .compareBy(compareBy)
+    .build()
 }

@@ -114,7 +114,7 @@ class XmlFeedParser : FeedBodyParser {
     richArticle.title = entry.title
     richArticle.tags = entry.categories.map { it.name }
     richArticle.contentText = contentText
-    richArticle.contentRaw = content?.value
+    richArticle.contentRawBase64 = content?.value
     richArticle.contentRawMime = content?.type
     richArticle.imageUrl = imageUrl
     richArticle.url = entry.link ?: entry.uri

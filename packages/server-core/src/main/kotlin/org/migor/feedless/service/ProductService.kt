@@ -21,7 +21,7 @@ class ProductService {
       ProductName.feedless -> "feedless.com"
       ProductName.untoldNotes -> "untoldnotes.com"
       ProductName.custom -> propertyService.domain
-      else -> throw IllegalArgumentException("not supported")
+      else -> throw IllegalArgumentException("$product not supported")
     }
   }
 

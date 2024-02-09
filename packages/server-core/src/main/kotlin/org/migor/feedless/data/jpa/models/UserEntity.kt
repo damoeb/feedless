@@ -83,7 +83,7 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "plan_id")
   open lateinit var planId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
+  @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"), insertable = false, updatable = false)
   open var plan: PlanEntity? = null

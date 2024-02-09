@@ -13,6 +13,7 @@ import { AlertController } from '@ionic/angular';
 import { Feature } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
+import { ActivatedRoute } from '@angular/router';
 
 export type FeedlessAppConfig = {
   apiUrl: string;
@@ -37,6 +38,7 @@ export class ServerSettingsService {
 
   constructor(
     private readonly httpClient: HttpClient,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly alertCtrl: AlertController,
   ) {}
 
@@ -47,8 +49,13 @@ export class ServerSettingsService {
       );
       this.apiUrl = config.apiUrl;
 
-      if (config.forceProduct) {
-        const product = config.forceProduct;
+      if (!environment.production) {
+
+      }
+      const devForceProduct = environment.production ? null : this.activatedRoute.snapshot.queryParams.forceProduct;
+      const forceProduct = config.forceProduct || devForceProduct;
+      if (forceProduct) {
+        const product = forceProduct;
         console.log(`forcing product ${product}`);
         const products = Object.keys(GqlProductName).map(
           (p) => GqlProductName[p],

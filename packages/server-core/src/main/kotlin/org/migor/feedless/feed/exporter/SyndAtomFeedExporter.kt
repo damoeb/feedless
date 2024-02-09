@@ -115,9 +115,9 @@ class SyndAtomFeedExporter {
 
   private fun toSyndContents(it: RichArticle): List<SyndContent> {
     val contents = mutableListOf<SyndContent>()
-    if (StringUtils.isNoneBlank(it.contentRaw)) {
+    if (StringUtils.isNoneBlank(it.contentRawBase64)) {
       val other = SyndContentImpl()
-      other.value = it.contentRaw
+      other.value = it.contentRawBase64
       other.type = it.contentRawMime
       contents.add(other)
     }

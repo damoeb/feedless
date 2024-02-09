@@ -11,6 +11,7 @@ import { GqlVisibility } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Authentication, AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-repository-create-page',
@@ -80,6 +81,7 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
           subscriptions: [
             {
               sources: [],
+              product: environment.product(),
               sinkOptions: {
                 title: form.title,
                 description: form.description,

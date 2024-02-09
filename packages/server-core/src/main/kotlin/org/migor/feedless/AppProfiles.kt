@@ -2,7 +2,6 @@ package org.migor.feedless
 
 object AppProfiles {
   const val dev = "dev"
-  const val testing = "testing"
   const val serveStatic = "static"
   const val authSSO = "sso"
   const val authMail = "mail"

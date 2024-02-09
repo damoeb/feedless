@@ -9,20 +9,15 @@ import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
-data class FulltextPluginParams(val readability: Boolean)
-
 @Service
 class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
 
-  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
-
-  private val defaultConfig = FulltextPluginParams(true)
+  private val log = LoggerFactory.getLogger(SpawnPageTrackerPlugin::class.simpleName)
 
   @Autowired
   lateinit var webToArticleTransformer: WebToArticleTransformer
@@ -30,7 +25,6 @@ class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
   @Autowired
   lateinit var httpService: HttpService
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
-  override fun description(): String = ""
   override fun name(): String = "Fulltext & Readability"
 
   override fun listed() = true
@@ -76,11 +70,4 @@ class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
       .build()
 
   }
-
-  private fun parseParams(paramsRaw: String?): FulltextPluginParams {
-    return paramsRaw?.let {
-      JsonUtil.gson.fromJson(it, FulltextPluginParams::class.java)
-    } ?: defaultConfig
-  }
-
 }

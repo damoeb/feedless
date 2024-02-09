@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<feed xmlns:rr="../schemas/feedless-0.1.xsd" xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom">
 
   <title>Example Feed</title>
   <link href="http://example.org/"/>
@@ -16,10 +16,6 @@
     <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
     <updated>2003-12-13T18:30:02Z</updated>
     <summary>Some text.</summary>
-    <rr:retweets>12</rr:retweets>
-    <rr:quotes>12</rr:quotes>
-    <rr:hearts>12</rr:hearts>
-    <rr:comments>12</rr:comments>
   </entry>
 
 </feed>

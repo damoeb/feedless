@@ -9,15 +9,20 @@ import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.models.MailForwardEntity
 import org.migor.feedless.data.jpa.models.PluginRef
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.models.toDto
+import org.migor.feedless.data.jpa.repositories.MailForwardDAO
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
+import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.ScrapeRequestInput
@@ -30,6 +35,8 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -44,7 +51,19 @@ class SourceSubscriptionService {
   lateinit var scrapeSourceDAO: ScrapeSourceDAO
 
   @Autowired
+  lateinit var mailForwardDAO: MailForwardDAO
+
+  @Autowired
+  lateinit var userDAO: UserDAO
+
+  @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+
+  @Autowired
+  lateinit var javaMailSender: JavaMailSender
+
+  @Autowired
+  lateinit var mailService: MailService
 
   @Autowired
   lateinit var currentUser: CurrentUser
@@ -61,6 +80,9 @@ class SourceSubscriptionService {
   @Autowired
   lateinit var propertyService: PropertyService
 
+  @Autowired
+  lateinit var pluginService: PluginService
+
   @Transactional
   fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
     log.info("[$corrId] create sub")
@@ -70,7 +92,7 @@ class SourceSubscriptionService {
     val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(ownerId, false)
     planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
     if (planConstraints.violatesScrapeSourceMaxActiveCount(activeCount, ownerId)) {
-      log.info("[$corrId] archiving")
+      log.info("[$corrId] archiving oldest")
       sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
     }
     return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
@@ -93,6 +115,9 @@ class SourceSubscriptionService {
     sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
     sub.ownerId = ownerId
     subInput.sinkOptions.plugins?.let {
+      if (it.size > 5) {
+        throw RuntimeException("Too many plugins ${it.size}, limit 5")
+      }
       sub.plugins = it.map { plugin -> plugin.toPluginRef() }
     }
     sub.schedulerExpression = subInput.sourceOptions?.let {
@@ -101,8 +126,41 @@ class SourceSubscriptionService {
     sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
     sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays)
     sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
+    sub.product = subInput.product.fromDto()
 
-    return sourceSubscriptionDAO.save(sub)
+    val saved = sourceSubscriptionDAO.save(sub)
+
+    subInput.additionalSinks?.let {sink ->
+      val owner = userDAO.findById(ownerId).orElseThrow()
+      sub.mailForwards = sink.mapNotNull { it.email }
+        .map { createMailForwarder(corrId, it, sub, owner, sub.product) }
+        .toMutableList()
+    }
+
+    return saved
+  }
+
+  private fun createMailForwarder(
+    corrId: String,
+    email: String,
+    sub: SourceSubscriptionEntity,
+    owner: UserEntity,
+    product: ProductName
+  ): MailForwardEntity {
+    val forward = MailForwardEntity()
+    forward.email = email
+    forward.authorized = email == owner.email
+    forward.subscriptionId = sub.id
+
+    val (mailFormatter) = pluginService.resolveMailFormatter(sub)
+    val mimeMessage = mailService.createMimeMessage()
+    val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
+    message.setFrom(mailService.getNoReplyAddress(product))
+    message.setTo(email)
+    mailFormatter.prepareWelcomeMail(corrId, message, sub, forward)
+    mailService.send(corrId, mimeMessage)
+
+    return mailForwardDAO.save(forward)
   }
 
   private fun createScrapeSource(corrId: String, ownerId: UUID, req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
@@ -182,7 +240,7 @@ private fun WebDocumentEntity.toRichArticle(): RichArticle {
         a
   }
   article.contentText = StringUtils.trimToEmpty(this.contentText)
-  article.contentRaw = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }
+  article.contentRawBase64 = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }
   article.contentRawMime = this.contentRawMime
   article.publishedAt = this.releasedAt
   article.startingAt = this.startingAt

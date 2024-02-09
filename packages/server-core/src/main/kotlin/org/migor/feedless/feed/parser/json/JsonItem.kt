@@ -23,7 +23,7 @@ open class GenericFeedItem: Serializable {
   lateinit var contentText: String
 
   @SerializedName("content_raw")
-  var contentRaw: String? = null
+  var contentRawBase64: String? = null
 
   @SerializedName("content_raw_mime")
   var contentRawMime: String? = null

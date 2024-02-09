@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlFeedlessPlugins,
-  GqlScrapeRequest,
+  GqlScrapeRequest, GqlScrapeRequestInput
 } from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
@@ -19,12 +19,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import { FeedBuilderActionsModalComponent } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
+import {
+  FeedBuilderActionsModalComponent,
+  FeedBuilderData
+} from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 
 export type FeedWithRequest = {
-  scrapeRequest: GqlScrapeRequest;
+  scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;
 };
 
@@ -39,7 +42,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
   embedWebsite: Embeddable;
   loading = false;
-  scrapeRequest: GqlScrapeRequest;
+  scrapeRequest: GqlScrapeRequestInput;
   hasFeed: boolean;
   selectedFeed: NativeOrGenericFeed;
   productConfig: ProductConfig;
@@ -118,13 +121,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           },
         ],
       };
-      this.scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
 
-      this.embedWebsite = {
-        mimeType: 'text/html',
-        data: this.scrapeResponse.elements[0].selector.html.data,
-        url: this.url,
-      };
+      this.handleResponse(await this.scrapeService.scrape(this.scrapeRequest));
     } catch (e) {
       this.errorMessage = e.message;
     }
@@ -165,6 +163,17 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     });
 
     await modal.present();
+    const result = await modal.onDidDismiss<FeedBuilderData>();
+    if (result.data) {
+      this.scrapeRequest = null;
+      this.scrapeResponse = null;
+      this.embedWebsite = null;
+      this.changeRef.detectChanges();
+
+      this.scrapeRequest = result.data.request;
+      this.handleResponse(result.data.response);
+      this.changeRef.detectChanges();
+    }
   }
 
   handleQuery(url: string) {
@@ -175,5 +184,15 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   handleCancel() {
     console.log('handleCancel');
     this.apolloAbortController.abort('user canceled');
+  }
+
+  private handleResponse(scrapeResponse: ScrapeResponse) {
+    this.scrapeResponse = scrapeResponse;
+
+    this.embedWebsite = {
+      mimeType: 'text/html',
+      data: this.scrapeResponse.elements[0].selector.html.data,
+      url: this.url,
+    };
   }
 }

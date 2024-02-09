@@ -400,7 +400,7 @@ class WebToFeedTransformer(
           article.title = StringUtils.substring(linkText.replace(reLinebreaks, " "), 0, 100)
           article.url = articleUrl
           article.contentText = webToTextTransformer.extractText(content)
-          article.contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml()
+          article.contentRawBase64 = withAbsUrls(content, url).selectFirst("div")!!.outerHtml()
           article.contentRawMime = "text/html"
           article.publishedAt = pubDate
           article.startingAt = startingDate

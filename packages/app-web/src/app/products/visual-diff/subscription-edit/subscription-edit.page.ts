@@ -17,14 +17,14 @@ import {
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,
   GqlScrapeDebugTimes,
-  GqlScrapeEmitInput,
+  GqlScrapeEmitInput, GqlScrapeRequestInput,
   GqlScrapeResponse,
   GqlViewPort,
   GqlWebDocumentField,
   GqlXyPosition,
-  Maybe,
+  Maybe
 } from '../../../../generated/graphql';
-import { isNull, isUndefined } from 'lodash-es';
+import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
 import { ScrapedElement, SourceSubscription } from '../../../graphql/types';
@@ -32,6 +32,7 @@ import { SourceSubscriptionService } from '../../../services/source-subscription
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProfileService } from '../../../services/profile.service';
+import { environment } from '../../../../environments/environment';
 
 type Email = string;
 
@@ -99,7 +100,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         [Validators.required],
       ),
     },
-    { updateOn: 'blur' },
+    { updateOn: 'change' },
   );
   actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
@@ -107,6 +108,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private scrapeResponse: VisualDiffScrapeResponse;
   errorMessage: null;
+  private scrapeRequest: GqlScrapeRequestInput;
+  showErrors: boolean;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -139,6 +142,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         } else {
           this.form.controls.areaBoundingBox.disable();
         }
+        this.changeRef.detectChanges();
       }),
     );
 
@@ -183,15 +187,24 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       url = fixUrl(url);
       this.form.controls.url.setValue(fixUrl(url));
     }
+
     if (this.busy || this.form.controls.url.invalid) {
       return;
     }
+
+    await this.router.navigate(['.'], {
+      queryParams: {
+        url,
+      },
+      relativeTo: this.activatedRoute
+    })
+
     this.errorMessage = null;
     this.busy = true;
     this.changeRef.detectChanges();
 
     try {
-      const scrapeResponse = await this.scrapeService.scrape({
+      const newScrapeRequest = {
         page: {
           url,
           prerender: {
@@ -203,18 +216,26 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         debug: {
           screenshot: true,
         },
-      });
-
-      this.embedScreenshot = null;
-      this.changeRef.detectChanges();
-
-      this.embedScreenshot = {
-        mimeType: 'image/png',
-        data: scrapeResponse.debug.screenshot,
-        url,
-        viewport: scrapeResponse.debug.viewport,
       };
-      this.scrapeResponse = scrapeResponse;
+
+      if (isEqual(newScrapeRequest, this.scrapeRequest)) {
+        console.log('scrapeRequest is unchanged')
+      } else {
+        this.scrapeRequest = newScrapeRequest;
+
+        const scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
+
+        this.embedScreenshot = null;
+        this.changeRef.detectChanges();
+
+        this.embedScreenshot = {
+          mimeType: 'image/png',
+          data: scrapeResponse.debug.screenshot,
+          url,
+          viewport: scrapeResponse.debug.viewport,
+        };
+        this.scrapeResponse = scrapeResponse;
+      }
     } catch (e) {
       this.errorMessage = e.message;
     } finally {
@@ -242,7 +263,14 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   async startMonitoring() {
-    await this.createSubscription();
+    this.showErrors = true;
+    try {
+      await this.createSubscription();
+    } catch (e) {
+      this.errorMessage = e.message;
+      this.showErrors = false;
+    }
+    this.changeRef.detectChanges();
   }
   private async createSubscription() {
     if (this.form.invalid) {
@@ -263,9 +291,15 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
               emit: [this.getEmit()],
             },
           ],
+          product: environment.product(),
           sourceOptions: {
             refreshCron: this.form.value.fetchFrequency,
           },
+          additionalSinks: [
+            {
+              email: this.form.value.email
+            }
+          ],
           sinkOptions: {
             title: this.form.value.subject,
             description: 'Visual Diff',
@@ -274,21 +308,13 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
             },
             plugins: [
               {
-                pluginId: GqlFeedlessPlugins.OrgFeedlessEnforceItemIncrement,
-                params: {
-                  enforceItemIncrement: {
-                    compareBy: this.form.value.compareType,
-                    nextItemMinIncrement: this.form.value.sinkCondition,
-                  },
-                },
-              },
-              {
                 pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
                 params: {
                   diffEmailForward: {
-                    emailRecipients: this.form.value.email.split(/[,: ]/),
                     inlineDiffImage: true,
                     inlineLatestImage: true,
+                    compareBy: this.form.value.compareType,
+                    nextItemMinIncrement: this.form.value.sinkCondition,
                   },
                 },
               },
@@ -299,7 +325,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     });
 
     if (!this.profileService.isAuthenticated()) {
-      await this.showAnonymousSuccessAlert(sub[0]);
+      await this.showAnonymousSuccessAlert();
     }
     await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
@@ -342,7 +368,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   isPickPositionMode() {
-    return this.isDefined(this.pickPositionDelegate);
+    return this.isDefined(this.pickPositionDelegate) || this.isDefined(this.pickBoundingBoxDelegate);
   }
 
   protected isDefined(v: any | undefined): boolean {
@@ -390,13 +416,12 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     return this.scrape();
   }
 
-  private async showAnonymousSuccessAlert(sub: SourceSubscription) {
+  private async showAnonymousSuccessAlert() {
     const alert = await this.alertCtrl.create({
-      header: 'Your Tracker has been created',
-      message: `You should have received an email, to authorize mails from this tracker. It will be active until ${new Date(
-        sub.disabledFrom,
-      )}. If you like the service, sign up and keep it alive!`,
-      buttons: ['Understood'],
+      header: 'Tracker created',
+      cssClass: 'success-alert',
+      message: `You should have received an email, you may continue from there.`,
+      buttons: ['Ok'],
     });
 
     await alert.present();

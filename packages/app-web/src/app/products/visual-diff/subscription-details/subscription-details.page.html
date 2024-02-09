@@ -26,12 +26,12 @@
 
     <div *ngIf="documents.length === 1">
       <p>Version from {{documents[0].createdAt | date: dateTimeFormat}}</p>
-      <img [src]="'data:image/png;base64, '+documents[0].contentRaw" alt="" />
+      <img [src]="'data:image/png;base64, '+documents[0].contentRawBase64" alt="" />
     </div>
     <div *ngIf="documents.length > 1">
       <img-comparison-slider style="width: auto; margin: auto">
         <img
-          [src]="'data:image/png;base64, '+documents[0].contentRaw"
+          [src]="'data:image/png;base64, '+documents[0].contentRawBase64"
           alt=""
           slot="first"
         />

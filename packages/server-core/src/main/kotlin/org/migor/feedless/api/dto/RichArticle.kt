@@ -9,7 +9,7 @@ class RichArticle() : JsonItem() {
     url = item.url
     tags = item.tags
     contentText = item.contentText
-    contentRaw = item.contentRaw
+    contentRawBase64 = item.contentRawBase64
     contentRawMime = item.contentRawMime
     summary = item.summary
     imageUrl = item.imageUrl

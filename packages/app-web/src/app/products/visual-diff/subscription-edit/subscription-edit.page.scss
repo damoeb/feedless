@@ -20,12 +20,25 @@ ion-header {
   flex: 1;
   flex-direction: column;
   border-width: 2px;
+  background: repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)),
+      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 20px
+  );
   border-radius: var(--border-radius);
 
   &--mark {
     border-style: solid;
     border-color: var(--ion-color-primary);
-    min-height: 60vh;
+    --border-radius: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
   }
 
   //box-shadow: inset 0px 0px 5px var(--foreground);
@@ -60,7 +73,7 @@ ion-item {
 }
 
 ion-button {
-  @include round-border();
+  @include control();
 }
 
 ion-input {
@@ -75,7 +88,9 @@ ion-select {
     padding-right: 10px;
   }
 
-  &::part(container) {
+  &::part(container),
+  &::part(text),
+  &::part(label) {
     width: 100%;
   }
 
@@ -92,8 +107,8 @@ ion-select {
   cursor: progress;
 }
 
-.ng-invalid {
-  --border-color: var(--ion-color-danger);
+.show-errors .ng-invalid {
+  --border-color: var(--ion-color-danger) !important;
   --border-width: 2px;
   --border-style: solid;
 }
@@ -169,6 +184,9 @@ ion-accordion {
     border-top-left-radius: var(--app-border-radius);
     border-top-right-radius: var(--app-border-radius);
   }
+  ion-item:first-child {
+    font-weight: bold;
+  }
 
   &:last-child {
     border-bottom-left-radius: var(--app-border-radius);
@@ -178,5 +196,5 @@ ion-accordion {
 
 ion-accordion-group {
   border-radius: var(--app-border-radius);
-  box-shadow: 0 1px 2px 1px rgba(white, 0.15);
+  box-shadow: 0 1px 2px 1px rgba(var(--ion-color-dark-rgb), 0.15);
 }

@@ -32,6 +32,7 @@ import { ScrapeResponse } from '../../graphql/types';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { PluginService } from '../../services/plugin.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * IDEEN
@@ -482,6 +483,7 @@ export class FeedBuilderModalComponent
           sources: this.feedBuilderFg.value.source.map(
             (source) => source.request,
           ),
+          product: environment.product(),
           sourceOptions: {
             refreshCron: this.feedBuilderFg.value.fetch.cronString,
           },

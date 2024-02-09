@@ -7,7 +7,6 @@ import {
   GqlDomActionSelect,
   GqlDomElementByName,
   GqlDomElementByXPath,
-  GqlEnforceItemIncrementParams,
   GqlFeature,
   GqlFeatureBooleanValue,
   GqlFeatureIntValue,
@@ -62,16 +61,9 @@ export type FeedlessPluginExecution = Pick<GqlPluginExecution, 'pluginId'> & {
       diffEmailForward?: Maybe<
         Pick<
           GqlDiffEmailForwardParams,
-          | 'emailRecipients'
           | 'inlineDiffImage'
           | 'inlineLatestImage'
           | 'inlinePreviousImage'
-        >
-      >;
-      enforceItemIncrement?: Maybe<
-        Pick<
-          GqlEnforceItemIncrementParams,
-          'compareBy' | 'nextItemMinIncrement'
         >
       >;
       fulltext?: Maybe<Pick<GqlFulltextPluginParams, 'readability'>>;
@@ -192,7 +184,7 @@ export type WebDocument = Pick<
   | 'imageUrl'
   | 'createdAt'
   | 'contentText'
-  | 'contentRaw'
+  | 'contentRawBase64'
   | 'contentRawMime'
   | 'contentTitle'
   | 'publishedAt'
@@ -274,7 +266,7 @@ export type RemoteFeedItem = Pick<
   | 'url'
   | 'contentTitle'
   | 'contentText'
-  | 'contentRaw'
+  | 'contentRawBase64'
   | 'contentRawMime'
   | 'publishedAt'
   | 'startingAt'

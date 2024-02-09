@@ -11,6 +11,7 @@ import { GqlVisibility } from '../../../../generated/graphql';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { Completion } from '@codemirror/autocomplete';
+import { environment } from '../../../../environments/environment';
 
 export type NotebookHead = {
   id: string;
@@ -426,6 +427,7 @@ export class NotebookService {
         subscriptions: [
           {
             sources: [],
+            product: environment.product(),
             sinkOptions: {
               title: notebook.head.name,
               description: '',

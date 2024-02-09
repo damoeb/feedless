@@ -11,13 +11,14 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { XyPosition } from '../../components/embedded-image/embedded-image.component';
 import {
+  GqlFeedlessPlugins,
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,
-  GqlScrapeDebugTimes,
+  GqlScrapeDebugTimes, GqlScrapeRequest, GqlScrapeRequestInput,
   GqlScrapeResponse,
   GqlViewPort,
   GqlXyPosition,
-  Maybe,
+  Maybe
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
@@ -30,6 +31,30 @@ type BrowserActionType = 'click';
 interface BrowserAction {
   type: FormControl<BrowserActionType>;
   clickParams: FormControl<GqlXyPosition>;
+}
+
+export type FeedBuilderScrapeResponse = Pick<
+  GqlScrapeResponse,
+  'url' | 'failed' | 'errorMessage'
+> & {
+  debug: Pick<
+    GqlScrapeDebugResponse,
+    | 'console'
+    | 'cookies'
+    | 'contentType'
+    | 'statusCode'
+    | 'screenshot'
+    | 'html'
+  > & {
+    metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
+    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
+  };
+  elements: Array<ScrapedElement>;
+};
+
+export interface FeedBuilderData {
+  request: GqlScrapeRequestInput,
+  response: FeedBuilderScrapeResponse
 }
 
 @Component({
@@ -52,24 +77,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
   private subscriptions: Subscription[] = [];
-  private scrapeResponse: Pick<
-    GqlScrapeResponse,
-    'url' | 'failed' | 'errorMessage'
-  > & {
-    debug: Pick<
-      GqlScrapeDebugResponse,
-      | 'console'
-      | 'cookies'
-      | 'contentType'
-      | 'statusCode'
-      | 'screenshot'
-      | 'html'
-    > & {
-      metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-      viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
-    };
-    elements: Array<ScrapedElement>;
-  };
+  private scrapeResponse: FeedBuilderScrapeResponse;
   errorMessage: string;
 
   constructor(
@@ -191,10 +199,11 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   }
 
   applyChanges() {
-    return this.modalCtrl.dismiss({
+    const data: FeedBuilderData = {
       request: this.getScrapeRequest(),
       response: this.scrapeResponse,
-    });
+    };
+    return this.modalCtrl.dismiss(data);
   }
 
   isPickMode() {
@@ -224,7 +233,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getScrapeRequest(debug = false) {
+  private getScrapeRequest(debug = false): GqlScrapeRequestInput {
     return {
       page: {
         url: this.url,
@@ -233,9 +242,25 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
         },
         actions: this.getActionsRequestFragment(),
       },
-      emit: [],
+      emit: [
+        {
+          selectorBased: {
+            xpath: {
+              value: '/',
+            },
+            expose: {
+              transformers: [
+                {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+                },
+              ],
+            },
+          },
+        },
+      ],
       debug: {
         screenshot: debug,
+        html: debug
       },
     };
   }

@@ -1,6 +1,6 @@
 <div class="flex__column">
   <div>
-    <ion-toolbar style="padding: 14px">
+    <ion-toolbar style="padding: 10px">
       <app-searchbar
         (querySubmit)="handleQuery($event)"
         buttonText="Create"
@@ -42,7 +42,10 @@
       [scrapeRequest]="scrapeRequest"
       [scrapeResponse]="scrapeResponse"
     >
-      <ion-item (click)="showActionsModal()" [button]="true" topSlot>
+      <ion-item (click)="showActionsModal()"
+                class="cy-enable-js-button"
+                [button]="true"
+                topSlot>
         Enable Javascript
         <ion-icon name="settings-outline" slot="end"></ion-icon>
       </ion-item>

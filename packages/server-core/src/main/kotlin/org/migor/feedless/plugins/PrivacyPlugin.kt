@@ -37,8 +37,8 @@ class PrivacyPlugin: MapEntityPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
 
-  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
-  override fun name(): String = "Privacy"
+//  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
+  override fun name(): String = "Privacy & Robustness"
   override fun listed() = true
 
   override fun mapEntity(
@@ -106,7 +106,7 @@ class PrivacyPlugin: MapEntityPlugin {
     val scaledImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
     scaledImage.graphics.drawImage(image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT), 0, 0, null)
     val baot = ByteArrayOutputStream()
-    ImageIO.write(scaledImage, "png", baot)
+    ImageIO.write(scaledImage, "webp", baot)
     return baot.toByteArray()
   }
 }

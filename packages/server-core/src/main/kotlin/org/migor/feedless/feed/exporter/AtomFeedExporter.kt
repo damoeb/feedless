@@ -80,11 +80,11 @@ class AtomFeedExporter : AbstractXmlExporter() {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
       createNode(eventWriter, "title", entry.title)
       createNode(eventWriter, "summary", entry.contentText)
-      entry.contentRaw?.let {
+      entry.contentRawBase64?.let {
         createNode(
           eventWriter,
           "content",
-          "<![CDATA[${entry.contentRaw}]]",
+          "<![CDATA[${entry.contentRawBase64}]]",
           mapOf(Pair("type", entry.contentRawMime!!))
         )
       }

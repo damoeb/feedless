@@ -55,7 +55,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         .id(it.url)
         .contentTitle(it.title)
         .contentText(it.contentText)
-        .contentRaw(it.contentRaw)
+        .contentRawBase64(it.contentRawBase64)
         .contentRawMime(it.contentRawMime)
         .publishedAt(it.publishedAt.time)
         .startingAt(it.startingAt?.time)

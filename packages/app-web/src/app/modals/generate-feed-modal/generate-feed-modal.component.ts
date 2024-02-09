@@ -1,25 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapePageInput,
-  GqlScrapeRequest,
-  GqlVisibility,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapePageInput, GqlScrapeRequest, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 export interface GenerateFeedModalComponentProps {
-  scrapeRequest: GqlScrapeRequest;
+  scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;
 }
 
@@ -123,6 +113,7 @@ export class GenerateFeedModalComponent
         await this.sourceSubscriptionService.createSubscriptions({
           subscriptions: [
             {
+              product: environment.product(),
               sources: [
                 {
                   page,

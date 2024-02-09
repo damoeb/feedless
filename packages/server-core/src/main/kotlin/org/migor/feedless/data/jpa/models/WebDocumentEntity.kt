@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
+import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
@@ -108,7 +109,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   @JoinColumn(name = "subscriptionId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_item__subscritpion"))
   open var subscription: SourceSubscriptionEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
   open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
   @Basic
@@ -135,7 +136,12 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    this.finalized = pendingPlugins.isEmpty()
+    if (contentRaw != null) {
+      val tika = Tika()
+      val mime = tika.detect(contentRaw)
+      mime.toString()
+    }
+    finalized = pendingPlugins.isEmpty()
   }
 
 }
@@ -147,7 +153,7 @@ fun WebDocumentEntity.toDto(): WebDocument =
     .url(url)
     .contentTitle(contentTitle)
     .contentText(contentText)
-    .contentRaw(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
+    .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
     .contentRawMime(contentRawMime)
     .updatedAt(updatedAt.time)
     .createdAt(createdAt.time)

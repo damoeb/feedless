@@ -6,8 +6,8 @@ plugins {
   id("com.netflix.dgs.codegen") version "5.6.9"
   id("org.ajoberstar.grgit")
   id("com.google.protobuf") version "0.9.2"
-  kotlin("jvm") version "1.8.10"
-  kotlin("plugin.spring") version "1.8.10"
+  kotlin("jvm") version "1.9.20"
+  kotlin("plugin.spring") version "1.9.20"
 }
 
 apply(plugin = "io.spring.dependency-management")
@@ -27,12 +27,12 @@ sourceSets.getByName("main") {
 
 kotlin {
   jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 }
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 }
 
@@ -67,6 +67,8 @@ dependencies {
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
   // https://mvnrepository.com/artifact/org.apache.commons/commons-text
   implementation("org.apache.commons:commons-text:1.10.0")
+  implementation("org.sejda.webp-imageio:webp-imageio-sejda:0.1.0")
+
 
   // graphql
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")

@@ -24,10 +24,9 @@ import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.DiffEmailForwardParams
 import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
-import org.migor.feedless.generated.types.EnforceItemIncrementParams
-import org.migor.feedless.generated.types.EnforceItemIncrementParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.PluginExecution
@@ -37,7 +36,6 @@ import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
-import org.migor.feedless.generated.types.WebDocumentField
 import java.util.*
 
 data class PluginRef(val id: String, val params: PluginExecutionParamsInput?)
@@ -84,6 +82,9 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var archived: Boolean = false
 
+  @Column(nullable = false)
+  open lateinit var product: ProductName
+
   @Type(JsonType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
   @Basic(fetch = FetchType.LAZY)
@@ -105,7 +106,10 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
   open var sources: MutableList<ScrapeSourceEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
+  open var mailForwards: MutableList<MailForwardEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
   open var documents: MutableList<WebDocumentEntity> = mutableListOf()
 
   @Basic
@@ -119,7 +123,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    this.archived = disabledFrom != null
+//    this.archived = disabledFrom != null
   }
 }
 
@@ -154,7 +158,6 @@ private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
   return PluginExecutionParams.newBuilder()
     .fulltext(fulltext?.toDto())
     .genericFeed(genericFeed?.toDto())
-    .enforceItemIncrement(enforceItemIncrement?.toDto())
     .diffEmailForward(diffEmailForward?.toDto())
     .rawJson(rawJson)
     .build()
@@ -162,17 +165,11 @@ private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
 
 private fun DiffEmailForwardParamsInput.toDto(): DiffEmailForwardParams {
   return DiffEmailForwardParams.newBuilder()
-    .emailRecipients(emailRecipients)
+    .compareBy(compareBy)
+    .nextItemMinIncrement(nextItemMinIncrement)
     .inlineDiffImage(inlineDiffImage)
     .inlineLatestImage(inlineLatestImage)
     .inlinePreviousImage(inlinePreviousImage)
-    .build()
-}
-
-private fun EnforceItemIncrementParamsInput.toDto(): EnforceItemIncrementParams {
-  return EnforceItemIncrementParams.newBuilder()
-    .nextItemMinIncrement(nextItemMinIncrement)
-    .compareBy(compareBy)
     .build()
 }
 

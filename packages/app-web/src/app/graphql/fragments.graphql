@@ -24,12 +24,9 @@ fragment BasicSourceSubscription on SourceSubscription {
         dateXPath
       }
       diffEmailForward {
-        emailRecipients
         inlineDiffImage
         inlineLatestImage
         inlinePreviousImage
-      }
-      enforceItemIncrement {
         compareBy
         nextItemMinIncrement
       }
@@ -259,7 +256,7 @@ fragment BasicWebDocument on WebDocument {
   id
   contentTitle
   contentRawMime
-  contentRaw
+  contentRawBase64
   contentText
   url
   imageUrl
@@ -286,7 +283,7 @@ fragment BasicHistogram on Histogram {
 fragment BasicContent on WebDocument {
   contentTitle
   contentText
-  contentRaw
+  contentRawBase64
   contentRawMime
   pendingPlugins
   url

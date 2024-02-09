@@ -110,7 +110,7 @@ type Mutation {
 }
 
 input CreateWebDocumentInput {
-  contentRaw: String
+  contentRawBase64: String
   contentRawMime: String
   contentText: String
   contentTitle: String!
@@ -129,7 +129,7 @@ input UpdateWebDocumentInput {
 }
 
 input WebDocumentInput {
-  contentRaw: NullableStringUpdateOperationsInput
+  contentRawBase64: NullableStringUpdateOperationsInput
   contentRawMime: NullableStringUpdateOperationsInput
   contentText: StringUpdateOperationsInput
   contentTitle: StringUpdateOperationsInput
@@ -190,7 +190,6 @@ type Plugin {
   id: ID!
   name: String!
   type: PluginType!
-  description: String!
   listed: Boolean!
 #  params: PluginParamsSchema
 }
@@ -468,7 +467,7 @@ type ScrapeDebugResponse {
   network: [NetworkRequest!]!
   cookies: [String!]
   html: String
-  statusCode: Int!
+  statusCode: Int
   contentType: String
   viewport: ViewPort
   metrics: ScrapeDebugTimes!
@@ -482,7 +481,7 @@ input ScrapeDebugResponseInput {
   network: [NetworkRequestInput!]!
   cookies: [String!]
   html: String
-  statusCode: Int!
+  statusCode: Int
   contentType: String
   viewport: ViewPortInput
   metrics: ScrapeDebugTimesInput!
@@ -602,7 +601,7 @@ type UserSecret {
 }
 
 type WebDocument {
-  contentRaw: String
+  contentRawBase64: String
   contentRawMime: String
   contentText: String
   contentTitle: String
@@ -812,10 +811,10 @@ input SourceSubscriptionUniqueWhereInput {
 
 input SourceSubscriptionsCreateInput {
   subscriptions: [SourceSubscriptionCreateInput!]!
-#  product: Product!
 }
 
 input SourceSubscriptionCreateInput {
+  product: ProductName!
   sources: [ScrapeRequestInput!]!
   sourceOptions: SourceOptionsInput
   sinkOptions: SinkOptionsInput!
@@ -1096,14 +1095,14 @@ input ScrapeSelectorExposeInput {
 
 input PluginExecutionParamsInput {
   genericFeed: SelectorsInput
-  enforceItemIncrement: EnforceItemIncrementParamsInput
   diffEmailForward: DiffEmailForwardParamsInput
   rawJson: String
   fulltext: FulltextPluginParamsInput
 }
 
 input DiffEmailForwardParamsInput {
-  emailRecipients: [String!]!
+  nextItemMinIncrement: Float!
+  compareBy: WebDocumentField!
   inlineLatestImage: Boolean
   inlinePreviousImage: Boolean
   inlineDiffImage: Boolean
@@ -1119,18 +1118,8 @@ enum FeedlessPlugins {
   org_feedless_fulltext
   org_feedless_privacy
   org_feedless_detect_media
-  org_feedless_enforce_item_increment
   org_feedless_diff_email_forward
-}
-
-input EnforceItemIncrementParamsInput {
-  nextItemMinIncrement: Float!
-  compareBy: WebDocumentField!
-}
-
-type EnforceItemIncrementParams {
-  nextItemMinIncrement: Float!
-  compareBy: WebDocumentField!
+  org_feedless_spawn_page_tracker
 }
 
 enum WebDocumentField {
@@ -1202,14 +1191,14 @@ type PluginExecution {
 
 type PluginExecutionParams {
   genericFeed: Selectors
-  enforceItemIncrement: EnforceItemIncrementParams
   diffEmailForward: DiffEmailForwardParams
   fulltext: FulltextPluginParams
   rawJson: String
 }
 
 type DiffEmailForwardParams {
-  emailRecipients: [String!]!
+  nextItemMinIncrement: Float!
+  compareBy: WebDocumentField!
   inlineLatestImage: Boolean
   inlineDiffImage: Boolean
   inlinePreviousImage: Boolean

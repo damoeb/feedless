@@ -3,11 +3,13 @@ package org.migor.feedless.plugins
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.graphql.DtoResolver.toDto
+import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.util.HtmlUtil
@@ -32,7 +34,6 @@ class FeedsPlugin: FragmentTransformerPlugin {
   lateinit var genericFeedLocator: GenericFeedLocator
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
-  override fun description(): String = ""
   override fun listed() = false
 
   override fun transformFragment(

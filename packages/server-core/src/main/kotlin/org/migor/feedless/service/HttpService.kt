@@ -56,13 +56,6 @@ class HttpService {
     return client.prepareGet(url)
   }
 
-//  fun getContentTypeForUrl(corrId: String, url: String): String {
-//    protectFromOverloading(url)
-//    val response = execute(corrId, client.prepareHead(url), 200)
-//    val contentType = response.getHeader("content-type").lowercase()
-//    return contentType.replace(Regex(";.*"), "")
-//  }
-
   fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
     return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
   }

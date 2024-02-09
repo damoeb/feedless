@@ -45,8 +45,6 @@ class DetectMediaPlugin: MapEntityPlugin {
 
   override fun name(): String = "Detect Audio/Video"
 
-  override fun description(): String = "Look for attached media streams in websites and add them to a feed"
-
   @Transactional(propagation = Propagation.NESTED)
   override fun mapEntity(
     corrId: String,

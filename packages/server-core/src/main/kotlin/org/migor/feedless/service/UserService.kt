@@ -14,7 +14,6 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.mail.MailService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

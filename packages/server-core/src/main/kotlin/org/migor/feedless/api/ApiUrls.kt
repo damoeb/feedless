@@ -8,4 +8,5 @@ object ApiUrls {
   const val webToFeedFromChange = "/api/w2f/change"
   const val legacyTransformFeed = "/api/legacy/tf"
   const val legacyWebToFeed = "/api/legacy/w2f"
+  const val mailForwardingAllow = "/mail/forwarding/allow"
 }

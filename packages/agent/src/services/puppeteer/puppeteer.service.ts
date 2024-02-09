@@ -39,6 +39,7 @@ type LogAppender = (msg: string) => void;
 export class PuppeteerService {
   private readonly log = new Logger(PuppeteerService.name);
   private readonly isDebug: boolean;
+  private readonly imageQuality = 100;
   private readonly queue: {
     job: ScrapeRequest;
     queuedAt: number;
@@ -270,7 +271,7 @@ export class PuppeteerService {
         : [],
       prerendered: true,
       screenshot: request.debug?.screenshot
-        ? await page.screenshot({ fullPage: true, encoding: 'base64' })
+        ? await page.screenshot({ fullPage: true, quality: this.imageQuality, type: 'webp', encoding: 'base64' })
         : undefined,
     };
   }
@@ -280,7 +281,7 @@ export class PuppeteerService {
     xpath: string,
     expose: FieldWrapper<ScrapeSelectorExpose>
   ): Promise<ScrapedElementInput> {
-    const response: EvaluateResponse = await page.evaluate((baseXpath) => {
+    const evaluateResponse: EvaluateResponse = await page.evaluate((baseXpath) => {
       let element: HTMLElement = document
         .evaluate(baseXpath.toString(), document, null, 5)
         .iterateNext() as HTMLElement;
@@ -304,6 +305,17 @@ export class PuppeteerService {
       };
     }, xpath);
 
+    const getScreenshot = (): Promise<string> => {
+      if (xpath === '/') {
+        return page.screenshot({ fullPage: true, quality: this.imageQuality, type: 'webp', encoding: 'base64' });
+      } else {
+        return this.extractScreenshot(
+          page,
+          this.extendBoundingBox(evaluateResponse.boundingBox, page),
+        )
+      }
+    }
+
     return {
       selector: {
         xpath: {
@@ -311,16 +323,13 @@ export class PuppeteerService {
         },
         fields: [],
         html: {
-          data: response.markup
+          data: evaluateResponse.markup
         },
         text: {
-          data: response.text
+          data: evaluateResponse.text
         },
         pixel: expose.pixel? {
-          base64Data: await this.extractScreenshot(
-            page,
-            this.extendBoundingBox(response.boundingBox, page),
-          )
+          base64Data: await getScreenshot()
         } : null
 
       }
@@ -337,7 +346,11 @@ export class PuppeteerService {
         y: boundingBox.y,
         height: boundingBox.h,
         width: boundingBox.w,
-      }
+      },
+      type: 'webp',
+      quality: this.imageQuality,
+      encoding: 'base64',
+      captureBeyondViewport: true,
     });
 
     return {
@@ -349,7 +362,7 @@ export class PuppeteerService {
           h: boundingBox.h,
         },
         data: {
-          base64Data: screenshot.toString('base64')
+          base64Data: screenshot
         }
       },
     };
@@ -468,10 +481,13 @@ export class PuppeteerService {
   private async extractScreenshot(page: Page, boundingBox: ScreenshotClip) {
     this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
     this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
-    const screenshot = await page.screenshot({
+    return page.screenshot({
       clip: boundingBox,
+      type: 'webp',
+      quality: this.imageQuality,
+      encoding: 'base64',
+      captureBeyondViewport: true
     });
-    return screenshot.toString('base64');
   }
 
   private extendBoundingBox(bb: ScreenshotClip, page: Page): ScreenshotClip {

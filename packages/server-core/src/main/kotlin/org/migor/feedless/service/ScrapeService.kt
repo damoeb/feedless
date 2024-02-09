@@ -217,7 +217,7 @@ class ScrapeService {
   }
 
   private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {
-    val elements = if (res.debug.contentType.startsWith("text/html")) {
+    val elements = if (res.debug.contentType.startsWith("text/")) {
       res.elements.mapIndexed { index, scrapedElement ->
         req.emit.get(index).selectorBased?.let {
           it.expose.transformers?.let {
