@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -18,12 +17,12 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
+import org.slf4j.LoggerFactory
 import java.util.*
 
 @Entity
@@ -33,6 +32,9 @@ import java.util.*
   ]
 )
 open class WebDocumentEntity : EntityWithUUID() {
+
+  @Transient
+  private val log = LoggerFactory.getLogger(WebDocumentEntity::class.simpleName)
 
   companion object {
     const val LEN_TITLE = 256
@@ -83,18 +85,8 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var score: Int = 0
 
-  @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false, name = "pending_plugins")
-  @Basic(fetch = FetchType.LAZY)
-  open var pendingPlugins: List<String> = emptyList()
-
-  @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false, name = "executed_plugins")
-  @Basic(fetch = FetchType.LAZY)
-  open var executedPlugins: List<String> = emptyList()
-
-  @Basic
-  open var pluginsCoolDownUntil: Date? = null
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
+  open var plugins: MutableList<PipelineJobEntity> = mutableListOf()
 
   @Basic
   @Column(nullable = false)
@@ -106,7 +98,13 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "subscriptionId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_item__subscritpion"))
+  @JoinColumn(
+    name = "subscriptionId",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_item__subscritpion")
+  )
   open var subscription: SourceSubscriptionEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
@@ -139,9 +137,9 @@ open class WebDocumentEntity : EntityWithUUID() {
     if (contentRaw != null) {
       val tika = Tika()
       val mime = tika.detect(contentRaw)
-      mime.toString()
+//      log.info("webDocument $id with raw-data '$mime'")
+      this.contentRawMime = mime
     }
-    finalized = pendingPlugins.isEmpty()
   }
 
 }
@@ -157,7 +155,6 @@ fun WebDocumentEntity.toDto(): WebDocument =
     .contentRawMime(contentRawMime)
     .updatedAt(updatedAt.time)
     .createdAt(createdAt.time)
-    .pendingPlugins(pendingPlugins)
     .enclosures(attachments.map {
       Enclosure.newBuilder()
         .url(it.url)

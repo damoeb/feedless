@@ -29,7 +29,7 @@ import kotlin.time.toDuration
 
 @Service
 class TokenProvider {
-  private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
+  private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
 
   @Autowired
   lateinit var propertyService: PropertyService

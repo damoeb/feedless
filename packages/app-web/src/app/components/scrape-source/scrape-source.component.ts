@@ -1247,9 +1247,11 @@ export class ScrapeSourceComponent
                 transformers: [
                   {
                     pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+                    params: {}
                   },
                   {
                     pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+                    params: {}
                   },
                 ],
               },
@@ -1359,6 +1361,7 @@ export class ScrapeSourceComponent
                     transformers: [
                       {
                         pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+                        params: {}
                       },
                     ],
                   },

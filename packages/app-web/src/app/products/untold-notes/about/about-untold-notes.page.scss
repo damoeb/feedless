@@ -8,3 +8,10 @@ ul {
   color: rgba(var(--foreground-rgb), 0.7);
   //text-align: justify;
 }
+
+.notebooks {
+  ion-item {
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+}

@@ -56,4 +56,17 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
 
 
   fun existsByContentTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
+
+  @Modifying
+  @Query(
+    """
+    DELETE FROM WebDocumentEntity d
+    WHERE d.id = ?1 and d.id in (
+        select d1.id from WebDocumentEntity d1
+        inner join SourceSubscriptionEntity s
+        where d1.id = ?1
+        and s.ownerId = ?2
+    )
+    """)
+  fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
 }

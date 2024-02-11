@@ -38,11 +38,6 @@ class ScrapeQueryResolver {
     val corrId = handleCorrId(cid)
     log.info("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
-    try {
-      scrapeService.scrape(corrId, scrapeRequest).block()!!
-    } catch (e: Exception) {
-      log.error("[$corrId] ${e.message}")
-      throw e
-    }
+    scrapeService.scrape(corrId, scrapeRequest).block()!!
   }
 }

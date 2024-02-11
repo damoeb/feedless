@@ -10,21 +10,29 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.api.auth.TokenProvider
+import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.models.fromDto
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
+import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.DeleteUserSecretsInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionUniqueWhereInput
+import org.migor.feedless.generated.types.SourceSubscriptionUpdateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.PropertyService
@@ -97,9 +105,9 @@ class MutationResolver {
     log.info("[$corrId] authUser")
     if (propertyService.authentication == AppProfiles.authRoot) {
       log.info("[$corrId] authRoot")
-      val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found ($corrId)")
+      val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found ($corrId)")
       if (!root.root) {
-        throw IllegalAccessException("account is not root ($corrId)")
+        throw PermissionDeniedException("account is not root ($corrId)")
       }
       userSecretService.findBySecretKeyValue(data.secretKey, data.email)
         ?: throw IllegalArgumentException("secretKey does not match ($corrId)")
@@ -110,7 +118,7 @@ class MutationResolver {
         .corrId(CryptUtil.newCorrId())
         .build()
     } else {
-      throw IllegalArgumentException("authRoot profile is not active ($corrId)")
+      throw PermissionDeniedException("authRoot profile is not active ($corrId)")
     }
   }
 
@@ -140,6 +148,7 @@ class MutationResolver {
     true
   }
 
+  @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
@@ -149,6 +158,22 @@ class MutationResolver {
     userSecretService.createUserSecret(corrId, currentUser.user(corrId)).toDto(false)
   }
 
+  @Throttled
+  @DgsMutation
+  @PreAuthorize("hasAuthority('ANONYMOUS')")
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun createUser(
+    @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: CreateUserInput
+  ): User = coroutineScope {
+    userService.createUser(corrId,
+      email = data.email,
+      productName = data.product.fromDto(),
+      AuthSource.email,
+      planName = data.plan.fromDto()).toDto()
+  }
+
+  @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
@@ -161,6 +186,7 @@ class MutationResolver {
   }
 
 
+  @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
@@ -173,6 +199,7 @@ class MutationResolver {
     true
   }
 
+  @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.REQUIRED)
@@ -184,6 +211,19 @@ class MutationResolver {
     sourceSubscriptionService.create(corrId, data)
   }
 
+  @Throttled
+  @DgsMutation
+  @PreAuthorize("hasAuthority('USER')")
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun updateSourceSubscription(
+    @InputArgument("data") data: SourceSubscriptionUpdateInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): SourceSubscription = coroutineScope {
+    log.info("[$corrId] updateSourceSubscription $data")
+    sourceSubscriptionService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
+  }
+
+  @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)

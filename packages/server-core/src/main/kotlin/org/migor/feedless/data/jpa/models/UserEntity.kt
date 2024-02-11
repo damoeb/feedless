@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
 import jakarta.persistence.Basic
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -12,9 +11,11 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.User
@@ -22,11 +23,14 @@ import java.sql.Timestamp
 import java.util.*
 
 @Entity
-@Table(name = "t_user")
+@Table(name = "t_user",
+  uniqueConstraints = [
+    UniqueConstraint(name = "UniqueUser", columnNames = [StandardJpaFields.email, StandardJpaFields.product])]
+)
 open class UserEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, name = StandardJpaFields.email)
   open lateinit var email: String
 
   @Basic
@@ -42,7 +46,7 @@ open class UserEntity : EntityWithUUID() {
   open lateinit var usesAuthSource: AuthSource
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, name = StandardJpaFields.product)
   open lateinit var product: ProductName
 
   @Basic

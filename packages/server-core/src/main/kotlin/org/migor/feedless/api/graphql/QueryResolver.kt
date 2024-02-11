@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
@@ -159,7 +160,7 @@ class QueryResolver {
   ): WebDocument = coroutineScope {
     log.info("[$corrId] webDocument $data")
     webDocumentService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("webDocument not found")}.toDto()
+      .orElseThrow { NotFoundException("webDocument not found") }.toDto()
   }
 
   @Throttled
@@ -172,8 +173,8 @@ class QueryResolver {
     log.info("[$corrId] webDocuments $data")
     val subscriptionId = UUID.fromString(data.where.sourceSubscription.where.id)
     // authentication
-    sourceSubscriptionService.findById(corrId, subscriptionId)
-    webDocumentService.findAllBySubscriptionId(subscriptionId, data.cursor?.page).map { it.toDto() }
+    val subscription = sourceSubscriptionService.findById(corrId, subscriptionId)
+    webDocumentService.findAllBySubscriptionId(subscription.id, data.cursor?.page).map { it.toDto() }
   }
 
   private fun handlePageNumber(page: Int?): Int =

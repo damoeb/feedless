@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.data.jpa.models.AgentEntity
@@ -13,7 +14,6 @@ import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
-import org.migor.feedless.harvest.ResumableHarvestException
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

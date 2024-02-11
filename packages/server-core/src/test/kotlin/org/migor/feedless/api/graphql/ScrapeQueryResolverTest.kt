@@ -61,7 +61,7 @@ class ScrapeQueryResolverTest {
       .thenReturn(httpResponse)
 
     // when
-    val scrapeResponse = callScrape()
+    val scrapeResponse = callScrape(PluginExecutionParamsInput.newBuilder().build())
 
     // then
     executeFeedAssertions(scrapeResponse)
@@ -75,10 +75,12 @@ class ScrapeQueryResolverTest {
     Mockito.`when`(httpServiceMock.httpGetCaching(anyString(), anyString(), anyInt(), any<Map<String, Any>>()))
       .thenReturn(httpResponse)
     val params = PluginExecutionParamsInput.newBuilder()
-      .genericFeed(SelectorsInput.newBuilder()
-        .contextXPath("//div[1]/div[1]/div[1]/div")
-        .linkXPath("./h1[1]/a[1]")
-        .build())
+      .genericFeed(
+        SelectorsInput.newBuilder()
+          .contextXPath("//div[1]/div[1]/div[1]/div")
+          .linkXPath("./h1[1]/a[1]")
+          .build()
+      )
       .build()
 
     // when
@@ -88,7 +90,7 @@ class ScrapeQueryResolverTest {
     executeFeedAssertions(scrapeResponse)
   }
 
-  private fun callScrape(params: PluginExecutionParamsInput? = null): ScrapeResponse {
+  private fun callScrape(params: PluginExecutionParamsInput): ScrapeResponse {
     return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
       """
         query (${'$'}pluginId: ID!, ${'$'}params: PluginExecutionParamsInput) {
@@ -132,7 +134,7 @@ class ScrapeQueryResolverTest {
       "data.scrape",
       mapOf(
         "pluginId" to FeedlessPlugins.org_feedless_feed.name,
-        "params" to params?.let { JsonUtil.gson.fromJson(JsonUtil.gson.toJson(params), Map::class.java)}
+        "params" to params?.let { JsonUtil.gson.fromJson(JsonUtil.gson.toJson(params), Map::class.java) }
       ),
       ScrapeResponse::class.java,
     )

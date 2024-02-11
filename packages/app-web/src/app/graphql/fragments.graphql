@@ -13,6 +13,7 @@ fragment BasicSourceSubscription on SourceSubscription {
   description
   visibility
   createdAt
+  updatedAt
   plugins {
     pluginId
     params {
@@ -285,7 +286,6 @@ fragment BasicContent on WebDocument {
   contentText
   contentRawBase64
   contentRawMime
-  pendingPlugins
   url
   imageUrl
   publishedAt

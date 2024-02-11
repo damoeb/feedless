@@ -1,6 +1,7 @@
 package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.models.FeatureEntity
@@ -35,7 +36,7 @@ class PlanConstraintsService {
 
   fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int {
     return (maxItems ?: 0)
-      .coerceAtLeast(4)
+      .coerceAtLeast(10)
       .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId))
   }
 
@@ -50,8 +51,7 @@ class PlanConstraintsService {
     }
   }
 
-  fun coerceRetentionMaxAgeDays(maxAge: Int?): Int = (maxAge ?: 0)
-    .coerceAtLeast(2)
+  fun coerceRetentionMaxAgeDays(maxAge: Int?): Int? = maxAge?.coerceAtLeast(2)
 
   fun auditRefreshCron(cronString: String): String {
     CronExpression.isValidExpression(cronString)
@@ -59,8 +59,12 @@ class PlanConstraintsService {
     return cronString
   }
 
-  fun coerceVisibility(visibility: EntityVisibility): EntityVisibility {
-    return if (visibility === EntityVisibility.isPublic && getFeatureBool(FeatureName.publicScrapeSourceBool, userIdFromRequest())) {
+  fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
+    return if (visibility === EntityVisibility.isPublic && getFeatureBool(
+        FeatureName.publicScrapeSourceBool,
+        userIdFromRequest()
+      )
+    ) {
       visibility
     } else {
       EntityVisibility.isPrivate
@@ -72,7 +76,7 @@ class PlanConstraintsService {
       ?.let {
         val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
         if (maxActions < actionsCount) {
-          throw IllegalArgumentException("Too many actions (limit $maxActions, actual $actionsCount")
+          throw BadRequestException("Too many actions (limit $maxActions, actual $actionsCount")
         }
       }
   }
@@ -88,7 +92,7 @@ class PlanConstraintsService {
       ?.let {
         val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutInt, userId)
         if (maxTimeout < it) {
-          throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
+          throw BadRequestException("Timeout exceedes limit (limit $maxTimeout, actual $it")
         }
       }
   }
@@ -98,7 +102,7 @@ class PlanConstraintsService {
     return if (user.anonymous) {
       val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDaysInt).valueInt!!
       val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
-      log.info("[$corrId] set expiry to $expiry")
+      log.info("[$corrId] assign expiry to $expiry")
       toDate(expiry)
     } else {
       null
@@ -119,7 +123,7 @@ class PlanConstraintsService {
   fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
     val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotalInt, userId)
     if (maxSubscriptions < count) {
-      throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
+      throw BadRequestException("Too many subscriptions (limit $maxSubscriptions, actual $count")
     }
   }
 
@@ -130,7 +134,7 @@ class PlanConstraintsService {
   fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID) {
     val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId)
     if (maxRequests < count) {
-      throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
+      throw BadRequestException("Too many requests in source (limit $maxRequests, actual $count)")
     }
   }
 }

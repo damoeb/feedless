@@ -8,6 +8,12 @@ mutation deleteSourceSubscription($data: SourceSubscriptionUniqueWhereInput!) {
   deleteSourceSubscription(data: $data)
 }
 
+mutation updateSourceSubscription($data: SourceSubscriptionUpdateInput!) {
+  updateSourceSubscription(data: $data) {
+    ...BasicSourceSubscription
+  }
+}
+
 query listSourceSubscriptions($data: SourceSubscriptionsInput!) {
   sourceSubscriptions(data: $data) {
     ...BasicSourceSubscription

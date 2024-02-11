@@ -11,6 +11,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ProductName
@@ -20,10 +21,12 @@ import java.util.*
 enum class PlanAvailability {
   available,
   by_request,
+  availableButHidden,
   unavailable
 }
 
 enum class PlanName {
+  waitlist,
   system,
   minimal,
   basic,
@@ -97,11 +100,22 @@ fun PlanEntity.toDto(): Plan {
 private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
   PlanName.minimal -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
-  else -> throw RuntimeException("cannot be exported")
+  PlanName.waitlist -> org.migor.feedless.generated.types.PlanName.waitlist
+  PlanName.maximal -> throw BadRequestException("cannot be exported")
+  PlanName.system -> throw BadRequestException("cannot be exported")
 }
 
 private fun PlanAvailability.toDto(): org.migor.feedless.generated.types.PlanAvailability = when (this) {
   PlanAvailability.by_request -> org.migor.feedless.generated.types.PlanAvailability.by_request
   PlanAvailability.available -> org.migor.feedless.generated.types.PlanAvailability.available
-  PlanAvailability.unavailable -> throw RuntimeException("cannot be exported")
+  PlanAvailability.unavailable -> throw BadRequestException("cannot be exported")
+  PlanAvailability.availableButHidden -> throw BadRequestException("cannot be exported")
+}
+
+fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {
+  return when(this) {
+    org.migor.feedless.generated.types.PlanName.waitlist -> PlanName.waitlist
+    org.migor.feedless.generated.types.PlanName.free -> PlanName.minimal
+    org.migor.feedless.generated.types.PlanName.basic -> PlanName.basic
+  }
 }

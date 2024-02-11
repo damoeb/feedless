@@ -22,6 +22,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   productConfig: ProductConfig;
   url: string;
   private subscriptions: Subscription[] = [];
+  showSearchBar: boolean;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,

@@ -104,7 +104,7 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
 export type AutoSuggestionsProvider = (
   query: string,
   type: string,
-) => Completion[];
+) => Promise<Completion[]>;
 
 @Component({
   selector: 'app-code-editor',
@@ -129,7 +129,7 @@ export class CodeEditorComponent implements AfterViewInit {
   triggerQuery = new EventEmitter<string>();
 
   @Input()
-  autoSuggestionsProvider: AutoSuggestionsProvider = () => [];
+  autoSuggestionsProvider: AutoSuggestionsProvider = () => Promise.resolve([]);
 
   private editorView: EditorView;
   ctrlPressed: boolean;
@@ -234,10 +234,11 @@ export class CodeEditorComponent implements AfterViewInit {
 
             if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
               const query = context.state.sliceDoc(token.from, token.to);
+              const options = await this.autoSuggestionsProvider(query, node.name);
               return {
                 from: token.from,
                 filter: false,
-                options: this.autoSuggestionsProvider(query, node.name),
+                options,
               };
             } else {
               if (firstToken === '/') {
@@ -252,13 +253,14 @@ export class CodeEditorComponent implements AfterViewInit {
 
                 const from = selection?.from || context.pos;
 
+                const options = await this.autoSuggestionsProvider(
+                  resolveQuery(),
+                  node.name,
+                );
                 return {
                   from: firstToken === '/' ? from - 1 : from,
                   filter: false,
-                  options: this.autoSuggestionsProvider(
-                    resolveQuery(),
-                    node.name,
-                  ),
+                  options,
                 };
               }
             }

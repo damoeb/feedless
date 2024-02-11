@@ -1,26 +1,32 @@
 package org.migor.feedless.plugins
 
+import jakarta.mail.util.ByteArrayDataSource
 import org.migor.feedless.data.jpa.models.MailForwardEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.springframework.mail.javamail.MimeMessageHelper
 
-interface MailFormatter {
+data class MailAttachment(val id: String, val resource: ByteArrayDataSource, val inline: Boolean = false)
 
-  fun prepareMail(
+class MailData {
+  lateinit var body: String
+  lateinit var subject: String
+  val attachments: MutableList<MailAttachment> = mutableListOf()
+}
+
+interface MailProvider {
+
+  fun provideWebDocumentMail(
     corrId: String,
-    message: MimeMessageHelper,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
-  )
+    params: PluginExecutionParamsInput
+  ): MailData
 
-  fun prepareWelcomeMail(
+  fun provideWelcomeMail(
     corrId: String,
-    message: MimeMessageHelper,
     subscription: SourceSubscriptionEntity,
     mailForward: MailForwardEntity,
-  )
+  ): MailData
 
 }

@@ -5,9 +5,10 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.BadRequestException
+import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.JwtParameterNames
-import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.PlanService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil
@@ -36,7 +37,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   lateinit var authService: AuthService
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
-    val userId = StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw IllegalArgumentException("invalid jwt)")
+    val userId = StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw BadRequestException("invalid jwt)")
     return cache.computeIfAbsent(userId) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromApiKey(jwt))

@@ -5,9 +5,21 @@
     </ion-buttons>
 
     <div class="title">
-      <div class="ion-hide-xl-up" routerLink="/" style="cursor: pointer">
+      <div
+        class="ion-hide-xl-up ion-hide-md-down"
+        routerLink="/"
+        style="cursor: pointer"
+      >
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
+
+      <app-searchbar
+        buttonText="Create Feed"
+        color="primary"
+        *ngIf="showSearchBar"
+        [value]="url"
+        placeholder="Type a Url of a website"
+      ></app-searchbar>
     </div>
 
     <ion-buttons slot="end">

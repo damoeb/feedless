@@ -3,13 +3,11 @@ package org.migor.feedless.plugins
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.graphql.DtoResolver.toDto
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.util.HtmlUtil
@@ -42,6 +40,8 @@ class FeedsPlugin: FragmentTransformerPlugin {
     plugin: PluginExecution,
     url: String
   ): ScrapedFeeds {
+    log.info("[$corrId] transformFragment")
+
     val document = HtmlUtil.parseHtml(element.selector.html.data, url)
     log.info("[$corrId] extracting feeds")
     val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)

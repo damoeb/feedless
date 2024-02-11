@@ -10,7 +10,7 @@
 </ion-header>
 <ion-content>
   <ion-list>
-    <ion-item>
+    <ion-item class="label">
       <ion-label>Feed Title</ion-label>
     </ion-item>
     <ion-item>
@@ -21,7 +21,7 @@
         aria-label="Title"
       ></ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item class="label">
       <ion-label>Description (optional)</ion-label>
     </ion-item>
     <ion-item>
@@ -33,7 +33,7 @@
         aria-label="Describe the feed with #tags and urls"
       ></ion-textarea>
     </ion-item>
-    <ion-item>
+    <ion-item class="label">
       <ion-label>Fetch Frequency</ion-label>
     </ion-item>
     <ion-item>
@@ -62,14 +62,24 @@
       </ion-select>
     </ion-item>
   </ion-list>
+
   <ion-list class="filters">
     <ion-item>
-      <ion-label>Filters</ion-label>
+      <ion-label>
+        Filters
+        <a
+          (click)="addFilter()"
+          *ngIf="filters.length < 4"
+          href="javascript:void(0)"
+        >
+          Add Filter
+        </a>
+      </ion-label>
     </ion-item>
 
-    <ion-item
+    <div
       *ngFor="let filter of filters; let i = index"
-      class="ion-margin-bottom"
+      class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
     >
       <ion-select
         [formControl]="filter.controls.type"
@@ -101,21 +111,51 @@
       </ion-select>
       <ion-input
         [formControl]="filter.controls.value"
+        placeholder="Type a value"
         fill="outline"
       ></ion-input>
 
       <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
         <ion-icon name="trash-outline"></ion-icon>
       </ion-button>
-    </ion-item>
-
-    <ion-item *ngIf="filters.length < 4">
-      <a (click)="addFilter()" href="javascript:void(0)"> Add Filter </a>
-    </ion-item>
+    </div>
   </ion-list>
 
-  <div style="flex: 1"></div>
+  <ion-list class="filters">
+    <ion-item class="label">
+      <ion-label>Plugins</ion-label>
+    </ion-item>
 
+    <ion-item>
+      <ion-checkbox
+        labelPlacement="end"
+        justify="start"
+        [formControl]="formFg.controls.applyFulltextPlugin"
+      >
+        Fulltext <ion-note>Fetch Fulltext for every Item</ion-note>
+        <ion-chip
+          color="danger"
+          *ngIf="!isLoggedIn && formFg.value.applyFulltextPlugin"
+          >Signup to use</ion-chip
+        >
+      </ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-checkbox
+        labelPlacement="end"
+        justify="start"
+        [formControl]="formFg.controls.applyPrivacyPlugin"
+      >
+        Privacy & Robustness
+        <ion-note
+          >Replaces links to images by base64 inlined images and resolve
+          shortened tracking urls</ion-note
+        >
+      </ion-checkbox>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
   <ion-list
     class="ion-no-margin ion-no-padding"
     style="background: transparent"
@@ -125,17 +165,23 @@
         ><strong>{{ errorMessage }}</strong></ion-label
       >
     </ion-item>
+    <ion-item *ngIf="!isLoggedIn" class="label">
+      <ion-label
+        >You can create a limited trial feed without signing up.</ion-label
+      >
+    </ion-item>
     <ion-item
       (click)="createFeed()"
       *ngIf="!loading"
       [button]="true"
       color="success"
     >
-      <ion-label> Generate Feed </ion-label>
+      <ion-label *ngIf="isLoggedIn"> Generate Feed </ion-label>
+      <ion-label *ngIf="!isLoggedIn"> Generate Trial Feed </ion-label>
     </ion-item>
     <ion-item color="danger" *ngIf="loading">
       <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>
       Cancel
     </ion-item>
   </ion-list>
-</ion-content>
+</ion-footer>

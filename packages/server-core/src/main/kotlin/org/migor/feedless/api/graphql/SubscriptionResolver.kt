@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.generated.types.AgentEvent
@@ -46,6 +47,6 @@ class SubscriptionResolver {
     val corrId = newCorrId()
     log.info("[$corrId] registerAgent ${data.secretKey?.email}")
     return data.secretKey?.let { agentService.registerPrerenderAgent(corrId, data) }
-      ?: throw IllegalArgumentException("expected secretKey, found none ($corrId)")
+      ?: throw PermissionDeniedException("expected secretKey, found none ($corrId)")
   }
 }

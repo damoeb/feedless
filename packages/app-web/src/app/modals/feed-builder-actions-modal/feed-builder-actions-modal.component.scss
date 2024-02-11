@@ -42,6 +42,13 @@ ion-toolbar {
 .website {
   flex: 4;
   border: 2px solid var(--border-color);
+  background: repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)),
+      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 20px
+  );
 
   &--pick-mode {
     --border-color: var(--ion-color-primary);

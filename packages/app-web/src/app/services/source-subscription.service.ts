@@ -14,14 +14,19 @@ import {
   GqlSourceSubscriptionsCreateInput,
   GqlSourceSubscriptionsInput,
   GqlSourceSubscriptionUniqueWhereInput,
+  GqlSourceSubscriptionUpdateInput,
+  GqlUpdateSourceSubscriptionMutation,
+  GqlUpdateSourceSubscriptionMutationVariables,
   ListSourceSubscriptions,
   SourceSubscriptionById,
+  UpdateSourceSubscription
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
 import { ServerSettingsService } from './server-settings.service';
 import { ProfileService } from './profile.service';
 import { Router } from '@angular/router';
+import { responseIterator } from '@apollo/client/link/http/responseIterator';
 
 @Injectable({
   providedIn: 'root',
@@ -79,6 +84,22 @@ export class SourceSubscriptionService {
         },
       })
       .then();
+  }
+
+  updateSubscription(
+    data: GqlSourceSubscriptionUpdateInput,
+  ): Promise<SourceSubscription> {
+    return this.apollo
+      .mutate<
+        GqlUpdateSourceSubscriptionMutation,
+        GqlUpdateSourceSubscriptionMutationVariables
+      >({
+        mutation: UpdateSourceSubscription,
+        variables: {
+          data,
+        },
+      })
+      .then(response => response.data.updateSourceSubscription);
   }
 
   listSourceSubscriptions(

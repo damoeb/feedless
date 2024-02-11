@@ -29,12 +29,16 @@
     }
   }
 
-  &:has(ion-searchbar.searchbar-has-focus) {
+  &:has(ion-input.has-focus) {
     --border-color: rgba(var(--ion-color-primary-rgb), 1);
   }
 
   &:hover {
     --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+
+  ion-input {
+    --border-style: none;
   }
 
   //padding-right: 10px;

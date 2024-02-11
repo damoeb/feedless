@@ -3,7 +3,7 @@
     <ion-label>Create Notebook</ion-label>
   </ion-item>
   <ion-item>
-    <ion-label>Notebooks</ion-label>
+    <ion-label color="medium">Notebooks</ion-label>
   </ion-item>
   <ion-menu-toggle
     *ngFor="let notebook of notebooks; let i = index"
@@ -16,6 +16,7 @@
       routerDirection="root"
     >
       <ion-label>{{ notebook.name }}</ion-label>
+      <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
   </ion-menu-toggle>
 </ion-list>

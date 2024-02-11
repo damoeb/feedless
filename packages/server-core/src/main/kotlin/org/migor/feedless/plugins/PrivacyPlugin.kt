@@ -25,7 +25,7 @@ import javax.imageio.ImageIO
 
 @Service
 @Profile(AppProfiles.database)
-class PrivacyPlugin: MapEntityPlugin {
+class PrivacyPlugin : MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(PrivacyPlugin::class.simpleName)
 
@@ -37,7 +37,7 @@ class PrivacyPlugin: MapEntityPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
 
-//  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
+  //  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
   override fun name(): String = "Privacy & Robustness"
   override fun listed() = true
 
@@ -45,22 +45,26 @@ class PrivacyPlugin: MapEntityPlugin {
     corrId: String,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
+    params: PluginExecutionParamsInput
   ) {
-    val response = httpService.httpGet(corrId, webDocument.url, 200)
-    log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
-    webDocument.url = response.url
+    log.info("[$corrId] mapEntity ${webDocument.url}")
+    val response = httpService.httpGetCaching(corrId, webDocument.url, 200)
+    if (webDocument.url != response.url) {
+      log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
+      webDocument.url = response.url
+    }
 
 //    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
-      webDocument.contentHtml?.let {
-        webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
-      } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
+    webDocument.contentHtml?.let {
+      webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
+    } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
 //    }
   }
 
   fun inlineImages(corrId: String, document: Document): String {
     val images = document.body().select("img[src]")
       .filter { imageElement -> imageElement.attr("src").startsWith("http") }
+      .filterIndexed { index, _ -> index < 30 }
 
     log.info("[$corrId] inline ${images.size} images")
     val encoder = Base64.getEncoder()

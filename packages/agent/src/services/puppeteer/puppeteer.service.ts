@@ -250,6 +250,15 @@ export class PuppeteerService {
     page: Page,
     totalTimeUsed: number,
   ): Promise<ScrapeDebugResponseInput> {
+    const given = async (condition: boolean, label: string): Promise<void> => {
+      if (condition) {
+        this.log.log(`[${corrId}] appending ${label}`)
+        return Promise.resolve()
+      } else {
+        return Promise.reject('')
+      }
+    }
+
     return {
       corrId,
       console: logs,

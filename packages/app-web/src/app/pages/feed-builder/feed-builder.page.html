@@ -1,10 +1,11 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Create a Feed</ion-title>
-  </ion-toolbar>
-</ion-header>
+<!--<ion-header>-->
+<!--  <ion-toolbar>-->
+<!--    <ion-title>Create a Feed</ion-title>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
 <ion-content>
   <app-feed-builder
+    [hideSearchBar]="false"
     (selectedFeedChanged)="handleFeed($event)"
   ></app-feed-builder>
 </ion-content>

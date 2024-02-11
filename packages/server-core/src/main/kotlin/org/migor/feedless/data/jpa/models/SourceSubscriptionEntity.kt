@@ -20,6 +20,7 @@ import jakarta.validation.constraints.Size
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
+import org.hibernate.annotations.UpdateTimestamp
 import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
@@ -38,7 +39,7 @@ import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
 import java.util.*
 
-data class PluginRef(val id: String, val params: PluginExecutionParamsInput?)
+data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
 
 @Entity
 @Table(name = "t_source_subscription")
@@ -72,8 +73,9 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open var retentionMaxAgeDays: Int? = null
 
   @Temporal(TemporalType.TIMESTAMP)
+  @UpdateTimestamp
   @Column
-  open var lastUpdatedAt: Date? = null
+  open var lastUpdatedAt: Date = Date()
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column
@@ -83,12 +85,13 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open var archived: Boolean = false
 
   @Column(nullable = false)
+  @Deprecated("comes from user")
   open lateinit var product: ProductName
 
   @Type(JsonType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
   @Basic(fetch = FetchType.LAZY)
-  open var plugins: List<PluginRef> = emptyList()
+  open var plugins: List<org.migor.feedless.data.jpa.models.PluginExecution> = emptyList()
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column
@@ -100,7 +103,13 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id, insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_native_feed__user"))
+  @JoinColumn(
+    name = StandardJpaFields.ownerId,
+    referencedColumnName = StandardJpaFields.id,
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_native_feed__user")
+  )
   open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
@@ -118,7 +127,11 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  @JoinColumn(name = "segmentation_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_source_subscription__segmentation"))
+  @JoinColumn(
+    name = "segmentation_id",
+    referencedColumnName = "id",
+    foreignKey = ForeignKey(name = "fk_source_subscription__segmentation")
+  )
   open var segmentation: SegmentationEntity? = null
 
   @PrePersist
@@ -134,12 +147,15 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     .disabledFrom(disabledFrom?.time)
     .plugins(plugins.map { it.toDto() })
     .archived(archived)
-    .retention(Retention.newBuilder()
-      .maxItems(retentionMaxItems)
-      .maxAgeDays(retentionMaxAgeDays)
-      .build())
+    .retention(
+      Retention.newBuilder()
+        .maxItems(retentionMaxItems)
+        .maxAgeDays(retentionMaxAgeDays)
+        .build()
+    )
     .visibility(visibility.toDto())
     .createdAt(createdAt.time)
+    .updatedAt(lastUpdatedAt.time)
     .description(description)
     .title(title)
     .segmented(segmentation?.toDto())
@@ -147,7 +163,7 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     .build()
 }
 
-private fun PluginRef.toDto(): PluginExecution {
+private fun org.migor.feedless.data.jpa.models.PluginExecution.toDto(): PluginExecution {
   return PluginExecution.newBuilder()
     .pluginId(id)
     .params(params?.toDto())

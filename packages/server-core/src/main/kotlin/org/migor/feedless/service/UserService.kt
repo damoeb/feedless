@@ -4,15 +4,17 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiErrorCode
-import org.migor.feedless.api.ApiException
+import org.migor.feedless.BadRequestException
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureName
+import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
+import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,15 +57,20 @@ class UserService {
     email: String,
     productName: ProductName,
     authSource: AuthSource,
-    plan: PlanName,
+    planName: PlanName,
   ): UserEntity {
     if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
-      throw IllegalArgumentException("Sign Up is deactivated")
+      throw BadRequestException("sign-up is deactivated")
+    }
+    val plan = planDAO.findByNameAndProduct(planName, productName)
+    plan ?: throw BadRequestException("plan $planName for product $productName does not exist")
+
+    if (plan.availability == PlanAvailability.unavailable) {
+      throw BadRequestException("plan $planName for product $productName is unavailable")
     }
 
-
     if (userDAO.existsByEmail(email)) {
-      throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists ($corrId)")
+      throw BadRequestException("user already exists")
     }
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("[$corrId] create user $email")
@@ -73,7 +80,7 @@ class UserService {
     user.anonymous = false
     user.product = productName
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByNameAndProduct(plan, productName)!!.id
+    user.planId = planDAO.findByNameAndProduct(planName, productName)!!.id
 
     if (!user.anonymous && !user.root) {
       mailService.sendWelcomeMail(corrId, user)
@@ -91,7 +98,7 @@ class UserService {
   }
 
   fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
-    val user = userDAO.findById(userId).orElseThrow { IllegalArgumentException("user not found") }
+    val user = userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
     var changed = false
     data.acceptedTermsAndServices?.let {
       if (it.set) {

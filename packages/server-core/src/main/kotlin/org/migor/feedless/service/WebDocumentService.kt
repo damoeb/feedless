@@ -4,6 +4,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
+import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.slf4j.LoggerFactory
@@ -41,15 +42,19 @@ class WebDocumentService {
 
   fun applyRetentionStrategy(corrId: String, subscription: SourceSubscriptionEntity) {
     val retentionSize = planConstraintsService.coerceRetentionMaxItems(subscription.retentionMaxItems, subscription.ownerId)
-    log.info("applying retention with maxItems=$retentionSize")
+    log.info("[$corrId] applying retention with maxItems=$retentionSize")
     webDocumentDAO.deleteAllBySubscriptionIdAndStatusWithSkip(subscription.id, ReleaseStatus.released, retentionSize)
 
     planConstraintsService.coerceRetentionMaxAgeDays(subscription.retentionMaxAgeDays)
       ?.let {maxAgeDays ->
-      log.info("applying retention with maxAgeDays=$maxAgeDays")
+      log.info("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
       val maxDate = Date.from(LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant())
       webDocumentDAO.deleteAllBySubscriptionIdAndCreatedAtBeforeAndStatus(subscription.id, maxDate, ReleaseStatus.released)
-    }
+    } ?: log.info("[$corrId] no retention with maxAgeDays given")
+  }
+
+  fun deleteWebDocumentById(corrId: String, user: UserEntity, id: UUID) {
+    webDocumentDAO.deleteByIdAndOwnerId(id, user.id)
   }
 
 

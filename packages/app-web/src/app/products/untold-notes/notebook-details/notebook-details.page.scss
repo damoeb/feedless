@@ -32,7 +32,22 @@ ion-content::part(scroll) {
   }
 }
 
+.searchresult_text {
+  white-space: pre;
+  max-height: 100px;
+}
+
 app-code-editor {
   display: flex;
   flex: 1;
+}
+
+ion-searchbar {
+  @include unless-control();
+  --box-shadow: none;
+  &.searchbar-has-focus {
+    border-color: var(--app-border-color-focus);
+  }
+  width: 500px;
+  margin: auto;
 }

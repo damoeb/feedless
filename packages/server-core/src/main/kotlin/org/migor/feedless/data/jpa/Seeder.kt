@@ -2,8 +2,7 @@ package org.migor.feedless.data.jpa
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiErrorCode
-import org.migor.feedless.api.ApiException
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
@@ -99,7 +98,7 @@ class Seeder {
     isAnonymous: Boolean = false
   ): UserEntity {
     if (userDAO.existsByEmail(email)) {
-      throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
+      throw BadRequestException("user already exists")
     }
     log.info("create internal user $email")
     val user = UserEntity()
@@ -133,7 +132,6 @@ class Seeder {
         FeatureName.itemWebhookForwardBool to asBoolFeature(true),
       )
     )
-
     seedPlansForProduct(ProductName.rssBuilder)
     seedPlansForProduct(ProductName.feedless)
     seedPlansForProduct(ProductName.visualDiff)
@@ -141,6 +139,9 @@ class Seeder {
   }
 
   private fun seedPlansForProduct(product: ProductName) {
+    persistPlan(
+      PlanName.waitlist, 0.0, PlanAvailability.availableButHidden, product, features = emptyMap()
+    )
     persistPlan(
       PlanName.minimal, 0.0, PlanAvailability.available, product, primary = true, mapOf(
         FeatureName.rateLimitInt to asIntFeature(40),
@@ -155,7 +156,8 @@ class Seeder {
         FeatureName.apiBool to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(true),
         FeatureName.canLogin to asBoolFeature(true),
-        FeatureName.canCreateUser to asBoolFeature(false),
+        FeatureName.canCreateUser to asBoolFeature(true), // wait list
+        FeatureName.canSignUp to asBoolFeature(false),
         FeatureName.canCreateAsAnonymous to asBoolFeature(true),
         FeatureName.hasWaitList to asBoolFeature(true),
         FeatureName.itemEmailForwardBool to asBoolFeature(false),

@@ -1,12 +1,12 @@
 <div class="flex__column">
-  <div>
+  <div *ngIf="!hideSearchBar">
     <ion-toolbar style="padding: 10px">
       <app-searchbar
         (querySubmit)="handleQuery($event)"
-        buttonText="Create"
         [value]="url"
         [loading]="loading"
         (cancelReceived)="handleCancel()"
+        buttonText="Create"
         color="primary"
         placeholder="Type a Url of a website"
       ></app-searchbar>
@@ -42,10 +42,12 @@
       [scrapeRequest]="scrapeRequest"
       [scrapeResponse]="scrapeResponse"
     >
-      <ion-item (click)="showActionsModal()"
-                class="cy-enable-js-button"
-                [button]="true"
-                topSlot>
+      <ion-item
+        (click)="showActionsModal()"
+        class="cy-enable-js-button"
+        [button]="true"
+        topSlot
+      >
         Enable Javascript
         <ion-icon name="settings-outline" slot="end"></ion-icon>
       </ion-item>

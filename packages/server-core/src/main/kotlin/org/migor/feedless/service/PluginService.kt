@@ -6,8 +6,8 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.harvest.mapToPluginInstance
 import org.migor.feedless.plugins.FeedlessPlugin
 import org.migor.feedless.plugins.FragmentTransformerPlugin
-import org.migor.feedless.plugins.MailFormatter
-import org.migor.feedless.plugins.MailFormatterPlugin
+import org.migor.feedless.plugins.MailProvider
+import org.migor.feedless.plugins.MailProviderPlugin
 import org.migor.feedless.plugins.MapEntityPlugin
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +32,7 @@ class PluginService {
   lateinit var environment: Environment
 
   @Autowired
-  lateinit var defaultMailFormatterService: MailFormatterService
+  lateinit var defaultMailFormatterService: MailProviderService
 
   @PostConstruct
   fun postConstruct() {
@@ -54,14 +54,14 @@ class PluginService {
     return entityPlugins.plus(transformerPlugins)
   }
 
-  final inline fun <reified T:FeedlessPlugin> resolveById(id: String): T? {
+  final inline fun <reified T : FeedlessPlugin> resolveById(id: String): T? {
     return plugins.filter { it.id() == id }
       .filterIsInstance<T>()
       .firstOrNull()
   }
 
-  fun resolveMailFormatter(sub: SourceSubscriptionEntity): Pair<MailFormatter, PluginExecutionParamsInput?> {
-    return sub.plugins.mapToPluginInstance<MailFormatterPlugin>(this)
-      .firstOrNull() ?: Pair(defaultMailFormatterService, null)
+  fun resolveMailFormatter(sub: SourceSubscriptionEntity): Pair<MailProvider, PluginExecutionParamsInput> {
+    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
+      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput.newBuilder().build())
   }
 }

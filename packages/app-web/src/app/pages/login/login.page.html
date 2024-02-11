@@ -1,4 +1,4 @@
-<ion-header *ngIf="!canCreateUser">
+<ion-header *ngIf="!canSignUp">
   <ion-toolbar color="danger">
     <ion-text class="ion-margin-horizontal">
       Sign Up <span *ngIf="!canLogin">and Log In</span> is currently
@@ -35,7 +35,7 @@
 
       <div
         class="ion-margin-top"
-        *ngIf="!canLogin && !hasWaitList && !canCreateUser"
+        *ngIf="!canLogin && !hasWaitList && !canSignUp"
       >
         <h3>
           The Doors here are closed for now. Join us on

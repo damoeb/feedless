@@ -6,6 +6,11 @@ import graphql.GraphQLError
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.DataFetcherExceptionHandlerParameters
 import graphql.execution.DataFetcherExceptionHandlerResult
+import org.migor.feedless.BadRequestException
+import org.migor.feedless.HarvestException
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.UnavailableException
 import org.migor.feedless.api.ApiParams
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -20,41 +25,42 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
   private val log = LoggerFactory.getLogger(CustomExceptionHandler::class.simpleName)
 
   override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult> {
-    return when(handlerParameters?.exception?.cause) {
-      is RuntimeException, is IllegalAccessException, is UnknownHostException -> run {
-        val corrId = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
-//        handlerParameters.exception.printStackTrace()
-        log.warn("[$corrId] ${handlerParameters.exception.message}")
-//        handlerParameters.exception.printStackTrace();
-//        val debugInfo: MutableMap<String, Any> = HashMap()
-//      debugInfo["somefield"] = "somevalue"
-      val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
-        .message("${handlerParameters.exception.message} (corrId: $corrId)")
-//        .debugInfo(debugInfo)
-        .errorType(ErrorType.FAILED_PRECONDITION)
-        .path(handlerParameters.path).build()
-      val result: DataFetcherExceptionHandlerResult = DataFetcherExceptionHandlerResult.newResult()
-        .error(graphqlError)
-        .build()
-      CompletableFuture.completedFuture(result)
+    return when(handlerParameters?.exception) {
+      is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(handlerParameters.exception, handlerParameters)
+      else -> when(handlerParameters?.exception?.cause) {
+        is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(handlerParameters.exception.cause, handlerParameters)
+        else -> super.handleException(handlerParameters)
       }
-      else -> super.handleException(handlerParameters)
     }
   }
-  //  fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters): CompletableFuture<DataFetcherExceptionHandlerResult> {
-//    return if (handlerParameters.getException() is MyException) {
-//      val debugInfo: MutableMap<String, Any> = HashMap()
-//      debugInfo["somefield"] = "somevalue"
-//      val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
-//        .message("This custom thing went wrong!")
-//        .debugInfo(debugInfo)
-//        .path(handlerParameters.getPath()).build()
-//      val result: DataFetcherExceptionHandlerResult = DataFetcherExceptionHandlerResult.newResult()
-//        .error(graphqlError)
-//        .build()
-//      CompletableFuture.completedFuture(result)
-//    } else {
-//      super@DataFetcherExceptionHandler.handleException(handlerParameters)
-//    }
-//  }
+
+  private fun toGraphqlError(throwable: Throwable?, handlerParameters: DataFetcherExceptionHandlerParameters): CompletableFuture<DataFetcherExceptionHandlerResult> {
+    val corrId =
+      (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
+
+    val errorType = toErrorType(throwable)
+    log.warn("[$corrId] ${errorType.name} ${handlerParameters.exception.message}")
+    val debugInfo: MutableMap<String, Any> = HashMap()
+    debugInfo["corrId"] = corrId
+    val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
+      .message(handlerParameters.exception.message)
+      .debugInfo(debugInfo)
+      .errorType(errorType)
+      .path(handlerParameters.path).build()
+    val result: DataFetcherExceptionHandlerResult = DataFetcherExceptionHandlerResult.newResult()
+      .error(graphqlError)
+      .build()
+    return CompletableFuture.completedFuture(result)
+  }
+
+  private fun toErrorType(throwable: Throwable?): ErrorType {
+    return when(throwable) {
+      is PermissionDeniedException -> ErrorType.PERMISSION_DENIED
+      is UnavailableException -> ErrorType.UNAVAILABLE
+      is BadRequestException -> ErrorType.BAD_REQUEST
+      is NotFoundException -> ErrorType.NOT_FOUND
+      is HarvestException -> ErrorType.FAILED_PRECONDITION
+      else -> ErrorType.UNKNOWN
+    }
+  }
 }

@@ -83,4 +83,12 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   fromNow(futureTimestamp: number): string {
     return dayjs(futureTimestamp).toNow(true);
   }
+
+  deleteWebDocument(document: WebDocument) {
+    return this.webDocumentService.removeById({
+      where: {
+        id: document.id,
+      },
+    });
+  }
 }

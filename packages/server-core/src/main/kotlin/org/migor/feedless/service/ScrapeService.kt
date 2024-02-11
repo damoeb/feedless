@@ -8,6 +8,7 @@ import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.asRemoteNativeFeed
 import org.migor.feedless.feed.parser.FeedType
@@ -61,7 +62,7 @@ class ScrapeService {
     log.info("[$corrId] scrape ${scrapeRequest.page.url}")
 
     if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.imageBased !== null }) {
-      throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering ($corrId)")
+      throw IllegalArgumentException("[${corrId}] emitting pixel requires prerendering ($corrId)")
     }
 
     meterRegistry.counter(
@@ -296,7 +297,7 @@ class ScrapeService {
 
     val data = pluginService.resolveFragmentTransformerById(it.pluginId)
       ?.transformFragment(corrId, element, it, url)
-      ?: throw RuntimeException("plugin '${it.pluginId}' does not exist ($corrId)")
+      ?: throw BadRequestException("plugin '${it.pluginId}' does not exist ($corrId)")
 
     return createJsonField(it.pluginId, data)
   }

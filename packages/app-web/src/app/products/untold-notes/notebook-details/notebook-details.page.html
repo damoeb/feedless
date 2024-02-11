@@ -1,59 +1,111 @@
+<ion-header [translucent]="true" style="box-shadow: none">
+  <ion-toolbar style="--background: transparent">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+      <ion-button (click)="createNote()">
+        <ion-icon name="add-outline"
+                  slot="start"></ion-icon>
+        New Note
+      </ion-button>
+    </ion-buttons>
+
+    <div class="flex__row ion-margin-horizontal">
+      <form style="flex: 1">
+        <ion-searchbar #searchbar
+                       [formControl]="queryFc"
+                       (ionFocus)="toggleSearchMode(true)"
+                       [showClearButton]="true"
+                       placeholder="Search your Notebook"></ion-searchbar>
+      </form>
+    </div>
+
+    <ion-buttons slot="end">
+<!--      <app-dark-mode-button></app-dark-mode-button>-->
+      <ion-button fill="outline">
+        {{openedNotes.length}}
+      </ion-button>
+      <ion-button id="open-settings-modal">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+
+      <ion-popover
+        [showBackdrop]="false"
+        trigger="open-settings-modal"
+        triggerAction="click"
+      >
+        <ng-template>
+          <!--          <ion-header>-->
+          <!--            <ion-toolbar>-->
+          <!--              <ion-title>Text Preferences</ion-title>-->
+          <!--            </ion-toolbar>-->
+          <!--          </ion-header>-->
+          <ion-content class="ion-padding">
+            <ion-list>
+              <ion-item routerLink="/plans">
+                Pricing
+              </ion-item>
+              <app-login-button tabindex="-1"></app-login-button>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
   <ion-spinner *ngIf="systemBusy" name="dots"></ion-spinner>
   <div class="flex__row" *ngIf="!systemBusy">
-    <div style="width: 300px; position: relative; overflow-y: auto">
-      <ion-list class="results">
-        <ion-spinner *ngIf="busy" name="dots"></ion-spinner>
-        <ng-container *ngIf="!busy">
-          <ng-container *ngIf="searchResults.length === 0">
-            <ion-item>
-              <ion-label> No Results </ion-label>
+    <div class="flex">
+      <div class="flex__column" *ngIf="searchMode">
+        <ion-list class="results">
+          <ion-spinner *ngIf="busy" name="dots"></ion-spinner>
+          <ng-container *ngIf="!busy">
+            <ng-container *ngIf="searchResults.length === 0">
+              <ion-item>
+                <ion-label> No Results </ion-label>
+              </ion-item>
+            </ng-container>
+            <ion-item
+              *ngFor="let searchResult of searchResults; let i = index"
+              [button]="!searchResult.isGroup"
+              (mouseenter)="focussedIndex = i"
+              (click)="searchResult.onClick()"
+              [ngClass]="{
+                      'in-focus': i === focussedIndex,
+                      'is-group': searchResult.isGroup,
+                      }"
+            >
+              <ion-label>
+                <h3>{{searchResult.label}}</h3>
+                <p *ngIf="!searchResult.isGroup" class="searchresult_text" [innerHtml]="searchResult.textHighlighted"></p>
+              </ion-label>
             </ion-item>
           </ng-container>
-          <ion-item
-            *ngFor="let searchResult of searchResults; let i = index"
-            [button]="!searchResult.isGroup"
-            (mouseenter)="focussedIndex = i"
-            (click)="searchResult.onClick()"
-            [ngClass]="{
-                    'in-focus': i === focussedIndex,
-                    'is-group': searchResult.isGroup,
-                    }"
+        </ion-list>
+      </div>
+      <div class="flex__column" *ngIf="!searchMode && currentNote" style="max-width: 900px; min-width: 900px; margin: auto">
+        <ion-toolbar style="--background: none;">
+          <ion-text color="medium" class="ion-margin-horizontal"
+            >{{currentNote.name}}<span *ngIf="currentNote.dirty">*</span
+            ></ion-text
           >
-            <ion-label>
-              <h3>{{searchResult.label}}</h3>
-              <!--              <p>{{searchResult.hint}}</p>-->
-            </ion-label>
-          </ion-item>
-        </ng-container>
-      </ion-list>
-    </div>
-    <div class="flex">
-      <div class="flex__column">
-        <div *ngFor="let note of openedNotes">
-          <ion-toolbar>
-            <ion-title
-              >{{note.name || 'New Note'}}<span *ngIf="note.dirty"
-                >*</span
-              ></ion-title
-            >
-            <ion-buttons slot="end">
-              <!--              <ion-button>-->
-              <!--                <ion-icon name="trash-outline"></ion-icon>-->
-              <!--              </ion-button>-->
-              <ion-button (click)="closeNote(note)">
-                <ion-icon name="close-outline"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-          <app-code-editor
-            [autoSuggestionsProvider]="loadAutoSuggestions"
-            style="min-height: 400px"
-            [text]="note.text"
-            (triggerQuery)="handleQuery($event)"
-            (textChange)="note.textChangeHandler($event)"
-          ></app-code-editor>
-        </div>
+          <ion-buttons slot="end">
+            <!--              <ion-button>-->
+            <!--                <ion-icon name="trash-outline"></ion-icon>-->
+            <!--              </ion-button>-->
+            <ion-button (click)="closeNote(currentNote)">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+        <app-code-editor
+          [autoSuggestionsProvider]="loadAutoSuggestions"
+          style="min-height: 400px"
+          [text]="currentNote.text"
+          (triggerQuery)="handleQuery($event)"
+          (textChange)="currentNote.textChangeHandler($event)"
+        ></app-code-editor>
       </div>
     </div>
   </div>

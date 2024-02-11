@@ -5,34 +5,29 @@ import { ProfileService } from '../../../services/profile.service';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { AlertController } from '@ionic/angular';
-import { debounce, DebouncedFunc, uniq, uniqBy } from 'lodash-es';
+import { debounce, DebouncedFunc, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
-import { GqlVisibility } from '../../../../generated/graphql';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { Completion } from '@codemirror/autocomplete';
-import { environment } from '../../../../environments/environment';
+import { notebookRepository } from './notebook-repository';
+import { UntoldNotesProductModule } from '../untold-notes-product.module';
 
-export type NotebookHead = {
+export interface Notebook {
   id: string;
   name: string;
-  // lastOpened: Date
-};
-
-export type Notebook = {
-  head: NotebookHead;
   lastSyncAt: Date | null;
-  notes: Note[];
 };
 
-export type Note = {
+export interface Note {
   id: string;
   name: string;
   text: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
   metadata?: string;
   fileType?: string;
+  notebookId: string;
 };
 
 export type AppAction = {
@@ -43,7 +38,7 @@ export type AppAction = {
 };
 export type SearchResultGroup = {
   name: string;
-  notes?: Note[];
+  notes?: () => Promise<Note[]>;
   actions?: AppAction[];
 };
 
@@ -152,17 +147,15 @@ export class NotebookService {
 
   private readonly LIMIT = 30;
 
-  private notebooks: NotebookHead[] = [];
-  private store: Note[] = [];
+  private notebooks: Notebook[] = [];
 
-  notebooksChanges = new ReplaySubject<NotebookHead[]>(1);
+  notebooksChanges = new ReplaySubject<Notebook[]>(1);
   notesChanges = new ReplaySubject<SearchResultGroup[]>(1);
-  openedNoteChanges = new ReplaySubject<Note>(1);
   queryChanges = new ReplaySubject<string>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
-  focusSearchbar = new ReplaySubject<void>(1);
   private index: Flexsearch.Document<IndexDocument>;
   searchAsync: DebouncedFunc<(query: string) => void>;
+  private currentNotebookId: string;
 
   constructor(
     private readonly profileService: ProfileService,
@@ -171,32 +164,26 @@ export class NotebookService {
     private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly webDocumentService: WebDocumentService,
   ) {
-    this.notebooks = this.loadLocalNotebooks();
-    this.notebooksChanges.next(this.notebooks);
     this.searchAsync = debounce(this.searchAsyncInternal, 400);
+    this.init();
   }
 
   async createNotebook(name: string) {
     console.log('createNotebook');
-    const head: NotebookHead = {
+    const notebook: Notebook = {
       id: uuidv4(),
       name,
-    };
-    const notebook: Notebook = {
-      head,
       lastSyncAt: null,
-      notes: [],
     };
 
-    this.persistLocalNotebook(notebook);
-    await this.persistRemoteNotebook(notebook);
-    this.notebooks.push(head);
+    notebookRepository.notebooks.add(notebook);
+    this.notebooks.push(notebook);
     await new Promise((resolve) => setTimeout(resolve, 500));
     this.notebooksChanges.next(this.notebooks);
     return notebook;
   }
 
-  suggestByType(query: string, type: string): Completion[] {
+  async suggestByType(query: string, type: string): Promise<Completion[]> {
     console.log('query', query, type);
     switch (type) {
       case 'Hashtag':
@@ -224,9 +211,7 @@ export class NotebookService {
       const groups: SearchResultGroup[] = results.map((perField) => {
         return {
           name: perField.field,
-          notes: perField.result.map((id) =>
-            this.store.find((note) => note.id == id),
-          ),
+          notes: () => notebookRepository.notes.bulkGet(perField.result.map((id) => `${id}`)),
         };
       });
       this.notesChanges.next(groups);
@@ -242,51 +227,44 @@ export class NotebookService {
       name: this.createNoteId(),
       text: `# ${name}\n\n${text}`,
       createdAt: new Date(),
+      updatedAt: new Date(),
+      notebookId: this.currentNotebookId
     };
-    this.store.push(note);
+    notebookRepository.notes.add(note);
     this.index.add({
       id: note.id,
       note,
     });
-    // this.searchAsync(name);
+    this.searchAsync(name);
     return note;
   }
 
   async openNotebook(notebookId: string) {
+    this.currentNotebookId = notebookId;
     console.log('openNotebook', notebookId);
     this.systemBusyChanges.next(true);
 
-    const localNotebook: Notebook = this.loadLocalNotebook(notebookId);
-    const remoteNotebook = await this.loadRemoteNotebook(
-      notebookId,
-      localNotebook?.lastSyncAt,
-    );
+    const localNotebook: Notebook = await notebookRepository.notebooks.get(notebookId);
 
-    if (localNotebook || remoteNotebook) {
+    if (localNotebook) {
       this.createIndex();
 
-      const notes = [
-        ...(localNotebook?.notes ?? []),
-        ...(remoteNotebook?.notes ?? []),
-      ];
-
+      const notes = await notebookRepository.notes.where({notebookId}).toArray();
       notes.forEach((note) =>
         this.index.add({
           id: note.id,
           note,
         }),
       );
-      this.store = [];
-      this.store.push(...notes);
 
       if (notes.length === 0) {
         this.createNote('First Note', firstNoteBody);
       }
 
-      if (remoteNotebook) {
-        remoteNotebook.notes.push(...(localNotebook?.notes ?? []));
-        this.persistLocalNotebook(remoteNotebook);
-      }
+      // if (remoteNotebook) {
+      //   remoteNotebook.notes.push(...(await localNotebook?.notes()));
+      //   this.persistLocalNotebook(remoteNotebook);
+      // }
       this.propagateRecentNotes();
 
       this.systemBusyChanges.next(false);
@@ -314,7 +292,10 @@ export class NotebookService {
     this.notesChanges.next([
       {
         name: 'Recent',
-        notes: this.store.filter((_, index) => index < this.LIMIT),
+        notes: () => notebookRepository.notes
+          .where('notebookId').equals(this.currentNotebookId)
+          .limit(this.LIMIT)
+          .sortBy('updatedAt'),
       },
     ]);
   }
@@ -340,104 +321,55 @@ export class NotebookService {
     });
   }
 
-  private persistLocalNotebook(notebook: Notebook) {
-    const headIndex = this.loadLocalNotebooks();
-    headIndex.push(notebook.head);
-    localStorage.setItem(
-      `unless-notebook-index`,
-      JSON.stringify(uniqBy(headIndex, 'head.id')),
-    );
-    localStorage.setItem(
-      `unless-notebook-${notebook.head.id}`,
-      JSON.stringify(notebook),
-    );
+  updateNote(note: Note) {
+    notebookRepository.notes.update(note.id, note)
   }
 
-  private loadLocalNotebooks(): NotebookHead[] {
-    const persistedHeadIndex = localStorage.getItem(`unless-notebook-index`);
-    return persistedHeadIndex ? JSON.parse(persistedHeadIndex) : [];
-  }
+  // private async loadRemoteNotebook(
+  //   notebookId: string,
+  //   lastSyncAt: Date,
+  // ): Promise<Notebook> {
+  //   if (this.profileService.isAuthenticated()) {
+  //     // sync or create
+  //     const sourceSubscription =
+  //       await this.sourceSubscriptionService.getSubscriptionById(notebookId);
+  //
+  //     return {
+  //       id: sourceSubscription.id,
+  //       name: sourceSubscription.title,
+  //       lastSyncAt: new Date(),
+  //       notes: () => this.loadRemoteNotes(notebookId, lastSyncAt),
+  //     };
+  //   }
+  // }
 
-  private syncWithRemote() {
-    // todo
-    // this.sourceSubscriptionService.listSourceSubscriptions({
-    //   cursor: {
-    //     page: 0
-    //   }
-    // })
-    this.webDocumentService.findAllByStreamId({
-      cursor: {
-        page: 0,
-      },
-      where: {
-        sourceSubscription: {
-          where: {
-            id: '',
-          },
-        },
-        updatedAt: {
-          after: {
-            value: '',
-          },
-        },
-      },
-    });
-  }
+  // private async loadRemoteNotes(
+  //   notebookId: string,
+  //   since: Date,
+  // ): Promise<Note[]> {
+  //   // this.webDocumentService.findAllByStreamId()
+  //   return [];
+  // }
 
-  updateNode(openedNote: Note) {}
-
-  private loadLocalNotebook(notebookId: string): Notebook {
-    const data = localStorage.getItem(`unless-notebook-${notebookId}`);
-    if (data) {
-      return JSON.parse(data);
-    }
-  }
-
-  private async loadRemoteNotebook(
-    notebookId: string,
-    lastSyncAt: Date,
-  ): Promise<Notebook> {
-    if (this.profileService.isAuthenticated()) {
-      // sync or create
-      const sourceSubscription =
-        await this.sourceSubscriptionService.getSubscriptionById(notebookId);
-
-      return {
-        head: {
-          id: sourceSubscription.id,
-          name: sourceSubscription.title,
-        },
-        lastSyncAt: new Date(),
-        notes: await this.loadRemoteNotes(notebookId, lastSyncAt),
-      };
-    }
-  }
-
-  private async loadRemoteNotes(
-    notebookId: string,
-    since: Date,
-  ): Promise<Note[]> {
-    // this.webDocumentService.findAllByStreamId()
-    return [];
-  }
-
-  private async persistRemoteNotebook(notebook: Notebook) {
-    if (this.profileService.isAuthenticated()) {
-      await this.sourceSubscriptionService.createSubscriptions({
-        subscriptions: [
-          {
-            sources: [],
-            product: environment.product(),
-            sinkOptions: {
-              title: notebook.head.name,
-              description: '',
-              visibility: GqlVisibility.IsPrivate,
-            },
-          },
-        ],
-      });
-    }
-  }
+  // private async persistRemoteNotebook(notebook: Notebook) {
+  //   if (this.profileService.isAuthenticated()) {
+  //     const sub = await this.sourceSubscriptionService.createSubscriptions({
+  //       subscriptions: [
+  //         {
+  //           sources: [],
+  //           product: environment.product(),
+  //           sinkOptions: {
+  //             title: notebook.name,
+  //             description: '',
+  //             visibility: GqlVisibility.IsPrivate,
+  //           },
+  //         },
+  //       ],
+  //     }).then(response => response[0]);
+  //
+  //     // todo remove notebook by id
+  //   }
+  // }
 
   private getHint(field: string, query: string, note: Note) {
     const fieldValue = note[field];
@@ -451,23 +383,20 @@ export class NotebookService {
     }
   }
 
-  private suggestNotes(query: string) {
+  private async suggestNotes(query: string): Promise<Completion[]> {
     if (query.length > 0) {
       const results = this.index.search({
         query,
         limit: this.LIMIT,
       });
-      console.log(results);
-      return uniq(
-        results.flatMap((perField) => {
+      return Promise.all(results.flatMap((perField) => {
           return perField.result
-            .map((id) => this.store.find((note) => note.id == id))
-            .map((note) => ({
-              apply: `[${note.name}]`,
-              label: this.getHint(perField.field, query, note),
-            }));
-        }),
-      );
+            .map((id) => notebookRepository.notes.get(id.toString()).then(note => ({
+                apply: `[${note.name}]`,
+                label: this.getHint(perField.field, query, note),
+              }))
+            )
+        }));
     } else {
       return [
         {
@@ -480,5 +409,10 @@ export class NotebookService {
 
   private createNoteId(): string {
     return `${dayjs().format('YYYY-MM')}/${uuidv4().split('-')[0]}`;
+  }
+
+  private async init() {
+    this.notebooks = await notebookRepository.notebooks.toArray();
+    this.notebooksChanges.next(this.notebooks);
   }
 }

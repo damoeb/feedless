@@ -5,20 +5,23 @@ import org.junit.jupiter.api.Test
 
 internal class InMemoryRequestThrottleServiceTest {
 
-    @BeforeEach
-    fun setUp() {
-    }
+  @BeforeEach
+  fun setUp() {
+  }
 
-    @Test
-    fun testAnonymousTokenGetThrottled() {
-    }
-    @Test
-    fun testUserTokenGetThrottled() {
-    }
-    @Test
-    fun testWebTokenGetThrottled() {
-    }
-    @Test
-    fun testBucketsGetCleanedUp() {
-    }
+  @Test
+  fun testAnonymousTokenGetThrottled() {
+  }
+
+  @Test
+  fun testUserTokenGetThrottled() {
+  }
+
+  @Test
+  fun testWebTokenGetThrottled() {
+  }
+
+  @Test
+  fun testBucketsGetCleanedUp() {
+  }
 }

@@ -35,6 +35,6 @@ class MailController {
     mailService.updateMailForwardById(UUID.fromString(mailForwardId), true)
 
     return ResponseEntity.ok()
-        .body("Mail Tracker has been authorized")
+      .body("Change Tracker has been authorized")
   }
 }

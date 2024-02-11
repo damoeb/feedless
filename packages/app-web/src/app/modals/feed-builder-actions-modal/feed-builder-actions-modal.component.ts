@@ -14,11 +14,13 @@ import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,
-  GqlScrapeDebugTimes, GqlScrapeRequest, GqlScrapeRequestInput,
+  GqlScrapeDebugTimes,
+  GqlScrapeRequest,
+  GqlScrapeRequestInput,
   GqlScrapeResponse,
   GqlViewPort,
   GqlXyPosition,
-  Maybe
+  Maybe,
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
@@ -39,12 +41,7 @@ export type FeedBuilderScrapeResponse = Pick<
 > & {
   debug: Pick<
     GqlScrapeDebugResponse,
-    | 'console'
-    | 'cookies'
-    | 'contentType'
-    | 'statusCode'
-    | 'screenshot'
-    | 'html'
+    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
   > & {
     metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
     viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
@@ -53,8 +50,8 @@ export type FeedBuilderScrapeResponse = Pick<
 };
 
 export interface FeedBuilderData {
-  request: GqlScrapeRequestInput,
-  response: FeedBuilderScrapeResponse
+  request: GqlScrapeRequestInput;
+  response: FeedBuilderScrapeResponse;
 }
 
 @Component({
@@ -77,7 +74,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
   private subscriptions: Subscription[] = [];
-  private scrapeResponse: FeedBuilderScrapeResponse;
+  scrapeResponse: FeedBuilderScrapeResponse;
   errorMessage: string;
 
   constructor(
@@ -252,6 +249,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
               transformers: [
                 {
                   pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+                  params: {}
                 },
               ],
             },
@@ -260,7 +258,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       ],
       debug: {
         screenshot: debug,
-        html: debug
+        html: debug,
       },
     };
   }

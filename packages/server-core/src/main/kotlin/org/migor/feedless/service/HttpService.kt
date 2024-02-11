@@ -7,14 +7,14 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
+import org.migor.feedless.HarvestException
+import org.migor.feedless.HostOverloadingException
+import org.migor.feedless.MethodNotAllowedException
+import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.ServiceUnavailableException
+import org.migor.feedless.SiteNotFoundException
+import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.harvest.HarvestException
-import org.migor.feedless.harvest.HostOverloadingException
-import org.migor.feedless.harvest.MethodNotAllowedException
-import org.migor.feedless.harvest.ResumableHarvestException
-import org.migor.feedless.harvest.ServiceUnavailableException
-import org.migor.feedless.harvest.SiteNotFoundException
-import org.migor.feedless.harvest.TemporaryServerException
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.URL
-import java.net.UnknownHostException
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -133,8 +132,8 @@ class HttpService {
           429 -> throw HostOverloadingException(corrId, "429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException(corrId, "400 received", Duration.ofHours(1))
           HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          404, 403 -> throw SiteNotFoundException(corrId)
-          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode} ($corrId)")
+          404, 403 -> throw SiteNotFoundException()
+          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
         val duration = (System.nanoTime() - start) / 100000
@@ -142,39 +141,31 @@ class HttpService {
       }
       response
     } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect cause ${e.message} ($corrId)")
+      throw HarvestException("Cannot connect cause ${e.message}")
     } catch (e: ExecutionException) {
-      throw HarvestException("${e.message} ($corrId)")
+      throw HarvestException("${e.message}")
     }
   }
 
   fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
     if (supportsHead(url)) {
-      try {
-        val req = client.prepareHead(url)
+      val req = client.prepareHead(url)
 
-        val response = req.execute().get()
-        if (response.statusCode == 404) {
-          throw SiteNotFoundException(corrId)
-        }
-        if (response.statusCode == 405) {
-          throw MethodNotAllowedException(corrId)
-        }
-        if (response.statusCode != statusCode) {
-          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
-        }
-        if (response.contentType == null) {
-          throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
-        }
-        if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
-          throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
-        }
-      } catch (e: UnknownHostException) {
-        log.error("[$corrId] ${e.message}")
-      } catch (e: SiteNotFoundException) {
-        log.error("[$corrId] ${e.message}")
-      } catch (e: MethodNotAllowedException) {
-        log.error("[$corrId] ${e.message}")
+      val response = req.execute().get()
+      if (response.statusCode == 404) {
+        throw SiteNotFoundException()
+      }
+      if (response.statusCode == 405) {
+        throw MethodNotAllowedException(corrId)
+      }
+      if (response.statusCode != statusCode) {
+        throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
+      }
+      if (response.contentType == null) {
+        throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
+      }
+      if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
+        throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
       }
     }
   }

@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Plan
@@ -27,6 +28,6 @@ class PlanSubscriptionDataResolver {
   suspend fun plan(dfe: DgsDataFetchingEnvironment): Plan = coroutineScope {
     val subscription: PlanSubscription = dfe.getSource()
     planService.findById(subscription.planId)
-      .orElseThrow { IllegalArgumentException("plan not found") }.toDto()
+      .orElseThrow { NotFoundException("plan not found") }.toDto()
   }
 }

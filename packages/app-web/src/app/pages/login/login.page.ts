@@ -17,7 +17,7 @@ export class LoginPage implements OnInit, OnDestroy {
   loginUrl: string;
   private subscriptions: Subscription[] = [];
   canLogin: boolean;
-  canCreateUser: boolean;
+  canSignUp: boolean;
   hasWaitList: boolean;
   showLogin: boolean;
 
@@ -36,7 +36,9 @@ export class LoginPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
-    this.canCreateUser = this.serverSettings.isEnabled(
+    this.canSignUp = this.serverSettings.isEnabled(
+      GqlFeatureName.CanSignUp,
+    ) && this.serverSettings.isEnabled(
       GqlFeatureName.CanCreateUser,
     );
     this.hasWaitList = this.serverSettings.isEnabled(

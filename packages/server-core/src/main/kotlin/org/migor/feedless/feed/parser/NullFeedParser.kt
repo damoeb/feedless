@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.parser
 
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.harvest.HarvestException
 import org.migor.feedless.harvest.HarvestResponse
 
 class NullFeedParser : FeedBodyParser {
@@ -15,6 +14,6 @@ class NullFeedParser : FeedBodyParser {
   }
 
   override fun process(corrId: String, response: HarvestResponse): RichFeed {
-    throw HarvestException("No parser found for ${response.response.contentType} ($corrId)")
+    throw IllegalArgumentException("No parser found for ${response.response.contentType} ($corrId)")
   }
 }

@@ -20,11 +20,6 @@ object DtoResolver {
     EntityVisibility.isPublic -> VisibilityDto.isPublic
   }
 
-  fun fromDto(visibility: VisibilityDto?): EntityVisibility = when (visibility) {
-    VisibilityDto.isPublic -> EntityVisibility.isPublic
-    else -> EntityVisibility.isPrivate
-  }
-
   fun ScrapeResponseInput.fromDto(): ScrapeResponse {
     return ScrapeResponse.newBuilder()
       .url(url)

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CookieProvider {
-  private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
+  private val log = LoggerFactory.getLogger(CookieProvider::class.simpleName)
 
   @Autowired
   lateinit var propertyService: PropertyService

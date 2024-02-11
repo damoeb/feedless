@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.HarvestAbortedException
 import org.migor.feedless.data.jpa.models.AttachmentEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.AttachmentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +32,7 @@ data class MediaItem(
 
 @Service
 @Profile(AppProfiles.database)
-class DetectMediaPlugin: MapEntityPlugin {
+class DetectMediaPlugin : MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(DetectMediaPlugin::class.simpleName)
 
@@ -50,9 +50,10 @@ class DetectMediaPlugin: MapEntityPlugin {
     corrId: String,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
+    params: PluginExecutionParamsInput
   ) {
     val url = webDocument.url
+    log.info("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
       throw HarvestAbortedException(corrId, "illegal url $url")
     }
@@ -87,7 +88,13 @@ class DetectMediaPlugin: MapEntityPlugin {
         attachments.add(MediaItem(url = it, format = StringUtils.lowerCase(json.format), duration = json.duration))
       }
       json.formats?.let {
-        attachments.addAll(it.map { MediaItem(url = it.url, format = StringUtils.lowerCase(it.format), duration = json.duration) })
+        attachments.addAll(it.map {
+          MediaItem(
+            url = it.url,
+            format = StringUtils.lowerCase(it.format),
+            duration = json.duration
+          )
+        })
       }
     }
   }
@@ -113,12 +120,12 @@ private fun MediaItem.toEntity(id: UUID): AttachmentEntity {
 }
 
 data class YoutubeDlJson(
-    val duration: Long?,
-    val thumbnail: String?,
-    val url: String?,
-    val format: String?,
-    val thumbnails: List<YoutubeDlThumbnailItem>?,
-    val formats: List<YoutubeDlFormatItem>?
+  val duration: Long?,
+  val thumbnail: String?,
+  val url: String?,
+  val format: String?,
+  val thumbnails: List<YoutubeDlThumbnailItem>?,
+  val formats: List<YoutubeDlFormatItem>?
 )
 
 data class YoutubeDlFormatItem(val url: String, val format: String)

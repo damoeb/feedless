@@ -50,9 +50,10 @@ export class ServerSettingsService {
       this.apiUrl = config.apiUrl;
 
       if (!environment.production) {
-
       }
-      const devForceProduct = environment.production ? null : this.activatedRoute.snapshot.queryParams.forceProduct;
+      const devForceProduct = environment.production
+        ? null
+        : this.activatedRoute.snapshot.queryParams.forceProduct;
       const forceProduct = config.forceProduct || devForceProduct;
       if (forceProduct) {
         const product = forceProduct;
@@ -92,6 +93,7 @@ export class ServerSettingsService {
       await this.showToast({
         header: 'Server is not reachable',
         message: 'Either you are offline or the server is down.',
+        cssClass: 'fatal-alert',
         buttons: [
           {
             text: 'Ok',

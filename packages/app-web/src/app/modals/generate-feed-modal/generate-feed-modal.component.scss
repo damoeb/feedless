@@ -59,4 +59,12 @@ ion-select {
   ion-input {
     --padding-start: 10px;
   }
+  .ion-invalid {
+    --border-color: var(--ion-color-danger) !important
+  ;
+  }
+}
+
+.label {
+  color: var(--ion-color-medium);
 }

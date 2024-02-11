@@ -15,7 +15,10 @@
 <!--</ion-header>-->
 <ion-content>
   <form (ngSubmit)="scrape()">
-    <p *ngIf="errorMessage">{{ errorMessage }}</p>
+    <ion-toolbar color="danger">
+      <ion-label class="ion-margin-horizontal"
+                 *ngIf="errorMessage">{{ errorMessage }}. Please try later.</ion-label>
+    </ion-toolbar>
     <ion-row
       [ngClass]="{ 'busy-cursor': busy, 'website--pick-mode': isPickMode() }"
       class="website flex_column"
@@ -91,7 +94,7 @@
       <ion-button (click)="dismissModal()"> Cancel </ion-button>
       <ion-button
         (click)="applyChanges()"
-        [disabled]="actions.invalid"
+        [disabled]="busy || errorMessage || !scrapeResponse || actions.invalid"
         color="success"
         expand="full"
         fill="solid"

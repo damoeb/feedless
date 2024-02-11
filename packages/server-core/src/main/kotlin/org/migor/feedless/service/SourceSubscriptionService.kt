@@ -2,6 +2,9 @@ package org.migor.feedless.service
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.BadRequestException
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
@@ -13,7 +16,7 @@ import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.MailForwardEntity
-import org.migor.feedless.data.jpa.models.PluginRef
+import org.migor.feedless.data.jpa.models.PluginExecution
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.UserEntity
@@ -29,14 +32,14 @@ import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
+import org.migor.feedless.generated.types.UpdateSinkOptionsInput
+import org.migor.feedless.generated.types.Visibility
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -58,9 +61,6 @@ class SourceSubscriptionService {
 
   @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
-
-  @Autowired
-  lateinit var javaMailSender: JavaMailSender
 
   @Autowired
   lateinit var mailService: MailService
@@ -85,14 +85,14 @@ class SourceSubscriptionService {
 
   @Transactional
   fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
-    log.info("[$corrId] create sub")
+    log.info("[$corrId] create sourceSubscription with ${data.subscriptions.size} sources")
 
     val ownerId = getActualUserOrDefaultUser(corrId).id
     val totalCount = sourceSubscriptionDAO.countByOwnerId(ownerId)
     val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(ownerId, false)
     planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
     if (planConstraints.violatesScrapeSourceMaxActiveCount(activeCount, ownerId)) {
-      log.info("[$corrId] archiving oldest")
+      log.info("[$corrId] violates maxActiveCount, archiving oldest")
       sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
     }
     return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
@@ -104,21 +104,25 @@ class SourceSubscriptionService {
     } ?: userService.getAnonymousUser().also { log.info("[$corrId] fallback to user anonymous") }
   }
 
-  private fun createSubscription(corrId: String, ownerId: UUID, subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
+  private fun createSubscription(
+    corrId: String,
+    ownerId: UUID,
+    subInput: SourceSubscriptionCreateInput
+  ): SourceSubscriptionEntity {
     val sub = SourceSubscriptionEntity()
 
     sub.title = subInput.sinkOptions.title
     sub.description = subInput.sinkOptions.description
-    sub.visibility = planConstraints.coerceVisibility(fromDto(subInput.sinkOptions.visibility))
+    sub.visibility = planConstraints.coerceVisibility(subInput.sinkOptions.visibility?.fromDto())
 
     planConstraints.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId)
     sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
     sub.ownerId = ownerId
     subInput.sinkOptions.plugins?.let {
       if (it.size > 5) {
-        throw RuntimeException("Too many plugins ${it.size}, limit 5")
+        throw BadRequestException("Too many plugins ${it.size}, limit 5")
       }
-      sub.plugins = it.map { plugin -> plugin.toPluginRef() }
+      sub.plugins = it.map { plugin -> plugin.fromDto() }
     }
     sub.schedulerExpression = subInput.sourceOptions?.let {
       planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
@@ -130,7 +134,7 @@ class SourceSubscriptionService {
 
     val saved = sourceSubscriptionDAO.save(sub)
 
-    subInput.additionalSinks?.let {sink ->
+    subInput.additionalSinks?.let { sink ->
       val owner = userDAO.findById(ownerId).orElseThrow()
       sub.mailForwards = sink.mapNotNull { it.email }
         .map { createMailForwarder(corrId, it, sub, owner, sub.product) }
@@ -153,17 +157,18 @@ class SourceSubscriptionService {
     forward.subscriptionId = sub.id
 
     val (mailFormatter) = pluginService.resolveMailFormatter(sub)
-    val mimeMessage = mailService.createMimeMessage()
-    val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
-    message.setFrom(mailService.getNoReplyAddress(product))
-    message.setTo(email)
-    mailFormatter.prepareWelcomeMail(corrId, message, sub, forward)
-    mailService.send(corrId, mimeMessage)
+    val from = mailService.getNoReplyAddress(product)
+    mailService.send(corrId, from = from, to = arrayOf(email), mailFormatter.provideWelcomeMail(corrId, sub, forward))
 
     return mailForwardDAO.save(forward)
   }
 
-  private fun createScrapeSource(corrId: String, ownerId: UUID, req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
+  private fun createScrapeSource(
+    corrId: String,
+    ownerId: UUID,
+    req: ScrapeRequestInput,
+    sub: SourceSubscriptionEntity
+  ): ScrapeSourceEntity {
     val entity = ScrapeSourceEntity()
     val scrapeRequest = req.fromDto()
     log.info("[$corrId] create source ${scrapeRequest.page.url}")
@@ -178,7 +183,7 @@ class SourceSubscriptionService {
   @Transactional(readOnly = true)
   fun getFeedBySubscriptionId(subscriptionId: String, page: Int): RichFeed {
     val id = UUID.fromString(subscriptionId)
-    val subscription = sourceSubscriptionDAO.findById(id).orElseThrow {IllegalArgumentException("subscription not found")}
+    val subscription = sourceSubscriptionDAO.findById(id).orElseThrow { NotFoundException("subscription not found") }
     val items = webDocumentService.findAllBySubscriptionId(id, page, ReleaseStatus.released)
       .map { it.toRichArticle() }
 
@@ -198,21 +203,22 @@ class SourceSubscriptionService {
   }
 
   fun findAll(offset: Int, pageSize: Int, userId: UUID?): List<SourceSubscriptionEntity> {
-    val pageable = PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))
+    val pageable =
+      PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))
     return (userId
       ?.let { sourceSubscriptionDAO.findAllByOwnerId(it, pageable) }
       ?: emptyList())
   }
 
   fun findById(corrId: String, id: UUID): SourceSubscriptionEntity {
-    val sub = sourceSubscriptionDAO.findById(id).orElseThrow { RuntimeException("not found ($corrId)") }
+    val sub = sourceSubscriptionDAO.findById(id).orElseThrow { NotFoundException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
       if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
         sub
       } else {
-        throw RuntimeException("unauthorized ($corrId)")
+        throw PermissionDeniedException("unauthorized ($corrId)")
       }
     }
   }
@@ -220,10 +226,29 @@ class SourceSubscriptionService {
   fun delete(corrId: String, id: UUID) {
     sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user(corrId).id)
   }
+
+  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsInput): SourceSubscriptionEntity {
+    val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
+    if (sub.ownerId != currentUser.userId()) {
+      throw PermissionDeniedException("not authorized")
+    }
+    data.title?.set?.let { sub.title = it }
+    data.description?.set?.let { sub.description = it }
+    data.visibility?.set?.let { sub.visibility = planConstraints.coerceVisibility(it.fromDto()) }
+
+    return sourceSubscriptionDAO.save(sub)
+  }
 }
 
-private fun PluginExecutionInput.toPluginRef(): PluginRef {
-  return PluginRef(id = this.pluginId, params = this.params)
+private fun Visibility.fromDto(): EntityVisibility {
+  return when (this) {
+    Visibility.isPublic -> EntityVisibility.isPublic
+    Visibility.isPrivate -> EntityVisibility.isPrivate
+  }
+}
+
+private fun PluginExecutionInput.fromDto(): PluginExecution {
+  return PluginExecution(id = this.pluginId, params = this.params)
 }
 
 private fun WebDocumentEntity.toRichArticle(): RichArticle {
@@ -232,12 +257,12 @@ private fun WebDocumentEntity.toRichArticle(): RichArticle {
   article.title = StringUtils.trimToEmpty(this.contentTitle)
   article.url = this.url
   article.attachments = this.attachments.map {
-        val a = JsonAttachment()
-        a.url = it.url
-        a.type = it.type
+    val a = JsonAttachment()
+    a.url = it.url
+    a.type = it.type
 //                a.size = it.size
 //        a.duration = it.duration
-        a
+    a
   }
   article.contentText = StringUtils.trimToEmpty(this.contentText)
   article.contentRawBase64 = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }

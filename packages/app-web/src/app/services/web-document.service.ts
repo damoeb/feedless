@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
+  DeleteWebDocumentById,
+  GqlDeleteWebDocumentByIdMutation,
+  GqlDeleteWebDocumentByIdMutationVariables,
+  GqlDeleteWebDocumentInput,
   GqlWebDocumentByIdsQuery,
   GqlWebDocumentByIdsQueryVariables,
   GqlWebDocumentsInput,
@@ -43,4 +47,19 @@ export class WebDocumentService {
   //     })
   //     .then((response) => response.data.webDocument);
   // }
+  removeById(data: GqlDeleteWebDocumentInput) {
+    return this.apollo
+      .mutate<
+        GqlDeleteWebDocumentByIdMutation,
+        GqlDeleteWebDocumentByIdMutationVariables
+      >({
+        mutation: DeleteWebDocumentById,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => {
+        return response.data.deleteWebDocument;
+      });
+  }
 }

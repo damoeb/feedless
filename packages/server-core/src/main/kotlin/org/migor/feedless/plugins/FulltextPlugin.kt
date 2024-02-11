@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
+class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
-  private val log = LoggerFactory.getLogger(SpawnPageTrackerPlugin::class.simpleName)
+  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
   @Autowired
   lateinit var webToArticleTransformer: WebToArticleTransformer
@@ -33,9 +33,10 @@ class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
     corrId: String,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
+    params: PluginExecutionParamsInput
   ) {
-    val response = httpService.httpGet(corrId, webDocument.url, 200)
+    log.info("[$corrId] mapEntity ${webDocument.url}")
+    val response = httpService.httpGetCaching(corrId, webDocument.url, 200)
     if (response.contentType.startsWith("text/html")) {
       val html = String(response.responseBody)
       if (params!!.fulltext.readability) {

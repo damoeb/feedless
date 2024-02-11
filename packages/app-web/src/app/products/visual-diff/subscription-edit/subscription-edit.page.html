@@ -22,8 +22,16 @@
               </ion-col>
             </ion-row>
             <div style="position: relative">
-              <div *ngIf="busy"
-                   style="position: absolute; width: 100%; height: 100%; cursor: progress; z-index: 1"></div>
+              <div
+                *ngIf="busy"
+                style="
+                  position: absolute;
+                  width: 100%;
+                  height: 100%;
+                  cursor: progress;
+                  z-index: 1;
+                "
+              ></div>
               <ion-row>
                 <ion-col size="12">
                   <div
@@ -286,7 +294,11 @@
             </ion-row>
             <ion-row>
               <ion-col>
-                <ion-button (click)="startMonitoring()" expand="block" class="cy-start-monitoring-button">
+                <ion-button
+                  (click)="startMonitoring()"
+                  expand="block"
+                  class="cy-start-monitoring-button"
+                >
                   Start monitoring
                 </ion-button>
               </ion-col>

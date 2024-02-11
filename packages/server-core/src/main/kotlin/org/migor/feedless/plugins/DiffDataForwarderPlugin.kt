@@ -3,7 +3,6 @@ package org.migor.feedless.plugins
 import jakarta.mail.util.ByteArrayDataSource
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.text.similarity.LevenshteinDistance
-import org.apache.tika.Tika
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -43,9 +41,9 @@ fun getLastWebDocumentBySubscription(webDocumentDAO: WebDocumentDAO, subscriptio
 
 @Service
 @Profile(AppProfiles.database)
-class DiffDataForwaderPlugin : FilterPlugin, MailFormatterPlugin {
+class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
-  private val log = LoggerFactory.getLogger(DiffDataForwaderPlugin::class.simpleName)
+  private val log = LoggerFactory.getLogger(DiffDataForwarderPlugin::class.simpleName)
 
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
@@ -60,9 +58,15 @@ class DiffDataForwaderPlugin : FilterPlugin, MailFormatterPlugin {
   override fun name() = ""
   override fun listed() = false
 
-  override fun filter(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput): Boolean {
-    val increment = params.diffEmailForward.nextItemMinIncrement
-    log.info("[$corrId] filter increment=$increment")
+  override fun filterEntity(
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    params: PluginExecutionParamsInput
+  ): Boolean {
+    log.info("[$corrId] filter ${webDocument.url}")
+
+    val increment = params.diffEmailForward.nextItemMinIncrement.coerceAtLeast(0.01)
+    log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
     val previous = getLastWebDocumentBySubscription(webDocumentDAO, webDocument.subscriptionId)
 
@@ -93,14 +97,15 @@ class DiffDataForwaderPlugin : FilterPlugin, MailFormatterPlugin {
   }
 
   private fun toImage(webDocument: WebDocumentEntity): BufferedImage {
-    val tika = Tika()
-    val mime = tika.detect(webDocument.contentRaw)
-    mime.toString()
-    val supported = ImageIO.getReaderMIMETypes()
     return ImageIO.read(ByteArrayInputStream(webDocument.contentRaw))
   }
 
-  private fun compareByPixel(corrId: String, left: WebDocumentEntity, right: WebDocumentEntity, minIncrement: Double): Boolean {
+  private fun compareByPixel(
+    corrId: String,
+    left: WebDocumentEntity,
+    right: WebDocumentEntity,
+    minIncrement: Double
+  ): Boolean {
     val img1 = toImage(left)
     val img2 = toImage(right)
 
@@ -132,63 +137,83 @@ class DiffDataForwaderPlugin : FilterPlugin, MailFormatterPlugin {
     return ratio > minIncrement
   }
 
-  override fun prepareWelcomeMail(
+  override fun provideWelcomeMail(
     corrId: String,
-    message: MimeMessageHelper,
     subscription: SourceSubscriptionEntity,
     mailForward: MailForwardEntity
-  ) {
+  ): MailData {
     log.info("[$corrId] prepare welcome mail")
-    message.setSubject("VisualDiff Tracker: ${subscription.title}")
-    message.setText("""Hi,
-you created a tracker for page ${scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { it.scrapeRequest.page.url }.joinToString(", ")}
+    val mailData = MailData()
+    mailData.subject = "VisualDiff Tracker: ${subscription.title}"
+    mailData.body = """Hi,
+you created a tracker for page ${
+      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { it.scrapeRequest.page.url }.joinToString(", ")
+    }
 in order to authorize the tracking emails, click here ${productService.getGatewayUrl(subscription.product)}${ApiUrls.mailForwardingAllow}/${mailForward.id}
 ${subscription.schedulerExpression}
 
-    """.trimIndent())
+    """.trimIndent()
+
+    return mailData
   }
 
-  override fun prepareMail(
+  override fun provideWebDocumentMail(
     corrId: String,
-    message: MimeMessageHelper,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
-  ) {
+    params: PluginExecutionParamsInput
+  ): MailData {
     log.info("[$corrId] prepare diff email")
 
     val config = params!!.diffEmailForward
 
-    message.setSubject(subscription.title)
+    val mailData = MailData()
+
+    mailData.subject = subscription.title
     var body = """Hi,
-      | your tracker '${subscription.title}' noticed a change on site ${scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { s -> s.scrapeRequest.page.url }}.
+      | your tracker '${subscription.title}' noticed a change on site ${
+      scrapeSourceDAO.findAllBySubscriptionId(
+        subscription.id
+      ).map { s -> s.scrapeRequest.page.url }
+    }.
     """.trimMargin()
 
     val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
 
     val latestDateString = sdf.format(webDocument.createdAt)
     val images = mutableListOf(
-      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!! ),
+      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!!),
     )
 
     val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
     previous?.let {
-      images.add(Triple(config.inlinePreviousImage, "previousImage-${sdf.format(previous.createdAt)}", previous.contentRaw!!))
-      images.add(Triple(config.inlineDiffImage, "diffImage-${latestDateString}", createDiffImage(previous, webDocument)))
+      images.add(
+        Triple(
+          config.inlinePreviousImage,
+          "previousImage-${sdf.format(previous.createdAt)}",
+          previous.contentRaw!!
+        )
+      )
+      images.add(
+        Triple(
+          config.inlineDiffImage,
+          "diffImage-${latestDateString}",
+          createDiffImage(previous, webDocument)
+        )
+      )
     }
 
     images.forEach { (shouldInline, contentId, data) ->
       run {
-        val resource = ByteArrayDataSource(data, "image/webp")
         if (BooleanUtils.isTrue(shouldInline)) {
           body += "<p><img src='cid:$contentId'></p>"
-          message.addInline(contentId, resource)
+          mailData.attachments.add(MailAttachment(contentId, ByteArrayDataSource(data, "image/webp"), true))
         }
-        message.addAttachment("$contentId.webp", resource)
+        mailData.attachments.add(MailAttachment("$contentId.webp", ByteArrayDataSource(data, "image/webp")))
       }
     }
 
-    message.setText(body, true)
+    return mailData
   }
 
   private fun createDiffImage(left: WebDocumentEntity, right: WebDocumentEntity): ByteArray {

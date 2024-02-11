@@ -34,7 +34,7 @@ class XmlFeedParser : FeedBodyParser {
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response.response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
-      else -> throw RuntimeException("Not implemented ($corrId)")
+      else -> throw IllegalArgumentException("Not implemented ($corrId)")
     }
   }
 

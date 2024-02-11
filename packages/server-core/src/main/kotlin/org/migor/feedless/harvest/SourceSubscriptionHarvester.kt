@@ -1,14 +1,20 @@
 package org.migor.feedless.harvest
 
 import io.micrometer.core.instrument.MeterRegistry
+import org.apache.commons.lang3.StringUtils
+import org.apache.tika.Tika
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.BadRequestException
+import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.PluginRef
+import org.migor.feedless.data.jpa.models.PipelineJobEntity
+import org.migor.feedless.data.jpa.models.PluginExecution
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.MailForwardDAO
+import org.migor.feedless.data.jpa.repositories.PipelineJobDAO
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
@@ -20,10 +26,8 @@ import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.plugins.FeedlessPlugin
-import org.migor.feedless.plugins.FilterPlugin
-import org.migor.feedless.plugins.MailFormatterPlugin
-import org.migor.feedless.plugins.MapEntityPlugin
 import org.migor.feedless.service.MailService
+import org.migor.feedless.service.NotificationService
 import org.migor.feedless.service.PlanConstraintsService
 import org.migor.feedless.service.PluginService
 import org.migor.feedless.service.PropertyService
@@ -34,7 +38,6 @@ import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -63,6 +66,9 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
+  lateinit var pipelineJobDAO: PipelineJobDAO
+
+  @Autowired
   lateinit var planConstraintsService: PlanConstraintsService
 
   @Autowired
@@ -86,6 +92,9 @@ class SourceSubscriptionHarvester internal constructor() {
   @Autowired
   lateinit var pluginService: PluginService
 
+  @Autowired
+  lateinit var notificationService: NotificationService
+
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun handleSourceSubscription(corrId: String, subscription: SourceSubscriptionEntity) {
     log.info("[${corrId}] handleSourceSubscription ${subscription.id}")
@@ -101,6 +110,7 @@ class SourceSubscriptionHarvester internal constructor() {
 
     } catch (it: Exception) {
       log.error(it.message)
+      notificationService.createNotification(corrId, subscription.ownerId, it.message ?: "")
 //      if (log.isDebugEnabled) {
 //        it.printStackTrace()
 //      }
@@ -122,7 +132,10 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun updateScheduledNextAt(corrId: String, subscription: SourceSubscriptionEntity) {
-    val scheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(nextCronDate(subscription.schedulerExpression), subscription.ownerId)
+    val scheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(
+      nextCronDate(subscription.schedulerExpression),
+      subscription.ownerId
+    )
     log.info("[$corrId] Next import scheduled for $scheduledNextAt")
     sourceSubscriptionDAO.updateScheduledNextAt(subscription.id, scheduledNextAt)
   }
@@ -142,6 +155,7 @@ class SourceSubscriptionHarvester internal constructor() {
           if (e is ResumableHarvestException) {
             log.warn("[$corrId] ${e.message}")
           } else {
+            notificationService.createNotification(corrId, subscription.ownerId, e.message)
             scrapeSourceDAO.setErrornous(it.id, true, e.message)
           }
           Flux.empty()
@@ -179,7 +193,7 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun importElement(corrId: String, element: ScrapedElement, subscriptionId: UUID) {
-    log.info("[$corrId] importElement")
+    log.debug("[$corrId] importElement")
     element.image?.let {
       importImageElement(corrId, it, subscriptionId)
     }
@@ -189,7 +203,7 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun importSelectorElement(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
-    log.info("[$corrId] importSelectorElement")
+    log.debug("[$corrId] importSelectorElement")
     scrapedData.fields?.let { fields ->
       fields.forEach {
         when (it.name) {
@@ -199,7 +213,7 @@ class SourceSubscriptionHarvester internal constructor() {
             JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java)
           )
 
-          else -> throw RuntimeException("Cannot handle field ${it.name} ($corrId)")
+          else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
         }
       }
     }
@@ -207,24 +221,32 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
-    val webDocument = scrapedData.asEntity(subscriptionId)
-
-    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-
-      createOrUpdate(
-        corrId,
-        webDocument,
-        webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
-        subscription
-      )
+    log.info("[$corrId] importScrapedData")
+//    val webDocument = scrapedData.asEntity(subscriptionId)
+//
+//    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
+//
+//    createOrUpdate(
+//      corrId,
+//      webDocument,
+//      webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
+//      subscription
+//    )
   }
 
   private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
+    log.info("[$corrId] importFeed")
     val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-    feed.items.map {
-      val existing = webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)
-      val updated = it.asEntity(subscription.id, ReleaseStatus.released)
-      createOrUpdate(corrId, updated, existing, subscription)
+    feed.items.forEach {
+      try {
+        val existing = webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)
+
+        val updated = it.asEntity(subscription.id, ReleaseStatus.released)
+        createOrUpdate(corrId, updated, existing, subscription)
+      } catch (e: Exception) {
+        log.error("[$corrId] ${e.message}")
+        notificationService.createNotification(corrId, subscriptionId, e.message)
+      }
     }
   }
 
@@ -235,68 +257,57 @@ class SourceSubscriptionHarvester internal constructor() {
     subscription: SourceSubscriptionEntity
   ) {
     try {
-      val keep = subscription.plugins.mapToPluginInstance<FilterPlugin>(pluginService)
-        .all { (filterPlugin, params) -> filterPlugin.filter(corrId, webDocument, params!!) }
-
-      if (keep) {
-        existing?.let {
-          it.updatedAt = Date()
-          webDocumentDAO.save(it)
-        } ?: run {
+      existing
+        ?.let {
+          log.info("[$corrId] skip item ${webDocument.url}")
+        }
+        ?: run {
           meterRegistry.counter(AppMetrics.createWebDocument).increment()
 
-          subscription.plugins.mapToPluginInstance<MapEntityPlugin>(pluginService)
-            .forEach { (mapper, params) -> mapper.mapEntity(corrId, webDocument, subscription, params) }
+          webDocument.status = if (subscription.plugins.isEmpty()) {
+            ReleaseStatus.released
+          } else {
+            ReleaseStatus.unreleased
+          }
 
-          forwardToMail(corrId, webDocument, subscription)
+          webDocument.plugins = subscription.plugins
+            .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, webDocument, index) }
+            .toMutableList()
 
           webDocumentDAO.save(webDocument)
-          log.info("[$corrId] created item ${webDocument.url}")
+
+          log.info("[$corrId] saved ${subscription.id} ${webDocument.url} with ${webDocument.plugins.size} plugins")
         }
-      } else {
-        log.info("[$corrId] omit item ${webDocument.url}")
-      }
     } catch (e: Exception) {
       log.error("[$corrId] ${e.message}")
+      notificationService.createNotification(corrId, subscription.ownerId, e.message)
       if (log.isDebugEnabled) {
         e.printStackTrace()
       }
     }
   }
 
-  private fun forwardToMail(corrId: String, webDocument: WebDocumentEntity, subscription: SourceSubscriptionEntity) {
-    val mailForwards = mailForwardDAO.findAllBySubscriptionId(subscription.id)
-    if (mailForwards.isNotEmpty()) {
-      val authorizedMailForwards = mailForwards.filter { it.authorized }.map { it.email }
-      if (authorizedMailForwards.isEmpty()) {
-        log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
-      } else {
-        val (mailFormatter, params) = pluginService.resolveMailFormatter(subscription)
-        log.info("[$corrId] using formatter ${mailFormatter::class.java.name}")
-
-        val mimeMessage = mailService.createMimeMessage()
-        val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
-        message.setFrom(mailService.getNoReplyAddress(subscription.product))
-        message.setTo(authorizedMailForwards.toTypedArray())
-        log.info("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
-        mailFormatter.prepareMail(corrId, message, webDocument, subscription, params)
-        mailService.send(corrId, mimeMessage)
-      }
-    }
+  private fun toPipelineJob(plugin: PluginExecution, webDocument: WebDocumentEntity, index: Int): PipelineJobEntity {
+    val job = PipelineJobEntity()
+    job.sequenceId = index
+    job.webDocumentId = webDocument.id
+    job.executorId = plugin.id
+    job.executorParams = plugin.params
+    return pipelineJobDAO.save(job)
   }
 
   private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, subscriptionId: UUID) {
     log.info("[${corrId}] importImageElement")
     val id = CryptUtil.sha1(scrapedData.data.base64Data)
     if (!webDocumentDAO.existsByContentTitleAndSubscriptionId(id, subscriptionId)) {
-      log.info("[$corrId] created item $id")
+      log.info("[$corrId] create item $id")
       TODO("not implemented")
 //      webDocumentDAO.save(entity)
     }
   }
 }
 
-inline fun <reified T : FeedlessPlugin> List<PluginRef>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput?>> {
+inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {
   return this.map { Pair(pluginService.resolveById<T>(it.id), it.params) }
     .mapNotNull { (plugin, params) ->
       if (plugin == null) {
@@ -307,33 +318,21 @@ inline fun <reified T : FeedlessPlugin> List<PluginRef>.mapToPluginInstance(plug
     }
 }
 
-private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity {
-  val e = WebDocumentEntity()
-  e.subscriptionId = subscriptionId
-  pixel?.let {
-    e.contentTitle = CryptUtil.sha1(it.base64Data)
-    e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
-    e.contentRawMime = "image/webp"
-  }
-  html?.let {
-    e.contentTitle = CryptUtil.sha1(it.data)
-    e.contentHtml = it.data
-  }
-
-  e.contentText = text.data
-  e.status = ReleaseStatus.released
-  e.releasedAt = Date()
-  e.updatedAt = Date()
-  e.url = "https://feedless.org/d/${e.id}"
-  return e
-}
-
 private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): WebDocumentEntity {
   val e = WebDocumentEntity()
   e.contentTitle = contentTitle
   e.subscriptionId = subscriptionId
-  e.contentRaw = contentRawBase64?.let {Base64.getDecoder().decode(it)}
-  e.contentRawMime = contentRawMime
+  if (StringUtils.isNotBlank(contentRawBase64)) {
+    val tika = Tika()
+    val contentRawBytes = contentRawBase64.toByteArray()
+    val mime = tika.detect(contentRawBytes)
+    e.contentRaw = if (mime.startsWith("text/")) {
+      contentRawBytes
+    } else {
+      Base64.getDecoder().decode(contentRawBase64)
+    }
+    e.contentRawMime = mime
+  }
   e.contentText = contentText
   e.status = status
   e.releasedAt = Date(publishedAt)

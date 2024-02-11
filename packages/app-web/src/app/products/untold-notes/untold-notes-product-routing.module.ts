@@ -22,14 +22,14 @@ const routes: Routes = [
             (m) => m.AboutUntoldNotesModule,
           ),
       },
-      {
-        path: 'notebook',
-        loadChildren: () =>
-          import('./notebook-details/notebook-details.module').then(
-            (m) => m.NotebookDetailsPageModule,
-          ),
-      },
     ],
+  },
+  {
+    path: 'notebook',
+    loadChildren: () =>
+      import('./notebook-details/notebook-details.module').then(
+        (m) => m.NotebookDetailsPageModule,
+      ),
   },
   ...ProductService.defaultRoutes,
   {

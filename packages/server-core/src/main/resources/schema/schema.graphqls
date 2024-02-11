@@ -78,6 +78,7 @@ type SourceSubscription {
   ownerId: ID!
   visibility: Visibility!
   createdAt: Long!
+  updatedAt: Long!
   disabledFrom: Long
   archived: Boolean!
   plugins: [PluginExecution!]!
@@ -99,6 +100,7 @@ type Mutation {
   createUserSecret: UserSecret!
   deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
   createSourceSubscriptions(data: SourceSubscriptionsCreateInput!): [SourceSubscription!]!
+  updateSourceSubscription(data: SourceSubscriptionUpdateInput!): SourceSubscription!
   deleteSourceSubscription(data: SourceSubscriptionUniqueWhereInput!): Boolean!
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
@@ -107,6 +109,17 @@ type Mutation {
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
 #  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
+}
+
+input SourceSubscriptionUpdateInput {
+  where: SourceSubscriptionUniqueWhereInput!
+  data: UpdateSinkOptionsInput!
+}
+
+input UpdateSinkOptionsInput {
+  description: NullableStringUpdateOperationsInput
+  title: StringUpdateOperationsInput
+  visibility: VisibilityUpdateOperationsInput
 }
 
 input CreateWebDocumentInput {
@@ -138,7 +151,7 @@ input WebDocumentInput {
 input CreateUserInput {
   email: String!
   product: ProductName!
-  waitList: Boolean!
+  plan: PlanName!
   newsletter: Boolean!
 }
 
@@ -609,7 +622,6 @@ type WebDocument {
   enclosures: [Enclosure!]
   id: ID!
   imageUrl: String
-  pendingPlugins: [String!]!
   publishedAt: Long!
   startingAt: Long
   updatedAt: Long
@@ -684,6 +696,7 @@ enum PlanAvailability {
 enum PlanName {
   basic
   free
+  waitlist
 }
 
 enum PuppeteerWaitUntil {
@@ -830,18 +843,6 @@ input SinkOptionsInput {
   plugins: [PluginExecutionInput!]
 }
 
-#input IncludeOrExcludeFilerInput {
-#  include: FieldFilterConditionInput
-#  exclude: FieldFilterConditionInput
-#}
-
-#input FieldFilterConditionInput {
-#  field: String!
-#  invert: Boolean!
-#  operator: StringFilterOperator!
-#  value: String!
-#}
-
 enum StringFilterOperator {
   contains,
   matches,
@@ -860,7 +861,7 @@ input AgentByGroup {
 
 input PluginExecutionInput {
   pluginId: ID!
-  params: PluginExecutionParamsInput
+  params: PluginExecutionParamsInput!
 }
 
 input NullableBoolUpdateOperationsInput {
@@ -1096,8 +1097,27 @@ input ScrapeSelectorExposeInput {
 input PluginExecutionParamsInput {
   genericFeed: SelectorsInput
   diffEmailForward: DiffEmailForwardParamsInput
+  filters: [CompositeFilterParamsInput!]
   rawJson: String
   fulltext: FulltextPluginParamsInput
+}
+
+input CompositeFilterParamsInput {
+  type: CompositeFilterType!
+  field: CompositeFilterField!
+  operator: StringFilterOperator!
+  value: String!
+}
+
+enum CompositeFilterField {
+  title
+  content
+  link
+}
+
+enum CompositeFilterType {
+  include
+  exclude
 }
 
 input DiffEmailForwardParamsInput {
@@ -1116,6 +1136,7 @@ enum FeedlessPlugins {
   org_feedless_feed
   org_feedless_feeds
   org_feedless_fulltext
+  org_feedless_filter
   org_feedless_privacy
   org_feedless_detect_media
   org_feedless_diff_email_forward
@@ -1186,7 +1207,7 @@ type ScrapeSelectorExpose {
 
 type PluginExecution {
   pluginId: ID!
-  params: PluginExecutionParams
+  params: PluginExecutionParams!
 }
 
 type PluginExecutionParams {

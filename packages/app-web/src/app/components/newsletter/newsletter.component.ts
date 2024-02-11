@@ -2,11 +2,12 @@ import { Component, Input } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
+import { GqlPlanName } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-newsletter',
   templateUrl: './newsletter.component.html',
-  styleUrls: ['./newsletter.component.scss'],
+  styleUrls: ['./newsletter.component.scss']
 })
 export class NewsletterComponent {
   @Input({ required: true })
@@ -16,21 +17,35 @@ export class NewsletterComponent {
   @Input({ required: true })
   buttonText: string;
 
-  emailFc = new FormControl<string>('', [
+  submitted = false;
+  errorMessage: string;
+
+  private emailFc = new FormControl<string>('', [
     Validators.required,
-    Validators.email,
+    Validators.email
   ]);
 
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {
+  }
 
-  async joinNow($event: string) {
+  async joinNow(email: string) {
+    console.log('joinNow');
+    this.emailFc.setValue(email);
+    this.errorMessage = null
     if (this.emailFc.valid) {
-      await this.userService.createUser({
-        email: this.emailFc.value,
-        waitList: true,
-        newsletter: true,
-        product: environment.product(),
-      });
+      try {
+        await this.userService.createUser({
+          email: this.emailFc.value,
+          newsletter: true,
+          plan: GqlPlanName.Waitlist,
+          product: environment.product()
+        });
+        this.submitted = true;
+      } catch (e) {
+        this.errorMessage = 'Something went wrong! Maybe try later again!';
+      }
+    } else {
+      this.errorMessage = 'Your email looks invalid';
     }
   }
 }

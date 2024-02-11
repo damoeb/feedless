@@ -107,6 +107,9 @@ export const fixUrl = (value: string): string => {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     ProductTitleModule,
+    // test
+    TransformWebsiteToFeedModalModule,
+    FeedBuilderModalModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

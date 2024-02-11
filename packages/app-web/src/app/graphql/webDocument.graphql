@@ -9,3 +9,7 @@ query webDocumentByIds($data: WebDocumentsInput!) {
     ...BasicWebDocument
   }
 }
+
+mutation deleteWebDocumentById($data: DeleteWebDocumentInput!) {
+  deleteWebDocument(data: $data)
+}

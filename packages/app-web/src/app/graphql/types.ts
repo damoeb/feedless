@@ -61,9 +61,7 @@ export type FeedlessPluginExecution = Pick<GqlPluginExecution, 'pluginId'> & {
       diffEmailForward?: Maybe<
         Pick<
           GqlDiffEmailForwardParams,
-          | 'inlineDiffImage'
-          | 'inlineLatestImage'
-          | 'inlinePreviousImage'
+          'inlineDiffImage' | 'inlineLatestImage' | 'inlinePreviousImage'
         >
       >;
       fulltext?: Maybe<Pick<GqlFulltextPluginParams, 'readability'>>;
@@ -163,6 +161,7 @@ export type SourceSubscription = Pick<
   | 'description'
   | 'visibility'
   | 'createdAt'
+  | 'updatedAt'
   | 'disabledFrom'
   | 'archived'
 > & {

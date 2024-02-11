@@ -39,7 +39,7 @@ object FeedUtil {
       "application/rss+xml" -> FeedType.RSS
       "application/atom+xml" -> FeedType.ATOM
       "text/xml", "application/xml" -> FeedType.XML
-      else -> throw RuntimeException("Cannot resolve feedType $contentType ($corrId)")
+      else -> throw IllegalArgumentException("Cannot resolve feedType $contentType ($corrId)")
     }
   }
 

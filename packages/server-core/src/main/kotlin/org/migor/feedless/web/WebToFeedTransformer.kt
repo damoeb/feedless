@@ -54,14 +54,14 @@ data class ContextVicinity(
       "context" -> context
       "previous" -> previous
       "next" -> next
-      else -> throw RuntimeException("$propertyName not available")
+      else -> throw IllegalArgumentException("$propertyName not available")
     }
   }
 
   fun hasProperty(propertyName: String): Boolean {
     return try {
       Optional.ofNullable(get(propertyName)).map { true }.orElse(false)
-    } catch (e: RuntimeException) {
+    } catch (e: IllegalArgumentException) {
       false
     }
 
@@ -646,7 +646,7 @@ class WebToFeedTransformer(
         ix++
       }
     }
-    throw RuntimeException("Cannot generate xpath")
+    throw IllegalArgumentException("Cannot generate xpath")
   }
 
   private fun evaluateXPath(xpath: String, context: Element): List<Element> {

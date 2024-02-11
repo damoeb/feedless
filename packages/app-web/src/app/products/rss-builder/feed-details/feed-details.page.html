@@ -53,9 +53,10 @@
       <ion-item *ngFor="let document of documents">
         <!--        todo add link -->
         <ion-label>
-          <h3>{{document.contentTitle}}</h3>
+          <h3><a [href]="document.url">{{document.contentTitle}}</a></h3>
           <p class="ion-text-wrap">{{document.contentText}}</p>
         </ion-label>
+        <ion-button (click)="deleteWebDocument(document)"> Delete </ion-button>
       </ion-item>
     </ion-list>
   </div>

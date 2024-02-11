@@ -4,7 +4,7 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { NotebookHead, NotebookService } from '../services/notebook.service';
+import { Notebook, NotebookService } from '../services/notebook.service';
 
 @Component({
   selector: 'app-untold-notes-menu',
@@ -13,7 +13,7 @@ import { NotebookHead, NotebookService } from '../services/notebook.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UntoldNotesMenuComponent implements OnInit {
-  notebooks: NotebookHead[];
+  notebooks: Notebook[];
 
   constructor(
     private readonly notebookService: NotebookService,

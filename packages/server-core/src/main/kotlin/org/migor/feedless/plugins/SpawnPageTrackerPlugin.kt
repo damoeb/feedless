@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class SpawnPageTrackerPlugin: MapEntityPlugin {
+class SpawnPageTrackerPlugin : MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(SpawnPageTrackerPlugin::class.simpleName)
 
@@ -21,8 +21,9 @@ class SpawnPageTrackerPlugin: MapEntityPlugin {
     corrId: String,
     webDocument: WebDocumentEntity,
     subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput?
+    params: PluginExecutionParamsInput
   ) {
+    log.info("[$corrId] mapEntity ${webDocument.url}")
     // todo create new sourcesubscription tracking this page for n-days
   }
 }

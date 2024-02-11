@@ -1,5 +1,3 @@
-@import "./untold-mixins";
-
 ion-toolbar {
   ion-item {
     --border-style: none;
@@ -22,13 +20,5 @@ ion-content::part(scroll) {
 
   & > * {
     align-self: center;
-  }
-}
-
-ion-searchbar {
-  @include unless-control();
-  --box-shadow: none;
-  &.searchbar-has-focus {
-    border-color: var(--app-border-color-focus);
   }
 }

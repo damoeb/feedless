@@ -1,12 +1,26 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import { GqlFeedlessPlugins, GqlScrapePageInput, GqlScrapeRequest, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlPluginExecutionInput,
+  GqlScrapePageInput,
+  GqlScrapeRequest,
+  GqlScrapeRequestInput,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { ProfileService } from '../../services/profile.service';
 
 export interface GenerateFeedModalComponentProps {
   scrapeRequest: GqlScrapeRequestInput;
@@ -42,6 +56,8 @@ export class GenerateFeedModalComponent
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
+    applyFulltextPlugin: new FormControl<boolean>(false),
+    applyPrivacyPlugin: new FormControl<boolean>(false),
   });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
 
@@ -52,10 +68,12 @@ export class GenerateFeedModalComponent
   scrapeRequest: GqlScrapeRequest;
   loading = false;
   errorMessage: string;
+  isLoggedIn: boolean;
 
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
+    private readonly profileService: ProfileService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
@@ -79,7 +97,7 @@ export class GenerateFeedModalComponent
         ]),
         value: new FormControl<string>('', [
           Validators.required,
-          Validators.minLength(3),
+          Validators.minLength(1),
         ]),
       }),
     );
@@ -108,6 +126,30 @@ export class GenerateFeedModalComponent
     };
     try {
       const page: GqlScrapePageInput = pageUrl();
+
+      const plugins: GqlPluginExecutionInput[] = [];
+      if (this.formFg.value.applyFulltextPlugin) {
+        plugins.push({
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+          params: {
+            fulltext: {
+              readability: true,
+            },
+          },
+        });
+      }
+      if (this.formFg.value.applyPrivacyPlugin) {
+        plugins.push({
+          pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
+          params: {}
+        });
+      }
+      if (this.filters.length > 0) {
+        plugins.push({
+          pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
+          params: {}
+        });
+      }
 
       const subscriptions =
         await this.sourceSubscriptionService.createSubscriptions({
@@ -145,6 +187,7 @@ export class GenerateFeedModalComponent
                 title: this.formFg.value.title,
                 description: this.formFg.value.description,
                 visibility: GqlVisibility.IsPrivate,
+                plugins,
               },
             },
           ],
@@ -163,6 +206,7 @@ export class GenerateFeedModalComponent
   }
 
   async ngOnInit(): Promise<void> {
+    this.isLoggedIn = this.profileService.isAuthenticated();
     this.formFg.patchValue(this.getFeedTitle());
   }
 
@@ -179,4 +223,6 @@ export class GenerateFeedModalComponent
       };
     }
   }
+
+  removePlugin(index: number) {}
 }

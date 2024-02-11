@@ -3,6 +3,7 @@ package org.migor.feedless.config
 import io.micrometer.core.instrument.MeterRegistry
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.JwtRequestFilter
@@ -142,7 +143,7 @@ class SecurityConfig {
             val user = when(authenticationToken.authorizedClientRegistrationId) {
               "github" -> handleGithubAuthResponse(authenticationToken)
               "google" -> handleGoogleAuthResponse(authenticationToken)
-              else -> throw IllegalAccessException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
+              else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
             }
             log.info("jwt from user ${user.id}")
             val jwt = tokenProvider.createJwtForUser(user)
@@ -167,13 +168,13 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.minimal, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, planName = PlanName.minimal, productName = ProductName.feedless)
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.minimal, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, planName = PlanName.minimal, productName = ProductName.feedless)
   }
 
   private fun resolveUserByEmail(email: String): UserEntity? {

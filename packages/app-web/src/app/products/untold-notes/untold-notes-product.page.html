@@ -10,11 +10,8 @@
           <span [innerHtml]="productConfig?.titleHtml"></span>
         </div>
       </div>
-
-      <form style="flex: 1">
-        <ion-searchbar #searchbar [formControl]="queryFc"></ion-searchbar>
-      </form>
     </div>
+
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
       <ion-button tabindex="-1" routerLink="/plans"> Pricing </ion-button>

@@ -17,12 +17,13 @@ import {
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,
   GqlScrapeDebugTimes,
-  GqlScrapeEmitInput, GqlScrapeRequestInput,
+  GqlScrapeEmitInput,
+  GqlScrapeRequestInput,
   GqlScrapeResponse,
   GqlViewPort,
   GqlWebDocumentField,
   GqlXyPosition,
-  Maybe
+  Maybe,
 } from '../../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
@@ -196,8 +197,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       queryParams: {
         url,
       },
-      relativeTo: this.activatedRoute
-    })
+      relativeTo: this.activatedRoute,
+    });
 
     this.errorMessage = null;
     this.busy = true;
@@ -219,11 +220,13 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       };
 
       if (isEqual(newScrapeRequest, this.scrapeRequest)) {
-        console.log('scrapeRequest is unchanged')
+        console.log('scrapeRequest is unchanged');
       } else {
         this.scrapeRequest = newScrapeRequest;
 
-        const scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
+        const scrapeResponse = await this.scrapeService.scrape(
+          this.scrapeRequest,
+        );
 
         this.embedScreenshot = null;
         this.changeRef.detectChanges();
@@ -297,8 +300,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
           },
           additionalSinks: [
             {
-              email: this.form.value.email
-            }
+              email: this.form.value.email,
+            },
           ],
           sinkOptions: {
             title: this.form.value.subject,
@@ -368,7 +371,10 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   isPickPositionMode() {
-    return this.isDefined(this.pickPositionDelegate) || this.isDefined(this.pickBoundingBoxDelegate);
+    return (
+      this.isDefined(this.pickPositionDelegate) ||
+      this.isDefined(this.pickBoundingBoxDelegate)
+    );
   }
 
   protected isDefined(v: any | undefined): boolean {

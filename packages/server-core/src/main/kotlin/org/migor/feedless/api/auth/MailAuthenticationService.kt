@@ -2,6 +2,8 @@ package org.migor.feedless.api.auth
 
 import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.UnavailableException
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.FeatureName
@@ -66,7 +68,7 @@ class MailAuthenticationService {
     return Flux.create { emitter -> run {
       try {
         if (featureService.isDisabled(FeatureName.canLogin, data.product.fromDto())) {
-          throw IllegalArgumentException("login is deactivated")
+          throw UnavailableException("login is deactivated by feature flag")
         }
 
         val user = resolveUserByMail(corrId, data)
@@ -115,10 +117,10 @@ class MailAuthenticationService {
 
     otp.ifPresentOrElse({
       if (isOtpExpired(it)) {
-        throw RuntimeException("code expired. Please restart authentication ($corrId)")
+        throw PermissionDeniedException("code expired. Please restart authentication ($corrId)")
       }
       if (it.password != codeInput.code) {
-        throw RuntimeException("invalid code ($corrId)")
+        throw PermissionDeniedException("invalid code ($corrId)")
       }
 
       oneTimePasswordDAO.deleteById(otpId)

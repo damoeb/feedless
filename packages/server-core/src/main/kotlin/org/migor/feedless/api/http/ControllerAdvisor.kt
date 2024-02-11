@@ -1,6 +1,6 @@
 package org.migor.feedless.api.http
 
-import org.migor.feedless.harvest.HostOverloadingException
+import org.migor.feedless.HostOverloadingException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

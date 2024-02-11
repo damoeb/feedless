@@ -3,6 +3,7 @@ package org.migor.feedless.data.jpa
 object StandardJpaFields {
   const val createdAt = "createdAt"
   const val product = "product"
+  const val email = "email"
   const val subscriptionId = "subscriptionId"
   const val releasedAt = "releasedAt"
   const val status = "status"
