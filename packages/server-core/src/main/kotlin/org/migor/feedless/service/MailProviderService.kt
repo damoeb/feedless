@@ -1,6 +1,5 @@
 package org.migor.feedless.service
 
-import freemarker.template.Template
 import org.migor.feedless.data.jpa.models.MailForwardEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
@@ -10,9 +9,6 @@ import org.migor.feedless.plugins.MailProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer
-import java.io.ByteArrayOutputStream
-import java.io.OutputStreamWriter
 
 
 @Service
@@ -21,7 +17,10 @@ class MailProviderService : MailProvider {
   private val log = LoggerFactory.getLogger(MailProviderService::class.simpleName)
 
   @Autowired
-  private lateinit var freemarkerConfigurer: FreeMarkerConfigurer
+  private lateinit var templateService: TemplateService
+
+  @Autowired
+  private lateinit var productService: ProductService
 
   override fun provideWebDocumentMail(
     corrId: String,
@@ -31,11 +30,9 @@ class MailProviderService : MailProvider {
   ): MailData {
     log.info("[$corrId] prepare email")
 
-    val data = mutableMapOf<String, Any>()
-
     val mailData = MailData()
     mailData.subject = "Change"
-    mailData.body = renderTemplate(corrId, "", data)
+    mailData.body = templateService.renderTemplate(corrId, WebDocumentUpdateMailTemplate())
     return mailData
   }
 
@@ -45,24 +42,12 @@ class MailProviderService : MailProvider {
     mailForward: MailForwardEntity
   ): MailData {
     log.info("[$corrId] prepare welcome email")
-    val data = mutableMapOf<String, Any>()
     val mailData = MailData()
-    mailData.subject = "Change"
-    mailData.body = renderTemplate(corrId, "", data)
+    mailData.subject = "Welcome to ${productService.getDomain(subscription.product)}"
+    val params = WelcomeMailParams(
+      productName = subscription.product.name
+    )
+    mailData.body = templateService.renderTemplate(corrId, WelcomeFreeMailTemplate(params))
     return mailData
-  }
-
-  fun renderTemplate(
-    corrId: String,
-    templateName: String,
-    data: Map<String, Any>
-  ): String {
-    log.info("[$corrId] renderTemplate $templateName")
-
-    val template: Template = freemarkerConfigurer.configuration.getTemplate(templateName)
-    return ByteArrayOutputStream().use {
-      template.process(data, OutputStreamWriter(it))
-      String(it.toByteArray())
-    }
   }
 }

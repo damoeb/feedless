@@ -103,7 +103,7 @@ class SecurityConfig {
       ApiUrls.webToFeedVerbose,
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
-      ApiUrls.mailForwardingAllow+"/**",
+      ApiUrls.mailForwardingAllow + "/**",
       "/api/legacy/**",
       "/stream/feed/**",
       "/stream/bucket/**",
@@ -140,7 +140,7 @@ class SecurityConfig {
           run {
             val corrId = newCorrId()
             val authenticationToken = authentication as OAuth2AuthenticationToken
-            val user = when(authenticationToken.authorizedClientRegistrationId) {
+            val user = when (authenticationToken.authorizedClientRegistrationId) {
               "github" -> handleGithubAuthResponse(authenticationToken)
               "google" -> handleGoogleAuthResponse(authenticationToken)
               else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
@@ -168,13 +168,25 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, planName = PlanName.minimal, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(
+      newCorrId(),
+      email,
+      authSource = AuthSource.oauth,
+      planName = PlanName.free,
+      productName = ProductName.feedless
+    )
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, planName = PlanName.minimal, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(
+      newCorrId(),
+      email,
+      authSource = AuthSource.oauth,
+      planName = PlanName.free,
+      productName = ProductName.feedless
+    )
   }
 
   private fun resolveUserByEmail(email: String): UserEntity? {
@@ -184,7 +196,7 @@ class SecurityConfig {
           meterRegistry.counter(AppMetrics.userLogin).increment()
         }
       }
-    }
+  }
 
   @Bean
   fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {

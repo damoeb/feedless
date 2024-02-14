@@ -15,6 +15,11 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.WebDocumentField
 import org.migor.feedless.service.ProductService
+import org.migor.feedless.service.TemplateService
+import org.migor.feedless.service.VisualDiffChangeDetectedMailTemplate
+import org.migor.feedless.service.VisualDiffChangeDetectedParams
+import org.migor.feedless.service.VisualDiffWelcomeMailTemplate
+import org.migor.feedless.service.VisualDiffWelcomeParams
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -53,6 +58,9 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
   @Autowired
   lateinit var scrapeSourceDAO: ScrapeSourceDAO
+
+  @Autowired
+  lateinit var templateService: TemplateService
 
   override fun id() = FeedlessPlugins.org_feedless_diff_email_forward.name
   override fun name() = ""
@@ -96,6 +104,93 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     } ?: true
   }
 
+  override fun provideWelcomeMail(
+    corrId: String,
+    subscription: SourceSubscriptionEntity,
+    mailForward: MailForwardEntity
+  ): MailData {
+    log.info("[$corrId] prepare welcome mail")
+    val mailData = MailData()
+    mailData.subject = "VisualDiff Tracker: ${subscription.title}"
+    val website =
+      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { it.scrapeRequest.page.url }.joinToString(", ")
+
+    val params = VisualDiffWelcomeParams(
+      trackerTitle = subscription.title,
+      website = website,
+      trackerInfo = subscription.schedulerExpression,
+      activateTrackerMailsUrl = "${productService.getGatewayUrl(subscription.product)}${ApiUrls.mailForwardingAllow}/${mailForward.id}",
+      info = ""
+    )
+    mailData.body = templateService.renderTemplate(corrId, VisualDiffWelcomeMailTemplate(params))
+
+    return mailData
+  }
+
+  override fun provideWebDocumentMail(
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    subscription: SourceSubscriptionEntity,
+    params: PluginExecutionParamsInput
+  ): MailData {
+    log.info("[$corrId] prepare diff email")
+
+    val config = params.diffEmailForward
+
+    val mailData = MailData()
+
+    mailData.subject = subscription.title
+
+    val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
+
+    val latestDateString = sdf.format(webDocument.createdAt)
+    val images = mutableListOf(
+      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!!),
+    )
+
+    val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
+    previous?.let {
+      images.add(
+        Triple(
+          config.inlinePreviousImage,
+          "previousImage-${sdf.format(previous.createdAt)}",
+          previous.contentRaw!!
+        )
+      )
+      images.add(
+        Triple(
+          config.inlineDiffImage,
+          "diffImage-${latestDateString}",
+          createDiffImage(previous, webDocument)
+        )
+      )
+    }
+
+    val inlined = mutableListOf<String>()
+    images.forEach { (shouldInline, contentId, data) ->
+      run {
+        if (BooleanUtils.isTrue(shouldInline)) {
+          inlined.add("<p><img src='cid:$contentId'></p>")
+          mailData.attachments.add(MailAttachment(contentId, ByteArrayDataSource(data, "image/webp"), true))
+        }
+        mailData.attachments.add(MailAttachment("$contentId.webp", ByteArrayDataSource(data, "image/webp")))
+      }
+    }
+
+    val website = scrapeSourceDAO.findAllBySubscriptionId(
+      subscription.id
+    ).joinToString(", ") { s -> s.scrapeRequest.page.url }
+
+    val templateParams = VisualDiffChangeDetectedParams(
+      trackerTitle = subscription.title,
+      website = website,
+      inlineImages = inlined.joinToString("\n")
+    )
+    mailData.body = templateService.renderTemplate(corrId, VisualDiffChangeDetectedMailTemplate(templateParams))
+
+    return mailData
+  }
+
   private fun toImage(webDocument: WebDocumentEntity): BufferedImage {
     return ImageIO.read(ByteArrayInputStream(webDocument.contentRaw))
   }
@@ -135,85 +230,6 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val ratio = changes / len.toDouble()
     log.info("[$corrId] editDistance=$changes total=$len ratio=$ratio")
     return ratio > minIncrement
-  }
-
-  override fun provideWelcomeMail(
-    corrId: String,
-    subscription: SourceSubscriptionEntity,
-    mailForward: MailForwardEntity
-  ): MailData {
-    log.info("[$corrId] prepare welcome mail")
-    val mailData = MailData()
-    mailData.subject = "VisualDiff Tracker: ${subscription.title}"
-    mailData.body = """Hi,
-you created a tracker for page ${
-      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { it.scrapeRequest.page.url }.joinToString(", ")
-    }
-in order to authorize the tracking emails, click here ${productService.getGatewayUrl(subscription.product)}${ApiUrls.mailForwardingAllow}/${mailForward.id}
-${subscription.schedulerExpression}
-
-    """.trimIndent()
-
-    return mailData
-  }
-
-  override fun provideWebDocumentMail(
-    corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
-    params: PluginExecutionParamsInput
-  ): MailData {
-    log.info("[$corrId] prepare diff email")
-
-    val config = params!!.diffEmailForward
-
-    val mailData = MailData()
-
-    mailData.subject = subscription.title
-    var body = """Hi,
-      | your tracker '${subscription.title}' noticed a change on site ${
-      scrapeSourceDAO.findAllBySubscriptionId(
-        subscription.id
-      ).map { s -> s.scrapeRequest.page.url }
-    }.
-    """.trimMargin()
-
-    val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
-
-    val latestDateString = sdf.format(webDocument.createdAt)
-    val images = mutableListOf(
-      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!!),
-    )
-
-    val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
-    previous?.let {
-      images.add(
-        Triple(
-          config.inlinePreviousImage,
-          "previousImage-${sdf.format(previous.createdAt)}",
-          previous.contentRaw!!
-        )
-      )
-      images.add(
-        Triple(
-          config.inlineDiffImage,
-          "diffImage-${latestDateString}",
-          createDiffImage(previous, webDocument)
-        )
-      )
-    }
-
-    images.forEach { (shouldInline, contentId, data) ->
-      run {
-        if (BooleanUtils.isTrue(shouldInline)) {
-          body += "<p><img src='cid:$contentId'></p>"
-          mailData.attachments.add(MailAttachment(contentId, ByteArrayDataSource(data, "image/webp"), true))
-        }
-        mailData.attachments.add(MailAttachment("$contentId.webp", ByteArrayDataSource(data, "image/webp")))
-      }
-    }
-
-    return mailData
   }
 
   private fun createDiffImage(left: WebDocumentEntity, right: WebDocumentEntity): ByteArray {

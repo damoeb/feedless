@@ -97,9 +97,10 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authUser(@RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
-                       dfe: DataFetchingEnvironment,
-                       @InputArgument data: AuthUserInput,
+  suspend fun authUser(
+    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
+    dfe: DataFetchingEnvironment,
+    @InputArgument data: AuthUserInput,
   ): AuthenticationDto = coroutineScope {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] authUser")
@@ -166,11 +167,14 @@ class MutationResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: CreateUserInput
   ): User = coroutineScope {
-    userService.createUser(corrId,
+    log.info("[$corrId] createUser $data")
+    userService.createUser(
+      corrId,
       email = data.email,
       productName = data.product.fromDto(),
       AuthSource.email,
-      planName = data.plan.fromDto()).toDto()
+      planName = data.plan.fromDto()
+    ).toDto()
   }
 
   @Throttled
@@ -238,8 +242,9 @@ class MutationResolver {
 
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
-  suspend fun logout(dfe: DataFetchingEnvironment,
-                     @RequestHeader(ApiParams.corrId) corrId: String,
+  suspend fun logout(
+    dfe: DataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
     log.info("[$corrId] logout")
     val cookie = Cookie("TOKEN", "")

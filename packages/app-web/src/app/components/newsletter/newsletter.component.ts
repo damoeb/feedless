@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
@@ -7,7 +7,8 @@ import { GqlPlanName } from '../../../generated/graphql';
 @Component({
   selector: 'app-newsletter',
   templateUrl: './newsletter.component.html',
-  styleUrls: ['./newsletter.component.scss']
+  styleUrls: ['./newsletter.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewsletterComponent {
   @Input({ required: true })
@@ -17,6 +18,7 @@ export class NewsletterComponent {
   @Input({ required: true })
   buttonText: string;
 
+  busy = false;
   submitted = false;
   errorMessage: string;
 
@@ -25,13 +27,16 @@ export class NewsletterComponent {
     Validators.email
   ]);
 
-  constructor(private readonly userService: UserService) {
+  constructor(private readonly userService: UserService,
+              private readonly changeRef: ChangeDetectorRef) {
   }
 
   async joinNow(email: string) {
     console.log('joinNow');
     this.emailFc.setValue(email);
     this.errorMessage = null
+    this.busy = true;
+    this.changeRef.detectChanges();
     if (this.emailFc.valid) {
       try {
         await this.userService.createUser({
@@ -47,5 +52,7 @@ export class NewsletterComponent {
     } else {
       this.errorMessage = 'Your email looks invalid';
     }
+    this.busy = false;
+    this.changeRef.detectChanges();
   }
 }

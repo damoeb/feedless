@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      html, body {
+        font-family: "Arial";
+      }
+    </style>
+  </head>
+  <body>
+    <p>Hi,</p>
+    <p>you request access to ${domain}. Please enter the following code (valid until ${otp.validUntil} minutes).</p>
+
+    <div style="margin: 15px; font-size: 16px;">
+      ${code}
+    </div>
+
+    <div>(${description}, CorrelationId: ${corrId})</div>
+  </body>
+</html>

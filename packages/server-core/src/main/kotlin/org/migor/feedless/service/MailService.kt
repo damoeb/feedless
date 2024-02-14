@@ -14,6 +14,7 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
+import java.text.SimpleDateFormat
 import java.util.*
 
 data class Email(val subject: String, val text: String, val from: String)
@@ -33,7 +34,7 @@ class MailService {
   private lateinit var mailForwardDAO: MailForwardDAO
 
   @Autowired
-  private lateinit var mailFormatterService: MailProviderService
+  private lateinit var templateService: TemplateService
 
   @Deprecated("")
   private fun send(to: String, body: Email) {
@@ -46,10 +47,29 @@ class MailService {
     javaMailSender.send(mailMessage)
   }
 
-  fun sendWelcomeMail(corrId: String, user: UserEntity) {
-    log.info("[$corrId] send welcome mail ${user.email}")
-//    mailFormatterService.
+  fun sendWelcomeWaitListMail(corrId: String, user: UserEntity) {
+    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.product.name)))
+  }
 
+  fun sendWelcomePaidMail(corrId: String, user: UserEntity) {
+    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.product.name)))
+  }
+
+  fun sendWelcomeFreeMail(corrId: String, user: UserEntity) {
+    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.product.name)))
+  }
+
+  private fun <T> sendWelcomeAnyMail(corrId: String, user: UserEntity, template: FtlTemplate<T>) {
+    log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")
+    val product = user.product
+
+    val mailData = MailData()
+    mailData.subject = "Welcome to ${productService.getDomain(product)}"
+    val params = WelcomeMailParams(
+      productName = product.name
+    )
+    mailData.body = templateService.renderTemplate(corrId, template)
+    send(corrId, getNoReplyAddress(product), arrayOf(user.email), mailData)
   }
 
   fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
@@ -58,22 +78,21 @@ class MailService {
     val from = getNoReplyAddress(user.product)
     val domain = productService.getDomain(user.product)
     val subject = "$domain: Access Code"
-    val text = """
-Hi,
-you request access to $domain. Please enter the following code (valid until ${otp.validUntil} minutes).
 
-
-${otp.password}
-
-
-(${description}, CorrelationId: ${corrId})
-
-""".trimIndent()
     val mailData = MailData()
     mailData.subject = subject
-    mailData.body = text
+    val sdf = SimpleDateFormat("HH:mm")
 
-    send(corrId, from, to= arrayOf(user.email), mailData)
+    val params = AuthCodeMailParams(
+      domain = domain,
+      codeValidUntil = sdf.format(otp.validUntil),
+      code = otp.password,
+      description = description,
+      corrId = corrId,
+    )
+    mailData.body = templateService.renderTemplate(corrId, AuthCodeMailTemplate(params))
+
+    send(corrId, from, to = arrayOf(user.email), mailData)
   }
 
   fun getNoReplyAddress(product: ProductName): String {

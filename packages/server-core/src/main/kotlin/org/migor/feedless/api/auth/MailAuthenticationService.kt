@@ -65,49 +65,54 @@ class MailAuthenticationService {
   fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email
     log.info("[${corrId}] init user session for $email")
-    return Flux.create { emitter -> run {
-      try {
-        if (featureService.isDisabled(FeatureName.canLogin, data.product.fromDto())) {
-          throw UnavailableException("login is deactivated by feature flag")
+    return Flux.create { emitter ->
+      run {
+        try {
+          if (featureService.isDisabled(FeatureName.canLogin, data.product.fromDto())) {
+            throw UnavailableException("login is deactivated by feature flag")
+          }
+
+          val user = resolveUserByMail(corrId, data)
+
+          val otp = if (user == null) {
+            oneTimePasswordService.createOTP()
+          } else {
+            oneTimePasswordService.createOTP(corrId, user, data.osInfo)
+          }
+
+          Mono.delay(Duration.ofSeconds(2)).subscribe {
+            emitter.next(
+              AuthenticationEvent.newBuilder()
+                .confirmCode(
+                  ConfirmCode.newBuilder()
+                    .length(otp.password.length)
+                    .otpId(otp.id.toString())
+                    .build()
+                )
+                .build()
+            )
+            emitter.complete()
+          }
+          emitter.onDispose { log.debug("[$corrId] disconnected") }
+
+        } catch (e: Exception) {
+          log.error("[$corrId] ${e.message}")
+          emitter.error(e)
         }
-
-        val user = resolveUserByMail(corrId, data)
-
-        val otp = if (user == null) {
-          oneTimePasswordService.createOTP()
-        } else {
-          oneTimePasswordService.createOTP(corrId, user, data.osInfo)
-        }
-
-        Mono.delay(Duration.ofSeconds(2)).subscribe {
-          emitter.next(
-            AuthenticationEvent.newBuilder()
-              .confirmCode(
-                ConfirmCode.newBuilder()
-                  .length(otp.password.length)
-                  .otpId(otp.id.toString())
-                  .build()
-              )
-              .build()
-          )
-          emitter.complete()
-        }
-        emitter.onDispose { log.debug("[$corrId] disconnected") }
-
-      } catch (e: Exception) {
-        log.error("[$corrId] ${e.message}")
-        emitter.error(e)
       }
-    }
     }
   }
 
   private fun resolveUserByMail(corrId: String, data: AuthViaMailInput): UserEntity? {
-    return userDAO.findByEmail(data.email) ?: if (data.allowCreate) { createUser(corrId, data.email, product=data.product) } else {null}
+    return userDAO.findByEmail(data.email) ?: if (data.allowCreate) {
+      createUser(corrId, data.email, product = data.product)
+    } else {
+      null
+    }
   }
 
   private fun createUser(corrId: String, email: String, product: ProductName): UserEntity {
-    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.minimal)
+    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.free)
   }
 
   //  @Transactional

@@ -8,6 +8,7 @@
       [buttonText]="buttonText"
       *ngIf="!submitted"
       placeholder="Your email"
+      [loading]="busy"
       (querySubmit)="joinNow($event)"
       color="primary"
     ></app-searchbar>

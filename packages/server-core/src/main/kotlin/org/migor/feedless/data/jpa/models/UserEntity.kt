@@ -23,7 +23,8 @@ import java.sql.Timestamp
 import java.util.*
 
 @Entity
-@Table(name = "t_user",
+@Table(
+  name = "t_user",
   uniqueConstraints = [
     UniqueConstraint(name = "UniqueUser", columnNames = [StandardJpaFields.email, StandardJpaFields.product])]
 )
@@ -69,10 +70,6 @@ open class UserEntity : EntityWithUUID() {
   open var locked: Boolean = false
 
   @Basic
-  @Column(nullable = false)
-  open var canLogin: Boolean = true
-
-  @Basic
   open var purgeScheduledFor: Timestamp? = null
 
   @Basic
@@ -89,7 +86,13 @@ open class UserEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"), insertable = false, updatable = false)
+  @JoinColumn(
+    name = "plan_id",
+    referencedColumnName = "id",
+    foreignKey = ForeignKey(name = "fk_user__plan"),
+    insertable = false,
+    updatable = false
+  )
   open var plan: PlanEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")

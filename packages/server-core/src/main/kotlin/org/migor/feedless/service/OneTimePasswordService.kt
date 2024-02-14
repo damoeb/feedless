@@ -1,17 +1,20 @@
 package org.migor.feedless.service
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
 import java.time.LocalDateTime
 
 
 @Service
+@Profile(AppProfiles.database)
 class OneTimePasswordService {
 
   private val log = LoggerFactory.getLogger(OneTimePasswordService::class.simpleName)

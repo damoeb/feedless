@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.migor.feedless.service.MailService
+import org.migor.feedless.service.MailTrackerAuthorizedTemplate
+import org.migor.feedless.service.TemplateService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +25,9 @@ class MailController {
   @Autowired
   lateinit var mailService: MailService
 
+  @Autowired
+  lateinit var templateService: TemplateService
+
   @GetMapping(
     "${mailForwardingAllow}/{mailForwardId}",
   )
@@ -35,6 +40,6 @@ class MailController {
     mailService.updateMailForwardById(UUID.fromString(mailForwardId), true)
 
     return ResponseEntity.ok()
-      .body("Change Tracker has been authorized")
+      .body(templateService.renderTemplate(corrId, MailTrackerAuthorizedTemplate()))
   }
 }

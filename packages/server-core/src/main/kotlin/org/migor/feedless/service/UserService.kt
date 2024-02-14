@@ -14,7 +14,6 @@ import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
-import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -83,7 +82,11 @@ class UserService {
     user.planId = planDAO.findByNameAndProduct(planName, productName)!!.id
 
     if (!user.anonymous && !user.root) {
-      mailService.sendWelcomeMail(corrId, user)
+      when (planName) {
+        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
+        PlanName.free -> mailService.sendWelcomeFreeMail(corrId, user)
+        else -> mailService.sendWelcomePaidMail(corrId, user)
+      }
     }
 
     return userDAO.saveAndFlush(user)

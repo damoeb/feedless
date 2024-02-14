@@ -64,7 +64,12 @@ class Seeder {
   private fun seedUsers() {
     userDAO.findByEmail(propertyService.anonymousEmail) ?: createAnonymousUser()
     val root =
-      userDAO.findRootUser() ?: createUser(propertyService.rootEmail, isRoot = true, authSource = AuthSource.none, plan = PlanName.system)
+      userDAO.findRootUser() ?: createUser(
+        propertyService.rootEmail,
+        isRoot = true,
+        authSource = AuthSource.none,
+        plan = PlanName.system
+      )
     if (root.email != propertyService.rootEmail) {
       log.info("Updated rootEmail")
       root.email = propertyService.rootEmail
@@ -143,7 +148,7 @@ class Seeder {
       PlanName.waitlist, 0.0, PlanAvailability.availableButHidden, product, features = emptyMap()
     )
     persistPlan(
-      PlanName.minimal, 0.0, PlanAvailability.available, product, primary = true, mapOf(
+      PlanName.free, 0.0, PlanAvailability.available, product, primary = true, mapOf(
         FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
         FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
@@ -216,7 +221,8 @@ class Seeder {
       featureDAO.findByPlanIdAndName(plan.id, featureName)
         ?.let {
           it.scope = featureScope(featureName)
-          val logValueMismatch = { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
+          val logValueMismatch =
+            { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
           if (it.valueBoolean != featureEntity.valueBoolean) {
             logValueMismatch(featureEntity.valueBoolean!!, it.valueBoolean!!)
           }
@@ -231,7 +237,7 @@ class Seeder {
           featureEntity.scope = featureScope(featureName)
           featureDAO.save(featureEntity)
         }
-      }
+    }
   }
 
   private fun asIntFeature(value: Int): FeatureEntity {

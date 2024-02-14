@@ -124,12 +124,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.push(
-      this.activatedRoute.queryParams.subscribe((queryParams) => {
-        if (queryParams.url) {
-          this.form.controls.url.setValue(queryParams.url);
-          this.scrape();
-        }
-      }),
       merge(this.form.controls.url.valueChanges, this.actions.valueChanges)
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
@@ -137,6 +131,11 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
             return this.scrape();
           }
         }),
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
+        if (queryParams.url && queryParams.url != this.form.value.url) {
+          this.form.controls.url.setValue(queryParams.url);
+        }
+      }),
       this.form.controls.screen.valueChanges.subscribe((screen) => {
         if (screen === 'area') {
           this.form.controls.areaBoundingBox.enable();
@@ -146,18 +145,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         this.changeRef.detectChanges();
       }),
     );
-
-    // this.form.valueChanges.subscribe(() => console.log('changed'));
-
-    // this.form.patchValue({
-    //   url: 'https://spiegel.de',
-    //   screen: 'page',
-    //   compareType: GqlWebDocumentField.Pixel,
-    //   fetchFrequency: '0 0 0 * * *',
-    //   subject: 'Foo',
-    //   sinkCondition: 0.1,
-    //   email: 'foo@bar.com'
-    // });
 
     this.changeRef.detectChanges();
   }
@@ -184,25 +171,27 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   async scrape() {
     let url = this.form.value.url;
+    console.log('scrape', url);
     if (!isValidUrl(url)) {
       url = fixUrl(url);
-      this.form.controls.url.setValue(fixUrl(url));
+      this.form.controls.url.setValue(fixUrl(url), {emitEvent: false});
     }
 
     if (this.busy || this.form.controls.url.invalid) {
       return;
     }
 
+    this.errorMessage = null;
+    this.busy = true;
+    this.changeRef.detectChanges();
+
     await this.router.navigate(['.'], {
       queryParams: {
         url,
       },
       relativeTo: this.activatedRoute,
+      skipLocationChange: true
     });
-
-    this.errorMessage = null;
-    this.busy = true;
-    this.changeRef.detectChanges();
 
     try {
       const newScrapeRequest = {
@@ -419,7 +408,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   handleQuery(query: string) {
     this.form.controls.url.setValue(query);
-    return this.scrape();
   }
 
   private async showAnonymousSuccessAlert() {

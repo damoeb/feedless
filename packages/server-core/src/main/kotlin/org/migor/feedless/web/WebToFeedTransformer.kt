@@ -102,19 +102,6 @@ data class GenericFeedParserOptions(
   val minWordCountOfLink: Int = 1,
 )
 
-@JsonIgnoreProperties
-data class FetchOptions(
-  val websiteUrl: String,
-  val prerender: Boolean = false,
-  val baseXpath: String = "",
-  val emit: PuppeteerEmitType = PuppeteerEmitType.markup,
-  var prerenderWaitUntil: PuppeteerWaitUntil = PuppeteerWaitUntil.load,
-  var prerenderScript: String? = null
-)
-
-enum class PuppeteerEmitType {
-  markup, text, pixel
-}
 enum class PuppeteerWaitUntil {
   networkidle0,
   networkidle2,
@@ -140,14 +127,6 @@ data class GenericFeedSelectors(
   override val dateIsStartOfEvent: Boolean = false
 ) : Selectors()
 
-
-@JsonIgnoreProperties
-data class GenericFeedSpecification(
-  val selectors: GenericFeedSelectors?,
-  val parserOptions: GenericFeedParserOptions,
-  val scrapeOptions: ScrapeRequest,
-  val refineOptions: GenericFeedRefineOptions,
-)
 
 data class ArticleContext(
   val linkElement: Element,
@@ -206,7 +185,8 @@ class WebToFeedTransformer(
       .page(
         ScrapePage.newBuilder()
           .url(url.toString())
-        .build())
+          .build()
+      )
       .build()
 
     val refineOptions = GenericFeedRefineOptions()
@@ -330,7 +310,7 @@ class WebToFeedTransformer(
       WebToFeedParamsV2.contextPath to selectors.contextXPath,
       WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
       WebToFeedParamsV2.extendContext to selectors.extendContext.value,
-      WebToFeedParamsV2.prerender to "${ scrapeRequest.page.prerender != null }",
+      WebToFeedParamsV2.prerender to "${scrapeRequest.page.prerender != null}",
       WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
       WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
     ).map { entry -> entry.key to encode("${entry.value}") }
@@ -444,7 +424,9 @@ class WebToFeedTransformer(
       .map {
         Pair(
           it.text(), toAbsoluteUrl(
-            url, StringUtils.trimToNull(it.attr("href")) ?: ("/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText())))
+            url,
+            StringUtils.trimToNull(it.attr("href"))
+              ?: ("/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText())))
           )
         )
       }
@@ -903,7 +885,7 @@ class WebToFeedTransformer(
 }
 
 fun toDto(it: PuppeteerWaitUntil): org.migor.feedless.generated.types.PuppeteerWaitUntil {
-  return when(it) {
+  return when (it) {
     PuppeteerWaitUntil.domcontentloaded -> org.migor.feedless.generated.types.PuppeteerWaitUntil.domcontentloaded
     PuppeteerWaitUntil.networkidle2 -> org.migor.feedless.generated.types.PuppeteerWaitUntil.networkidle2
     PuppeteerWaitUntil.networkidle0 -> org.migor.feedless.generated.types.PuppeteerWaitUntil.networkidle0

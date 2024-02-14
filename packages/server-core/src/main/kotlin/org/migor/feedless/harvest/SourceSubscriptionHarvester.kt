@@ -136,7 +136,7 @@ class SourceSubscriptionHarvester internal constructor() {
       nextCronDate(subscription.schedulerExpression),
       subscription.ownerId
     )
-    log.info("[$corrId] Next import scheduled for $scheduledNextAt")
+    log.info("[$corrId] Next harvest scheduled for $scheduledNextAt")
     sourceSubscriptionDAO.updateScheduledNextAt(subscription.id, scheduledNextAt)
   }
 
@@ -216,22 +216,21 @@ class SourceSubscriptionHarvester internal constructor() {
           else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
         }
       }
-    }
-    importScrapedData(corrId, scrapedData, subscriptionId)
+    } ?: importScrapedData(corrId, scrapedData, subscriptionId)
   }
 
   private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
     log.info("[$corrId] importScrapedData")
-//    val webDocument = scrapedData.asEntity(subscriptionId)
-//
-//    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-//
-//    createOrUpdate(
-//      corrId,
-//      webDocument,
-//      webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
-//      subscription
-//    )
+    val webDocument = scrapedData.asEntity(subscriptionId)
+
+    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
+
+    createOrUpdate(
+      corrId,
+      webDocument,
+      webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
+      subscription
+    )
   }
 
   private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
@@ -270,11 +269,11 @@ class SourceSubscriptionHarvester internal constructor() {
             ReleaseStatus.unreleased
           }
 
+          webDocumentDAO.save(webDocument)
+          
           webDocument.plugins = subscription.plugins
             .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, webDocument, index) }
             .toMutableList()
-
-          webDocumentDAO.save(webDocument)
 
           log.info("[$corrId] saved ${subscription.id} ${webDocument.url} with ${webDocument.plugins.size} plugins")
         }
@@ -316,6 +315,27 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
         Pair(plugin, params)
       }
     }
+}
+
+private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity {
+  val e = WebDocumentEntity()
+  e.subscriptionId = subscriptionId
+  pixel?.let {
+    e.contentTitle = CryptUtil.sha1(it.base64Data)
+    e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
+    e.contentRawMime = "image/webp"
+  }
+  html?.let {
+    e.contentTitle = CryptUtil.sha1(it.data)
+    e.contentHtml = it.data
+  }
+
+  e.contentText = text.data
+  e.status = ReleaseStatus.released
+  e.releasedAt = Date()
+  e.updatedAt = Date()
+  e.url = "https://feedless.org/d/${e.id}"
+  return e
 }
 
 private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): WebDocumentEntity {

@@ -28,15 +28,19 @@ enum class PlanAvailability {
 enum class PlanName {
   waitlist,
   system,
-  minimal,
+  free,
   basic,
   maximal
 }
 
 
 @Entity
-@Table(name = "t_plan", uniqueConstraints = [
-  UniqueConstraint(name = "UniquePlanNamePerProduct", columnNames = [StandardJpaFields.name, StandardJpaFields.product])]
+@Table(
+  name = "t_plan", uniqueConstraints = [
+    UniqueConstraint(
+      name = "UniquePlanNamePerProduct",
+      columnNames = [StandardJpaFields.name, StandardJpaFields.product]
+    )]
 )
 open class PlanEntity : EntityWithUUID() {
 
@@ -98,7 +102,7 @@ fun PlanEntity.toDto(): Plan {
 }
 
 private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
-  PlanName.minimal -> org.migor.feedless.generated.types.PlanName.free
+  PlanName.free -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
   PlanName.waitlist -> org.migor.feedless.generated.types.PlanName.waitlist
   PlanName.maximal -> throw BadRequestException("cannot be exported")
@@ -113,9 +117,9 @@ private fun PlanAvailability.toDto(): org.migor.feedless.generated.types.PlanAva
 }
 
 fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {
-  return when(this) {
+  return when (this) {
     org.migor.feedless.generated.types.PlanName.waitlist -> PlanName.waitlist
-    org.migor.feedless.generated.types.PlanName.free -> PlanName.minimal
+    org.migor.feedless.generated.types.PlanName.free -> PlanName.free
     org.migor.feedless.generated.types.PlanName.basic -> PlanName.basic
   }
 }
