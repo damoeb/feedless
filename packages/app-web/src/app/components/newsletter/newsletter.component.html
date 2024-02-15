@@ -14,11 +14,12 @@
     ></app-searchbar>
     <ion-item color="success" *ngIf="submitted" style="border-radius: 8px">
       <ion-icon name="mail-outline" slot="start"></ion-icon>
-      <ion-label>
-        Great, you joined the club!
-      </ion-label>
+      <ion-label> Great, you joined the club! </ion-label>
     </ion-item>
-    <ion-item *ngIf="errorMessage" style="border-radius: 8px; --background: none">
+    <ion-item
+      *ngIf="errorMessage"
+      style="border-radius: 8px; --background: none"
+    >
       <ion-label color="danger">{{ errorMessage }}</ion-label>
     </ion-item>
   </div>

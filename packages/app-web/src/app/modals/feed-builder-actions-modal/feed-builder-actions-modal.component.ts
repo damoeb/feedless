@@ -249,7 +249,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
               transformers: [
                 {
                   pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                  params: {}
+                  params: {},
                 },
               ],
             },

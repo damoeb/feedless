@@ -118,7 +118,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
                 transformers: [
                   {
                     pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                    params: {}
+                    params: {},
                   },
                 ],
               },

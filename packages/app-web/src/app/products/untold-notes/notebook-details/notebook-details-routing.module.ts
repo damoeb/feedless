@@ -7,6 +7,10 @@ const routes: Routes = [
     path: ':notebookId',
     component: NotebookDetailsPage,
   },
+  {
+    path: ':notebookId/:noteId',
+    component: NotebookDetailsPage,
+  },
 ];
 
 @NgModule({

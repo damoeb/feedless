@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
@@ -30,7 +37,7 @@ export class UntoldNotesProductPage implements OnInit, OnDestroy {
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
           this.changeRef.detectChanges();
-        })
+        }),
     );
   }
 

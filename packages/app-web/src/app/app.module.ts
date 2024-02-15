@@ -33,6 +33,7 @@ import { FeedBuilderModalModule } from './modals/feed-builder-modal/feed-builder
 
 export interface AppEnvironment {
   production: boolean;
+  offlineSupport: () => boolean;
   product: () => GqlProductName;
 }
 

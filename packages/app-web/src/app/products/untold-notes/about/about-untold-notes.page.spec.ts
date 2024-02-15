@@ -2,14 +2,19 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutUntoldNotesPage } from './about-untold-notes.page';
 import { AppTestModule } from '../../../app-test.module';
 import { AboutUntoldNotesModule } from './about-untold-notes.module';
+import { UntoldNotesProductModule } from '../untold-notes-product.module';
 
-describe('AboutRssBuilderPage', () => {
+describe('AboutUntoldNotesPage', () => {
   let component: AboutUntoldNotesPage;
   let fixture: ComponentFixture<AboutUntoldNotesPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [AboutUntoldNotesModule, AppTestModule.withDefaults()],
+      imports: [
+        AboutUntoldNotesModule,
+        UntoldNotesProductModule,
+        AppTestModule.withDefaults(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AboutUntoldNotesPage);

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Notebook, NotebookService } from '../services/notebook.service';
 
@@ -33,9 +38,9 @@ export class AboutUntoldNotesPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.notebookService.notebooksChanges.subscribe(notebooks => {
+    this.notebookService.notebooksChanges.subscribe((notebooks) => {
       this.notebooks = notebooks;
       this.changeRef.detectChanges();
-    })
+    });
   }
 }

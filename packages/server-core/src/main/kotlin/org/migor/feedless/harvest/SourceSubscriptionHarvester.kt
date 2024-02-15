@@ -270,12 +270,12 @@ class SourceSubscriptionHarvester internal constructor() {
           }
 
           webDocumentDAO.save(webDocument)
-          
+
           webDocument.plugins = subscription.plugins
             .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, webDocument, index) }
             .toMutableList()
 
-          log.info("[$corrId] saved ${subscription.id} ${webDocument.url} with ${webDocument.plugins.size} plugins")
+          log.info("[$corrId] saved ${subscription.id} ${webDocument.status} ${webDocument.url} with ${webDocument.plugins.size} plugins")
         }
     } catch (e: Exception) {
       log.error("[$corrId] ${e.message}")

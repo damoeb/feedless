@@ -36,8 +36,9 @@ data class AuthCodeMailTemplate(override val params: AuthCodeMailParams) :
 data class VisualDiffChangeDetectedParams(
   val trackerTitle: String,
   val website: String,
-  val inlineImages: String
+  val diffImage: String
 )
+
 data class VisualDiffChangeDetectedMailTemplate(override val params: VisualDiffChangeDetectedParams) :
   FtlTemplate<VisualDiffChangeDetectedParams>("mail-visual-diff-change-detected")
 

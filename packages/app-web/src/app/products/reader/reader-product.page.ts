@@ -139,11 +139,11 @@ export class ReaderProductPage implements OnInit, OnDestroy {
               transformers: [
                 {
                   pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
-                  params: {}
+                  params: {},
                 },
                 {
                   pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                  params: {}
+                  params: {},
                 },
               ],
             },

@@ -1,7 +1,7 @@
 import com.github.gradle.node.yarn.task.YarnTask
 
 plugins {
-  id ("com.github.node-gradle.node")
+  id("com.github.node-gradle.node")
   id("org.ajoberstar.grgit")
 }
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
@@ -29,8 +29,16 @@ val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
   dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
-  inputs.files("angular.json", "yarn.lock", ".prettierignore", ".prettierrc.json", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
-    "tslint.json")
+  inputs.files(
+    "angular.json",
+    "yarn.lock",
+    ".prettierignore",
+    ".prettierrc.json",
+    "tsconfig.json",
+    "tsconfig.app.json",
+    "tsconfig.spec.json",
+    "tslint.json"
+  )
   outputs.upToDateWhen { true }
 }
 
@@ -39,8 +47,10 @@ val testTask = tasks.register<YarnTask>("test") {
   dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
   inputs.dir("node_modules")
-  inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
-    "tslint.json")
+  inputs.files(
+    "angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
+    "tslint.json"
+  )
   outputs.upToDateWhen { true }
 }
 
@@ -59,8 +69,16 @@ tasks.register("buildDockerImage", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
   commandLine(
     "docker", "build",
+    "-t", "$baseTag:app",
     "-t", "$baseTag:app-$gitHash",
     "."
+  )
+}
+
+tasks.register("clean", Exec::class) {
+  commandLine(
+    "rm", "-rf",
+    "www", "build",
   )
 }
 

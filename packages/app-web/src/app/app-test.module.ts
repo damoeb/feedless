@@ -231,6 +231,7 @@ export function mockSourceSubscription(
         plugins: [],
         visibility: GqlVisibility.IsPrivate,
         createdAt: 0,
+        updatedAt: new Date(),
         retention: {},
       };
       return {

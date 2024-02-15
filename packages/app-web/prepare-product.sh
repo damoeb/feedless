@@ -1,3 +1,4 @@
 PRODUCT=$1
-echo "width product $PRODUCT"
-echo "{ \"apiUrl\": \"http://localhost:8080\",  \"forceProduct\":\"${PRODUCT}\"}" > src/config.json
+OFFLINE_SUPPORT=$2
+echo "width product $PRODUCT $OFFLINE_SUPPORT"
+echo "{ \"apiUrl\": \"http://localhost:8080\", \"forceProduct\":\"${PRODUCT}\", \"offlineSupport\":${OFFLINE_SUPPORT}}" > src/config.json

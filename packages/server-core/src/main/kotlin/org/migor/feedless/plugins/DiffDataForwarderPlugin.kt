@@ -148,6 +148,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
       Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!!),
     )
 
+    previous is selfe
     val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
     previous?.let {
       images.add(

@@ -1,21 +1,24 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NotebookDetailsPage } from './notebook-details.page';
 import { AppTestModule } from '../../../app-test.module';
-import { SubscriptionDetailsPageModule } from './notebook-details.module';
+import { NotebookDetailsPageModule } from './notebook-details.module';
+import { UntoldNotesProductModule } from '../untold-notes-product.module';
 
-describe('SubscriptionDetailsPage', () => {
+describe('NotebookDetailsDetailsPage', () => {
   let component: NotebookDetailsPage;
   let fixture: ComponentFixture<NotebookDetailsPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SubscriptionDetailsPageModule, AppTestModule.withDefaults()],
+      imports: [
+        NotebookDetailsPageModule,
+        UntoldNotesProductModule,
+        AppTestModule.withDefaults(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotebookDetailsPage);
     component = fixture.componentInstance;
-    component.subscription = {} as any;
-    component.documents = [];
     fixture.detectChanges();
   }));
 

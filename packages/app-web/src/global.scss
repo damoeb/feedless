@@ -52,10 +52,10 @@ app-bubble {
   }
 }
 
-app-wizard {
-  display: flex;
-  flex: 1;
-}
+//app-wizard {
+//  display: flex;
+//  flex: 1;
+//}
 
 .flex {
   display: flex;
@@ -165,34 +165,17 @@ a {
 }
 
 .dark {
-  --background: black;
-  --foreground: white;
-  --foreground-rgb: 255, 255, 255;
+  --app-background: black;
+  --app-foreground: white;
+  --app-background-rgb: 0, 0, 0;
+  --app-foreground-rgb: 255, 255, 255;
 }
 
 .light {
-  --background: white;
-  --foreground: black;
-  --foreground-rgb: 0, 0, 0;
-}
-
-p-splitter {
-  flex: 1;
-  display: flex;
-  > div {
-    flex: 1;
-    display: flex;
-  }
-}
-
-.p-splitter-panel {
-  position: relative;
-  display: flex;
-  overflow-y: auto;
-  & > div {
-    position: absolute;
-    width: 100%;
-  }
+  --app-background: white;
+  --app-foreground: black;
+  --app-background-rgb: 255, 255, 255;
+  --app-foreground-rgb: 0, 0, 0;
 }
 
 .tiny-toast {

@@ -21,12 +21,26 @@ export const theme = EditorView.theme({
     color: 'var(--ion-color-light)',
     border: 'none',
   },
+  '.cm-note': {
+    color: 'var(--ion-color-medium)',
+  },
+  '.cm-link-mark': {
+    background: 'rgba(var(--ion-color-primary-rgb), 0.2)',
+  },
+  '.cm-tooltip-autocomplete li': {
+    backgroundColor: 'var(--app-body-background)',
+    color: 'var(--ion-color-medium)',
+  },
   '.cm-tooltip-autocomplete li[aria-selected]': {
-    backgroundColor: 'var(--ion-color-light)!important',
+    backgroundColor: 'var(--ion-color-primary)!important',
+  },
+  '.cm-tooltip-autocomplete': {
+    padding: '0',
+    border: '1px solid var(--ion-color-primary)',
   },
   '.cm-tooltip-cursor:hover': { opacity: '1' },
   '.cm-url': { color: 'var(--ion-color-primary)' },
-  '.cm-cursor': { borderRight: '2px solid var(--foreground)' },
+  '.cm-cursor': { borderRight: '2px solid var(--app-foreground)' },
   '.cm-open-link': {
     cursor: 'pointer',
     marginLeft: '3px',
@@ -41,7 +55,10 @@ export const theme = EditorView.theme({
   '.cm-hashtag': { color: 'var(--ion-color-primary)' },
   '.cm-strong-emphasis': { fontStyle: 'oblique' },
   '.cm-strikethrough': { textDecoration: 'line-through' },
-  '.cm-gutters': { backgroundColor: 'var(--background)', borderRight: 'none' },
+  '.cm-gutters': {
+    backgroundColor: 'var(--app-background)',
+    borderRight: 'none',
+  },
   '[class*="-mark"]:not(.cm-list-mark)': {
     color: 'rgba(var(--ion-color-dark-rgb), 0.2)',
   },

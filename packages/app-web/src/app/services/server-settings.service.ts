@@ -13,11 +13,11 @@ import { AlertController } from '@ionic/angular';
 import { Feature } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
-import { ActivatedRoute } from '@angular/router';
 
 export type FeedlessAppConfig = {
   apiUrl: string;
   forceProduct?: GqlProductName;
+  offlineSupport?: boolean;
 };
 
 type ToastOptions = {
@@ -38,25 +38,20 @@ export class ServerSettingsService {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly activatedRoute: ActivatedRoute,
     private readonly alertCtrl: AlertController,
   ) {}
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<FeedlessAppConfig>('/config.json'), // todo here?
+        this.httpClient.get<FeedlessAppConfig>('/config.json'),
       );
       this.apiUrl = config.apiUrl;
 
-      if (!environment.production) {
-      }
-      const devForceProduct = environment.production
-        ? null
-        : this.activatedRoute.snapshot.queryParams.forceProduct;
-      const forceProduct = config.forceProduct || devForceProduct;
+      const forceProduct = config.forceProduct;
       if (forceProduct) {
         const product = forceProduct;
+        environment.offlineSupport = () => config.offlineSupport;
         console.log(`forcing product ${product}`);
         const products = Object.keys(GqlProductName).map(
           (p) => GqlProductName[p],
@@ -66,7 +61,6 @@ export class ServerSettingsService {
           const message = `Product '${product}' does not exist. Know products are ${products.join(
             ', ',
           )}`;
-          console.error(message);
           await this.showToast({
             header: 'Invalid Config',
             message,
@@ -90,21 +84,23 @@ export class ServerSettingsService {
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
     } catch (e) {
-      await this.showToast({
-        header: 'Server is not reachable',
-        message: 'Either you are offline or the server is down.',
-        cssClass: 'fatal-alert',
-        buttons: [
-          {
-            text: 'Ok',
-            role: 'confirm',
-            handler: () => {
-              location.reload();
+      if (!environment.offlineSupport()) {
+        await this.showToast({
+          header: 'Server is not reachable',
+          message: 'Either you are offline or the server is down.',
+          cssClass: 'fatal-alert',
+          buttons: [
+            {
+              text: 'Ok',
+              role: 'confirm',
+              handler: () => {
+                location.reload();
+              },
             },
-          },
-        ],
-      });
-      throw e;
+          ],
+        });
+        throw e;
+      }
     }
   }
 

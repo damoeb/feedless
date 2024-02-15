@@ -18,7 +18,7 @@ import { LoginButtonModule } from '../../../components/login-button/login-button
     ReactiveFormsModule,
     DarkModeButtonModule,
     FormsModule,
-    LoginButtonModule
+    LoginButtonModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [NotebookDetailsPage],

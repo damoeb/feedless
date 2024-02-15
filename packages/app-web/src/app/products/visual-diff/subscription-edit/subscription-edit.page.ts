@@ -174,7 +174,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     console.log('scrape', url);
     if (!isValidUrl(url)) {
       url = fixUrl(url);
-      this.form.controls.url.setValue(fixUrl(url), {emitEvent: false});
+      this.form.controls.url.setValue(fixUrl(url), { emitEvent: false });
     }
 
     if (this.busy || this.form.controls.url.invalid) {
@@ -190,7 +190,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         url,
       },
       relativeTo: this.activatedRoute,
-      skipLocationChange: true
+      skipLocationChange: true,
     });
 
     try {

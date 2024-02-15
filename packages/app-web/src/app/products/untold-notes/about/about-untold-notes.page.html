@@ -33,18 +33,21 @@
         buttonText="Create Notebook"
         color="primary"
         [loading]="busy"
-        placeholder="Name your Notebook"
+        placeholder="Name your new Notebook"
       ></app-searchbar>
 
-      <ion-list *ngIf="notebooks?.length > 0"
-                class="ion-margin-top notebooks"
-                style="background: transparent">
+      <ion-list
+        *ngIf="notebooks?.length > 0"
+        class="ion-margin-top notebooks"
+        style="background: transparent"
+      >
         <ion-list-header class="ion-no-padding">
-          <ion-label color="medium">
-            Existing Repositories
-          </ion-label>
+          <ion-label color="medium"> Existing Repositories </ion-label>
         </ion-list-header>
-        <ion-item *ngFor="let notebook of notebooks" [routerLink]="'/notebook/'+notebook.id">
+        <ion-item
+          *ngFor="let notebook of notebooks"
+          [routerLink]="'/notebook/'+notebook.id"
+        >
           <ion-label>{{notebook.name}}</ion-label>
           <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
         </ion-item>

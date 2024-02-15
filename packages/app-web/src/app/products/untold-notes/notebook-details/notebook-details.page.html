@@ -3,27 +3,29 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
       <ion-button (click)="createNote()">
-        <ion-icon name="add-outline"
-                  slot="start"></ion-icon>
+        <ion-icon name="add-outline" slot="start"></ion-icon>
         New Note
       </ion-button>
     </ion-buttons>
 
     <div class="flex__row ion-margin-horizontal">
       <form style="flex: 1">
-        <ion-searchbar #searchbar
-                       [formControl]="queryFc"
-                       (ionFocus)="toggleSearchMode(true)"
-                       [showClearButton]="true"
-                       placeholder="Search your Notebook"></ion-searchbar>
+        <ion-searchbar
+          #searchbar
+          [formControl]="queryFc"
+          (ionFocus)="toggleSearchMode(true)"
+          (ionBlur)="toggleSearchMode(false)"
+          [showClearButton]="true"
+          placeholder="Search your Notebook"
+        ></ion-searchbar>
       </form>
     </div>
 
     <ion-buttons slot="end">
-<!--      <app-dark-mode-button></app-dark-mode-button>-->
-      <ion-button fill="outline">
-        {{openedNotes.length}}
-      </ion-button>
+      <app-dark-mode-button></app-dark-mode-button>
+      <!--      <ion-button fill="outline">-->
+      <!--        {{openedNotes.length}}-->
+      <!--      </ion-button>-->
       <ion-button id="open-settings-modal">
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
@@ -41,24 +43,25 @@
           <!--          </ion-header>-->
           <ion-content class="ion-padding">
             <ion-list>
-              <ion-item routerLink="/plans">
-                Pricing
-              </ion-item>
+              <ion-item routerLink="/plans"> Pricing </ion-item>
               <app-login-button tabindex="-1"></app-login-button>
             </ion-list>
           </ion-content>
         </ng-template>
       </ion-popover>
-
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <ion-spinner *ngIf="systemBusy" name="dots"></ion-spinner>
-  <div class="flex__row" *ngIf="!systemBusy">
-    <div class="flex">
-      <div class="flex__column" *ngIf="searchMode">
-        <ion-list class="results">
+  <div
+    class="ion-align-self-center"
+    style="display: flex; width: 900px"
+    *ngIf="!systemBusy"
+  >
+    <div class="flex__column">
+      <div class="flex__column">
+        <ion-list class="results" [ngClass]="{'in-focus': searchMode}">
           <ion-spinner *ngIf="busy" name="dots"></ion-spinner>
           <ng-container *ngIf="!busy">
             <ng-container *ngIf="searchResults.length === 0">
@@ -69,6 +72,7 @@
             <ion-item
               *ngFor="let searchResult of searchResults; let i = index"
               [button]="!searchResult.isGroup"
+              lines="full"
               (mouseenter)="focussedIndex = i"
               (click)="searchResult.onClick()"
               [ngClass]="{
@@ -76,36 +80,90 @@
                       'is-group': searchResult.isGroup,
                       }"
             >
-              <ion-label>
-                <h3>{{searchResult.label}}</h3>
-                <p *ngIf="!searchResult.isGroup" class="searchresult_text" [innerHtml]="searchResult.textHighlighted"></p>
-              </ion-label>
+              <div class="searchresult__title">{{searchResult.label}}</div>
+              <div *ngIf="!searchResult.isGroup" class="searchresult__text">
+                {{searchResult.text}}
+              </div>
             </ion-item>
           </ng-container>
         </ion-list>
       </div>
-      <div class="flex__column" *ngIf="!searchMode && currentNote" style="max-width: 900px; min-width: 900px; margin: auto">
-        <ion-toolbar style="--background: none;">
+      <div
+        class="flex__column"
+        *ngIf="currentNote"
+        style="max-width: 900px; min-width: 900px; margin: auto"
+      >
+        <app-code-editor
+          #codeEditor
+          [autoSuggestionsProvider]="loadAutoSuggestions"
+          style="min-height: 400px"
+          [text]="currentNote?.text"
+          (triggerQuery)="handleQuery($event)"
+          [extensions]="extensions"
+          (textChange)="currentNote.textChangeHandler($event)"
+        ></app-code-editor>
+        <ion-toolbar style="--background: none">
           <ion-text color="medium" class="ion-margin-horizontal"
-            >{{currentNote.name}}<span *ngIf="currentNote.dirty">*</span
+            >{{currentNote.namedId}}<span *ngIf="currentNote.dirty"
+              >*</span
             ></ion-text
           >
           <ion-buttons slot="end">
-            <!--              <ion-button>-->
-            <!--                <ion-icon name="trash-outline"></ion-icon>-->
-            <!--              </ion-button>-->
-            <ion-button (click)="closeNote(currentNote)">
-              <ion-icon name="close-outline"></ion-icon>
+            <ion-button (click)="deleteCurrentNote()">
+              <ion-icon name="trash-outline"></ion-icon>
             </ion-button>
+            <!--            <ion-button (click)="closeNote(currentNote)">-->
+            <!--              <ion-icon name="close-outline"></ion-icon>-->
+            <!--            </ion-button>-->
           </ion-buttons>
         </ion-toolbar>
-        <app-code-editor
-          [autoSuggestionsProvider]="loadAutoSuggestions"
-          style="min-height: 400px"
-          [text]="currentNote.text"
-          (triggerQuery)="handleQuery($event)"
-          (textChange)="currentNote.textChangeHandler($event)"
-        ></app-code-editor>
+        <!--        <div>-->
+        <!--          <div style="border-top: 3px solid var(&#45;&#45;app-foreground); width: 100px; margin-top: 50px"></div>-->
+        <!--          <div>-->
+        <!--            <div>-->
+        <!--              <h3>Incoming</h3>-->
+        <!--              <div *ngFor="let note of incomingLinks">-->
+        <!--                <ion-button fill="empty"-->
+        <!--                            color="medium"-->
+        <!--                            routerLinkActive="active"-->
+        <!--                            [routerLink]="linkTo(note)">-->
+        <!--                  {{ note.namedId }} - {{ note.title }}-->
+        <!--                </ion-button>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--            <div>-->
+        <!--              <h3>Outgoing</h3>-->
+        <!--              <div *ngFor="let group of outgoingLinks | keyvalue">-->
+        <!--                &lt;!&ndash;            <p>{{group.key}}</p>&ndash;&gt;-->
+        <!--                <div *ngFor="let note of group.value">-->
+        <!--                  <ion-button fill="solid"-->
+        <!--                              color="medium"-->
+        <!--                              routerLinkActive="active"-->
+        <!--                              [routerLink]="linkTo(note)">-->
+        <!--                    {{ note.namedId }} - {{ note.title }}-->
+        <!--                  </ion-button>-->
+        <!--                </div>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--            <div>-->
+        <!--              <h3>Hastags</h3>-->
+        <!--              <div *ngFor="let group of hashtagLinks | keyvalue">-->
+        <!--                <p>{{group.key}}</p>-->
+        <!--                <div *ngIf="group.value.length === 0">-->
+        <!--                  <em>empty</em>-->
+        <!--                </div>-->
+        <!--                <div *ngFor="let note of group.value">-->
+        <!--                  <ion-button fill="solid"-->
+        <!--                              color="medium"-->
+        <!--                              routerLinkActive="active"-->
+        <!--                              [routerLink]="linkTo(note)">-->
+        <!--                    {{ note.namedId }} - {{ note.title }}-->
+        <!--                  </ion-button>-->
+        <!--                </div>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </div>-->
       </div>
     </div>
   </div>

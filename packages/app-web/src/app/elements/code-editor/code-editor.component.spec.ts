@@ -4,8 +4,8 @@ import { CodeEditorComponent } from './code-editor.component';
 import { CodeEditorModule } from './code-editor.module';
 
 describe('CodeEditorComponent', () => {
-  let component: CodeEditorComponent<any>;
-  let fixture: ComponentFixture<CodeEditorComponent<any>>;
+  let component: CodeEditorComponent;
+  let fixture: ComponentFixture<CodeEditorComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({

@@ -7,8 +7,8 @@
   --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2) !important;
   --border-width: 2px !important;
 
-  --highlight-color-focused: var(--foreground);
-  --color: var(--foreground);
+  --highlight-color-focused: var(--app-foreground);
+  --color: var(--app-foreground);
 
   &:hover {
     --border-color: var(--app-border-color-hover) !important;
@@ -43,11 +43,11 @@ ion-toolbar {
   flex: 4;
   border: 2px solid var(--border-color);
   background: repeating-linear-gradient(
-      45deg,
-      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)),
-      color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)) 10px,
-      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 10px,
-      color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 20px
+    45deg,
+    color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)),
+    color-mix(in srgb, var(--ion-color-light) 95%, var(--ion-color-dark)) 10px,
+    color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 10px,
+    color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 20px
   );
 
   &--pick-mode {
@@ -82,7 +82,7 @@ ion-select {
   }
 
   &.has-value {
-    color: var(--foreground);
+    color: var(--app-foreground);
   }
 }
 

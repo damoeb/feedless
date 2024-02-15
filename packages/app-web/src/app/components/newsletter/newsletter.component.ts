@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
@@ -8,7 +13,7 @@ import { GqlPlanName } from '../../../generated/graphql';
   selector: 'app-newsletter',
   templateUrl: './newsletter.component.html',
   styleUrls: ['./newsletter.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewsletterComponent {
   @Input({ required: true })
@@ -24,17 +29,18 @@ export class NewsletterComponent {
 
   private emailFc = new FormControl<string>('', [
     Validators.required,
-    Validators.email
+    Validators.email,
   ]);
 
-  constructor(private readonly userService: UserService,
-              private readonly changeRef: ChangeDetectorRef) {
-  }
+  constructor(
+    private readonly userService: UserService,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async joinNow(email: string) {
     console.log('joinNow');
     this.emailFc.setValue(email);
-    this.errorMessage = null
+    this.errorMessage = null;
     this.busy = true;
     this.changeRef.detectChanges();
     if (this.emailFc.valid) {
@@ -43,7 +49,7 @@ export class NewsletterComponent {
           email: this.emailFc.value,
           newsletter: true,
           plan: GqlPlanName.Waitlist,
-          product: environment.product()
+          product: environment.product(),
         });
         this.submitted = true;
       } catch (e) {

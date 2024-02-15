@@ -1,6 +1,7 @@
 <ion-list class="flex__column">
-  <ion-item [button]="true" color="medium">
-    <ion-label>Create Notebook</ion-label>
+  <ion-item [button]="true">
+    <ion-label> Create Notebook </ion-label>
+    <ion-icon name="add-outline" slot="end"></ion-icon>
   </ion-item>
   <ion-item>
     <ion-label color="medium">Notebooks</ion-label>
@@ -11,6 +12,7 @@
   >
     <ion-item
       [routerLink]="'/notebook/' + notebook.id"
+      routerLinkActive="active"
       detail="false"
       lines="none"
       routerDirection="root"

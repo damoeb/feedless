@@ -6,10 +6,14 @@ ion-content::part(scroll) {
 }
 
 .results {
-  width: 100%;
-  min-height: 100%;
-  position: absolute;
+  //mark {
+  //  background: var(--ion-color-primary);
+  //}
+  --app-focussed-search-item: rgba(var(--ion-color-medium), 0.7);
 
+  &.in-focus {
+    --app-focussed-search-item: var(--ion-color-primary);
+  }
   ion-item {
     &.is-open {
       color: var(--ion-color-dark);
@@ -26,20 +30,34 @@ ion-content::part(scroll) {
 
       &.in-focus {
         color: var(--ion-color-dark);
-        --background: rgba(var(--ion-color-medium-rgb), 0.5);
+        --background: var(--app-focussed-search-item);
       }
     }
   }
 }
 
-.searchresult_text {
-  white-space: pre;
-  max-height: 100px;
+.searchresult__text {
+  color: rgba(var(--ion-color-dark-rgb), 0.6);
+  white-space: nowrap;
+  max-width: 500px;
+  overflow: hidden;
+  display: inline-block;
+}
+.searchresult__title {
+  color: var(--ion-color-dark);
+  padding-left: 5px;
+  padding-right: 5px;
+  font-weight: bold;
+  display: inline-block;
 }
 
 app-code-editor {
   display: flex;
   flex: 1;
+}
+
+mark {
+  background: var(--ion-color-medium);
 }
 
 ion-searchbar {
@@ -48,6 +66,25 @@ ion-searchbar {
   &.searchbar-has-focus {
     border-color: var(--app-border-color-focus);
   }
+  --background: var(--app-body-background);
+  background: var(--app-body-background);
   width: 500px;
   margin: auto;
+}
+
+app-code-editor {
+  box-shadow: 0px 7px 46px -30px var(--ion-color-dark);
+}
+
+ion-button.active {
+  --background: var(--ion-color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  ion-content,
+  ion-header {
+    --app-background: #21252b;
+    --app-body-background: #282c34;
+    --ion-item-background: var(--app-body-background);
+  }
 }

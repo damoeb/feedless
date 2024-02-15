@@ -141,13 +141,13 @@ export class GenerateFeedModalComponent
       if (this.formFg.value.applyPrivacyPlugin) {
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
-          params: {}
+          params: {},
         });
       }
       if (this.filters.length > 0) {
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
-          params: {}
+          params: {},
         });
       }
 

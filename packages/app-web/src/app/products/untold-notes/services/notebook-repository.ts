@@ -1,7 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Note, Notebook } from './notebook.service';
 
-
 class NotebookRepository extends Dexie {
   notebooks!: Table<Notebook, string>;
   notes!: Table<Note, string>;
@@ -11,10 +10,10 @@ class NotebookRepository extends Dexie {
     super('notebooks');
     this.version(1).stores({
       notebooks: 'id',
-      notes: 'id, notebookId',
-      openNotes: 'id, notebookId',
+      notes: 'id, namedId, notebookId',
+      openNotes: 'id, namedId, notebookId',
     });
   }
 }
 
-export const notebookRepository = new NotebookRepository()
+export const notebookRepository = new NotebookRepository();

@@ -36,11 +36,9 @@ export class LoginPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
-    this.canSignUp = this.serverSettings.isEnabled(
-      GqlFeatureName.CanSignUp,
-    ) && this.serverSettings.isEnabled(
-      GqlFeatureName.CanCreateUser,
-    );
+    this.canSignUp =
+      this.serverSettings.isEnabled(GqlFeatureName.CanSignUp) &&
+      this.serverSettings.isEnabled(GqlFeatureName.CanCreateUser);
     this.hasWaitList = this.serverSettings.isEnabled(
       GqlFeatureName.HasWaitList,
     );

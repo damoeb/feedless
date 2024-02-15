@@ -41,7 +41,7 @@ ion-header {
     z-index: 10;
   }
 
-  //box-shadow: inset 0px 0px 5px var(--foreground);
+  //box-shadow: inset 0px 0px 5px var(--app-foreground);
 }
 
 app-embedded-image {
@@ -99,7 +99,7 @@ ion-select {
   }
 
   &.has-value {
-    color: var(--foreground);
+    color: var(--app-foreground);
   }
 }
 
@@ -175,7 +175,7 @@ ion-radio {
   padding-inline: 9px;
 
   &.radio-checked {
-    color: var(--foreground);
+    color: var(--app-foreground);
   }
 }
 

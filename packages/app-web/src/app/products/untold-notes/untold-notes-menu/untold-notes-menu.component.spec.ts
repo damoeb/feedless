@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { UntoldNotesMenuComponent } from './untold-notes-menu.component';
+import { UntoldNotesProductModule } from '../untold-notes-product.module';
+import { AppTestModule } from '../../../app-test.module';
 
 describe('UntoldNotesMenuComponent', () => {
   let component: UntoldNotesMenuComponent;
@@ -10,7 +11,7 @@ describe('UntoldNotesMenuComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [UntoldNotesMenuComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [UntoldNotesProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UntoldNotesMenuComponent);

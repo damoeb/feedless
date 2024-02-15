@@ -5,24 +5,28 @@ import { ProfileService } from '../../../services/profile.service';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { AlertController } from '@ionic/angular';
-import { debounce, DebouncedFunc, uniq } from 'lodash-es';
+import { compact, debounce, DebouncedFunc, omit, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { Completion } from '@codemirror/autocomplete';
 import { notebookRepository } from './notebook-repository';
-import { UntoldNotesProductModule } from '../untold-notes-product.module';
 
-export interface Notebook {
+export type Notebook = {
   id: string;
   name: string;
   lastSyncAt: Date | null;
+  notesCount: number;
 };
-
-export interface Note {
+export type Note = {
   id: string;
-  name: string;
+  namedId: string;
+  title: string;
   text: string;
+  references: {
+    hashtags: string[];
+    links: string[];
+  };
   createdAt: Date;
   updatedAt: Date;
   metadata?: string;
@@ -36,6 +40,7 @@ export type AppAction = {
   hint?: string;
   callback: () => void;
 };
+
 export type SearchResultGroup = {
   name: string;
   notes?: () => Promise<Note[]>;
@@ -150,11 +155,13 @@ export class NotebookService {
   private notebooks: Notebook[] = [];
 
   notebooksChanges = new ReplaySubject<Notebook[]>(1);
-  notesChanges = new ReplaySubject<SearchResultGroup[]>(1);
+  openNoteChanges = new ReplaySubject<Note>(1);
+  notesChanges = new ReplaySubject<void>(1);
+  searchResultsChanges = new ReplaySubject<SearchResultGroup[]>(1);
   queryChanges = new ReplaySubject<string>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
   private index: Flexsearch.Document<IndexDocument>;
-  searchAsync: DebouncedFunc<(query: string) => void>;
+  findAllAsync: DebouncedFunc<(query: string) => void>;
   private currentNotebookId: string;
 
   constructor(
@@ -164,7 +171,7 @@ export class NotebookService {
     private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly webDocumentService: WebDocumentService,
   ) {
-    this.searchAsync = debounce(this.searchAsyncInternal, 400);
+    this.findAllAsync = debounce(this.findAllAsyncInternal, 200);
     this.init();
   }
 
@@ -174,6 +181,7 @@ export class NotebookService {
       id: uuidv4(),
       name,
       lastSyncAt: null,
+      notesCount: 0,
     };
 
     notebookRepository.notebooks.add(notebook);
@@ -184,7 +192,6 @@ export class NotebookService {
   }
 
   async suggestByType(query: string, type: string): Promise<Completion[]> {
-    console.log('query', query, type);
     switch (type) {
       case 'Hashtag':
         return [
@@ -198,44 +205,66 @@ export class NotebookService {
     }
   }
 
-  protected searchAsyncInternal(query: string) {
+  protected findAllAsyncInternal(query: string) {
     console.log('searchAsync', query);
     this.queryChanges.next(query);
     if (query.trim()) {
-      const results = this.index.search({
-        query,
-        index: ['note:name', 'note:text'],
-        limit: this.LIMIT,
-      });
-      console.log(results);
-      const groups: SearchResultGroup[] = results.map((perField) => {
-        return {
-          name: perField.field,
-          notes: () => notebookRepository.notes.bulkGet(perField.result.map((id) => `${id}`)),
-        };
-      });
-      this.notesChanges.next(groups);
+      const groups: SearchResultGroup[] = this.findAll(query);
+      this.searchResultsChanges.next(groups);
     } else {
       this.propagateRecentNotes();
     }
   }
 
-  createNote(name: string, text: string = '') {
-    console.log('create note');
+  findAll(query: string): SearchResultGroup[] {
+    if (query.trim()) {
+      const results = this.index.search({
+        query,
+        index: ['note:text', 'note:namedId'],
+        limit: this.LIMIT,
+      });
+      return results.map((perField) => {
+        return {
+          name: perField.field,
+          notes: async () =>
+            notebookRepository.notes.bulkGet(
+              perField.result.map((id) => `${id}`),
+            ),
+        };
+      });
+    } else {
+      return [];
+    }
+  }
+
+  createNote(
+    params: Partial<Pick<Note, 'title' | 'namedId' | 'text'>> = {},
+    triggerOpen: boolean = false,
+  ) {
+    console.log('create note', params, triggerOpen);
+    const title = params.title ?? '';
     const note: Note = {
       id: uuidv4(),
-      name: this.createNoteId(),
-      text: `# ${name}\n\n${text}`,
+      namedId: params.namedId ?? this.createNoteId(),
+      title: title,
+      text: `# ${title}\n\n${params.text ?? ''}`.trim(),
+      references: {
+        hashtags: [],
+        links: [],
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
-      notebookId: this.currentNotebookId
+      notebookId: this.currentNotebookId,
     };
     notebookRepository.notes.add(note);
     this.index.add({
       id: note.id,
       note,
     });
-    this.searchAsync(name);
+    this.findAllAsync(title);
+    if (triggerOpen) {
+      this.openNote(note);
+    }
     return note;
   }
 
@@ -244,12 +273,15 @@ export class NotebookService {
     console.log('openNotebook', notebookId);
     this.systemBusyChanges.next(true);
 
-    const localNotebook: Notebook = await notebookRepository.notebooks.get(notebookId);
+    const localNotebook: Notebook =
+      await notebookRepository.notebooks.get(notebookId);
 
     if (localNotebook) {
       this.createIndex();
 
-      const notes = await notebookRepository.notes.where({notebookId}).toArray();
+      const notes = await notebookRepository.notes
+        .where({ notebookId })
+        .toArray();
       notes.forEach((note) =>
         this.index.add({
           id: note.id,
@@ -258,7 +290,7 @@ export class NotebookService {
       );
 
       if (notes.length === 0) {
-        this.createNote('First Note', firstNoteBody);
+        this.createNote({ title: 'First Note', text: firstNoteBody });
       }
 
       // if (remoteNotebook) {
@@ -289,13 +321,15 @@ export class NotebookService {
   }
 
   private propagateRecentNotes() {
-    this.notesChanges.next([
+    this.searchResultsChanges.next([
       {
         name: 'Recent',
-        notes: () => notebookRepository.notes
-          .where('notebookId').equals(this.currentNotebookId)
-          .limit(this.LIMIT)
-          .sortBy('updatedAt'),
+        notes: () =>
+          notebookRepository.notes
+            .where('notebookId')
+            .equals(this.currentNotebookId)
+            .limit(this.LIMIT)
+            .sortBy('updatedAt'),
       },
     ]);
   }
@@ -309,7 +343,7 @@ export class NotebookService {
       context: true,
       document: {
         id: 'id',
-        index: ['id', 'action:name', 'note:name', 'note:text'],
+        index: ['id', 'action:name', 'note:namedId', 'note:text'],
       },
     });
 
@@ -321,8 +355,33 @@ export class NotebookService {
     });
   }
 
-  updateNote(note: Note) {
-    notebookRepository.notes.update(note.id, note)
+  async updateNote(note: Note) {
+    note.title =
+      note.text
+        .trimStart()
+        .split(/\n/g)[0]
+        .replace(/^[ ]*#[ ]*/, '') ?? '';
+    const reLink = /\[([^\]]+)\]/g;
+    const reHashtag = /(#[^ \n\t]+)/g;
+
+    function extractByRegExp(re: RegExp): string[] {
+      let m: RegExpExecArray | null;
+      const matches = [];
+      while ((m = re.exec(note.text))) {
+        matches.push(m[1]);
+      }
+      return matches;
+    }
+
+    note.references = {
+      hashtags: extractByRegExp(reHashtag),
+      links: extractByRegExp(reLink),
+    };
+
+    const cleanNote = omit(note, ['dirty', 'textChangeHandler']) as Note;
+    this.index.update(cleanNote);
+    notebookRepository.notes.update(note.id, cleanNote);
+    this.notesChanges.next();
   }
 
   // private async loadRemoteNotebook(
@@ -371,17 +430,16 @@ export class NotebookService {
   //   }
   // }
 
-  private getHint(field: string, query: string, note: Note) {
-    const fieldValue = note[field];
-    const index = fieldValue.indexOf(query);
-    if (index > -1) {
-      const from = Math.max(index - 10, 0);
-      const to = Math.min(query.length + index + 10, fieldValue.length);
-      return fieldValue.substring(from, to);
-    } else {
-      return fieldValue;
-    }
-  }
+  // private getHint(field: string, query: string, note: Note) {
+  //   const fieldValue = note[field] as string;
+  //   const tokens = uniq(compact(query.split(/ /g)));
+  //   let highlights = `${fieldValue}`;
+  //   tokens.forEach(t => highlights = highlights.replaceAll(t, `<mark>${t}</mark>`));
+  //   // trim left
+  //   const from = Math.max(highlights.indexOf('<mark>') - 15, 0);
+  //
+  //   return highlights.substring(from, highlights.length - 1).replaceAll(/\n|\t/g, ' ;;').trim() || fieldValue;
+  // }
 
   private async suggestNotes(query: string): Promise<Completion[]> {
     if (query.length > 0) {
@@ -389,14 +447,19 @@ export class NotebookService {
         query,
         limit: this.LIMIT,
       });
-      return Promise.all(results.flatMap((perField) => {
-          return perField.result
-            .map((id) => notebookRepository.notes.get(id.toString()).then(note => ({
-                apply: `[${note.name}]`,
-                label: this.getHint(perField.field, query, note),
-              }))
-            )
-        }));
+      return Promise.all(
+        results.flatMap((perField) => {
+          return perField.result.map((id) =>
+            notebookRepository.notes.get(id.toString()).then((note) => {
+              return {
+                apply: `[${note.namedId}]`,
+                label: `${note.title}: ${note[perField.field]}`,
+                // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
+              };
+            }),
+          );
+        }),
+      );
     } else {
       return [
         {
@@ -414,5 +477,37 @@ export class NotebookService {
   private async init() {
     this.notebooks = await notebookRepository.notebooks.toArray();
     this.notebooksChanges.next(this.notebooks);
+  }
+
+  existsByNamedId(noteId: string) {
+    return (
+      this.index.search({
+        query: noteId,
+        index: ['note:namedId'],
+        limit: 1,
+      }).length > 0
+    );
+  }
+
+  async findByNamedId(noteId: string) {
+    const note = this.index.search({
+      query: noteId,
+      index: ['note:namedId'],
+      limit: 1,
+    });
+
+    if (note.length > 0) {
+      return notebookRepository.notes.get(`${note[0].result[0]}`);
+    }
+  }
+
+  openNote(note: Note) {
+    this.openNoteChanges.next(note);
+  }
+
+  deleteById(id: string) {
+    this.index.remove(id);
+    notebookRepository.notes.delete(id);
+    this.notesChanges.next();
   }
 }

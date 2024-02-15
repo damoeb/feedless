@@ -4,7 +4,7 @@
   --border-color: rgba(var(--ion-color-medium-rgb), 0.4);
   --box-shadow: none;
   --border-width: 2px;
-  background: var(--background);
+  background: var(--app-background);
 
   margin: auto;
   border: var(--border-width) solid var(--border-color);
@@ -20,7 +20,7 @@
   ion-searchbar {
     text-align: left;
     margin-left: 5px;
-    background: var(--background);
+    background: var(--app-background);
     --box-shadow: none;
     padding-left: 0;
 

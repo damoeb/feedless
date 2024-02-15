@@ -20,6 +20,7 @@ import {
   lineNumbers,
   showTooltip,
   Tooltip,
+  ViewUpdate,
 } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import {
@@ -34,6 +35,7 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
+  closeCompletion,
   Completion,
   CompletionContext,
   completionKeymap,
@@ -53,8 +55,8 @@ import { urlDecorator } from './url.decorator';
 import { lintKeymap } from '@codemirror/lint';
 import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
-import { noteReferenceMatcher } from './note-reference.widget';
 import { IterMode } from '@lezer/common';
+import { debounce } from 'lodash-es';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -122,6 +124,9 @@ export class CodeEditorComponent implements AfterViewInit {
   @Input()
   readOnly: boolean = false;
 
+  @Input()
+  extensions: Extension[] = [];
+
   @Output()
   textChange = new EventEmitter<string>();
 
@@ -133,6 +138,7 @@ export class CodeEditorComponent implements AfterViewInit {
 
   private editorView: EditorView;
   ctrlPressed: boolean;
+  private wordInFocus: string = '';
 
   constructor() {}
 
@@ -164,7 +170,8 @@ export class CodeEditorComponent implements AfterViewInit {
       // rectangularSelection(),
       highlightSelectionMatches(),
       hashtagMatcher,
-      noteReferenceMatcher,
+      ...this.extensions,
+      // noteReferenceMatcher,
       EditorView.lineWrapping,
       keymap.of([
         ...closeBracketsKeymap,
@@ -231,10 +238,18 @@ export class CodeEditorComponent implements AfterViewInit {
             const firstToken = context.matchBefore(/[^ ]*/).text[0];
             const node = syntaxTree(context.state).resolve(context.pos).node;
             const token = node.cursor(IterMode.ExcludeBuffers);
+            console.log('autocomplete');
+
+            // if (true) {
+            //   return null;
+            // }
 
             if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
               const query = context.state.sliceDoc(token.from, token.to);
-              const options = await this.autoSuggestionsProvider(query, node.name);
+              const options = await this.autoSuggestionsProvider(
+                query,
+                node.name,
+              );
               return {
                 from: token.from,
                 filter: false,
@@ -267,15 +282,21 @@ export class CodeEditorComponent implements AfterViewInit {
           },
         ],
       }),
-      // EditorView.inputHandler.of((view, from, to, text) => {
-      //   console.log('text', text);
-      //   if (text === ' ') {
-      //     closeCompletion(view);
-      //   } else {
-      //     startCompletion(view);
+      // EditorView.updateListener.of(debounce((update: ViewUpdate) => {
+      //   const ranges = update.state.selection.ranges;
+      //
+      //   if (ranges) {
+      //     const wordRange = update.state.wordAt(ranges[0].to);
+      //     if (wordRange) {
+      //       const word = update.state.sliceDoc(wordRange.from, wordRange.to)
+      //       if (this.wordInFocus != word && word.length > 2) {
+      //         startCompletion(update.view);
+      //         this.wordInFocus = word;
+      //       }
+      //     }
       //   }
-      //   return false
-      // })
+      //
+      // }, 300)),
     ];
     return extensions;
   }

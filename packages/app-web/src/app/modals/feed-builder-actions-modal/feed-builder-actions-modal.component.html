@@ -16,8 +16,9 @@
 <ion-content>
   <form (ngSubmit)="scrape()">
     <ion-toolbar color="danger">
-      <ion-label class="ion-margin-horizontal"
-                 *ngIf="errorMessage">{{ errorMessage }}. Please try later.</ion-label>
+      <ion-label class="ion-margin-horizontal" *ngIf="errorMessage"
+        >{{ errorMessage }}. Please try later.</ion-label
+      >
     </ion-toolbar>
     <ion-row
       [ngClass]="{ 'busy-cursor': busy, 'website--pick-mode': isPickMode() }"
