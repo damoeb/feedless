@@ -4,7 +4,7 @@ import {
   GqlProductName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings,
+  ServerSettings
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -14,10 +14,15 @@ import { Feature } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 
+type FeedlessProductConfig = {
+  hostname: string;
+  product: GqlProductName;
+}
+
 export type FeedlessAppConfig = {
   apiUrl: string;
   forceProduct?: GqlProductName;
-  offlineSupport?: boolean;
+  products: FeedlessProductConfig[]
 };
 
 type ToastOptions = {
@@ -41,41 +46,50 @@ export class ServerSettingsService {
     private readonly alertCtrl: AlertController,
   ) {}
 
+  async fetchConfig(): Promise<GqlProductName> {
+    const config = await firstValueFrom(
+      this.httpClient.get<FeedlessAppConfig>('/config.json'),
+    );
+    this.apiUrl = config.apiUrl;
+
+    // const product= environment.production ? config.products.find(p => p.hostname === location.hostname)?.product : config.forceProduct
+    const product= config.forceProduct ?? config.products.find(p => p.hostname === location.hostname)?.product;
+
+    if (product) {
+      console.log(`forcing product ${product}`);
+      const products = Object.keys(GqlProductName).map(
+        (p) => GqlProductName[p],
+      );
+      console.log(`Know products ${products.join(', ')}`);
+      if (!products.some((otherProduct) => otherProduct == product)) {
+        const message = `Product '${product}' does not exist. Know products are ${products.join(
+          ', ',
+        )}`;
+        await this.showToast({
+          header: 'Invalid Config',
+          message,
+          cssClass: 'fatal-alert',
+        });
+      }
+    } else {
+      await this.showToast({
+        header: 'Invalid Config',
+        message: `Cannot map hostname ${location.hostname} to product`,
+        cssClass: 'fatal-alert',
+      });
+    }
+    return product;
+  }
+
   async fetchServerSettings(): Promise<void> {
     try {
-      const config = await firstValueFrom(
-        this.httpClient.get<FeedlessAppConfig>('/config.json'),
-      );
-      this.apiUrl = config.apiUrl;
-
-      const forceProduct = config.forceProduct;
-      if (forceProduct) {
-        const product = forceProduct;
-        environment.offlineSupport = () => config.offlineSupport;
-        console.log(`forcing product ${product}`);
-        const products = Object.keys(GqlProductName).map(
-          (p) => GqlProductName[p],
-        );
-        console.log(`Know products ${products.join(', ')}`);
-        if (!products.some((otherProduct) => otherProduct == product)) {
-          const message = `Product '${product}' does not exist. Know products are ${products.join(
-            ', ',
-          )}`;
-          await this.showToast({
-            header: 'Invalid Config',
-            message,
-            cssClass: 'fatal-alert',
-          });
-        }
-        environment.product = () => product;
-      }
       const response = await this.createApolloClient()
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
           variables: {
             data: {
               host: location.host,
-              product: environment.product(),
+              product: environment.product,
             },
           },
         })
@@ -83,8 +97,9 @@ export class ServerSettingsService {
       this.features = response.features;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
+
     } catch (e) {
-      if (!environment.offlineSupport()) {
+      if (!environment.offlineSupport) {
         await this.showToast({
           header: 'Server is not reachable',
           message: 'Either you are offline or the server is down.',
@@ -103,6 +118,7 @@ export class ServerSettingsService {
       }
     }
   }
+
 
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({

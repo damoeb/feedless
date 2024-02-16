@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ServerSettingsService } from './services/server-settings.service';
 import { ProductService } from './services/product.service';
-import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [],
@@ -17,8 +16,9 @@ import { environment } from '../environments/environment';
           productService: ProductService,
         ) =>
         async () => {
+          const product = await serverSettings.fetchConfig();
+          productService.activateProduct(product);
           await serverSettings.fetchServerSettings();
-          productService.activateProduct(environment.product());
         },
       deps: [ServerSettingsService, ProductService],
       multi: true,

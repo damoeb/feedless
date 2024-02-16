@@ -483,7 +483,7 @@ export class FeedBuilderModalComponent
           sources: this.feedBuilderFg.value.source.map(
             (source) => source.request,
           ),
-          product: environment.product(),
+          product: environment.product,
           sourceOptions: {
             refreshCron: this.feedBuilderFg.value.fetch.cronString,
           },

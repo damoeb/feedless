@@ -158,13 +158,6 @@ export class ProfileService {
     ).matches;
     this.darkModePipe = new ReplaySubject<boolean>(1);
     this.darkModePipe.next(isDarkMode);
-    this.darkModePipe.subscribe((isDarkMode) => {
-      if (isDarkMode) {
-        document.body.className = 'dark';
-      } else {
-        document.body.className = 'light';
-      }
-    });
   }
 
   private getBrowserDateTimeFormats() {

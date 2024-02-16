@@ -19,7 +19,7 @@ export class PlanService {
       .query<GqlPlansQuery, GqlPlansQueryVariables>({
         query: Plans,
         variables: {
-          product: environment.product(),
+          product: environment.product,
         },
       })
       .then((response) => response.data.plans);

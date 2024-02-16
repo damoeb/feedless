@@ -8,7 +8,7 @@ import { GqlProductName } from '../generated/graphql';
 export const environment: AppEnvironment = {
   production: false,
   offlineSupport: false,
-  product: () => GqlProductName.Feedless,
+  product: GqlProductName.Feedless,
 };
 
 /*

@@ -49,7 +49,7 @@ export class NewsletterComponent {
           email: this.emailFc.value,
           newsletter: true,
           plan: GqlPlanName.Waitlist,
-          product: environment.product(),
+          product: environment.product,
         });
         this.submitted = true;
       } catch (e) {

@@ -220,7 +220,7 @@ export class NotebookService {
     if (query.trim()) {
       const results = this.index.search({
         query,
-        index: ['note:text', 'note:namedId'],
+        index: ['note:text', 'note:namedId', 'note:references:links', 'note:references:hashtags'],
         limit: this.LIMIT,
       });
       return results.map((perField) => {
@@ -343,7 +343,7 @@ export class NotebookService {
       context: true,
       document: {
         id: 'id',
-        index: ['id', 'action:name', 'note:namedId', 'note:text'],
+        index: ['id', 'action:name', 'note:namedId', 'note:text', 'note:references:links', 'note:references:hashtags'],
       },
     });
 
@@ -416,7 +416,7 @@ export class NotebookService {
   //       subscriptions: [
   //         {
   //           sources: [],
-  //           product: environment.product(),
+  //           product: environment.product,
   //           sinkOptions: {
   //             title: notebook.name,
   //             description: '',

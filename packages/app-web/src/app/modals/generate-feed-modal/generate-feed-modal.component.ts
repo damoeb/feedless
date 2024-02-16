@@ -155,7 +155,7 @@ export class GenerateFeedModalComponent
         await this.sourceSubscriptionService.createSubscriptions({
           subscriptions: [
             {
-              product: environment.product(),
+              product: environment.product,
               sources: [
                 {
                   page,

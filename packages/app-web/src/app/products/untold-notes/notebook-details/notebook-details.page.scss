@@ -19,6 +19,7 @@ ion-content::part(scroll) {
       color: var(--ion-color-dark);
     }
     &.is-group {
+      display: none;
       text-transform: uppercase;
       color: rgba(var(--ion-color-dark-rgb), 0.5);
       ion-label {
@@ -78,13 +79,4 @@ app-code-editor {
 
 ion-button.active {
   --background: var(--ion-color-primary);
-}
-
-@media (prefers-color-scheme: dark) {
-  ion-content,
-  ion-header {
-    --app-background: #21252b;
-    --app-body-background: #282c34;
-    --ion-item-background: var(--app-body-background);
-  }
 }

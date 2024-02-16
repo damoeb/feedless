@@ -52,16 +52,17 @@
   margin-left: 2px;
   margin-right: 2px;
   border-radius: 5px;
-  text-decoration: none;
+  text-decoration: underline;
   min-width: 30px;
 
   color: var(--color);
   background: var(--background);
-  border: 1px solid var(--border-color);
+  //border: 1px solid var(--border-color);
 
-  //&:hover {
+  &:hover {
+    text-decoration: none;
   //  border-color: var(--ion-color-primary);
-  //}
+  }
 
   &--invalid {
     --border-color: rgba(var(--ion-color-danger-rgb), 0.4);
@@ -76,11 +77,8 @@
   }
 }
 
-//.cm-note {
-//  &--invalid {
-//    //border-bottom: 1px solid red;
-//    text-decoration: underline;
-//    text-decoration-style: wavy;
-//    text-decoration-color: var(--ion-color-danger);
-//  }
-//}
+ion-toolbar {
+  --background: var(--background);
+  border-bottom: 1px solid rgba(var(--ion-color-medium-rgb), 0.3);
+  padding-left: 10px;
+}

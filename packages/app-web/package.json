@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "prebuild": "yarn graphql-codegen",
-    "prestart:feedless": "yarn graphql-codegen",
+    "prestart:feedless": "yarn graphql-codegen && sh prepare-product.sh feedless false",
     "start:feedless": "ng serve",
     "prestart:rss-builder": "yarn graphql-codegen && sh prepare-product.sh rssBuilder false",
     "start:rss-builder": "ng serve",
@@ -42,7 +42,6 @@
     "@codemirror/commands": "^6.3.3",
     "@codemirror/lang-css": "^6.2.1",
     "@codemirror/lang-html": "^6.4.7",
-    "@codemirror/lang-java": "^6.0.1",
     "@codemirror/lang-javascript": "^6.2.1",
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-markdown": "^6.2.4",

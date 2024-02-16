@@ -120,8 +120,7 @@ services:
     image: damoeb/feedless:app
     restart: unless-stopped
     volumes:
-#      - ./docker/app/app-config.json:/usr/share/nginx/html/config.json
-      - ./docker/app/untold-notes-config.json:/usr/share/nginx/html/config.json
+      - ./docker/app/app-config.json:/usr/share/nginx/html/config.json
     ports:
       - "4200:80"
 

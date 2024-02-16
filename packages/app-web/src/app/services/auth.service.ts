@@ -75,7 +75,7 @@ export class AuthService {
         data: {
           email,
           token: authentication.token,
-          product: environment.product(),
+          product: environment.product,
           osInfo: `${platform.description}`,
           allowCreate: true,
         },

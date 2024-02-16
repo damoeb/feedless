@@ -194,3 +194,22 @@ a {
 .success-alert {
   background: rgba(var(--ion-color-primary-rgb), 0.4);
 }
+
+.product--untold-notes{
+  &.dark {
+    ion-content,
+    ion-header {
+      --app-background: #21252b;
+      --app-body-background: #282c34;
+      --ion-item-background: var(--app-body-background);
+    }
+  }
+  &.light {
+    ion-content,
+    ion-header {
+      --app-background: white;
+      --app-body-background: white;
+      --ion-item-background: var(--app-body-background);
+    }
+  }
+}

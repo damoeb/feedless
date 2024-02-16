@@ -1,3 +1,38 @@
 {
-  "apiUrl": "http://localhost:8080"
+  "apiUrl": "http://localhost:8080",
+  "forceProduct": "untoldNotes",
+  "products": [
+    {
+      "product": "feedless",
+      "hostname": ""
+    },
+    {
+      "product": "untoldNotes",
+      "hostname": ""
+    },
+    {
+      "product": "reader",
+      "hostname": ""
+    },
+    {
+      "product": "rssBuilder",
+      "hostname": ""
+    },
+    {
+      "product": "pageChangeTracker",
+      "hostname": ""
+    },
+    {
+      "product": "upcoming",
+      "hostname": ""
+    },
+    {
+      "product": "visualDiff",
+      "hostname": ""
+    },
+    {
+      "product": "digest",
+      "hostname": ""
+    }
+  ]
 }

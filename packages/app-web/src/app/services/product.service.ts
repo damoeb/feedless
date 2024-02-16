@@ -16,6 +16,7 @@ export interface SideMenuConfig {
 
 export interface ProductConfig {
   product: GqlProductName;
+  offlineSupport?: boolean;
   titlePlain: string;
   titleHtml: string;
   pageTitle: string;
@@ -131,6 +132,7 @@ export class ProductService {
       product: GqlProductName.UntoldNotes,
       titlePlain: 'Untold Notes',
       titleHtml: '<strong>Un</strong><em>told</em>',
+      offlineSupport: true,
       pageTitle: 'Untold Notes',
       sideMenu: {
         width: 200,
@@ -196,10 +198,11 @@ export class ProductService {
 
   activateProduct(product: GqlProductName) {
     console.log(`activateProduct ${product}`);
-    environment.product = () => product;
+    environment.product = product;
     const config = this.products.find(
-      (productConfig) => productConfig.product === environment.product(),
+      (productConfig) => productConfig.product === environment.product,
     );
+    environment.offlineSupport = config.offlineSupport === true;
     this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);
     this.activeProductConfig.next(config);

@@ -81,7 +81,7 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
           subscriptions: [
             {
               sources: [],
-              product: environment.product(),
+              product: environment.product,
               sinkOptions: {
                 title: form.title,
                 description: form.description,

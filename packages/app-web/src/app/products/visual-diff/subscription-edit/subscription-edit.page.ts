@@ -283,7 +283,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
               emit: [this.getEmit()],
             },
           ],
-          product: environment.product(),
+          product: environment.product,
           sourceOptions: {
             refreshCron: this.form.value.fetchFrequency,
           },
