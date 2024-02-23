@@ -59,6 +59,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
     this.subscription =
       await this.sourceSubscriptionService.getSubscriptionById(id);
+    this.feedUrl = ''; //todo
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
@@ -79,6 +80,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   protected readonly dateFormat = dateFormat;
   protected readonly dateTimeFormat = dateTimeFormat;
+  feedUrl: string;
 
   fromNow(futureTimestamp: number): string {
     return dayjs(futureTimestamp).toNow(true);

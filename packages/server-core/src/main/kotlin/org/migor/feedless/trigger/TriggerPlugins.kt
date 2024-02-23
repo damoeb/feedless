@@ -95,8 +95,8 @@ class TriggerPlugins internal constructor() {
       if (omitted) {
         webDocumentDAO.delete(webDocument)
       } else {
-        webDocument.status = ReleaseStatus.released
         forwardToMail(corrId, webDocument, subscription)
+        webDocument.status = ReleaseStatus.released
         webDocumentDAO.save(webDocument)
       }
 

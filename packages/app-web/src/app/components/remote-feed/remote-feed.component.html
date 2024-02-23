@@ -20,46 +20,10 @@
         {{ errorMessage }}
       </div>
       <ion-list *ngIf="!errorMessage" class="cy-remote-feed remote-feed">
-        <ion-item
-          *ngFor="let item of feedItems; let feedIndex = index"
-          class="cy-feed-item"
-        >
-          <!--          <app-bubble-->
-          <!--            *ngIf="filter"-->
-          <!--            [color]="filterChanged ? 'gray' : item.omitted ? 'red' : 'green'"-->
-          <!--          ></app-bubble>-->
-          <ion-label>
-            <p>
-              <ion-note>{{ feedIndex + 1 }}.</ion-note>
-            </p>
-            <h2 *ngIf="item.contentTitle" class="cy-remote-feed__title">
-              {{ item.contentTitle }}
-            </h2>
-            <h2 *ngIf="!item.contentTitle" class="cy-remote-feed__title">
-              <del>Empty Title</del>
-            </h2>
-            <p>
-              <a
-                [href]="item.url"
-                class="title"
-                referrerpolicy="no-referrer"
-                target="_blank"
-                >{{ item.url }}</a
-              >
-            </p>
-            <p class="cy-remote-feed__date-published">
-              Published
-              {{ toDate(item.publishedAt) | date: dateFormat }}
-            </p>
-            <p *ngIf="item.startingAt">
-              Starting
-              {{ toDate(item.startingAt) | date: dateFormat }}
-            </p>
-            <p class="cy-remote-feed__body ion-text-wrap">
-              {{ item.contentText }}
-            </p>
-          </ion-label>
-        </ion-item>
+        <app-remote-feed-item *ngFor="let item of feedItems; let feedIndex = index"
+                              class="cy-feed-item"
+                              [feedItemIndex]="feedIndex + 1"
+                              [feedItem]="item"></app-remote-feed-item>
       </ion-list>
     </ng-container>
   </div>

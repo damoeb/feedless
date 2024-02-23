@@ -89,10 +89,6 @@ open class WebDocumentEntity : EntityWithUUID() {
   open var plugins: MutableList<PipelineJobEntity> = mutableListOf()
 
   @Basic
-  @Column(nullable = false)
-  open var finalized: Boolean = false
-
-  @Basic
   @Column(name = "subscriptionId", nullable = false)
   open lateinit var subscriptionId: UUID
 
@@ -113,7 +109,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false, name = StandardJpaFields.status, length = 50)
   @Enumerated(EnumType.STRING)
-  open var status: ReleaseStatus = ReleaseStatus.released
+  open lateinit var status: ReleaseStatus
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
 //  @JoinTable(

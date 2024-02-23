@@ -162,6 +162,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   async showActionsModal() {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderActionsModalComponent,
+      cssClass: 'fullscreen-modal',
       componentProps: {
         url: this.url,
       },

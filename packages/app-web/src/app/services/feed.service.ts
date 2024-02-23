@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
+  GqlPreviewFeedInput,
+  GqlPreviewFeedQuery, GqlPreviewFeedQueryVariables,
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
-  GqlRemoteNativeFeedQueryVariables,
-  RemoteNativeFeed,
+  GqlRemoteNativeFeedQueryVariables, GqlScrapeRequestInput, PreviewFeed,
+  RemoteNativeFeed
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { RemoteFeed, RemoteFeedItem } from '../graphql/types';
@@ -29,5 +31,16 @@ export class FeedService {
         },
       })
       .then((response) => response.data.remoteNativeFeed);
+  }
+
+  async previewFeed(data: GqlPreviewFeedInput): Promise<RemoteFeed> {
+    return this.apollo
+      .query<GqlPreviewFeedQuery, GqlPreviewFeedQueryVariables>({
+        query: PreviewFeed,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => response.data.previewFeed);
   }
 }

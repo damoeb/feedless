@@ -1,22 +1,17 @@
-<!--<ion-header>-->
-<!--  <ion-toolbar>-->
-<!--    <ion-buttons slot="start">-->
-<!--      <ion-button (click)="dismissModal()">-->
-<!--        <ion-icon name="close-outline"></ion-icon>-->
-<!--      </ion-button>-->
-<!--    </ion-buttons>-->
-<!--    <ion-title>Actions</ion-title>-->
-<!--    <ion-buttons slot="end">-->
-<!--      <ion-button color="success" expand="full" fill="solid" (click)="applyChanges()">-->
-<!--        Apply-->
-<!--      </ion-button>-->
-<!--    </ion-buttons>-->
-<!--  </ion-toolbar>-->
-<!--</ion-header>-->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Website with JavaScript</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
   <form (ngSubmit)="scrape()">
-    <ion-toolbar color="danger">
-      <ion-label class="ion-margin-horizontal" *ngIf="errorMessage"
+    <ion-toolbar color="danger" *ngIf="errorMessage">
+      <ion-label class="ion-margin-horizontal"
         >{{ errorMessage }}. Please try later.</ion-label
       >
     </ion-toolbar>

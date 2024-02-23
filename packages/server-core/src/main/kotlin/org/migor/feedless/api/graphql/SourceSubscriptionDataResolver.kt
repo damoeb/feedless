@@ -9,6 +9,7 @@ import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.SourceSubscription
+import org.migor.feedless.harvest.toScrapeRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
@@ -28,7 +29,7 @@ class SourceSubscriptionDataResolver {
     val source: SourceSubscription = dfe.getSource()
     scrapeRequestDAO.findAllBySubscriptionId(UUID.fromString(source.id)).map { scrapeSource ->
       run {
-        val scrapeRequest = scrapeSource.scrapeRequest
+        val scrapeRequest = scrapeSource.toScrapeRequest()
         scrapeRequest.id = null
         scrapeRequest.corrId = null
         scrapeRequest

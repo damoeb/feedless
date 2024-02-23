@@ -237,10 +237,16 @@ type Query {
   profile: Profile!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
+  previewFeed(data: PreviewFeedInput!): RemoteNativeFeed!
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
+}
+
+input PreviewFeedInput {
+  request: ScrapeRequestInput!
+  filters: [CompositeFilterParamsInput!]!
 }
 
 input WebDocumentsInput {

@@ -61,6 +61,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     };
     const modal = await this.modalCtrl.create({
       component: GenerateFeedModalComponent,
+      cssClass: 'fullscreen-modal',
       componentProps,
     });
 

@@ -174,7 +174,9 @@ class SourceSubscriptionService {
     log.info("[$corrId] create source ${scrapeRequest.page.url}")
     planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
     planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
-    entity.scrapeRequest = scrapeRequest
+    entity.emit = scrapeRequest.emit
+    entity.page = scrapeRequest.page
+    entity.debug = scrapeRequest.debug
     entity.subscriptionId = sub.id
     return scrapeSourceDAO.save(entity)
   }

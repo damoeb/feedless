@@ -11,10 +11,15 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.asRemoteNativeFeed
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.feed.parser.FeedType
+import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugTimes
 import org.migor.feedless.generated.types.ScrapeRequest
@@ -25,7 +30,10 @@ import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
 import org.migor.feedless.generated.types.TextData
+import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.plugins.CompositeFilterPlugin
+import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -34,6 +42,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
 import java.nio.charset.Charset
+import java.util.*
 
 
 @Service
@@ -46,6 +55,9 @@ class ScrapeService {
 
   @Autowired
   lateinit var agentService: AgentService
+
+  @Autowired
+  lateinit var filterPlugin: CompositeFilterPlugin
 
   @Autowired
   lateinit var feedParserService: FeedParserService
@@ -87,7 +99,7 @@ class ScrapeService {
         listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
       )
 
-      val headers = HashMap<String,String>()
+      val headers = HashMap<String, String>()
       scrapeRequest.page.actions
         ?.mapNotNull { it.header }
         ?.forEach {
@@ -104,7 +116,7 @@ class ScrapeService {
           val elements = Xsoup.compile(it.value).evaluate(document).elements
           log.info("[$corrId] purge element ${it.value} -> ${elements.size}")
           elements.remove()
-          }
+        }
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(corrId, staticResponse)
 
@@ -194,26 +206,48 @@ class ScrapeService {
     }
   }
 
+  fun scrapeFeedFromUrl(corrId: String, url: String): RichFeed {
+    log.info("[$corrId] parseFeedFromUrl $url")
+    httpService.guardedHttpResource(
+      corrId,
+      url,
+      200,
+      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+    )
+    val request = httpService.prepareGet(url)
+//    authHeader?.let {
+//      request.setHeader("Authorization", it)
+//    }
+    val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
+    log.info("[$branchedCorrId] GET $url")
+    val response = httpService.executeRequest(branchedCorrId, request, 200)
+    return feedParserService.parseFeed(corrId, HarvestResponse(url, response))
+  }
+
+
+  fun scrapeFeedFromRequest(
+    corrId: String,
+    scrapeRequest: ScrapeRequest,
+    filters: List<CompositeFilterParamsInput>
+  ): RemoteNativeFeed {
+    val response = scrape(corrId, scrapeRequest).block()!!
+    val feedField =
+      response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!!
+
+    val feed = JsonUtil.gson.fromJson(feedField.value.one.data, RemoteNativeFeed::class.java)
+    val params = filters.toPluginExecutionParamsInput()
+    feed.items.removeAll(feed.items.filter { item ->
+      !filterPlugin.filterEntity(
+        corrId,
+        item.asEntity(),
+        params
+      )
+    })
+    return feed
+  }
+
+
   private fun toFields(feed: RichFeed): List<ScrapedField> {
-//    return listOf(
-//      field("title", feed.title),
-//      field("link", feed.link),
-//      field("description", feed.description),
-//      field("imageUrl", feed.imageUrl),
-//      field("iconUrl", feed.iconUrl),
-//      field("favicon", feed.favicon),
-//      field("websiteUrl", feed.websiteUrl),
-//      field("feedUrl", feed.feedUrl),
-//      ScrapedField.newBuilder()
-//        .name("items")
-//        .value(
-//          ScrapedFieldValue.newBuilder()
-//            .nested(feed.items.map { it.asScrapedField() })
-//            .build()
-//        )
-//        .build()
-//
-//    )
     return listOf(createJsonField(FeedlessPlugins.org_feedless_feed.name, feed.asRemoteNativeFeed()))
   }
 
@@ -314,4 +348,26 @@ class ScrapeService {
       }
     }
   }
+}
+
+private fun WebDocument.asEntity(): WebDocumentEntity {
+  val e = WebDocumentEntity()
+  e.contentTitle = contentTitle
+//  if (StringUtils.isNotBlank(contentRawBase64)) {
+//    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
+//    e.contentRawMime = contentRawMime
+//  }
+
+  e.contentText = contentText
+  e.status = ReleaseStatus.released
+  e.releasedAt = Date(publishedAt)
+//  e.updatedAt = Date()
+  e.url = url
+  return e
+}
+
+private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInput(): PluginExecutionParamsInput {
+  return PluginExecutionParamsInput.newBuilder()
+    .filters(this)
+    .build()
 }

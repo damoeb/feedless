@@ -40,6 +40,7 @@ export class PuppeteerService {
   private readonly log = new Logger(PuppeteerService.name);
   private readonly isDebug: boolean;
   private readonly imageQuality = 100;
+  private readonly imageType = 'webp';
   private readonly queue: {
     job: ScrapeRequest;
     queuedAt: number;
@@ -280,7 +281,7 @@ export class PuppeteerService {
         : [],
       prerendered: true,
       screenshot: request.debug?.screenshot
-        ? await page.screenshot({ fullPage: true, quality: this.imageQuality, type: 'webp', encoding: 'base64' })
+        ? await page.screenshot({ fullPage: true, optimizeForSpeed: false, quality: this.imageQuality, type: this.imageType, encoding: 'base64' })
         : undefined,
     };
   }
@@ -316,7 +317,7 @@ export class PuppeteerService {
 
     const getScreenshot = (): Promise<string> => {
       if (xpath === '/') {
-        return page.screenshot({ fullPage: true, quality: this.imageQuality, type: 'webp', encoding: 'base64' });
+        return page.screenshot({ fullPage: true, optimizeForSpeed: false, quality: this.imageQuality, type: this.imageType, encoding: 'base64' });
       } else {
         return this.extractScreenshot(
           page,
@@ -356,8 +357,9 @@ export class PuppeteerService {
         height: boundingBox.h,
         width: boundingBox.w,
       },
-      type: 'webp',
+      type: this.imageType,
       quality: this.imageQuality,
+      optimizeForSpeed: false,
       encoding: 'base64',
       captureBeyondViewport: true,
     });
@@ -492,8 +494,9 @@ export class PuppeteerService {
     this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
     return page.screenshot({
       clip: boundingBox,
-      type: 'webp',
+      type: this.imageType,
       quality: this.imageQuality,
+      optimizeForSpeed: false,
       encoding: 'base64',
       captureBeyondViewport: true
     });

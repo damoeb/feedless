@@ -26,13 +26,17 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.awt.Toolkit
 import java.awt.image.BufferedImage
+import java.awt.image.FilteredImageSource
+import java.awt.image.RGBImageFilter
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.abs
+
 
 fun getLastWebDocumentBySubscription(webDocumentDAO: WebDocumentDAO, subscriptionId: UUID): WebDocumentEntity? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
@@ -113,7 +117,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val mailData = MailData()
     mailData.subject = "VisualDiff Tracker: ${subscription.title}"
     val website =
-      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).map { it.scrapeRequest.page.url }.joinToString(", ")
+      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).joinToString(", ") { it.page.url }
 
     val params = VisualDiffWelcomeParams(
       trackerTitle = subscription.title,
@@ -143,26 +147,36 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
     val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
 
+    config.inlineLatestImage = false
+    config.inlinePreviousImage = false
+    config.inlineDiffImage = true
+
     val latestDateString = sdf.format(webDocument.createdAt)
     val images = mutableListOf(
-      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!!),
+      Triple(
+        config.inlineLatestImage,
+        "latest-$latestDateString",
+        webDocument.contentRaw!!
+      )
     )
 
-    previous is selfe
-    val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
-    previous?.let {
+    val lastWebDocument = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
+    lastWebDocument?.let {
+      if (webDocument.id.toString() == lastWebDocument.id.toString()) {
+        throw IllegalArgumentException("comparing same document")
+      }
       images.add(
         Triple(
           config.inlinePreviousImage,
-          "previousImage-${sdf.format(previous.createdAt)}",
-          previous.contentRaw!!
+          "previous-${sdf.format(lastWebDocument.createdAt)}",
+          lastWebDocument.contentRaw!!
         )
       )
       images.add(
         Triple(
           config.inlineDiffImage,
-          "diffImage-${latestDateString}",
-          createDiffImage(previous, webDocument)
+          "diff-${latestDateString}",
+          createDiffImage(lastWebDocument, webDocument)
         )
       )
     }
@@ -180,7 +194,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
     val website = scrapeSourceDAO.findAllBySubscriptionId(
       subscription.id
-    ).joinToString(", ") { s -> s.scrapeRequest.page.url }
+    ).joinToString(", ") { s -> s.page.url }
 
     val templateParams = VisualDiffChangeDetectedParams(
       trackerTitle = subscription.title,
@@ -233,27 +247,32 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     return ratio > minIncrement
   }
 
-  private fun createDiffImage(left: WebDocumentEntity, right: WebDocumentEntity): ByteArray {
-    val img1 = toImage(left)
-    val img2 = toImage(right)
+  private fun createDiffImage(oldDocument: WebDocumentEntity, newDocument: WebDocumentEntity): ByteArray {
+    val oldImage = toImage(oldDocument)
+    val newImage = toImage(newDocument)
 
-    val width = img1.width.coerceAtLeast(img2.width)
-    val height = img1.height.coerceAtLeast(img2.height)
+    assert(newImage.width == oldImage.width) { "image width not equal" }
+    assert(newImage.height == oldImage.height) { "image height not equal" }
 
-    val diffImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
-    for (x in 0 until width) {
-      for (y in 0 until height) {
-        if (img1.getRGB(x, y) == img2.getRGB(x, y)) {
-          diffImage.setRGB(x, y, img2.getRGB(x, y))
+    val pixelFilter = object : RGBImageFilter() {
+      override fun filterRGB(x: Int, y: Int, rgb: Int): Int {
+        return if (oldImage.getRGB(x, y) == rgb) {
+          0x64ffffff and rgb
         } else {
-          diffImage.setRGB(x, y, 0xff0000)
+          0x7FFF0000
         }
       }
     }
 
+    val diffImage = Toolkit.getDefaultToolkit().createImage(FilteredImageSource(newImage.source, pixelFilter))
+
+    val bimage = BufferedImage(diffImage.getWidth(null), diffImage.getHeight(null), BufferedImage.TYPE_INT_ARGB)
+    val g = bimage.createGraphics()
+    g.drawImage(diffImage, 0, 0, null)
+    g.dispose()
+
     val baos = ByteArrayOutputStream()
-    ImageIO.write(diffImage, "webp", baos)
+    ImageIO.write(bimage, "webp", baos)
     return baos.toByteArray()
   }
 

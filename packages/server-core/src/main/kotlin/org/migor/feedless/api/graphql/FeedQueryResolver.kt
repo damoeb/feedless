@@ -8,10 +8,12 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
+import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.service.FeedParserService
+import org.migor.feedless.service.ScrapeService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
@@ -26,7 +28,7 @@ class FeedQueryResolver {
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var feedParserService: FeedParserService
+  lateinit var scrapeService: ScrapeService
 
   @Throttled
   @DgsQuery
@@ -37,7 +39,19 @@ class FeedQueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] remoteNativeFeed $data")
-    feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
+    scrapeService.scrapeFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
+  }
+
+  @Throttled
+  @DgsQuery
+  @PreAuthorize("hasAuthority('ANONYMOUS')")
+  @Transactional(propagation = Propagation.NEVER)
+  suspend fun previewFeed(
+    @InputArgument data: PreviewFeedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): RemoteNativeFeed = coroutineScope {
+    log.info("[$corrId] previewFeed $data")
+    scrapeService.scrapeFeedFromRequest(corrId, data.request.fromDto(), data.filters)
   }
 }
 

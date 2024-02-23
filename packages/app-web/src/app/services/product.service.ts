@@ -111,9 +111,9 @@ export class ProductService {
     },
     {
       product: GqlProductName.RssBuilder,
-      titlePlain: 'RSS Builder',
-      titleHtml: '<strong>RSS</strong><em>Builder</em>',
-      pageTitle: 'RSS Builder',
+      titlePlain: 'RSS Proxy',
+      titleHtml: '<strong>RSS</strong><em>Proxy</em>',
+      pageTitle: 'RSS Proxy',
       sideMenu: {
         width: 200,
         breakpoint: 'xl',

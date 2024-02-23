@@ -21,6 +21,7 @@ import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
+import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapedByBoundingBox
 import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
@@ -187,7 +188,7 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun scrapeSource(corrId: String, source: ScrapeSourceEntity): Flux<Unit> {
-    return scrapeService.scrape(corrId, source.scrapeRequest)
+    return scrapeService.scrape(corrId, source.toScrapeRequest())
       .flatMapMany { scrapeResponse -> Flux.fromIterable(scrapeResponse.elements) }
       .flatMap { Flux.just(importElement(corrId, it, source.subscription!!.id)) }
   }
@@ -304,6 +305,14 @@ class SourceSubscriptionHarvester internal constructor() {
 //      webDocumentDAO.save(entity)
     }
   }
+}
+
+fun ScrapeSourceEntity.toScrapeRequest(): ScrapeRequest {
+  return ScrapeRequest.newBuilder()
+    .page(page)
+    .emit(emit)
+    .debug(debug)
+    .build()
 }
 
 inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {

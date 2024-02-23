@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
-import { FieldWrapper, Scalars } from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { RemoteFeedItem } from '../../graphql/types';
 import { FeedService } from '../../services/feed.service';
-import { dateFormat } from '../../services/profile.service';
 
 @Component({
   selector: 'app-remote-feed',
@@ -37,10 +29,6 @@ export class RemoteFeedComponent implements OnInit {
     return this.refresh();
   }
 
-  toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
-    return new Date(date);
-  }
-
   async refresh() {
     await this.fetch(this.feedUrl);
   }
@@ -59,6 +47,4 @@ export class RemoteFeedComponent implements OnInit {
     this.loading = false;
     this.changeRef.detectChanges();
   }
-
-  protected readonly dateFormat = dateFormat;
 }
