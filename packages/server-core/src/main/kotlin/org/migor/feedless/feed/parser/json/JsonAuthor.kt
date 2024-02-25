@@ -6,7 +6,9 @@ data class JsonAuthor(
   @SerializedName(value = "name")
   val name: String?,
   @SerializedName(value = "url")
-  val url: String?,
+  val url: String? = null,
   @SerializedName(value = "avatar")
-  val avatar: String?
+  val avatar: String? = null,
+  @SerializedName(value = "email")
+  val email: String? = null
 )

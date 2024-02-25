@@ -1,5 +1,12 @@
 package org.migor.feedless.feed.exporter
 
+import com.rometools.modules.atom.modules.AtomLinkModuleImpl
+import com.rometools.modules.itunes.EntryInformationImpl
+import com.rometools.modules.itunes.FeedInformationImpl
+import com.rometools.modules.mediarss.MediaEntryModuleImpl
+import com.rometools.modules.mediarss.types.MediaContent
+import com.rometools.modules.mediarss.types.UrlReference
+import com.rometools.rome.feed.atom.Link
 import com.rometools.rome.feed.synd.SyndCategory
 import com.rometools.rome.feed.synd.SyndCategoryImpl
 import com.rometools.rome.feed.synd.SyndContent
@@ -15,6 +22,8 @@ import com.rometools.rome.feed.synd.SyndImageImpl
 import com.rometools.rome.feed.synd.SyndLinkImpl
 import com.rometools.rome.io.SyndFeedOutput
 import org.apache.commons.lang3.StringUtils
+import org.jdom2.Element
+import org.jdom2.Namespace
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.parser.json.JsonAttachment
@@ -34,32 +43,42 @@ class SyndAtomFeedExporter {
 
   private fun toSyndFeed(richFeed: RichFeed): SyndFeed {
     val feed = SyndFeedImpl()
-//    val atomLinkModule = AtomLinkModuleImpl()
-//    val atomLink = AtomLink()
-//    atomLink.type = "self"
-//    atomLink.href = richFeed.feedUrl
-//    atomLink.type = "application/atom+xml"
-//    atomLinkModule.link = atomLink
-//    feed.modules = listOf(atomLinkModule)
+    val atomLinkModule = AtomLinkModuleImpl()
+    val atomLink = Link()
+    atomLink.rel = "self"
+    atomLink.href = richFeed.feedUrl
+    atomLink.type = "application/atom+xml"
+    atomLinkModule.link = atomLink
+    feed.modules.add(atomLinkModule)
 
     feed.uri = "https://feedless.org/feed/${richFeed.id}"
     feed.feedType = "atom_1.0"
     feed.title = richFeed.title
     feed.description = richFeed.description
-//    if (StringUtils.isNoneBlank(richFeed.author)) {
-//      feed.author = richFeed.author
-//    }
+
+    val feedInformation = FeedInformationImpl()
+    richFeed.tags?.let {
+      feedInformation.keywords = it.toTypedArray()
+    }
+    richFeed.authors?.let {
+      feedInformation.author = it.firstOrNull()?.name
+    }
+    feed.modules.add(feedInformation)
+//    val imageNamespace = Namespace.getNamespace("image", "http://purl.org/rss/1.0/modules/image/")
+//    val element = Element("image", imageNamespace)
+//    feed.foreignMarkup.add(element)
+
     feed.image = richFeed.imageUrl?.let { toSyndImage(it) }
     richFeed.language?.let {
       feed.language = it
     }
     feed.publishedDate = richFeed.publishedAt
     val link = SyndLinkImpl()
-    link.type = "self"
+    link.rel = "self"
     link.href = richFeed.feedUrl
     link.type = "application/atom+xml"
     val website = SyndLinkImpl()
-    website.type = "alternate"
+    website.rel = "alternate"
     website.href = richFeed.websiteUrl
     website.type = "text/html"
     feed.links = listOf(link, website)
@@ -70,17 +89,31 @@ class SyndAtomFeedExporter {
 
   private fun toSyndEntry(article: RichArticle): SyndEntry {
     val entry = SyndEntryImpl()
-
     entry.uri = "https://feedless.org/articles/${article.id}"
     entry.title = article.title
     entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
     entry.contents = toSyndContents(article)
     entry.description = toSyndContentPlain(article)
-//    entry.enclosures = listOf() // it.imageUrl = imageUrl
+
+    article.imageUrl?.let {
+      val image = Element("image", Namespace.getNamespace("image", "http://web.resource.org/rss/1.0/modules/image/"))
+      image.addContent(article.imageUrl)
+      entry.foreignMarkup.add(image)
+
+      val reference = UrlReference(it)
+      val mediaContent = MediaContent(reference)
+      val mediaContents = arrayOf(mediaContent)
+      val imageModule = MediaEntryModuleImpl()
+      imageModule.mediaContents = mediaContents
+      entry.modules.add(imageModule)
+    }
+
+    val entryInformation = EntryInformationImpl()
+    entryInformation.author = article.authors?.firstOrNull()?.name
+
+    entry.modules.add(entryInformation)
+
     entry.link = article.url
-//    if (StringUtils.isNoneBlank(article.author)) {
-//      entry.author = article.author
-//    }
     entry.author = URL(article.url).host
     entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
     entry.publishedDate = article.publishedAt

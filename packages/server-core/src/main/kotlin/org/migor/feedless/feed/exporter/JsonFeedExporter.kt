@@ -28,14 +28,14 @@ class JsonFeedExporter {
   fun toJson(corrId: String, feed: RichFeed): String {
     log.debug("[${corrId}] to json")
 
-    feed.selfPage?.let {
-      if (feed.items.isNotEmpty()) {
-        feed.nextUrl = toJsonFeedUrlForPage(feed, it + 1)
-      }
-//      if (feed.selfPage != 0) {
-//        feed.previousUrl = toJsonFeedUrlForPage(feed, it - 1)
+//    feed.selfPage?.let {
+//      if (feed.items.isNotEmpty()) {
+//        feed.nextUrl = toJsonFeedUrlForPage(feed, it + 1)
 //      }
-    }
+////      if (feed.selfPage != 0) {
+////        feed.previousUrl = toJsonFeedUrlForPage(feed, it - 1)
+////      }
+//    }
 //    feed.lastUrl = toJsonFeedUrlForPage(feed, feed.lastPage)
     return gson.toJson(feed)
   }

@@ -2,17 +2,24 @@ package org.migor.feedless.feed.parser
 
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
+import com.rometools.modules.mediarss.MediaEntryModule
+import com.rometools.modules.mediarss.types.PlayerReference
+import com.rometools.modules.mediarss.types.UrlReference
 import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
+import com.rometools.rome.feed.synd.SyndPerson
 import com.rometools.rome.io.SyndFeedInput
+import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichEnclosure
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.feed.parser.json.JsonAuthor
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
+import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.util.*
@@ -44,7 +51,7 @@ class XmlFeedParser : FeedBodyParser {
       .getOrThrow()
   }
 
-  fun parseXml(body: ByteArray): SyndFeed {
+  private fun parseXml(body: ByteArray): SyndFeed {
     val markup = runCatching {
       // pseudo fix namespaces
       val doc = Jsoup.parse(String(body), "", Parser.xmlParser())
@@ -99,31 +106,95 @@ class XmlFeedParser : FeedBodyParser {
     richFeed.publishedAt = feed.publishedDate ?: Date()
     richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
     richFeed.feedUrl = feedUrl
+    feedInformation?.let {
+      if (StringUtils.isNotBlank(it.author)) {
+        richFeed.authors = listOf(JsonAuthor(name = it.author))
+      }
+      richFeed.tags = it.keywords?.toList()
+    }
+
     return richFeed
   }
 
   private fun fromSyndEntry(entry: SyndEntry): RichArticle {
-    val content = entry.contents.firstOrNull()
+    val contentHtml = entry.contents.firstOrNull { it.type.lowercase().contains("html") }
     val contentText = Optional.ofNullable(entry.description?.value)
-      .orElse("")
+      .orElse("").trimMargin()
 
-    val entryInformation = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
-    val imageUrl = entryInformation?.imageUri
+    val entryInformationModule = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
+    val mediaEntryModule = entry.modules.find { it is MediaEntryModule } as MediaEntryModule?
+//    val dcModule = entry.modules.find { it is DCModule } as DCModule?
     val richArticle = RichArticle()
     richArticle.id = entry.uri
     richArticle.title = entry.title
     richArticle.tags = entry.categories.map { it.name }
-    richArticle.contentText = contentText
-    richArticle.contentRawBase64 = content?.value
-    richArticle.contentRawMime = content?.type
-    richArticle.imageUrl = imageUrl
-    richArticle.url = entry.link ?: entry.uri
-//    richArticle.author = entry.author
-    richArticle.attachments = if (entry.enclosures.size == 1) {
-      listOf(fromSyndEnclosure(entry.enclosures.first(), entryInformation))
-    } else {
-      entry.enclosures.map { fromSyndEnclosure(it) }
+
+    // content
+    val hasText = StringUtils.isNotBlank(contentText)
+    val hasHtml = contentHtml != null
+    if (hasText || hasHtml) {
+      if (hasText && hasHtml) {
+        richArticle.contentText = contentText
+        richArticle.contentRawMime = "text/html"
+        richArticle.contentRawBase64 = contentHtml!!.value
+      } else {
+        if (hasText) {
+          richArticle.contentText = contentText
+        } else {
+          richArticle.contentRawMime = "text/html"
+          richArticle.contentRawBase64 = contentHtml!!.value
+          try {
+            val body = HtmlUtil.parseHtml(contentText, "").body()
+            richArticle.contentText = body.text()
+          } catch (e: Exception) {
+            // ignore
+          }
+
+        }
+      }
     }
+
+    richArticle.url = entry.link ?: entry.uri
+
+    val authors = mutableListOf<JsonAuthor>()
+    (entryInformationModule?.author ?: entry.author)?.let {
+      authors.add(JsonAuthor(name = it))
+    }
+    authors.addAll(entry.authors.map { it.toJsonAuthor() })
+    richArticle.authors = authors
+
+    val attachments = arrayListOf<RichEnclosure>()
+    if (entry.enclosures.size == 1) {
+      attachments.add(fromSyndEnclosure(entry.enclosures.first(), entryInformationModule))
+    } else {
+      attachments.addAll(entry.enclosures.map { fromSyndEnclosure(it) })
+    }
+    mediaEntryModule?.let {
+      it.mediaContents.filter { it.reference is UrlReference || it.reference is PlayerReference }
+        .forEach { mediaContent ->
+          run {
+            val url = when (mediaContent.reference) {
+              is UrlReference -> (mediaContent.reference as UrlReference).url
+              is PlayerReference -> (mediaContent.reference as PlayerReference).url
+              else -> throw IllegalArgumentException("no supported")
+            }
+            attachments.add(
+              RichEnclosure(
+                length = 0,
+                type = mediaContent.type ?: mediaContent.medium ?: "unknown",
+                url = url.toString(),
+                duration = null
+              )
+            )
+          }
+        }
+    }
+    richArticle.attachments = attachments
+
+    val imageUrl = entryInformationModule?.imageUri ?: attachments.filter { StringUtils.isNotBlank(it.type) }
+      .firstOrNull { it.type.lowercase().startsWith("image") }?.url
+    richArticle.imageUrl = imageUrl
+
     richArticle.publishedAt = entry.publishedDate ?: Date()
 
 //    entryInformation?.let {
@@ -134,13 +205,18 @@ class XmlFeedParser : FeedBodyParser {
     return richArticle
   }
 
-  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure, entryInformation: EntryInformationImpl? = null) = RichEnclosure(
-    length = syndEnclosure.length,
-    type = syndEnclosure.type,
-    url = syndEnclosure.url,
-    duration = entryInformation?.duration?.milliseconds?.let { it/1000 }
-  )
+  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure, entryInformation: EntryInformationImpl? = null) =
+    RichEnclosure(
+      length = syndEnclosure.length,
+      type = syndEnclosure.type,
+      url = syndEnclosure.url,
+      duration = entryInformation?.duration?.milliseconds?.let { it / 1000 }
+    )
 
+}
+
+private fun SyndPerson.toJsonAuthor(): JsonAuthor {
+  return JsonAuthor(name = name, url = uri?.toString(), email = email)
 }
 
 enum class FeedType {

@@ -6,7 +6,7 @@ import java.util.*
 
 open class JsonItem : GenericFeedItem()
 
-open class GenericFeedItem: Serializable {
+open class GenericFeedItem : Serializable {
   @SerializedName("id")
   lateinit var id: String
 
@@ -39,9 +39,6 @@ open class GenericFeedItem: Serializable {
 
   @SerializedName("language")
   var language: String? = null
-
-  @SerializedName("author")
-  var author: JsonAuthor? = null
 
   @SerializedName("authors")
   var authors: List<JsonAuthor>? = null

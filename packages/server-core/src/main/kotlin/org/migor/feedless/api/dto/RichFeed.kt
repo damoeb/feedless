@@ -16,7 +16,6 @@ class RichFeed() : GenericFeed<RichArticle>() {
     version = feed.version
     favicon = feed.favicon
     description = feed.description
-    author = feed.author
     authors = feed.authors
     websiteUrl = feed.websiteUrl
     user_comment = feed.user_comment

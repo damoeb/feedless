@@ -15,7 +15,6 @@ class RichArticle() : JsonItem() {
     imageUrl = item.imageUrl
     bannerImage = item.bannerImage
     language = item.language
-    author = item.author
     authors = item.authors
     attachments = item.attachments
     publishedAt = item.publishedAt

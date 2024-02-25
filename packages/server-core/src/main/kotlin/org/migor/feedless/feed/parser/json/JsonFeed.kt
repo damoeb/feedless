@@ -6,7 +6,7 @@ import java.util.*
 
 open class JsonFeed : GenericFeed<JsonItem>()
 
-open class GenericFeed<ITEM>: Serializable {
+open class GenericFeed<ITEM> : Serializable {
   @SerializedName(value = "id")
   lateinit var id: String
 
@@ -24,9 +24,6 @@ open class GenericFeed<ITEM>: Serializable {
 
   @SerializedName(value = "description")
   var description: String? = null
-
-  @SerializedName(value = "author")
-  var author: JsonAuthor? = null
 
   @SerializedName(value = "authors")
   var authors: List<JsonAuthor>? = null
@@ -52,8 +49,8 @@ open class GenericFeed<ITEM>: Serializable {
   @SerializedName(value = "feed_url")
   lateinit var feedUrl: String
 
-  @SerializedName(value = "edit_url")
-  var editUrl: String? = null
+//  @SerializedName(value = "edit_url")
+//  var editUrl: String? = null
 
   @SerializedName(value = "expired")
   var expired: Boolean = false
@@ -68,8 +65,8 @@ open class GenericFeed<ITEM>: Serializable {
 //  @SerializedName(value = "previous_url")
 //  var previousUrl: String? = null
 
-  @SerializedName(value = "next_url")
-  var nextUrl: String? = null
+//  @SerializedName(value = "next_url")
+//  var nextUrl: String? = null
 
 //  @SerializedName(value = "last_url")
 //  var lastUrl: String? = null
