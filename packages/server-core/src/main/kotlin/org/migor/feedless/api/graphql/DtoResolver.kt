@@ -37,6 +37,7 @@ object DtoResolver {
       .description(description)
       .build()
   }
+
   fun GenericFeedRule.toDto(): TransientGenericFeed {
     val selectors: Selectors = Selectors.newBuilder()
       .contextXPath(contextXPath)
@@ -192,9 +193,9 @@ object DtoResolver {
   }
 
   private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams {
-return FulltextPluginParams.newBuilder()
-  .readability(readability)
-  .build()
+    return FulltextPluginParams.newBuilder()
+      .readability(readability)
+      .build()
   }
 
   private fun SelectorsInput.fromDto(): Selectors {

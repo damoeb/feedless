@@ -14,7 +14,7 @@ query remoteNativeFeed($data: RemoteNativeFeedInput!) {
   }
 }
 
-query previewFeed($data: PreviewFeedInput!){
+query previewFeed($data: PreviewFeedInput!) {
   previewFeed(data: $data) {
     ...BasicRemoteNativeFeed
   }

@@ -50,5 +50,6 @@ class TestingEndpoint {
 
   @GetMapping("/testing/file/{file}")
   fun staticFile(@PathVariable file: String): ResponseEntity<String> {
-    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:test-data/$file").toPath()))  }
+    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:test-data/$file").toPath()))
+  }
 }

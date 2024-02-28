@@ -17,7 +17,7 @@ class PdfService {
   private val log = LoggerFactory.getLogger(PdfService::class.simpleName)
 
   fun toHTML(corrId: String, file: File): String {
-    file.inputStream().use {inputStream ->
+    file.inputStream().use { inputStream ->
       return toHTML(corrId, inputStream)
     }
   }

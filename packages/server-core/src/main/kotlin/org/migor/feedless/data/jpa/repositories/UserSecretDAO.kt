@@ -23,8 +23,10 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
     where U.email = :email and U.locked = false and K.value = :value
   """
   )
-  fun findBySecretKeyValue(@Param("value") secretKeyValue: String,
-                           @Param("email") email: String): UserSecretEntity?
+  fun findBySecretKeyValue(
+    @Param("value") secretKeyValue: String,
+    @Param("email") email: String
+  ): UserSecretEntity?
 
   fun existsByValueAndOwnerId(value: String, ownerId: UUID): Boolean
 

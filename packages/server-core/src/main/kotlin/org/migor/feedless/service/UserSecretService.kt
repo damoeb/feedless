@@ -42,7 +42,9 @@ class UserSecretService {
     k.ownerId = user.id
     k.value = token.tokenValue
     k.type = UserSecretType.SecretKey
-    k.validUntil = Date.from(LocalDateTime.now().plus(tokenProvider.getApiTokenExpiration()).atZone(ZoneId.systemDefault()).toInstant())
+    k.validUntil = Date.from(
+      LocalDateTime.now().plus(tokenProvider.getApiTokenExpiration()).atZone(ZoneId.systemDefault()).toInstant()
+    )
 
     return userSecretDAO.save(k)
   }

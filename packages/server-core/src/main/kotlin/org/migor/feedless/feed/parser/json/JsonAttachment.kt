@@ -3,7 +3,7 @@ package org.migor.feedless.feed.parser.json
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-open class JsonAttachment: Serializable {
+open class JsonAttachment : Serializable {
   @SerializedName("size_in_bytes")
   var size: Long? = null
 

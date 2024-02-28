@@ -133,7 +133,10 @@
           justify="start"
           [formControl]="formFg.controls.applyFulltextPlugin"
         >
-          Fulltext <ion-note class="ion-padding-horizontal">Fetch Fulltext for every Item</ion-note>
+          Fulltext
+          <ion-note class="ion-padding-horizontal"
+            >Fetch Fulltext for every Item</ion-note
+          >
           <ion-chip
             color="danger"
             *ngIf="!isLoggedIn && formFg.value.applyFulltextPlugin"
@@ -160,22 +163,30 @@
       <ion-item>
         <ion-label>
           Feed Preview
-          <ion-note class="ion-margin-horizontal">(Plugins are not applied)</ion-note>
+          <ion-note class="ion-margin-horizontal"
+            >(Plugins are not applied)</ion-note
+          >
         </ion-label>
       </ion-item>
     </ion-list>
-    <div style="position: relative; overflow-y: auto; overflow-x: hidden; flex: 1">
+    <div
+      style="position: relative; overflow-y: auto; overflow-x: hidden; flex: 1"
+    >
       <ion-spinner name="dots" *ngIf="!previewFeed"></ion-spinner>
-      <ion-list *ngIf="previewFeed" style="position: absolute; width: 100vw; opacity: 0.6">
-        <app-remote-feed-item *ngFor="let item of previewFeed.items; let feedIndex = index"
-                              [feedItem]="item"
-                              [feedItemIndex]="feedIndex + 1"
+      <ion-list
+        *ngIf="previewFeed"
+        style="position: absolute; width: 100vw; opacity: 0.6"
+      >
+        <app-remote-feed-item
+          *ngFor="let item of previewFeed.items; let feedIndex = index"
+          [feedItem]="item"
+          [feedItemIndex]="feedIndex + 1"
         ></app-remote-feed-item>
       </ion-list>
     </div>
   </div>
 </ion-content>
-<ion-footer style="box-shadow: 0px -16px 18px 3px var(--ion-item-background);">
+<ion-footer style="box-shadow: 0px -16px 18px 3px var(--ion-item-background)">
   <ion-list
     class="ion-no-margin ion-no-padding"
     style="background: transparent"

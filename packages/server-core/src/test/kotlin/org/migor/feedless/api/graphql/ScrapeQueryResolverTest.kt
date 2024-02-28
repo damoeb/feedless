@@ -31,7 +31,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 
-
 @SpringBootTest
 @ActiveProfiles(profiles = ["test"])
 @MockBeans(value = [MockBean(AgentDAO::class), MockBean(UserSecretService::class), MockBean(OneTimePasswordDAO::class)])
@@ -93,7 +92,7 @@ class ScrapeQueryResolverTest {
   private fun callScrape(params: PluginExecutionParamsInput): ScrapeResponse {
     return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
       """
-        query (${'$'}pluginId: ID!, ${'$'}params: PluginExecutionParamsInput) {
+        query (${'$'}pluginId: ID!, ${'$'}params: PluginExecutionParamsInput!) {
           scrape(data: {
             page: {
               url: "$url"
@@ -134,7 +133,7 @@ class ScrapeQueryResolverTest {
       "data.scrape",
       mapOf(
         "pluginId" to FeedlessPlugins.org_feedless_feed.name,
-        "params" to params?.let { JsonUtil.gson.fromJson(JsonUtil.gson.toJson(params), Map::class.java) }
+        "params" to JsonUtil.gson.fromJson(JsonUtil.gson.toJson(params), Map::class.java)
       ),
       ScrapeResponse::class.java,
     )

@@ -38,7 +38,8 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
         order by d1.releasedAt desc
         offset ?3 ROWS
     )
-    """)
+    """
+  )
   fun deleteAllBySubscriptionIdAndStatusWithSkip(subscriptionId: UUID, status: ReleaseStatus, skip: Int)
 
   fun deleteAllBySubscriptionIdAndCreatedAtBeforeAndStatus(subscriptionId: UUID, date: Date, status: ReleaseStatus)
@@ -51,8 +52,12 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     """
     SELECT D FROM WebDocumentEntity D
     WHERE D.url = :url and D.subscriptionId = :subscriptionId
-    """)
-  fun findByUrlAndSubscriptionId(@Param("url") url: String, @Param("subscriptionId") subscriptionId: UUID): WebDocumentEntity?
+    """
+  )
+  fun findByUrlAndSubscriptionId(
+    @Param("url") url: String,
+    @Param("subscriptionId") subscriptionId: UUID
+  ): WebDocumentEntity?
 
 
   fun existsByContentTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
@@ -67,6 +72,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
         where d1.id = ?1
         and s.ownerId = ?2
     )
-    """)
+    """
+  )
   fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
 }

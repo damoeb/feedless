@@ -45,7 +45,13 @@ open class UserSecretEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "owner_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user_secrets__user"))
+  @JoinColumn(
+    name = "owner_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_user_secrets__user")
+  )
   open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", orphanRemoval = true)
@@ -64,7 +70,7 @@ fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
     .build()
 }
 
-private fun UserSecretType.toDto(): org.migor.feedless.generated.types.UserSecretType = when(this) {
+private fun UserSecretType.toDto(): org.migor.feedless.generated.types.UserSecretType = when (this) {
   UserSecretType.JWT -> org.migor.feedless.generated.types.UserSecretType.Jwt
   UserSecretType.SecretKey -> org.migor.feedless.generated.types.UserSecretType.SecretKey
 }

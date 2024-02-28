@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.FluxSink
 
 @Service
-class AuthWebsocketRepository: InMemorySinkRepository<String, AuthenticationEvent>() {
+class AuthWebsocketRepository : InMemorySinkRepository<String, AuthenticationEvent>() {
   fun pop(otp: OneTimePasswordEntity): FluxSink<AuthenticationEvent> {
     return super.pop(otp.id.toString())
   }

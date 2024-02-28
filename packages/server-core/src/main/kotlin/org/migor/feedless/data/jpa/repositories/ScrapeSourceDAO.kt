@@ -24,6 +24,10 @@ interface ScrapeSourceDAO : JpaRepository<ScrapeSourceEntity, UUID> {
       where C.id = :id
     """
   )
-  fun setErrornous(@Param("id") id: UUID, @Param("erroneous") erroneous: Boolean, @Param("errorMessage") errorMessage: String? = null)
+  fun setErrornous(
+    @Param("id") id: UUID,
+    @Param("erroneous") erroneous: Boolean,
+    @Param("errorMessage") errorMessage: String? = null
+  )
 
 }

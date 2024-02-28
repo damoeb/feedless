@@ -1,5 +1,3 @@
 package org.migor.feedless.plugins
 
-interface MailProviderPlugin: FeedlessPlugin, MailProvider {
-
-}
+interface MailProviderPlugin : FeedlessPlugin, MailProvider

@@ -82,8 +82,9 @@ fun featureScope(name: FeatureName): FeatureScope {
 
 
 @Entity
-@Table(name = "t_feature", uniqueConstraints = [
-  UniqueConstraint(name = "UniqueFeaturePerPlan", columnNames = [StandardJpaFields.planId, StandardJpaFields.name])]
+@Table(
+  name = "t_feature", uniqueConstraints = [
+    UniqueConstraint(name = "UniqueFeaturePerPlan", columnNames = [StandardJpaFields.planId, StandardJpaFields.name])]
 )
 open class FeatureEntity : EntityWithUUID() {
 
@@ -114,22 +115,30 @@ open class FeatureEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = StandardJpaFields.planId, referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"), insertable = false, updatable = false)
+  @JoinColumn(
+    name = StandardJpaFields.planId,
+    referencedColumnName = "id",
+    foreignKey = ForeignKey(name = "fk_feature__plan"),
+    insertable = false,
+    updatable = false
+  )
   open var plan: PlanEntity? = null
 }
 
 fun FeatureEntity.toDto(): Feature {
   val value = FeatureValue.newBuilder()
-  if(valueType == FeatureValueType.number) {
+  if (valueType == FeatureValueType.number) {
     value.numVal(
       FeatureIntValue.newBuilder()
         .value(valueInt!!)
-        .build())
+        .build()
+    )
   } else {
     value.boolVal(
       FeatureBooleanValue.newBuilder()
         .value(valueBoolean!!)
-        .build())
+        .build()
+    )
   }
 
   return Feature.newBuilder()
@@ -139,7 +148,7 @@ fun FeatureEntity.toDto(): Feature {
 }
 
 fun FeatureName.toDto(): FeatureNameDto {
-  return when(this) {
+  return when (this) {
     FeatureName.database -> FeatureNameDto.database
     FeatureName.pluginsBool -> FeatureNameDto.plugins
     FeatureName.authentication -> FeatureNameDto.authentication

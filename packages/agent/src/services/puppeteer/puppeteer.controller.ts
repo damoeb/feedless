@@ -40,13 +40,13 @@ export class PuppeteerController implements OnModuleInit {
           {
             selectorBased: {
               xpath: {
-                value: '/'
+                value: '/',
               },
               expose: {
-                pixel: true
-              }
-            }
-          }
+                pixel: true,
+              },
+            },
+          },
         ],
         debug: {
           html: true,

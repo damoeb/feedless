@@ -21,7 +21,7 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
-class FeedsPlugin: FragmentTransformerPlugin {
+class FeedsPlugin : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedsPlugin::class.simpleName)
 

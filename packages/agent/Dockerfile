@@ -5,7 +5,7 @@ WORKDIR /usr/node/agent
 #    && apt-get install git=1:2.20.1-2+deb10u3 -y --no-install-recommends
 COPY package.json .
 COPY yarn.lock .
-COPY build/client-lib ../client-lib
+#COPY build/client-lib ../client-lib
 #ENV GIT_SSL_NO_VERIFY=1
 #RUN yarn config set "strict-ssl" false -g \
 #    &&  \

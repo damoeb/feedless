@@ -29,7 +29,7 @@ import kotlin.time.toDuration
 
 @Service
 @Profile(AppProfiles.database)
-class AuthService: IAuthService {
+class AuthService : IAuthService {
   private lateinit var whitelistedIps: List<String>
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 
@@ -73,7 +73,14 @@ class AuthService: IAuthService {
         }
       }
       .filterNotNull()
-      .plus(listOf(InetAddress.getLocalHost().hostAddress, InetAddress.getLoopbackAddress().hostAddress, "127.0.0.1", "0:0:0:0:0:0:0:1"))
+      .plus(
+        listOf(
+          InetAddress.getLocalHost().hostAddress,
+          InetAddress.getLoopbackAddress().hostAddress,
+          "127.0.0.1",
+          "0:0:0:0:0:0:0:1"
+        )
+      )
       .distinct()
     log.info("whitelistedIps=${whitelistedIps}")
   }
@@ -144,8 +151,8 @@ class AuthService: IAuthService {
   private fun interceptTokenRaw(request: HttpServletRequest): String {
     val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
     if (StringUtils.isNotBlank(authCookie?.value)) {
-        // todo validate ip
-        return authCookie?.value!!
+      // todo validate ip
+      return authCookie?.value!!
     }
     val authHeader = request.getHeader("Authentication")
     if (StringUtils.isNotBlank(authHeader)) {

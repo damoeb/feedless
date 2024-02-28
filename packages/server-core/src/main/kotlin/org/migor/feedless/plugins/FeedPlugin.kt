@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.net.URL
 
 @Service
-class FeedPlugin: FragmentTransformerPlugin {
+class FeedPlugin : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedPlugin::class.simpleName)
 

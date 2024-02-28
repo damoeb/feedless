@@ -48,14 +48,14 @@ class AgentService {
   fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
-        ?.let {
-            securityKey ->
+        ?.let { securityKey ->
           if (securityKey.validUntil.before(Date())) {
             emitter.error(IllegalAccessException("Key is expired"))
             emitter.complete()
           } else {
             userSecretService.updateLastUsed(securityKey.id, Date())
-            val agentRef = AgentRef(securityKey.id, securityKey.ownerId!!, data.version, data.connectionId, data.os, Date(), emitter)
+            val agentRef =
+              AgentRef(securityKey.id, securityKey.ownerId, data.version, data.connectionId, data.os, Date(), emitter)
 
             emitter.onDispose {
               removeAgent(corrId, agentRef)

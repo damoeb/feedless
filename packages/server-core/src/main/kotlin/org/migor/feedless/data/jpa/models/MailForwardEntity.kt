@@ -38,9 +38,11 @@ open class MailForwardEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = StandardJpaFields.subscriptionId,
+  @JoinColumn(
+    name = StandardJpaFields.subscriptionId,
     referencedColumnName = "id",
     insertable = false,
-    updatable = false, foreignKey = ForeignKey(name = "fk_subscription__mail_forward"))
+    updatable = false, foreignKey = ForeignKey(name = "fk_subscription__mail_forward")
+  )
   open var subscription: SourceSubscriptionEntity? = null
 }

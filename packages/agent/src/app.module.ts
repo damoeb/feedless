@@ -10,11 +10,11 @@ export interface AgentScope {
   restrictions: {
     // owner: boolean
     // group: boolean
-    others: boolean
-  },
+    others: boolean;
+  };
   secrets: {
     // provide secrets k/v, cookies
-  }
+  };
 }
 
 @Module({

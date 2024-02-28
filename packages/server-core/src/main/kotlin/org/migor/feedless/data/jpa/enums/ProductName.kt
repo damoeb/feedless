@@ -14,7 +14,7 @@ enum class ProductName {
 }
 
 fun org.migor.feedless.generated.types.ProductName.fromDto(): ProductName {
-  return when(this) {
+  return when (this) {
     org.migor.feedless.generated.types.ProductName.visualDiff -> ProductName.visualDiff
     org.migor.feedless.generated.types.ProductName.pageChangeTracker -> ProductName.pageChangeTracker
     org.migor.feedless.generated.types.ProductName.rssBuilder -> ProductName.rssBuilder

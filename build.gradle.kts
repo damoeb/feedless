@@ -1,11 +1,9 @@
-import kotlin.math.min
-
 buildscript {
   repositories {
     gradlePluginPortal()
   }
   dependencies {
-    classpath ("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
+    classpath("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
   }
 }
 
@@ -58,6 +56,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
     "--build-arg", "APP_VERSION=$gitHash",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
+    "-t", "$baseTag:aio",
     "-t", "$baseTag:aio-$gitHash",
     "docker-images/with-web"
   )
@@ -75,6 +74,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
     "--build-arg", "APP_VERSION=$gitHash",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
+    "-t", "$baseTag:aio-chromium",
     "-t", "$baseTag:aio-chromium-$gitHash",
     "docker-images/with-chromium"
   )
@@ -97,7 +97,11 @@ tasks.register("publish", Exec::class) {
 
 subprojects {
   tasks.register("lintDockerImage", Exec::class) {
-    commandLine("sh", rootProject.file("lintDockerfile.sh").getAbsolutePath(), project.file("Dockerfile").getAbsolutePath())
+    commandLine(
+      "sh",
+      rootProject.file("lintDockerfile.sh").getAbsolutePath(),
+      project.file("Dockerfile").getAbsolutePath()
+    )
   }
 }
 

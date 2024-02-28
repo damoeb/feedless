@@ -25,16 +25,27 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
   private val log = LoggerFactory.getLogger(CustomExceptionHandler::class.simpleName)
 
   override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult> {
-    return when(handlerParameters?.exception) {
-      is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(handlerParameters.exception, handlerParameters)
-      else -> when(handlerParameters?.exception?.cause) {
-        is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(handlerParameters.exception.cause, handlerParameters)
+    return when (handlerParameters?.exception) {
+      is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(
+        handlerParameters.exception,
+        handlerParameters
+      )
+
+      else -> when (handlerParameters?.exception?.cause) {
+        is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(
+          handlerParameters.exception.cause,
+          handlerParameters
+        )
+
         else -> super.handleException(handlerParameters)
       }
     }
   }
 
-  private fun toGraphqlError(throwable: Throwable?, handlerParameters: DataFetcherExceptionHandlerParameters): CompletableFuture<DataFetcherExceptionHandlerResult> {
+  private fun toGraphqlError(
+    throwable: Throwable?,
+    handlerParameters: DataFetcherExceptionHandlerParameters
+  ): CompletableFuture<DataFetcherExceptionHandlerResult> {
     val corrId =
       (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
 
@@ -54,7 +65,7 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
   }
 
   private fun toErrorType(throwable: Throwable?): ErrorType {
-    return when(throwable) {
+    return when (throwable) {
       is PermissionDeniedException -> ErrorType.PERMISSION_DENIED
       is UnavailableException -> ErrorType.UNAVAILABLE
       is BadRequestException -> ErrorType.BAD_REQUEST

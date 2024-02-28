@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
@@ -10,7 +16,7 @@ import {
   GqlScrapePageInput,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
@@ -102,7 +108,7 @@ export class GenerateFeedModalComponent
       ]),
     });
     this.filters.push(filter);
-    filter.statusChanges.subscribe(status => {
+    filter.statusChanges.subscribe((status) => {
       if (status === 'VALID') {
         this.filterChanges.next();
       }
@@ -152,9 +158,7 @@ export class GenerateFeedModalComponent
           subscriptions: [
             {
               product: environment.product,
-              sources: [
-                this.getScrapeRequest(),
-              ],
+              sources: [this.getScrapeRequest()],
               sourceOptions: {
                 refreshCron: this.formFg.value.fetchFrequency,
               },
@@ -199,21 +203,21 @@ export class GenerateFeedModalComponent
         {
           selectorBased: {
             xpath: {
-              value: '/'
+              value: '/',
             },
             expose: {
               transformers: [
                 {
                   pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
                   params: {
-                    genericFeed: this.feed.genericFeed?.selectors
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
+                    genericFeed: this.feed.genericFeed?.selectors,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ],
     };
   }
 
@@ -232,7 +236,7 @@ export class GenerateFeedModalComponent
   private async loadFeedPreview() {
     this.previewFeed = await this.feedService.previewFeed({
       request: this.getScrapeRequest(),
-      filters: this.getFilterParams()
+      filters: this.getFilterParams(),
     });
     this.changeRef.detectChanges();
   }
@@ -241,20 +245,24 @@ export class GenerateFeedModalComponent
     return {
       pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
       params: {
-        filters: this.getFilterParams()
-      }
-    }
+        filters: this.getFilterParams(),
+      },
+    };
   }
 
   private getFilterParams(): GqlCompositeFilterParamsInput[] {
-    return this.filters.filter(filterFg => filterFg.valid)
-      .map(filterFg => filterFg.value)
-      .map(filter => ({
-        field: filter.field,
-        value: filter.value,
-        type: filter.type,
-        operator: filter.operator
-      } as GqlCompositeFilterParamsInput));
+    return this.filters
+      .filter((filterFg) => filterFg.valid)
+      .map((filterFg) => filterFg.value)
+      .map(
+        (filter) =>
+          ({
+            field: filter.field,
+            value: filter.value,
+            type: filter.type,
+            operator: filter.operator,
+          }) as GqlCompositeFilterParamsInput,
+      );
   }
 
   private getFeedTitle() {

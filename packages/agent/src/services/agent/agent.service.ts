@@ -53,11 +53,11 @@ export class AgentService implements OnModuleInit {
               corrId: event.scrape.corrId,
               scrapeResponse,
             });
-            this.statsService.recordAgentEventSuccess(recordId, scrapeResponse)
+            this.statsService.recordAgentEventSuccess(recordId, scrapeResponse);
           } catch (e) {
             this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
 
-            this.statsService.recordAgentEventFailure(recordId, e?.message)
+            this.statsService.recordAgentEventFailure(recordId, e?.message);
 
             const errorResponse: ScrapeResponseInput = {
               failed: true,

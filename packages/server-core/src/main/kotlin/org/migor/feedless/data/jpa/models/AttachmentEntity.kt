@@ -16,9 +16,10 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import java.util.*
 
 @Entity
-@Table(name = "t_attachment", indexes = [
-  Index(name = "idx_attachment_url", columnList = "url")
-]
+@Table(
+  name = "t_attachment", indexes = [
+    Index(name = "idx_attachment_url", columnList = "url")
+  ]
 )
 open class AttachmentEntity : EntityWithUUID() {
 
@@ -44,7 +45,13 @@ open class AttachmentEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "webDocumentId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_attachment__web_document"))
+  @JoinColumn(
+    name = "webDocumentId",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_attachment__web_document")
+  )
   open var webDocument: WebDocumentEntity? = null
 
   @PrePersist

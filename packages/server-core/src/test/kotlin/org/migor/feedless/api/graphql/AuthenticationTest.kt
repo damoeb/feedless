@@ -16,7 +16,9 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -27,6 +29,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = ["test", AppProfiles.database])
+@MockBeans(value = [MockBean(JavaMailSender::class)])
 @Testcontainers
 class AuthenticationTest {
 
@@ -59,7 +62,7 @@ class AuthenticationTest {
         """.trimIndent()
     ).blockOptional()
       .orElseThrow()
-      .extractValue<LinkedHashMap<String,Any>>("data.authAnonymous")
+      .extractValue<LinkedHashMap<String, Any>>("data.authAnonymous")
 
     val auth = ObjectMapper().convertValue(response, Authentication::class.java)
 
@@ -86,7 +89,7 @@ class AuthenticationTest {
         """.trimIndent()
     ).blockOptional()
       .orElseThrow()
-      .extractValue<LinkedHashMap<String,Any>>("data.authUser")
+      .extractValue<LinkedHashMap<String, Any>>("data.authUser")
 
     // then
     val auth = ObjectMapper().convertValue(response, Authentication::class.java)

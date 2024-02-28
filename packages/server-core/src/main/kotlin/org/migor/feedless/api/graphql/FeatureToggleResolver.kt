@@ -42,7 +42,10 @@ class FeatureToggleResolver {
   lateinit var productService: ProductService
 
   @DgsQuery
-  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], keyGenerator = "cacheKeyGenerator") // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
+  @Cacheable(
+    value = [CacheNames.GRAPHQL_RESPONSE],
+    keyGenerator = "cacheKeyGenerator"
+  ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
   suspend fun serverSettings(
     @InputArgument data: ServerSettingsContextInput,
   ): ServerSettings = coroutineScope {
@@ -56,11 +59,15 @@ class FeatureToggleResolver {
     ).map {
       Feature.newBuilder()
         .name(it.key)
-        .value(FeatureValue.newBuilder()
-          .boolVal(FeatureBooleanValue.newBuilder()
-            .value(true)
-            .build())
-          .build())
+        .value(
+          FeatureValue.newBuilder()
+            .boolVal(
+              FeatureBooleanValue.newBuilder()
+                .value(true)
+                .build()
+            )
+            .build()
+        )
         .build()
     }
 

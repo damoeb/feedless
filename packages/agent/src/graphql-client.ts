@@ -1,4 +1,9 @@
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client/core';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+} from '@apollo/client/core';
 import { WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -14,7 +19,7 @@ import {
   SubmitAgentDataInput,
   SubmitAgentJobData,
   SubmitAgentJobDataMutation,
-  SubmitAgentJobDataMutationVariables
+  SubmitAgentJobDataMutationVariables,
 } from './generated/graphql';
 
 // should be a builder
@@ -22,19 +27,23 @@ export class GraphqlClient {
   private subscriptionClient: ApolloClient<any>;
   private httpClient: ApolloClient<any>;
 
-  constructor(private readonly host: string,
-              private readonly useSsl: boolean) {
-  }
+  constructor(
+    private readonly host: string,
+    private readonly useSsl: boolean,
+  ) {}
 
-  authenticateAgent(email: string, secretKey: string, version: string): Observable<AgentEvent> {
+  authenticateAgent(
+    email: string,
+    secretKey: string,
+    version: string,
+  ): Observable<AgentEvent> {
     // console.log(`host: ${this.host}`);
     // console.log(`email: ${email}`);
     // console.log(`secretKey: ${secretKey.substring(0, 4)}****`);
 
     this.createSubscriptionClient({
       keepAlive: 10000,
-      retryWait: () =>
-        new Promise((resolve) => setTimeout(resolve, 30000)),
+      retryWait: () => new Promise((resolve) => setTimeout(resolve, 30000)),
     });
     const connectionId = (Math.random() + 1).toString(36).substring(7);
     return this.subscribeAgent(email, secretKey, version, connectionId);
@@ -59,26 +68,25 @@ export class GraphqlClient {
     connectionId: string,
   ): Observable<AgentEvent> {
     return this.subscriptionClient
-      .subscribe<
-        RegisterAgentSubscription,
-        RegisterAgentSubscriptionVariables
-      >({
-        query: RegisterAgent,
-        variables: {
-          data: {
-            version,
-            connectionId,
-            os: {
-              arch: arch(),
-              platform: platform()
-            },
-            secretKey: {
-              email,
-              secretKey,
+      .subscribe<RegisterAgentSubscription, RegisterAgentSubscriptionVariables>(
+        {
+          query: RegisterAgent,
+          variables: {
+            data: {
+              version,
+              connectionId,
+              os: {
+                arch: arch(),
+                platform: platform(),
+              },
+              secretKey: {
+                email,
+                secretKey,
+              },
             },
           },
         },
-      })
+      )
       .map((response) => response.data.registerAgent)
       .filter((event: AgentEvent) => {
         if (event.authentication) {
@@ -95,7 +103,7 @@ export class GraphqlClient {
     const url = this.useSsl
       ? `wss://${this.host}/subscriptions`
       : `ws://${this.host}/subscriptions`;
-    console.log(`[graphql-client] Subscribing to ${url}`)
+    console.log(`[graphql-client] Subscribing to ${url}`);
     this.subscriptionClient = new ApolloClient<any>({
       link: ApolloLink.from([
         new GraphQLWsLink(
@@ -108,7 +116,7 @@ export class GraphqlClient {
                 if (process.env.DEBUG) {
                   console.error(`[graphql-client] ${err}`);
                 } else {
-                  console.error(`[graphql-client] ${err?.message}`)
+                  console.error(`[graphql-client] ${err?.message}`);
                 }
                 process.exit(1);
               },

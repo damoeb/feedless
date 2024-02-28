@@ -16,7 +16,7 @@ import {
   ScrapedElementInput,
   ScrapeRequest,
   ScrapeResponseInput,
-  ScrapeSelectorExpose
+  ScrapeSelectorExpose,
 } from '../../generated/graphql';
 
 interface Viewport {
@@ -85,7 +85,7 @@ export class PuppeteerService {
   }
 
   private async newBrowser(scrapeRequest: ScrapeRequest): Promise<Browser> {
-    const viewport: Viewport = this.resolveViewport(scrapeRequest)
+    const viewport: Viewport = this.resolveViewport(scrapeRequest);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
       // devtools: false,
@@ -151,8 +151,11 @@ export class PuppeteerService {
       appendLog(`timeout=${timeout}`);
 
       const headers = {};
-      request.page.actions?.filter(action => !!action.header)
-        .forEach(action => headers[action.header.name] = action.header.value)
+      request.page.actions
+        ?.filter((action) => !!action.header)
+        .forEach(
+          (action) => (headers[action.header.name] = action.header.value),
+        );
 
       await page.setExtraHTTPHeaders(headers);
 
@@ -167,7 +170,9 @@ export class PuppeteerService {
       await this.waitForNetworkIdle(page, 1000);
 
       if (request.page.actions?.length > 0) {
-        this.log.log(`[${corrId}] executing ${request.page.actions?.length} actions`);
+        this.log.log(
+          `[${corrId}] executing ${request.page.actions?.length} actions`,
+        );
         await request.page.actions?.reduce(
           (waitFor, action) =>
             waitFor.then(() => this.executeAction(action, page, appendLog)),
@@ -181,23 +186,31 @@ export class PuppeteerService {
       const { additionalWaitSec } = request.page.prerender;
       if (additionalWaitSec > 0) {
         this.log.log(`[${corrId}] wait ${additionalWaitSec} sec`);
-        await new Promise((resolve) => setTimeout(resolve, additionalWaitSec * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, additionalWaitSec * 1000),
+        );
       }
 
       return {
         elements: await Promise.all(
-          request.emit.map(scrapeEmit => {
+          request.emit.map((scrapeEmit) => {
             if (scrapeEmit.selectorBased) {
-              return this.grabElement(page, scrapeEmit.selectorBased.xpath.value, scrapeEmit.selectorBased.expose);
+              return this.grabElement(
+                page,
+                scrapeEmit.selectorBased.xpath.value,
+                scrapeEmit.selectorBased.expose,
+              );
             } else {
               if (scrapeEmit.imageBased.boundingBox) {
-                return this.grabBoundingBox(page, scrapeEmit.imageBased.boundingBox);
+                return this.grabBoundingBox(
+                  page,
+                  scrapeEmit.imageBased.boundingBox,
+                );
               } else {
                 throw new Error(`[${corrId}] Undespecified fragment.`);
               }
             }
-          }
-          ),
+          }),
         ),
         url: response.url(),
         failed: false,
@@ -239,7 +252,6 @@ export class PuppeteerService {
     } catch (e) {
       this.log.warn(e.message);
     }
-
   }
 
   private async getDebug(
@@ -253,12 +265,12 @@ export class PuppeteerService {
   ): Promise<ScrapeDebugResponseInput> {
     const given = async (condition: boolean, label: string): Promise<void> => {
       if (condition) {
-        this.log.log(`[${corrId}] appending ${label}`)
-        return Promise.resolve()
+        this.log.log(`[${corrId}] appending ${label}`);
+        return Promise.resolve();
       } else {
-        return Promise.reject('')
+        return Promise.reject('');
       }
-    }
+    };
 
     return {
       corrId,
@@ -281,7 +293,13 @@ export class PuppeteerService {
         : [],
       prerendered: true,
       screenshot: request.debug?.screenshot
-        ? await page.screenshot({ fullPage: true, optimizeForSpeed: false, quality: this.imageQuality, type: this.imageType, encoding: 'base64' })
+        ? await page.screenshot({
+            fullPage: true,
+            optimizeForSpeed: false,
+            quality: this.imageQuality,
+            type: this.imageType,
+            encoding: 'base64',
+          })
         : undefined,
     };
   }
@@ -289,66 +307,76 @@ export class PuppeteerService {
   private async grabElement(
     page: Page,
     xpath: string,
-    expose: FieldWrapper<ScrapeSelectorExpose>
+    expose: FieldWrapper<ScrapeSelectorExpose>,
   ): Promise<ScrapedElementInput> {
-    const evaluateResponse: EvaluateResponse = await page.evaluate((baseXpath) => {
-      let element: HTMLElement = document
-        .evaluate(baseXpath.toString(), document, null, 5)
-        .iterateNext() as HTMLElement;
+    const evaluateResponse: EvaluateResponse = await page.evaluate(
+      (baseXpath) => {
+        let element: HTMLElement = document
+          .evaluate(baseXpath.toString(), document, null, 5)
+          .iterateNext() as HTMLElement;
 
-      const isDocument = element?.nodeType === 9;
-      if (isDocument) {
-        element = (element as any).documentElement as HTMLElement;
-      }
-      const bb = element.getBoundingClientRect();
-      const boundingBox = {
-        x: bb.left,
-        y: bb.top,
-        width: bb.right - bb.left,
-        height: bb.bottom - bb.top,
-      };
+        const isDocument = element?.nodeType === 9;
+        if (isDocument) {
+          element = (element as any).documentElement as HTMLElement;
+        }
+        const bb = element.getBoundingClientRect();
+        const boundingBox = {
+          x: bb.left,
+          y: bb.top,
+          width: bb.right - bb.left,
+          height: bb.bottom - bb.top,
+        };
 
-      return {
-        markup: element.outerHTML,
-        text: element.outerText,
-        boundingBox,
-      };
-    }, xpath);
+        return {
+          markup: element.outerHTML,
+          text: element.outerText,
+          boundingBox,
+        };
+      },
+      xpath,
+    );
 
     const getScreenshot = (): Promise<string> => {
       if (xpath === '/') {
-        return page.screenshot({ fullPage: true, optimizeForSpeed: false, quality: this.imageQuality, type: this.imageType, encoding: 'base64' });
+        return page.screenshot({
+          fullPage: true,
+          optimizeForSpeed: false,
+          quality: this.imageQuality,
+          type: this.imageType,
+          encoding: 'base64',
+        });
       } else {
         return this.extractScreenshot(
           page,
           this.extendBoundingBox(evaluateResponse.boundingBox, page),
-        )
+        );
       }
-    }
+    };
 
     return {
       selector: {
         xpath: {
-          value: xpath
+          value: xpath,
         },
         fields: [],
         html: {
-          data: evaluateResponse.markup
+          data: evaluateResponse.markup,
         },
         text: {
-          data: evaluateResponse.text
+          data: evaluateResponse.text,
         },
-        pixel: expose.pixel? {
-          base64Data: await getScreenshot()
-        } : null
-
-      }
+        pixel: expose.pixel
+          ? {
+              base64Data: await getScreenshot(),
+            }
+          : null,
+      },
       // data: scrapeData,
     };
   }
   private async grabBoundingBox(
     page: Page,
-    boundingBox: { x: number, y: number, w: number, h: number }
+    boundingBox: { x: number; y: number; w: number; h: number },
   ): Promise<ScrapedElementInput> {
     const screenshot = await page.screenshot({
       clip: {
@@ -373,8 +401,8 @@ export class PuppeteerService {
           h: boundingBox.h,
         },
         data: {
-          base64Data: screenshot
-        }
+          base64Data: screenshot,
+        },
       },
     };
   }
@@ -480,10 +508,7 @@ export class PuppeteerService {
     };
   }
 
-  private interceptConsole(
-    page: Page,
-    appendLog: LogAppender,
-  ) {
+  private interceptConsole(page: Page, appendLog: LogAppender) {
     page.on('console', (consoleObj) => {
       appendLog(`[${consoleObj.type()}] ${consoleObj.text()}`);
     });
@@ -498,7 +523,7 @@ export class PuppeteerService {
       quality: this.imageQuality,
       optimizeForSpeed: false,
       encoding: 'base64',
-      captureBeyondViewport: true
+      captureBeyondViewport: true,
     });
   }
 
@@ -559,16 +584,14 @@ export class PuppeteerService {
   private async executePurgeAction(
     element: DomElementByXPath,
     page: Page,
-    appendLog: LogAppender
+    appendLog: LogAppender,
   ) {
-    appendLog(
-      `purge '${element.value}'`,
-    );
+    appendLog(`purge '${element.value}'`);
     await page.evaluate((selector) => {
-        Array.from(document.querySelectorAll(selector)).forEach(el => el.remove())
-      },
-      this.resolveXpathSelector(element),
-    );
+      Array.from(document.querySelectorAll(selector)).forEach((el) =>
+        el.remove(),
+      );
+    }, this.resolveXpathSelector(element));
   }
 
   private async executeClickAction(
@@ -629,7 +652,7 @@ export class PuppeteerService {
         'isLandscape',
         'isMobile',
         'width',
-      ])
+      ]);
     } else {
       return this.defaultViewport;
     }

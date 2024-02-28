@@ -166,7 +166,7 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
 private fun org.migor.feedless.data.jpa.models.PluginExecution.toDto(): PluginExecution {
   return PluginExecution.newBuilder()
     .pluginId(id)
-    .params(params?.toDto())
+    .params(params.toDto())
     .build()
 }
 

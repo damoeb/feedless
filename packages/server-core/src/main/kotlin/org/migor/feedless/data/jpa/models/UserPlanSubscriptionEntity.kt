@@ -24,7 +24,13 @@ open class UserPlanSubscriptionEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_ups__user"))
+  @JoinColumn(
+    name = "user_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_ups__user")
+  )
   open var user: UserEntity? = null
 
   @Basic
@@ -33,7 +39,13 @@ open class UserPlanSubscriptionEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "plan_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_ups__plan"))
+  @JoinColumn(
+    name = "plan_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_ups__plan")
+  )
   open var plan: PlanEntity? = null
 
   @Basic

@@ -37,7 +37,8 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   lateinit var authService: AuthService
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
-    val userId = StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw BadRequestException("invalid jwt)")
+    val userId =
+      StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw BadRequestException("invalid jwt)")
     return cache.computeIfAbsent(userId) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromApiKey(jwt))
@@ -69,7 +70,11 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
         true
       } else {
         val waitForRefill: Long = probes.maxOf { it.nanosToWaitForRefill }
-        throw HostOverloadingException(newCorrId(), "You have exhausted your API Request Quota", Duration.ofNanos(waitForRefill))
+        throw HostOverloadingException(
+          newCorrId(),
+          "You have exhausted your API Request Quota",
+          Duration.ofNanos(waitForRefill)
+        )
       }
     }
   }

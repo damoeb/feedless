@@ -28,12 +28,12 @@ class CurrentUser {
   fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }
 
   private fun attr(param: String): String? {
-      return runCatching {
-        if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
-          StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[param] as String)
-        } else {
-          null
-        }
-      }.getOrNull()
+    return runCatching {
+      if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+        StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[param] as String)
+      } else {
+        null
+      }
+    }.getOrNull()
   }
 }

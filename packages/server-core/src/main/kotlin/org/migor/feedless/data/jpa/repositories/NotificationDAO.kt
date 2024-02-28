@@ -9,5 +9,4 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface NotificationDAO : JpaRepository<NotificationEntity, UUID> {
-}
+interface NotificationDAO : JpaRepository<NotificationEntity, UUID>

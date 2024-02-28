@@ -78,10 +78,12 @@ class TokenProvider {
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
 //        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
-        attrAuthorities to toAuthorities(listOf(
-          Authority.ANONYMOUS,
-          Authority.USER
-        )),
+        attrAuthorities to toAuthorities(
+          listOf(
+            Authority.ANONYMOUS,
+            Authority.USER
+          )
+        ),
       ),
       getUserTokenExpiration()
     )
@@ -95,9 +97,11 @@ class TokenProvider {
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.API.value,
 //        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
-        attrAuthorities to toAuthorities(listOf(
-          Authority.ANONYMOUS
-        )),
+        attrAuthorities to toAuthorities(
+          listOf(
+            Authority.ANONYMOUS
+          )
+        ),
       ),
       getApiTokenExpiration()
     )
@@ -110,9 +114,11 @@ class TokenProvider {
       mapOf(
         JwtParameterNames.USER_ID to securityKey.ownerId.toString(),
         JwtParameterNames.TYPE to AuthTokenType.AGENT.value,
-        attrAuthorities to toAuthorities(listOf(
-          Authority.PROVIDE_HTTP_RESPONSE
-        )),
+        attrAuthorities to toAuthorities(
+          listOf(
+            Authority.PROVIDE_HTTP_RESPONSE
+          )
+        ),
       ),
       Duration.ofDays(356)
     )

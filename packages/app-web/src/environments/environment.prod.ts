@@ -3,12 +3,6 @@ import { GqlProductName } from '../generated/graphql';
 
 export const environment: AppEnvironment = {
   production: true,
-  offlineSupport: () => false,
-  product: () => {
-    switch (location.host) {
-      // todo
-      default:
-        return GqlProductName.Feedless;
-    }
-  },
+  offlineSupport: false,
+  product: GqlProductName.Feedless,
 };

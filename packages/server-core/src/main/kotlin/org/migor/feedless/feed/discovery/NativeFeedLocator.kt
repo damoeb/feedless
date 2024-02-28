@@ -20,7 +20,7 @@ class NativeFeedLocator {
       RemoteNativeFeedRef(
         absUrl(url, element.attr("href")),
         FeedUtil.detectFeedType(corrId, element.attr("type")),
-        StringUtils.trimToNull(element.attr("title")) ?: "Native Feed #${index+1}"
+        StringUtils.trimToNull(element.attr("title")) ?: "Native Feed #${index + 1}"
       )
     } catch (e: Exception) {
       null

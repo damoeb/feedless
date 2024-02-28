@@ -54,7 +54,12 @@ class SourceSubscriptionController {
       )
     ).increment()
     log.info("[$corrId] GET feed/atom id=$subscriptionId page=$page")
-    return feedExporter.to(corrId, HttpStatus.OK, "atom", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
+    return feedExporter.to(
+      corrId,
+      HttpStatus.OK,
+      "atom",
+      sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page)
+    )
   }
 
   @GetMapping(
@@ -79,7 +84,12 @@ class SourceSubscriptionController {
       )
     ).increment()
     log.info("[$corrId] GET feed/json id=$subscriptionId page=$page")
-    return feedExporter.to(corrId, HttpStatus.OK, "json", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
+    return feedExporter.to(
+      corrId,
+      HttpStatus.OK,
+      "json",
+      sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page)
+    )
   }
 
   @GetMapping(

@@ -1,6 +1,4 @@
-<ion-item
-  class="cy-feed-item"
->
+<ion-item class="cy-feed-item">
   <div class="ion-margin-end">{{ feedItemIndex }}.</div>
   <ion-label>
     <h2 *ngIf="feedItem.contentTitle" class="cy-remote-feed__title">
@@ -15,7 +13,7 @@
         class="title"
         referrerpolicy="no-referrer"
         target="_blank"
-      >{{ feedItem.url }}</a
+        >{{ feedItem.url }}</a
       >
     </p>
     <p class="cy-remote-feed__date-published">

@@ -1,7 +1,7 @@
 import com.github.gradle.node.yarn.task.YarnTask
 
 plugins {
-  id ("com.github.node-gradle.node")
+  id("com.github.node-gradle.node")
   id("org.ajoberstar.grgit")
 }
 
@@ -46,14 +46,14 @@ val testTask = tasks.register<YarnTask>("test") {
   outputs.upToDateWhen { true }
 }
 
-val buildGhosteryTask = tasks.register("buildGhostery", Exec::class) {
-  commandLine("sh", "./build-ghostery.sh")
-  outputs.dir("ghostery-extension/extension-manifest-v2/dist")
-}
+//val buildGhosteryTask = tasks.register("buildGhostery", Exec::class) {
+//  commandLine("sh", "./build-ghostery.sh")
+//  outputs.dir("ghostery-extension/extension-manifest-v2/dist")
+//}
 
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
-  dependsOn(yarnInstallTask, lintTask, testTask, buildGhosteryTask)
+  dependsOn(yarnInstallTask, lintTask, testTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
@@ -67,11 +67,13 @@ tasks.register("buildDockerImage", Exec::class) {
 
   val gitHash = grgit.head().id
 
-  commandLine("docker", "build",
+  commandLine(
+    "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "-t", "$baseTag:agent-$gitHash",
-    ".")
+    "."
+  )
 }
 
 

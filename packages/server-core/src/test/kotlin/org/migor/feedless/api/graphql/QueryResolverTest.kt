@@ -5,9 +5,13 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.generated.types.Profile
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -19,6 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
 @ActiveProfiles(profiles = ["test", AppProfiles.database])
+@MockBeans(value = [MockBean(JavaMailSender::class), MockBean(CurrentUser::class)])
 @Testcontainers
 class QueryResolverTest {
 
@@ -27,7 +32,7 @@ class QueryResolverTest {
 
   @Test
   fun `fetchProfile for anonymous works`() {
-    val response = dgsQueryExecutor.executeAndExtractJsonPath<HashMap<String,Any>>(
+    val response = dgsQueryExecutor.executeAndExtractJsonPath<HashMap<String, Any>>(
       """
             query {
                 profile {

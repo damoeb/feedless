@@ -35,7 +35,13 @@ open class AgentEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "secret_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_agent__user_secrets"))
+  @JoinColumn(
+    name = "secret_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_agent__user_secrets")
+  )
   open var secretKey: UserSecretEntity? = null
 
   @Basic
@@ -44,6 +50,12 @@ open class AgentEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "owner_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user_secrets__user"))
+  @JoinColumn(
+    name = "owner_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_user_secrets__user")
+  )
   open var owner: UserEntity? = null
 }

@@ -6,5 +6,4 @@ import org.springframework.context.annotation.Profile
 
 @Configuration
 @Profile(AppProfiles.mail)
-class MailConfig {
-}
+class MailConfig

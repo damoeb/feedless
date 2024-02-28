@@ -39,7 +39,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     val response = httpService.httpGetCaching(corrId, webDocument.url, 200)
     if (response.contentType.startsWith("text/html")) {
       val html = String(response.responseBody)
-      if (params!!.fulltext.readability) {
+      if (params.fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, webDocument.url)
         webDocument.contentHtml = readability.content
         webDocument.contentText = readability.contentText

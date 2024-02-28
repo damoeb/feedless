@@ -14,7 +14,7 @@ class ProductService {
   lateinit var propertyService: PropertyService
 
   fun getDomain(product: ProductName): String {
-    return when(product) {
+    return when (product) {
       ProductName.visualDiff -> "visualdiff.com"
       ProductName.pageChangeTracker -> "pagechangetracker.com"
       ProductName.rssBuilder -> "feedguru.com"

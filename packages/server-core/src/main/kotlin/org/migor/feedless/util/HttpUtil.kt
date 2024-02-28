@@ -10,6 +10,7 @@ object HttpUtil {
   fun getRemoteAddr(request: HttpServletRequest): String {
     return StringUtils.trimToNull(request.getHeader("X-Real-IP")) ?: request.remoteAddr
   }
+
   fun createCorrId(request: HttpServletRequest): String {
     val corrId = CryptUtil.newCorrId()
     val attributes = ServletRequestAttributes(request)

@@ -58,8 +58,14 @@ class PropertyService {
     Assert.hasLength(jwtSecret, "jwtSecret must not be empty")
     Assert.hasLength(apiGatewayUrl, "publicUrl must not be empty")
     Assert.isTrue(!StringUtils.startsWith(jwtSecret, "\${"), "jwtSecret seems invalid")
-    Assert.isTrue(!StringUtils.startsWith(rootSecretKey, "\${"), "rootSecretKey seems invalid. Provide env var APP_ROOT_SECRET_KEY")
-    Assert.isTrue(!StringUtils.startsWith(rootEmail, "\${"), "rootEmail '${rootEmail}' seems invalid. Provide env var APP_ROOT_EMAIL")
+    Assert.isTrue(
+      !StringUtils.startsWith(rootSecretKey, "\${"),
+      "rootSecretKey seems invalid. Provide env var APP_ROOT_SECRET_KEY"
+    )
+    Assert.isTrue(
+      !StringUtils.startsWith(rootEmail, "\${"),
+      "rootEmail '${rootEmail}' seems invalid. Provide env var APP_ROOT_EMAIL"
+    )
   }
 
   private fun logProperty(value: String) {
@@ -67,6 +73,6 @@ class PropertyService {
   }
 
   private fun mask(value: String): String {
-    return "${StringUtils.substring(value,0,4)}**** [masked]"
+    return "${StringUtils.substring(value, 0, 4)}**** [masked]"
   }
 }

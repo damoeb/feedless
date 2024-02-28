@@ -4,7 +4,7 @@ import {
   GqlProductName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings
+  ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -17,12 +17,12 @@ import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-inter
 type FeedlessProductConfig = {
   hostname: string;
   product: GqlProductName;
-}
+};
 
 export type FeedlessAppConfig = {
   apiUrl: string;
   forceProduct?: GqlProductName;
-  products: FeedlessProductConfig[]
+  products: FeedlessProductConfig[];
 };
 
 type ToastOptions = {
@@ -53,7 +53,9 @@ export class ServerSettingsService {
     this.apiUrl = config.apiUrl;
 
     // const product= environment.production ? config.products.find(p => p.hostname === location.hostname)?.product : config.forceProduct
-    const product= config.forceProduct ?? config.products.find(p => p.hostname === location.hostname)?.product;
+    const product =
+      config.forceProduct ??
+      config.products.find((p) => p.hostname === location.hostname)?.product;
 
     if (product) {
       console.log(`forcing product ${product}`);
@@ -97,7 +99,6 @@ export class ServerSettingsService {
       this.features = response.features;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
-
     } catch (e) {
       if (!environment.offlineSupport) {
         await this.showToast({
@@ -118,7 +119,6 @@ export class ServerSettingsService {
       }
     }
   }
-
 
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({

@@ -35,7 +35,7 @@ class AttachmentController {
     log.info("[$corrId] GET attachmentId id=$attachmentId")
     val attachment = attachmentService.findById(attachmentId)
 
-    return if(attachment.isPresent) {
+    return if (attachment.isPresent) {
       val a = attachment.get()
       ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, a.type)

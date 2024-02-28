@@ -126,7 +126,6 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
   }
 
 
-
   private fun applyDateFormat(simpleDateTimeStr: String, locale: Locale, format: String, hasTime: Boolean): Date {
     val formatter = DateTimeFormatter.ofPattern(format, locale)
     return if (hasTime) {

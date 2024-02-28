@@ -151,7 +151,7 @@ class SourceSubscriptionHarvester internal constructor() {
       .flatMap {
         try {
           scrapeSource(corrId, it)
-            .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)));
+            .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
         } catch (e: Exception) {
           if (e is ResumableHarvestException) {
             log.warn("[$corrId] ${e.message}")

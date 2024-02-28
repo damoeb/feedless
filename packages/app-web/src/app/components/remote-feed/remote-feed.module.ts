@@ -9,6 +9,12 @@ import { RemoteFeedItemModule } from '../remote-feed-item/remote-feed-item.modul
 @NgModule({
   declarations: [RemoteFeedComponent],
   exports: [RemoteFeedComponent],
-  imports: [CommonModule, IonicModule, RouterLink, BubbleModule, RemoteFeedItemModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterLink,
+    BubbleModule,
+    RemoteFeedItemModule,
+  ],
 })
 export class RemoteFeedModule {}

@@ -14,15 +14,17 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
 
 @Configuration
 @EnableAspectJAutoProxy
-@SpringBootApplication(exclude = [
-  ReactiveElasticsearchRepositoriesAutoConfiguration::class,
-  ElasticsearchRepositoriesAutoConfiguration::class,
-  JpaRepositoriesAutoConfiguration::class,
-  CacheAutoConfiguration::class,
-  ElasticsearchRestHealthContributorAutoConfiguration::class,
-  ElasticsearchReactiveHealthContributorAutoConfiguration::class,
-  DgsWebSocketAutoConfig::class,
-])
+@SpringBootApplication(
+  exclude = [
+    ReactiveElasticsearchRepositoriesAutoConfiguration::class,
+    ElasticsearchRepositoriesAutoConfiguration::class,
+    JpaRepositoriesAutoConfiguration::class,
+    CacheAutoConfiguration::class,
+    ElasticsearchRestHealthContributorAutoConfiguration::class,
+    ElasticsearchReactiveHealthContributorAutoConfiguration::class,
+    DgsWebSocketAutoConfig::class,
+  ]
+)
 class RichRssApplication
 
 fun main(args: Array<String>) {

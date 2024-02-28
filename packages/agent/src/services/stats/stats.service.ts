@@ -7,22 +7,15 @@ export class StatsService implements OnModuleInit {
   private readonly log = new Logger(StatsService.name);
   private id = 1;
 
-  constructor(
-    private readonly config: VerboseConfigService,
-  ) {}
+  constructor(private readonly config: VerboseConfigService) {}
 
-  onModuleInit() {
-  }
+  onModuleInit() {}
 
   recordAgentEvent(event: AgentEvent): number {
     return this.id++;
   }
 
-  recordAgentEventSuccess(id: number, scrapeResponse: ScrapeResponseInput) {
+  recordAgentEventSuccess(id: number, scrapeResponse: ScrapeResponseInput) {}
 
-  }
-
-  recordAgentEventFailure(id: number, message: any) {
-
-  }
+  recordAgentEventFailure(id: number, message: any) {}
 }

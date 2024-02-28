@@ -68,10 +68,12 @@ export class AppComponent implements OnDestroy, OnInit {
         this.isDarkMode = isDarkMode;
         this.propagateColorModeAndProduct();
       }),
-      this.productService.getActiveProductConfigChange().subscribe(product => {
-        this.product = product.product;
-        this.propagateColorModeAndProduct();
-      })
+      this.productService
+        .getActiveProductConfigChange()
+        .subscribe((product) => {
+          this.product = product.product;
+          this.propagateColorModeAndProduct();
+        }),
     );
   }
 
@@ -84,7 +86,7 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   private propagateColorModeAndProduct() {
-    const classNames: string[] = []
+    const classNames: string[] = [];
     if (this.isDarkMode) {
       classNames.push('dark');
     } else {
@@ -95,6 +97,6 @@ export class AppComponent implements OnDestroy, OnInit {
       classNames.push('product--' + kebabCase(this.product.toString()));
     }
 
-    document.body.className = classNames.join(' ')
+    document.body.className = classNames.join(' ');
   }
 }

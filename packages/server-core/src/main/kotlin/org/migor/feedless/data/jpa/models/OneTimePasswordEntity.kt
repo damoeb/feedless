@@ -35,7 +35,13 @@ open class OneTimePasswordEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "userId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_otp__user"))
+  @JoinColumn(
+    name = "userId",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_otp__user")
+  )
   open var user: UserEntity? = null
 
   @Column(name = "userId", nullable = false)

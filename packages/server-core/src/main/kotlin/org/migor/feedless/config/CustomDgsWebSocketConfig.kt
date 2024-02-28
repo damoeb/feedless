@@ -18,8 +18,15 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 class CustomDgsWebSocketConfig {
 
   @Bean
-  fun webSocketHandler(@Suppress("SpringJavaInjectionPointsAutowiringInspection") dgsQueryExecutor: DgsQueryExecutor, configProps: DgsWebSocketConfigurationProperties): WebSocketHandler {
-    return DgsWebSocketHandler(dgsQueryExecutor, configProps.connectionInitTimeout, configProps.subscriptionErrorLogLevel)
+  fun webSocketHandler(
+    @Suppress("SpringJavaInjectionPointsAutowiringInspection") dgsQueryExecutor: DgsQueryExecutor,
+    configProps: DgsWebSocketConfigurationProperties
+  ): WebSocketHandler {
+    return DgsWebSocketHandler(
+      dgsQueryExecutor,
+      configProps.connectionInitTimeout,
+      configProps.subscriptionErrorLogLevel
+    )
   }
 
   @Configuration

@@ -26,7 +26,7 @@ class ProfileDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun user(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val profile: ProfileDto = dfe.getSource()
-    profile.userId?.let {currentUser.user("?").toDto() }
+    profile.userId?.let { currentUser.user("?").toDto() }
   }
 
 }

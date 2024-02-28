@@ -36,8 +36,9 @@ class AuthAnonymousResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId, required = false) cid: String,
-                            dfe: DataFetchingEnvironment,
+  suspend fun authAnonymous(
+    @RequestHeader(ApiParams.corrId, required = false) cid: String,
+    dfe: DataFetchingEnvironment,
   ): AuthenticationDto = coroutineScope {
     val corrId = handleCorrId(cid)
     log.info("[$corrId] authAnonymous")

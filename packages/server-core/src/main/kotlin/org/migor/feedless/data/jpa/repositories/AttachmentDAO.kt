@@ -9,5 +9,4 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface AttachmentDAO : JpaRepository<AttachmentEntity, UUID> {
-}
+interface AttachmentDAO : JpaRepository<AttachmentEntity, UUID>

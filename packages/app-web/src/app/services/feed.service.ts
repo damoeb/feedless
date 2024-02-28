@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
   GqlPreviewFeedInput,
-  GqlPreviewFeedQuery, GqlPreviewFeedQueryVariables,
+  GqlPreviewFeedQuery,
+  GqlPreviewFeedQueryVariables,
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
-  GqlRemoteNativeFeedQueryVariables, GqlScrapeRequestInput, PreviewFeed,
-  RemoteNativeFeed
+  GqlRemoteNativeFeedQueryVariables,
+  GqlScrapeRequestInput,
+  PreviewFeed,
+  RemoteNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { RemoteFeed, RemoteFeedItem } from '../graphql/types';

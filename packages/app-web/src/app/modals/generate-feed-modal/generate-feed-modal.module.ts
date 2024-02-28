@@ -8,6 +8,11 @@ import { RemoteFeedItemModule } from '../../components/remote-feed-item/remote-f
 @NgModule({
   declarations: [GenerateFeedModalComponent],
   exports: [GenerateFeedModalComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, RemoteFeedItemModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    RemoteFeedItemModule,
+  ],
 })
 export class GenerateFeedModalModule {}

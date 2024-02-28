@@ -128,7 +128,9 @@ class QueryResolver {
 
   private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
     val cookie = cookieProvider.createExpiredSessionCookie("JSESSION")
-    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(cookie)
+    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
+      cookie
+    )
   }
 
   @Throttled
@@ -186,11 +188,13 @@ class QueryResolver {
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: ProductName): List<Plan> = coroutineScope {
-    log.info("[$corrId] plans for $product")
-    planService.findAllAvailable(product.fromDto()).map { it.toDto() }
-  }
+  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: ProductName): List<Plan> =
+    coroutineScope {
+      log.info("[$corrId] plans for $product")
+      planService.findAllAvailable(product.fromDto()).map { it.toDto() }
+    }
 }
+
 private fun AgentEntity.toDto(): Agent {
   return Agent.newBuilder()
     .ownerId(ownerId.toString())
