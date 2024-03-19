@@ -38,11 +38,7 @@ export class AgentService implements OnModuleInit {
           const recordId = this.statsService.recordAgentEvent(event);
           const startTime = Date.now();
           this.log.log(
-            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(
-              event,
-              null,
-              2,
-            )}`,
+            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event)}`,
           );
           try {
             const scrapeResponse = await this.puppeteerService.submit(

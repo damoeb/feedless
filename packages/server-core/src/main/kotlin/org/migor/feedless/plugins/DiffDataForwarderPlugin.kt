@@ -117,7 +117,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val mailData = MailData()
     mailData.subject = "VisualDiff Tracker: ${subscription.title}"
     val website =
-      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).joinToString(", ") { it.page.url }
+      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).joinToString(", ") { it.url }
 
     val params = VisualDiffWelcomeParams(
       trackerTitle = subscription.title,
@@ -194,7 +194,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
     val website = scrapeSourceDAO.findAllBySubscriptionId(
       subscription.id
-    ).joinToString(", ") { s -> s.page.url }
+    ).joinToString(", ") { s -> s.url }
 
     val templateParams = VisualDiffChangeDetectedParams(
       trackerTitle = subscription.title,

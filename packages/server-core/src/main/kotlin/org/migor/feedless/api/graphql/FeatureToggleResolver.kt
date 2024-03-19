@@ -71,10 +71,11 @@ class FeatureToggleResolver {
         .build()
     }
 
+    val product = data.product.fromDto()
     ServerSettings.newBuilder()
-      .appUrl(productService.getAppUrl(data.product.fromDto()))
-      .gatewayUrl(productService.getGatewayUrl(data.product.fromDto()))
-      .features(features.plus(featureService.findAllByProduct(data.product.fromDto()).map { it.toDto() }))
+      .appUrl(productService.getAppUrl(product))
+      .gatewayUrl(productService.getGatewayUrl(product))
+      .features(features.plus(featureService.findAllByProduct(product).map { it.toDto() }))
       .build()
   }
 

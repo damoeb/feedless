@@ -9,180 +9,177 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div class="flex__column">
-    <ion-list>
-      <ion-item>
-        <ion-label>Feed Title</ion-label>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          [formControl]="formFg.controls.title"
-          fill="outline"
-          placeholder="Type a title"
-          aria-label="Title"
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>Description (optional)</ion-label>
-      </ion-item>
-      <ion-item>
-        <ion-textarea
-          [autoGrow]="true"
-          fill="outline"
-          placeholder="#tags, urls,..."
-          [formControl]="formFg.controls.description"
-          aria-label="Describe the feed with #tags and urls"
-        ></ion-textarea>
-      </ion-item>
-      <ion-item>
-        <ion-label>Fetch Frequency</ion-label>
-      </ion-item>
-      <ion-item>
-        <ion-select
-          [formControl]="formFg.controls.fetchFrequency"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option disabled value="0 */15 * * * *"
-            >Every 15 min
-          </ion-select-option>
-          <ion-select-option disabled value="0 */30 * * * *"
-            >Every 30 min
-          </ion-select-option>
-          <ion-select-option disabled value="0 0 * * * *"
-            >Every hour
-          </ion-select-option>
-          <ion-select-option disabled value="0 0 */8 * * *"
-            >Every 6 hours
-          </ion-select-option>
-          <ion-select-option disabled value="0 0 */12 * * *"
-            >Every 12 hours
-          </ion-select-option>
-          <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
-          <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </ion-list>
-
-    <ion-list class="filters">
-      <ion-item>
-        <ion-label>
-          Filters
-          <a
-            (click)="addFilter()"
-            *ngIf="filters.length < 4"
-            href="javascript:void(0)"
+  <div class="flex__row">
+    <div class="flex__column">
+      <ion-list>
+        <ion-item>
+          <ion-label>Feed Title</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            [formControl]="formFg.controls.title"
+            fill="outline"
+            placeholder="Type a title"
+            aria-label="Title"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Description (optional)</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-textarea
+            [autoGrow]="true"
+            fill="outline"
+            placeholder="#tags, urls,..."
+            [formControl]="formFg.controls.description"
+            aria-label="Describe the feed with #tags and urls"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label>Fetch Frequency</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            [formControl]="formFg.controls.fetchFrequency"
+            fill="outline"
+            interface="popover"
           >
-            Add Filter
-          </a>
-        </ion-label>
-      </ion-item>
-
-      <div
-        *ngFor="let filter of filters; let i = index"
-        class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
-      >
-        <ion-select
-          [formControl]="filter.controls.type"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option value="include">include</ion-select-option>
-          <ion-select-option value="exclude">exclude</ion-select-option>
-        </ion-select>
-        <ion-text class="ion-padding-end"> if </ion-text>
-        <ion-select
-          [formControl]="filter.controls.field"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option value="link">link</ion-select-option>
-          <ion-select-option value="title">title</ion-select-option>
-          <ion-select-option value="content">content</ion-select-option>
-        </ion-select>
-        <ion-select
-          [formControl]="filter.controls.operator"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option value="contains">contains</ion-select-option>
-          <ion-select-option value="matches">matches</ion-select-option>
-          <ion-select-option value="startsWith">starts with</ion-select-option>
-          <ion-select-option value="endsWith">ends with</ion-select-option>
-        </ion-select>
-        <ion-input
-          [formControl]="filter.controls.value"
-          placeholder="Type a value"
-          fill="outline"
-        ></ion-input>
-
-        <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </ion-list>
-
-    <ion-list>
-      <ion-item>
-        <ion-label>Plugins</ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.applyFulltextPlugin"
-        >
-          Fulltext
-          <ion-note class="ion-padding-horizontal"
-            >Fetch Fulltext for every Item</ion-note
-          >
-          <ion-chip
-            color="danger"
-            *ngIf="!isLoggedIn && formFg.value.applyFulltextPlugin"
-            >Signup to use</ion-chip
-          >
-        </ion-checkbox>
-      </ion-item>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.applyPrivacyPlugin"
-        >
-          Privacy & Robustness
-          <ion-note class="ion-padding-horizontal"
-            >Replaces links to images by base64 inlined images and resolve
-            shortened tracking urls</ion-note
-          >
-        </ion-checkbox>
-      </ion-item>
-    </ion-list>
-
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          Feed Preview
-          <ion-note class="ion-margin-horizontal"
-            >(Plugins are not applied)</ion-note
-          >
-        </ion-label>
-      </ion-item>
-    </ion-list>
-    <div
-      style="position: relative; overflow-y: auto; overflow-x: hidden; flex: 1"
-    >
-      <ion-spinner name="dots" *ngIf="!previewFeed"></ion-spinner>
-      <ion-list
-        *ngIf="previewFeed"
-        style="position: absolute; width: 100vw; opacity: 0.6"
-      >
-        <app-remote-feed-item
-          *ngFor="let item of previewFeed.items; let feedIndex = index"
-          [feedItem]="item"
-          [feedItemIndex]="feedIndex + 1"
-        ></app-remote-feed-item>
+            <ion-select-option disabled value="0 */15 * * * *"
+              >Every 15 min
+            </ion-select-option>
+            <ion-select-option disabled value="0 */30 * * * *"
+              >Every 30 min
+            </ion-select-option>
+            <ion-select-option disabled value="0 0 * * * *"
+              >Every hour
+            </ion-select-option>
+            <ion-select-option disabled value="0 0 */8 * * *"
+              >Every 6 hours
+            </ion-select-option>
+            <ion-select-option disabled value="0 0 */12 * * *"
+              >Every 12 hours
+            </ion-select-option>
+            <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
+            <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
+          </ion-select>
+        </ion-item>
       </ion-list>
+
+      <ion-list class="filters">
+        <ion-item>
+          <ion-label>
+            Filters
+            <a
+              (click)="addFilter()"
+              *ngIf="filters.length < 4"
+              href="javascript:void(0)"
+            >
+              Add Filter
+            </a>
+          </ion-label>
+        </ion-item>
+
+        <div
+          *ngFor="let filter of filters; let i = index"
+          class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
+        >
+          <ion-select
+            [formControl]="filter.controls.type"
+            fill="outline"
+            interface="popover"
+          >
+            <ion-select-option value="include">include</ion-select-option>
+            <ion-select-option value="exclude">exclude</ion-select-option>
+          </ion-select>
+          <ion-text class="ion-padding-end"> if </ion-text>
+          <ion-select
+            [formControl]="filter.controls.field"
+            fill="outline"
+            interface="popover"
+          >
+            <ion-select-option value="link">link</ion-select-option>
+            <ion-select-option value="title">title</ion-select-option>
+            <ion-select-option value="content">content</ion-select-option>
+          </ion-select>
+          <ion-select
+            [formControl]="filter.controls.operator"
+            fill="outline"
+            interface="popover"
+          >
+            <ion-select-option value="contains">contains</ion-select-option>
+            <ion-select-option value="matches">matches</ion-select-option>
+            <ion-select-option value="startsWith">starts with</ion-select-option>
+            <ion-select-option value="endsWith">ends with</ion-select-option>
+          </ion-select>
+          <ion-input
+            [formControl]="filter.controls.value"
+            placeholder="Type a value"
+            fill="outline"
+          ></ion-input>
+
+          <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-list>
+
+      <ion-list>
+        <ion-item>
+          <ion-label>Plugins</ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-checkbox
+            labelPlacement="end"
+            justify="start"
+            [formControl]="formFg.controls.applyFulltextPlugin"
+          >
+            Fulltext
+            <ion-note class="ion-padding-horizontal"
+              >Fetch Fulltext for every Item</ion-note
+            >
+          </ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox
+            labelPlacement="end"
+            justify="start"
+            [formControl]="formFg.controls.applyPrivacyPlugin"
+          >
+            Privacy & Robustness
+            <ion-note class="ion-padding-horizontal"
+              >Inlines images (base64) and unwinds tracking urls</ion-note
+            >
+          </ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div>
+      <ion-list>
+        <ion-item>
+          <ion-label>
+            Feed Preview
+            <ion-note class="ion-margin-horizontal"
+            >(Plugins are not applied in Preview)</ion-note
+            >
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <div
+        style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
+      >
+        <ion-spinner name="dots" *ngIf="!previewFeed"></ion-spinner>
+        <ion-list
+          *ngIf="previewFeed"
+          style="position: absolute; width: 100vw; opacity: 0.6"
+        >
+          <app-remote-feed-item
+            *ngFor="let item of previewFeed.items; let feedIndex = index"
+            [feedItem]="item"
+            [feedItemIndex]="feedIndex + 1"
+          ></app-remote-feed-item>
+        </ion-list>
+      </div>
     </div>
   </div>
 </ion-content>

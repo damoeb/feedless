@@ -13,7 +13,7 @@ import org.migor.feedless.data.jpa.models.PluginExecution
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.data.jpa.repositories.MailForwardDAO
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.data.jpa.repositories.PipelineJobDAO
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
@@ -27,7 +27,6 @@ import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.plugins.FeedlessPlugin
-import org.migor.feedless.service.MailService
 import org.migor.feedless.service.NotificationService
 import org.migor.feedless.service.PlanConstraintsService
 import org.migor.feedless.service.PluginService
@@ -73,12 +72,6 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var planConstraintsService: PlanConstraintsService
 
   @Autowired
-  lateinit var mailService: MailService
-
-  @Autowired
-  lateinit var mailForwardDAO: MailForwardDAO
-
-  @Autowired
   lateinit var webDocumentService: WebDocumentService
 
   @Autowired
@@ -89,9 +82,6 @@ class SourceSubscriptionHarvester internal constructor() {
 
   @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
-
-  @Autowired
-  lateinit var pluginService: PluginService
 
   @Autowired
   lateinit var notificationService: NotificationService
@@ -156,6 +146,7 @@ class SourceSubscriptionHarvester internal constructor() {
           if (e is ResumableHarvestException) {
             log.warn("[$corrId] ${e.message}")
           } else {
+            meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
             notificationService.createNotification(corrId, subscription.ownerId, e.message)
             scrapeSourceDAO.setErrornous(it.id, true, e.message)
           }
@@ -308,11 +299,7 @@ class SourceSubscriptionHarvester internal constructor() {
 }
 
 fun ScrapeSourceEntity.toScrapeRequest(): ScrapeRequest {
-  return ScrapeRequest.newBuilder()
-    .page(page)
-    .emit(emit)
-    .debug(debug)
-    .build()
+  return this.toDto()
 }
 
 inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {

@@ -1,4 +1,4 @@
-import { Browser, Frame, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
+import { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
@@ -39,8 +39,8 @@ type LogAppender = (msg: string) => void;
 export class PuppeteerService {
   private readonly log = new Logger(PuppeteerService.name);
   private readonly isDebug: boolean;
-  private readonly imageQuality = 100;
-  private readonly imageType = 'webp';
+  // private readonly imageQuality = 100;
+  private readonly imageType = 'png';
   private readonly queue: {
     job: ScrapeRequest;
     queuedAt: number;
@@ -263,14 +263,14 @@ export class PuppeteerService {
     page: Page,
     totalTimeUsed: number,
   ): Promise<ScrapeDebugResponseInput> {
-    const given = async (condition: boolean, label: string): Promise<void> => {
-      if (condition) {
-        this.log.log(`[${corrId}] appending ${label}`);
-        return Promise.resolve();
-      } else {
-        return Promise.reject('');
-      }
-    };
+    // const given = async (condition: boolean, label: string): Promise<void> => {
+    //   if (condition) {
+    //     this.log.log(`[${corrId}] appending ${label}`);
+    //     return Promise.resolve();
+    //   } else {
+    //     return Promise.reject('');
+    //   }
+    // };
 
     return {
       corrId,
@@ -293,13 +293,7 @@ export class PuppeteerService {
         : [],
       prerendered: true,
       screenshot: request.debug?.screenshot
-        ? await page.screenshot({
-            fullPage: true,
-            optimizeForSpeed: false,
-            quality: this.imageQuality,
-            type: this.imageType,
-            encoding: 'base64',
-          })
+        ? await this.extractScreenshot(page, undefined)
         : undefined,
     };
   }
@@ -341,7 +335,7 @@ export class PuppeteerService {
         return page.screenshot({
           fullPage: true,
           optimizeForSpeed: false,
-          quality: this.imageQuality,
+          // quality: this.imageQuality,
           type: this.imageType,
           encoding: 'base64',
         });
@@ -386,7 +380,7 @@ export class PuppeteerService {
         width: boundingBox.w,
       },
       type: this.imageType,
-      quality: this.imageQuality,
+      // quality: this.imageQuality,
       optimizeForSpeed: false,
       encoding: 'base64',
       captureBeyondViewport: true,
@@ -515,16 +509,28 @@ export class PuppeteerService {
   }
 
   private async extractScreenshot(page: Page, boundingBox: ScreenshotClip) {
-    this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
-    this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
-    return page.screenshot({
-      clip: boundingBox,
+    const hasBoundingBox = !!boundingBox;
+    const options: ScreenshotOptions = {};
+
+    if (hasBoundingBox) {
+      this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
+      this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
+      options.clip = boundingBox;
+    } else {
+      this.log.log(`screenshot full page`);
+      options.fullPage = true;
+    }
+
+    const screenshot = await page.screenshot({
+      ...options,
       type: this.imageType,
-      quality: this.imageQuality,
+      // quality: this.imageQuality,
       optimizeForSpeed: false,
       encoding: 'base64',
       captureBeyondViewport: true,
     });
+    console.assert(screenshot.length > 0, 'screenshot is empty');
+    return screenshot;
   }
 
   private extendBoundingBox(bb: ScreenshotClip, page: Page): ScreenshotClip {

@@ -1,5 +1,6 @@
 package org.migor.feedless.service
 
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
@@ -175,8 +176,18 @@ class SourceSubscriptionService {
     planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
     planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.emit = scrapeRequest.emit
-    entity.page = scrapeRequest.page
-    entity.debug = scrapeRequest.debug
+    entity.url = scrapeRequest.page.url
+    entity.timeout = scrapeRequest.page.timeout
+    entity.waitUntil = scrapeRequest.page.prerender.waitUntil
+    entity.additionalWaitSec = scrapeRequest.page.prerender.additionalWaitSec
+    entity.viewport = scrapeRequest.page.prerender.viewport
+    entity.language = scrapeRequest.page.prerender.language
+    entity.actions = scrapeRequest.page.actions
+    entity.debugCookies = BooleanUtils.isTrue(scrapeRequest.debug?.cookies)
+    entity.debugHtml = BooleanUtils.isTrue(scrapeRequest.debug?.html)
+    entity.debugConsole = BooleanUtils.isTrue(scrapeRequest.debug?.console)
+    entity.debugScreenshot = BooleanUtils.isTrue(scrapeRequest.debug?.screenshot)
+    entity.debugNetwork = BooleanUtils.isTrue(scrapeRequest.debug?.network)
     entity.subscriptionId = sub.id
     return scrapeSourceDAO.save(entity)
   }

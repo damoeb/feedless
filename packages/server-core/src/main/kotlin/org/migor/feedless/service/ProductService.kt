@@ -17,9 +17,11 @@ class ProductService {
     return when (product) {
       ProductName.visualDiff -> "visualdiff.com"
       ProductName.pageChangeTracker -> "pagechangetracker.com"
-      ProductName.rssBuilder -> "feedguru.com"
-      ProductName.feedless -> "feedless.com"
+      ProductName.rssBuilder -> "rssproxy.migor.org"
+      ProductName.feedless -> "feedless.org"
       ProductName.untoldNotes -> "untoldnotes.com"
+      ProductName.upcoming -> "upcoming.feedless.org"
+      ProductName.reader -> "reader.feedless.org"
       ProductName.custom -> propertyService.domain
       else -> throw IllegalArgumentException("$product not supported")
     }
