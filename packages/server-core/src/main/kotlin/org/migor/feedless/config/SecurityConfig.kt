@@ -115,10 +115,10 @@ class SecurityConfig {
       "/attachment/**",
       "/a/**",
     )
-    if (propertyService.authentication == AppProfiles.authSSO) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       urls.add("/login/oauth2/**")
     }
-    if (propertyService.authentication == AppProfiles.authMail) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))) {
       urls.add("/api/auth/magic-mail/**")
     }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
@@ -132,7 +132,7 @@ class SecurityConfig {
   }
 
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
-    return if (propertyService.authentication == AppProfiles.authSSO) {
+    return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
         .oauth2Login()
@@ -142,7 +142,7 @@ class SecurityConfig {
             val authenticationToken = authentication as OAuth2AuthenticationToken
             val user = when (authenticationToken.authorizedClientRegistrationId) {
               "github" -> handleGithubAuthResponse(authenticationToken)
-              "google" -> handleGoogleAuthResponse(authenticationToken)
+//              "google" -> handleGoogleAuthResponse(authenticationToken)
               else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
             }
             log.info("jwt from user ${user.id}")
@@ -167,10 +167,12 @@ class SecurityConfig {
 
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
-    val email = "${attributes["id"]}@github.com"
-    return resolveUserByEmail(email) ?: userService.createUser(
+    val email = attributes["email"] as String?
+    val githubId = attributes["id"] as String
+    return resolveUserByGithubId(githubId) ?: userService.createUser(
       newCorrId(),
-      email,
+      email = email,
+      githubId = githubId,
       authSource = AuthSource.oauth,
       planName = PlanName.free,
       productName = ProductName.feedless
@@ -191,6 +193,15 @@ class SecurityConfig {
 
   private fun resolveUserByEmail(email: String): UserEntity? {
     return userService.findByEmail(email)
+      .also {
+        it?.let {
+          meterRegistry.counter(AppMetrics.userLogin).increment()
+        }
+      }
+  }
+
+  private fun resolveUserByGithubId(githubId: String): UserEntity? {
+    return userService.findByGithubId(githubId)
       .also {
         it?.let {
           meterRegistry.counter(AppMetrics.userLogin).increment()

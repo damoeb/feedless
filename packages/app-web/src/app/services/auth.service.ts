@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import platform from 'platform';
 import {
-  AuthAnonymous,
+  AuthAnonymous, AuthUser,
   AuthViaMail,
   ConfirmCode,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables,
+  GqlAuthAnonymousMutationVariables, GqlAuthUserInput, GqlAuthUserMutation, GqlAuthUserMutationVariables,
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables,
+  GqlConfirmCodeMutationVariables
 } from '../../generated/graphql';
 import {
   ApolloClient,
@@ -83,18 +83,18 @@ export class AuthService {
     });
   }
 
-  // async authorizeUser(data: GqlAuthUserInput): Promise<void> {
-  //   return this.apollo
-  //     .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
-  //       mutation: AuthUser,
-  //       variables: {
-  //         data,
-  //       },
-  //     })
-  //     .then((response) =>
-  //       this.handleAuthenticationToken(response.data.authUser.token),
-  //     );
-  // }
+  async authorizeUser(data: GqlAuthUserInput): Promise<void> {
+    return this.apollo
+      .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
+        mutation: AuthUser,
+        variables: {
+          data,
+        },
+      })
+      .then((response) =>
+        this.handleAuthenticationToken(response.data.authUser.token),
+      );
+  }
 
   sendConfirmationCode(confirmationCode: string, otpId: string) {
     return this.apollo.mutate<

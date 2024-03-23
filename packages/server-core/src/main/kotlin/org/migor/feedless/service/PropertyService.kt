@@ -2,12 +2,10 @@ package org.migor.feedless.service
 
 import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 import java.net.URL
@@ -23,7 +21,6 @@ class PropertyService {
   val anonymousEmail: String = "anonymous@localhost"
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
-  lateinit var authentication: String
   lateinit var domain: String
   lateinit var apiGatewayUrl: String
   lateinit var appHost: String
@@ -52,9 +49,6 @@ class PropertyService {
     locale = Locale.forLanguageTag(defaultLocale)
     logProperty("locale = $locale")
 
-    authentication = listOf(AppProfiles.authSSO, AppProfiles.authMail, AppProfiles.authRoot)
-      .firstOrNull { environment.acceptsProfiles(Profiles.of(it)) } ?: AppProfiles.authRoot
-    logProperty("authentication = $authentication")
     Assert.hasLength(jwtSecret, "jwtSecret must not be empty")
     Assert.hasLength(apiGatewayUrl, "publicUrl must not be empty")
     Assert.isTrue(!StringUtils.startsWith(jwtSecret, "\${"), "jwtSecret seems invalid")

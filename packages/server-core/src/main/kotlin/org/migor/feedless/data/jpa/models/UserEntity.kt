@@ -31,8 +31,11 @@ import java.util.*
 open class UserEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, unique = true, name = StandardJpaFields.email)
-  open lateinit var email: String
+  @Column(name = StandardJpaFields.email)
+  open var email: String? = null
+
+  @Basic
+  open var githubId: String? = null
 
   @Basic
   @Column(nullable = false)

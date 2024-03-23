@@ -3,6 +3,7 @@ package org.migor.feedless.trigger
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.MailForwardEntity
 import org.migor.feedless.data.jpa.models.PipelineJobEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Service
 @Profile(AppProfiles.database)
@@ -109,7 +111,7 @@ class TriggerPlugins internal constructor() {
   private fun forwardToMail(corrId: String, webDocument: WebDocumentEntity, subscription: SourceSubscriptionEntity) {
     val mailForwards = mailForwardDAO.findAllBySubscriptionId(subscription.id)
     if (mailForwards.isNotEmpty()) {
-      val authorizedMailForwards = mailForwards.filter { it.authorized }.map { it.email }
+      val authorizedMailForwards = mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
       if (authorizedMailForwards.isEmpty()) {
         log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
       } else {

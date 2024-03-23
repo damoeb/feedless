@@ -105,10 +105,15 @@ type Mutation {
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
+  updateLicense(data: UpdateLicenseInput!): License!
 
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
 #  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
+}
+
+input UpdateLicenseInput {
+  licenseRaw: String!
 }
 
 input SourceSubscriptionUpdateInput {
@@ -239,6 +244,7 @@ type Query {
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   previewFeed(data: PreviewFeedInput!): RemoteNativeFeed!
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
+  license: License!
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
@@ -543,12 +549,24 @@ type Selectors {
 type ServerSettings {
   gatewayUrl: String!
   appUrl: String!
+  buildFrom: Long!
+  version: String!
   features: [Feature!]!
-  license: License!
+  profiles: [ProfileName!]!
 }
 
-interface License {
+type License {
+  isValid: Boolean!
+  isLocated: Boolean!
+  isTrial: Boolean!
   trialUntil: Long
+  data: LicenseData
+}
+
+type LicenseData {
+  name: String!
+  email: String!
+  date: Long!
 }
 
 type Subscription {
@@ -652,11 +670,12 @@ enum ExtendContentOptions {
   PREVIOUS_AND_NEXT
 }
 
-enum FeatureName {
-  database
-  authentication
+enum ProfileName {
   authSSO
   authMail
+  selfHosted
+}
+enum FeatureName {
   canCreateUser
   hasWaitList
   canSignUp

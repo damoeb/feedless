@@ -11,8 +11,6 @@ import org.migor.feedless.data.jpa.repositories.FeatureDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -23,13 +21,6 @@ class FeatureService {
 
   @Autowired
   lateinit var featureDAO: FeatureDAO
-
-  @Autowired
-  lateinit var environment: Environment
-
-  fun withDatabase(): Boolean {
-    return environment.acceptsProfiles(Profiles.of(AppProfiles.database))
-  }
 
   fun findAllByPlanId(id: UUID): List<FeatureEntity> {
     return this.featureDAO.findAllByPlanId(id)

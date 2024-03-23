@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
@@ -53,10 +54,11 @@ class UserService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
     corrId: String,
-    email: String,
+    email: String?,
     productName: ProductName,
     authSource: AuthSource,
     planName: PlanName,
+    githubId: String? = null,
   ): UserEntity {
     if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
       throw BadRequestException("sign-up is deactivated")
@@ -68,13 +70,21 @@ class UserService {
       throw BadRequestException("plan $planName for product $productName is unavailable")
     }
 
-    if (userDAO.existsByEmail(email)) {
-      throw BadRequestException("user already exists")
+    if (StringUtils.isNotBlank(email)) {
+      if (userDAO.existsByEmail(email!!)) {
+        throw BadRequestException("user already exists")
+      }
+    }
+    if (StringUtils.isNotBlank(githubId)) {
+      if (userDAO.existsByGithubId(githubId!!)) {
+        throw BadRequestException("user already exists")
+      }
     }
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("[$corrId] create user $email")
     val user = UserEntity()
     user.email = email
+    user.githubId = githubId
     user.root = false
     user.anonymous = false
     user.product = productName
@@ -98,6 +108,10 @@ class UserService {
 
   fun findByEmail(email: String): UserEntity? {
     return userDAO.findByEmail(email)
+  }
+
+  fun findByGithubId(githubId: String): UserEntity? {
+    return userDAO.findByGithubId(githubId)
   }
 
   fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {

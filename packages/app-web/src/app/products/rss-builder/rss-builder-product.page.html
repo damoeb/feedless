@@ -1,4 +1,24 @@
 <ion-header [translucent]="true">
+  <ng-container *ngIf="serverSettings.isSelfHosted()">
+    <ion-toolbar color="primary" *ngIf="serverSettings.isTrialPeriod()">
+      <ion-text class="ion-margin-horizontal">
+        <strong>Trial Period</strong> until {{serverSettings.getLicense().trialUntil | date: dateFormat}}, it's free for personal use.
+      </ion-text>
+      <ion-button slot="end" class="ion-margin-end" color="dark" routerLink="/license">
+        Activate
+      </ion-button>
+      <!--        <ion-card color="warning" class="ion-no-margin">-->
+      <!--          <ion-card-header>-->
+      <!--            <ion-card-title>Activation</ion-card-title>-->
+      <!--          </ion-card-header>-->
+      <!--          <ion-card-content>-->
+      <!--            RSS-Proxy is released under <a href="https://fsl.software/" target="_blank">Functional Source License</a>, which means after {{getLicenseExpiry() | date: dateFormat }} this software becomes Apache 2.-->
+      <!--            You have 2 month of trial-->
+      <!--            <ion-button></ion-button>-->
+      <!--          </ion-card-content>-->
+      <!--        </ion-card>-->
+    </ion-toolbar>
+  </ng-container>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
@@ -24,6 +44,12 @@
 
     <ion-buttons slot="end">
       <ion-button
+        *ngIf="serverSettings.isSelfHosted()"
+        href="https://gihub.com/damoeb/rss-proxy"
+      >
+        Documentation
+      </ion-button>
+      <ion-button
         fill="solid"
         color="primary"
         routerLinkActive="hidden"
@@ -32,7 +58,8 @@
         Create Feed
       </ion-button>
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button routerLink="/plans"> Pricing </ion-button>
+      <ion-button *ngIf="!serverSettings.isSelfHosted()"
+                  routerLink="/plans"> Pricing </ion-button>
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>
@@ -41,3 +68,9 @@
 <ion-content>
   <ion-router-outlet></ion-router-outlet>
 </ion-content>
+
+<ion-footer>
+  <div class="ion-text-right">
+    v.{{serverSettings.getVersion()}}
+  </div>
+</ion-footer>

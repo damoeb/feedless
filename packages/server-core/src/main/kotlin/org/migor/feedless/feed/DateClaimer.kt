@@ -10,6 +10,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 @Service
@@ -145,16 +146,16 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
    */
   private fun guessDateFormat(dateString: String): Pair<String, Boolean>? {
     return dateFormatToRegexp
-      .filter { (regex, dateFormat, _) ->
-        run {
-          val matches = regex.matches(dateString)
-          if (matches) {
-            log.debug("$dateString looks like $dateFormat")
-          }
-          matches
+        .filterTo(ArrayList()) { (regex, dateFormat, _): Triple<Regex, String, Boolean> ->
+            run {
+                val matches = regex.matches(dateString)
+                if (matches) {
+                    log.debug("$dateString looks like $dateFormat")
+                }
+                matches
+            }
         }
-      }
-      .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
+        .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
       .firstOrNull()
   }
 

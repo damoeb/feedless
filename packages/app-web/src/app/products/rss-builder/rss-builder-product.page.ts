@@ -10,6 +10,8 @@ import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { fixUrl } from '../../app.module';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { dateFormat } from '../../services/profile.service';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -27,6 +29,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
+    readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
@@ -63,4 +66,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
       console.warn(e);
     }
   }
+
+  protected readonly dateFormat = dateFormat;
 }

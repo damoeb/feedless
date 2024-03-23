@@ -8,17 +8,16 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.generated.types.Feature
-import org.migor.feedless.generated.types.FeatureBooleanValue
-import org.migor.feedless.generated.types.FeatureName
-import org.migor.feedless.generated.types.FeatureValue
+import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.service.FeatureService
+import org.migor.feedless.service.LicenseService
 import org.migor.feedless.service.ProductService
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.env.Environment
 import java.util.*
@@ -38,8 +37,14 @@ class FeatureToggleResolver {
   @Autowired
   lateinit var featureService: FeatureService
 
+  @Value("\${APP_VERSION}")
+  lateinit var version: String
+
   @Autowired
   lateinit var productService: ProductService
+
+  @Autowired
+  lateinit var licenseService: LicenseService
 
   @DgsQuery
   @Cacheable(
@@ -50,32 +55,22 @@ class FeatureToggleResolver {
     @InputArgument data: ServerSettingsContextInput,
   ): ServerSettings = coroutineScope {
     log.info("serverSettings $data")
-    val db = featureService.withDatabase()
-    val features = mapOf(
-      FeatureName.database to db,
-      FeatureName.authSSO to (propertyService.authentication == AppProfiles.authSSO),
-      FeatureName.authMail to (propertyService.authentication == AppProfiles.authMail),
-//        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
-    ).map {
-      Feature.newBuilder()
-        .name(it.key)
-        .value(
-          FeatureValue.newBuilder()
-            .boolVal(
-              FeatureBooleanValue.newBuilder()
-                .value(true)
-                .build()
-            )
-            .build()
-        )
-        .build()
-    }
-
     val product = data.product.fromDto()
+
     ServerSettings.newBuilder()
       .appUrl(productService.getAppUrl(product))
+      .version(version)
+      .buildFrom(licenseService.buildFrom())
+      .profiles(environment.activeProfiles.map {
+        when (it) {
+          AppProfiles.authMail -> ProfileName.authMail
+          AppProfiles.authSSO -> ProfileName.authSSO
+          AppProfiles.selfHosted -> ProfileName.selfHosted
+          else -> null
+        }
+      }.filterNotNull())
       .gatewayUrl(productService.getGatewayUrl(product))
-      .features(features.plus(featureService.findAllByProduct(product).map { it.toDto() }))
+      .features(featureService.findAllByProduct(product).map { it.toDto() })
       .build()
   }
 

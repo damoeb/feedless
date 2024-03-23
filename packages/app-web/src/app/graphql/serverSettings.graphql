@@ -1,6 +1,9 @@
 query serverSettings($data: ServerSettingsContextInput!) {
   serverSettings(data: $data) {
     appUrl
+    profiles
+    buildFrom
+    version
     gatewayUrl
     features {
       ...BasicFeature

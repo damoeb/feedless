@@ -42,6 +42,13 @@ const routes: Routes = [
         loadChildren: () =>
           import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
+      {
+        path: 'license',
+        loadChildren: () =>
+          import('../../pages/license/license.module').then(
+            (m) => m.LicensePageModule,
+          ),
+      }
     ],
   },
   ...ProductService.defaultRoutes,

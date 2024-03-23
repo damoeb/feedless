@@ -1,4 +1,4 @@
-<ion-header *ngIf="!canSignUp">
+<ion-header *ngIf="!canSignUp && showNoSignupBanner">
   <ion-toolbar color="danger">
     <ion-text class="ion-margin-horizontal">
       Sign Up <span *ngIf="!canLogin">and Log In</span> is currently
@@ -10,69 +10,108 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+
   <div
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
   >
     <div style="width: 400px">
-      <div class="ion-margin-horizontal ion-margin-bottom" *ngIf="hasWaitList">
-        <app-newsletter
-          headerText="Private Beta"
-          bodyText="I haven't opened public signup yet, you can request to join the public beta tough."
-          buttonText="Request Access"
-        >
-          Join us on
-          <a
-            href="https://discord.com/invite/QJGkCMhn"
-            target="_blank"
-            referrerpolicy="no-referrer"
-          >
-            <ion-icon name="logo-discord"></ion-icon>
-            discord</a
-          >.
-        </app-newsletter>
-      </div>
+      <form *ngIf="showUserPasswordLogin"
+            (ngSubmit)="loginWithUserPassword(email.value, password.value)">
+        <h1 class="ion-margin-start">Login</h1>
+        <ion-card-content>
+          <ion-list>
+            <ion-item>
+              <ion-input
+                label="Email"
+                class="cy-email"
+                labelPlacement="start"
+                #email
+              ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input
+                label="Password"
+                class="cy-password"
+                labelPlacement="start"
+                #password
+                type="password"
+              ></ion-input>
+            </ion-item>
+            <ion-item
+              [button]="true"
+              (click)="loginWithUserPassword(email.value, password.value)"
+              color="primary"
+              class="ion-margin-top cy-login-button"
+            >
+              Login
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </form>
 
-      <div
-        class="ion-margin-top"
-        *ngIf="!canLogin && !hasWaitList && !canSignUp"
-      >
-        <h3>
-          The Doors here are closed for now. Join us on
-          <a
-            href="https://discord.com/invite/QJGkCMhn"
-            target="_blank"
-            referrerpolicy="no-referrer"
+      <div *ngIf="!showUserPasswordLogin">
+        <div class="ion-margin-horizontal ion-margin-bottom" *ngIf="hasWaitList && !canSignUp">
+          <app-newsletter
+            headerText="Private Beta"
+            bodyText="I haven't opened public signup yet, you can request to join the public beta tough."
+            buttonText="Request Access"
           >
-            <ion-icon name="logo-discord"></ion-icon>
-            discord</a
-          >.
-        </h3>
-      </div>
-
-      <div class="ion-margin-top" *ngIf="canLogin">
-        <div *ngIf="hasWaitList && !showLogin" class="ion-margin-horizontal">
-          If you have an account
-          <a href="javascript:void(0)" (click)="showLogin = true">login here</a>
+            Join us on
+            <a
+              href="https://discord.com/invite/QJGkCMhn"
+              target="_blank"
+              referrerpolicy="no-referrer"
+            >
+              <ion-icon name="logo-discord"></ion-icon>
+              discord</a
+            >.
+          </app-newsletter>
         </div>
 
-        <div *ngIf="!hasWaitList || showLogin">
-          <h1 class="ion-margin-start">Login</h1>
-          <app-email-login *ngIf="showMailLogin"></app-email-login>
+        <div
+          class="ion-margin-top"
+          *ngIf="!canLogin && !hasWaitList && !canSignUp"
+        >
+          <h3>
+            Signup is temporarily disabled. Join us on
+            <a
+              href="https://discord.com/invite/QJGkCMhn"
+              target="_blank"
+              referrerpolicy="no-referrer"
+            >
+              <ion-icon name="logo-discord"></ion-icon>
+              discord</a
+            >.
+          </h3>
+        </div>
 
-          <div *ngIf="showSSO">
-            <ion-card class="ion-margin-top">
-              <ion-card-content>
-                <ion-button
-                  [href]="loginUrl+'github'"
-                  color="medium"
-                  size="block"
-                >
-                  <ion-icon name="logo-github" slot="start"></ion-icon>
-                  Github
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
+        <div class="ion-margin-top" *ngIf="canLogin">
+          <div *ngIf="!showLogin" class="ion-margin-horizontal">
+            If you have an account
+            <a href="javascript:void(0)" (click)="showLogin = true">login here</a>
+          </div>
+
+          <div *ngIf="showLogin">
+            <h1 class="ion-margin-start">Login</h1>
+            <app-email-login *ngIf="showMailLogin"></app-email-login>
+
+            <div *ngIf="showSSO">
+              <h3 class="ion-margin ion-text-center">or</h3>
+
+              <ion-card class="ion-margin-top">
+                <ion-card-content>
+                  <ion-button
+                    [href]="loginUrl+'github'"
+                    color="dark"
+                    size="block"
+                  >
+                    <ion-icon name="logo-github" slot="start"></ion-icon>
+                    Sign-In with Github
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
+            </div>
           </div>
         </div>
       </div>

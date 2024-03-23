@@ -24,10 +24,8 @@ import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 enum class FeatureName {
   // internal
-  database,
-  authentication,
-  authSSO,
-  authMail,
+//  authSSO,
+//  authMail,
 
   rateLimitInt,
   minRefreshRateInMinutesInt,
@@ -57,12 +55,8 @@ fun featureScope(name: FeatureName): FeatureScope {
     FeatureName.canLogin,
     FeatureName.canCreateUser,
     FeatureName.canCreateAsAnonymous,
-    FeatureName.hasWaitList,
-    FeatureName.authSSO,
-    FeatureName.authMail,
-    FeatureName.authentication -> FeatureScope.frontend
+    FeatureName.hasWaitList -> FeatureScope.frontend
 
-    FeatureName.database,
     FeatureName.rateLimitInt,
     FeatureName.minRefreshRateInMinutesInt,
     FeatureName.publicScrapeSourceBool,
@@ -149,11 +143,7 @@ fun FeatureEntity.toDto(): Feature {
 
 fun FeatureName.toDto(): FeatureNameDto {
   return when (this) {
-    FeatureName.database -> FeatureNameDto.database
     FeatureName.pluginsBool -> FeatureNameDto.plugins
-    FeatureName.authentication -> FeatureNameDto.authentication
-    FeatureName.authSSO -> FeatureNameDto.authSSO
-    FeatureName.authMail -> FeatureNameDto.authMail
     FeatureName.rateLimitInt -> FeatureNameDto.rateLimit
     FeatureName.minRefreshRateInMinutesInt -> FeatureNameDto.minRefreshRateInMinutes
     FeatureName.publicScrapeSourceBool -> FeatureNameDto.publicScrapeSource

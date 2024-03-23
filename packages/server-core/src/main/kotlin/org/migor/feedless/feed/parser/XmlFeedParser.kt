@@ -59,7 +59,7 @@ class XmlFeedParser : FeedBodyParser {
 
       val actualNamespaces = head.attributes().asList()
         .map { it.key }
-        .filter { it.lowercase().startsWith("xmlns:") }
+        .filterTo(ArrayList()) { it: String -> it.lowercase().startsWith("xmlns:") }
         .map { it.split(":")[1] }
 
       head.select("*")
@@ -191,7 +191,11 @@ class XmlFeedParser : FeedBodyParser {
     }
     richArticle.attachments = attachments
 
-    val imageUrl = entryInformationModule?.imageUri ?: attachments.filter { StringUtils.isNotBlank(it.type) }
+    val imageUrl = entryInformationModule?.imageUri ?: attachments.filterTo(ArrayList()) { it: RichEnclosure ->
+      StringUtils.isNotBlank(
+        it.type
+      )
+    }
       .firstOrNull { it.type.lowercase().startsWith("image") }?.url
     richArticle.imageUrl = imageUrl
 

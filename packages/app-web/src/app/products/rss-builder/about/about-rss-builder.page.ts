@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -9,7 +11,8 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutRssBuilderPage {
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router,
+              readonly serverSettings: ServerSettingsService) {}
 
   async handleQuery(url: string) {
     try {
@@ -22,4 +25,10 @@ export class AboutRssBuilderPage {
       console.warn(e);
     }
   }
+
+  getLicenseExpiry() {
+    return new Date(this.serverSettings.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2);
+  }
+
+  protected readonly dateFormat = dateFormat;
 }

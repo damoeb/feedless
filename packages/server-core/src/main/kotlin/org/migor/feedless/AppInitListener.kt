@@ -32,7 +32,7 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
     """.trimIndent()
     )
 
-    System.out.println("feedless:core v$version-$hash https://github.com/damoeb/feedless")
+    System.out.println("Running v$version-$hash https://github.com/damoeb/feedless")
 
   }
 

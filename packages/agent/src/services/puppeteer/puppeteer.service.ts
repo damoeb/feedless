@@ -1,4 +1,11 @@
-import { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions } from 'puppeteer';
+import {
+  Browser,
+  Frame,
+  HTTPResponse,
+  Page,
+  ScreenshotClip,
+  ScreenshotOptions,
+} from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';

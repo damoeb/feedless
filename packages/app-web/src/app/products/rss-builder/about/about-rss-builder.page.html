@@ -15,18 +15,56 @@
         placeholder="Type a Url of a website"
       ></app-searchbar>
 
-      <div style="margin-top: 150px">
-        <h2>Why choose RSS Proxy?</h2>
-        <p>
-          Try it at no cost, no signup – just pure performance at your
-          fingertips. For maximum independence you can self-host or subscribe to
-          unleash its full potential.
-        </p>
+      <div style="margin-top: 150px"></div>
+
+      <div *ngIf="serverSettings.isSelfHosted()">
+        <div>
+          <h2>Hello, fellow Self Hoster!</h2>
+          <p>
+            Checkout the <a href="" target="_blank">self hosting documentation</a> and
+            <a href="https://discord.com/invite/QJGkCMhn" target="_blank">reach us on discord</a>.
+          </p>
+          <p>
+            RSS-Proxy is released under a <a href="https://fsl.software/" target="_blank">non-competitive license</a> that will become Open Source (Apache 2) after 2 years ({{ getLicenseExpiry() | date: dateFormat }}).
+            Within this period you need to activate the software, it's free for personal use.
+          </p>
+
+          <div>
+            <h2>Free for Personal Use</h2>
+            <p>
+              After the 2-month trial period you need to activate the software to keep all working.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <h2>Let the Video speak for itself</h2>
-        <p>[video]</p>
+      <div *ngIf="!serverSettings.isSelfHosted()">
+        <div>
+          <h2>Why choose RSS Proxy?</h2>
+          <p>
+            Try it at no cost, no signup – just pure performance at your
+            fingertips. For maximum independence you can self-host or subscribe to
+            unleash its full potential.
+          </p>
+        </div>
+
+        <div>
+          <h2>Open Source</h2>
+          <p>
+            RSS Proxy is released under non-competitive FSL license, which falls back to Apache 2 after 2 years.
+          </p>
+        </div>
+
+        <div>
+          <h2>Let the Video speak for itself</h2>
+          <p>[video]</p>
+        </div>
+
+        <div>
+          <h2>Self Hosting</h2>
+          <p>Once you have docker or podman, run this command:</p>
+          <pre>docker run -p 8080:8080 -it damoeb/rss-proxy:2</pre>
+        </div>
       </div>
     </div>
   </div>

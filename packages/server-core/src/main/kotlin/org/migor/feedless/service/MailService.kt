@@ -1,11 +1,13 @@
 package org.migor.feedless.service
 
 import jakarta.mail.internet.MimeMessage
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.MailForwardDAO
+import org.migor.feedless.plugins.MailAttachment
 import org.migor.feedless.plugins.MailData
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +18,7 @@ import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 data class Email(val subject: String, val text: String, val from: String)
 
@@ -60,19 +63,24 @@ class MailService {
   }
 
   private fun <T> sendWelcomeAnyMail(corrId: String, user: UserEntity, template: FtlTemplate<T>) {
-    log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")
-    val product = user.product
+    user.email?.let { email ->
+      log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")
+      val product = user.product
 
-    val mailData = MailData()
-    mailData.subject = "Welcome to ${productService.getDomain(product)}"
-    val params = WelcomeMailParams(
-      productName = product.name
-    )
-    mailData.body = templateService.renderTemplate(corrId, template)
-    send(corrId, getNoReplyAddress(product), arrayOf(user.email), mailData)
+      val mailData = MailData()
+      mailData.subject = "Welcome to ${productService.getDomain(product)}"
+      val params = WelcomeMailParams(
+        productName = product.name
+      )
+      mailData.body = templateService.renderTemplate(corrId, template)
+      send(corrId, getNoReplyAddress(product), arrayOf(email), mailData)
+    }
   }
 
   fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
+    if (StringUtils.isBlank(user.email)) {
+      throw IllegalArgumentException("Email is not defined")
+    }
     log.info("[$corrId] send auth mail ${user.email}")
 
     val from = getNoReplyAddress(user.product)
@@ -92,7 +100,7 @@ class MailService {
     )
     mailData.body = templateService.renderTemplate(corrId, AuthCodeMailTemplate(params))
 
-    send(corrId, from, to = arrayOf(user.email), mailData)
+    send(corrId, from, to = arrayOf(user.email!!), mailData)
   }
 
   fun getNoReplyAddress(product: ProductName): String {
@@ -124,9 +132,9 @@ class MailService {
     message.setTo(to)
     message.setSubject(mailData.subject)
     message.setText(mailData.body, true)
-    mailData.attachments.filter { it.inline }
+    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> it.inline }
       .forEach { inline -> message.addInline(inline.id, inline.resource) }
-    mailData.attachments.filter { !it.inline }
+    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> !it.inline }
       .forEach { inline -> message.addAttachment(inline.id, inline.resource) }
     javaMailSender.send(mimeMessage)
   }

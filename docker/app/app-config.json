@@ -1,6 +1,6 @@
 {
   "apiUrl": "http://localhost:8080",
-  "forceProduct": "untoldNotes",
+  "forceProduct": "rssBuilder",
   "products": [
     {
       "product": "feedless",

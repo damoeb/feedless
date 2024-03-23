@@ -23,4 +23,6 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
   fun findRootUser(): UserEntity?
 
   fun findByAnonymousIsTrue(): UserEntity
+  fun findByGithubId(githubId: String): UserEntity?
+  fun existsByGithubId(githubId: String): Boolean
 }

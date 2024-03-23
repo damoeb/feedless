@@ -162,7 +162,7 @@ class Seeder {
         FeatureName.pluginsBool to asBoolFeature(true),
         FeatureName.canLogin to asBoolFeature(true),
         FeatureName.canCreateUser to asBoolFeature(true), // wait list
-        FeatureName.canSignUp to asBoolFeature(false),
+        FeatureName.canSignUp to asBoolFeature(true),
         FeatureName.canCreateAsAnonymous to asBoolFeature(true),
         FeatureName.hasWaitList to asBoolFeature(true),
         FeatureName.itemEmailForwardBool to asBoolFeature(false),

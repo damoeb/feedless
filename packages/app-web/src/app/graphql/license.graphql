@@ -1,0 +1,24 @@
+fragment License on License {
+  isValid
+  isLocated
+  trialUntil
+  isTrial
+  data {
+    name
+    email
+    date
+  }
+}
+
+query license {
+  license {
+    ...License
+  }
+}
+
+
+mutation updateLicense($data: UpdateLicenseInput!) {
+  updateLicense(data: $data) {
+    ...License
+  }
+}

@@ -4,6 +4,7 @@ object AppProfiles {
   const val dev = "dev"
   const val serveStatic = "static"
   const val authSSO = "sso"
+  const val selfHosted = "selfHosted"
   const val authMail = "mail"
   const val authRoot = "authRoot"
   const val database = "database"

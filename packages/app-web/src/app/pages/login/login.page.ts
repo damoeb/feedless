@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { GqlFeatureName } from '../../../generated/graphql';
+import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -20,12 +20,13 @@ export class LoginPage implements OnInit, OnDestroy {
   canSignUp: boolean;
   hasWaitList: boolean;
   showLogin: boolean;
+  showNoSignupBanner: boolean;
+  showUserPasswordLogin: boolean;
 
   constructor(
     private readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly authSettings: AuthService,
   ) {
     this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
   }
@@ -35,24 +36,40 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
-    this.canSignUp =
-      this.serverSettings.isEnabled(GqlFeatureName.CanSignUp) &&
-      this.serverSettings.isEnabled(GqlFeatureName.CanCreateUser);
-    this.hasWaitList = this.serverSettings.isEnabled(
-      GqlFeatureName.HasWaitList,
-    );
+    if (this.serverSettings.hasProfile(GqlProfileName.SelfHosted)) {
+      this.showNoSignupBanner = false;
+      this.showUserPasswordLogin = true;
+
+    } else {
+      this.showNoSignupBanner = true;
+      this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
+      this.canSignUp =
+        this.serverSettings.isEnabled(GqlFeatureName.CanSignUp) &&
+        this.serverSettings.isEnabled(GqlFeatureName.CanCreateUser);
+      this.hasWaitList = this.serverSettings.isEnabled(
+        GqlFeatureName.HasWaitList,
+      );
+      this.showLogin = this.canLogin && !this.hasWaitList;
+    }
+
     this.subscriptions.push(
-      this.authSettings.isAuthenticated().subscribe(async (authenticated) => {
+      this.authService.isAuthenticated().subscribe(async (authenticated) => {
         if (authenticated) {
           await this.router.navigateByUrl('/');
         } else {
-          this.showSSO = this.serverSettings.isEnabled(GqlFeatureName.AuthSso);
-          this.showMailLogin = this.serverSettings.isEnabled(
-            GqlFeatureName.AuthMail,
+          this.showSSO = this.serverSettings.hasProfile(GqlProfileName.AuthSso);
+          this.showMailLogin = this.serverSettings.hasProfile(
+            GqlProfileName.AuthMail,
           );
         }
       }),
     );
+  }
+
+  loginWithUserPassword(email: string | number, password: string | number) {
+    return this.authService.authorizeUser({
+      email: `${email}`,
+      secretKey: `${password}`
+    })
   }
 }

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Date
 
 plugins {
   id("org.springframework.boot") version "3.0.3"
@@ -181,7 +182,8 @@ tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, codegen)
 tasks.getByName("compileTestKotlin").dependsOn(codegen)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
-  args("--spring.profiles.active=dev")
+  systemProperty("APP_BUILD_TIMESTAMP", Date().time)
+  args("--spring.profiles.active=dev ")
 }
 
 val lintTask = tasks.register("lint") {
@@ -209,6 +211,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
     "-t", "$baseTag:core-$gitHash",
     "."

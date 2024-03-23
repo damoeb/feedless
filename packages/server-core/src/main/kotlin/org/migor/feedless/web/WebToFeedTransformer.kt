@@ -193,7 +193,13 @@ class WebToFeedTransformer(
 
     return linkGroups
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
-      .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup, parserOptions) }
+      .filterTo(ArrayList()) { (groupId, linksInGroup): Pair<String, MutableList<LinkPointer>> ->
+        hasRelevantSize(
+          groupId,
+          linksInGroup,
+          parserOptions
+        )
+      }
       .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
       .map { contexts -> tryAddDateXPath(contexts) }
       .map { contexts -> convertContextsToRule(contexts, body) }
@@ -504,7 +510,7 @@ class WebToFeedTransformer(
   }
 
   private fun toWords(text: String): List<String> {
-    return text.trim().split(" ").filter { word -> word.isNotEmpty() }
+    return text.trim().split(" ").filterTo(ArrayList()) { word: String -> word.isNotEmpty() }
   }
 
   private fun toAbsoluteUrl(url: URL, link: String): String {
@@ -528,7 +534,7 @@ class WebToFeedTransformer(
   fun __generalizeXPaths(xpaths: Collection<String>): String {
     val tokenized = xpaths.map { xpath ->
       xpath.split('/')
-        .filter { xpathFragment -> xpathFragment.isNotEmpty() }
+        .filterTo(ArrayList()) { xpathFragment: String -> xpathFragment.isNotEmpty() }
         .map { p ->
           run {
             val attrNodeMatch = reXpathId.matchEntire(p)
@@ -677,7 +683,8 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun words(text: String): List<String> = text.split(" ").filter { word -> word.length > 0 }
+  private fun words(text: String): List<String> = text.split(" ")
+    .filterTo(ArrayList()) { word: String -> word.length > 0 }
 
   private fun scoreRule(selectors: GenericFeedSelectors): GenericFeedSelectors {
 //    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest

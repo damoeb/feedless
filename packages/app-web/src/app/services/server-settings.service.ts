@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
-  GqlFeatureName,
+  GqlFeatureName, GqlLicense, GqlLicenseData,
   GqlProductName,
+  GqlProfileName,
   GqlServerSettingsQuery,
-  GqlServerSettingsQueryVariables,
-  ServerSettings,
+  GqlServerSettingsQueryVariables, Maybe,
+  ServerSettings
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -32,6 +33,10 @@ type ToastOptions = {
   buttons?: AlertButton[];
 };
 
+export type License = Pick<GqlLicense, 'isValid' | 'isLocated' | 'trialUntil'> & {
+  data?: Maybe<Pick<GqlLicenseData, 'name' | 'email' | 'date'>>
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -39,7 +44,11 @@ export class ServerSettingsService {
   apiUrl: string; // todo merge api and gateway
   gatewayUrl: string;
   appUrl: string;
-  private features: Array<Feature>;
+  private features: Feature[];
+  private profiles: GqlProfileName[];
+  private license: License;
+  private buildFrom: number;
+  private version: string;
 
   constructor(
     private readonly httpClient: HttpClient,
@@ -97,6 +106,10 @@ export class ServerSettingsService {
         })
         .then((response) => response.data.serverSettings);
       this.features = response.features;
+      this.profiles = response.profiles;
+      this.license = response.license;
+      this.version = response.version;
+      this.buildFrom = response.buildFrom;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
     } catch (e) {
@@ -151,5 +164,29 @@ export class ServerSettingsService {
     });
 
     await alert.present();
+  }
+
+  hasProfile(profile: GqlProfileName) {
+    return this.profiles.indexOf(profile) > -1;
+  }
+
+  isSelfHosted() {
+    return this.hasProfile(GqlProfileName.SelfHosted)
+  }
+
+  getBuildFrom() {
+    return this.buildFrom;
+  }
+
+  getVersion() {
+    return this.version;
+  }
+
+  getLicense() {
+    return this.license;
+  }
+
+  isTrialPeriod() {
+    return !this.license.isLocated && this.license.trialUntil > new Date().getTime()
   }
 }

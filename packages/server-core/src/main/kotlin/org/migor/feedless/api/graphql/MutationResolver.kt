@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -104,7 +105,7 @@ class MutationResolver {
   ): AuthenticationDto = coroutineScope {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] authUser")
-    if (propertyService.authentication == AppProfiles.authRoot) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
       log.info("[$corrId] authRoot")
       val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found ($corrId)")
       if (!root.root) {
