@@ -1,4 +1,4 @@
-fragment BasicPlugin on Plugin {
+fragment PluginFragment on Plugin {
   id
   name
   listed

@@ -26,6 +26,7 @@ import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { FeedService } from '../../services/feed.service';
 import { RemoteFeed } from '../../graphql/types';
+import { ServerSettingsService } from '../../services/server-settings.service';
 
 export interface GenerateFeedModalComponentProps {
   scrapeRequest: GqlScrapeRequestInput;
@@ -82,6 +83,7 @@ export class GenerateFeedModalComponent
     private readonly alertCtrl: AlertController,
     private readonly profileService: ProfileService,
     private readonly feedService: FeedService,
+    readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly sourceSubscriptionService: SourceSubscriptionService,

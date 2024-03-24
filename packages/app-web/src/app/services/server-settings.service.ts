@@ -33,10 +33,6 @@ type ToastOptions = {
   buttons?: AlertButton[];
 };
 
-export type License = Pick<GqlLicense, 'isValid' | 'isLocated' | 'trialUntil'> & {
-  data?: Maybe<Pick<GqlLicenseData, 'name' | 'email' | 'date'>>
-};
-
 @Injectable({
   providedIn: 'root',
 })
@@ -46,7 +42,6 @@ export class ServerSettingsService {
   appUrl: string;
   private features: Feature[];
   private profiles: GqlProfileName[];
-  private license: License;
   private buildFrom: number;
   private version: string;
 
@@ -107,7 +102,6 @@ export class ServerSettingsService {
         .then((response) => response.data.serverSettings);
       this.features = response.features;
       this.profiles = response.profiles;
-      this.license = response.license;
       this.version = response.version;
       this.buildFrom = response.buildFrom;
       this.gatewayUrl = response.gatewayUrl;
@@ -180,13 +174,5 @@ export class ServerSettingsService {
 
   getVersion() {
     return this.version;
-  }
-
-  getLicense() {
-    return this.license;
-  }
-
-  isTrialPeriod() {
-    return !this.license.isLocated && this.license.trialUntil > new Date().getTime()
   }
 }

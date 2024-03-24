@@ -1,8 +1,8 @@
 query plans($product: ProductName!) {
   plans(product: $product) {
-    ...BasicPlan
+    ...PlanFragment
     features {
-      ...BasicFeature
+      ...FeatureFragment
     }
   }
 }

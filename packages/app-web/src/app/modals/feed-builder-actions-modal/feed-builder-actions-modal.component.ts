@@ -26,7 +26,7 @@ import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { Router } from '@angular/router';
-import { ScrapedElement } from '../../graphql/types';
+import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
 
 type BrowserActionType = 'click';
 
@@ -35,23 +35,23 @@ interface BrowserAction {
   clickParams: FormControl<GqlXyPosition>;
 }
 
-export type FeedBuilderScrapeResponse = Pick<
-  GqlScrapeResponse,
-  'url' | 'failed' | 'errorMessage'
-> & {
-  debug: Pick<
-    GqlScrapeDebugResponse,
-    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
-  > & {
-    metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
-  };
-  elements: Array<ScrapedElement>;
-};
+// export type FeedBuilderScrapeResponse = Pick<
+//   GqlScrapeResponse,
+//   'url' | 'failed' | 'errorMessage'
+// > & {
+//   debug: Pick<
+//     GqlScrapeDebugResponse,
+//     'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
+//   > & {
+//     metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
+//     viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
+//   };
+//   elements: Array<ScrapedElement>;
+// };
 
 export interface FeedBuilderData {
   request: GqlScrapeRequestInput;
-  response: FeedBuilderScrapeResponse;
+  response: ScrapeResponse;
 }
 
 @Component({
@@ -74,7 +74,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
   private subscriptions: Subscription[] = [];
-  scrapeResponse: FeedBuilderScrapeResponse;
+  scrapeResponse: ScrapeResponse;
   errorMessage: string;
 
   constructor(

@@ -158,7 +158,7 @@
         </ion-item>
       </ion-list>
     </div>
-    <div>
+    <div style="display: flex; flex-direction: column; flex: 1">
       <ion-list>
         <ion-item>
           <ion-label>
@@ -197,7 +197,7 @@
         ><strong>{{ errorMessage }}</strong></ion-label
       >
     </ion-item>
-    <ion-item *ngIf="!isLoggedIn">
+    <ion-item *ngIf="!isLoggedIn && !serverSettings.isSelfHosted()">
       <ion-label
         >You can create a limited trial feed without signing up.</ion-label
       >

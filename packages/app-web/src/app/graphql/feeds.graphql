@@ -1,21 +1,21 @@
-fragment BasicRemoteNativeFeed on RemoteNativeFeed {
+fragment RemoteNativeFeedFragment on RemoteNativeFeed {
   title
   description
   websiteUrl
   feedUrl
   items {
-    ...BasicWebDocument
+    ...WebDocumentFragment
   }
 }
 
 query remoteNativeFeed($data: RemoteNativeFeedInput!) {
   remoteNativeFeed(data: $data) {
-    ...BasicRemoteNativeFeed
+    ...RemoteNativeFeedFragment
   }
 }
 
 query previewFeed($data: PreviewFeedInput!) {
   previewFeed(data: $data) {
-    ...BasicRemoteNativeFeed
+    ...RemoteNativeFeedFragment
   }
 }

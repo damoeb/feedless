@@ -65,7 +65,6 @@ export class AuthService {
     email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.authorizeAnonymous();
-    console.log(platform.description);
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables

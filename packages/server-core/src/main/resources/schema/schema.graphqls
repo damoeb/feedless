@@ -566,6 +566,7 @@ type License {
 type LicenseData {
   name: String!
   email: String!
+  type: String!
   date: Long!
 }
 

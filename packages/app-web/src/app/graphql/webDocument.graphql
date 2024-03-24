@@ -1,12 +1,12 @@
 query webDocumentById($data: WebDocumentWhereInput!) {
   webDocument(data: $data) {
-    ...BasicWebDocument
+    ...WebDocumentFragment
   }
 }
 
 query webDocumentByIds($data: WebDocumentsInput!) {
   webDocuments(data: $data) {
-    ...BasicWebDocument
+    ...WebDocumentFragment
   }
 }
 

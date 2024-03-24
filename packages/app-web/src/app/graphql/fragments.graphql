@@ -1,4 +1,4 @@
-fragment BasicSelectors on Selectors {
+fragment SelectorsFragment on Selectors {
   contextXPath
   linkXPath
   extendContext
@@ -6,7 +6,7 @@ fragment BasicSelectors on Selectors {
   dateIsStartOfEvent
 }
 
-fragment BasicSourceSubscription on SourceSubscription {
+fragment SourceSubscriptionFragment on SourceSubscription {
   id
   ownerId
   title
@@ -112,24 +112,24 @@ fragment BasicSourceSubscription on SourceSubscription {
       timeout
       prerender {
         viewport {
-          ...BasicViewport
+          ...ViewportFragment
         }
       }
       actions {
-        ...BasicAction
+        ...ActionFragment
       }
     }
   }
 }
 
-fragment BasicViewport on ViewPort {
+fragment ViewportFragment on ViewPort {
   height
   width
   isLandscape
   isMobile
 }
 
-fragment BasicReadability on ScrapedReadability {
+fragment ReadabilityFragment on ScrapedReadability {
   url
   content
   contentMime
@@ -140,10 +140,10 @@ fragment BasicReadability on ScrapedReadability {
   title
 }
 
-fragment BasicNestedScrapedField on ScrapedField {
-  ...BasicScrapedField
+fragment NestedScrapedFieldFragment on ScrapedField {
+  ...ScrapedFieldFragment
 }
-fragment BasicScrapedField on ScrapedField {
+fragment ScrapedFieldFragment on ScrapedField {
   xpath {
     value
   }
@@ -166,11 +166,11 @@ fragment BasicScrapedField on ScrapedField {
   }
 }
 
-fragment BasicRefineOptions on RefineOptions {
+fragment RefineOptionsFragment on RefineOptions {
   filter
 }
 
-fragment BasicAction on ScrapeAction {
+fragment ActionFragment on ScrapeAction {
   type {
     element {
       value
@@ -210,22 +210,22 @@ fragment BasicAction on ScrapeAction {
     }
   }
 }
-fragment BasicScrapeOptions on ScrapeRequest {
+fragment ScrapeOptionsFragment on ScrapeRequest {
   page {
     prerender {
       viewport {
-        ...BasicViewport
+        ...ViewportFragment
       }
     }
     actions {
-      ...BasicAction
+      ...ActionFragment
     }
     url
     timeout
   }
 }
 
-fragment BasicFeature on Feature {
+fragment FeatureFragment on Feature {
   name
   value {
     numVal {
@@ -237,7 +237,7 @@ fragment BasicFeature on Feature {
   }
 }
 
-fragment BasicPlan on Plan {
+fragment PlanFragment on Plan {
   id
   name
   availability
@@ -246,14 +246,14 @@ fragment BasicPlan on Plan {
   beforeCosts
 }
 
-fragment BasicPagination on Pagination {
+fragment PaginationFragment on Pagination {
   page
   isLast
   isFirst
   isEmpty
 }
 
-fragment BasicWebDocument on WebDocument {
+fragment WebDocumentFragment on WebDocument {
   id
   contentTitle
   contentRawMime
@@ -266,14 +266,14 @@ fragment BasicWebDocument on WebDocument {
   startingAt
 }
 
-fragment BasicEnclosure on Enclosure {
+fragment EnclosureFragment on Enclosure {
   size
   duration
   type
   url
 }
 
-fragment BasicHistogram on Histogram {
+fragment HistogramFragment on Histogram {
   items {
     index
     count
@@ -281,7 +281,7 @@ fragment BasicHistogram on Histogram {
   frame
 }
 
-fragment BasicContent on WebDocument {
+fragment ContentFragment on WebDocument {
   contentTitle
   contentText
   contentRawBase64
@@ -293,11 +293,11 @@ fragment BasicContent on WebDocument {
   updatedAt
   createdAt
   enclosures {
-    ...BasicEnclosure
+    ...EnclosureFragment
   }
 }
 
-fragment BasicNativeFeed on NativeFeed {
+fragment NativeFeedFragment on NativeFeed {
   title
   description
   domain
