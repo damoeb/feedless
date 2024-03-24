@@ -1,194 +1,30 @@
 import {
   GqlAuthentication,
-  GqlBase64Data,
-  GqlBoundingBox,
-  GqlCookieValue,
-  GqlDiffEmailForwardParams,
-  GqlDomActionSelect,
-  GqlDomElementByName,
-  GqlDomElementByXPath,
-  GqlFeature,
-  GqlFeatureBooleanValue,
-  GqlFeatureIntValue,
-  GqlFulltextPluginParams,
-  GqlPlan,
-  GqlPlanSubscription,
-  GqlPlugin,
-  GqlPluginExecution,
-  GqlPluginExecutionParams,
-  GqlProfile,
-  GqlRemoteNativeFeed,
-  GqlRequestHeader,
-  GqlRetention,
-  GqlScrapeDebugOptions,
-  GqlScrapeDebugResponse,
-  GqlScrapeDebugTimes,
-  GqlScrapedField,
+  GqlCreateSourceSubscriptionsMutation,
+  GqlCreateUserSecretMutation,
+  GqlListPluginsQuery,
+  GqlPlansQuery,
+  GqlProfileQuery,
+  GqlRemoteNativeFeedQuery,
   GqlScrapedReadability,
-  GqlScrapedSingleFieldValue,
-  GqlScrapePage,
-  GqlScrapeRequest,
-  GqlScrapeResponse,
-  GqlScrapeSelector,
-  GqlScrapeSelectorExpose,
-  GqlScrapeSelectorExposeField,
-  GqlScrapeSelectorExposeFieldTextValue,
-  GqlScrapeSelectorExposeFieldValue,
-  GqlSegment,
+  GqlScrapeQuery,
   GqlSelectors,
-  GqlSourceSubscription,
-  GqlTextData,
-  GqlUser,
-  GqlUserSecret,
-  GqlViewPort,
-  GqlWebDocument,
-  Maybe,
+  GqlSourceSubscriptionByIdQuery,
+  GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';
 
-export type FeedlessPluginExecution = Pick<GqlPluginExecution, 'pluginId'> & {
-  params?: Maybe<
-    Pick<GqlPluginExecutionParams, 'rawJson'> & {
-      genericFeed?: Maybe<
-        Pick<
-          GqlSelectors,
-          | 'extendContext'
-          | 'linkXPath'
-          | 'contextXPath'
-          | 'dateIsStartOfEvent'
-          | 'dateXPath'
-        >
-      >;
-      diffEmailForward?: Maybe<
-        Pick<
-          GqlDiffEmailForwardParams,
-          'inlineDiffImage' | 'inlineLatestImage' | 'inlinePreviousImage'
-        >
-      >;
-      fulltext?: Maybe<Pick<GqlFulltextPluginParams, 'readability'>>;
-    }
-  >;
-};
-export type SubscriptionSource = Pick<GqlScrapeRequest, 'id'> & {
-  debug?: Maybe<
-    Pick<
-      GqlScrapeDebugOptions,
-      'network' | 'html' | 'console' | 'cookies' | 'screenshot'
-    >
-  >;
-  emit: Array<{
-    selectorBased?: Maybe<
-      Pick<GqlScrapeSelector, 'min' | 'max'> & {
-        xpath: Pick<GqlDomElementByXPath, 'value'>;
-        expose: Pick<GqlScrapeSelectorExpose, 'pixel'> & {
-          fields?: Maybe<
-            Array<
-              Pick<GqlScrapeSelectorExposeField, 'min' | 'max' | 'name'> & {
-                value?: Maybe<
-                  Pick<GqlScrapeSelectorExposeFieldValue, 'set'> & {
-                    html?: Maybe<{
-                      xpath: Pick<GqlDomElementByXPath, 'value'>;
-                    }>;
-                    text?: Maybe<
-                      Pick<GqlScrapeSelectorExposeFieldTextValue, 'regex'>
-                    >;
-                  }
-                >;
-              }
-            >
-          >;
-          transformers?: Maybe<
-            Array<
-              Pick<GqlPluginExecution, 'pluginId'> & {
-                params?: Maybe<{
-                  genericFeed?: Maybe<
-                    Pick<
-                      GqlSelectors,
-                      | 'contextXPath'
-                      | 'dateXPath'
-                      | 'dateIsStartOfEvent'
-                      | 'extendContext'
-                      | 'linkXPath'
-                    >
-                  >;
-                }>;
-              }
-            >
-          >;
-        };
-      }
-    >;
-    imageBased?: Maybe<{
-      boundingBox: Pick<GqlBoundingBox, 'x' | 'y' | 'w' | 'h'>;
-    }>;
-  }>;
-  page: Pick<GqlScrapePage, 'url' | 'timeout'> & {
-    prerender?: Maybe<{
-      viewport?: Maybe<
-        Pick<GqlViewPort, 'height' | 'width' | 'isLandscape' | 'isMobile'>
-      >;
-    }>;
-    actions?: Maybe<
-      Array<{
-        type?: Maybe<{ element: Pick<GqlDomElementByXPath, 'value'> }>;
-        cookie?: Maybe<Pick<GqlCookieValue, 'value'>>;
-        click?: Maybe<{
-          element?: Maybe<{
-            xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-            name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
-          }>;
-        }>;
-        header?: Maybe<Pick<GqlRequestHeader, 'value' | 'name'>>;
-        select?: Maybe<
-          Pick<GqlDomActionSelect, 'selectValue'> & {
-            element: Pick<GqlDomElementByXPath, 'value'>;
-          }
-        >;
-        wait?: Maybe<{
-          element?: Maybe<{
-            name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
-            xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-          }>;
-        }>;
-      }>
-    >;
-  };
-};
-export type SourceSubscription = Pick<
-  GqlSourceSubscription,
-  | 'id'
-  | 'ownerId'
-  | 'title'
-  | 'description'
-  | 'visibility'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'disabledFrom'
-  | 'archived'
-> & {
-  plugins: Array<FeedlessPluginExecution>;
-  segmented?: Maybe<
-    Pick<
-      GqlSegment,
-      'digest' | 'scheduleExpression' | 'size' | 'sortAsc' | 'sortBy'
-    >
-  >;
-  retention: Pick<GqlRetention, 'maxAgeDays' | 'maxItems'>;
-  sources: Array<SubscriptionSource>;
-};
-
-export type WebDocument = Pick<
-  GqlWebDocument,
-  | 'id'
-  | 'url'
-  | 'imageUrl'
-  | 'createdAt'
-  | 'contentText'
-  | 'contentRawBase64'
-  | 'contentRawMime'
-  | 'contentTitle'
-  | 'publishedAt'
-  | 'startingAt'
+export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
+export type FeedlessPluginExecution = GetElementType<
+  GqlSourceSubscriptionByIdQuery['sourceSubscription']['plugins']
+>['params'];
+export type SubscriptionSource = GetElementType<
+  GqlSourceSubscriptionByIdQuery['sourceSubscription']['sources']
 >;
+export type SourceSubscription = GetElementType<
+  GqlCreateSourceSubscriptionsMutation['createSourceSubscriptions']
+>;
+
+export type WebDocument = GqlWebDocumentByIdQuery['webDocument'];
 
 export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
@@ -213,109 +49,12 @@ export type ScrapedReadability = Pick<
   | 'title'
 >;
 
-export type ScrapedElement = {
-  image?: Maybe<{
-    boundingBox: Pick<GqlBoundingBox, 'y' | 'x' | 'w' | 'h'>;
-    data: Pick<GqlBase64Data, 'base64Data'>;
-  }>;
-  selector?: Maybe<{
-    xpath: Pick<GqlDomElementByXPath, 'value'>;
-    html?: Maybe<Pick<GqlTextData, 'data'>>;
-    pixel?: Maybe<Pick<GqlBase64Data, 'base64Data'>>;
-    text?: Maybe<Pick<GqlTextData, 'data'>>;
-    fields?: Maybe<
-      Array<
-        Pick<GqlScrapedField, 'name'> & {
-          xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-          value?: Maybe<{
-            one?: Maybe<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>;
-            many?: Maybe<
-              Array<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>
-            >;
-            nested?: Maybe<
-              Array<
-                Pick<GqlScrapedField, 'name'> & {
-                  xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-                }
-              >
-            >;
-          }>;
-        }
-      >
-    >;
-  }>;
-};
-
-export type ScrapeResponse = Pick<
-  GqlScrapeResponse,
-  'url' | 'failed' | 'errorMessage'
-> & {
-  debug: Pick<
-    GqlScrapeDebugResponse,
-    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
-  > & {
-    metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
-  };
-  elements: Array<ScrapedElement>;
-};
-
-export type RemoteFeedItem = Pick<
-  GqlWebDocument,
-  | 'url'
-  | 'contentTitle'
-  | 'contentText'
-  | 'contentRawBase64'
-  | 'contentRawMime'
-  | 'publishedAt'
-  | 'startingAt'
->;
-
-export type RemoteFeed = Pick<
-  GqlRemoteNativeFeed,
-  'title' | 'description' | 'websiteUrl' | 'feedUrl'
-> & { items?: Array<RemoteFeedItem> };
-
-export type Feature = Pick<GqlFeature, 'name'> & {
-  value: {
-    numVal?: Maybe<Pick<GqlFeatureIntValue, 'value'>>;
-    boolVal?: Maybe<Pick<GqlFeatureBooleanValue, 'value'>>;
-  };
-};
-export type Plan = Pick<
-  GqlPlan,
-  'id' | 'name' | 'availability' | 'isPrimary' | 'currentCosts' | 'beforeCosts'
-> & { features: Array<Feature> };
-
-export type Profile = Pick<GqlProfile, 'isLoggedIn'> & {
-  user?: Maybe<
-    Pick<GqlUser, 'id' | 'hasAcceptedTerms' | 'purgeScheduledFor'> & {
-      secrets: Array<
-        Pick<
-          GqlUserSecret,
-          'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
-        >
-      >;
-      subscription?: Maybe<
-        Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
-          plan: Pick<
-            GqlPlan,
-            | 'id'
-            | 'name'
-            | 'availability'
-            | 'isPrimary'
-            | 'currentCosts'
-            | 'beforeCosts'
-          >;
-        }
-      >;
-    }
-  >;
-};
-
-export type UserSecret = Pick<
-  GqlUserSecret,
-  'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
->;
-
-export type FeedlessPlugin = Pick<GqlPlugin, 'id' | 'name' | 'type' | 'listed'>;
+export type ScrapedElement = GetElementType<ScrapeResponse['elements']>;
+export type ScrapeResponse = GqlScrapeQuery['scrape'];
+export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
+export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];
+export type Feature = GetElementType<Plan['features']>;
+export type Plan = GetElementType<GqlPlansQuery['plans']>;
+export type Profile = GqlProfileQuery['profile'];
+export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
+export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;

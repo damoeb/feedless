@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { RssBuilderProductPage } from './rss-builder-product.page';
 import { ProductService } from '../../services/product.service';
 import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
+import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
   {
@@ -24,6 +25,7 @@ const routes: Routes = [
       },
       {
         path: 'builder',
+        canActivate: [AuthGuardService],
         loadChildren: () =>
           import('../../pages/feed-builder/feed-builder.module').then(
             (m) => m.FeedBuilderPageModule,
@@ -48,7 +50,7 @@ const routes: Routes = [
           import('../../pages/license/license.module').then(
             (m) => m.LicensePageModule,
           ),
-      }
+      },
     ],
   },
   ...ProductService.defaultRoutes,

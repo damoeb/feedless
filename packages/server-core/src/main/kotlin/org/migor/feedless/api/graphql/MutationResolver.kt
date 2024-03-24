@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
-import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
@@ -16,14 +15,12 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
-import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.fromDto
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.AuthUserInput
-import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.DeleteUserSecretsInput
 import org.migor.feedless.generated.types.SourceSubscription
@@ -65,9 +62,6 @@ class MutationResolver {
 
   @Autowired
   lateinit var environment: Environment
-
-  @Autowired
-  lateinit var mailAuthenticationService: MailAuthenticationService
 
   @Autowired
   lateinit var agentService: AgentService
@@ -123,23 +117,6 @@ class MutationResolver {
       throw PermissionDeniedException("authRoot profile is not active ($corrId)")
     }
   }
-
-  @Throttled
-  @DgsMutation
-  suspend fun authConfirmCode(
-    @InputArgument data: ConfirmAuthCodeInput,
-    dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = coroutineScope {
-    log.info("[$corrId] authConfirmCode")
-    mailAuthenticationService.confirmAuthCode(corrId, data, resolveHttpResponse(dfe))
-    true
-  }
-
-  private fun resolveHttpResponse(dfe: DataFetchingEnvironment): HttpServletResponse {
-    return ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!
-  }
-
 
   @Throttled
   @DgsMutation

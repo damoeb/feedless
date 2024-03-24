@@ -52,7 +52,7 @@ class SecurityConfig {
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
   private val metricRole = "METRIC_CONSUMER"
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var userService: UserService
 
   @Autowired(required = false)

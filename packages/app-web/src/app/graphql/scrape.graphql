@@ -13,7 +13,7 @@ query scrape($data: ScrapeRequestInput!) {
         render
       }
       viewport {
-        ...BasicViewport
+        ...ViewportFragment
       }
     }
     failed
@@ -44,7 +44,7 @@ query scrape($data: ScrapeRequestInput!) {
           data
         }
         fields {
-          ...BasicNestedScrapedField
+          ...NestedScrapedFieldFragment
         }
       }
     }

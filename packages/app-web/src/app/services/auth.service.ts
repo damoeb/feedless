@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core';
 import platform from 'platform';
 import {
-  AuthAnonymous, AuthUser,
+  AuthAnonymous,
+  AuthUser,
   AuthViaMail,
   ConfirmCode,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables, GqlAuthUserInput, GqlAuthUserMutation, GqlAuthUserMutationVariables,
+  GqlAuthAnonymousMutationVariables,
+  GqlAuthUserInput,
+  GqlAuthUserMutation,
+  GqlAuthUserMutationVariables,
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables
+  GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
 import {
   ApolloClient,
@@ -65,7 +69,6 @@ export class AuthService {
     email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.authorizeAnonymous();
-    console.log(platform.description);
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables

@@ -105,15 +105,15 @@ private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when
   PlanName.free -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
   PlanName.waitlist -> org.migor.feedless.generated.types.PlanName.waitlist
-  PlanName.maximal -> throw BadRequestException("cannot be exported")
-  PlanName.system -> throw BadRequestException("cannot be exported")
+  PlanName.maximal -> throw BadRequestException("$this cannot be exported")
+  PlanName.system -> throw BadRequestException("$this cannot be exported")
 }
 
 private fun PlanAvailability.toDto(): org.migor.feedless.generated.types.PlanAvailability = when (this) {
   PlanAvailability.by_request -> org.migor.feedless.generated.types.PlanAvailability.by_request
   PlanAvailability.available -> org.migor.feedless.generated.types.PlanAvailability.available
-  PlanAvailability.unavailable -> throw BadRequestException("cannot be exported")
-  PlanAvailability.availableButHidden -> throw BadRequestException("cannot be exported")
+  PlanAvailability.unavailable -> throw BadRequestException("$this cannot be exported")
+  PlanAvailability.availableButHidden -> throw BadRequestException("$this cannot be exported")
 }
 
 fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {

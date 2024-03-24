@@ -1,5 +1,15 @@
+@import "../../../mixins";
+
 a,
 a:visited,
 a:active {
   color: var(--ion-color-primary);
+}
+
+ion-textarea {
+  --app-border-radius: 8px;
+  --padding-start: 10px !important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+  min-height: 400px;
+  @include control();
 }

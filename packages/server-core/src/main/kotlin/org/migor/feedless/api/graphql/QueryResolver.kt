@@ -191,7 +191,7 @@ class QueryResolver {
   suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: ProductName): List<Plan> =
     coroutineScope {
       log.info("[$corrId] plans for $product")
-      planService.findAllAvailable(product.fromDto()).map { it.toDto() }
+      planService.findAllVisible(product.fromDto()).map { it.toDto() }
     }
 }
 

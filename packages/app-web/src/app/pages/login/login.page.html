@@ -10,14 +10,15 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-
   <div
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
   >
     <div style="width: 400px">
-      <form *ngIf="showUserPasswordLogin"
-            (ngSubmit)="loginWithUserPassword(email.value, password.value)">
+      <form
+        *ngIf="showUserPasswordLogin"
+        (ngSubmit)="loginWithUserPassword(email.value, password.value)"
+      >
         <h1 class="ion-margin-start">Login</h1>
         <ion-card-content>
           <ion-list>
@@ -51,7 +52,10 @@
       </form>
 
       <div *ngIf="!showUserPasswordLogin">
-        <div class="ion-margin-horizontal ion-margin-bottom" *ngIf="hasWaitList && !canSignUp">
+        <div
+          class="ion-margin-horizontal ion-margin-bottom"
+          *ngIf="hasWaitList && !canSignUp"
+        >
           <app-newsletter
             headerText="Private Beta"
             bodyText="I haven't opened public signup yet, you can request to join the public beta tough."
@@ -89,7 +93,9 @@
         <div class="ion-margin-top" *ngIf="canLogin">
           <div *ngIf="!showLogin" class="ion-margin-horizontal">
             If you have an account
-            <a href="javascript:void(0)" (click)="showLogin = true">login here</a>
+            <a href="javascript:void(0)" (click)="showLogin = true"
+              >login here</a
+            >
           </div>
 
           <div *ngIf="showLogin">

@@ -5,11 +5,7 @@ import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.api.auth.AuthService
-import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.generated.types.AgentEvent
-import org.migor.feedless.generated.types.AuthViaMailInput
-import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -21,26 +17,12 @@ import org.springframework.context.annotation.Profile
 
 @DgsComponent
 @Profile(AppProfiles.database)
-class SubscriptionResolver {
+class AgentResolver {
 
-  private val log = LoggerFactory.getLogger(SubscriptionResolver::class.simpleName)
-
-  @Autowired
-  lateinit var mailAuthenticationService: MailAuthenticationService
+  private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
   @Autowired
   lateinit var agentService: AgentService
-
-  @Autowired
-  lateinit var authService: AuthService
-
-  @DgsSubscription
-  fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {
-    val corrId = newCorrId()
-    log.info("[$corrId] authViaMail ${data.product}")
-    this.authService.decodeToken(data.token)
-    return mailAuthenticationService.authenticateUsingMail(corrId, data)
-  }
 
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {

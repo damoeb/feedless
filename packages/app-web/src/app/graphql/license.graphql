@@ -1,4 +1,4 @@
-fragment License on License {
+fragment LicenseFragment on License {
   isValid
   isLocated
   trialUntil
@@ -6,19 +6,19 @@ fragment License on License {
   data {
     name
     email
+    type
     date
   }
 }
 
 query license {
   license {
-    ...License
+    ...LicenseFragment
   }
 }
 
-
 mutation updateLicense($data: UpdateLicenseInput!) {
   updateLicense(data: $data) {
-    ...License
+    ...LicenseFragment
   }
 }

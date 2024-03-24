@@ -7,14 +7,16 @@ COPY build/libs/app.jar app.jar
 FROM amazoncorretto:21-alpine-jdk
 ARG workdir=/usr/feedless
 WORKDIR $workdir
-
 ARG APP_VERSION
+ARG APP_BUILD_TIMESTAMP
 ARG APP_GIT_HASH
+
 ENV APP_ACTIVE_PROFILES="prod" \
     APP_LOG_LEVEL="error" \
     APP_BUILD_TIMESTAMP=$APP_BUILD_TIMESTAMP \
     APP_VERSION=$APP_VERSION \
     APP_GIT_HASH=$APP_GIT_HASH
+
 EXPOSE 8080
 RUN addgroup -g 1000 java && \
     adduser -u 1000 -G java -s /bin/sh -D java && \

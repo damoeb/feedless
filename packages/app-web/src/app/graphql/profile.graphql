@@ -6,13 +6,13 @@ query profile {
       hasAcceptedTerms
       purgeScheduledFor
       secrets {
-        ...BasicSecret
+        ...SecretFragment
       }
       subscription {
         expiry
         startedAt
         plan {
-          ...BasicPlan
+          ...PlanFragment
         }
       }
     }
@@ -33,7 +33,7 @@ mutation logout {
   logout
 }
 
-fragment BasicSecret on UserSecret {
+fragment SecretFragment on UserSecret {
   id
   validUntil
   type
@@ -44,7 +44,7 @@ fragment BasicSecret on UserSecret {
 
 mutation createUserSecret {
   createUserSecret {
-    ...BasicSecret
+    ...SecretFragment
   }
 }
 

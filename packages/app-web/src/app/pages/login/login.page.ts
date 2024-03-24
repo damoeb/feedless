@@ -39,7 +39,6 @@ export class LoginPage implements OnInit, OnDestroy {
     if (this.serverSettings.hasProfile(GqlProfileName.SelfHosted)) {
       this.showNoSignupBanner = false;
       this.showUserPasswordLogin = true;
-
     } else {
       this.showNoSignupBanner = true;
       this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
@@ -69,7 +68,7 @@ export class LoginPage implements OnInit, OnDestroy {
   loginWithUserPassword(email: string | number, password: string | number) {
     return this.authService.authorizeUser({
       email: `${email}`,
-      secretKey: `${password}`
-    })
+      secretKey: `${password}`,
+    });
   }
 }

@@ -45,7 +45,7 @@ class UserService {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var mailService: MailService
 
   @Autowired

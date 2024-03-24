@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
-  GqlFeatureName, GqlLicense, GqlLicenseData,
+  GqlFeatureName,
+  GqlLicense,
+  GqlLicenseData,
   GqlProductName,
   GqlProfileName,
   GqlServerSettingsQuery,
-  GqlServerSettingsQueryVariables, Maybe,
-  ServerSettings
+  GqlServerSettingsQueryVariables,
+  Maybe,
+  ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -33,10 +36,6 @@ type ToastOptions = {
   buttons?: AlertButton[];
 };
 
-export type License = Pick<GqlLicense, 'isValid' | 'isLocated' | 'trialUntil'> & {
-  data?: Maybe<Pick<GqlLicenseData, 'name' | 'email' | 'date'>>
-};
-
 @Injectable({
   providedIn: 'root',
 })
@@ -46,7 +45,6 @@ export class ServerSettingsService {
   appUrl: string;
   private features: Feature[];
   private profiles: GqlProfileName[];
-  private license: License;
   private buildFrom: number;
   private version: string;
 
@@ -59,6 +57,7 @@ export class ServerSettingsService {
     const config = await firstValueFrom(
       this.httpClient.get<FeedlessAppConfig>('/config.json'),
     );
+
     this.apiUrl = config.apiUrl;
 
     // const product= environment.production ? config.products.find(p => p.hostname === location.hostname)?.product : config.forceProduct
@@ -107,7 +106,6 @@ export class ServerSettingsService {
         .then((response) => response.data.serverSettings);
       this.features = response.features;
       this.profiles = response.profiles;
-      this.license = response.license;
       this.version = response.version;
       this.buildFrom = response.buildFrom;
       this.gatewayUrl = response.gatewayUrl;
@@ -171,7 +169,7 @@ export class ServerSettingsService {
   }
 
   isSelfHosted() {
-    return this.hasProfile(GqlProfileName.SelfHosted)
+    return this.hasProfile(GqlProfileName.SelfHosted);
   }
 
   getBuildFrom() {
@@ -180,13 +178,5 @@ export class ServerSettingsService {
 
   getVersion() {
     return this.version;
-  }
-
-  getLicense() {
-    return this.license;
-  }
-
-  isTrialPeriod() {
-    return !this.license.isLocated && this.license.trialUntil > new Date().getTime()
   }
 }

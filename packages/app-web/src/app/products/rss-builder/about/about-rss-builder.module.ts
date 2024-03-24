@@ -6,6 +6,7 @@ import { AboutRssBuilderRoutingModule } from './about-rss-builder-routing.module
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
+import { ImportOpmlModalModule } from '../../../modals/import-opml-modal/import-opml-modal.module';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     AboutRssBuilderRoutingModule,
     ProductHeadlineModule,
     SearchbarModule,
+    ImportOpmlModalModule,
   ],
   declarations: [AboutRssBuilderPage],
 })

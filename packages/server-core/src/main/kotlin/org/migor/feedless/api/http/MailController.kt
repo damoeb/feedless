@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import java.util.*
 
 @Controller
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.mail}")
 class MailController {
 
   private val log = LoggerFactory.getLogger(MailController::class.simpleName)

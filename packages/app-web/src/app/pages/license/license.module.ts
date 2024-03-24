@@ -9,12 +9,7 @@ import { LicensePageRoutingModule } from './license-routing.module';
 import { LicensePage } from './license.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    LicensePageRoutingModule,
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, LicensePageRoutingModule],
   declarations: [LicensePage],
 })
 export class LicensePageModule {}

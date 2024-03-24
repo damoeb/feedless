@@ -34,7 +34,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.mail}")
 class MailAuthenticationService {
   private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
 

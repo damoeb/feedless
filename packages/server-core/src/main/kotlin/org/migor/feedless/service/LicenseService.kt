@@ -18,7 +18,7 @@ import java.io.FileWriter
 import java.nio.file.Files
 import java.util.*
 
-data class LicensePayload(val name: String, val email: String, val date: Long)
+data class LicensePayload(val name: String, val email: String, val type: String, val date: Long)
 
 @Service
 class LicenseService : ApplicationListener<ApplicationReadyEvent> {
@@ -45,43 +45,56 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
         throw IllegalArgumentException("Invalid properties. Build time is in the future")
       }
     } else {
-      throw IllegalArgumentException("Invalid properties. Build time not found")
+      throw IllegalArgumentException("Invalid properties. APP_BUILD_TIMESTAMP expected, found '$buildTimestamp'")
     }
 
     if (isSelfHosted()) {
-      licenseRaw = if (StringUtils.isNotBlank(licenseKey)) {
-        val writer = FileWriter(getLicenseFile())
-        writer.write(licenseKey!!)
-        writer.close()
-        licenseKey!!
-      } else {
+      licenseRaw = if (getLicenseFile().exists()) {
         readLicenseFile()
+      } else {
+        if (StringUtils.isNotBlank(licenseKey)) {
+          log.info("Using license from env")
+          val writer = FileWriter(getLicenseFile())
+          writer.write(licenseKey!!)
+          writer.close()
+          licenseKey!!
+        } else {
+          null
+        }
       }
-      license = parseLicense()
+      licenseRaw?.let {
+        license = parseLicense(it)
+      }
     }
   }
 
-  private fun parseLicense(): LicensePayload? {
+  private fun parseLicense(licenseRaw: String): LicensePayload? {
     return try {
-      licenseRaw?.let {
-        // todo validate
-        val lines = it.split("\n").map { line -> line.split(":") }
+      log.info("Parsing license")
+      // todo validate
+      val lines = String(
+        Base64.getDecoder()
+          .decode(licenseRaw.replace("\n", ""))
+      )
+        .split("\n")
+        .map { line -> line.split(":") }
 
-        val extractProperty = { property: String ->
-          lines.filter { it[0] == property }.map { it[1] }.firstOrNull()!!
-        }
-
-        val name = extractProperty("name")
-        val email = extractProperty("email")
-        val date = extractProperty("date").toLong()
-        LicensePayload(
-          name,
-          email,
-          date
-        )
+      val extractProperty = { property: String ->
+        lines.filter { it[0] == property }.map { it[1] }.firstOrNull()!!
       }
+
+      val name = extractProperty("name")
+      val email = extractProperty("email")
+      val type = extractProperty("type")
+      val date = extractProperty("date").toLong()
+      LicensePayload(
+        name,
+        email,
+        type,
+        date
+      )
     } catch (e: Exception) {
-      log.error("Cannot parse license: ${e.message}")
+      log.error("Invalid license: ${e.message}")
       null
     }
   }
@@ -102,7 +115,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   private fun readLicenseFile(): String? {
     return try {
-      Files.readString(getLicenseFile().toPath())
+      val license = Files.readString(getLicenseFile().toPath())
+      log.info("Using license from file")
+      license
     } catch (e: Exception) {
       null
     }
@@ -142,6 +157,12 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   fun isTrial(): Boolean {
     return getTrialUntil() > Date().time
+  }
+
+  fun updateLicense(licenseRaw: String) {
+    license = parseLicense(licenseRaw)
+    val writer = FileWriter(getLicenseFile())
+    writer.write(licenseRaw)
   }
 
 }

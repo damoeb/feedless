@@ -156,11 +156,12 @@ ion-item {
 }
 
 a {
-  color: white;
+  color: var(--ion-color-dark);
   text-decoration: none;
+  border-bottom: 1px solid var(--ion-color-primary);
   cursor: pointer;
   &:hover {
-    text-decoration: underline;
+    border-bottom-style: none;
   }
 }
 

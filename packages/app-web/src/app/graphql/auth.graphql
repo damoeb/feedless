@@ -1,11 +1,11 @@
-fragment BasicAuthentication on Authentication {
+fragment AuthenticationFragment on Authentication {
   token
   corrId
 }
 subscription authViaMail($data: AuthViaMailInput!) {
   authViaMail(data: $data) {
     authentication {
-      ...BasicAuthentication
+      ...AuthenticationFragment
     }
     confirmCode {
       length
@@ -16,13 +16,13 @@ subscription authViaMail($data: AuthViaMailInput!) {
 
 mutation authAnonymous {
   authAnonymous {
-    ...BasicAuthentication
+    ...AuthenticationFragment
   }
 }
 
 mutation authUser($data: AuthUserInput!) {
   authUser(data: $data) {
-    ...BasicAuthentication
+    ...AuthenticationFragment
   }
 }
 

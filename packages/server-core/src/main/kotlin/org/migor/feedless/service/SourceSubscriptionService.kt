@@ -63,7 +63,7 @@ class SourceSubscriptionService {
   @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var mailService: MailService
 
   @Autowired

@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.Date
+import java.util.*
 
 plugins {
   id("org.springframework.boot") version "3.0.3"
@@ -195,8 +195,9 @@ tasks.register("start") {
 }
 
 val testDocker = tasks.register("testDocker", Exec::class) {
+  val gitHash = grgit.head().id
   commandLine(
-    "sh", "./test/test-docker.sh"
+    "sh", "./test/test-docker.sh", gitHash
   )
 }
 
@@ -213,6 +214,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
+//    "-t", "$baseTag:core",
     "-t", "$baseTag:core-$gitHash",
     "."
   )

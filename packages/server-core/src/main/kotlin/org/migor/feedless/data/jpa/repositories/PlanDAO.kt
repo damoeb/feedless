@@ -13,6 +13,10 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface PlanDAO : JpaRepository<PlanEntity, UUID> {
-  fun findAllByAvailabilityNotAndProduct(availability: PlanAvailability, product: ProductName): List<PlanEntity>
+  fun findAllByAvailabilityNotInAndProduct(
+    availabilities: List<PlanAvailability>,
+    product: ProductName
+  ): List<PlanEntity>
+
   fun findByNameAndProduct(name: PlanName, product: ProductName): PlanEntity?
 }

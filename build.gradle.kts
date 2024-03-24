@@ -1,3 +1,5 @@
+import java.util.*
+
 buildscript {
   repositories {
     gradlePluginPortal()
@@ -47,16 +49,19 @@ tasks.register("stopContainers", Exec::class) {
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
   dependsOn(appWebTask(), serverCoreTask(), agentTask())
 
+  val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
 
   // with web
   commandLine(
     "docker", "build",
-    "--build-arg", "APP_VERSION=$gitHash",
+    "--build-arg", "APP_VERSION=$semver",
+    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-    "-t", "$baseTag:aio",
+//    "-t", "$baseTag:aio",
     "-t", "$baseTag:aio-$gitHash",
     "docker-images/with-web"
   )
@@ -65,16 +70,19 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
 val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::class) {
   dependsOn(buildDockerAioWeb)
 
+  val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
 
   // with chromium
   commandLine(
     "docker", "build",
-    "--build-arg", "APP_VERSION=$gitHash",
+    "--build-arg", "APP_VERSION=$semver",
+    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-    "-t", "$baseTag:aio-chromium",
+//    "-t", "$baseTag:aio-chromium",
     "-t", "$baseTag:aio-chromium-$gitHash",
     "docker-images/with-chromium"
   )

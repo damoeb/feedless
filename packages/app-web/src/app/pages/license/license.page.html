@@ -1,4 +1,79 @@
 <ion-content>
+  <div style="display: flex; justify-content: center">
+    <div style="width: 700px; margin-top: 150px; margin-bottom: 100px">
+      <ion-list>
+        <ion-item>
+          <h3>License</h3>
+        </ion-item>
+        <ion-item>
+          <p>
+            After the 2 month trial period, you need a license key to keep the
+            system running. For personal usage this is completely free.
+          </p>
+        </ion-item>
 
+        <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
 
+        <ng-container *ngIf="!loading">
+          <ion-item *ngIf="license.isValid && !license.isTrial" color="success">
+            <p>No License needed, its now Apache 2</p>
+          </ion-item>
+
+          <ion-item
+            *ngIf="license.isValid && license.isTrial && !license.isLocated"
+            color="primary"
+          >
+            <p>
+              Trial Period until {{license.trialUntil | date:
+              dateFormat}}
+            </p>
+          </ion-item>
+
+          <ng-container *ngIf="!license.isLocated">
+            <ion-item *ngIf="!license.isValid" color="warning">
+              <p>No License found</p>
+            </ion-item>
+          </ng-container>
+          <ng-container *ngIf="license.isLocated">
+            <ion-item *ngIf="license.isValid" color="success">
+              <p>Licenced to <strong>{{license.data?.name}}</strong></p>
+            </ion-item>
+            <ion-item *ngIf="!license.isValid" color="warning">
+              <p>{{license.data?.name}}</p>
+              <p>License is invalid</p>
+            </ion-item>
+          </ng-container>
+          <ng-container *ngIf="!license.isValid || license.isTrial">
+            <ion-item class="ion-margin-top">
+              <h3>Activate using your License Key</h3>
+            </ion-item>
+            <ion-item>
+              <p>
+                If you need a license key, send me a mail feedlessapp@proton.me,
+                I haven't automated this part yet :)
+              </p>
+            </ion-item>
+            <ion-item>
+              <ion-textarea
+                style="--padding-start: 10px"
+                placeholder="Your License Key"
+                #licenseField
+                rows="5"
+                fill="outline"
+                [autoGrow]="true"
+              ></ion-textarea>
+            </ion-item>
+            <ion-item>
+              <ion-button
+                color="primary"
+                (click)="applyLicense(licenseField.value)"
+              >
+                Activate Now
+              </ion-button>
+            </ion-item>
+          </ng-container>
+        </ng-container>
+      </ion-list>
+    </div>
+  </div>
 </ion-content>

@@ -4,7 +4,6 @@ import {
   GqlCreateUserInput,
   GqlCreateUserMutation,
   GqlCreateUserMutationVariables,
-  GqlUser,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -14,7 +13,9 @@ import { ApolloClient } from '@apollo/client/core';
 export class UserService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  async createUser(data: GqlCreateUserInput): Promise<Pick<GqlUser, 'id'>> {
+  async createUser(
+    data: GqlCreateUserInput,
+  ): Promise<GqlCreateUserMutation['createUser']> {
     return this.apollo
       .mutate<GqlCreateUserMutation, GqlCreateUserMutationVariables>({
         mutation: CreateUser,

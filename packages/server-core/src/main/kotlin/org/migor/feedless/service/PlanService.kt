@@ -38,8 +38,13 @@ class PlanService {
     return Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)))
   }
 
-  fun findAllAvailable(product: ProductName): List<PlanEntity> {
-    return planDAO.findAllByAvailabilityNotAndProduct(PlanAvailability.unavailable, product)
+  fun findAllVisible(product: ProductName): List<PlanEntity> {
+    return planDAO.findAllByAvailabilityNotInAndProduct(
+      listOf(
+        PlanAvailability.unavailable,
+        PlanAvailability.availableButHidden
+      ), product
+    )
   }
 
   fun findById(id: String): Optional<PlanEntity> {

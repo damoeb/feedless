@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.mail}")
 class OneTimePasswordService {
 
   private val log = LoggerFactory.getLogger(OneTimePasswordService::class.simpleName)

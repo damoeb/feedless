@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -44,6 +46,9 @@ class Seeder {
 
   @Autowired
   lateinit var featureDAO: FeatureDAO
+
+  @Autowired
+  lateinit var environment: Environment
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -86,6 +91,15 @@ class Seeder {
         Date.from(LocalDateTime.now().plus(Duration.ofDays(356)).atZone(ZoneId.systemDefault()).toInstant())
       userSecretDAO.save(userSecret)
     }
+
+    if (isSelfHosted()) {
+//      createUser(
+//        propertyService.rootEmail,
+//        isRoot = false,
+//        authSource = AuthSource.none,
+//        plan = PlanName.system
+//      )
+    }
   }
 
   private fun createAnonymousUser() = createUser(
@@ -117,6 +131,9 @@ class Seeder {
   }
 
   private fun seedPlans() {
+    if (isSelfHosted()) {
+      return
+    }
     persistPlan(
       PlanName.system, 0.0, PlanAvailability.unavailable, ProductName.system, features = mapOf(
         FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(7),
@@ -142,6 +159,8 @@ class Seeder {
     seedPlansForProduct(ProductName.visualDiff)
     seedPlansForProduct(ProductName.untoldNotes)
   }
+
+  private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   private fun seedPlansForProduct(product: ProductName) {
     persistPlan(

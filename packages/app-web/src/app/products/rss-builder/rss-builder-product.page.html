@@ -1,22 +1,31 @@
 <ion-header [translucent]="true">
   <ng-container *ngIf="serverSettings.isSelfHosted()">
-    <ion-toolbar color="primary" *ngIf="serverSettings.isTrialPeriod()">
+    <ion-toolbar color="primary" *ngIf="isTrialPeriod()">
       <ion-text class="ion-margin-horizontal">
-        <strong>Trial Period</strong> until {{serverSettings.getLicense().trialUntil | date: dateFormat}}, it's free for personal use.
+        <strong>Your Trial Period</strong> ends in {{trialEndIn}}, it's free for
+        personal use.
       </ion-text>
-      <ion-button slot="end" class="ion-margin-end" color="dark" routerLink="/license">
+      <ion-button
+        slot="end"
+        class="ion-margin-end"
+        color="dark"
+        routerLink="/license"
+      >
         Activate
       </ion-button>
-      <!--        <ion-card color="warning" class="ion-no-margin">-->
-      <!--          <ion-card-header>-->
-      <!--            <ion-card-title>Activation</ion-card-title>-->
-      <!--          </ion-card-header>-->
-      <!--          <ion-card-content>-->
-      <!--            RSS-Proxy is released under <a href="https://fsl.software/" target="_blank">Functional Source License</a>, which means after {{getLicenseExpiry() | date: dateFormat }} this software becomes Apache 2.-->
-      <!--            You have 2 month of trial-->
-      <!--            <ion-button></ion-button>-->
-      <!--          </ion-card-content>-->
-      <!--        </ion-card>-->
+    </ion-toolbar>
+    <ion-toolbar color="primary" *ngIf="!isTrialPeriod() && !license?.isValid">
+      <ion-text class="ion-margin-horizontal">
+        <strong>Trial Period ended</strong>, it's free for personal use.
+      </ion-text>
+      <ion-button
+        slot="end"
+        class="ion-margin-end"
+        color="dark"
+        routerLink="/license"
+      >
+        Activate
+      </ion-button>
     </ion-toolbar>
   </ng-container>
   <ion-toolbar>
@@ -45,8 +54,17 @@
     <ion-buttons slot="end">
       <ion-button
         *ngIf="serverSettings.isSelfHosted()"
+        href="https://discord.com/invite/QJGkCMhn"
+        target="_blank"
+      >
+        Community
+      </ion-button>
+      <ion-button
+        *ngIf="serverSettings.isSelfHosted()"
+        target="_blank"
         href="https://gihub.com/damoeb/rss-proxy"
       >
+        <ion-icon name="logo-github" slot="start"></ion-icon>
         Documentation
       </ion-button>
       <ion-button
@@ -58,8 +76,9 @@
         Create Feed
       </ion-button>
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button *ngIf="!serverSettings.isSelfHosted()"
-                  routerLink="/plans"> Pricing </ion-button>
+      <ion-button *ngIf="!serverSettings.isSelfHosted()" routerLink="/plans">
+        Pricing
+      </ion-button>
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>
@@ -71,6 +90,24 @@
 
 <ion-footer>
   <div class="ion-text-right">
-    v.{{serverSettings.getVersion()}}
+    <ion-chip>v.{{serverSettings.getVersion()}}</ion-chip>
+    <ng-container *ngIf="serverSettings.isSelfHosted() && license">
+      <ion-chip *ngIf="license.isValid && !license.isTrial"
+        >Open Source Apache 2</ion-chip
+      >
+      <ion-chip
+        *ngIf="license.isValid && license.isTrial && !license.isLocated"
+        color="primary"
+        routerLink="/license"
+        >Trial</ion-chip
+      >
+      <ion-chip
+        *ngIf="license.isValid && license.isLocated"
+        color="success"
+        routerLink="/license"
+      >
+        {{ license.data.name }}
+      </ion-chip>
+    </ng-container>
   </div>
 </ion-footer>
