@@ -31,7 +31,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   private var licenseRaw: String? = null
   private var license: LicensePayload? = null
 
-  @Value("\${LICENSE_KEY:}")
+  @Value("\${APP_LICENSE_KEY:}")
   var licenseKey: String? = null
 
   @Value("\${APP_BUILD_TIMESTAMP:}")

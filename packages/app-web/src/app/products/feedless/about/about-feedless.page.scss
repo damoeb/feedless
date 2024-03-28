@@ -12,14 +12,20 @@ ion-item {
 }
 
 p,
+div,
 ul {
   font-size: 1.1rem;
   letter-spacing: -0.003em;
   line-height: 32px;
   font-weight: 400;
   hyphens: auto;
-  color: rgba(var(--app-foreground-rgb), 0.7);
+  color: rgba(var(--app-foreground-rgb), 0.8);
   //text-align: justify;
+}
+
+h1,
+h2 {
+  color: var(--app-foreground);
 }
 
 a {
@@ -30,5 +36,30 @@ a {
   &:hover {
     border-bottom: none;
     text-decoration: none;
+  }
+}
+
+.products {
+  display: flex;
+  flex-wrap: wrap;
+
+  ion-card {
+    flex: 0 0 30%;
+    filter: grayscale(1);
+    border: 2px solid transparent;
+    border-radius: 8px;
+
+    &:hover {
+      filter: grayscale(0);
+      border-color: var(--ion-color-primary);
+      color: var(--app-foreground-rgb);
+    }
+
+    &:first-child {
+      margin-left: 0;
+    }
+    &:last-child {
+      margin-right: 0;
+    }
   }
 }

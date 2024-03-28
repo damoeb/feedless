@@ -20,6 +20,5 @@ ENV APP_AUTHENTICATION=root \
     APP_BUILD_TIMESTAMP=$APP_BUILD_TIMESTAMP \
     APP_VERSION=$APP_VERSION \
     APP_GIT_HASH=$APP_GIT_HASH
-#    DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
 
 COPY --from=app /usr/share/nginx/html/ ./public/

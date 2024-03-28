@@ -31,10 +31,15 @@ const routes: Routes = [
             (m) => m.RepositoriesPageModule,
           ),
       },
+      // {
+      //   path: 'plans',
+      //   loadChildren: () =>
+      //     import('./plans/plans.module').then((m) => m.PlansPageModule),
+      // },
       {
-        path: 'plans',
+        path: 'products',
         loadChildren: () =>
-          import('./plans/plans.module').then((m) => m.PlansPageModule),
+          import('./products/products.module').then((m) => m.ProductsPageModule),
       },
       {
         path: '',

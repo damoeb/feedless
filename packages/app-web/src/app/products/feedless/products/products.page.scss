@@ -1,0 +1,29 @@
+.product {
+  position: absolute;
+  z-index: -1;
+  opacity: 0.4;
+  height: 350px;
+  width: 100%;
+  background-image: var(--image-url);
+  background-position: center -300px;
+  background-repeat: no-repeat;
+}
+
+p,
+div,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+}
+
+app-product-headline,
+h1,
+h2,
+h3,
+h4 {
+  color: var(--app-foreground);
+}

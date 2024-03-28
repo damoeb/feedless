@@ -1,39 +1,41 @@
 # feedless
 
-`feedless` is an experimental feed middleware to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. It's goal is to keep the web open and accessible and to create shareable data streams.
+`feedless` is an API toolbox for web scraping and web automation, the tools steer into the direction of ITTT or zapier. If you endorse this mission join [me on discord](https://discord.gg/6ySGeryD).
 
-You may [Self-host](./docs/self-hosting.md) or use [feedless.org](https://feedless.org) to create and share feeds. For trivial web-to-feed use cases, [rss-proxy](https://github.com/damoeb/rss-proxy) might be sufficient.
+## Products
+Due to its general nature I shaped a couple of separate `products` for a special use case. Their user interface is optimized for their particular use case, behavior in the backend is selectively 
+toggled using feature flags. Custom functionality outside of `feedless`' core is implemented using a plugin architecture, a core citizen.
 
+- [RSS feed builder](https://github.com/damoeb/rss-proxy)
+- [Page change tracker](https://github.com/damoeb/visualdiff)
 
-[![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
+## Getting Started
+It is not there yet. refer to the products above instead and support them. 
 
 ## Features
-- Content enrichment with Full(-text)
-- Media detection using [yt-dlp](https://github.com/yt-dlp)
-- [Web-to-Feed](docs/web-to-feed.md)
-- [Web-to-Fragment-Feed](docs/web-to-fragment-feed.md)
-- Aggregation of multiple feeds into Buckets
-- [Filters](docs/filters.md)
-- [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
-- Inline Images for archive/privacy purposes
-- Extendable using [Plugins](docs/plugins.md)
-- Simple [Self-hosting](./docs/self-hosting.md)
-- [Reader Mode](./docs/reader-mode.md)
-- [Third-party migration](./docs/third-party-migration.md) 
+- Authentication: Magic Link via Email (authMail), oauth (sso), user/password
+- Persistence
+- Plugins Support
+- Rendering in headless chrome using [agents](./packages/agent/README.md)
+- Plans and feature constraints
+- Product support
+- Monitoring
+- Caching
+- Throttling
+- Self Hosting Support
 
-# Client Modules
+## Architecture
+The architecture is rather simple. 
+
+A web based user interface (app) interacts with a graphQL API offered by the server, that outsources some operations to a horde of agents.
+
+## Client Modules
 - [app](./packages/app-web/README.md) angular UI to manage feeds ([angular](angular.io/))
-- [cli](./packages/app-cli/README.md) CLI to query articles ([node](https://nodejs.org/))
 
-# Server Modules
+## Server Modules
 - [core](./packages/server-core/README.md) Stateless backend ([spring boot](https://spring.io/projects/spring-boot/))
-- [agent](./packages/agent/README.md) Puppeteer wrapper ([nestjs](https://nestjs.com/))
+- [agent](./packages/agent/README.md) Puppeteer wrapper to interact with headless chromium ([nestjs](https://nestjs.com/))
 
-# Getting Started
-See [Self-hosting](./docs/self-hosting.md) or [development](./docs/development.md)
-
-## Changelog
-See [changelog](changelog.md)
 
 ## Contact
 feedlessapp/at/proton/dot/me
@@ -52,4 +54,6 @@ feedlessapp/at/proton/dot/me
 - [Pingback Protocol](./docs/rfcs/Pingback%201.0.html)
 
 ## License
-[EUPL-1.2](https://opensource.org/licenses/EUPL-1.2)
+[FSL-1.1-Apache-2.0](https://github.com/getsentry/fsl.software/blob/main/FSL-1.1-Apache-2.0.template.md)
+
+This project is licenced under [FSL](https://fsl.software), which is a non-competitive license, that becomes open-source Apache 2 after two years.

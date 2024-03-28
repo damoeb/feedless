@@ -9,6 +9,7 @@ import { FeedlessProductPage } from './feedless-product.page';
 import { ProductTitleModule } from '../../components/product-title/product-title.module';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
+import { TeaserProductsService } from './services/teaser-products.service';
 
 @NgModule({
   imports: [
@@ -20,5 +21,6 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
     LoginButtonModule,
   ],
   declarations: [FeedlessProductPage],
+  providers: [TeaserProductsService],
 })
 export class FeedlessProductModule {}

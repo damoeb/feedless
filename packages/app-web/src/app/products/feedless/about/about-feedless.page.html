@@ -10,16 +10,20 @@
       "
     >
       <div class="flex__column">
-        <app-product-headline title="RSS Feed Toolbox"></app-product-headline>
+        <app-product-headline title="Web Scraping Toolbox"></app-product-headline>
 
         <p class="ion-padding-vertical">
-          Unlock the web's potential with Feedless, and get a glimpse into the
-          <a href="">old days of feeds</a>. Take back ownership, privacy and get
-          ahead in the signal over noise battle. A
-          <a href="">wide range of features</a> help you to create feeds,
+          <em>feedless</em> is a set of tools for web scraping and web automation.
+          Take back ownership, privacy and get
+          ahead in the signal over noise battle.
+
+          A
+          <a href="#features">wide range of features</a> help you to create feeds,
           filter, remix, segment, schedule and extend feeds. Whether you prefer
           self-hosting or utilizing it as a service, this open-source middleware
           provides flexibility and control.
+
+          The idea is
         </p>
 
         <div class="flex__row" style="column-gap: 10px" *ngIf="!waitList">
@@ -28,35 +32,61 @@
             fill="solid"
             shape="round"
             size="small"
-            routerLink="/builder"
+            href="#products"
             style="height: 40px"
           >
-            Start free
+            See products
             <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
           </ion-button>
-          <ion-button
-            color="dark"
-            fill="outline"
-            shape="round"
-            size="small"
-            style="height: 40px"
-          >
-            Local Setup
-            <ion-icon name="download-outline" slot="end"></ion-icon>
-          </ion-button>
+<!--          <ion-button-->
+<!--            color="dark"-->
+<!--            fill="outline"-->
+<!--            shape="round"-->
+<!--            size="small"-->
+<!--            style="height: 40px"-->
+<!--          >-->
+<!--            Local Setup-->
+<!--            <ion-icon name="download-outline" slot="end"></ion-icon>-->
+<!--          </ion-button>-->
           <div class="ion-align-self-center">
-            <a href="https://discord.com/invite/QJGkCMhn" target="_blank">
+            <a href="https://discord.gg/6ySGeryD" target="_blank">
               Talk to us on discord
             </a>
           </div>
         </div>
 
-        <!--        <app-newsletter *ngIf="waitList"></app-newsletter>-->
+        <app-newsletter *ngIf="waitList"
+                        buttonText="Join Wait List"
+                        headerText="headerText"
+                        bodyText="bodyText"></app-newsletter>
 
         <div style="margin-top: 150px">
+          <a name="products"></a>
+          <h2>Apps</h2>
+          <div>
+            I have a couple of product in development, the following are stable enough to be self hosted.
+          </div>
+          <div class="products">
+            <ion-card *ngFor="let product of teaserProducts.getProducts()"
+                      [routerLink]="'/products/'+product.id">
+
+              <img alt="Silhouette of mountains" [src]="product.imageUrl" />
+              <ion-card-header>
+                <ion-card-title>{{product.title}}</ion-card-title>
+                <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
+              </ion-card-header>
+
+              <ion-card-content>
+                {{product.body}}
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+
+        <div style="margin-top: 100px">
           <h2>Why Feedless?</h2>
           <p>
-            <a href="https://discord.com/invite/QJGkCMhn" target="_blank"
+            <a href="https://discord.gg/6ySGeryD" target="_blank"
               >Join out community</a
             >
             about open internet, that reopens data hubs or creates relevant
@@ -66,79 +96,8 @@
             >.
           </p>
         </div>
-
-        <div style="margin-top: 50px">
-          <h2>Local Installation</h2>
-          <p></p>
-          <pre>docker run -p 8080:8080 -it damoeb/feedless:all-in-one</pre>
-        </div>
       </div>
 
-      <!--      <app-searchbar (querySubmit)="handleQuery($event)"></app-searchbar>-->
-
-      <!--      <div>-->
-      <!--        <div class="ion-padding">-->
-      <!--          <h2>Video</h2>-->
-      <!--          <div class="ion-hide-sm-down">-->
-      <!--            <lite-youtube-->
-      <!--              style="min-width: 600px; margin: auto"-->
-      <!--              videoid="PolMYwBVmzc"-->
-      <!--              videotitle="Mis hijos se burlan de mi español"-->
-      <!--            ></lite-youtube>-->
-      <!--          </div>-->
-      <!--          <div class="ion-hide-sm-up">-->
-      <!--            <a-->
-      <!--              href="https://www.youtube.com/watch?v=PolMYwBVmzc"-->
-      <!--              target="_blank"-->
-      <!--              referrerpolicy="no-referrer"-->
-      <!--            >-->
-      <!--              <img-->
-      <!--                src="assets/video-preview.webp"-->
-      <!--                style="aspect-ratio: 888 / 677"-->
-      <!--                alt="feedless.org preview video"-->
-      <!--              />-->
-      <!--            </a>-->
-      <!--          </div>-->
-      <!--        </div>-->
-      <!--        <div class="ion-padding">-->
-      <!--          <h2>Source Available</h2>-->
-      <!--          <p>-->
-      <!--            Checkout <a href="https://github.com/damoeb/feedless">github</a> to-->
-      <!--            fork, create an issue or feature request and-->
-      <!--            <a href="https://github.com/damoeb/feedless/docs/self-hosting.md"-->
-      <!--            >self-hosting</a-->
-      <!--            >.-->
-      <!--          </p>-->
-      <!--        </div>-->
-      <!--        <div class="ion-padding">-->
-      <!--          <h2>Use Cases</h2>-->
-      <!--          <ul style="margin-left: -1rem">-->
-      <!--            <li>RSS Feed Generation and Deep Archiving</li>-->
-      <!--            <li>Web Extraction</li>-->
-      <!--            <li>Reader</li>-->
-      <!--            <li>CRUD API</li>-->
-      <!--            <li>-->
-      <!--              <a href="https://github.com/damoeb/feedless/docs/plugins.md"-->
-      <!--              >Extendable</a-->
-      <!--              >-->
-      <!--            </li>-->
-      <!--            <li>Privacy first (e.g. inline images)</li>-->
-      <!--            <li>-->
-      <!--              <a href="https://github.com/damoeb/feedless/docs/filters.md"-->
-      <!--              >Filtering</a-->
-      <!--              >-->
-      <!--            </li>-->
-      <!--            &lt;!&ndash;            <li>Archiving and Retention</li>&ndash;&gt;-->
-      <!--            <li>Feed Format Conversion</li>-->
-      <!--            <li>-->
-      <!--              <a-->
-      <!--                href="https://github.com/damoeb/feedless/packages/app-cli/README.md"-->
-      <!--              >CLI</a-->
-      <!--              >-->
-      <!--            </li>-->
-      <!--          </ul>-->
-      <!--        </div>-->
-      <!--      </div>-->
     </div>
   </div>
 </ion-content>

@@ -1,0 +1,54 @@
+<ion-content>
+    <div style="display: flex; justify-content: center; margin: 20px;">
+    <div
+      style="
+          max-width: 900px;
+          width: 1120px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+        "
+    >
+      <div class="flex__column">
+
+        <h1>Billing Options and Pricing</h1>
+
+<!--        <div>-->
+<!--          <ion-segment mode="ios">-->
+<!--            <ion-segment-button>For Organizations</ion-segment-button>-->
+<!--            <ion-segment-button>For Individual Use</ion-segment-button>-->
+<!--            <ion-segment-button>Other Categories</ion-segment-button>-->
+<!--          </ion-segment>-->
+
+<!--          <ion-segment mode="ios">-->
+<!--            <ion-segment-button>Self Hosting</ion-segment-button>-->
+<!--            <ion-segment-button>As a Service</ion-segment-button>-->
+<!--          </ion-segment>-->
+<!--        </div>-->
+
+        <ion-list>
+          <ion-item>
+            <ion-select label="Type" label-placement="start">
+              <ion-select-option>For Organization</ion-select-option>
+              <ion-select-option>For Individual Use</ion-select-option>
+              <ion-select-option>Other</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-input label-placement="start" label="Name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input label-placement="start" label="Email" type="email"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input label-placement="start" label="Country"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input label-placement="start" label="Asking Price" type="number" min=""></ion-input>
+          </ion-item>
+        </ion-list>
+
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -11,4 +11,6 @@ object AppProfiles {
   const val mail = "mail"
   const val cache = "cache"
   const val nothrottle = "nothrottle"
+  const val legacyV2 = "legacySupport"
+  const val autoSignIn = "autoSignIn"
 }
