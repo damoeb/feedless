@@ -22,8 +22,8 @@ export class BuyPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-    this.activatedRoute.params.subscribe(params => {
-      this.product = this.teaserProducts.getProducts().find(p => p.id === params.productId)
+    this.activatedRoute.params.subscribe(async params => {
+      this.product = (await this.teaserProducts.getProducts()).find(p => p.id === params.productId)
     }));
     this.changeRef.detectChanges();
   }

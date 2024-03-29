@@ -18,7 +18,7 @@ const routes: Routes = [
     redirectTo: '/',
   },
   {
-    path: '**',
+    path: '',
     outlet: 'sidemenu',
     component: ReaderMenuComponent,
   },

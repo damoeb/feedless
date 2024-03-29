@@ -67,7 +67,7 @@
             I have a couple of product in development, the following are stable enough to be self hosted.
           </div>
           <div class="products">
-            <ion-card *ngFor="let product of teaserProducts.getProducts()"
+            <ion-card *ngFor="let product of products"
                       [routerLink]="'/products/'+product.id">
 
               <img alt="Silhouette of mountains" [src]="product.imageUrl" />
@@ -77,7 +77,7 @@
               </ion-card-header>
 
               <ion-card-content>
-                {{product.body}}
+                {{product.description}}
               </ion-card-content>
             </ion-card>
           </div>

@@ -8,6 +8,7 @@
   </div>
   <div style="display: flex; justify-content: center; margin: 20px;">
     <div
+      *ngIf="product"
       style="
           max-width: 900px;
           width: 1120px;
@@ -21,10 +22,10 @@
         <ion-breadcrumb>{{product.title}}</ion-breadcrumb>
       </ion-breadcrumbs>
       <div class="flex__column">
-        <app-product-headline [title]="product?.title"></app-product-headline>
+        <app-product-headline [title]="product.title"></app-product-headline>
 
         <p class="ion-padding-vertical">
-          {{product.body}}
+          {{product.description}}
         </p>
 
         <div class="flex__row" style="column-gap: 10px">

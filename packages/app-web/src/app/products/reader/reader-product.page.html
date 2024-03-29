@@ -8,6 +8,7 @@
       (querySubmit)="handleQuery($event)"
       [loading]="loading"
       [value]="url"
+      placeholder="Type your URL"
     ></app-searchbar>
 
     <ion-buttons slot="end">
@@ -226,11 +227,11 @@
     </div>
 
     <div class="flex">
-      <app-embedded-website
-        *ngIf="output === 'website'"
-        [embed]="embedWebsite"
-        class="flex"
-      ></app-embedded-website>
+<!--      <app-embedded-website-->
+<!--        *ngIf="output === 'website'"-->
+<!--        [embed]="embedWebsite"-->
+<!--        class="flex"-->
+<!--      ></app-embedded-website>-->
 
       <div
         [ngStyle]="{

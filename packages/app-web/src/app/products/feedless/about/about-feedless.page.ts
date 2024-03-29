@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import '@justinribeiro/lite-youtube';
 
 import { fixUrl } from '../../../app.module';
-import { TeaserProductsService } from '../services/teaser-products.service';
+import { ProductTeaser, TeaserProductsService } from '../services/teaser-products.service';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -13,8 +13,10 @@ import { TeaserProductsService } from '../services/teaser-products.service';
 })
 export class AboutFeedlessPage implements OnInit {
   waitList: boolean;
+  products: ProductTeaser[];
 
   constructor(private readonly router: Router,
+              private readonly changeRef: ChangeDetectorRef,
               readonly teaserProducts: TeaserProductsService) {}
 
   async handleQuery(url: string) {
@@ -29,7 +31,9 @@ export class AboutFeedlessPage implements OnInit {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    this.products = await this.teaserProducts.getProducts();
     this.waitList = false;
+    this.changeRef.detectChanges();
   }
 }

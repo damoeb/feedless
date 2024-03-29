@@ -203,13 +203,12 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                 transformXpathToCssPath(it.linkXPath),
               );
               if (linkElement) {
-                const url = linkElement.getAttribute('href');
-                const { hostname } = new URL(url, this.url);
+                const url = new URL(linkElement.getAttribute('href'), this.url);
                 return {
                   contentText: context.textContent,
-                  url,
+                  url: this.readerOptions.linkTarget === 'reader' ? `./?url=${encodeURI(url.href)}` : url.href,
                   contentTitle: linkElement?.textContent,
-                  hostname,
+                  hostname: url.hostname,
                 };
               }
             })

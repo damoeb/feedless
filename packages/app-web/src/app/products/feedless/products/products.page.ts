@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ProductTeaser, TeaserProductsService } from '../services/teaser-products.service';
@@ -8,6 +8,7 @@ import { ProductTeaser, TeaserProductsService } from '../services/teaser-product
   templateUrl: './products.page.html',
   styleUrls: ['./products.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class ProductsPage implements OnInit, OnDestroy {
 
@@ -22,10 +23,10 @@ export class ProductsPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-    this.activatedRoute.params.subscribe(params => {
-      this.product = this.teaserProducts.getProducts().find(p => p.id === params.productId)
+    this.activatedRoute.params.subscribe(async params => {
+      this.product = (await this.teaserProducts.getProducts()).find(p => p.id === params.productId)
+      this.changeRef.detectChanges();
     }));
-    this.changeRef.detectChanges();
   }
 
 
@@ -34,6 +35,6 @@ export class ProductsPage implements OnInit, OnDestroy {
   }
 
   getImageUrl() {
-    return `url("${this.product.imageUrl}")`
+    return `url("${this.product?.imageUrl}")`
   }
 }

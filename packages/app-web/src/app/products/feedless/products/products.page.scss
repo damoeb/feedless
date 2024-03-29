@@ -27,3 +27,9 @@ h3,
 h4 {
   color: var(--app-foreground);
 }
+
+pre {
+  border-left: 2px solid;
+  padding-left: 10px;
+  font-size: 0.9rem;
+}
