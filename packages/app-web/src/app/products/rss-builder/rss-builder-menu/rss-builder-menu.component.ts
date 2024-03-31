@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { AuthService } from '../../../services/auth.service';
 import { SourceSubscription } from '../../../graphql/types';
@@ -8,6 +8,7 @@ import { filter } from 'rxjs';
   selector: 'app-rss-builder-menu',
   templateUrl: './rss-builder-menu.component.html',
   styleUrls: ['./rss-builder-menu.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RssBuilderMenuComponent implements OnInit {
   feeds: SourceSubscription[] = [];
@@ -15,6 +16,7 @@ export class RssBuilderMenuComponent implements OnInit {
   constructor(
     private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly authService: AuthService,
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -35,13 +37,11 @@ export class RssBuilderMenuComponent implements OnInit {
 
   private async fetchFeeds() {
     const page = 0;
-    const sources =
-      await this.sourceSubscriptionService.listSourceSubscriptions({
-        cursor: {
-          page,
-        },
-      });
-    this.feeds.push(...sources);
-    console.log(this.feeds);
+    this.feeds = await this.sourceSubscriptionService.listSourceSubscriptions({
+      cursor: {
+        page,
+      },
+    });
+    this.changeRef.detectChanges();
   }
 }

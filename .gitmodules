@@ -1,3 +1,9 @@
 [submodule "packages/agent/ghostery-extension"]
 	path = packages/agent/ghostery-extension
 	url = git@github.com:ghostery/ghostery-extension.git
+[submodule "products/rss-proxy"]
+	path = products/rss-proxy
+	url = git@github.com:damoeb/rss-proxy.git
+[submodule "products/visual-diff"]
+	path = products/visual-diff
+	url = git@github.com:damoeb/visual-diff.git

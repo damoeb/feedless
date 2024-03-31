@@ -63,7 +63,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
 //    "--platform=linux/arm64v8",
 //    "-t", "$baseTag:aio",
     "-t", "$baseTag:aio-$gitHash",
-    "docker-images/with-web"
+    "docker/aio-with-web"
   )
 }
 
@@ -84,7 +84,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
 //    "--platform=linux/arm64v8",
 //    "-t", "$baseTag:aio-chromium",
     "-t", "$baseTag:aio-chromium-$gitHash",
-    "docker-images/with-chromium"
+    "docker/aio-with-chromium"
   )
 }
 

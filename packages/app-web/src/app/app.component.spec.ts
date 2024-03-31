@@ -5,11 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { AppComponent } from './app.component';
 import { AppTestModule } from './app-test.module';
-import {
-  GqlProfileQuery,
-  GqlProfileQueryVariables,
-  Profile as ProfileQuery,
-} from '../generated/graphql';
+import { GqlProfileQuery, GqlProfileQueryVariables, Profile as ProfileQuery } from '../generated/graphql';
 
 describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {

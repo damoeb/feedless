@@ -1,0 +1,21 @@
+{
+  "name": "feedless",
+  "devDependencies": {
+    "mustache": "^4.2.0"
+  },
+  "scripts": {
+    "commit2": "mustache packages/app-web/meta.json products/rss-proxy/README.mustache.md products/rss-proxy/README.md",
+    "commit": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damoeb/rich-rss.git"
+  },
+  "keywords": [],
+  "author": "Markus Ruepp",
+  "license": "FSL",
+  "bugs": {
+    "url": "https://github.com/damoeb/rich-rss/issues"
+  },
+  "homepage": "https://github.com/damoeb/rich-rss#readme"
+}

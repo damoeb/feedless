@@ -1,12 +1,4 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  PluginValue,
-  ViewPlugin,
-  ViewUpdate,
-  WidgetType,
-} from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
 
 class CheckboxWidget extends WidgetType {

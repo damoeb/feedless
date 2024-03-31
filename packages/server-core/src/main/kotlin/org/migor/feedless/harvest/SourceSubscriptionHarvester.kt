@@ -299,7 +299,7 @@ class SourceSubscriptionHarvester internal constructor() {
 }
 
 fun ScrapeSourceEntity.toScrapeRequest(): ScrapeRequest {
-  return this.toDto()
+  return toDto()
 }
 
 inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {

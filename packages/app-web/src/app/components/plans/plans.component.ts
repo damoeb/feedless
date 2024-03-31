@@ -1,10 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature, Plan } from '../../graphql/types';
-import {
-  GqlFeatureName,
-  GqlPlan,
-  GqlPlanAvailability,
-} from '../../../generated/graphql';
+import { GqlFeatureName, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
 
 export type PlanAction = {
   label: string;

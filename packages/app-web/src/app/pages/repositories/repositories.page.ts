@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { ProfileService } from 'src/app/services/profile.service';

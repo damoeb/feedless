@@ -1,19 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -79,8 +71,8 @@ export class TransformWebsiteToFeedComponent implements OnInit {
     { updateOn: 'change' },
   );
 
-  genericFeeds: GqlTransientGenericFeed[];
-  nativeFeeds: GqlNativeFeed[];
+  genericFeeds: GqlTransientGenericFeed[] = [];
+  nativeFeeds: GqlNativeFeed[] = [];
   currentNativeFeed: GqlNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
   embedWebsiteData: Embeddable;
@@ -93,41 +85,65 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnInit() {
-    const element = this.scrapeResponse.elements.find((element) =>
-      element.selector.fields.some(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ),
-    );
-    const feeds = JSON.parse(
-      element.selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ).value.one.data,
-    ) as GqlScrapedFeeds;
-    this.genericFeeds = feeds.genericFeeds;
-    this.nativeFeeds = feeds.nativeFeeds;
-    const scores = feeds.genericFeeds.map((gf) => gf.score);
-    const maxScore = max(scores);
-    const minScore = min(scores);
-    this.scaleScore = scaleLinear()
-      .domain([minScore, maxScore])
-      .range([0, 100]);
+    try {
+      const elementWithFeeds = this.scrapeResponse.elements.find((element) =>
+        element.selector.fields.some(
+          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
+        ),
+      );
+      if (elementWithFeeds) {
+        const feeds = JSON.parse(
+          elementWithFeeds.selector.fields.find(
+            (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
+          ).value.one.data,
+        ) as GqlScrapedFeeds;
+        this.genericFeeds = feeds.genericFeeds;
+        this.nativeFeeds = feeds.nativeFeeds;
+        const scores = feeds.genericFeeds.map((gf) => gf.score);
+        const maxScore = max(scores);
+        const minScore = min(scores);
+        this.scaleScore = scaleLinear()
+          .domain([minScore, maxScore])
+          .range([0, 100]);
 
-    this.embedWebsiteData = {
-      data: this.scrapeResponse.debug.html,
-      mimeType: this.scrapeResponse.debug.contentType,
-      url: this.scrapeRequest.page.url,
-      viewport: this.scrapeRequest.page.prerender?.viewport,
-    };
-    if (this.feed) {
-      if (this.feed.nativeFeed) {
-        await this.pickNativeFeed(this.feed.nativeFeed);
-      } else if (this.feed.genericFeed) {
-        await this.pickGenericFeed(this.feed.genericFeed);
+        this.embedWebsiteData = {
+          data: this.scrapeResponse.debug.html,
+          mimeType: this.scrapeResponse.debug.contentType,
+          url: this.scrapeRequest.page.url,
+          viewport: this.scrapeRequest.page.prerender?.viewport,
+        };
       } else {
-        throw new Error('not supported');
+        const elementWithFeed = this.scrapeResponse.elements.find((element) =>
+          element.selector.fields.some(
+            (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeed,
+          ),
+        );
+        if (elementWithFeed) {
+          const feed = JSON.parse(
+            elementWithFeed.selector.fields.find(
+              (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeed,
+            ).value.one.data,
+          ) as GqlNativeFeed;
+          this.nativeFeeds = [feed];
+          await this.pickNativeFeed(feed);
+
+        } else {
+          throw new Error('not supported');
+        }
       }
+      if (this.feed) {
+        if (this.feed.nativeFeed) {
+          await this.pickNativeFeed(this.feed.nativeFeed);
+        } else if (this.feed.genericFeed) {
+          await this.pickGenericFeed(this.feed.genericFeed);
+        } else {
+          throw new Error('not supported');
+        }
+      }
+      this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
+    } catch (e) {
+      console.error(e)
     }
-    this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
   }
 
   async pickNativeFeed(feed: GqlNativeFeed) {

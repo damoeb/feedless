@@ -6,7 +6,7 @@ import {
   GqlUpdateLicenseMutation,
   GqlUpdateLicenseMutationVariables,
   License,
-  UpdateLicense,
+  UpdateLicense
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { ReplaySubject } from 'rxjs';

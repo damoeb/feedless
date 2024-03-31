@@ -33,7 +33,7 @@ import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
-import org.migor.feedless.generated.types.UpdateSinkOptionsInput
+import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
 import org.migor.feedless.generated.types.Visibility
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -178,10 +178,13 @@ class SourceSubscriptionService {
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
     entity.timeout = scrapeRequest.page.timeout
-    entity.waitUntil = scrapeRequest.page.prerender.waitUntil
-    entity.additionalWaitSec = scrapeRequest.page.prerender.additionalWaitSec
-    entity.viewport = scrapeRequest.page.prerender.viewport
-    entity.language = scrapeRequest.page.prerender.language
+    scrapeRequest.page.prerender?.let {
+      entity.waitUntil = it.waitUntil
+      entity.prerender = true
+      entity.additionalWaitSec = it.additionalWaitSec
+      entity.viewport = it.viewport
+      entity.language = it.language
+    }
     entity.actions = scrapeRequest.page.actions
     entity.debugCookies = BooleanUtils.isTrue(scrapeRequest.debug?.cookies)
     entity.debugHtml = BooleanUtils.isTrue(scrapeRequest.debug?.html)
@@ -240,14 +243,34 @@ class SourceSubscriptionService {
     sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user(corrId).id)
   }
 
-  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsInput): SourceSubscriptionEntity {
+  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsDataInput): SourceSubscriptionEntity {
     val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
     if (sub.ownerId != currentUser.userId()) {
       throw PermissionDeniedException("not authorized")
     }
-    data.title?.set?.let { sub.title = it }
-    data.description?.set?.let { sub.description = it }
-    data.visibility?.set?.let { sub.visibility = planConstraints.coerceVisibility(it.fromDto()) }
+    data.sinkOptions?.let {
+      it.title?.set?.let { sub.title = it }
+      it.description?.set?.let { sub.description = it }
+      it.visibility?.set?.let { sub.visibility = planConstraints.coerceVisibility(it.fromDto()) }
+      it.plugins?.let {
+        sub.plugins = it.map { it.fromDto() }
+      }
+      it.retention?.let {
+        it.maxAgeDays?.set?.let {
+          sub.retentionMaxAgeDays = it
+        }
+        it.maxItems?.set?.let {
+          sub.retentionMaxItems = it
+        }
+      }
+    }
+    data.sources?.let {
+      it.add?.let { it.forEach { createScrapeSource(corrId, sub.ownerId, it, sub) } }
+      it.remove?.let {
+        scrapeSourceDAO.deleteAllById(it.map { UUID.fromString(it) }
+          .filter { sub.sources.any { otherSource -> otherSource.id == it } })
+      }
+    }
 
     return sourceSubscriptionDAO.save(sub)
   }

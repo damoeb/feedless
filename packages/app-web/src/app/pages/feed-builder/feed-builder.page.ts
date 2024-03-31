@@ -1,21 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import {
-  GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
+import { ModalService } from '../../services/modal.service';
+import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
+import { GqlScrapeRequest } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feed-builder-page',
@@ -34,6 +28,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     private readonly apolloAbortController: ApolloAbortControllerService,
     private readonly scrapeService: ScrapeService,
     private readonly modalCtrl: ModalController,
+    private readonly modalService: ModalService,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
@@ -55,16 +50,31 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   }
 
   async handleFeed(feed: FeedWithRequest) {
+    const { title, description } = this.getFeedData(feed.feed, feed.scrapeRequest.page.url)
     const componentProps: GenerateFeedModalComponentProps = {
-      scrapeRequest: feed.scrapeRequest,
-      feed: feed.feed,
+      subscription: {
+        title,
+        description,
+        plugins: [],
+        sources: [getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest)]
+      } as any
     };
-    const modal = await this.modalCtrl.create({
-      component: GenerateFeedModalComponent,
-      cssClass: 'fullscreen-modal',
-      componentProps,
-    });
-
-    await modal.present();
+    await this.modalService.openFeedMetaEditor(componentProps);
   }
+
+  private getFeedData(feed: NativeOrGenericFeed, urlString: string) {
+    if (feed.nativeFeed) {
+      return {
+        title: feed.nativeFeed.title,
+        description: `Source: ${feed.nativeFeed.feedUrl}`,
+      };
+    } else {
+      const url = new URL(urlString);
+      return {
+        title: `Feed from ${url.host}`,
+        description: `Source: ${url}`,
+      };
+    }
+  }
+
 }

@@ -26,6 +26,8 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.generated.types.CompositeFilterParams
+import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.DiffEmailForwardParams
 import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
@@ -159,7 +161,7 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     .description(description)
     .title(title)
     .segmented(segmentation?.toDto())
-    .sources(sources.map { it.toDto() })
+    .scheduleExpression(schedulerExpression)
     .build()
 }
 
@@ -176,6 +178,16 @@ private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
     .genericFeed(genericFeed?.toDto())
     .diffEmailForward(diffEmailForward?.toDto())
     .rawJson(rawJson)
+    .filters(filters?.map { it.toDto() })
+    .build()
+}
+
+private fun CompositeFilterParamsInput.toDto(): CompositeFilterParams {
+  return CompositeFilterParams.newBuilder()
+    .value(value)
+    .type(type)
+    .field(field)
+    .operator(operator)
     .build()
 }
 

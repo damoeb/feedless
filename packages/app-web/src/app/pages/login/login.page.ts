@@ -1,14 +1,15 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login-page',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginPage implements OnInit, OnDestroy {
   // showUserPasswordLogin: boolean;
@@ -22,10 +23,13 @@ export class LoginPage implements OnInit, OnDestroy {
   showLogin: boolean;
   showNoSignupBanner: boolean;
   showUserPasswordLogin: boolean;
+  errorMessage: string;
 
   constructor(
     private readonly serverSettings: ServerSettingsService,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
+    private readonly changeRef: ChangeDetectorRef,
     private readonly authService: AuthService,
   ) {
     this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
@@ -54,7 +58,10 @@ export class LoginPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.authService.isAuthenticated().subscribe(async (authenticated) => {
         if (authenticated) {
-          await this.router.navigateByUrl('/');
+          const { queryParams } = this.activatedRoute.snapshot;
+          const { redirectUrl } = queryParams;
+          const url = this.router.createUrlTree([redirectUrl || '/'], {})
+          await this.router.navigateByUrl(url);
         } else {
           this.showSSO = this.serverSettings.hasProfile(GqlProfileName.AuthSso);
           this.showMailLogin = this.serverSettings.hasProfile(
@@ -66,9 +73,13 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   loginWithUserPassword(email: string | number, password: string | number) {
+    this.errorMessage = null;
     return this.authService.authorizeUser({
       email: `${email}`,
       secretKey: `${password}`,
+    }).catch(e => {
+      this.errorMessage = e.message;
+      this.changeRef.detectChanges();
     });
   }
 }

@@ -1,0 +1,91 @@
+@import "../../../mixins";
+
+.builder-label {
+  @include builder-label;
+}
+
+.shade-out {
+  opacity: 0.6;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+
+ion-item {
+  --border-radius: 5px;
+}
+
+ion-input {
+  //border: 1px solid #cccccc!important;
+  display: inline-block;
+  //width: 60px;
+  min-width: 100px;
+  min-height: 40px !important;
+  //min-height: auto!important;
+  //height: 35px;
+  //--padding-start: 5px;
+  //--padding-top: 5px;
+  //--padding-bottom: 5px;
+  --border-radius: 0;
+  margin-left: 5px;
+  --padding-start: 5px;
+  --padding-end: 5px;
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+  --border-color: none;
+}
+
+ion-modal {
+  ion-content::part(scroll) {
+    display: flex;
+    flex: 1;
+  }
+}
+
+app-scrape-source {
+  display: flex;
+  flex: 1;
+}
+
+.builder-group--right {
+  margin-left: auto;
+  align-self: center;
+}
+
+.block-error {
+  color: var(--ion-color-danger);
+  font-weight: bold;
+}
+
+ion-button.error,
+.ng-invalid {
+  --border-color: var(--ion-color-danger);
+  --border-style: solid;
+  --border-width: 1px;
+}
+
+span.error {
+  text-decoration: underline;
+  text-decoration-color: var(--ion-color-danger);
+  text-decoration-style: wavy;
+}
+
+ion-card-content {
+  ion-input {
+    --padding-start: 5;
+  }
+}
+
+ion-row > ion-col:first-child {
+  align-self: auto;
+}
+
+.dim {
+  opacity: 0.4;
+}
+
+.label {
+  @include inline-step-label;
+}

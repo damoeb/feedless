@@ -1,18 +1,11 @@
 import { Injectable } from '@angular/core';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
-import {
-  DeepPartial,
-  FeedBuilder,
-  FeedBuilderModalComponent,
-  FeedBuilderModalComponentExitRole,
-  FeedBuilderModalComponentProps,
-  FeedBuilderModalData,
-} from '../modals/feed-builder-modal/feed-builder-modal.component';
+import { DeepPartial, FeedBuilder, FeedBuilderModalComponentExitRole } from '../modals/scrape-source-modal/scrape-source-modal.component';
 import { Router } from '@angular/router';
+import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
+import { FeedWithRequest } from '../components/feed-builder/feed-builder.component';
+import { GenerateFeedModalComponent, GenerateFeedModalComponentProps } from '../modals/generate-feed-modal/generate-feed-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -45,7 +38,7 @@ export class ModalService {
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,
-    overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null,
+    overwriteHandler: (data: FeedWithRequest, role: String) => Promise<void> = null,
   ) {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
@@ -55,7 +48,7 @@ export class ModalService {
       backdropDismiss: false,
     });
     await modal.present();
-    const { data, role } = await modal.onDidDismiss<FeedBuilderModalData>();
+    const { data, role } = await modal.onDidDismiss<FeedWithRequest>();
 
     if (overwriteHandler) {
       await overwriteHandler(data, role);
@@ -80,11 +73,21 @@ export class ModalService {
   }
 
   async resumeFeedWizard() {
-    const feedBuilder: DeepPartial<FeedBuilder> = this.getPendingWizardState();
-    const componentProps: FeedBuilderModalComponentProps = {
-      feedBuilder: feedBuilder ?? {},
-    };
-    // this.resetWizardState();
-    await this.openFeedBuilder(componentProps);
+    // const feedBuilder: DeepPartial<FeedBuilder> = this.getPendingWizardState();
+    // const componentProps: ScrapeSourceModalComponentProps = {
+    //   feedBuilder: feedBuilder ?? {},
+    // };
+    // // this.resetWizardState();
+    // await this.openFeedBuilder(componentProps);
+  }
+
+  async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {
+    const modal = await this.modalCtrl.create({
+      component: GenerateFeedModalComponent,
+      cssClass: 'fullscreen-modal',
+      componentProps,
+    });
+
+    await modal.present();
   }
 }

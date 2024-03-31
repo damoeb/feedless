@@ -1,18 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { FetchPolicy } from '@apollo/client/core';
 import { ServerSettingsService } from '../../../../services/server-settings.service';
-import {
-  dateTimeFormat,
-  ProfileService,
-} from '../../../../services/profile.service';
+import { dateTimeFormat, ProfileService } from '../../../../services/profile.service';
 import { Subscription } from 'rxjs';
 import { WebDocument } from '../../../../graphql/types';
 import { SourceSubscriptionService } from '../../../../services/source-subscription.service';

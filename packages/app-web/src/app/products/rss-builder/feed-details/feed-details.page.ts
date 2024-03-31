@@ -1,19 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { WebDocumentService } from '../../../services/web-document.service';
-import { SourceSubscription, WebDocument } from '../../../graphql/types';
+import { SourceSubscription, SubscriptionSource, WebDocument } from '../../../graphql/types';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ModalService } from '../../../services/modal.service';
+import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
+import { GqlScrapeRequest } from '../../../../generated/graphql';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -28,9 +28,15 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   private diffImageUrl: string;
   subscription: SourceSubscription;
 
+  protected readonly dateFormat = dateFormat;
+  protected readonly dateTimeFormat = dateTimeFormat;
+  feedUrl: string;
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly modalCtrl: ModalController,
+    private readonly modalService: ModalService,
+    private readonly serverSettingsService: ServerSettingsService,
     private readonly domSanitizer: DomSanitizer,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly webDocumentService: WebDocumentService,
@@ -59,7 +65,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
     this.subscription =
       await this.sourceSubscriptionService.getSubscriptionById(id);
-    this.feedUrl = ''; //todo
+    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.subscription.id}`;
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
@@ -77,11 +83,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.busy = false;
     this.changeRef.detectChanges();
   }
-
-  protected readonly dateFormat = dateFormat;
-  protected readonly dateTimeFormat = dateTimeFormat;
-  feedUrl: string;
-
   fromNow(futureTimestamp: number): string {
     return dayjs(futureTimestamp).toNow(true);
   }
@@ -92,5 +93,76 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         id: document.id,
       },
     });
+  }
+
+  async editSource(source: SubscriptionSource = null) {
+    await this.modalService.openFeedBuilder({
+      scrapeRequest: source as any
+    }, async (data: FeedWithRequest) => {
+      if (data) {
+        await this.sourceSubscriptionService.updateSubscription({
+          where: {
+            id: this.subscription.id
+          },
+          data: {
+            sources: {
+              add: [getScrapeRequest(data.feed, data.scrapeRequest as GqlScrapeRequest)],
+              remove: source ? [source.id] : []
+            }
+          }
+        });
+      }
+    });
+  }
+
+  deleteSource(source: SubscriptionSource) {
+    console.log('deleteSource', source);
+    return this.sourceSubscriptionService.updateSubscription({
+      where: {
+        id: this.subscription.id
+      },
+      data: {
+        sources: {
+          remove: [source.id]
+        }
+      }
+    })
+  }
+
+  dismissModal() {
+    this.modalCtrl.dismiss()
+  }
+
+  hostname(url: string): string {
+    return new URL(url).hostname
+  }
+
+  async editSubscription() {
+    const componentProps: GenerateFeedModalComponentProps = {
+      subscription: this.subscription
+    };
+    await this.modalService.openFeedMetaEditor(componentProps);
+  }
+
+  deleteSubscription() {
+    return this.sourceSubscriptionService.deleteSubscription({
+      id: this.subscription.id
+    })
+  }
+
+  getRetentionStrategy(): string {
+    if (this.subscription.retention.maxAgeDays || this.subscription.retention.maxItems) {
+      if (this.subscription.retention.maxAgeDays && this.subscription.retention.maxItems) {
+        return `${this.subscription.retention.maxAgeDays} days, ${this.subscription.retention.maxItems} items`;
+      } else {
+        if (this.subscription.retention.maxAgeDays) {
+          return `${this.subscription.retention.maxAgeDays} days`;
+        } else {
+          return `${this.subscription.retention.maxItems} items`;
+        }
+      }
+    } else {
+      return 'Auto';
+    }
   }
 }

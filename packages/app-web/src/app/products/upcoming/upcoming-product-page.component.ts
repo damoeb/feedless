@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import dayjs, { Dayjs } from 'dayjs';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { Subscription } from 'rxjs';

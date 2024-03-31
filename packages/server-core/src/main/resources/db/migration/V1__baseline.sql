@@ -172,10 +172,11 @@ CREATE TABLE public.t_scrape_debug (
 CREATE TABLE public.t_scrape_source (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
-    actions jsonb NOT NULL,
-    additionalwaitsec integer NOT NULL,
+    actions jsonb,
+    additionalwaitsec integer,
     debugconsole boolean NOT NULL,
     debugcookies boolean NOT NULL,
+    prerender boolean NOT NULL default false,
     debughtml boolean NOT NULL,
     debugnetwork boolean NOT NULL,
     debugscreenshot boolean NOT NULL,

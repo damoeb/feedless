@@ -4,13 +4,7 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client/core';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -19,7 +13,6 @@ import { createClient } from 'graphql-ws';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
-import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
 import { ServerSettingsService } from './services/server-settings.service';
@@ -29,7 +22,8 @@ import { GqlProductName } from '../generated/graphql';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
-import { FeedBuilderModalModule } from './modals/feed-builder-modal/feed-builder-modal.module';
+import { ScrapeSourceModalModule } from './modals/scrape-source-modal/scrape-source-modal.module';
+import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 
 export interface AppEnvironment {
   production: boolean;
@@ -110,7 +104,7 @@ export const fixUrl = (value: string): string => {
     ProductTitleModule,
     // test
     TransformWebsiteToFeedModalModule,
-    FeedBuilderModalModule,
+    ScrapeSourceModalModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -164,6 +158,7 @@ export const fixUrl = (value: string): string => {
               }),
             ),
             ApolloLink.from([
+              removeTypenameFromVariables(),
               onError(({ graphQLErrors, networkError }) => {
                 if (networkError) {
                   httpErrorInterceptorService.interceptNetworkError(

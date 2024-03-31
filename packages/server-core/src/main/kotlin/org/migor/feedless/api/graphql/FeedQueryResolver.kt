@@ -51,7 +51,7 @@ class FeedQueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] previewFeed $data")
-    scrapeService.scrapeFeedFromRequest(corrId, data.request.fromDto(), data.filters)
+    scrapeService.scrapeFeedFromRequest(corrId, data.requests.map { it.fromDto() }, data.filters)
   }
 }
 

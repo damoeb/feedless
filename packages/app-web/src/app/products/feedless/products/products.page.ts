@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ProductTeaser, TeaserProductsService } from '../services/teaser-products.service';
+import { ProductService, ProductTeaser } from '../../../services/product.service';
 
 @Component({
   selector: 'app-feedless-products-page',
@@ -17,14 +17,14 @@ export class ProductsPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly teaserProducts: TeaserProductsService,
+    private readonly productService: ProductService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
     this.activatedRoute.params.subscribe(async params => {
-      this.product = (await this.teaserProducts.getProducts()).find(p => p.id === params.productId)
+      this.product = (await this.productService.getProductConfigs()).find(p => p.meta.id === params.productId).meta
       this.changeRef.detectChanges();
     }));
   }

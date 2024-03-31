@@ -14,11 +14,24 @@ export interface SideMenuConfig {
   breakpoint?: SidemenuBreakpoint;
 }
 
+export type ProductTeaser = {
+  localSetup: string;
+  id: string
+  title: string
+  imageUrl: string
+  subtitle: string
+  description: string
+  costs: number,
+  features: string[]
+}
+
+
 export interface ProductConfig {
   product: GqlProductName;
   offlineSupport?: boolean;
   titlePlain: string;
   titleHtml: string;
+  meta?: ProductTeaser;
   pageTitle: string;
   sideMenu?: SideMenuConfig;
   routes: Routes;
@@ -80,10 +93,10 @@ export class ProductService {
       titlePlain: 'Reader',
       titleHtml: '<strong>Reader</strong>',
       pageTitle: 'Reader',
-      sideMenu: {
-        width: 200,
-        breakpoint: 'md',
-      },
+      // sideMenu: {
+      //   width: 200,
+      //   breakpoint: 'md',
+      // },
       routes: [
         {
           path: '',
@@ -210,6 +223,15 @@ export class ProductService {
 
   getActiveProductConfigChange() {
     return this.activeProductConfig.asObservable();
+  }
+
+  async getProductConfigs(): Promise<ProductConfig[]> {
+    // return Promise.all(Object.values(products.apps).map(async a => ({
+    //   ...a,
+    //   localSetup: await marked(a.localSetup),
+    //   imageUrl: `/assets/${a.id}.jpeg`
+    // })));
+    return []
   }
 
   // forceProduct(product: GqlProduct) {

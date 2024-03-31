@@ -1,19 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
-import { ReplaySubject, Subscription } from 'rxjs';
-import {
-  ProductConfig,
-  ProductService,
-  SidemenuBreakpoint,
-} from './services/product.service';
+import { Subscription } from 'rxjs';
+import { ProductConfig, ProductService, SidemenuBreakpoint } from './services/product.service';
 import { GqlProductName } from '../generated/graphql';
 import { kebabCase } from 'lodash';
 

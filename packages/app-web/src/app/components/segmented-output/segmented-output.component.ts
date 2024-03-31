@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Field } from '../../modals/feed-builder-modal/scrape-builder';
-import { SegmentedOutput } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { Field } from '../../modals/scrape-source-modal/scrape-builder';
+import { SegmentedOutput } from '../../modals/scrape-source-modal/scrape-source-modal.component';
 import { KeyLabelOption } from '../../elements/select/select.component';
 
 type SortDirection = 'asc' | 'desc';

@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
-  GqlLicense,
-  GqlLicenseData,
   GqlProductName,
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  Maybe,
-  ServerSettings,
+  ServerSettings
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';

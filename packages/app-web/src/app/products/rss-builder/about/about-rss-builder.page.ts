@@ -1,19 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { dateFormat } from '../../../services/profile.service';
 import { OpmlService } from '../../../services/opml.service';
 import { ModalController } from '@ionic/angular';
-import {
-  ImportOpmlModalComponent,
-  ImportOpmlModalComponentProps,
-} from '../../../modals/import-opml-modal/import-opml-modal.component';
+import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../../../modals/import-opml-modal/import-opml-modal.component';
 import { AuthService } from '../../../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 

@@ -6,7 +6,7 @@ import { AppTestModule } from '../../app-test.module';
 import {
   GqlListSourceSubscriptionsQuery,
   GqlListSourceSubscriptionsQueryVariables,
-  ListSourceSubscriptions,
+  ListSourceSubscriptions
 } from '../../../generated/graphql';
 
 describe('RepositoriesPage', () => {

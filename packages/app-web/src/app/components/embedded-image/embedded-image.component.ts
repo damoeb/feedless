@@ -10,7 +10,7 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';

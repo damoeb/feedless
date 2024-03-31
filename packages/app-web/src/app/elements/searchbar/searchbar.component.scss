@@ -9,7 +9,7 @@
   margin: auto;
   border: var(--border-width) solid var(--border-color);
   border-radius: 8px;
-  width: var(--width);
+  max-width: var(--width);
 
   ion-button {
     margin-right: 5px;

@@ -2,10 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { ScrapeResponse } from '../../graphql/types';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
 import { TransformWebsiteToFeedModule } from './transform-website-to-feed.module';
 
 // const markupResponse: ScrapeResponse = {

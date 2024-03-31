@@ -4,14 +4,34 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <app-searchbar
-      (querySubmit)="handleQuery($event)"
-      [loading]="loading"
-      [value]="url"
-      placeholder="Type your URL"
-    ></app-searchbar>
+    <div class="title">
+      <div
+        class="ion-hide-md-down ion-padding-horizontal"
+        routerLink="/"
+        style="cursor: pointer"
+      >
+        reader
+      </div>
+      <app-searchbar
+        (querySubmit)="handleQuery($event)"
+        [loading]="loading"
+        class="ion-margin-end"
+        [value]="url"
+        placeholder="Type your URL"
+      ></app-searchbar>
+
+    </div>
 
     <ion-buttons slot="end">
+      <ion-button
+        href="https://discord.gg/6ySGeryD"
+        target="_blank"
+        fill="solid"
+        color="primary"
+      >
+        <ion-icon slot="start" name="logo-discord"></ion-icon>
+        Join</ion-button
+      >
       <app-dark-mode-button></app-dark-mode-button>
 
       <ion-button [disabled]="loading" id="open-settings-modal">

@@ -13,6 +13,12 @@ fragment SourceSubscriptionFragment on SourceSubscription {
   description
   visibility
   createdAt
+  activity {
+    items {
+      count
+      index
+    }
+  }
   updatedAt
   plugins {
     pluginId
@@ -31,6 +37,12 @@ fragment SourceSubscriptionFragment on SourceSubscription {
         compareBy
         nextItemMinIncrement
       }
+      filters {
+        type
+        value
+        field
+        operator
+      }
       fulltext {
         readability
       }
@@ -39,13 +51,14 @@ fragment SourceSubscriptionFragment on SourceSubscription {
   }
   segmented {
     digest
-    scheduleExpression
     size
     sortAsc
     sortBy
   }
+  scheduleExpression
   disabledFrom
   archived
+  documentCount
   retention {
     maxAgeDays
     maxItems
@@ -271,14 +284,6 @@ fragment EnclosureFragment on Enclosure {
   duration
   type
   url
-}
-
-fragment HistogramFragment on Histogram {
-  items {
-    index
-    count
-  }
-  frame
 }
 
 fragment ContentFragment on WebDocument {

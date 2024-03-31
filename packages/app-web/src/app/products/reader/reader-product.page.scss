@@ -10,7 +10,17 @@
 .font-sans-serif {
   --font: var(--font-sans-serif);
 }
+.title {
+  display: flex;
+  flex: 1;
 
+  & > * {
+    align-self: center;
+  }
+  app-searchbar {
+    flex: 1;
+  }
+}
 .font-serif {
   --font: var(--font-serif);
 }

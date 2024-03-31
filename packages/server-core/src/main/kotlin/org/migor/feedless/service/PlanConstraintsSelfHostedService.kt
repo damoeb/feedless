@@ -16,8 +16,8 @@ import java.util.*
 class PlanConstraintsSelfHostedService : PlanConstraintsService {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsSelfHostedService::class.simpleName)
-  override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int {
-    return (maxItems ?: 0)
+  override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int? {
+    return maxItems?.coerceAtLeast(2)
   }
 
   override fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {

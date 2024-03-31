@@ -1,9 +1,26 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Finalize Feed</ion-title>
-    <ion-buttons slot="end">
+    <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
         <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Finalize Feed</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="createOrUpdateFeed()"
+        *ngIf="!loading"
+        fill="solid"
+        color="success"
+      >
+        <ion-label *ngIf="isLoggedIn">
+          <span *ngIf="isUpdate()">Update</span>
+          <span *ngIf="!isUpdate()">Create</span>
+          Feed </ion-label>
+        <ion-label *ngIf="!isLoggedIn">
+          <span *ngIf="isUpdate()">Update</span>
+          <span *ngIf="!isUpdate()">Create</span>
+          Trial Feed </ion-label>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -29,6 +46,7 @@
         <ion-item>
           <ion-textarea
             [autoGrow]="true"
+            rows="3"
             fill="outline"
             placeholder="#tags, urls,..."
             [formControl]="formFg.controls.description"
@@ -72,7 +90,7 @@
           <ion-label>
             Filters
             <a
-              (click)="addFilter()"
+              (click)="addFilter(f)"
               *ngIf="filters.length < 4"
               href="javascript:void(0)"
             >
@@ -90,8 +108,8 @@
             fill="outline"
             interface="popover"
           >
-            <ion-select-option value="include">include</ion-select-option>
-            <ion-select-option value="exclude">exclude</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterType.Include">include</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterType.Exclude">exclude</ion-select-option>
           </ion-select>
           <ion-text class="ion-padding-end"> if </ion-text>
           <ion-select
@@ -99,21 +117,21 @@
             fill="outline"
             interface="popover"
           >
-            <ion-select-option value="link">link</ion-select-option>
-            <ion-select-option value="title">title</ion-select-option>
-            <ion-select-option value="content">content</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterField.Link">link</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterField.Title">title</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterField.Content">content</ion-select-option>
           </ion-select>
           <ion-select
             [formControl]="filter.controls.operator"
             fill="outline"
             interface="popover"
           >
-            <ion-select-option value="contains">contains</ion-select-option>
-            <ion-select-option value="matches">matches</ion-select-option>
-            <ion-select-option value="startsWith"
+            <ion-select-option [value]="GqlStringFilterOperator.Contains">contains</ion-select-option>
+            <ion-select-option [value]="GqlStringFilterOperator.Matches">matches</ion-select-option>
+            <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
               >starts with</ion-select-option
             >
-            <ion-select-option value="endsWith">ends with</ion-select-option>
+            <ion-select-option [value]="GqlStringFilterOperator.EndsWith">ends with</ion-select-option>
           </ion-select>
           <ion-input
             [formControl]="filter.controls.value"
@@ -125,6 +143,37 @@
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
         </div>
+      </ion-list>
+
+      <ion-list>
+        <ion-item>
+          <ion-label>
+            Retention Strategy
+            <a
+              (click)="showRetention = !showRetention"
+              *ngIf="!showRetention"
+              href="javascript:void(0)"
+            >
+              Customize
+            </a>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="showRetention">
+          <ion-input label="Delete after days"
+                     labelPlacement="start"
+                     fill="outline"
+                     [formControl]="formFg.controls.maxAgeDays"
+                     [clearInput]="true"
+                     placeholder="<Auto>"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="showRetention">
+          <ion-input label="Keep max items"
+                     labelPlacement="start"
+                     fill="outline"
+                     [formControl]="formFg.controls.maxItems"
+                     [clearInput]="true"
+                     placeholder="<Auto>"></ion-input>
+        </ion-item>
       </ion-list>
 
       <ion-list>
@@ -162,7 +211,7 @@
       <ion-list>
         <ion-item>
           <ion-label>
-            Feed Preview
+            Feed Preview <ion-note *ngIf="previewFeed">({{previewFeed.items?.length}})</ion-note>
             <ion-note class="ion-margin-horizontal"
               >(Plugins are not applied in Preview)</ion-note
             >
@@ -177,6 +226,9 @@
           *ngIf="previewFeed"
           style="position: absolute; width: 100vw; opacity: 0.6"
         >
+          <ion-item *ngIf="previewFeed.items.length === 0">
+            <ion-label>Feed is empty</ion-label>
+          </ion-item>
           <app-remote-feed-item
             *ngFor="let item of previewFeed.items; let feedIndex = index"
             [feedItem]="item"
@@ -187,33 +239,24 @@
     </div>
   </div>
 </ion-content>
-<ion-footer style="box-shadow: 0px -16px 18px 3px var(--ion-item-background)">
-  <ion-list
-    class="ion-no-margin ion-no-padding"
-    style="background: transparent"
-  >
-    <ion-item *ngIf="errorMessage" style="--background: transparent">
-      <ion-label color="danger"
-        ><strong>{{ errorMessage }}</strong></ion-label
-      >
-    </ion-item>
-    <ion-item *ngIf="!isLoggedIn && !serverSettings.isSelfHosted()">
-      <ion-label
-        >You can create a limited trial feed without signing up.</ion-label
-      >
-    </ion-item>
-    <ion-item
-      (click)="createFeed()"
-      *ngIf="!loading"
-      [button]="true"
-      color="success"
-    >
-      <ion-label *ngIf="isLoggedIn"> Create Feed </ion-label>
-      <ion-label *ngIf="!isLoggedIn"> Create Trial Feed </ion-label>
-    </ion-item>
-    <ion-item color="danger" *ngIf="loading">
-      <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>
-      Cancel
-    </ion-item>
-  </ion-list>
-</ion-footer>
+<!--<ion-footer style="box-shadow: 0px -16px 18px 3px var(&#45;&#45;ion-item-background)">-->
+<!--  <ion-list-->
+<!--    class="ion-no-margin ion-no-padding"-->
+<!--    style="background: transparent"-->
+<!--  >-->
+<!--    <ion-item *ngIf="errorMessage" style="&#45;&#45;background: transparent">-->
+<!--      <ion-label color="danger"-->
+<!--        ><strong>{{ errorMessage }}</strong></ion-label-->
+<!--      >-->
+<!--    </ion-item>-->
+<!--    <ion-item *ngIf="!isLoggedIn && !serverSettings.isSelfHosted()">-->
+<!--      <ion-label-->
+<!--        >You can create a limited trial feed without signing up.</ion-label-->
+<!--      >-->
+<!--    </ion-item>-->
+<!--    <ion-item color="danger" *ngIf="loading">-->
+<!--      <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>-->
+<!--      Cancel-->
+<!--    </ion-item>-->
+<!--  </ion-list>-->
+<!--</ion-footer>-->

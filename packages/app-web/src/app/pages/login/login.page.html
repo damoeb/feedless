@@ -47,6 +47,9 @@
             >
               Login
             </ion-item>
+            <ion-item *ngIf="errorMessage">
+              <ion-label color="danger">{{errorMessage}}</ion-label>
+            </ion-item>
           </ion-list>
         </ion-card-content>
       </form>

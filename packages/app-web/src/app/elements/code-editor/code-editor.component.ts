@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -19,35 +10,23 @@ import {
   keymap,
   lineNumbers,
   showTooltip,
-  Tooltip,
-  ViewUpdate,
+  Tooltip
 } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import {
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-  indentOnInput,
-  syntaxTree,
-} from '@codemirror/language';
+import { bracketMatching, foldGutter, foldKeymap, indentOnInput, syntaxTree } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
-  closeCompletion,
   Completion,
   CompletionContext,
   completionKeymap,
   CompletionResult,
-  startCompletion,
+  startCompletion
 } from '@codemirror/autocomplete';
 
-import {
-  markdownLanguageSupport,
-  NODE_HASHTAG,
-  NODE_LINK,
-} from './markdown.lang';
+import { markdownLanguageSupport, NODE_HASHTAG, NODE_LINK } from './markdown.lang';
 import { theme } from './theme';
 import { markdownDecorator } from './markdown.decorator';
 import { hashtagMatcher } from './hashtag.widget';
@@ -56,7 +35,6 @@ import { lintKeymap } from '@codemirror/lint';
 import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
-import { debounce } from 'lodash-es';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];

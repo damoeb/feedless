@@ -6,9 +6,8 @@ import {
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
-  GqlScrapeRequestInput,
   PreviewFeed,
-  RemoteNativeFeed,
+  RemoteNativeFeed
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { RemoteFeed, RemoteFeedItem } from '../graphql/types';

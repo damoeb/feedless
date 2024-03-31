@@ -34,8 +34,8 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   @Autowired
   lateinit var userDAO: UserDAO
 
-  override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int {
-    return (maxItems ?: 0)
+  override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int? {
+    return (maxItems ?: 2)
       .coerceAtLeast(10)
       .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId))
   }

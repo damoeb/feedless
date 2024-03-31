@@ -61,12 +61,11 @@ type FeatureValue {
   numVal: FeatureIntValue
 }
 
-type Histogram {
-  frame: HistogramFrame!
-  items: [HistogramItem!]!
+type Activity {
+  items: [ActivityItem!]!
 }
 
-type HistogramItem {
+type ActivityItem {
   count: Int!
   index: String!
 }
@@ -77,10 +76,13 @@ type SourceSubscription {
   title: String!
   ownerId: ID!
   visibility: Visibility!
+  scheduleExpression: String!
   createdAt: Long!
   updatedAt: Long!
+  documentCount: Long!
   disabledFrom: Long
   archived: Boolean!
+  activity: Activity!
   plugins: [PluginExecution!]!
   segmented: Segment
   retention: Retention!
@@ -118,14 +120,33 @@ input UpdateLicenseInput {
 
 input SourceSubscriptionUpdateInput {
   where: SourceSubscriptionUniqueWhereInput!
-  data: UpdateSinkOptionsInput!
+  data: UpdateSinkOptionsDataInput!
+}
+
+input UpdateSinkOptionsDataInput {
+  sinkOptions: UpdateSinkOptionsInput
+  sources: SourcesUpdateInput
+}
+
+input SourcesUpdateInput {
+  remove: [ID!]
+  add: [ScrapeRequestInput!]
 }
 
 input UpdateSinkOptionsInput {
   description: NullableStringUpdateOperationsInput
+  scheduleExpression: NullableStringUpdateOperationsInput
   title: StringUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
+  retention: RetentionUpdateInput
+  plugins: [PluginExecutionInput!]
 }
+
+input RetentionUpdateInput {
+  maxItems: NullableIntUpdateOperationsInput
+  maxAgeDays: NullableIntUpdateOperationsInput
+}
+
 
 input CreateWebDocumentInput {
   contentRawBase64: String
@@ -251,7 +272,7 @@ type Query {
 }
 
 input PreviewFeedInput {
-  request: ScrapeRequestInput!
+  requests: [ScrapeRequestInput!]!
   filters: [CompositeFilterParamsInput!]!
 }
 
@@ -283,14 +304,14 @@ type RefineOptions {
 }
 
 type RemoteNativeFeed {
-  author: String
-  description: String
   expired: Boolean!
   feedUrl: String!
-  items: [WebDocument!]
-  language: String
   publishedAt: Long!
   title: String!
+  author: String
+  description: String
+  items: [WebDocument!]
+  language: String
   websiteUrl: String
 }
 
@@ -532,7 +553,6 @@ input NetworkRequestInput {
 
 type Segment {
   digest: Boolean!
-  scheduleExpression: String!
   size: Int!
   sortAsc: Boolean!
   sortBy: String!
@@ -602,7 +622,6 @@ type NativeFeed {
   feedUrl: String!
   harvestRateFixed: Boolean!
   harvestRateMinutes: Int
-  histogram(frame: HistogramFrame!): Histogram!
   iconUrl: String
   imageUrl: String
   lastChangedAt: Long
@@ -698,10 +717,6 @@ enum FeatureName {
   scrapeRequestMaxCountPerSource
   scrapeRequestActionMaxCount
   scrapeSourceMaxCountTotal
-}
-
-enum HistogramFrame {
-  last_month
 }
 
 enum NativeFeedStatus {
@@ -865,6 +880,7 @@ input SinkOptionsInput {
   title: String!
   description: String!
   retention: RetentionInput
+  scheduleExpression: String
   visibility: Visibility
   plugins: [PluginExecutionInput!]
 }
@@ -962,7 +978,6 @@ input SecretKey {
 
 input SegmentInput {
   digest: Boolean!
-  scheduleExpression: String!
   size: Int!
   orderAsc: Boolean!
   orderBy: String!
@@ -1086,6 +1101,8 @@ type TextData {
 }
 
 input ScrapeRequestInput {
+  corrId: ID
+  id: ID
   page: ScrapePageInput!
   localized: LocalizedSourceInput
   tags: [String!]
@@ -1203,7 +1220,7 @@ input ScrapeSelectorExposeFieldHtmlValueInput {
 
 type ScrapeRequest {
   corrId: ID
-  id: ID
+  id: ID!
   page: ScrapePage!
   debug: ScrapeDebugOptions
   emit: [ScrapeEmit!]!
@@ -1239,9 +1256,18 @@ type PluginExecution {
 type PluginExecutionParams {
   genericFeed: Selectors
   diffEmailForward: DiffEmailForwardParams
+  filters: [CompositeFilterParams!]
   fulltext: FulltextPluginParams
   rawJson: String
 }
+
+type CompositeFilterParams {
+  type: CompositeFilterType!
+  field: CompositeFilterField!
+  operator: StringFilterOperator!
+  value: String!
+}
+
 
 type DiffEmailForwardParams {
   nextItemMinIncrement: Float!

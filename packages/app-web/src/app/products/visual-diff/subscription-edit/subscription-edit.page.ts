@@ -1,17 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../../../components/embedded-image/embedded-image.component';
+import { BoundingBox, XyPosition } from '../../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
@@ -23,12 +14,12 @@ import {
   GqlViewPort,
   GqlWebDocumentField,
   GqlXyPosition,
-  Maybe,
+  Maybe
 } from '../../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
-import { ScrapedElement, SourceSubscription } from '../../../graphql/types';
+import { ScrapedElement } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';

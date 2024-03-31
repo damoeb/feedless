@@ -19,6 +19,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 
+data class FrequencyItem(val year: Int, val month: Int, val day: Int, val count: Int)
+
+
 @Service
 @Profile(AppProfiles.database)
 class WebDocumentService {
@@ -48,7 +51,9 @@ class WebDocumentService {
     val retentionSize =
       planConstraintsService.coerceRetentionMaxItems(subscription.retentionMaxItems, subscription.ownerId)
     log.info("[$corrId] applying retention with maxItems=$retentionSize")
-    webDocumentDAO.deleteAllBySubscriptionIdAndStatusWithSkip(subscription.id, ReleaseStatus.released, retentionSize)
+    if (retentionSize != null && retentionSize > 0) {
+      webDocumentDAO.deleteAllBySubscriptionIdAndStatusWithSkip(subscription.id, ReleaseStatus.released, retentionSize)
+    }
 
     planConstraintsService.coerceRetentionMaxAgeDays(subscription.retentionMaxAgeDays)
       ?.let { maxAgeDays ->
@@ -68,5 +73,17 @@ class WebDocumentService {
     webDocumentDAO.deleteByIdAndOwnerId(id, user.id)
   }
 
-
+  fun getWebDocumentFrequency(
+    sourceSubscriptionId: UUID,
+  ): List<FrequencyItem> {
+    return webDocumentDAO.histogramPerDayByStreamIdOrImporterId(sourceSubscriptionId)
+      .map {
+        FrequencyItem(
+          year = (it[0] as Double).toInt(),
+          month = (it[1] as Double).toInt(),
+          day = (it[2] as Double).toInt(),
+          count = (it[3] as Long).toInt(),
+        )
+      }
+  }
 }

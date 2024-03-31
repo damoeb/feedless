@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RepositorySettingsPage } from './repository-settings-page.component';
 import { RepositorySettingsPageModule } from './repository-settings.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  AppTestModule,
-  mockSourceSubscription,
-} from '../../../../app-test.module';
+import { AppTestModule, mockSourceSubscription } from '../../../../app-test.module';
 
 describe('RepositorySettingsPage', () => {
   let component: RepositorySettingsPage;

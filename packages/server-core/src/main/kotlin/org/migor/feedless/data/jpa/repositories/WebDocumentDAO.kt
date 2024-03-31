@@ -75,4 +75,23 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     """
   )
   fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
+
+  fun countBySubscriptionId(id: UUID): Long
+
+  @Query(
+    """
+    SELECT date_part('year', releasedat\:\:date) as year,
+           date_part('month', releasedat\:\:date) AS month,
+           date_part('day', releasedat\:\:date) AS day,
+           COUNT(id)
+    FROM t_web_document
+    WHERE releasedat >= date_trunc('month', current_date - interval '1' month)
+       and subscriptionid = ?1
+    GROUP BY year, month, day
+    ORDER BY year, month, day
+    """,
+    nativeQuery = true
+  )
+  fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
+
 }

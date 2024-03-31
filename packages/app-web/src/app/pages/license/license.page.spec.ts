@@ -1,24 +1,20 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LicensePage } from './license.page';
-import { EmailLoginPageModule } from './license.module';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../app-test.module';
+import { LicensePageModule } from './license.module';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('LoginPage', () => {
+describe('LicencePage', () => {
   let component: LicensePage;
   let fixture: ComponentFixture<LicensePage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EmailLoginPageModule,
+        LicensePageModule,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],

@@ -45,14 +45,18 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   open var language: String? = null
 
   @Basic
+  @Column(nullable = false)
+  open var prerender: Boolean = false
+
+  @Basic
   @Enumerated(EnumType.STRING)
   open var waitUntil: PuppeteerWaitUntil? = null
 
   @Basic
-  open var additionalWaitSec = 0
+  open var additionalWaitSec: Int? = null
 
   @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false)
+  @Column(columnDefinition = "jsonb")
   @Basic(fetch = FetchType.LAZY)
   open var actions: List<ScrapeAction>? = null
 
@@ -125,12 +129,16 @@ fun ScrapeSourceEntity.toDto(): ScrapeRequest {
     .page(
       ScrapePage.newBuilder()
         .prerender(
-          ScrapePrerender.newBuilder()
-            .waitUntil(waitUntil)
-            .viewport(viewport)
-            .additionalWaitSec(additionalWaitSec)
-            .language(language)
-            .build()
+          if (prerender) {
+            ScrapePrerender.newBuilder()
+              .waitUntil(waitUntil)
+              .viewport(viewport)
+              .additionalWaitSec(additionalWaitSec ?: 0)
+              .language(language)
+              .build()
+          } else {
+            null
+          }
         )
         .actions(actions)
         .timeout(timeout)

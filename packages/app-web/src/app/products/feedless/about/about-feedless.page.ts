@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import '@justinribeiro/lite-youtube';
 
 import { fixUrl } from '../../../app.module';
-import { ProductTeaser, TeaserProductsService } from '../services/teaser-products.service';
+import { ProductService, ProductTeaser } from '../../../services/product.service';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -17,7 +17,7 @@ export class AboutFeedlessPage implements OnInit {
 
   constructor(private readonly router: Router,
               private readonly changeRef: ChangeDetectorRef,
-              readonly teaserProducts: TeaserProductsService) {}
+              readonly productService: ProductService) {}
 
   async handleQuery(url: string) {
     try {
@@ -32,7 +32,8 @@ export class AboutFeedlessPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.products = await this.teaserProducts.getProducts();
+    const configs = await this.productService.getProductConfigs();
+    this.products = configs.map(c => c.meta);
     this.waitList = false;
     this.changeRef.detectChanges();
   }

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { GqlHistogram } from '../../../generated/graphql';
+import { GqlActivity } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
 import { scaleLinear } from 'd3-scale';
@@ -10,8 +10,8 @@ import { scaleLinear } from 'd3-scale';
   styleUrls: ['./histogram.component.scss'],
 })
 export class HistogramComponent implements OnInit {
-  @Input()
-  data: GqlHistogram;
+  @Input({required: true})
+  data: GqlActivity;
   path: string;
   rate: number;
 

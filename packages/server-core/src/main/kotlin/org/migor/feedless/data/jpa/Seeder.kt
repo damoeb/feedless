@@ -131,9 +131,9 @@ class Seeder {
   }
 
   private fun seedPlans() {
-    if (isSelfHosted()) {
-      return
-    }
+//    if (isSelfHosted()) {
+//      return
+//    }
     persistPlan(
       PlanName.system, 0.0, PlanAvailability.unavailable, ProductName.system, features = mapOf(
         FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(7),

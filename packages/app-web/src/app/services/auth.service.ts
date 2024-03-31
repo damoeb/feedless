@@ -13,21 +13,10 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables,
+  GqlConfirmCodeMutationVariables
 } from '../../generated/graphql';
-import {
-  ApolloClient,
-  FetchResult,
-  Observable as ApolloObservable,
-} from '@apollo/client/core';
-import {
-  BehaviorSubject,
-  firstValueFrom,
-  map,
-  Observable,
-  Subject,
-  take,
-} from 'rxjs';
+import { ApolloClient, FetchResult, Observable as ApolloObservable } from '@apollo/client/core';
+import { BehaviorSubject, firstValueFrom, map, Observable, Subject, take } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
@@ -131,7 +120,7 @@ export class AuthService {
 
   async handleAuthenticationToken(token: string) {
     const decodedToken = jwt_decode<RichAuthToken>(token);
-    console.log('handleAuthenticationToken', decodedToken);
+    // console.log('handleAuthenticationToken', decodedToken);
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
       loggedIn: decodedToken.user_id?.length > 0,
@@ -145,9 +134,9 @@ export class AuthService {
   }
 
   changeAuthStatus(loggedIn: boolean) {
+    console.log('changeAuthStatus', loggedIn);
     this.authStatus.next({ loggedIn });
   }
-
   async showTermsAndConditions() {
     if (this.modalIsOpen) {
       return;

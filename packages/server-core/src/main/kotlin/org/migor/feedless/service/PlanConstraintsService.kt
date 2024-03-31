@@ -5,7 +5,7 @@ import java.util.*
 
 interface PlanConstraintsService {
 
-  fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int
+  fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int?
 
   fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date
 

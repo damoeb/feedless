@@ -1,20 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { SourceSubscription } from '../../../graphql/types';
-import {
-  AppAction,
-  Note,
-  NotebookService,
-  SearchResultGroup,
-} from '../services/notebook.service';
+import { AppAction, Note, NotebookService, SearchResultGroup } from '../services/notebook.service';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { debounce as debounceFn, isNull } from 'lodash-es';
 import { AlertController, IonSearchbar } from '@ionic/angular';

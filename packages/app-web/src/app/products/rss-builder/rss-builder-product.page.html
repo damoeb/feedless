@@ -16,7 +16,7 @@
     </ion-toolbar>
     <ion-toolbar color="primary" *ngIf="!isTrialPeriod() && !license?.isValid">
       <ion-text class="ion-margin-horizontal">
-        <strong>Trial Period ended</strong>, it's free for personal use.
+        <strong>Trial Period ended</strong>.
       </ion-text>
       <ion-button
         slot="end"
@@ -42,13 +42,17 @@
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
 
-      <app-searchbar
-        buttonText="Create Feed"
-        color="primary"
-        *ngIf="showSearchBar"
-        [value]="url"
-        placeholder="Type a Url of a website"
-      ></app-searchbar>
+<!--      <app-searchbar-->
+<!--        buttonText="Create Feed"-->
+<!--        color="primary"-->
+<!--        *ngIf="showSearchBar"-->
+<!--        [value]="url"-->
+<!--        placeholder="Type a Url of a website"-->
+<!--      ></app-searchbar>-->
+
+      <ion-button routerLink="/feeds" color="dark" class="ion-margin-horizontal" fill="clear">
+        Your Feeds
+      </ion-button>
     </div>
 
     <ion-buttons slot="end">
@@ -103,7 +107,7 @@
       >
       <ion-chip
         *ngIf="license.isValid && license.isLocated"
-        color="success"
+        color="dark"
         routerLink="/license"
       >
         {{ license.data.name }}

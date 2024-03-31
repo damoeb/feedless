@@ -5,7 +5,7 @@ import { ProfileService } from '../../../services/profile.service';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { AlertController } from '@ionic/angular';
-import { compact, debounce, DebouncedFunc, omit, uniq } from 'lodash-es';
+import { debounce, DebouncedFunc, omit } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';

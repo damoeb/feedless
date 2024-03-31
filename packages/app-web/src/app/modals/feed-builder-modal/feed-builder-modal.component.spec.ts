@@ -3,11 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedBuilderModalComponent } from './feed-builder-modal.component';
 import { FeedBuilderModalModule } from './feed-builder-modal.module';
 import { AppTestModule } from '../../app-test.module';
-import {
-  GqlListPluginsQuery,
-  GqlListPluginsQueryVariables,
-  ListPlugins,
-} from '../../../generated/graphql';
+import { GqlListPluginsQuery, GqlListPluginsQueryVariables, ListPlugins } from '../../../generated/graphql';
 
 describe('FeedBuilderModalComponent', () => {
   let component: FeedBuilderModalComponent;

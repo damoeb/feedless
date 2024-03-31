@@ -1,22 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
 import {
+  GqlCompositeFilterField,
   GqlCompositeFilterParamsInput,
+  GqlCompositeFilterType,
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
-  GqlScrapePageInput,
+  GqlScrapePage,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
-  GqlVisibility,
+  GqlStringFilterOperator,
+  GqlVisibility
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
@@ -25,17 +22,18 @@ import { dateFormat, ProfileService } from '../../services/profile.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { FeedService } from '../../services/feed.service';
-import { RemoteFeed } from '../../graphql/types';
+import { RemoteFeed, SourceSubscription } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
+import { isDefined } from '../scrape-source-modal/scrape-builder';
+import { ArrayElement } from '../../types';
 
 export interface GenerateFeedModalComponentProps {
-  scrapeRequest: GqlScrapeRequestInput;
-  feed: NativeOrGenericFeed;
+  subscription: SourceSubscription
 }
 
-type FilterOperator = 'contains' | 'startsWith' | 'matches' | 'endsWith';
-type FilterField = 'link' | 'title' | 'content';
-type FilterType = 'include' | 'exclude';
+type FilterOperator = GqlStringFilterOperator
+type FilterField = GqlCompositeFilterField
+type FilterType = GqlCompositeFilterType
 
 interface FilterData {
   type: FilterType;
@@ -43,6 +41,47 @@ interface FilterData {
   operator: FilterOperator;
   value: string;
 }
+
+export function getScrapeRequest(feed: NativeOrGenericFeed, scrapeRequest: GqlScrapeRequest): GqlScrapeRequest {
+  const pageUrl = (): GqlScrapePage => {
+    if (feed.nativeFeed) {
+      return {
+        url: feed.nativeFeed.feedUrl,
+      };
+    } else {
+      return scrapeRequest.page;
+    }
+  };
+
+  const page = pageUrl();
+
+  return {
+    id: null,
+    page,
+    emit: [
+      {
+        selectorBased: {
+          xpath: {
+            value: '/',
+          },
+          expose: {
+            transformers: [
+              {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                params: {
+                  genericFeed: feed.genericFeed?.selectors,
+                },
+              },
+            ],
+          },
+        },
+      },
+    ],
+  };
+}
+
+
+type FilterParams = ArrayElement<ArrayElement<SourceSubscription['plugins']>['params']['filters']>
 
 @Component({
   selector: 'app-generate-feed-modal',
@@ -58,6 +97,8 @@ export class GenerateFeedModalComponent
       validators: [Validators.required, Validators.minLength(3)],
     }),
     description: new FormControl<string>('', [Validators.maxLength(250)]),
+    maxItems: new FormControl<number>(null),
+    maxAgeDays: new FormControl<number>(null),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
@@ -67,16 +108,24 @@ export class GenerateFeedModalComponent
   });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
 
-  @Input({ required: true })
-  feed: NativeOrGenericFeed;
+  // @Input({ required: true })
+  // scrapeRequests: GqlScrapeRequest[];
 
   @Input({ required: true })
-  scrapeRequest: GqlScrapeRequest;
+  subscription: SourceSubscription;
+
   loading = false;
   errorMessage: string;
   isLoggedIn: boolean;
   filterChanges = new ReplaySubject<void>();
   previewFeed: RemoteFeed;
+
+  protected readonly dateFormat = dateFormat;
+  protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
+  protected readonly GqlCompositeFilterField = GqlCompositeFilterField;
+  protected readonly GqlCompositeFilterType = GqlCompositeFilterType;
+  showRetention: boolean;
+
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -93,15 +142,15 @@ export class GenerateFeedModalComponent
     return this.modalCtrl.dismiss();
   }
 
-  addFilter() {
+  addFilter(f: FilterParams = null) {
     if (this.filters.some((filter) => filter.invalid)) {
       return;
     }
 
     const filter = new FormGroup({
-      type: new FormControl<FilterType>('exclude', [Validators.required]),
-      field: new FormControl<FilterField>('title', [Validators.required]),
-      operator: new FormControl<FilterOperator>('startsWith', [
+      type: new FormControl<FilterType>(GqlCompositeFilterType.Exclude, [Validators.required]),
+      field: new FormControl<FilterField>(GqlCompositeFilterField.Title, [Validators.required]),
+      operator: new FormControl<FilterOperator>(GqlStringFilterOperator.StartsWidth, [
         Validators.required,
       ]),
       value: new FormControl<string>('', [
@@ -109,6 +158,16 @@ export class GenerateFeedModalComponent
         Validators.minLength(1),
       ]),
     });
+
+    if (f) {
+      filter.patchValue({
+        value: f.value,
+        type: f.type,
+        operator: f.operator,
+        field: f.field,
+      })
+    }
+
     this.filters.push(filter);
     filter.statusChanges.subscribe((status) => {
       if (status === 'VALID') {
@@ -122,7 +181,7 @@ export class GenerateFeedModalComponent
     this.filterChanges.next();
   }
 
-  async createFeed() {
+  async createOrUpdateFeed() {
     if (this.formFg.invalid) {
       return;
     }
@@ -150,34 +209,73 @@ export class GenerateFeedModalComponent
       }
       if (this.filters.length > 0) {
         plugins.push({
-          pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
-          params: {},
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+          params: {
+            filters: this.filters.map(filter => ({
+              field: filter.value.field,
+              value: filter.value.value,
+              type: filter.value.type,
+              operator: filter.value.operator,
+            }))
+          },
         });
       }
 
-      const subscriptions =
-        await this.sourceSubscriptionService.createSubscriptions({
-          subscriptions: [
-            {
-              product: environment.product,
-              sources: [this.getScrapeRequest()],
-              sourceOptions: {
-                refreshCron: this.formFg.value.fetchFrequency,
+      if (this.isUpdate()) {
+        const {title, description, fetchFrequency, maxAgeDays, maxItems, } = this.formFg.value;
+        await this.sourceSubscriptionService.updateSubscription({
+          where: {
+            id: this.subscription.id
+          },
+          data: {
+            sinkOptions: {
+              plugins,
+              title: {
+                set: title
               },
-              sinkOptions: {
-                title: this.formFg.value.title,
-                description: this.formFg.value.description,
-                visibility: GqlVisibility.IsPrivate,
-                plugins,
+              description: {
+                set: description
               },
-            },
-          ],
-        });
+              scheduleExpression: {
+                set: fetchFrequency
+              },
+              retention: {
+                maxItems: {
+                  set: maxItems
+                },
+                maxAgeDays: {
+                  set: maxAgeDays
+                }
+              }
+            }
+          }
+        })
 
-      const sub = subscriptions[0];
+      } else {
+        const subscriptions =
+          await this.sourceSubscriptionService.createSubscriptions({
+            subscriptions: [
+              {
+                product: environment.product,
+                sources: this.subscription.sources as GqlScrapeRequestInput[],
+                sourceOptions: {
+                  refreshCron: this.formFg.value.fetchFrequency,
+                },
+                sinkOptions: {
+                  title: this.formFg.value.title,
+                  description: this.formFg.value.description,
+                  visibility: GqlVisibility.IsPrivate,
+                  plugins,
+                },
+              },
+            ],
+          });
 
-      await this.modalCtrl.dismiss();
-      await this.router.navigateByUrl(`/feeds/${sub.id}`);
+        const sub = subscriptions[0];
+        await this.modalCtrl.dismiss();
+        await this.router.navigateByUrl(`/feeds/${sub.id}`);
+      }
+
     } catch (e) {
       this.errorMessage = e.message;
     } finally {
@@ -186,46 +284,25 @@ export class GenerateFeedModalComponent
     this.changeRef.detectChanges();
   }
 
-  private getScrapeRequest(): GqlScrapeRequestInput {
-    const pageUrl = (): GqlScrapePageInput => {
-      if (this.feed.nativeFeed) {
-        return {
-          url: this.feed.nativeFeed.feedUrl,
-        };
-      } else {
-        return this.scrapeRequest.page;
-      }
-    };
-
-    const page = pageUrl();
-
-    return {
-      page,
-      emit: [
-        {
-          selectorBased: {
-            xpath: {
-              value: '/',
-            },
-            expose: {
-              transformers: [
-                {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-                  params: {
-                    genericFeed: this.feed.genericFeed?.selectors,
-                  },
-                },
-              ],
-            },
-          },
-        },
-      ],
-    };
-  }
-
   async ngOnInit(): Promise<void> {
+    console.log(this.subscription)
     this.isLoggedIn = this.profileService.isAuthenticated();
-    this.formFg.patchValue(this.getFeedTitle());
+    const retention = this.subscription.retention;
+    this.formFg.patchValue({
+      title: this.subscription.title,
+      description: this.subscription.description,
+      fetchFrequency: this.subscription.scheduleExpression || '0 0 0 * * *',
+      applyFulltextPlugin: this.subscription.plugins.some(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext),
+      applyPrivacyPlugin: this.subscription.plugins.some(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy),
+      maxAgeDays: retention?.maxAgeDays,
+      maxItems: retention?.maxItems,
+    });
+    const filterPlugin = this.subscription.plugins.find(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter)
+    if (filterPlugin) {
+      filterPlugin.params.filters.forEach(f => this.addFilter(f))
+    }
+
+    this.showRetention = isDefined(retention?.maxAgeDays) || isDefined(retention?.maxItems);
     this.filterChanges
       .pipe(debounce(() => interval(800)))
       .subscribe(async () => {
@@ -237,19 +314,10 @@ export class GenerateFeedModalComponent
 
   private async loadFeedPreview() {
     this.previewFeed = await this.feedService.previewFeed({
-      request: this.getScrapeRequest(),
+      requests: this.subscription.sources as GqlScrapeRequestInput[],
       filters: this.getFilterParams(),
     });
     this.changeRef.detectChanges();
-  }
-
-  private getFilters(): GqlPluginExecutionInput {
-    return {
-      pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-      params: {
-        filters: this.getFilterParams(),
-      },
-    };
   }
 
   private getFilterParams(): GqlCompositeFilterParamsInput[] {
@@ -267,19 +335,7 @@ export class GenerateFeedModalComponent
       );
   }
 
-  private getFeedTitle() {
-    if (this.feed.nativeFeed) {
-      return {
-        title: this.feed.nativeFeed.title,
-        description: `Source: ${this.feed.nativeFeed.feedUrl}`,
-      };
-    } else {
-      return {
-        title: `Feed from ${this.scrapeRequest.page.url}`,
-        description: `Source: ${this.scrapeRequest.page.url}`,
-      };
-    }
+  isUpdate() {
+    return isDefined(this.subscription.id);
   }
-
-  protected readonly dateFormat = dateFormat;
 }

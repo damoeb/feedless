@@ -3,11 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AgentsComponent } from './agents.component';
 import { AgentsModule } from './agents.module';
 import { AppTestModule } from '../../app-test.module';
-import {
-  Agents,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
-} from '../../../generated/graphql';
+import { Agents, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../../generated/graphql';
 
 describe('AgentsComponent', () => {
   let component: AgentsComponent;

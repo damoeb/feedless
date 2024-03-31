@@ -24,17 +24,6 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
 
-    <!--  <div-->
-    <!--    *ngIf="!loading && !scrapeResponse"-->
-    <!--    style="-->
-    <!--      height: 300px;-->
-    <!--      align-items: center;-->
-    <!--      justify-content: center;-->
-    <!--      display: flex;-->
-    <!--    "-->
-    <!--  >-->
-    <!--  </div>-->
-
     <app-transform-website-to-feed
       (selectedFeedChange)="selectedFeed = $event"
       (statusChange)="hasFeed = $event === 'valid'"
@@ -57,7 +46,7 @@
         [color]="hasFeed ? 'success' : 'medium'"
         bottomSlot
       >
-        Finalize Feed
+        {{submitButtonText}}
         <ion-icon name="flask-outline" slot="end"></ion-icon>
       </ion-item>
     </app-transform-website-to-feed>

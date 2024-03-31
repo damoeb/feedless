@@ -1,20 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeRequest,
-  GqlScrapeRequestInput,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapeRequestInput } from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +10,7 @@ import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-moda
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   FeedBuilderActionsModalComponent,
-  FeedBuilderData,
+  FeedBuilderData
 } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -44,6 +31,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
   embedWebsite: Embeddable;
   loading = false;
+
+  @Input()
+  submitButtonText = 'Finalize Feed'
+
+  @Input()
   scrapeRequest: GqlScrapeRequestInput;
   hasFeed: boolean;
   selectedFeed: NativeOrGenericFeed;
@@ -69,6 +61,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    if (this.scrapeRequest) {
+      this.url = this.scrapeRequest.page.url;
+
+      await this.scrapeUrl();
+    }
     this.subscriptions.push(
       this.productService
         .getActiveProductConfigChange()
@@ -91,11 +88,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
-    // await this.router.navigate(['/builder'], {
-    //   queryParams: {
-    //     url: this.url,
-    //   },
-    // });
 
     try {
       console.log(`scrape ${this.url}`);
@@ -195,10 +187,15 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   private handleResponse(scrapeResponse: ScrapeResponse) {
     this.scrapeResponse = scrapeResponse;
 
-    this.embedWebsite = {
-      mimeType: 'text/html',
-      data: this.scrapeResponse.elements[0].selector.html.data,
-      url: this.url,
-    };
+    const { contentType } = scrapeResponse.debug;
+    if (contentType.startsWith('text/html')) {
+      this.embedWebsite = {
+        mimeType: 'text/html',
+        data: this.scrapeResponse.elements[0].selector.html.data,
+        url: this.url,
+      };
+    } else {
+        console.warn(`Unsupported contentType ${contentType}`)
+    }
   }
 }

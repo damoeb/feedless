@@ -6,24 +6,14 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
-import {
-  ScrapedReadability,
-  ScrapeResponse,
-  Selectors,
-} from '../../graphql/types';
-import {
-  Embeddable,
-  transformXpathToCssPath,
-} from '../../components/embedded-website/embedded-website.component';
+import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
+import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
+import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
@@ -103,6 +93,9 @@ export class ReaderProductPage implements OnInit, OnDestroy {
           if (params.url?.length > 0) {
             this.url = fixUrl(params.url);
             await this.scrapeUrl();
+          } else {
+            this.url = '';
+            this.changeRef.detectChanges();
           }
         }),
         this.profile.watchColorScheme().subscribe((isDarkMode) => {

@@ -11,9 +11,9 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
-import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
+import { isDefined } from '../../modals/scrape-source-modal/scrape-builder';
 
 interface Viewport {
   width: number;
@@ -199,6 +199,8 @@ body { cursor: pointer; }
           break;
         case 'xpath':
           this.pickedXpath.emit('/' + data.data);
+          break;
+        case undefined:
           break;
         default:
           console.error(`invalid message type ${data.type}`);

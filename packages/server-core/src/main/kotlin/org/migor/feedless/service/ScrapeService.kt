@@ -39,6 +39,7 @@ import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
 import java.nio.charset.Charset
@@ -227,22 +228,32 @@ class ScrapeService {
 
   fun scrapeFeedFromRequest(
     corrId: String,
-    scrapeRequest: ScrapeRequest,
+    scrapeRequests: List<ScrapeRequest>,
     filters: List<CompositeFilterParamsInput>
   ): RemoteNativeFeed {
-    val response = scrape(corrId, scrapeRequest).block()!!
-    val feedField =
-      response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!!
-
-    val feed = JsonUtil.gson.fromJson(feedField.value.one.data, RemoteNativeFeed::class.java)
     val params = filters.toPluginExecutionParamsInput()
-    feed.items.removeAll(feed.items.filter { item ->
+
+    val items = Flux.fromIterable(scrapeRequests)
+      .flatMap { scrapeRequest -> scrape(corrId, scrapeRequest) }
+      .map { response -> response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!! }
+      .map { field: ScrapedField -> JsonUtil.gson.fromJson(field.value.one.data, RemoteNativeFeed::class.java).items }
+      .blockLast()!!
+      .toMutableList()
+
+    items.removeAll(items.filter { item ->
       !filterPlugin.filterEntity(
         corrId,
         item.asEntity(),
         params
       )
     })
+    val feed = RemoteNativeFeed()
+    feed.items = items
+    feed.expired = false
+    feed.feedUrl = ""
+    feed.publishedAt = Date().time
+    feed.title = "Preview Feed"
+
     return feed
   }
 

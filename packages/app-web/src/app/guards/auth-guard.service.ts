@@ -16,16 +16,18 @@ export class AuthGuardService implements CanActivate {
 
   canActivate(): Observable<boolean | UrlTree> {
     if (this.serverSettings.isSelfHosted()) {
-      return this.authService.isAuthenticated().pipe(
+      return this.authService.authorizationChange().pipe(
         switchMap((authenticated) => {
+          console.log('authenticated', authenticated);
           if (authenticated) {
             return of(true);
           } else {
-            return of(this.router.createUrlTree(['/login']));
+            return of(this.router.createUrlTree(['/login'], {queryParams: {redirectUrl: '/builder'}, queryParamsHandling: 'merge'}));
           }
         }),
       );
+    } else {
+      return of(true);
     }
-    return of(true);
   }
 }
