@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { ProductsPage } from './products.page';
-import { BuyPage } from '../buy/buy.page';
 
 const routes: Routes = [
   {
@@ -11,7 +10,8 @@ const routes: Routes = [
   },
   {
     path: ':productId/buy',
-    component: BuyPage,
+    loadChildren: () =>
+      import('../buy/buy.module').then((m) => m.ProductsPageModule),
   },
 ];
 

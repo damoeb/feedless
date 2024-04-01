@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { IonPopover, IonSearchbar, PopoverController } from '@ionic/angular';
 import { isFunction, isObject, isString } from 'lodash-es';
 

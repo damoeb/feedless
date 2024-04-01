@@ -13,39 +13,6 @@ plugins {
   id("org.ajoberstar.grgit")
 }
 
-val waitForContainers = tasks.register("WaitForContainers", Exec::class) {
-  commandLine(
-    "sh",
-    "scripts/wait-for-containers.sh"
-  )
-}
-
-tasks.register("startContainers", Exec::class) {
-  commandLine(
-    "docker-compose",
-    "up",
-    "-d",
-    "postgres",
-//    "feed-validator",
-    "feedless-app",
-    "feedless-agent",
-    "feedless-core"
-  )
-  finalizedBy(waitForContainers)
-}
-
-tasks.register("stopContainers", Exec::class) {
-  commandLine(
-    "docker-compose",
-    "stop",
-//    "postgres",
-//    "feed-validator",
-    "feedless-app",
-    "feedless-agent",
-    "feedless-core"
-  )
-}
-
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
   dependsOn(appWebTask(), serverCoreTask(), agentTask())
 
@@ -88,12 +55,16 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
   )
 }
 
-val packageAll = tasks.register("package") {
-  dependsOn(appWebTask(), serverCoreTask(), agentTask(), buildDockerAioWeb, buildDockerAioChromium)
+val prepareTask = tasks.register("prepare") {
+
+}
+
+val buildTask = tasks.register("build") {
+  dependsOn(prepareTask, buildDockerAioWeb, buildDockerAioChromium)
 }
 
 tasks.register("publish", Exec::class) {
-  dependsOn(packageAll)
+  dependsOn(buildTask)
 
   val gitHash = grgit.head().id
   val semver = (findProperty("feedlessVersion") as String).split(".")

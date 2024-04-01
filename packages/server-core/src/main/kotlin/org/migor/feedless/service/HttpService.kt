@@ -22,12 +22,10 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.io.Serializable
-import java.net.ConnectException
 import java.net.URL
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
 
@@ -78,8 +76,7 @@ class HttpService {
         request.addHeader(it.key, it.value)
       }
     }
-    val response = execute(corrId, request, expectedHttpStatus)
-    return toHttpResponse(response)
+    return toHttpResponse(execute(corrId, request, expectedHttpStatus))
   }
 
   private fun protectFromOverloading(corrId: String, url: String) {
@@ -124,8 +121,8 @@ class HttpService {
     return try {
       val start = System.nanoTime()
       val response = request.execute().get(30, TimeUnit.SECONDS)
+      log.info("[$corrId] -> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
-        log.info("[$corrId] -> ${response.statusCode}")
         when (response.statusCode) {
           // todo mag readjust bucket
           500 -> throw ResumableHarvestException(corrId, "500 received", Duration.ofMinutes(5))
@@ -137,12 +134,10 @@ class HttpService {
         }
       } else {
         val duration = (System.nanoTime() - start) / 100000
-        log.info("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")} [${duration}ms]")
+        log.info("[$corrId] -> ${response.getHeader("content-type")} [${duration}ms]")
       }
       response
-    } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect cause ${e.message}")
-    } catch (e: ExecutionException) {
+    } catch (e: Exception) {
       throw HarvestException("${e.message}")
     }
   }

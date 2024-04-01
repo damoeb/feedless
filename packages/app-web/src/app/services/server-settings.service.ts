@@ -5,7 +5,7 @@ import {
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings
+  ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';

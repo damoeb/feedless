@@ -12,6 +12,7 @@ import { UntoldNotesMenuModule } from './untold-notes-menu/untold-notes-menu.mod
 import { NotebookService } from './services/notebook.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+import { OfflineModule } from '../../offline.module';
 
 @NgModule({
   imports: [
@@ -24,6 +25,7 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     ReactiveFormsModule,
     FormsModule,
     SearchbarModule,
+    OfflineModule
   ],
   providers: [NotebookService],
   declarations: [UntoldNotesProductPage],

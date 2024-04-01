@@ -1,10 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
@@ -50,14 +59,19 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   }
 
   async handleFeed(feed: FeedWithRequest) {
-    const { title, description } = this.getFeedData(feed.feed, feed.scrapeRequest.page.url)
+    const { title, description } = this.getFeedData(
+      feed.feed,
+      feed.scrapeRequest.page.url,
+    );
     const componentProps: GenerateFeedModalComponentProps = {
       subscription: {
         title,
         description,
         plugins: [],
-        sources: [getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest)]
-      } as any
+        sources: [
+          getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest),
+        ],
+      } as any,
     };
     await this.modalService.openFeedMetaEditor(componentProps);
   }
@@ -76,5 +90,4 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
       };
     }
   }
-
 }

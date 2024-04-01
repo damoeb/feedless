@@ -1,33 +1,5 @@
 <ion-header [translucent]="true">
-  <ng-container *ngIf="serverSettings.isSelfHosted()">
-    <ion-toolbar color="primary" *ngIf="isTrialPeriod()">
-      <ion-text class="ion-margin-horizontal">
-        <strong>Your Trial Period</strong> ends in {{trialEndIn}}, it's free for
-        personal use.
-      </ion-text>
-      <ion-button
-        slot="end"
-        class="ion-margin-end"
-        color="dark"
-        routerLink="/license"
-      >
-        Activate
-      </ion-button>
-    </ion-toolbar>
-    <ion-toolbar color="primary" *ngIf="!isTrialPeriod() && !license?.isValid">
-      <ion-text class="ion-margin-horizontal">
-        <strong>Trial Period ended</strong>.
-      </ion-text>
-      <ion-button
-        slot="end"
-        class="ion-margin-end"
-        color="dark"
-        routerLink="/license"
-      >
-        Activate
-      </ion-button>
-    </ion-toolbar>
-  </ng-container>
+  <app-trial-warning></app-trial-warning>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
@@ -42,15 +14,12 @@
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
 
-<!--      <app-searchbar-->
-<!--        buttonText="Create Feed"-->
-<!--        color="primary"-->
-<!--        *ngIf="showSearchBar"-->
-<!--        [value]="url"-->
-<!--        placeholder="Type a Url of a website"-->
-<!--      ></app-searchbar>-->
-
-      <ion-button routerLink="/feeds" color="dark" class="ion-margin-horizontal" fill="clear">
+      <ion-button
+        routerLink="/feeds"
+        color="dark"
+        class="ion-margin-horizontal"
+        fill="clear"
+      >
         Your Feeds
       </ion-button>
     </div>

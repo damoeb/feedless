@@ -3,7 +3,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ScrapeSourceModalComponent } from './scrape-source-modal.component';
 import { ScrapeSourceModalModule } from './scrape-source-modal.module';
 import { AppTestModule } from '../../app-test.module';
-import { GqlListPluginsQuery, GqlListPluginsQueryVariables, ListPlugins } from '../../../generated/graphql';
+import {
+  GqlListPluginsQuery,
+  GqlListPluginsQueryVariables,
+  ListPlugins,
+} from '../../../generated/graphql';
 
 describe('FeedBuilderModalComponent', () => {
   let component: ScrapeSourceModalComponent;

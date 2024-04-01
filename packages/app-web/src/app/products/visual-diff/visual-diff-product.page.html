@@ -1,18 +1,36 @@
 <ion-header>
+  <app-trial-warning></app-trial-warning>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <ion-title>
-      <span
-        class="ion-hide-lg-up"
-        [innerHtml]="productConfig?.titleHtml"
-      ></span>
-      <span *ngIf="activePageTitle" class="ion-margin-horizontal"
-        >{{ activePageTitle }}</span
+    <div class="title">
+      <div
+        class="ion-hide-xl-up ion-hide-md-down"
+        routerLink="/"
+        style="cursor: pointer"
       >
-    </ion-title>
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </div>
+
+      <!--      <app-searchbar-->
+      <!--        buttonText="Create Feed"-->
+      <!--        color="primary"-->
+      <!--        *ngIf="showSearchBar"-->
+      <!--        [value]="url"-->
+      <!--        placeholder="Type a Url of a website"-->
+      <!--      ></app-searchbar>-->
+
+      <ion-button
+        routerLink="/trackers"
+        color="dark"
+        class="ion-margin-horizontal"
+        fill="clear"
+      >
+        Your Page Trackers
+      </ion-button>
+    </div>
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>

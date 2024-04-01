@@ -17,7 +17,7 @@ import { ProductService } from './services/product.service';
         ) =>
         async () => {
           const product = await serverSettings.fetchConfig();
-          productService.activateProduct(product);
+          await productService.activateProduct(product);
           await serverSettings.fetchServerSettings();
         },
       deps: [ServerSettingsService, ProductService],

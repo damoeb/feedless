@@ -23,10 +23,7 @@
             *ngIf="license.isValid && license.isTrial && !license.isLocated"
             color="primary"
           >
-            <p>
-              Trial Period until {{license.trialUntil | date:
-              dateFormat}}
-            </p>
+            <p>Trial Period until {{license.trialUntil | date: dateFormat}}</p>
           </ion-item>
 
           <ng-container *ngIf="!license.isLocated">

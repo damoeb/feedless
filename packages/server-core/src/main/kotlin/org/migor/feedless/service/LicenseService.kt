@@ -54,9 +54,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       } else {
         if (StringUtils.isNotBlank(licenseKey)) {
           log.info("Using license from env")
-          val writer = FileWriter(getLicenseFile())
-          writer.write(licenseKey!!)
-          writer.close()
+          writeLicenseKeyToFile(licenseKey!!)
           licenseKey!!
         } else {
           null
@@ -65,6 +63,12 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       licenseRaw?.let {
         license = parseLicense(it)
       }
+    }
+  }
+
+  private fun writeLicenseKeyToFile(licenseKey: String) {
+    FileWriter(getLicenseFile()).use { writer ->
+      writer.write(licenseKey)
     }
   }
 
@@ -160,9 +164,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun updateLicense(licenseRaw: String) {
+    log.info("Updating license at ${getLicenseFile().absolutePath}")
     license = parseLicense(licenseRaw)
-    val writer = FileWriter(getLicenseFile())
-    writer.write(licenseRaw)
+    writeLicenseKeyToFile(licenseRaw)
   }
 
 }

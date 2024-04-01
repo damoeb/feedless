@@ -4,7 +4,7 @@ import { ModalController } from '@ionic/angular';
 import { GqlScrapeRequestInput } from '../../../generated/graphql';
 
 export interface FeedBuilderModalComponentProps {
-  scrapeRequest?: GqlScrapeRequestInput
+  scrapeRequest?: GqlScrapeRequestInput;
 }
 
 @Component({
@@ -17,15 +17,13 @@ export class FeedBuilderModalComponent
 {
   scrapeRequest: GqlScrapeRequestInput;
 
-  constructor(private readonly modalCtrl: ModalController) {
-
-  }
+  constructor(private readonly modalCtrl: ModalController) {}
 
   closeModal() {
     return this.modalCtrl.dismiss();
   }
 
   async handleFeed(feed: FeedWithRequest) {
-    await this.modalCtrl.dismiss(feed)
+    await this.modalCtrl.dismiss(feed);
   }
 }

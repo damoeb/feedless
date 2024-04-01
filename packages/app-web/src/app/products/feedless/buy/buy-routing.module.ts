@@ -5,7 +5,7 @@ import { BuyPage } from './buy.page';
 
 const routes: Routes = [
   {
-    path: ':productId',
+    path: '',
     component: BuyPage,
   },
 ];

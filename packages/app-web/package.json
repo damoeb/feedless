@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
+    "feedless-config": "npx tsc feedless-config-writer.ts --outDir build/ && node build/feedless-config-writer.js > feedless-config.json",
     "prebuild": "yarn graphql-codegen",
     "prestart:feedless": "yarn graphql-codegen && sh prepare-product.sh feedless false",
     "start:feedless": "ng serve",
@@ -25,7 +26,7 @@
     "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",
     "outdated": "upgrade-interactive --latest",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml && yarn feedless-config"
   },
   "private": true,
   "dependencies": {

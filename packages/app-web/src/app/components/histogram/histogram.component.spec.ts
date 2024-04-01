@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { HistogramComponent } from './histogram.component';
 import { HistogramModule } from './histogram.module';
 import { AppTestModule } from '../../app-test.module';
-import { GqlHistogram } from '../../../generated/graphql';
+import { GqlActivity } from '../../../generated/graphql';
 
 describe('HistogramComponent', () => {
   let component: HistogramComponent;
@@ -16,7 +16,7 @@ describe('HistogramComponent', () => {
 
     fixture = TestBed.createComponent(HistogramComponent);
     component = fixture.componentInstance;
-    component.data = { items: [] } as GqlHistogram;
+    component.data = { items: [] } as GqlActivity;
     fixture.detectChanges();
   }));
 

@@ -10,7 +10,7 @@ import { scaleLinear } from 'd3-scale';
   styleUrls: ['./histogram.component.scss'],
 })
 export class HistogramComponent implements OnInit {
-  @Input({required: true})
+  @Input({ required: true })
   data: GqlActivity;
   path: string;
   rate: number;

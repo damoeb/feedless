@@ -11,7 +11,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { isDefined } from '../../modals/scrape-source-modal/scrape-builder';
 

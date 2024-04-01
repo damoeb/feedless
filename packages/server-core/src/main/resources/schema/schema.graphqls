@@ -182,14 +182,19 @@ input CreateUserInput {
 }
 
 enum ProductName {
-  visualDiff
-  pageChangeTracker
   rssBuilder
+  visualDiff
   reader
-  upcoming
-  digest
   feedless
+
+#  launchThis
+  upcoming
   untoldNotes
+  pageChangeTracker
+  digest
+  feedDump
+  openRoadmap
+  argue
 }
 
 type Agent {
@@ -1104,6 +1109,7 @@ input ScrapeRequestInput {
   corrId: ID
   id: ID
   page: ScrapePageInput!
+  errornous: Boolean
   localized: LocalizedSourceInput
   tags: [String!]
   debug: ScrapeDebugOptionsInput
@@ -1222,6 +1228,8 @@ type ScrapeRequest {
   corrId: ID
   id: ID!
   page: ScrapePage!
+  errornous: Boolean
+  lastErrorMessage: String
   debug: ScrapeDebugOptions
   emit: [ScrapeEmit!]!
 }

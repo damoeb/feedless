@@ -1,0 +1,9 @@
+<input
+  type="file"
+  #opmlPicker
+  (change)="importOpml($event)"
+  style="display: none"
+/>
+<ion-button expand="block" (click)="openOpmlPicker()"
+>Import OPML</ion-button
+>

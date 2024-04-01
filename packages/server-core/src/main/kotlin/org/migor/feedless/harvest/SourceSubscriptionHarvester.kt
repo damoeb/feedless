@@ -34,6 +34,7 @@ import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -137,14 +138,15 @@ class SourceSubscriptionHarvester internal constructor() {
   ): Flux<Unit> {
     log.info("[$corrId] scrape ${subscription.sources.size} sources")
     return Flux.fromIterable(subscription.sources)
-      .filter { !it.erroneous }
       .flatMap {
+        val subCorrId = newCorrId(parentCorrId = corrId)
         try {
           scrapeSource(corrId, it)
             .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
         } catch (e: Exception) {
+          log.warn("[$subCorrId] ${e.message}")
           if (e is ResumableHarvestException) {
-            log.warn("[$corrId] ${e.message}")
+            log.warn("[$subCorrId] ${e.message}")
           } else {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
             notificationService.createNotification(corrId, subscription.ownerId, e.message)

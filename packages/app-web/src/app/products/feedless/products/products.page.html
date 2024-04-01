@@ -1,115 +1,122 @@
 <ion-content>
   <div class="product" [style]="{'--image-url': getImageUrl()}">
-        <div style="background: linear-gradient(180deg, transparent 50%, var(--ion-background-color) 100%);
+    <div
+      style="
+        background: linear-gradient(
+          180deg,
+          transparent 50%,
+          var(--ion-background-color) 100%
+        );
         height: 200px;
         width: 100%;
         bottom: 0;
-        position: absolute;"></div>
+        position: absolute;
+      "
+    ></div>
   </div>
-  <div style="display: flex; justify-content: center; margin: 20px;">
+  <div style="display: flex; justify-content: center; margin: 20px">
     <div
       *ngIf="product"
       style="
-          max-width: 900px;
-          width: 1120px;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        "
+        max-width: 900px;
+        width: 1120px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      "
     >
-      <ion-breadcrumbs style="margin-bottom: 150px;">
+      <ion-breadcrumbs style="margin-bottom: 150px">
         <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
         <ion-breadcrumb>{{product.title}}</ion-breadcrumb>
       </ion-breadcrumbs>
       <div class="flex__column">
         <app-product-headline [title]="product.title"></app-product-headline>
 
-        <p class="ion-padding-vertical">
-          {{product.description}}
-        </p>
 
-        <div class="flex__row" style="column-gap: 10px">
-          <ion-button
-            color="primary"
-            shape="round"
-            size="small"
-            (click)="setup.scrollIntoView()"
-            style="height: 40px"
-          >
-            Local Setup
-            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-          </ion-button>
-          <ion-button
-            color="dark"
-            fill="outline"
-            shape="round"
-            size="small"
-            *ngIf="product.costs !== 0"
-            (click)="pricing.scrollIntoView()"
-            style="height: 40px"
-          >
-            Pricing
-            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-          </ion-button>
-          <div class="ion-align-self-center">
-            <a href="https://discord.gg/6ySGeryD" target="_blank">
-              Talk to us on discord
-            </a>
-          </div>
-        </div>
+        <ng-container *ngIf="product.isUnstable">
+          <ion-toolbar color="warning" class="ion-margin-top ion-padding-horizontal">This product is under development and not yet suitable to be used.</ion-toolbar>
+          <p>
+<!--            {{product.summary}} <br>-->
+          <span [innerHtml]="product.descriptionHtml"></span>
+          </p>
 
-<!--        <div class="ion-margin-vertical">-->
-<!--          <a href="assets/preview-reader.png">-->
-<!--            <img src="assets/preview-reader.png" style="border-radius: 8px; border: 2px solid black" alt="">-->
-<!--          </a>-->
-<!--        </div>-->
+          <app-newsletter headerText="Support the Mission!"
+                          bodyText="If you endorse this idea, join the list of supporters and get early access"
+                          buttonText="Subscribe Now"></app-newsletter>
 
-        <div style="margin-top: 50px">
-          <h1>Features</h1>
           <div>
-            <ul>
-              <li *ngFor="let feature of product.features">{{feature}}</li>
-            </ul>
+            <h1>Planned Features</h1>
+            <p>Among others, here are some of the features:</p>
+            <div>
+              <ul>
+                <li *ngFor="let feature of product.features">{{feature}}</li>
+                <li>Source Available</li>
+              </ul>
+            </div>
           </div>
-        </div>
+        </ng-container>
 
-        <div style="margin-top: 50px">
-          <h1 #setup>Local Setup</h1>
-          <div [innerHtml]="product.localSetup">
-          </div>
-        </div>
+        <ng-container *ngIf="!product.isUnstable">
+          <p class="ion-padding-vertical">{{product.descriptionMarkdown}}</p>
 
-        <div style="margin-top: 50px"
-             [hidden]="product.costs === 0">
-          <h1 #pricing>Pricing</h1>
-          <div class="ion-margin-bottom">
-            You have a 2 month trial.
+          <div class="flex__row" style="column-gap: 10px">
+            <ion-button
+              color="primary"
+              shape="round"
+              size="small"
+              (click)="setup.scrollIntoView()"
+              style="height: 40px"
+            >
+              Local Setup
+              <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+            </ion-button>
+            <ion-button
+              color="dark"
+              fill="outline"
+              shape="round"
+              size="small"
+              *ngIf="product.costs !== 0"
+              routerLink="./buy"
+              style="height: 40px"
+            >
+              Pricing
+              <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+            </ion-button>
+            <div class="ion-align-self-center">
+              <a href="https://discord.gg/6ySGeryD" target="_blank">
+                Join us on discord
+              </a>
+            </div>
           </div>
-          <div class="ion-margin-vertical">
-            <h4>For Individual Use</h4>
+
+          <div style="margin-top: 50px">
+            <h1>Features</h1>
             <div>
-              Individuals can buy a license for a major version for {{product.costs}} dollars.
-            </div>
-            <div>
-              <ion-button color="primary" shape="round" routerLink="./buy?type=individual">Buy for {{product.costs}}</ion-button>
-            </div>
-          </div>
-          <div class="ion-margin-vertical">
-            <h4>For Organizations</h4>
-            <div>
-              <ion-button color="dark" shape="round" routerLink="./buy?type=organization">Contact me</ion-button>
+              <ul>
+                <li *ngFor="let feature of product.features">{{feature}}</li>
+                <li>Source Available</li>
+              </ul>
             </div>
           </div>
-          <div class="ion-margin-vertical">
-            <h4>Others</h4>
-            <div>
-              For students and teachers and non-commercial open source projects it's free.
+
+          <div style="margin-top: 50px">
+            <h1 #setup>Local Setup</h1>
+            <div [innerHtml]="product.localSetup"></div>
+          </div>
+
+          <div style="margin-top: 50px" [hidden]="product.costs === 0">
+            <h1>Pricing</h1>
+            <div class="ion-margin-bottom">You have a 2 month trial.</div>
+            <div class="ion-margin-bottom">
+              I give it for free to some groups, check if you qualify :)
             </div>
-            <div>
-              <ion-button color="dark" shape="round" routerLink="./buy">Request Free License</ion-button>
+            <div class="ion-margin-bottom">
+              <ion-button color="primary" shape="round" routerLink="./buy"
+              >See Pricing Options</ion-button
+              >
             </div>
           </div>
-        </div>
+        </ng-container>
       </div>
     </div>
   </div>

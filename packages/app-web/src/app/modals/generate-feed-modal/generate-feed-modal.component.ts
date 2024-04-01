@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
@@ -13,7 +19,7 @@ import {
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
@@ -28,12 +34,12 @@ import { isDefined } from '../scrape-source-modal/scrape-builder';
 import { ArrayElement } from '../../types';
 
 export interface GenerateFeedModalComponentProps {
-  subscription: SourceSubscription
+  subscription: SourceSubscription;
 }
 
-type FilterOperator = GqlStringFilterOperator
-type FilterField = GqlCompositeFilterField
-type FilterType = GqlCompositeFilterType
+type FilterOperator = GqlStringFilterOperator;
+type FilterField = GqlCompositeFilterField;
+type FilterType = GqlCompositeFilterType;
 
 interface FilterData {
   type: FilterType;
@@ -42,7 +48,10 @@ interface FilterData {
   value: string;
 }
 
-export function getScrapeRequest(feed: NativeOrGenericFeed, scrapeRequest: GqlScrapeRequest): GqlScrapeRequest {
+export function getScrapeRequest(
+  feed: NativeOrGenericFeed,
+  scrapeRequest: GqlScrapeRequest,
+): GqlScrapeRequest {
   const pageUrl = (): GqlScrapePage => {
     if (feed.nativeFeed) {
       return {
@@ -80,8 +89,9 @@ export function getScrapeRequest(feed: NativeOrGenericFeed, scrapeRequest: GqlSc
   };
 }
 
-
-type FilterParams = ArrayElement<ArrayElement<SourceSubscription['plugins']>['params']['filters']>
+type FilterParams = ArrayElement<
+  ArrayElement<SourceSubscription['plugins']>['params']['filters']
+>;
 
 @Component({
   selector: 'app-generate-feed-modal',
@@ -126,7 +136,6 @@ export class GenerateFeedModalComponent
   protected readonly GqlCompositeFilterType = GqlCompositeFilterType;
   showRetention: boolean;
 
-
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
@@ -148,11 +157,16 @@ export class GenerateFeedModalComponent
     }
 
     const filter = new FormGroup({
-      type: new FormControl<FilterType>(GqlCompositeFilterType.Exclude, [Validators.required]),
-      field: new FormControl<FilterField>(GqlCompositeFilterField.Title, [Validators.required]),
-      operator: new FormControl<FilterOperator>(GqlStringFilterOperator.StartsWidth, [
+      type: new FormControl<FilterType>(GqlCompositeFilterType.Exclude, [
         Validators.required,
       ]),
+      field: new FormControl<FilterField>(GqlCompositeFilterField.Title, [
+        Validators.required,
+      ]),
+      operator: new FormControl<FilterOperator>(
+        GqlStringFilterOperator.StartsWidth,
+        [Validators.required],
+      ),
       value: new FormControl<string>('', [
         Validators.required,
         Validators.minLength(1),
@@ -165,7 +179,7 @@ export class GenerateFeedModalComponent
         type: f.type,
         operator: f.operator,
         field: f.field,
-      })
+      });
     }
 
     this.filters.push(filter);
@@ -211,46 +225,46 @@ export class GenerateFeedModalComponent
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
-            filters: this.filters.map(filter => ({
+            filters: this.filters.map((filter) => ({
               field: filter.value.field,
               value: filter.value.value,
               type: filter.value.type,
               operator: filter.value.operator,
-            }))
+            })),
           },
         });
       }
 
       if (this.isUpdate()) {
-        const {title, description, fetchFrequency, maxAgeDays, maxItems, } = this.formFg.value;
+        const { title, description, fetchFrequency, maxAgeDays, maxItems } =
+          this.formFg.value;
         await this.sourceSubscriptionService.updateSubscription({
           where: {
-            id: this.subscription.id
+            id: this.subscription.id,
           },
           data: {
             sinkOptions: {
               plugins,
               title: {
-                set: title
+                set: title,
               },
               description: {
-                set: description
+                set: description,
               },
               scheduleExpression: {
-                set: fetchFrequency
+                set: fetchFrequency,
               },
               retention: {
                 maxItems: {
-                  set: maxItems
+                  set: maxItems,
                 },
                 maxAgeDays: {
-                  set: maxAgeDays
-                }
-              }
-            }
-          }
-        })
-
+                  set: maxAgeDays,
+                },
+              },
+            },
+          },
+        });
       } else {
         const subscriptions =
           await this.sourceSubscriptionService.createSubscriptions({
@@ -275,7 +289,6 @@ export class GenerateFeedModalComponent
         await this.modalCtrl.dismiss();
         await this.router.navigateByUrl(`/feeds/${sub.id}`);
       }
-
     } catch (e) {
       this.errorMessage = e.message;
     } finally {
@@ -285,24 +298,31 @@ export class GenerateFeedModalComponent
   }
 
   async ngOnInit(): Promise<void> {
-    console.log(this.subscription)
+    console.log(this.subscription);
     this.isLoggedIn = this.profileService.isAuthenticated();
     const retention = this.subscription.retention;
     this.formFg.patchValue({
       title: this.subscription.title,
       description: this.subscription.description,
       fetchFrequency: this.subscription.scheduleExpression || '0 0 0 * * *',
-      applyFulltextPlugin: this.subscription.plugins.some(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext),
-      applyPrivacyPlugin: this.subscription.plugins.some(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy),
+      applyFulltextPlugin: this.subscription.plugins.some(
+        (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
+      ),
+      applyPrivacyPlugin: this.subscription.plugins.some(
+        (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
+      ),
       maxAgeDays: retention?.maxAgeDays,
       maxItems: retention?.maxItems,
     });
-    const filterPlugin = this.subscription.plugins.find(p => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter)
+    const filterPlugin = this.subscription.plugins.find(
+      (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
+    );
     if (filterPlugin) {
-      filterPlugin.params.filters.forEach(f => this.addFilter(f))
+      filterPlugin.params.filters.forEach((f) => this.addFilter(f));
     }
 
-    this.showRetention = isDefined(retention?.maxAgeDays) || isDefined(retention?.maxItems);
+    this.showRetention =
+      isDefined(retention?.maxAgeDays) || isDefined(retention?.maxItems);
     this.filterChanges
       .pipe(debounce(() => interval(800)))
       .subscribe(async () => {
@@ -314,7 +334,7 @@ export class GenerateFeedModalComponent
 
   private async loadFeedPreview() {
     this.previewFeed = await this.feedService.previewFeed({
-      requests: this.subscription.sources as GqlScrapeRequestInput[],
+      requests: this.subscription.sources as GqlScrapeRequest[],
       filters: this.getFilterParams(),
     });
     this.changeRef.detectChanges();

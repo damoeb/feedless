@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { GqlFeatureName, GqlPlanName } from '../../../../generated/graphql';
 import { PlanService } from '../../../services/plan.service';
 import { Plan } from '../../../graphql/types';
-import { FeatureGroup, FeatureLabel, PlanHeaders } from '../../../components/plans/plans.component';
+import {
+  FeatureGroup,
+  FeatureLabel,
+  PlanHeaders,
+} from '../../../components/plans/plans.component';
 
 @Component({
   selector: 'app-feedless-plans-page',

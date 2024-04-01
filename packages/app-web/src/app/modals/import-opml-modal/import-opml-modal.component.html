@@ -39,7 +39,7 @@
             [formControl]="outlineChild.fc"
             *ngIf="outlineChild.xmlUrl"
           >
-            <h3>{{ outlineChild.title }}</h3>
+            <p>{{ outlineChild.title }}</p>
             <p>{{ outlineChild.xmlUrl }}</p>
           </ion-checkbox>
         </ion-item>
@@ -48,11 +48,41 @@
   </ion-list>
 </ion-content>
 <ion-footer>
+  <ion-list>
+    <ion-item>
+      <ion-label>Activate Plugins</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-checkbox
+        labelPlacement="end"
+        justify="start"
+        [formControl]="formFg.controls.applyFulltextPlugin"
+      >
+        Fulltext
+        <ion-note class="ion-padding-horizontal"
+        >Fetch Fulltext for every Item (static only)</ion-note
+        >
+      </ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-checkbox
+        labelPlacement="end"
+        justify="start"
+        [formControl]="formFg.controls.applyPrivacyPlugin"
+      >
+        Privacy & Robustness
+        <ion-note class="ion-padding-horizontal"
+        >Inlines images (base64) and unwinds tracking urls</ion-note
+        >
+      </ion-checkbox>
+    </ion-item>
+  </ion-list>
+
   <ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button (click)="cancel()"> Cancel </ion-button>
       <ion-button (click)="importSelected()" color="primary" fill="solid">
-        Continue
+        Import Feeds
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

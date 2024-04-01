@@ -6,7 +6,7 @@ import {
   FormControlName,
   FormGroupDirective,
   NgControl,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 

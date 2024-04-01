@@ -11,7 +11,15 @@ import { LoginButtonModule } from '../../../components/login-button/login-button
 import { HistogramModule } from '../../../components/histogram/histogram.module';
 
 @NgModule({
-  imports: [CommonModule, IonicModule, FeedDetailsRoutingModule, FeedBuilderModalModule, BubbleModule, LoginButtonModule, HistogramModule],
+  imports: [
+    CommonModule,
+    IonicModule,
+    FeedDetailsRoutingModule,
+    FeedBuilderModalModule,
+    BubbleModule,
+    LoginButtonModule,
+    HistogramModule,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],
 })

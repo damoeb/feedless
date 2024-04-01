@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedsPage } from './feeds.page';
 import { AppTestModule } from '../../../app-test.module';
-import { FeedDetailsPageModule } from './feeds.module';
+import { FeedsPageModule } from './feeds.module';
 
 describe('FeedDetailsPage', () => {
   let component: FeedsPage;
@@ -9,12 +9,12 @@ describe('FeedDetailsPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FeedDetailsPageModule, AppTestModule.withDefaults()],
+      imports: [FeedsPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedsPage);
     component = fixture.componentInstance;
-    component.subscription = {} as any;
+    component.feeds = [];
     component.documents = [];
     fixture.detectChanges();
   }));

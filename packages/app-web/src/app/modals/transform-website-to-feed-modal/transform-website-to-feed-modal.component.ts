@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { GqlNativeFeed, GqlScrapeRequestInput, GqlTransientGenericFeed } from '../../../generated/graphql';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
+import {
+  GqlNativeFeed,
+  GqlScrapeRequestInput,
+  GqlTransientGenericFeed,
+} from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
 import { ModalController } from '@ionic/angular';
 import { ComponentStatus } from '../../components/transform-website-to-feed/transform-website-to-feed.component';

@@ -19,6 +19,8 @@ import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -45,8 +47,11 @@ class UserService {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var mailService: MailService
+
+  @Autowired
+  lateinit var environment: Environment
 
   @Autowired
   lateinit var featureService: FeatureService
@@ -87,6 +92,7 @@ class UserService {
     user.githubId = githubId
     user.root = false
     user.anonymous = false
+    user.hasAcceptedTerms = isSelfHosted()
     user.product = productName
     user.usesAuthSource = authSource
     user.planId = planDAO.findByNameAndProduct(planName, productName)!!.id
@@ -148,4 +154,5 @@ class UserService {
     return userDAO.findByAnonymousIsTrue()
   }
 
+  private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 }

@@ -24,9 +24,9 @@ class PlanConstraintsSelfHostedService : PlanConstraintsService {
     val minNextDate = toDate(LocalDateTime.now().plus(5, ChronoUnit.MINUTES))
 
     return if (nextDate < minNextDate) {
-      nextDate
-    } else {
       minNextDate
+    } else {
+      nextDate
     }
   }
 

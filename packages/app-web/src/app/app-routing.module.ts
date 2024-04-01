@@ -8,7 +8,7 @@ import { environment } from '../environments/environment';
     RouterModule.forRoot([], {
       preloadingStrategy: PreloadAllModules,
       paramsInheritanceStrategy: 'always',
-      enableTracing: !environment.production
+      enableTracing: !environment.production,
     }),
   ],
 })

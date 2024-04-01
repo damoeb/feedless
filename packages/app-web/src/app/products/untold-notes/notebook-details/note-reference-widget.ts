@@ -1,4 +1,13 @@
-import { Decoration, DecorationSet, EditorView, MatchDecorator, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  MatchDecorator,
+  PluginValue,
+  ViewPlugin,
+  ViewUpdate,
+  WidgetType,
+} from '@codemirror/view';
 import { NotebookService } from '../services/notebook.service';
 
 export function createNoteReferenceWidget(notebookService: NotebookService) {

@@ -1,11 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -126,7 +134,6 @@ export class TransformWebsiteToFeedComponent implements OnInit {
           ) as GqlNativeFeed;
           this.nativeFeeds = [feed];
           await this.pickNativeFeed(feed);
-
         } else {
           throw new Error('not supported');
         }
@@ -142,7 +149,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
       }
       this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
   }
 

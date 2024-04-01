@@ -5,6 +5,8 @@ import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
 import { GqlProductName } from '../../generated/graphql';
 import { ReplaySubject } from 'rxjs';
+import { marked } from 'marked';
+import { AppConfig, feedlessConfig, ProductId } from '../feedless-config';
 
 // see https://ionicframework.com/docs/api/split-pane#setting-breakpoints
 export type SidemenuBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -14,29 +16,14 @@ export interface SideMenuConfig {
   breakpoint?: SidemenuBreakpoint;
 }
 
-export type ProductTeaser = {
-  localSetup: string;
-  id: string
-  title: string
-  imageUrl: string
-  subtitle: string
-  description: string
-  costs: number,
-  features: string[]
-}
+export type ProductConfig = ProductRoutesConfig &
+  AppConfig & { imageUrl: string };
 
-
-export interface ProductConfig {
-  product: GqlProductName;
-  offlineSupport?: boolean;
-  titlePlain: string;
-  titleHtml: string;
-  meta?: ProductTeaser;
-  pageTitle: string;
-  sideMenu?: SideMenuConfig;
+export type ProductRoutesConfig = {
+  id: ProductId;
   routes: Routes;
-  pages?: { title: string; url: string }[];
-}
+  sideMenu?: SideMenuConfig;
+};
 
 @Injectable({
   providedIn: 'root',
@@ -87,12 +74,9 @@ export class ProductService {
     },
   ];
 
-  private products: ProductConfig[] = [
+  private productRoutes: ProductRoutesConfig[] = [
     {
-      product: GqlProductName.Reader,
-      titlePlain: 'Reader',
-      titleHtml: '<strong>Reader</strong>',
-      pageTitle: 'Reader',
+      id: 'reader',
       // sideMenu: {
       //   width: 200,
       //   breakpoint: 'md',
@@ -108,10 +92,7 @@ export class ProductService {
       ],
     },
     {
-      product: GqlProductName.Upcoming,
-      titlePlain: 'Upcoming',
-      titleHtml: '<strong>Up</strong><em>coming</em>',
-      pageTitle: 'Upcoming',
+      id: 'upcoming',
       routes: [
         {
           path: '',
@@ -123,10 +104,7 @@ export class ProductService {
       ],
     },
     {
-      product: GqlProductName.RssBuilder,
-      titlePlain: 'RSS Proxy',
-      titleHtml: '<strong>RSS</strong><em>Proxy</em>',
-      pageTitle: 'RSS Proxy',
+      id: 'rss-proxy',
       sideMenu: {
         width: 200,
         breakpoint: 'xl',
@@ -142,11 +120,7 @@ export class ProductService {
       ],
     },
     {
-      product: GqlProductName.UntoldNotes,
-      titlePlain: 'Untold Notes',
-      titleHtml: '<strong>Un</strong><em>told</em>',
-      offlineSupport: true,
-      pageTitle: 'Untold Notes',
+      id: 'untold',
       sideMenu: {
         width: 200,
         breakpoint: 'xl',
@@ -162,10 +136,7 @@ export class ProductService {
       ],
     },
     {
-      product: GqlProductName.Feedless,
-      titlePlain: 'feedless',
-      titleHtml: '<strong>feed</strong><em>less</em>',
-      pageTitle: 'feedless',
+      id: 'feedless',
       // sideMenu: {
       //   width: 200,
       //   breakpoint: 'xl',
@@ -181,10 +152,7 @@ export class ProductService {
       ],
     },
     {
-      product: GqlProductName.VisualDiff,
-      titlePlain: 'VisualDiff',
-      titleHtml: '<strong>Visual</strong><em>Diff</em>',
-      pageTitle: 'VisualDiff',
+      id: 'visual-diff',
       sideMenu: {
         width: 200,
         breakpoint: 'lg',
@@ -209,12 +177,11 @@ export class ProductService {
     private readonly titleService: Title,
   ) {}
 
-  activateProduct(product: GqlProductName) {
+  async activateProduct(product: GqlProductName) {
     console.log(`activateProduct ${product}`);
     environment.product = product;
-    const config = this.products.find(
-      (productConfig) => productConfig.product === environment.product,
-    );
+    const config = await this.resolveProductConfig(product);
+    console.log('productConfig', config);
     environment.offlineSupport = config.offlineSupport === true;
     this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);
@@ -226,18 +193,24 @@ export class ProductService {
   }
 
   async getProductConfigs(): Promise<ProductConfig[]> {
-    // return Promise.all(Object.values(products.apps).map(async a => ({
-    //   ...a,
-    //   localSetup: await marked(a.localSetup),
-    //   imageUrl: `/assets/${a.id}.jpeg`
-    // })));
-    return []
+    return Promise.all(
+      feedlessConfig.apps.map(async (meta) => {
+        const ui = this.productRoutes.find((p) => meta.id === p.id);
+        return {
+          ...meta,
+          ...ui,
+          localSetup: await marked(meta.localSetup),
+          descriptionHtml: await marked(meta.descriptionMarkdown),
+          imageUrl: `/assets/${meta.id}.jpeg`,
+        };
+      }),
+    );
   }
 
-  // forceProduct(product: GqlProduct) {
-  //   if (!environment.production) {
-  //     this.activateProduct(product);
-  //     this.router.navigateByUrl(location.pathname)
-  //   }
-  // }
+  private async resolveProductConfig(
+    product: GqlProductName,
+  ): Promise<ProductConfig> {
+    const configs = await this.getProductConfigs();
+    return configs.find((productConfig) => productConfig.product === product);
+  }
 }

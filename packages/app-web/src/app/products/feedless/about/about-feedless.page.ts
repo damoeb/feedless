@@ -1,9 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import '@justinribeiro/lite-youtube';
 
 import { fixUrl } from '../../../app.module';
-import { ProductService, ProductTeaser } from '../../../services/product.service';
+import {
+  ProductService,
+  ProductConfig,
+} from '../../../services/product.service';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -13,11 +21,14 @@ import { ProductService, ProductTeaser } from '../../../services/product.service
 })
 export class AboutFeedlessPage implements OnInit {
   waitList: boolean;
-  products: ProductTeaser[];
+  stableProducts: ProductConfig[];
+  unstableProducts: ProductConfig[];
 
-  constructor(private readonly router: Router,
-              private readonly changeRef: ChangeDetectorRef,
-              readonly productService: ProductService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly changeRef: ChangeDetectorRef,
+    readonly productService: ProductService,
+  ) {}
 
   async handleQuery(url: string) {
     try {
@@ -32,8 +43,9 @@ export class AboutFeedlessPage implements OnInit {
   }
 
   async ngOnInit() {
-    const configs = await this.productService.getProductConfigs();
-    this.products = configs.map(c => c.meta);
+    const allProducts = await this.productService.getProductConfigs();
+    this.stableProducts = allProducts.filter((p) => !p.isUnstable);
+    this.unstableProducts = allProducts.filter((p) => p.isUnstable);
     this.waitList = false;
     this.changeRef.detectChanges();
   }

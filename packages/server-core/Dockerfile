@@ -25,7 +25,8 @@ RUN addgroup -g 1000 java && \
 RUN apk add --update --no-cache python3 \
     && ln -sf python3 /usr/bin/python \
     && wget https://github.com/yt-dlp/yt-dlp/releases/download/2023.03.04/yt-dlp \
-    && chmod +x yt-dlp && chown java:java yt-dlp && ln -s `pwd`/yt-dlp /usr/local/bin
+    && chmod +x yt-dlp && chown java:java yt-dlp && ln -s `pwd`/yt-dlp /usr/local/bin \
+    && touch license.key && chown java:java license.key
 
 USER java
 COPY --from=build \

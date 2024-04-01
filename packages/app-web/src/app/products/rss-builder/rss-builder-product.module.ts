@@ -10,6 +10,7 @@ import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mod
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { RssBuilderMenuModule } from './rss-builder-menu/rss-builder-menu.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     DarkModeButtonModule,
     LoginButtonModule,
     SearchbarModule,
+    TrialWarningModule
   ],
   declarations: [RssBuilderProductPage],
 })

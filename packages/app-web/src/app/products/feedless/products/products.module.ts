@@ -17,7 +17,7 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
     IonicModule,
     ProductsPageRoutingModule,
     NewsletterModule,
-    ProductHeadlineModule
+    ProductHeadlineModule,
   ],
   declarations: [ProductsPage],
 })

@@ -1,4 +1,11 @@
-import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  DecorationSet,
+  EditorView,
+  PluginValue,
+  ViewPlugin,
+  ViewUpdate,
+} from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
 import { kebabCase } from 'lodash';
 

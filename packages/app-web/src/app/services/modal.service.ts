@@ -1,11 +1,24 @@
 import { Injectable } from '@angular/core';
-import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
-import { DeepPartial, FeedBuilder, FeedBuilderModalComponentExitRole } from '../modals/scrape-source-modal/scrape-source-modal.component';
+import {
+  DeepPartial,
+  FeedBuilder,
+  FeedBuilderModalComponentExitRole,
+} from '../modals/scrape-source-modal/scrape-source-modal.component';
 import { Router } from '@angular/router';
-import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
+import {
+  FeedBuilderModalComponent,
+  FeedBuilderModalComponentProps,
+} from '../modals/feed-builder-modal/feed-builder-modal.component';
 import { FeedWithRequest } from '../components/feed-builder/feed-builder.component';
-import { GenerateFeedModalComponent, GenerateFeedModalComponentProps } from '../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  GenerateFeedModalComponent,
+  GenerateFeedModalComponentProps,
+} from '../modals/generate-feed-modal/generate-feed-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -38,7 +51,10 @@ export class ModalService {
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,
-    overwriteHandler: (data: FeedWithRequest, role: String) => Promise<void> = null,
+    overwriteHandler: (
+      data: FeedWithRequest,
+      role: String,
+    ) => Promise<void> = null,
   ) {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,

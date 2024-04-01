@@ -43,6 +43,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
 import java.nio.charset.Charset
+import java.time.Duration
 import java.util.*
 
 
@@ -236,17 +237,24 @@ class ScrapeService {
     val items = Flux.fromIterable(scrapeRequests)
       .flatMap { scrapeRequest -> scrape(corrId, scrapeRequest) }
       .map { response -> response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!! }
-      .map { field: ScrapedField -> JsonUtil.gson.fromJson(field.value.one.data, RemoteNativeFeed::class.java).items }
-      .blockLast()!!
-      .toMutableList()
+      .flatMap { field: ScrapedField ->
+        Flux.fromIterable(
+          JsonUtil.gson.fromJson(
+            field.value.one.data,
+            RemoteNativeFeed::class.java
+          ).items
+        )
+      }
+      .filter { item ->
+        filterPlugin.filterEntity(
+          corrId,
+          item.asEntity(),
+          params
+        )
+      }
+      .collectList()
+      .block(Duration.ofSeconds(30))!!
 
-    items.removeAll(items.filter { item ->
-      !filterPlugin.filterEntity(
-        corrId,
-        item.asEntity(),
-        params
-      )
-    })
     val feed = RemoteNativeFeed()
     feed.items = items
     feed.expired = false

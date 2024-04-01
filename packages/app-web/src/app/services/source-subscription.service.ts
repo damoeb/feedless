@@ -19,7 +19,7 @@ import {
   GqlUpdateSourceSubscriptionMutationVariables,
   ListSourceSubscriptions,
   SourceSubscriptionById,
-  UpdateSourceSubscription
+  UpdateSourceSubscription,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';

@@ -117,6 +117,8 @@ open class ScrapeSourceEntity : EntityWithUUID() {
 fun ScrapeSourceEntity.toDto(): ScrapeRequest {
   return ScrapeRequest.newBuilder()
     .id(id.toString())
+    .errornous(erroneous)
+    .lastErrorMessage(lastErrorMessage)
     .debug(
       ScrapeDebugOptions.newBuilder()
         .screenshot(debugScreenshot)

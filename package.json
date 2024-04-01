@@ -4,7 +4,7 @@
     "mustache": "^4.2.0"
   },
   "scripts": {
-    "commit2": "mustache packages/app-web/meta.json products/rss-proxy/README.mustache.md products/rss-proxy/README.md",
+    "updateReadme": "for pj in products/*; do mustache packages/app-web/feedless-config.json $pj/README.mustache.md $pj/README.md; done",
     "commit": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

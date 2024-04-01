@@ -5,26 +5,26 @@
       <ion-breadcrumb>Your Feeds</ion-breadcrumb>
     </ion-breadcrumbs>
 
-    <h3>Feeds</h3>
+    <div class="flex__row" style="width: 100%">
+      <h3>Feeds</h3>
+      <ion-buttons slot="end">
+        <app-opml-picker></app-opml-picker>
+      </ion-buttons>
+    </div>
 
     <ion-list>
+      <ion-item *ngIf="feeds?.length === 0">
+        <p>You have no feeds yet</p>
+      </ion-item>
       <ion-item *ngFor="let feed of feeds">
-        <app-bubble></app-bubble>
+        <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
         <ion-label>
           <h2>
-            <a [routerLink]="'/feeds/' + feed.id">
-              {{ feed.title }}
-            </a>
-            <ion-chip>
-              {{feed.visibility}}
-            </ion-chip>
+            <a [routerLink]="'/feeds/' + feed.id"> {{ feed.title }} </a>
+            <ion-chip> {{feed.visibility}} </ion-chip>
           </h2>
           <p>{{ feed.description }}</p>
-          <p>
-            Fine
-
-            Updated yesterday
-          </p>
+          <p>Fine Updated yesterday</p>
         </ion-label>
         <app-histogram [data]="feed.activity"></app-histogram>
       </ion-item>

@@ -5,7 +5,10 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+} from '@apollo/client/core/types';
 import {
   AuthAnonymous,
   GqlAuthAnonymousMutation,
@@ -26,15 +29,19 @@ import {
   Plans,
   Scrape,
   ServerSettings,
-  SourceSubscriptionById
+  SourceSubscriptionById,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
-import { FeedlessAppConfig, ServerSettingsService } from './services/server-settings.service';
+import {
+  FeedlessAppConfig,
+  ServerSettingsService,
+} from './services/server-settings.service';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProductConfig, ProductService } from './services/product.service';
+import { ProductId } from './feedless-config';
 
 export type MockedRequestResolver<R, V> = (
   args: V,
@@ -172,12 +179,20 @@ export class AppTestModule {
     }
 
     const productConfig: ProductConfig = {
+      id: 'feedless',
       product: GqlProductName.Feedless,
-      titlePlain: '',
-      pages: [],
+      localSetup: '',
+      title: '',
       titleHtml: '',
-      routes: [],
+      imageUrl: '',
       pageTitle: '',
+      routes: [],
+      subtitle: '',
+      descriptionMarkdown: '',
+      descriptionHtml: '',
+      videoUrl: '',
+      costs: 0,
+      features: [],
     };
     const productServiceMock = {
       getActiveProductConfigChange: () => new BehaviorSubject(productConfig),
@@ -222,6 +237,11 @@ export function mockSourceSubscription(
         ownerId: '',
         sources: [],
         archived: false,
+        documentCount: 0,
+        activity: {
+          items: [],
+        },
+        scheduleExpression: '',
         plugins: [],
         visibility: GqlVisibility.IsPrivate,
         createdAt: 0,
@@ -281,7 +301,10 @@ export async function mockServerSettings(
       const serverSettings: GqlServerSettings = {
         appUrl: '',
         gatewayUrl: '',
-        license: {},
+        // license: {},
+        buildFrom: 0,
+        profiles: [],
+        version: '',
         features: [],
       };
       return {
@@ -297,6 +320,7 @@ export async function mockServerSettings(
   const httpClient = TestBed.inject(HttpClient);
   const mockConfig: FeedlessAppConfig = {
     apiUrl: '',
+    products: [],
   };
   httpClient.get = jasmine
     .createSpy('mockHttpGet')

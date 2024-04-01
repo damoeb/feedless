@@ -4,7 +4,13 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -24,6 +30,7 @@ import { ApolloAbortControllerService } from './services/apollo-abort-controller
 import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
 import { ScrapeSourceModalModule } from './modals/scrape-source-modal/scrape-source-modal.module';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
+import { isNull, isUndefined } from 'lodash-es';
 
 export interface AppEnvironment {
   production: boolean;
@@ -71,16 +78,20 @@ export const isValidUrl = (value: string): boolean => {
   );
 };
 export const fixUrl = (value: string): string => {
-  const potentialUrl = value.trim();
+  const potentialUrl = value?.trim();
   if (isValidUrl(potentialUrl)) {
     return potentialUrl;
   } else {
-    try {
-      const fixedUrl = `https://${potentialUrl}`;
-      new URL(fixedUrl);
-      return fixedUrl;
-    } catch (e) {
+    if (isNull(value) || isUndefined(value)) {
       throw new Error('invalid url');
+    } else {
+      try {
+        const fixedUrl = `https://${potentialUrl}`;
+        new URL(fixedUrl);
+        return fixedUrl;
+      } catch (e) {
+        throw new Error('invalid url');
+      }
     }
   }
 };

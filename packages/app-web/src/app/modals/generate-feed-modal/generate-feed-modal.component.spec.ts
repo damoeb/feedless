@@ -15,11 +15,12 @@ describe('GenerateFeedModalComponent', () => {
 
     fixture = TestBed.createComponent(GenerateFeedModalComponent);
     component = fixture.componentInstance;
-    component.feed = {
-      nativeFeed: {
-        title: '',
-      } as any,
-    };
+    component.subscription = {
+      sources: [],
+      // nativeFeed: {
+      //   title: '',
+      // } as any,
+    } as any;
     fixture.detectChanges();
   }));
 

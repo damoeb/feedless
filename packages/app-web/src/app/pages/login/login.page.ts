@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +15,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-login-page',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginPage implements OnInit, OnDestroy {
   // showUserPasswordLogin: boolean;
@@ -60,7 +66,7 @@ export class LoginPage implements OnInit, OnDestroy {
         if (authenticated) {
           const { queryParams } = this.activatedRoute.snapshot;
           const { redirectUrl } = queryParams;
-          const url = this.router.createUrlTree([redirectUrl || '/'], {})
+          const url = this.router.createUrlTree([redirectUrl || '/'], {});
           await this.router.navigateByUrl(url);
         } else {
           this.showSSO = this.serverSettings.hasProfile(GqlProfileName.AuthSso);
@@ -74,12 +80,14 @@ export class LoginPage implements OnInit, OnDestroy {
 
   loginWithUserPassword(email: string | number, password: string | number) {
     this.errorMessage = null;
-    return this.authService.authorizeUser({
-      email: `${email}`,
-      secretKey: `${password}`,
-    }).catch(e => {
-      this.errorMessage = e.message;
-      this.changeRef.detectChanges();
-    });
+    return this.authService
+      .authorizeUser({
+        email: `${email}`,
+        secretKey: `${password}`,
+      })
+      .catch((e) => {
+        this.errorMessage = e.message;
+        this.changeRef.detectChanges();
+      });
   }
 }

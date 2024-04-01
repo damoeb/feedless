@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   GqlPluginExecutionInput,
   GqlPluginType,
   GqlRetentionInput,
   GqlScrapeRequestInput,
   GqlSegmentInput,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { cloneDeep, omit, uniq, unset } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
@@ -16,7 +23,7 @@ import {
   ScrapeSourceComponent,
   ScrapeSourceComponentProps,
   ScrapeSourceDismissalData,
-  TypedFormGroup
+  TypedFormGroup,
 } from '../../components/scrape-source/scrape-source.component';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -483,7 +490,8 @@ export class ScrapeSourceModalComponent
             visibility: bucket.visibility,
             plugins: this.getPluginExecutions(),
             title: bucket.title,
-            scheduleExpression: this.feedBuilderFg.value.sink.segmented.scheduled.cronString,
+            scheduleExpression:
+              this.feedBuilderFg.value.sink.segmented.scheduled.cronString,
             description: bucket.description,
             // filters: this.feedBuilderFg.value.filters.map(filter => {
             //   const toOperatorDto = (operator: FieldFilterOperator): GqlStringFilterOperator => {

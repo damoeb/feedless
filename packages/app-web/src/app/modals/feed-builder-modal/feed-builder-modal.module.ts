@@ -7,10 +7,6 @@ import { FeedBuilderModule } from '../../components/feed-builder/feed-builder.mo
 @NgModule({
   declarations: [FeedBuilderModalComponent],
   exports: [FeedBuilderModalComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    FeedBuilderModule
-  ]
+  imports: [CommonModule, IonicModule, FeedBuilderModule],
 })
 export class FeedBuilderModalModule {}

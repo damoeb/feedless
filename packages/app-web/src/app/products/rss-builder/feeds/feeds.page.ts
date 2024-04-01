@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { BubbleColor } from '../../../components/bubble/bubble.component';
 
 @Component({
   selector: 'app-feeds-page',
@@ -26,9 +33,9 @@ export class FeedsPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     dayjs.extend(relativeTime);
-//     this.subscriptions.push(
-// ,
-//     );
+    //     this.subscriptions.push(
+    // ,
+    //     );
     await this.fetchFeeds();
   }
 
@@ -48,4 +55,11 @@ export class FeedsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
+  getHealthColorForFeed(feed: SourceSubscription): BubbleColor {
+    if (feed.sources.some(source => source.errornous)) {
+      return 'red';
+    } else {
+      return 'blue';
+    }
+  }
 }

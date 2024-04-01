@@ -41,9 +41,7 @@ const routes: Routes = [
       {
         path: 'feeds',
         loadChildren: () =>
-          import('./feeds/feeds.module').then(
-            (m) => m.FeedsPageModule,
-          ),
+          import('./feeds/feeds.module').then((m) => m.FeedsPageModule),
       },
       {
         path: 'plans',

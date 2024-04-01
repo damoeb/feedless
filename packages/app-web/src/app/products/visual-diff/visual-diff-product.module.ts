@@ -10,6 +10,7 @@ import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mod
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { VisualDiffMenuModule } from './visual-diff-menu/visual-diff-menu.module';
+import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { VisualDiffMenuModule } from './visual-diff-menu/visual-diff-menu.module
     DarkModeButtonModule,
     LoginButtonModule,
     SearchbarModule,
+    TrialWarningModule
   ],
   declarations: [VisualDiffProductPage],
 })

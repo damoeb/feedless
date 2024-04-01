@@ -22,7 +22,12 @@ export class AuthGuardService implements CanActivate {
           if (authenticated) {
             return of(true);
           } else {
-            return of(this.router.createUrlTree(['/login'], {queryParams: {redirectUrl: '/builder'}, queryParamsHandling: 'merge'}));
+            return of(
+              this.router.createUrlTree(['/login'], {
+                queryParams: { redirectUrl: '/builder' },
+                queryParamsHandling: 'merge',
+              }),
+            );
           }
         }),
       );

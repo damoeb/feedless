@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
@@ -22,14 +28,13 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   productConfig: ProductConfig;
   url: string;
   private subscriptions: Subscription[] = [];
-  showSearchBar: boolean;
   license: GqlLicenseQuery['license'];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
-    readonly serverSettings: ServerSettingsService,
     private readonly licenseService: LicenseService,
+    readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {
@@ -44,15 +49,14 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
           this.productConfig = productConfig;
           this.changeRef.detectChanges();
         }),
+        this.licenseService.licenseChange.subscribe((license) => {
+          this.license = license;
+          this.changeRef.detectChanges();
+        }),
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.url) {
           this.url = queryParams.url;
         }
-      }),
-      this.licenseService.licenseChange.subscribe((license) => {
-        this.license = license;
-        this.trialEndIn = dayjs(license.trialUntil).toNow(true);
-        this.changeRef.detectChanges();
       }),
     );
   }
@@ -60,15 +64,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
-  isTrialPeriod() {
-    return (
-      this.license &&
-      !this.license.isLocated &&
-      this.license.trialUntil > new Date().getTime()
-    );
-  }
-
   async handleQuery(url: string) {
     try {
       this.url = fixUrl(url);
@@ -83,5 +78,4 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   }
 
   protected readonly dateFormat = dateFormat;
-  trialEndIn: string;
 }

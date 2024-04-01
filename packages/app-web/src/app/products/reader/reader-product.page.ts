@@ -6,14 +6,24 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
-import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
-import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapedFeeds,
+} from '../../../generated/graphql';
+import {
+  ScrapedReadability,
+  ScrapeResponse,
+  Selectors,
+} from '../../graphql/types';
+import {
+  Embeddable,
+  transformXpathToCssPath,
+} from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
@@ -199,7 +209,10 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                 const url = new URL(linkElement.getAttribute('href'), this.url);
                 return {
                   contentText: context.textContent,
-                  url: this.readerOptions.linkTarget === 'reader' ? `./?url=${encodeURI(url.href)}` : url.href,
+                  url:
+                    this.readerOptions.linkTarget === 'reader'
+                      ? `./?url=${encodeURI(url.href)}`
+                      : url.href,
                   contentTitle: linkElement?.textContent,
                   hostname: url.hostname,
                 };

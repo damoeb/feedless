@@ -16,11 +16,13 @@
         <ion-label *ngIf="isLoggedIn">
           <span *ngIf="isUpdate()">Update</span>
           <span *ngIf="!isUpdate()">Create</span>
-          Feed </ion-label>
+          Feed
+        </ion-label>
         <ion-label *ngIf="!isLoggedIn">
           <span *ngIf="isUpdate()">Update</span>
           <span *ngIf="!isUpdate()">Create</span>
-          Trial Feed </ion-label>
+          Trial Feed
+        </ion-label>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -90,7 +92,7 @@
           <ion-label>
             Filters
             <a
-              (click)="addFilter(f)"
+              (click)="addFilter()"
               *ngIf="filters.length < 4"
               href="javascript:void(0)"
             >
@@ -108,8 +110,12 @@
             fill="outline"
             interface="popover"
           >
-            <ion-select-option [value]="GqlCompositeFilterType.Include">include</ion-select-option>
-            <ion-select-option [value]="GqlCompositeFilterType.Exclude">exclude</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterType.Include"
+              >include</ion-select-option
+            >
+            <ion-select-option [value]="GqlCompositeFilterType.Exclude"
+              >exclude</ion-select-option
+            >
           </ion-select>
           <ion-text class="ion-padding-end"> if </ion-text>
           <ion-select
@@ -117,21 +123,33 @@
             fill="outline"
             interface="popover"
           >
-            <ion-select-option [value]="GqlCompositeFilterField.Link">link</ion-select-option>
-            <ion-select-option [value]="GqlCompositeFilterField.Title">title</ion-select-option>
-            <ion-select-option [value]="GqlCompositeFilterField.Content">content</ion-select-option>
+            <ion-select-option [value]="GqlCompositeFilterField.Link"
+              >link</ion-select-option
+            >
+            <ion-select-option [value]="GqlCompositeFilterField.Title"
+              >title</ion-select-option
+            >
+            <ion-select-option [value]="GqlCompositeFilterField.Content"
+              >content</ion-select-option
+            >
           </ion-select>
           <ion-select
             [formControl]="filter.controls.operator"
             fill="outline"
             interface="popover"
           >
-            <ion-select-option [value]="GqlStringFilterOperator.Contains">contains</ion-select-option>
-            <ion-select-option [value]="GqlStringFilterOperator.Matches">matches</ion-select-option>
+            <ion-select-option [value]="GqlStringFilterOperator.Contains"
+              >contains</ion-select-option
+            >
+            <ion-select-option [value]="GqlStringFilterOperator.Matches"
+              >matches</ion-select-option
+            >
             <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
               >starts with</ion-select-option
             >
-            <ion-select-option [value]="GqlStringFilterOperator.EndsWith">ends with</ion-select-option>
+            <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+              >ends with</ion-select-option
+            >
           </ion-select>
           <ion-input
             [formControl]="filter.controls.value"
@@ -159,20 +177,24 @@
           </ion-label>
         </ion-item>
         <ion-item *ngIf="showRetention">
-          <ion-input label="Delete after days"
-                     labelPlacement="start"
-                     fill="outline"
-                     [formControl]="formFg.controls.maxAgeDays"
-                     [clearInput]="true"
-                     placeholder="<Auto>"></ion-input>
+          <ion-input
+            label="Delete after days"
+            labelPlacement="start"
+            fill="outline"
+            [formControl]="formFg.controls.maxAgeDays"
+            [clearInput]="true"
+            placeholder="<Auto>"
+          ></ion-input>
         </ion-item>
         <ion-item *ngIf="showRetention">
-          <ion-input label="Keep max items"
-                     labelPlacement="start"
-                     fill="outline"
-                     [formControl]="formFg.controls.maxItems"
-                     [clearInput]="true"
-                     placeholder="<Auto>"></ion-input>
+          <ion-input
+            label="Keep max items"
+            labelPlacement="start"
+            fill="outline"
+            [formControl]="formFg.controls.maxItems"
+            [clearInput]="true"
+            placeholder="<Auto>"
+          ></ion-input>
         </ion-item>
       </ion-list>
 
@@ -189,7 +211,7 @@
           >
             Fulltext
             <ion-note class="ion-padding-horizontal"
-              >Fetch Fulltext for every Item</ion-note
+              >Fetch Fulltext for every Item (static only)</ion-note
             >
           </ion-checkbox>
         </ion-item>
@@ -211,7 +233,10 @@
       <ion-list>
         <ion-item>
           <ion-label>
-            Feed Preview <ion-note *ngIf="previewFeed">({{previewFeed.items?.length}})</ion-note>
+            Feed Preview
+            <ion-note *ngIf="previewFeed"
+              >({{ previewFeed.items?.length }})</ion-note
+            >
             <ion-note class="ion-margin-horizontal"
               >(Plugins are not applied in Preview)</ion-note
             >

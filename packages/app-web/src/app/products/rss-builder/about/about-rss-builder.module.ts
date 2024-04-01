@@ -7,6 +7,7 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ImportOpmlModalModule } from '../../../modals/import-opml-modal/import-opml-modal.module';
+import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { ImportOpmlModalModule } from '../../../modals/import-opml-modal/import-
     ProductHeadlineModule,
     SearchbarModule,
     ImportOpmlModalModule,
+    OpmlPickerModule
   ],
   declarations: [AboutRssBuilderPage],
 })

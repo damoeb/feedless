@@ -4,7 +4,11 @@ import { RepositoryDataPage } from './repository-data.page';
 import { RepositoryDataPageModule } from './repository-data.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppTestModule } from '../../../../app-test.module';
-import { GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables, WebDocumentByIds } from '../../../../../generated/graphql';
+import {
+  GqlWebDocumentByIdsQuery,
+  GqlWebDocumentByIdsQueryVariables,
+  WebDocumentByIds,
+} from '../../../../../generated/graphql';
 
 describe('RepositoryDataPage', () => {
   let component: RepositoryDataPage;

@@ -12,6 +12,11 @@ node {
   download.set(true)
 }
 
+val prepareTask = tasks.register("prepare") {
+  mustRunAfter(tasks.findByPath(":prepare")!!)
+  dependsOn(codegenTask)
+}
+
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
   inputs.files("yarn.lock")
@@ -21,8 +26,8 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
-  inputs.files("codegen.yml", "yarn.lock")
-  outputs.files("src/generated/graphql.ts")
+  inputs.files("codegen.yml", "yarn.lock", "feedless-config-writer.ts", "src/app/feedless-config.ts")
+  outputs.files("src/generated/graphql.ts", "feedless-config.json")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {

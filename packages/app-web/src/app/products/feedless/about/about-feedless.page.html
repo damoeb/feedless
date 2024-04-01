@@ -10,20 +10,17 @@
       "
     >
       <div class="flex__column">
-        <app-product-headline title="Web Scraping Toolbox"></app-product-headline>
+        <app-product-headline
+          title="Web Scraping Toolbox"
+        ></app-product-headline>
 
         <p class="ion-padding-vertical">
-          <em>feedless</em> is a set of tools for web scraping and web automation.
-          Take back ownership, privacy and get
-          ahead in the signal over noise battle.
-
-          A
-          <a href="#features">wide range of features</a> help you to create feeds,
-          filter, remix, segment, schedule and extend feeds. Whether you prefer
-          self-hosting or utilizing it as a service, this open-source middleware
-          provides flexibility and control.
-
-          The idea is
+          <em>feedless</em> is a set of tools for web scraping, web
+          automation and workflows. Take back ownership, privacy and get ahead in the signal
+          over noise battle.<br>
+          I like to innovate things that the mainstream does not care about.
+          Due to its complexity in relation to my available time, I started to shape
+          concrete Use-Cases as products that you can already use and run locally.
         </p>
 
         <div class="flex__row" style="column-gap: 10px" *ngIf="!waitList">
@@ -38,38 +35,42 @@
             See products
             <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
           </ion-button>
-<!--          <ion-button-->
-<!--            color="dark"-->
-<!--            fill="outline"-->
-<!--            shape="round"-->
-<!--            size="small"-->
-<!--            style="height: 40px"-->
-<!--          >-->
-<!--            Local Setup-->
-<!--            <ion-icon name="download-outline" slot="end"></ion-icon>-->
-<!--          </ion-button>-->
+          <!--          <ion-button-->
+          <!--            color="dark"-->
+          <!--            fill="outline"-->
+          <!--            shape="round"-->
+          <!--            size="small"-->
+          <!--            style="height: 40px"-->
+          <!--          >-->
+          <!--            Local Setup-->
+          <!--            <ion-icon name="download-outline" slot="end"></ion-icon>-->
+          <!--          </ion-button>-->
           <div class="ion-align-self-center">
             <a href="https://discord.gg/6ySGeryD" target="_blank">
-              Talk to us on discord
+              Join us on discord
             </a>
           </div>
         </div>
 
-        <app-newsletter *ngIf="waitList"
-                        buttonText="Join Wait List"
-                        headerText="headerText"
-                        bodyText="bodyText"></app-newsletter>
+        <app-newsletter
+          *ngIf="waitList"
+          buttonText="Join Wait List"
+          headerText="headerText"
+          bodyText="bodyText"
+        ></app-newsletter>
 
         <div style="margin-top: 150px">
           <a name="products"></a>
-          <h2>Apps</h2>
+          <h2>Products</h2>
           <div>
-            I have a couple of product in development, the following are stable enough to be self hosted.
+            I have a couple of product in development, the following are stable
+            enough to be self hosted.
           </div>
           <div class="products">
-            <ion-card *ngFor="let product of products"
-                      [routerLink]="'/products/'+product.id">
-
+            <ion-card
+              *ngFor="let product of stableProducts"
+              [routerLink]="'/products/'+product.id"
+            >
               <img alt="Silhouette of mountains" [src]="product.imageUrl" />
               <ion-card-header>
                 <ion-card-title>{{product.title}}</ion-card-title>
@@ -77,7 +78,31 @@
               </ion-card-header>
 
               <ion-card-content>
-                {{product.description}}
+                {{product.summary}}
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+
+        <div style="margin-top: 150px">
+          <a name="products"></a>
+          <h2>In Progress</h2>
+<!--          <div>-->
+<!--             Give it a try!-->
+<!--          </div>-->
+          <div class="products">
+            <ion-card
+              *ngFor="let product of unstableProducts"
+              [routerLink]="'/products/'+product.id"
+            >
+              <img alt="Silhouette of mountains" [src]="product.imageUrl" />
+              <ion-card-header>
+                <ion-card-title>{{product.title}}</ion-card-title>
+                <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
+              </ion-card-header>
+
+              <ion-card-content>
+                {{product.summary}}
               </ion-card-content>
             </ion-card>
           </div>
@@ -87,7 +112,7 @@
           <h2>Why Feedless?</h2>
           <p>
             <a href="https://discord.gg/6ySGeryD" target="_blank"
-              >Join out community</a
+              >Join our community</a
             >
             about open internet, that reopens data hubs or creates relevant
             curated data feeds. Extend it by writing
@@ -97,7 +122,6 @@
           </p>
         </div>
       </div>
-
     </div>
   </div>
 </ion-content>

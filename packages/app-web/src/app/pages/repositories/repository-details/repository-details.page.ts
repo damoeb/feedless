@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { SourceSubscription } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
