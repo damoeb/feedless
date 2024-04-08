@@ -1,5 +1,6 @@
 {
   "name": "feedless",
+  "private": true,
   "devDependencies": {
     "mustache": "^4.2.0"
   },
@@ -13,7 +14,6 @@
   },
   "keywords": [],
   "author": "Markus Ruepp",
-  "license": "FSL",
   "bugs": {
     "url": "https://github.com/damoeb/rich-rss/issues"
   },

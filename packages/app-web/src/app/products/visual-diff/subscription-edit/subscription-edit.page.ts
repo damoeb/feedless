@@ -302,7 +302,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
               {
                 pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
                 params: {
-                  diffEmailForward: {
+                  [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
                     inlineDiffImage: true,
                     inlineLatestImage: true,
                     compareBy: this.form.value.compareType,

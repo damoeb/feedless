@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -20,15 +19,9 @@ import java.util.*
 @Table(name = "t_otp")
 open class OneTimePasswordEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false)
   open lateinit var password: String
 
-//  @Basic
-//  @Column(nullable = false)
-//  open var attemptFailed: Boolean = false
-
-  @Basic
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   open lateinit var validUntil: Timestamp

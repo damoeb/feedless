@@ -77,13 +77,13 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   ): Boolean {
     log.info("[$corrId] filter ${webDocument.url}")
 
-    val increment = params.diffEmailForward.nextItemMinIncrement.coerceAtLeast(0.01)
+    val increment = params.org_feedless_diff_email_forward.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
     val previous = getLastWebDocumentBySubscription(webDocumentDAO, webDocument.subscriptionId)
 
     return previous?.let {
-      when (params.diffEmailForward.compareBy!!) {
+      when (params.org_feedless_diff_email_forward.compareBy!!) {
         WebDocumentField.text -> compareByText(
           corrId,
           webDocument.contentText!!,
@@ -139,7 +139,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   ): MailData {
     log.info("[$corrId] prepare diff email")
 
-    val config = params.diffEmailForward
+    val config = params.org_feedless_diff_email_forward
 
     val mailData = MailData()
 

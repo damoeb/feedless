@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
-import jakarta.persistence.Basic
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -39,6 +38,7 @@ import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
+import org.springframework.context.annotation.Lazy
 import java.util.*
 
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
@@ -47,31 +47,24 @@ data class PluginExecution(val id: String, val params: PluginExecutionParamsInpu
 @Table(name = "t_source_subscription")
 open class SourceSubscriptionEntity : EntityWithUUID() {
 
-  @Basic
   @Column(name = StandardJpaFields.title, nullable = false)
   @Size(min = 3, max = 50)
   open lateinit var title: String
 
-  @Basic
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
 
-  @Basic
   @Column(name = StandardJpaFields.visibility, nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
-  @Basic
   @Column(nullable = false)
   open lateinit var schedulerExpression: String
 
-  @Basic
   open var tag: String? = null
 
-  @Basic
   open var retentionMaxItems: Int? = null
 
-  @Basic
   open var retentionMaxAgeDays: Int? = null
 
   @Temporal(TemporalType.TIMESTAMP)
@@ -90,16 +83,15 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @Deprecated("comes from user")
   open lateinit var product: ProductName
 
-  @Type(JsonType::class)
+  @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
-  @Basic(fetch = FetchType.LAZY)
+  @Lazy
   open var plugins: List<org.migor.feedless.data.jpa.models.PluginExecution> = emptyList()
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column
   open var triggerScheduledNextAt: Date? = null
 
-  @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
@@ -123,7 +115,6 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
   open var documents: MutableList<WebDocumentEntity> = mutableListOf()
 
-  @Basic
   @Column(name = "segmentation_id", insertable = false, updatable = false)
   open var segmentationId: UUID? = null
 
@@ -174,11 +165,11 @@ private fun org.migor.feedless.data.jpa.models.PluginExecution.toDto(): PluginEx
 
 private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
   return PluginExecutionParams.newBuilder()
-    .fulltext(fulltext?.toDto())
-    .genericFeed(genericFeed?.toDto())
-    .diffEmailForward(diffEmailForward?.toDto())
-    .rawJson(rawJson)
-    .filters(filters?.map { it.toDto() })
+    .org_feedless_fulltext(org_feedless_fulltext?.toDto())
+    .org_feedless_feed(org_feedless_feed?.toDto())
+    .org_feedless_diff_email_forward(org_feedless_diff_email_forward?.toDto())
+    .jsonData(jsonData)
+    .org_feedless_filter(org_feedless_filter?.map { it.toDto() })
     .build()
 }
 

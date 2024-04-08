@@ -13,9 +13,9 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.selfHosted}")
-class PlanConstraintsSelfHostedService : PlanConstraintsService {
+class NoopPlanConstraintsService : PlanConstraintsService {
 
-  private val log = LoggerFactory.getLogger(PlanConstraintsSelfHostedService::class.simpleName)
+  private val log = LoggerFactory.getLogger(NoopPlanConstraintsService::class.simpleName)
   override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int? {
     return maxItems?.coerceAtLeast(2)
   }

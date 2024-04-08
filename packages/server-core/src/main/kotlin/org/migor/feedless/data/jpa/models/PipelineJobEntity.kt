@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
-import jakarta.persistence.Basic
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -24,26 +23,21 @@ open class PipelineJobEntity : EntityWithUUID() {
   @Column(nullable = false, name = "sequence_id")
   open var sequenceId: Int = -1
 
-  @Basic
   @Column(nullable = false)
   open var attempt: Int = 0
 
-  @Basic
   @Column(nullable = false)
   open lateinit var executorId: String
 
-  @Type(JsonType::class)
+  @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb")
   open lateinit var executorParams: PluginExecutionParamsInput
 
-  @Basic
   open var terminatedAt: Date? = null
 
-  @Basic
   @Column(name = "cool_down_until")
   open var coolDownUntil: Date? = null
 
-  @Basic
   open var terminated: Boolean = false
 
 //  @Basic
@@ -53,7 +47,6 @@ open class PipelineJobEntity : EntityWithUUID() {
 //  @Column(columnDefinition = "TEXT")
 //  open var logs: String? = null
 
-  @Basic
   @Column(name = "webdocument_id", nullable = false)
   open lateinit var webDocumentId: UUID
 

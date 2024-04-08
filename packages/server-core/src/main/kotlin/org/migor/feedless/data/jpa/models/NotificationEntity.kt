@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -17,11 +16,9 @@ import java.util.*
 @Table(name = "t_notification")
 open class NotificationEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false)
   open lateinit var message: String
 
-  @Basic
   @Column(name = "owner_id", nullable = false)
   open var ownerId: UUID? = null
 

@@ -2,11 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 plugins {
-  id("org.springframework.boot") version "3.0.3"
+  id("org.springframework.boot") version "3.0.13"
   id("com.adarshr.test-logger") version "3.2.0"
-  id("com.netflix.dgs.codegen") version "5.6.9"
+  id("com.netflix.dgs.codegen") version "6.1.5"
   id("org.ajoberstar.grgit")
-  id("com.google.protobuf") version "0.9.2"
+//  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.9.20"
   kotlin("plugin.spring") version "1.9.20"
 }
@@ -42,7 +42,7 @@ tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 val versions = mapOf(
   "kotlinxCoroutines" to "1.6.0",
 //  "grpc" to "1.53.0",
-  "dgs" to "6.0.1"
+  "dgs" to "6.0.5"
 )
 
 dependencies {
@@ -82,8 +82,8 @@ dependencies {
   implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs"]}")
   implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
   testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
-  implementation("org.mapstruct:mapstruct:1.5.5.Final")
-  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+//  implementation("org.mapstruct:mapstruct:1.5.5.Final")
+//  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -101,8 +101,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
   // json feed
-  implementation("org.json:json:20230618")
-  implementation("com.google.guava:guava:31.1-jre")
+  implementation("org.json:json:20240303")
+  implementation("com.google.guava:guava:33.1.0-jre")
 
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")
@@ -115,8 +115,10 @@ dependencies {
   implementation("io.projectreactor:reactor-core:3.5.0")
 
   // database
-  implementation("org.postgresql:postgresql:42.5.1")
-  implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
+  implementation("org.postgresql:postgresql:42.7.3")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.3")
+
+
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")
 

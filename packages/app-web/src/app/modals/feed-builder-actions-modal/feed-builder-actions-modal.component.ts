@@ -29,20 +29,6 @@ interface BrowserAction {
   clickParams: FormControl<GqlXyPosition>;
 }
 
-// export type FeedBuilderScrapeResponse = Pick<
-//   GqlScrapeResponse,
-//   'url' | 'failed' | 'errorMessage'
-// > & {
-//   debug: Pick<
-//     GqlScrapeDebugResponse,
-//     'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
-//   > & {
-//     metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-//     viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
-//   };
-//   elements: Array<ScrapedElement>;
-// };
-
 export interface FeedBuilderData {
   request: GqlScrapeRequestInput;
   response: ScrapeResponse;

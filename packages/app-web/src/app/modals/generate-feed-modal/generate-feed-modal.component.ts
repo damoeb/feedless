@@ -78,7 +78,7 @@ export function getScrapeRequest(
               {
                 pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
                 params: {
-                  genericFeed: feed.genericFeed?.selectors,
+                  org_feedless_feed: feed.genericFeed?.selectors,
                 },
               },
             ],
@@ -90,7 +90,7 @@ export function getScrapeRequest(
 }
 
 type FilterParams = ArrayElement<
-  ArrayElement<SourceSubscription['plugins']>['params']['filters']
+  ArrayElement<SourceSubscription['plugins']>['params']['org_feedless_filter']
 >;
 
 @Component({
@@ -117,9 +117,6 @@ export class GenerateFeedModalComponent
     applyPrivacyPlugin: new FormControl<boolean>(false),
   });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
-
-  // @Input({ required: true })
-  // scrapeRequests: GqlScrapeRequest[];
 
   @Input({ required: true })
   subscription: SourceSubscription;
@@ -209,8 +206,10 @@ export class GenerateFeedModalComponent
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
           params: {
-            fulltext: {
+            org_feedless_fulltext: {
               readability: true,
+              inheritCookies: false,
+              prerender: false
             },
           },
         });
@@ -225,7 +224,7 @@ export class GenerateFeedModalComponent
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
-            filters: this.filters.map((filter) => ({
+            org_feedless_filter: this.filters.map((filter) => ({
               field: filter.value.field,
               value: filter.value.value,
               type: filter.value.type,
@@ -318,7 +317,7 @@ export class GenerateFeedModalComponent
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
     );
     if (filterPlugin) {
-      filterPlugin.params.filters.forEach((f) => this.addFilter(f));
+      filterPlugin.params.org_feedless_filter.forEach((f) => this.addFilter(f));
     }
 
     this.showRetention =

@@ -185,10 +185,10 @@ object DtoResolver {
 
   private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams {
     return PluginExecutionParams.newBuilder()
-      .genericFeed(genericFeed?.fromDto())
-      .rawJson(rawJson)
-      .diffEmailForward(diffEmailForward?.fromDto())
-      .fulltext(fulltext?.fromDto())
+      .org_feedless_feed(org_feedless_feed?.fromDto())
+      .jsonData(jsonData)
+      .org_feedless_diff_email_forward(org_feedless_diff_email_forward?.fromDto())
+      .org_feedless_fulltext(org_feedless_fulltext?.fromDto())
       .build()
   }
 

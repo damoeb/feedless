@@ -103,9 +103,10 @@ export class PlansComponent implements OnInit {
       name: plan.name,
       currentCosts: plan.currentCosts,
       beforeCosts: plan.beforeCosts,
-      color: plan.isPrimary
-        ? 'var(--ion-color-primary)'
-        : 'var(--ion-color-dark)',
+      color: 'var(--ion-color-dark)',
+      // color: plan.isPrimary
+      //   ? 'var(--ion-color-primary)'
+      //   : 'var(--ion-color-dark)',
       action: this.getAction(plan.availability),
       featureGroups: toFeatureGroups(plan.features),
     }));

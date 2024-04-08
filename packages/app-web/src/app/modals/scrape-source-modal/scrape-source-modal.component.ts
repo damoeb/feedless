@@ -847,7 +847,7 @@ export class ScrapeSourceModalComponent
       return {
         pluginId: plugin.id,
         params: {
-          rawJson: '' + plugin.data,
+          jsonData: '' + plugin.data,
         },
       };
     });

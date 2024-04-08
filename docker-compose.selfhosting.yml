@@ -15,20 +15,20 @@ services:
     networks:
       - postgres
 
-  feedless-agent:
-    image: damoeb/feedless:agent
-    depends_on:
-      - feedless-aio
-    links:
-      - feedless-aio
-    security_opt:
-      - seccomp=./chrome.json
-    restart: unless-stopped
-    environment:
-      - APP_HOST=feedless-aio:8080
-      - APP_SECURE=false
-    networks:
-      - agent
+#  feedless-agent:
+#    image: damoeb/feedless:agent
+#    depends_on:
+#      - feedless-aio
+#    links:
+#      - feedless-aio
+#    security_opt:
+#      - seccomp=./chrome.json
+#    restart: unless-stopped
+#    environment:
+#      - APP_HOST=feedless-aio:8080
+#      - APP_SECURE=false
+#    networks:
+#      - agent
 
   feedless-aio:
     image: damoeb/feedless:aio

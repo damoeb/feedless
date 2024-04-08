@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -17,19 +16,15 @@ import java.util.*
 @Table(name = "t_agent")
 open class AgentEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false)
   open lateinit var connectionId: String
 
-  @Basic
   @Column(nullable = false)
   open lateinit var version: String
 
-  @Basic
   @Column(nullable = false)
   open var openInstance: Boolean = false
 
-  @Basic
   @Column(name = "secret_id", nullable = false)
   open var secretKeyId: UUID? = null
 
@@ -44,7 +39,6 @@ open class AgentEntity : EntityWithUUID() {
   )
   open var secretKey: UserSecretEntity? = null
 
-  @Basic
   @Column(name = "owner_id", nullable = false)
   open var ownerId: UUID? = null
 

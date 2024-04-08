@@ -1382,7 +1382,7 @@ export class ScrapeSourceComponent
                       {
                         pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
                         params: {
-                          genericFeed:
+                          org_feedless_feed:
                             this.mapperFg.value.oneOf.feed.genericFeed
                               .selectors,
                         },
@@ -1398,58 +1398,6 @@ export class ScrapeSourceComponent
       return { emit: [] };
     }
   }
-
-  // private getMapper(): ResponseMapperInput {
-  //   const mapper = pick(this.mapperFg.value.oneOf, this.mapperFg.value.type);
-  //   return { ...mapper, type: this.mapperFg.value.type }
-  // }
-  // private parseMapper(request: GqlScrapeRequestInput): DeepPartial<MapperFormData> {
-  //   if (request.emit && request.emit.length > 0) {
-  //     const firstEmit = request.emit[0];
-  //     if (firstEmit.selectorBased) {
-  //       if (firstEmit.selectorBased.expose.html) {
-  //         return {
-  //           type: 'fragment'
-  //         }
-  //       }
-  //       if (firstEmit.selectorBased.expose.transformers) {
-  //         const firstTransformer = firstEmit.selectorBased.expose.transformers[0];
-  //         if (firstTransformer.internal.transformer === GqlMarkupTransformer.Feed) {
-  //           return {
-  //             type: 'feed',
-  //             oneOf: {
-  //               feed: null
-  //             }
-  //           }
-  //         }
-  //         if (firstTransformer.internal.transformer === GqlMarkupTransformer.Readability) {
-  //           return {
-  //             type: 'readability'
-  //           }
-  //         }
-  //
-  //       }
-  //     }
-  //
-  //   } else {
-  //     if (request.debug.screenshot) {
-  //       return {
-  //         type: 'pageScreenshot',
-  //       }
-  //     }
-  //     if (request.debug.html) {
-  //       return {
-  //         type: 'pageMarkup',
-  //       }
-  //     }
-  //     if (request.debug.html) {
-  //       return {
-  //         type: 'pageMarkup',
-  //       }
-  //     }
-  //   }
-  //   return undefined;
-  // }
 
   private applyChangesAndDismiss(
     request: GqlScrapeRequestInput,

@@ -6,7 +6,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.AuthTokenType
 import org.migor.feedless.api.auth.JwtParameterNames
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.slf4j.LoggerFactory
@@ -39,12 +38,13 @@ class PlanService {
   }
 
   fun findAllVisible(product: ProductName): List<PlanEntity> {
-    return planDAO.findAllByAvailabilityNotInAndProduct(
-      listOf(
-        PlanAvailability.unavailable,
-        PlanAvailability.availableButHidden
-      ), product
-    )
+//    return planDAO.findAllByAvailabilityNotInAndProduct(
+//      listOf(
+//        PlanAvailability.unavailable,
+//        PlanAvailability.availableButHidden
+//      ), product
+//    )
+    return emptyList();
   }
 
   fun findById(id: String): Optional<PlanEntity> {

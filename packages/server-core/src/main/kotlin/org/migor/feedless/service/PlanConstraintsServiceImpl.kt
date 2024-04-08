@@ -4,9 +4,11 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.repositories.FeatureDAO
+import org.migor.feedless.data.jpa.models.FeatureValueEntity
+import org.migor.feedless.data.jpa.models.PlanName
+import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
+import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
@@ -29,10 +31,13 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   lateinit var currentUser: CurrentUser
 
   @Autowired
-  lateinit var featureDAO: FeatureDAO
+  lateinit var featureDAO: FeatureValueDAO
 
   @Autowired
   lateinit var userDAO: UserDAO
+
+  @Autowired
+  lateinit var planDAO: PlanDAO
 
   override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int? {
     return (maxItems ?: 2)
@@ -100,7 +105,8 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   override fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
     val user = userDAO.findById(userId).orElseThrow()
     return if (user.anonymous) {
-      val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDaysInt).valueInt!!
+//      val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDaysInt).valueInt!!
+      val days = 1
       val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
       log.info("[$corrId] assign expiry to $expiry")
       toDate(expiry)
@@ -115,9 +121,12 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
 
   private fun getFeatureBool(featureName: FeatureName, userId: UUID) = getFeature(featureName, userId)!!.valueBoolean!!
 
-  private fun getFeature(featureName: FeatureName, userId: UUID): FeatureEntity? {
+  private fun getFeature(featureName: FeatureName, userId: UUID): FeatureValueEntity? {
     val user = userDAO.findById(userId).orElseThrow()
-    return featureDAO.findByPlanIdAndName(user.planId, featureName)
+    return user.planId?.let {
+      featureDAO.findByPlanIdAndName(it.toString(), featureName.name).firstOrNull()
+    } ?: featureDAO.findByPlanIdAndName(planDAO.findFirstByName(PlanName.system.name)!!.id.toString(), featureName.name)
+      .firstOrNull()
   }
 
   override fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {

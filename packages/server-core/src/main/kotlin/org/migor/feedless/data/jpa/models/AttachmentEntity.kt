@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -23,23 +22,18 @@ import java.util.*
 )
 open class AttachmentEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false)
   open lateinit var url: String
 
-  @Basic
   @Column(nullable = false)
   open lateinit var type: String
 
-  @Basic
   @Column(nullable = false)
   open var remoteData: Boolean = false
 
-  @Basic
   @Column(columnDefinition = "TEXT")
   open var data: String? = null
 
-  @Basic
   @Column(name = "webDocumentId", nullable = false)
   open lateinit var webDocumentId: UUID
 

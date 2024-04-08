@@ -52,8 +52,10 @@ export class ImportOpmlModalComponent
       plugins.push({
         pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
         params: {
-          fulltext: {
-            readability: true
+          org_feedless_fulltext: {
+            readability: true,
+            inheritCookies: false,
+            prerender: false
           }
         }
       });
@@ -139,33 +141,4 @@ export class ImportOpmlModalComponent
     };
   }
 
-  // private filterSelectedOutlines(selected: FcOutline[], outlines: FcOutline[]) {
-  //   selected.push(...outlines?.filter((o) => o.fc?.value));
-  //   outlines
-  //     ?.filter((o) => o.outlines)
-  //     .forEach((o) => this.filterSelectedOutlines(selected, o.outlines));
-  // }
-  // private getSelectedOutlines(): GqlNativeGenericOrFragmentFeedCreateInput[] {
-  //   const selected: FcOutline[] = [];
-  //   this.filterSelectedOutlines(selected, this.fcOutlines);
-  //   return selected
-  //     .map<Outline>(
-  //       (outline) =>
-  //         pick<Outline>(
-  //           outline,
-  //           'xmlUrl',
-  //           'title',
-  //           'text',
-  //           'htmlUrl',
-  //         ) as Outline,
-  //     )
-  //     .map<GqlNativeGenericOrFragmentFeedCreateInput>((outline) => ({
-  //       nativeFeed: {
-  //         title: outline.title,
-  //         feedUrl: outline.xmlUrl,
-  //         websiteUrl: outline.htmlUrl,
-  //         description: outline.text,
-  //       },
-  //     }));
-  // }
 }

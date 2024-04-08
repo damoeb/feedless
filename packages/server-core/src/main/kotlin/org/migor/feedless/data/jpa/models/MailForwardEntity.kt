@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -20,11 +19,9 @@ import java.util.*
 @Table(name = "t_mail_forward")
 open class MailForwardEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false)
   open lateinit var email: String
 
-  @Basic
   @Column(nullable = false)
   open var authorized: Boolean = false
 
@@ -32,7 +29,6 @@ open class MailForwardEntity : EntityWithUUID() {
   @Column
   open var authorizedAt: Date? = null
 
-  @Basic
   @Column(name = StandardJpaFields.subscriptionId, nullable = false)
   open lateinit var subscriptionId: UUID
 

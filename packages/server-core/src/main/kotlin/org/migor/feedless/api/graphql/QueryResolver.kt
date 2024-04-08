@@ -103,8 +103,8 @@ class QueryResolver {
     val defaultProfile = Profile.newBuilder()
       .isLoggedIn(false)
       .isAnonymous(true)
-      .dateFormat(propertyService.dateFormat)
-      .timeFormat(propertyService.timeFormat)
+//      .dateFormat(propertyService.dateFormat)
+//      .timeFormat(propertyService.timeFormat)
 //      .minimalFeatureState(FeatureState.experimental)
       .build()
 
@@ -112,8 +112,8 @@ class QueryResolver {
       runCatching {
         val user = currentUser.user(newCorrId())
         Profile.newBuilder()
-          .dateFormat(propertyService.dateFormat)
-          .timeFormat(propertyService.timeFormat)
+//          .dateFormat(propertyService.dateFormat)
+//          .timeFormat(propertyService.timeFormat)
           .isLoggedIn(true)
           .isAnonymous(false)
           .userId(user.id.toString())

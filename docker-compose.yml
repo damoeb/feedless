@@ -159,6 +159,23 @@ services:
       - postgres
       - monitoring
 
+  feedless-aio-chromium:
+    image: damoeb/feedless:aio-chromium-e75e5f8d295a5d5ec2497266fae6f151ada8709f
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/app/rss-proxy-config.json:/usr/feedless/public/config.json
+      - ./docker/your-license.key:/usr/feedless/license.key:rw
+    security_opt:
+      - seccomp=./chrome.json
+    env_file:
+      - selfhosting.env
+    networks:
+      - postgres
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING

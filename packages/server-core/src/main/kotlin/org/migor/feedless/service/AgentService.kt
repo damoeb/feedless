@@ -122,13 +122,19 @@ class AgentService {
         val harvestJobId = UUID.randomUUID().toString()
         scrapeRequest.id = harvestJobId
         scrapeRequest.corrId = corrId
-        agentRef.emitter.next(
-          AgentEvent.newBuilder()
-            .scrape(scrapeRequest)
-            .build()
-        )
-        log.info("$corrId] submitted agent job $harvestJobId")
-        pendingJobs[harvestJobId] = emitter
+
+        try {
+          agentRef.emitter.next(
+            AgentEvent.newBuilder()
+              .scrape(scrapeRequest)
+              .build()
+          )
+          log.info("$corrId] submitted agent job $harvestJobId")
+          pendingJobs[harvestJobId] = emitter
+        } catch (e: Exception) {
+          log.error("$corrId] ${e.message}")
+          emitter.error(e)
+        }
       }
     }
       .timeout(Duration.ofSeconds(60))

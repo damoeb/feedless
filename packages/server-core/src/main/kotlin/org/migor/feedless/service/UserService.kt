@@ -10,7 +10,6 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
@@ -68,12 +67,12 @@ class UserService {
     if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
       throw BadRequestException("sign-up is deactivated")
     }
-    val plan = planDAO.findByNameAndProduct(planName, productName)
-    plan ?: throw BadRequestException("plan $planName for product $productName does not exist")
-
-    if (plan.availability == PlanAvailability.unavailable) {
-      throw BadRequestException("plan $planName for product $productName is unavailable")
-    }
+//    val plan = planDAO.findByNameAndProductId(planName.name, productName)
+//    plan ?: throw BadRequestException("plan $planName for product $productName does not exist")
+//
+//    if (plan.availability == PlanAvailability.unavailable) {
+//      throw BadRequestException("plan $planName for product $productName is unavailable")
+//    }
 
     if (StringUtils.isNotBlank(email)) {
       if (userDAO.existsByEmail(email!!)) {
@@ -95,7 +94,7 @@ class UserService {
     user.hasAcceptedTerms = isSelfHosted()
     user.product = productName
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByNameAndProduct(planName, productName)!!.id
+//    user.planId = planDAO.findByNameAndProductId(planName, productName)!!.id
 
     if (!user.anonymous && !user.root) {
       when (planName) {

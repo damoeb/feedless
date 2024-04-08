@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -23,6 +22,7 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import java.util.*
 
 @Entity
@@ -41,23 +41,20 @@ open class WebDocumentEntity : EntityWithUUID() {
     const val LEN_URL = 1000
   }
 
-  @Basic
   @Column(nullable = false, length = LEN_URL)
   open lateinit var url: String
 
-  @Basic
   @Column(length = LEN_TITLE)
   open var contentTitle: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, LEN_TITLE)
     }
 
-  @Basic
   @Column(length = 50)
   open var contentRawMime: String? = null
 
+  @Lazy
   @Column(columnDefinition = "bytea") // bytea
-  @Basic(fetch = FetchType.LAZY)
   open var contentRaw: ByteArray? = null
 
   @Column(columnDefinition = "TEXT")
@@ -66,29 +63,23 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(columnDefinition = "TEXT")
   open var contentHtml: String? = null
 
-  @Basic
   @Column(length = LEN_URL)
   open var imageUrl: String? = null
 
-  @Basic
   @Column(nullable = false)
   open lateinit var updatedAt: Date
 
-  @Basic
   @Column(nullable = false, name = StandardJpaFields.releasedAt)
   open lateinit var releasedAt: Date
 
-  @Basic
   open var startingAt: Date? = null
 
-  @Basic
   @Column(nullable = false)
   open var score: Int = 0
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
   open var plugins: MutableList<PipelineJobEntity> = mutableListOf()
 
-  @Basic
   @Column(name = "subscriptionId", nullable = false)
   open lateinit var subscriptionId: UUID
 
@@ -103,10 +94,9 @@ open class WebDocumentEntity : EntityWithUUID() {
   )
   open var subscription: SourceSubscriptionEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
+  @OneToMany(fetch = FetchType.EAGER, mappedBy = "webDocumentId") // todo should be lazy
   open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
-  @Basic
   @Column(nullable = false, name = StandardJpaFields.status, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var status: ReleaseStatus

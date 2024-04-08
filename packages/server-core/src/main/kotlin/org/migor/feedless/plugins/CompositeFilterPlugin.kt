@@ -25,8 +25,8 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     params: PluginExecutionParamsInput
   ): Boolean {
     log.info("[$corrId] filter ${webDocument.url}")
-    return params.filters?.let {
-      params.filters.all {
+    return params.org_feedless_filter?.let {
+      it.all {
         when (it.type!!) {
           CompositeFilterType.include -> matches(webDocument, it)
           CompositeFilterType.exclude -> !matches(webDocument, it)

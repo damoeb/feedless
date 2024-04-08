@@ -2,7 +2,6 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
-import { StatsService } from '../stats/stats.service';
 import { GraphqlClient } from '../../graphql-client';
 import { ScrapeResponseInput } from '../../generated/graphql';
 
@@ -12,7 +11,6 @@ export class AgentService implements OnModuleInit {
 
   constructor(
     private readonly puppeteerService: PuppeteerService,
-    private readonly statsService: StatsService,
     private readonly config: VerboseConfigService,
   ) {}
 
@@ -34,8 +32,8 @@ export class AgentService implements OnModuleInit {
     const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
     graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
+        this.log.log('incoming event')
         if (event.scrape) {
-          const recordId = this.statsService.recordAgentEvent(event);
           const startTime = Date.now();
           this.log.log(
             `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event)}`,
@@ -49,11 +47,8 @@ export class AgentService implements OnModuleInit {
               corrId: event.scrape.corrId,
               scrapeResponse,
             });
-            this.statsService.recordAgentEventSuccess(recordId, scrapeResponse);
           } catch (e) {
             this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
-
-            this.statsService.recordAgentEventFailure(recordId, e?.message);
 
             const errorResponse: ScrapeResponseInput = {
               failed: true,
@@ -83,6 +78,7 @@ export class AgentService implements OnModuleInit {
       },
       (error) => {
         this.log.error(error);
+        console.log(error)
         // process.exit(1);
       },
     );

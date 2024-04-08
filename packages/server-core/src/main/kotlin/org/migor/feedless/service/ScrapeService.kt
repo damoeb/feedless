@@ -387,6 +387,6 @@ private fun WebDocument.asEntity(): WebDocumentEntity {
 
 private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInput(): PluginExecutionParamsInput {
   return PluginExecutionParamsInput.newBuilder()
-    .filters(this)
+    .org_feedless_filter(this)
     .build()
 }

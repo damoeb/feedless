@@ -3,17 +3,16 @@ package org.migor.feedless.util
 import org.apache.commons.lang3.StringUtils
 import java.security.MessageDigest
 import java.util.*
-import javax.xml.bind.DatatypeConverter
 
 object CryptUtil {
-  fun sha1(input: String) = hashString("SHA-1", input.toByteArray())
-  fun sha1(input: ByteArray) = hashString("SHA-1", input)
+  fun sha1(input: String) = hashString(input.toByteArray())
+  fun sha1(input: ByteArray) = hashString(input)
 
-  private fun hashString(type: String, input: ByteArray): String {
+  private fun hashString(input: ByteArray): String {
     val bytes = MessageDigest
-      .getInstance(type)
+      .getInstance("SHA-1")
       .digest(input)
-    return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
+    return HexFormat.of().formatHex(bytes).uppercase(Locale.getDefault())
   }
 
   fun newCorrId(length: Int = 4, parentCorrId: String? = null): String {

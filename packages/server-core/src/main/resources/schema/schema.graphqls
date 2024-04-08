@@ -44,7 +44,7 @@ type Enclosure {
 }
 
 type Feature {
-  name: FeatureName!
+  name: String!
   value: FeatureValue!
 }
 
@@ -187,14 +187,15 @@ enum ProductName {
   reader
   feedless
 
-#  launchThis
+#  shouldWeLaunchThis
   upcoming
   untoldNotes
   pageChangeTracker
   digest
+  featureFlags
   feedDump
   openRoadmap
-  argue
+  commentOn
 }
 
 type Agent {
@@ -214,13 +215,13 @@ type Pagination {
 }
 
 type Plan {
+  id: ID!
+  name: PlanName!
   availability: PlanAvailability!
   currentCosts: Float!
   beforeCosts: Float
+  parent: Plan
   features: [Feature!]!
-  id: ID!
-  isPrimary: Boolean!
-  name: PlanName!
 }
 
 type PlanSubscription {
@@ -250,8 +251,6 @@ enum PluginType {
 type Profile {
   isAnonymous: Boolean!
   isLoggedIn: Boolean!
-  dateFormat: String
-  timeFormat: String
   user: User
   userId: ID
 }
@@ -1144,11 +1143,11 @@ input ScrapeSelectorExposeInput {
 }
 
 input PluginExecutionParamsInput {
-  genericFeed: SelectorsInput
-  diffEmailForward: DiffEmailForwardParamsInput
-  filters: [CompositeFilterParamsInput!]
-  rawJson: String
-  fulltext: FulltextPluginParamsInput
+  org_feedless_feed: SelectorsInput
+  org_feedless_diff_email_forward: DiffEmailForwardParamsInput
+  org_feedless_filter: [CompositeFilterParamsInput!]
+  jsonData: String
+  org_feedless_fulltext: FulltextPluginParamsInput
 }
 
 input CompositeFilterParamsInput {
@@ -1179,6 +1178,8 @@ input DiffEmailForwardParamsInput {
 
 input FulltextPluginParamsInput {
   readability: Boolean!
+  inheritCookies: Boolean!
+  prerender: Boolean!
 }
 
 enum FeedlessPlugins {
@@ -1262,11 +1263,11 @@ type PluginExecution {
 }
 
 type PluginExecutionParams {
-  genericFeed: Selectors
-  diffEmailForward: DiffEmailForwardParams
-  filters: [CompositeFilterParams!]
-  fulltext: FulltextPluginParams
-  rawJson: String
+  org_feedless_feed: Selectors
+  org_feedless_diff_email_forward: DiffEmailForwardParams
+  org_feedless_filter: [CompositeFilterParams!]
+  jsonData: String
+  org_feedless_fulltext: FulltextPluginParams
 }
 
 type CompositeFilterParams {
@@ -1287,6 +1288,8 @@ type DiffEmailForwardParams {
 
 type FulltextPluginParams {
   readability: Boolean!
+  inheritCookies: Boolean!
+  prerender: Boolean!
 }
 
 type ScrapeSelectorExposeField {

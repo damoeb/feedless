@@ -7,16 +7,19 @@ import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
+import org.migor.feedless.data.jpa.models.FeatureValueEntity
 import org.migor.feedless.data.jpa.models.FeatureValueType
 import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
 import org.migor.feedless.data.jpa.models.PlanName
+import org.migor.feedless.data.jpa.models.ProductEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
-import org.migor.feedless.data.jpa.models.featureScope
 import org.migor.feedless.data.jpa.repositories.FeatureDAO
+import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
 import org.migor.feedless.data.jpa.repositories.PlanDAO
+import org.migor.feedless.data.jpa.repositories.ProductDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.service.PropertyService
@@ -45,6 +48,9 @@ class Seeder {
   lateinit var planDAO: PlanDAO
 
   @Autowired
+  lateinit var featureValueDAO: FeatureValueDAO
+
+  @Autowired
   lateinit var featureDAO: FeatureDAO
 
   @Autowired
@@ -52,6 +58,9 @@ class Seeder {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var productDAO: ProductDAO
 
   @Autowired
   lateinit var userSecretDAO: UserSecretDAO
@@ -62,18 +71,29 @@ class Seeder {
   @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun onInit() {
-    seedPlans()
+    val root = seedRootUser()
+    seedProductsAndPlans(root)
     seedUsers()
   }
 
   private fun seedUsers() {
     userDAO.findByEmail(propertyService.anonymousEmail) ?: createAnonymousUser()
+    if (isSelfHosted()) {
+//      createUser(
+//        propertyService.rootEmail,
+//        isRoot = false,
+//        authSource = AuthSource.none,
+//        plan = PlanName.system
+//      )
+    }
+  }
+
+  private fun seedRootUser(): UserEntity {
     val root =
       userDAO.findRootUser() ?: createUser(
         propertyService.rootEmail,
         isRoot = true,
         authSource = AuthSource.none,
-        plan = PlanName.system
       )
     if (root.email != propertyService.rootEmail) {
       log.info("Updated rootEmail")
@@ -92,27 +112,18 @@ class Seeder {
       userSecretDAO.save(userSecret)
     }
 
-    if (isSelfHosted()) {
-//      createUser(
-//        propertyService.rootEmail,
-//        isRoot = false,
-//        authSource = AuthSource.none,
-//        plan = PlanName.system
-//      )
-    }
+    return root
   }
 
   private fun createAnonymousUser() = createUser(
     propertyService.anonymousEmail,
     isAnonymous = true,
     authSource = AuthSource.none,
-    plan = PlanName.system
   )
 
   private fun createUser(
     email: String,
     authSource: AuthSource,
-    plan: PlanName,
     isRoot: Boolean = false,
     isAnonymous: Boolean = false
   ): UserEntity {
@@ -126,16 +137,15 @@ class Seeder {
     user.product = ProductName.system
     user.anonymous = isAnonymous
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
+    user.hasAcceptedTerms = isRoot || isAnonymous
+//    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
     return userDAO.saveAndFlush(user)
   }
 
-  private fun seedPlans() {
-//    if (isSelfHosted()) {
-//      return
-//    }
+  private fun seedProductsAndPlans(root: UserEntity) {
+    val systemProduct = resolveProduct(ProductName.system, root)
     persistPlan(
-      PlanName.system, 0.0, PlanAvailability.unavailable, ProductName.system, features = mapOf(
+      PlanName.system, 0.0, PlanAvailability.unavailable, systemProduct, features = mapOf(
         FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(7),
 //        FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
@@ -154,120 +164,166 @@ class Seeder {
         FeatureName.itemWebhookForwardBool to asBoolFeature(true),
       )
     )
-    seedPlansForProduct(ProductName.rssBuilder)
-    seedPlansForProduct(ProductName.feedless)
-    seedPlansForProduct(ProductName.visualDiff)
-    seedPlansForProduct(ProductName.untoldNotes)
+
+    if (!isSelfHosted()) {
+      seedPlansForProduct(ProductName.feedless, root, systemProduct)
+      seedPlansForProduct(ProductName.rssBuilder, root, systemProduct)
+      seedPlansForProduct(ProductName.visualDiff, root, systemProduct)
+      seedPlansForProduct(ProductName.untoldNotes, root, systemProduct)
+    }
+  }
+
+  private fun resolveProduct(
+    productName: ProductName,
+    owner: UserEntity,
+    systemProduct: ProductEntity? = null
+  ): ProductEntity {
+    val product = ProductEntity()
+    val name = productName.name
+    product.name = name
+    product.ownerId = owner.id
+    product.parentProductId = systemProduct?.id
+
+    return productDAO.findByNameAndOwnerId(name, owner.id) ?: productDAO.save(product)
   }
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
-  private fun seedPlansForProduct(product: ProductName) {
+  private fun seedPlansForProduct(productName: ProductName, root: UserEntity, systemProduct: ProductEntity) {
+    val product = resolveProduct(productName, root, systemProduct)
     persistPlan(
-      PlanName.waitlist, 0.0, PlanAvailability.availableButHidden, product, features = emptyMap()
-    )
-    persistPlan(
-      PlanName.free, 0.0, PlanAvailability.available, product, primary = true, mapOf(
-        FeatureName.rateLimitInt to asIntFeature(40),
-        FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
-        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
-        FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
-        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
-        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(5),
-        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
-        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
-        FeatureName.publicScrapeSourceBool to asBoolFeature(false),
-        FeatureName.apiBool to asBoolFeature(false),
-        FeatureName.pluginsBool to asBoolFeature(true),
-        FeatureName.canLogin to asBoolFeature(true),
-        FeatureName.canCreateUser to asBoolFeature(true), // wait list
-        FeatureName.canSignUp to asBoolFeature(true),
-        FeatureName.canCreateAsAnonymous to asBoolFeature(true),
-        FeatureName.hasWaitList to asBoolFeature(true),
-        FeatureName.itemEmailForwardBool to asBoolFeature(false),
-        FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+      PlanName.waitlist, 0.0, PlanAvailability.availableButHidden, product, features = mapOf(
+        FeatureName.canLogin to asBoolFeature(false)
       )
-    )
-    persistPlan(
-      PlanName.basic, 9.99, PlanAvailability.by_request, product, features = mapOf(
-        FeatureName.rateLimitInt to asIntFeature(120),
-        FeatureName.minRefreshRateInMinutesInt to asIntFeature(10),
-        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(100),
-        FeatureName.scrapeRequestTimeoutInt to asIntFeature(60000),
-        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(30),
-        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(30),
-        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
-        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(10),
-        FeatureName.publicScrapeSourceBool to asBoolFeature(true),
-        FeatureName.apiBool to asBoolFeature(true),
-        FeatureName.pluginsBool to asBoolFeature(true),
-        FeatureName.itemEmailForwardBool to asBoolFeature(true),
-        FeatureName.itemWebhookForwardBool to asBoolFeature(true)
+    ).let {
+      persistPlan(
+        PlanName.free, 0.0, PlanAvailability.available, product, parentPlan = it, features = mapOf(
+          FeatureName.rateLimitInt to asIntFeature(40),
+          FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
+          FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
+          FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
+          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
+          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(5),
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+          FeatureName.publicScrapeSourceBool to asBoolFeature(false),
+          FeatureName.apiBool to asBoolFeature(false),
+          FeatureName.pluginsBool to asBoolFeature(true),
+          FeatureName.canLogin to asBoolFeature(true),
+          FeatureName.canCreateUser to asBoolFeature(true), // wait list
+          FeatureName.canSignUp to asBoolFeature(true),
+          FeatureName.canCreateAsAnonymous to asBoolFeature(true),
+          FeatureName.hasWaitList to asBoolFeature(true),
+          FeatureName.itemEmailForwardBool to asBoolFeature(false),
+          FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+        )
       )
-    )
+//        .let {
+//        persistPlan(
+//          PlanName.basic, 9.99, PlanAvailability.by_request, product, parentPlan = it, features = mapOf(
+//            FeatureName.rateLimitInt to asIntFeature(120),
+//            FeatureName.minRefreshRateInMinutesInt to asIntFeature(10),
+//            FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(100),
+//            FeatureName.scrapeRequestTimeoutInt to asIntFeature(60000),
+//            FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(30),
+//            FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(30),
+//            FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
+//            FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(10),
+//            FeatureName.publicScrapeSourceBool to asBoolFeature(true),
+//            FeatureName.apiBool to asBoolFeature(true),
+//            FeatureName.pluginsBool to asBoolFeature(true),
+//            FeatureName.itemEmailForwardBool to asBoolFeature(true),
+//            FeatureName.itemWebhookForwardBool to asBoolFeature(true)
+//          )
+//        )
+//      }
+    }
   }
 
   private fun persistPlan(
     name: PlanName,
     costs: Double,
     availability: PlanAvailability,
-    product: ProductName,
-    primary: Boolean = false,
-    features: Map<FeatureName, FeatureEntity>
-  ) {
-    persistFeatures(resolvePlan(name, costs, availability, product, primary), features)
+    product: ProductEntity,
+    features: Map<FeatureName, FeatureValueEntity>,
+    parentPlan: PlanEntity? = null
+  ): PlanEntity {
+    val plan = resolvePlan(name, costs, availability, product, parentPlan)
+    persistFeatures(product, plan, features)
+    return plan
   }
 
   private fun resolvePlan(
     name: PlanName,
     costs: Double,
     availability: PlanAvailability,
-    product: ProductName,
-    primary: Boolean = false,
+    product: ProductEntity,
+    parentPlan: PlanEntity?,
   ): PlanEntity {
     val plan = PlanEntity()
-    plan.name = name
-    plan.product = product
+    plan.name = name.name
+    plan.productId = product.id
     plan.currentCosts = costs
     plan.availability = availability
-    plan.primaryPlan = primary
+    plan.parentPlanId = parentPlan?.id
 
-    return planDAO.findByNameAndProduct(name, product) ?: planDAO.save(plan)
+    return planDAO.findByNameAndProductId(name.name, product.id) ?: planDAO.save(plan)
   }
 
-  private fun persistFeatures(plan: PlanEntity, features: Map<FeatureName, FeatureEntity>) {
-    features.forEach { (featureName, featureEntity) ->
-      featureDAO.findByPlanIdAndName(plan.id, featureName)
-        ?.let {
-          it.scope = featureScope(featureName)
-          val logValueMismatch =
-            { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
-          if (it.valueBoolean != featureEntity.valueBoolean) {
-            logValueMismatch(featureEntity.valueBoolean!!, it.valueBoolean!!)
+  private fun persistFeatures(
+    product: ProductEntity,
+    plan: PlanEntity,
+    features: Map<FeatureName, FeatureValueEntity>
+  ) {
+    features.forEach { (featureName, featureValue) ->
+      run {
+        val feature = featureDAO.findByProductIdAndName(
+          product.id,
+          featureName.name
+        ) ?: createFeature(product, featureName)
+
+
+        featureValueDAO.findByPlanIdAndFeatureId(plan.id, feature.id)
+          ?.let {
+            val logValueMismatch =
+              { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
+            if (it.valueBoolean != featureValue.valueBoolean) {
+              logValueMismatch(featureValue.valueBoolean!!, it.valueBoolean!!)
+            }
+            if (it.valueInt != featureValue.valueInt) {
+              logValueMismatch(featureValue.valueInt!!, it.valueInt!!)
+            }
+            featureValueDAO.save(it)
           }
-          if (it.valueInt != featureEntity.valueInt) {
-            logValueMismatch(featureEntity.valueInt!!, it.valueInt!!)
+          ?: run {
+            val value = FeatureValueEntity()
+            value.planId = plan.id
+            value.featureId = feature.id
+            value.valueType = featureValue.valueType
+            value.valueBoolean = featureValue.valueBoolean
+            value.valueInt = featureValue.valueInt
+            featureValueDAO.save(value)
           }
-          featureDAO.save(it)
-        }
-        ?: run {
-          featureEntity.name = featureName
-          featureEntity.planId = plan.id
-          featureEntity.scope = featureScope(featureName)
-          featureDAO.save(featureEntity)
-        }
+      }
     }
   }
 
-  private fun asIntFeature(value: Int): FeatureEntity {
+  private fun createFeature(product: ProductEntity, featureName: FeatureName): FeatureEntity {
     val feature = FeatureEntity()
+    feature.productId = product.id
+    feature.name = featureName.name
+    return featureDAO.save(feature)
+  }
+
+  private fun asIntFeature(value: Int): FeatureValueEntity {
+    val feature = FeatureValueEntity()
     feature.valueType = FeatureValueType.number
     feature.valueInt = value
     return feature
   }
 
-  private fun asBoolFeature(value: Boolean): FeatureEntity {
-    val feature = FeatureEntity()
+  private fun asBoolFeature(value: Boolean): FeatureValueEntity {
+    val feature = FeatureValueEntity()
     feature.valueType = FeatureValueType.bool
     feature.valueBoolean = value
     return feature

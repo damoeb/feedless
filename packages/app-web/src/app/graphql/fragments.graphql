@@ -23,30 +23,32 @@ fragment SourceSubscriptionFragment on SourceSubscription {
   plugins {
     pluginId
     params {
-      genericFeed {
+      org_feedless_feed {
         extendContext
         linkXPath
         contextXPath
         dateIsStartOfEvent
         dateXPath
       }
-      diffEmailForward {
+      org_feedless_diff_email_forward {
         inlineDiffImage
         inlineLatestImage
         inlinePreviousImage
         compareBy
         nextItemMinIncrement
       }
-      filters {
+      org_feedless_filter {
         type
         value
         field
         operator
       }
-      fulltext {
+      org_feedless_fulltext {
         readability
+        prerender
+        inheritCookies
       }
-      rawJson
+      jsonData
     }
   }
   segmented {
@@ -102,7 +104,7 @@ fragment SourceSubscriptionFragment on SourceSubscription {
           transformers {
             pluginId
             params {
-              genericFeed {
+              org_feedless_feed {
                 contextXPath
                 dateXPath
                 dateIsStartOfEvent
@@ -256,7 +258,6 @@ fragment PlanFragment on Plan {
   id
   name
   availability
-  isPrimary
   currentCosts
   beforeCosts
 }

@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
-import jakarta.persistence.Basic
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -24,40 +23,36 @@ import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ViewPort
+import org.springframework.context.annotation.Lazy
 import java.util.*
 
 @Entity
 @Table(name = "t_scrape_source")
 open class ScrapeSourceEntity : EntityWithUUID() {
 
-  @Basic
   open var timeout: Int? = null
 
   @Column(nullable = false)
   open lateinit var url: String
 
-  @Type(JsonType::class)
+  @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb")
-  @Basic(fetch = FetchType.EAGER)
+  @Lazy
   open var viewport: ViewPort? = null
 
-  @Basic
   open var language: String? = null
 
-  @Basic
   @Column(nullable = false)
   open var prerender: Boolean = false
 
-  @Basic
   @Enumerated(EnumType.STRING)
   open var waitUntil: PuppeteerWaitUntil? = null
 
-  @Basic
   open var additionalWaitSec: Int? = null
 
-  @Type(JsonType::class)
+  @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb")
-  @Basic(fetch = FetchType.LAZY)
+  @Lazy
   open var actions: List<ScrapeAction>? = null
 
 //  @OneToOne(fetch = FetchType.EAGER)
@@ -86,20 +81,17 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var debugHtml: Boolean = false
 
-  @Type(JsonType::class)
+  @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
-  @Basic(fetch = FetchType.LAZY)
+  @Lazy
   open lateinit var emit: List<ScrapeEmit>
 
-  @Basic
   @Column(name = StandardJpaFields.subscriptionId, nullable = false)
   open lateinit var subscriptionId: UUID
 
-  @Basic
   @Column(nullable = false)
   open var erroneous: Boolean = false
 
-  @Basic
   open var lastErrorMessage: String? = null
 
   @ManyToOne(fetch = FetchType.LAZY)

@@ -1,6 +1,7 @@
 import { GqlProductName } from '../generated/graphql';
 
 export type ProductId =
+  | 'pageChangeTracker'
   | 'rss-proxy'
   | 'visual-diff'
   | 'reader'
@@ -8,6 +9,8 @@ export type ProductId =
   | 'mail-digest'
   | 'untold'
   | 'feedless';
+
+// export type AppStage = 'idea' | 'development' | 'alpha' | 'stable'
 
 export type AppConfig = {
   id: ProductId;
@@ -19,6 +22,7 @@ export type AppConfig = {
   offlineSupport?: boolean;
   subtitle: string;
   summary: string;
+  // stage: AppStage;
   isUnstable: boolean;
   descriptionMarkdown: string;
   descriptionHtml?: string;
@@ -221,6 +225,27 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',
       subtitle: 'Localized event sourcing',
+      summary: 'Searchable geo-located events sources from any sources',
+      descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
+      popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,
+      therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
+      costs: -1,
+      isUnstable: true,
+      videoUrl: '',
+      features: [
+        'Seed Events from Websites',
+        'Source Localization',
+        'Self-Hosting or SaaS'
+      ],
+      localSetup: ``,
+    },
+    {
+      id: 'pageChangeTracker',
+      product: GqlProductName.PageChangeTracker,
+      title: 'Page Change Tracker',
+      titleHtml: '<strong>Page</strong><em>Change</em>',
+      pageTitle: 'Page Change Tracker',
+      subtitle: 'Track any change of a website',
       summary: 'Searchable geo-located events sources from any sources',
       descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
       popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,

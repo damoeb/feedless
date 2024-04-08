@@ -1,12 +1,13 @@
 package org.migor.feedless.data.jpa.models
 
-import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
@@ -14,7 +15,6 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.Plan
 import java.util.*
 
@@ -39,36 +39,27 @@ enum class PlanName {
   name = "t_plan", uniqueConstraints = [
     UniqueConstraint(
       name = "UniquePlanNamePerProduct",
-      columnNames = [StandardJpaFields.name, StandardJpaFields.product]
+      columnNames = [StandardJpaFields.name, StandardJpaFields.productId]
     )]
 )
 open class PlanEntity : EntityWithUUID() {
 
-  @Basic
   @Column(nullable = false, name = StandardJpaFields.name, length = 50)
-  @Enumerated(EnumType.STRING)
-  open lateinit var name: PlanName
+//  @Enumerated(EnumType.STRING)
+  open lateinit var name: String
 
-  @Basic
-  @Column(nullable = false, name = StandardJpaFields.product, length = 50)
-  @Enumerated(EnumType.STRING)
-  open lateinit var product: ProductName
+//  @Column(nullable = false, name = StandardJpaFields.product, length = 50)
+//  @Enumerated(EnumType.STRING)
+//  open lateinit var product: ProductName
 
-  @Basic
   @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var availability: PlanAvailability
 
-  @Basic
   @Column(nullable = false)
   open var currentCosts: Double = 0.0
 
-  @Basic
   open var beforeCosts: Double? = null
-
-  @Basic
-  @Column(nullable = false)
-  open var primaryPlan: Boolean = false
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id")
 //  @JoinTable(
@@ -86,7 +77,33 @@ open class PlanEntity : EntityWithUUID() {
 //    ]
 //  )
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  open var features: MutableList<FeatureEntity> = mutableListOf()
+  open var features: MutableList<FeatureValueEntity> = mutableListOf()
+
+  @Column(name = "parent_plan_id", nullable = true)
+  open var parentPlanId: UUID? = null
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
+  @JoinColumn(
+    name = "parent_plan_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false
+  )
+  open var parentPlan: PlanEntity? = null
+
+  @Column(name = StandardJpaFields.productId, nullable = false)
+  open lateinit var productId: UUID
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
+  @JoinColumn(
+    name = StandardJpaFields.productId,
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false
+  )
+  open var product: ProductEntity? = null
 }
 
 fun PlanEntity.toDto(): Plan {
@@ -94,10 +111,9 @@ fun PlanEntity.toDto(): Plan {
     .id(id.toString())
     .currentCosts(currentCosts)
     .beforeCosts(beforeCosts)
-    .name(name.toDto())
+//    .name(name)
     .availability(availability.toDto())
-    .isPrimary(primaryPlan)
-    .features(features.map { it.toDto() })
+//    .features(features.map { it.toDto() })
     .build()
 }
 
