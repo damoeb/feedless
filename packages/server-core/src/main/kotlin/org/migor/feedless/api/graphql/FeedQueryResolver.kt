@@ -13,7 +13,7 @@ import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.service.FeedParserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
@@ -28,7 +28,7 @@ class FeedQueryResolver {
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var scrapeService: ScrapeService
+  lateinit var feedParserService: FeedParserService
 
   @Throttled
   @DgsQuery
@@ -39,7 +39,7 @@ class FeedQueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] remoteNativeFeed $data")
-    scrapeService.scrapeFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
+    feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
   }
 
   @Throttled
@@ -51,7 +51,7 @@ class FeedQueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] previewFeed $data")
-    scrapeService.scrapeFeedFromRequest(corrId, data.requests.map { it.fromDto() }, data.filters)
+    feedParserService.parseFeedFromRequest(corrId, data.requests.map { it.fromDto() }, data.filters)
   }
 }
 

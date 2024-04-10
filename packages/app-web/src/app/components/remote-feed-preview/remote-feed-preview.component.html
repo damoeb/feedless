@@ -1,0 +1,42 @@
+<div class="flex__row">
+  <div class="flex__column">
+    <ng-content></ng-content>
+  </div>
+  <div style="display: flex; flex-direction: column; flex: 1">
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          Feed Preview
+          <ion-note *ngIf="previewFeed"
+          >({{ previewFeed.items?.length }})</ion-note
+          >
+          <ion-note class="ion-margin-horizontal"
+          >(Plugins are not applied in Preview)</ion-note
+          >
+        </ion-label>
+      </ion-item>
+      <ion-progress-bar
+        *ngIf="busy || !previewFeed"
+        color="medium"
+        type="indeterminate"
+      ></ion-progress-bar>
+    </ion-list>
+    <div
+      style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
+    >
+      <ion-list
+        *ngIf="previewFeed"
+        style="position: absolute; width: 100vw; opacity: 0.6"
+      >
+        <ion-item *ngIf="previewFeed.items.length === 0">
+          <ion-label>Feed is empty</ion-label>
+        </ion-item>
+        <app-remote-feed-item
+          *ngFor="let item of previewFeed.items; let feedIndex = index"
+          [feedItem]="item"
+          [feedItemIndex]="feedIndex + 1"
+        ></app-remote-feed-item>
+      </ion-list>
+    </div>
+  </div>
+</div>

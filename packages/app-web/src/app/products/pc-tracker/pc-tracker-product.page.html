@@ -1,0 +1,77 @@
+<ion-header [translucent]="true">
+  <app-trial-warning></app-trial-warning>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <div class="title">
+      <div
+        class="ion-padding-start"
+        routerLink="/"
+        style="cursor: pointer"
+      >
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </div>
+    </div>
+
+    <ion-buttons slot="end">
+      <ng-container *ngIf="serverSettings.isSelfHosted()">
+        <ion-button
+          href="https://discord.gg/6ySGeryD"
+          target="_blank"
+        >
+          Community
+        </ion-button>
+        <ion-button
+          *ngIf="serverSettings.isSelfHosted()"
+          target="_blank"
+          href="https://gihub.com/damoeb/rss-proxy"
+        >
+          <ion-icon name="logo-github" slot="start"></ion-icon>
+          Documentation
+        </ion-button>
+        <ion-button
+          fill="solid"
+          color="primary"
+          (click)="openCreateTrackerModal()"
+        >
+          Create Tracker
+        </ion-button>
+      </ng-container>
+      <app-dark-mode-button></app-dark-mode-button>
+      <ion-button *ngIf="!serverSettings.isSelfHosted()" routerLink="/plans">
+        Pricing
+      </ion-button>
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>
+
+<ion-footer>
+  <div class="ion-text-right">
+    <ion-chip>v.{{serverSettings.getVersion()}}</ion-chip>
+    <ng-container *ngIf="serverSettings.isSelfHosted() && license">
+      <ion-chip *ngIf="license.isValid && !license.isTrial"
+        >Open Source Apache 2</ion-chip
+      >
+      <ion-chip
+        *ngIf="license.isValid && license.isTrial && !license.isLocated"
+        color="primary"
+        routerLink="/license"
+        >Trial</ion-chip
+      >
+      <ion-chip
+        *ngIf="license.isValid && license.isLocated"
+        color="dark"
+        routerLink="/license"
+      >
+        {{ license.data.name }}
+      </ion-chip>
+    </ng-container>
+  </div>
+</ion-footer>

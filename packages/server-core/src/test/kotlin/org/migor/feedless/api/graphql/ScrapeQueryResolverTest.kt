@@ -15,6 +15,7 @@ import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.UserSecretService
+import org.migor.feedless.service.UserService
 import org.migor.feedless.util.JsonUtil
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
@@ -33,7 +34,14 @@ import java.nio.file.Files
 
 @SpringBootTest
 @ActiveProfiles(profiles = ["test"])
-@MockBeans(value = [MockBean(AgentDAO::class), MockBean(UserSecretService::class), MockBean(OneTimePasswordDAO::class)])
+@MockBeans(
+  value = [
+    MockBean(AgentDAO::class),
+    MockBean(UserSecretService::class),
+    MockBean(UserService::class),
+    MockBean(OneTimePasswordDAO::class)
+  ]
+)
 class ScrapeQueryResolverTest {
 
 
@@ -74,7 +82,7 @@ class ScrapeQueryResolverTest {
     Mockito.`when`(httpServiceMock.httpGetCaching(anyString(), anyString(), anyInt(), any<Map<String, Any>>()))
       .thenReturn(httpResponse)
     val params = PluginExecutionParamsInput.newBuilder()
-      .genericFeed(
+      .org_feedless_feed(
         SelectorsInput.newBuilder()
           .contextXPath("//div[1]/div[1]/div[1]/div")
           .linkXPath("./h1[1]/a[1]")

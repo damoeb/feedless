@@ -8,7 +8,8 @@ interface FilterEntityPlugin : FeedlessPlugin {
   fun filterEntity(
     corrId: String,
     webDocument: WebDocumentEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    index: Int
   ): Boolean
 
 }

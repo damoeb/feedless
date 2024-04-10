@@ -5,13 +5,13 @@
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Builder</ion-title>
+    <ion-title>{{ modalTitle }}</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <app-feed-builder
     [hideSearchBar]="false"
-    submitButtonText="Save Feed"
+    [submitButtonText]="submitButtonText"
     [scrapeRequest]="scrapeRequest"
     (selectedFeedChanged)="handleFeed($event)"
   ></app-feed-builder>

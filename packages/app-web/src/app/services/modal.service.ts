@@ -19,6 +19,10 @@ import {
   GenerateFeedModalComponent,
   GenerateFeedModalComponentProps,
 } from '../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  TrackerEditModalComponent,
+  TrackerEditModalComponentProps
+} from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -100,6 +104,16 @@ export class ModalService {
   async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {
     const modal = await this.modalCtrl.create({
       component: GenerateFeedModalComponent,
+      cssClass: 'fullscreen-modal',
+      componentProps,
+    });
+
+    await modal.present();
+  }
+
+  async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {
+    const modal = await this.modalCtrl.create({
+      component: TrackerEditModalComponent,
       cssClass: 'fullscreen-modal',
       componentProps,
     });

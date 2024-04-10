@@ -73,7 +73,8 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   override fun filterEntity(
     corrId: String,
     webDocument: WebDocumentEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    index: Int
   ): Boolean {
     log.info("[$corrId] filter ${webDocument.url}")
 

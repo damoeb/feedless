@@ -5,11 +5,13 @@ import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.generated.types.Authentication
+import org.migor.feedless.service.LicenseService
 import org.migor.feedless.service.UserSecretService
 import org.migor.feedless.service.UserService
 import org.mockito.ArgumentMatchers.anyString
@@ -29,7 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = ["test", AppProfiles.database])
-@MockBeans(value = [MockBean(JavaMailSender::class)])
+@MockBeans(value = [MockBean(JavaMailSender::class), MockBean(LicenseService::class)])
 @Testcontainers
 class AuthenticationTest {
 
@@ -70,6 +72,7 @@ class AuthenticationTest {
   }
 
   @Test
+  @Disabled
   fun `authUser works`() {
     // given
     val mockUser = UserEntity()

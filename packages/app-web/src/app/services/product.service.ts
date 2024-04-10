@@ -104,6 +104,18 @@ export class ProductService {
       ],
     },
     {
+      id: 'pageChangeTracker',
+      routes: [
+        {
+          path: '',
+          loadChildren: () =>
+            import('../products/pc-tracker/pc-tracker-product.module').then(
+              (m) => m.PcTrackerProductModule,
+            ),
+        },
+      ],
+    },
+    {
       id: 'rss-proxy',
       sideMenu: {
         width: 200,

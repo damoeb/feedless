@@ -193,6 +193,10 @@ export class AppTestModule {
       videoUrl: '',
       costs: 0,
       features: [],
+      summary: '',
+      isUnstable: false,
+      offlineSupport: false,
+      sideMenu: null
     };
     const productServiceMock = {
       getActiveProductConfigChange: () => new BehaviorSubject(productConfig),
@@ -247,6 +251,7 @@ export function mockSourceSubscription(
         createdAt: 0,
         updatedAt: new Date(),
         retention: {},
+        documentCountSinceCreation: 0
       };
       return {
         data: {

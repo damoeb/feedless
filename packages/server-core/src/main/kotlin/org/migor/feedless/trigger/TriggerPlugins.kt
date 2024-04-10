@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Service
 @Profile(AppProfiles.database)
@@ -75,7 +74,7 @@ class TriggerPlugins internal constructor() {
 
           val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)
           when (plugin) {
-            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, webDocument, job.executorParams)) {
+            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, webDocument, job.executorParams, 0)) {
               omitted = true
               break
             }
@@ -111,7 +110,8 @@ class TriggerPlugins internal constructor() {
   private fun forwardToMail(corrId: String, webDocument: WebDocumentEntity, subscription: SourceSubscriptionEntity) {
     val mailForwards = mailForwardDAO.findAllBySubscriptionId(subscription.id)
     if (mailForwards.isNotEmpty()) {
-      val authorizedMailForwards = mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
+      val authorizedMailForwards =
+        mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
       if (authorizedMailForwards.isEmpty()) {
         log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
       } else {

@@ -12,7 +12,14 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
 @ActiveProfiles(profiles = ["test"])
-@MockBeans(value = [MockBean(AgentDAO::class), MockBean(UserSecretService::class)])
+@MockBeans(
+  value = [
+    MockBean(AgentDAO::class),
+    MockBean(UserSecretService::class),
+    MockBean(UserService::class),
+    MockBean(LicenseService::class)
+  ]
+)
 class TemplateServiceTest {
 
   @Autowired

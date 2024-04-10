@@ -25,12 +25,16 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.generated.types.CompositeFieldFilterParams
+import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParams
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.DiffEmailForwardParams
 import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
+import org.migor.feedless.generated.types.NumericalFilterParams
+import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -38,6 +42,8 @@ import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
+import org.migor.feedless.generated.types.StringFilterParams
+import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.springframework.context.annotation.Lazy
 import java.util.*
 
@@ -75,6 +81,16 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @Temporal(TemporalType.TIMESTAMP)
   @Column
   open var disabledFrom: Date? = null
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column
+  open var sunsetAfterTimestamp: Date? = null
+
+  @Column
+  open var sunsetAfterTotalDocumentCount: Int? = null
+
+  @Column
+  open var documentCountSinceCreation: Int = 0
 
   @Column(nullable = false)
   open var archived: Boolean = false
@@ -175,9 +191,30 @@ private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
 
 private fun CompositeFilterParamsInput.toDto(): CompositeFilterParams {
   return CompositeFilterParams.newBuilder()
+    .include(include?.toDto())
+    .exclude(exclude?.toDto())
+    .build()
+}
+
+private fun CompositeFieldFilterParamsInput.toDto(): CompositeFieldFilterParams {
+  return CompositeFieldFilterParams.newBuilder()
+    .index(index?.toDto())
+    .title(title?.toDto())
+    .content(content?.toDto())
+    .link(link?.toDto())
+    .build()
+}
+
+private fun NumericalFilterParamsInput.toDto(): NumericalFilterParams {
+  return NumericalFilterParams.newBuilder()
     .value(value)
-    .type(type)
-    .field(field)
+    .operator(operator)
+    .build()
+}
+
+private fun StringFilterParamsInput.toDto(): StringFilterParams {
+  return StringFilterParams.newBuilder()
+    .value(value)
     .operator(operator)
     .build()
 }

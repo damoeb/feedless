@@ -1,25 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
 import {
-  GqlCompositeFilterField,
+  GqlCompositeFieldFilterParamsInput,
   GqlCompositeFilterParamsInput,
-  GqlCompositeFilterType,
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
   GqlScrapePage,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility,
+  GqlVisibility
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
@@ -32,14 +25,15 @@ import { RemoteFeed, SourceSubscription } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { isDefined } from '../scrape-source-modal/scrape-builder';
 import { ArrayElement } from '../../types';
+import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 
 export interface GenerateFeedModalComponentProps {
   subscription: SourceSubscription;
 }
 
 type FilterOperator = GqlStringFilterOperator;
-type FilterField = GqlCompositeFilterField;
-type FilterType = GqlCompositeFilterType;
+type FilterField = keyof GqlCompositeFieldFilterParamsInput;
+type FilterType = keyof GqlCompositeFilterParamsInput;
 
 interface FilterData {
   type: FilterType;
@@ -121,17 +115,22 @@ export class GenerateFeedModalComponent
   @Input({ required: true })
   subscription: SourceSubscription;
 
+  @ViewChild('remoteFeedPreviewComponent', {static: true})
+  remoteFeedPreview: RemoteFeedPreviewComponent
+
   loading = false;
   errorMessage: string;
   isLoggedIn: boolean;
   filterChanges = new ReplaySubject<void>();
-  previewFeed: RemoteFeed;
 
   protected readonly dateFormat = dateFormat;
   protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
-  protected readonly GqlCompositeFilterField = GqlCompositeFilterField;
-  protected readonly GqlCompositeFilterType = GqlCompositeFilterType;
   showRetention: boolean;
+  protected FilterTypeInclude: FilterType = 'include';
+  protected FilterTypeExclude: FilterType = 'exclude';
+  protected FilterFieldLink: FilterField = 'link';
+  protected FilterFieldTitle: FilterField = 'title';
+  protected FilterFieldContent: FilterField = 'content';
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -154,10 +153,10 @@ export class GenerateFeedModalComponent
     }
 
     const filter = new FormGroup({
-      type: new FormControl<FilterType>(GqlCompositeFilterType.Exclude, [
+      type: new FormControl<FilterType>('exclude', [
         Validators.required,
       ]),
-      field: new FormControl<FilterField>(GqlCompositeFilterField.Title, [
+      field: new FormControl<FilterField>('title', [
         Validators.required,
       ]),
       operator: new FormControl<FilterOperator>(
@@ -171,11 +170,13 @@ export class GenerateFeedModalComponent
     });
 
     if (f) {
+      const type = Object.keys(f).find(field => field != '__typename' && !!f[field]);
+      const field = Object.keys(f[type]).find(field => field != '__typename' && !!f[type][field]);
       filter.patchValue({
-        value: f.value,
-        type: f.type,
-        operator: f.operator,
-        field: f.field,
+        type: type as any,
+        field: field as any,
+        value: f[type][field].value,
+        operator: f[type][field].operator,
       });
     }
 
@@ -208,8 +209,7 @@ export class GenerateFeedModalComponent
           params: {
             org_feedless_fulltext: {
               readability: true,
-              inheritCookies: false,
-              prerender: false
+              inheritParams: true,
             },
           },
         });
@@ -224,12 +224,7 @@ export class GenerateFeedModalComponent
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
-            org_feedless_filter: this.filters.map((filter) => ({
-              field: filter.value.field,
-              value: filter.value.value,
-              type: filter.value.type,
-              operator: filter.value.operator,
-            })),
+            org_feedless_filter: this.getFilterParams(),
           },
         });
       }
@@ -297,7 +292,6 @@ export class GenerateFeedModalComponent
   }
 
   async ngOnInit(): Promise<void> {
-    console.log(this.subscription);
     this.isLoggedIn = this.profileService.isAuthenticated();
     const retention = this.subscription.retention;
     this.formFg.patchValue({
@@ -332,25 +326,25 @@ export class GenerateFeedModalComponent
   }
 
   private async loadFeedPreview() {
-    this.previewFeed = await this.feedService.previewFeed({
-      requests: this.subscription.sources as GqlScrapeRequest[],
-      filters: this.getFilterParams(),
-    });
-    this.changeRef.detectChanges();
+    await this.remoteFeedPreview.loadFeedPreview(
+      this.subscription.sources as GqlScrapeRequest[],
+      this.getFilterParams())
   }
 
   private getFilterParams(): GqlCompositeFilterParamsInput[] {
     return this.filters
       .filter((filterFg) => filterFg.valid)
       .map((filterFg) => filterFg.value)
-      .map(
+      .map<GqlCompositeFilterParamsInput>(
         (filter) =>
           ({
-            field: filter.field,
-            value: filter.value,
-            type: filter.type,
-            operator: filter.operator,
-          }) as GqlCompositeFilterParamsInput,
+            [filter.type]: {
+              [filter.field]: {
+                value: filter.value,
+                operator: filter.operator,
+              }
+            }
+          }),
       );
   }
 

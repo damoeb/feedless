@@ -1,0 +1,36 @@
+@import "../../../../mixins";
+
+ion-searchbar {
+  @include search-form();
+  //max-width: 800px;
+  border: 2px solid var(--ion-color-dark);
+  border-radius: 10px;
+}
+
+ion-item {
+  --border-radius: 10px;
+  margin-top: 10px;
+}
+
+p,
+pre {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  hyphens: auto;
+}
+
+pre {
+  font-size: 0.9rem;
+}
+
+p,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--app-foreground-rgb), 0.7);
+  //text-align: justify;
+}

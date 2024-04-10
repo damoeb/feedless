@@ -1,3 +1,22 @@
+fragment StringFilterParamsFragment on StringFilterParams {
+  operator
+  value
+}
+fragment CompositeFieldFilterParamsFragment on CompositeFieldFilterParams {
+  index {
+    operator
+    value
+  }
+  title {
+    ...StringFilterParamsFragment
+  }
+  content {
+    ...StringFilterParamsFragment
+  }
+  link {
+    ...StringFilterParamsFragment
+  }
+}
 fragment SelectorsFragment on Selectors {
   contextXPath
   linkXPath
@@ -38,15 +57,16 @@ fragment SourceSubscriptionFragment on SourceSubscription {
         nextItemMinIncrement
       }
       org_feedless_filter {
-        type
-        value
-        field
-        operator
+        exclude {
+          ...CompositeFieldFilterParamsFragment
+        }
+        include {
+          ...CompositeFieldFilterParamsFragment
+        }
       }
       org_feedless_fulltext {
         readability
-        prerender
-        inheritCookies
+        inheritParams
       }
       jsonData
     }

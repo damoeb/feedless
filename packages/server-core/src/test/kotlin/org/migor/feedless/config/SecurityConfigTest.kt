@@ -8,6 +8,7 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.repositories.AgentDAO
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.feedless.service.UserSecretService
+import org.migor.feedless.service.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
@@ -25,7 +26,14 @@ const val actuatorPassword = "password"
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = ["app.actuatorPassword=$actuatorPassword"],
 )
-@MockBeans(value = [MockBean(AgentDAO::class), MockBean(UserSecretService::class), MockBean(OneTimePasswordDAO::class)])
+@MockBeans(
+  value = [
+    MockBean(AgentDAO::class),
+    MockBean(UserSecretService::class),
+    MockBean(UserService::class),
+    MockBean(OneTimePasswordDAO::class)
+  ]
+)
 @ActiveProfiles(profiles = ["test", "metrics"])
 //@TestPropertySource(locations= ["classpath:application-test.properties"])
 class SecurityConfigTest {

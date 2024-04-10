@@ -4,17 +4,19 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.generated.types.CompositeFilterField
+import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
-import org.migor.feedless.generated.types.CompositeFilterType
+import org.migor.feedless.generated.types.NumberFilterOperator
+import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
+import org.migor.feedless.generated.types.StringFilterParamsInput
 
 class CompositeFilterPluginTest {
 
   private lateinit var webDocument: WebDocumentEntity
   private lateinit var service: CompositeFilterPlugin
-  val corrId = "-"
+  private val corrId = "-"
 
   @BeforeEach
   fun setUp() {
@@ -28,45 +30,81 @@ class CompositeFilterPluginTest {
   @Test
   fun noFilterWorks() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
-      .filters(listOf())
+      .org_feedless_filter(listOf())
       .build()
-    val keep = service.filterEntity(corrId, webDocument, filterParams)
+    val keep = service.filterEntity(corrId, webDocument, filterParams, 0)
     assertThat(keep).isTrue()
   }
 
   @Test
-  fun includeFilterWorks() {
+  fun includeNumberFilterWorks() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
-      .filters(
+      .org_feedless_filter(
         listOf(
           CompositeFilterParamsInput.newBuilder()
-            .type(CompositeFilterType.include)
-            .field(CompositeFilterField.title)
-            .operator(StringFilterOperator.startsWidth)
-            .value("foo")
+            .include(
+              CompositeFieldFilterParamsInput.newBuilder()
+                .index(
+                  NumericalFilterParamsInput.newBuilder()
+                    .operator(NumberFilterOperator.eq)
+                    .value(0)
+                    .build()
+                )
+                .build()
+            )
             .build()
         )
       )
       .build()
 
-    assertThat(service.filterEntity(corrId, webDocument, filterParams)).isTrue()
+    assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isTrue()
   }
 
   @Test
-  fun excludeFilterWorks() {
+  fun includeStringFilterWorks() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
-      .filters(
+      .org_feedless_filter(
         listOf(
           CompositeFilterParamsInput.newBuilder()
-            .type(CompositeFilterType.exclude)
-            .field(CompositeFilterField.title)
-            .operator(StringFilterOperator.startsWidth)
-            .value("foo")
+            .include(
+              CompositeFieldFilterParamsInput.newBuilder()
+                .title(
+                  StringFilterParamsInput.newBuilder()
+                    .operator(StringFilterOperator.startsWidth)
+                    .value("foo")
+                    .build()
+                )
+                .build()
+            )
             .build()
         )
       )
       .build()
 
-    assertThat(service.filterEntity(corrId, webDocument, filterParams)).isFalse()
+    assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isTrue()
+  }
+
+  @Test
+  fun excludeStringFilterWorks() {
+    val filterParams = PluginExecutionParamsInput.newBuilder()
+      .org_feedless_filter(
+        listOf(
+          CompositeFilterParamsInput.newBuilder()
+            .exclude(
+              CompositeFieldFilterParamsInput.newBuilder()
+                .title(
+                  StringFilterParamsInput.newBuilder()
+                    .operator(StringFilterOperator.startsWidth)
+                    .value("foo")
+                    .build()
+                )
+                .build()
+            )
+            .build()
+        )
+      )
+      .build()
+
+    assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isFalse()
   }
 }

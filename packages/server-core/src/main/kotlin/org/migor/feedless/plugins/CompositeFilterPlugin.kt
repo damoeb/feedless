@@ -1,12 +1,13 @@
 package org.migor.feedless.plugins
 
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.generated.types.CompositeFilterField
-import org.migor.feedless.generated.types.CompositeFilterParamsInput
-import org.migor.feedless.generated.types.CompositeFilterType
+import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.NumberFilterOperator
+import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
+import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -22,22 +23,41 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun filterEntity(
     corrId: String,
     webDocument: WebDocumentEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    index: Int
   ): Boolean {
     log.info("[$corrId] filter ${webDocument.url}")
-    return params.org_feedless_filter?.let {
-      it.all {
-        when (it.type!!) {
-          CompositeFilterType.include -> matches(webDocument, it)
-          CompositeFilterType.exclude -> !matches(webDocument, it)
-        }
+    return params.org_feedless_filter?.let { plugins ->
+      plugins.all { plugin ->
+        plugin.exclude?.let { !matches(webDocument, it, index) } ?: true
+          && plugin.include?.let { matches(webDocument, it, index) } ?: true
       }
-
     } ?: true
   }
 
-  private fun matches(it: WebDocumentEntity, filterParams: CompositeFilterParamsInput): Boolean {
-    val fieldValue = it.get(filterParams.field).trim()
+  private fun matches(
+    webDocument: WebDocumentEntity,
+    filterParams: CompositeFieldFilterParamsInput,
+    index: Int
+  ): Boolean {
+    return arrayOf(
+      filterParams.content?.let { applyStringOperation(webDocument.contentText!!.trim(), it) },
+      filterParams.title?.let { applyStringOperation(webDocument.contentTitle!!.trim(), it) },
+      filterParams.link?.let { applyStringOperation(webDocument.url, it) },
+      filterParams.index?.let { applyNumberOperation(index, it) },
+    ).filterNotNull()
+      .all { it }
+  }
+
+  private fun applyNumberOperation(index: Int, filterParams: NumericalFilterParamsInput): Boolean {
+    return when (filterParams.operator!!) {
+      NumberFilterOperator.eq -> index == filterParams.value
+      NumberFilterOperator.gt -> index > filterParams.value
+      NumberFilterOperator.lt -> index < filterParams.value
+    }
+  }
+
+  private fun applyStringOperation(fieldValue: String, filterParams: StringFilterParamsInput): Boolean {
     val value = filterParams.value
     return when (filterParams.operator!!) {
       StringFilterOperator.startsWidth -> fieldValue.startsWith(value, true)
@@ -45,13 +65,5 @@ class CompositeFilterPlugin : FilterEntityPlugin {
       StringFilterOperator.matches -> fieldValue.matches(Regex(value))
       StringFilterOperator.endsWith -> fieldValue.endsWith(value, true)
     }
-  }
-}
-
-private fun WebDocumentEntity.get(field: CompositeFilterField): String {
-  return when (field) {
-    CompositeFilterField.title -> contentTitle!!
-    CompositeFilterField.content -> contentText!!
-    CompositeFilterField.link -> url
   }
 }

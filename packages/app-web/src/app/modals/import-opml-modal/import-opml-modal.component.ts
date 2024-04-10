@@ -54,8 +54,7 @@ export class ImportOpmlModalComponent
         params: {
           org_feedless_fulltext: {
             readability: true,
-            inheritCookies: false,
-            prerender: false
+            inheritParams: false
           }
         }
       });
@@ -69,7 +68,8 @@ export class ImportOpmlModalComponent
     }
 
     await this.sourceSubscriptionService.createSubscriptions({
-      subscriptions: this.fcOutlines.filter(outline => outline.fc.value).map(fc => ({
+      subscriptions: this.fcOutlines.filter(outline => outline.fc.value)
+        .map(fc => ({
           product: GqlProductName.RssBuilder,
           sources: [
             {

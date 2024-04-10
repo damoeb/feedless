@@ -28,260 +28,213 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div class="flex__row">
-    <div class="flex__column">
-      <ion-list>
-        <ion-item>
-          <ion-label>Feed Title</ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-input
-            [formControl]="formFg.controls.title"
-            fill="outline"
-            placeholder="Type a title"
-            aria-label="Title"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>Description (optional)</ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-textarea
-            [autoGrow]="true"
-            rows="3"
-            fill="outline"
-            placeholder="#tags, urls,..."
-            [formControl]="formFg.controls.description"
-            aria-label="Describe the feed with #tags and urls"
-          ></ion-textarea>
-        </ion-item>
-        <ion-item>
-          <ion-label>Fetch Frequency</ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-select
-            [formControl]="formFg.controls.fetchFrequency"
-            fill="outline"
-            interface="popover"
-          >
-            <ion-select-option disabled value="0 */15 * * * *"
-              >Every 15 min
-            </ion-select-option>
-            <ion-select-option disabled value="0 */30 * * * *"
-              >Every 30 min
-            </ion-select-option>
-            <ion-select-option disabled value="0 0 * * * *"
-              >Every hour
-            </ion-select-option>
-            <ion-select-option disabled value="0 0 */8 * * *"
-              >Every 6 hours
-            </ion-select-option>
-            <ion-select-option disabled value="0 0 */12 * * *"
-              >Every 12 hours
-            </ion-select-option>
-            <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
-            <ion-select-option value="0 0 0 * * 0"
-              >Every Week</ion-select-option
-            >
-          </ion-select>
-        </ion-item>
-      </ion-list>
-
-      <ion-list class="filters">
-        <ion-item>
-          <ion-label>
-            Filters
-            <a
-              (click)="addFilter()"
-              *ngIf="filters.length < 4"
-              href="javascript:void(0)"
-            >
-              Add Filter
-            </a>
-          </ion-label>
-        </ion-item>
-
-        <div
-          *ngFor="let filter of filters; let i = index"
-          class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
+  <app-remote-feed-preview #remoteFeedPreviewComponent>
+    <ion-list>
+      <ion-item>
+        <ion-label>Feed Title</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="formFg.controls.title"
+          fill="outline"
+          placeholder="Type a title"
+          aria-label="Title"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Description (optional)</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-textarea
+          [autoGrow]="true"
+          rows="3"
+          fill="outline"
+          placeholder="#tags, urls,..."
+          [formControl]="formFg.controls.description"
+          aria-label="Describe the feed with #tags and urls"
+        ></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-label>Fetch Frequency</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-select
+          [formControl]="formFg.controls.fetchFrequency"
+          fill="outline"
+          interface="popover"
         >
-          <ion-select
-            [formControl]="filter.controls.type"
-            fill="outline"
-            interface="popover"
+          <ion-select-option disabled value="0 */15 * * * *"
+          >Every 15 min
+          </ion-select-option>
+          <ion-select-option disabled value="0 */30 * * * *"
+          >Every 30 min
+          </ion-select-option>
+          <ion-select-option disabled value="0 0 * * * *"
+          >Every hour
+          </ion-select-option>
+          <ion-select-option disabled value="0 0 */8 * * *"
+          >Every 6 hours
+          </ion-select-option>
+          <ion-select-option disabled value="0 0 */12 * * *"
+          >Every 12 hours
+          </ion-select-option>
+          <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
+          <ion-select-option value="0 0 0 * * 0"
+          >Every Week</ion-select-option
           >
-            <ion-select-option [value]="GqlCompositeFilterType.Include"
-              >include</ion-select-option
-            >
-            <ion-select-option [value]="GqlCompositeFilterType.Exclude"
-              >exclude</ion-select-option
-            >
-          </ion-select>
-          <ion-text class="ion-padding-end"> if </ion-text>
-          <ion-select
-            [formControl]="filter.controls.field"
-            fill="outline"
-            interface="popover"
-          >
-            <ion-select-option [value]="GqlCompositeFilterField.Link"
-              >link</ion-select-option
-            >
-            <ion-select-option [value]="GqlCompositeFilterField.Title"
-              >title</ion-select-option
-            >
-            <ion-select-option [value]="GqlCompositeFilterField.Content"
-              >content</ion-select-option
-            >
-          </ion-select>
-          <ion-select
-            [formControl]="filter.controls.operator"
-            fill="outline"
-            interface="popover"
-          >
-            <ion-select-option [value]="GqlStringFilterOperator.Contains"
-              >contains</ion-select-option
-            >
-            <ion-select-option [value]="GqlStringFilterOperator.Matches"
-              >matches</ion-select-option
-            >
-            <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-              >starts with</ion-select-option
-            >
-            <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-              >ends with</ion-select-option
-            >
-          </ion-select>
-          <ion-input
-            [formControl]="filter.controls.value"
-            placeholder="Type a value"
-            fill="outline"
-          ></ion-input>
+        </ion-select>
+      </ion-item>
+    </ion-list>
 
-          <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-list>
-
-      <ion-list>
-        <ion-item>
-          <ion-label>
-            Retention Strategy
-            <a
-              (click)="showRetention = !showRetention"
-              *ngIf="!showRetention"
-              href="javascript:void(0)"
-            >
-              Customize
-            </a>
-          </ion-label>
-        </ion-item>
-        <ion-item *ngIf="showRetention">
-          <ion-input
-            label="Delete after days"
-            labelPlacement="start"
-            fill="outline"
-            [formControl]="formFg.controls.maxAgeDays"
-            [clearInput]="true"
-            placeholder="<Auto>"
-          ></ion-input>
-        </ion-item>
-        <ion-item *ngIf="showRetention">
-          <ion-input
-            label="Keep max items"
-            labelPlacement="start"
-            fill="outline"
-            [formControl]="formFg.controls.maxItems"
-            [clearInput]="true"
-            placeholder="<Auto>"
-          ></ion-input>
-        </ion-item>
-      </ion-list>
-
-      <ion-list>
-        <ion-item>
-          <ion-label>Plugins</ion-label>
-        </ion-item>
-
-        <ion-item>
-          <ion-checkbox
-            labelPlacement="end"
-            justify="start"
-            [formControl]="formFg.controls.applyFulltextPlugin"
+    <ion-list class="filters">
+      <ion-item>
+        <ion-label>
+          Filters
+          <a
+            (click)="addFilter()"
+            *ngIf="filters.length === 0"
+            href="javascript:void(0)"
           >
-            Fulltext
-            <ion-note class="ion-padding-horizontal"
-              >Fetch Fulltext for every Item (static only)</ion-note
-            >
-          </ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-checkbox
-            labelPlacement="end"
-            justify="start"
-            [formControl]="formFg.controls.applyPrivacyPlugin"
-          >
-            Privacy & Robustness
-            <ion-note class="ion-padding-horizontal"
-              >Inlines images (base64) and unwinds tracking urls</ion-note
-            >
-          </ion-checkbox>
-        </ion-item>
-      </ion-list>
-    </div>
-    <div style="display: flex; flex-direction: column; flex: 1">
-      <ion-list>
-        <ion-item>
-          <ion-label>
-            Feed Preview
-            <ion-note *ngIf="previewFeed"
-              >({{ previewFeed.items?.length }})</ion-note
-            >
-            <ion-note class="ion-margin-horizontal"
-              >(Plugins are not applied in Preview)</ion-note
-            >
-          </ion-label>
-        </ion-item>
-      </ion-list>
+            Add Filter
+          </a>
+        </ion-label>
+      </ion-item>
+
       <div
-        style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
+        *ngFor="let filter of filters; let i = index"
+        class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
       >
-        <ion-spinner name="dots" *ngIf="!previewFeed"></ion-spinner>
-        <ion-list
-          *ngIf="previewFeed"
-          style="position: absolute; width: 100vw; opacity: 0.6"
+        <ion-select
+          [formControl]="filter.controls.type"
+          fill="outline"
+          interface="popover"
         >
-          <ion-item *ngIf="previewFeed.items.length === 0">
-            <ion-label>Feed is empty</ion-label>
-          </ion-item>
-          <app-remote-feed-item
-            *ngFor="let item of previewFeed.items; let feedIndex = index"
-            [feedItem]="item"
-            [feedItemIndex]="feedIndex + 1"
-          ></app-remote-feed-item>
-        </ion-list>
+          <ion-select-option [value]="FilterTypeInclude"
+          >include</ion-select-option
+          >
+          <ion-select-option [value]="FilterTypeExclude"
+          >exclude</ion-select-option
+          >
+        </ion-select>
+        <ion-text class="ion-padding-end"> if </ion-text>
+        <ion-select
+          [formControl]="filter.controls.field"
+          fill="outline"
+          interface="popover"
+        >
+          <ion-select-option [value]="FilterFieldLink"
+          >link</ion-select-option
+          >
+          <ion-select-option [value]="FilterFieldTitle"
+          >title</ion-select-option
+          >
+          <ion-select-option [value]="FilterFieldContent"
+          >content</ion-select-option
+          >
+        </ion-select>
+        <ion-select
+          [formControl]="filter.controls.operator"
+          fill="outline"
+          interface="popover"
+        >
+          <ion-select-option [value]="GqlStringFilterOperator.Contains"
+          >contains</ion-select-option
+          >
+          <ion-select-option [value]="GqlStringFilterOperator.Matches"
+          >matches</ion-select-option
+          >
+          <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
+          >starts with</ion-select-option
+          >
+          <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+          >ends with</ion-select-option
+          >
+        </ion-select>
+        <ion-input
+          [formControl]="filter.controls.value"
+          placeholder="Type a value"
+          fill="outline"
+        ></ion-input>
+
+        <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
       </div>
-    </div>
-  </div>
+      <div class="ion-padding-start">
+        <a
+          (click)="addFilter()"
+          *ngIf="filters.length > 0 && filters.length < 4"
+          href="javascript:void(0)"
+        >
+          Add Filter
+        </a>
+      </div>
+    </ion-list>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          Retention Strategy
+          <a
+            (click)="showRetention = !showRetention"
+            *ngIf="!showRetention"
+            href="javascript:void(0)"
+          >
+            Customize
+          </a>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="showRetention">
+        <ion-input
+          label="Delete after days"
+          labelPlacement="start"
+          fill="outline"
+          [formControl]="formFg.controls.maxAgeDays"
+          [clearInput]="true"
+          placeholder="<Auto>"
+        ></ion-input>
+      </ion-item>
+      <ion-item *ngIf="showRetention">
+        <ion-input
+          label="Keep max items"
+          labelPlacement="start"
+          fill="outline"
+          [formControl]="formFg.controls.maxItems"
+          [clearInput]="true"
+          placeholder="<Auto>"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>Plugins</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          justify="start"
+          [formControl]="formFg.controls.applyFulltextPlugin"
+        >
+          Fulltext
+          <ion-note class="ion-padding-horizontal"
+          >Fetch Fulltext for every Item (static only)</ion-note
+          >
+        </ion-checkbox>
+      </ion-item>
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          justify="start"
+          [formControl]="formFg.controls.applyPrivacyPlugin"
+        >
+          Privacy & Robustness
+          <ion-note class="ion-padding-horizontal"
+          >Inlines images (base64) and unwinds tracking urls</ion-note
+          >
+        </ion-checkbox>
+      </ion-item>
+    </ion-list>
+  </app-remote-feed-preview>
 </ion-content>
-<!--<ion-footer style="box-shadow: 0px -16px 18px 3px var(&#45;&#45;ion-item-background)">-->
-<!--  <ion-list-->
-<!--    class="ion-no-margin ion-no-padding"-->
-<!--    style="background: transparent"-->
-<!--  >-->
-<!--    <ion-item *ngIf="errorMessage" style="&#45;&#45;background: transparent">-->
-<!--      <ion-label color="danger"-->
-<!--        ><strong>{{ errorMessage }}</strong></ion-label-->
-<!--      >-->
-<!--    </ion-item>-->
-<!--    <ion-item *ngIf="!isLoggedIn && !serverSettings.isSelfHosted()">-->
-<!--      <ion-label-->
-<!--        >You can create a limited trial feed without signing up.</ion-label-->
-<!--      >-->
-<!--    </ion-item>-->
-<!--    <ion-item color="danger" *ngIf="loading">-->
-<!--      <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>-->
-<!--      Cancel-->
-<!--    </ion-item>-->
-<!--  </ion-list>-->
-<!--</ion-footer>-->

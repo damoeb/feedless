@@ -37,7 +37,6 @@ class QueryResolverTest {
             query {
                 profile {
                     isAnonymous
-                    dateFormat
                     userId
                 }
             }
