@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutPcTrackerPage } from './about-pc-tracker.page';
-import { ApolloMockController, AppTestModule, mockServerSettings } from '../../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../../app-test.module';
 import { AboutPcTrackerModule } from './about-pc-tracker.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';

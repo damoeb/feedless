@@ -4,8 +4,9 @@ import { LicensePage } from './license.page';
 import { LicensePageModule } from './license.module';
 import {
   ApolloMockController,
-  AppTestModule, mockLicense,
-  mockServerSettings
+  AppTestModule,
+  mockLicense,
+  mockServerSettings,
 } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerSettingsService } from '../../services/server-settings.service';
@@ -19,7 +20,7 @@ describe('LicencePage', () => {
     await TestBed.configureTestingModule({
       imports: [
         LicensePageModule,
-        AppTestModule.withDefaults(apolloMockController => {
+        AppTestModule.withDefaults((apolloMockController) => {
           mockLicense(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),

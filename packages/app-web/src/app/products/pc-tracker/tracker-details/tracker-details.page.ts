@@ -6,31 +6,11 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
-import { WebDocumentService } from '../../../services/web-document.service';
-import {
-  FeedlessPlugin,
-  SourceSubscription,
-  SubscriptionSource,
-  WebDocument,
-} from '../../../graphql/types';
-import { DomSanitizer } from '@angular/platform-browser';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
-import { dateFormat, dateTimeFormat } from '../../../services/session.service';
+import { ActivatedRoute } from '@angular/router';
+import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { ServerSettingsService } from '../../../services/server-settings.service';
-import { ModalService } from '../../../services/modal.service';
-import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
-import { GqlScrapeRequest } from '../../../../generated/graphql';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalController } from '@ionic/angular';
-import { BubbleColor } from '../../../components/bubble/bubble.component';
-import { ArrayElement } from '../../../types';
-import { PluginService } from '../../../services/plugin.service';
 
 @Component({
   selector: 'app-tracker-details-page',

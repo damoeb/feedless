@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { VisualDiffProductPage } from './visual-diff-product.page';
-import { ProductService } from '../../services/product.service';
 import { VisualDiffMenuComponent } from './visual-diff-menu/visual-diff-menu.component';
+import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
@@ -53,7 +53,7 @@ const routes: Routes = [
             (m) => m.SubscriptionDetailsPageModule,
           ),
       },
-      ...ProductService.defaultRoutes,
+      ...DefaultRoutes,
       {
         path: '**',
         redirectTo: '/',

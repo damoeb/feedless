@@ -14,7 +14,7 @@
     "start": "APP_VERSION=dev nest start",
     "start:debug": "APP_VERSION=dev APP_PRERENDER_TIMEOUT_MILLIS=60000 DEBUG=true nest start --debug",
     "start:prod": "APP_VERSION=prod node dist/main",
-    "lint": "prettier -w .",
+    "lint": "prettier --write --log-level=warn .",
     "clean": "rimraf dist",
     "test": "jest",
     "outdated": "upgrade-interactive --latest",

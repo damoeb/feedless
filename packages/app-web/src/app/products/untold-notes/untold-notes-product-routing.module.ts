@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { UntoldNotesProductPage } from './untold-notes-product.page';
-import { ProductService } from '../../services/product.service';
 import { UntoldNotesMenuComponent } from './untold-notes-menu/untold-notes-menu.component';
+import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
@@ -31,7 +31,7 @@ const routes: Routes = [
         (m) => m.NotebookDetailsPageModule,
       ),
   },
-  ...ProductService.defaultRoutes,
+  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

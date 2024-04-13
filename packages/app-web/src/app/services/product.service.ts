@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Router, Routes } from '@angular/router';
-import { AuthGuardService } from '../guards/auth-guard.service';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
 import { GqlProductName } from '../../generated/graphql';
@@ -29,51 +28,6 @@ export type ProductRoutesConfig = {
   providedIn: 'root',
 })
 export class ProductService {
-  public static readonly defaultRoutes: Routes = [
-    {
-      path: 'login',
-      loadChildren: () =>
-        import('../pages/login/login.module').then(
-          (m) => m.EmailLoginPageModule,
-        ),
-    },
-    {
-      path: 'contact',
-      loadChildren: () =>
-        import('../pages/contact/contact.module').then(
-          (m) => m.ContactPageModule,
-        ),
-    },
-    {
-      path: 'join',
-      data: { title: 'Wait List' },
-      loadChildren: () =>
-        import('../pages/wait-list/wait-list-page.module').then(
-          (m) => m.WaitListPageModule,
-        ),
-    },
-    {
-      path: 'profile',
-      canActivate: [AuthGuardService],
-      loadChildren: () =>
-        import('../pages/profile/profile.module').then(
-          (m) => m.ProfilePageModule,
-        ),
-    },
-    {
-      path: 'terms',
-      loadChildren: () =>
-        import('../pages/terms/terms.module').then((m) => m.TermsPageModule),
-    },
-    {
-      path: 'privacy',
-      loadChildren: () =>
-        import('../pages/privacy/privacy.module').then(
-          (m) => m.PrivacyPageModule,
-        ),
-    },
-  ];
-
   private productRoutes: ProductRoutesConfig[] = [
     {
       id: 'reader',
@@ -204,7 +158,7 @@ export class ProductService {
     return this.activeProductConfig.asObservable();
   }
 
-  async getProductConfigs(): Promise<ProductConfig[]> {
+  getProductConfigs(): Promise<ProductConfig[]> {
     return Promise.all(
       feedlessConfig.apps.map(async (meta) => {
         const ui = this.productRoutes.find((p) => meta.id === p.id);

@@ -4,6 +4,7 @@ import { BuyPage } from './buy.page';
 import { ProductsPageModule } from './buy.module';
 import { AppTestModule, mockPlans } from '../../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ProductService } from '../../../services/product.service';
 
 describe('BuyPage', () => {
   let component: BuyPage;
@@ -19,6 +20,9 @@ describe('BuyPage', () => {
         RouterTestingModule.withRoutes([]),
       ],
     }).compileComponents();
+
+    const productService = TestBed.inject(ProductService);
+    productService.getProductConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(BuyPage);
     component = fixture.componentInstance;

@@ -22,8 +22,8 @@ module.exports = function (config) {
       suppressAll: true, // removes the duplicated traces
     },
     customLaunchers: {
-      ChromeHeadlessCI: {
-        base: "ChromeHeadless",
+      ChromiumHeadlessCI: {
+        base: "ChromiumHeadless",
         flags: [
           "--disable-translate",
           "--disable-extensions",
@@ -41,9 +41,9 @@ module.exports = function (config) {
     },
     reporters: ["progress"],
     port: 9876, // karma web server port
-    colors: false,
-    logLevel: config.LOG_DEBUG,
-    browsers: ["ChromeHeadlessCI"],
+    colors: true,
+    logLevel: config.LOG_INFO,
+    browsers: ["ChromiumHeadlessCI"],
     autoWatch: false,
     singleRun: true,
     watch: false,

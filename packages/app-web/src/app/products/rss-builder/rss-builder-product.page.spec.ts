@@ -1,6 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RssBuilderProductPage } from './rss-builder-product.page';
-import { ApolloMockController, AppTestModule, mockLicense, mockScrape, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockLicense,
+  mockScrape,
+  mockServerSettings,
+} from '../../app-test.module';
 import { RssBuilderProductModule } from './rss-builder-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerSettingsService } from '../../services/server-settings.service';

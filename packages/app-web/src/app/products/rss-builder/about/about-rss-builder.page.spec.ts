@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
-import { ApolloMockController, AppTestModule, mockServerSettings } from '../../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../../app-test.module';
 import { AboutRssBuilderModule } from './about-rss-builder.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';

@@ -27,44 +27,44 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Testcontainers
 class QueryResolverTest {
 
-    @Autowired
-    lateinit var dgsQueryExecutor: DgsQueryExecutor
+  @Autowired
+  lateinit var dgsQueryExecutor: DgsQueryExecutor
 
-    @Test
-    fun `fetchProfile for anonymous works`() {
-        val response = dgsQueryExecutor.executeAndExtractJsonPath<HashMap<String, Any>>(
-            """
+  @Test
+  fun `fetchProfile for anonymous works`() {
+    val response = dgsQueryExecutor.executeAndExtractJsonPath<HashMap<String, Any>>(
+      """
             query {
-                profile {
+                session {
                     isAnonymous
                     userId
                 }
             }
         """.trimIndent(),
-            "data.profile"
-        )
+      "data.session"
+    )
 
-        val profile = ObjectMapper().convertValue(response, Session::class.java)
+    val session = ObjectMapper().convertValue(response, Session::class.java)
 
-        Assertions.assertThat(profile.isAnonymous).isTrue()
-        Assertions.assertThat(profile.isLoggedIn).isFalse()
-        Assertions.assertThat(profile.userId).isBlank()
+    Assertions.assertThat(session.isAnonymous).isTrue()
+    Assertions.assertThat(session.isLoggedIn).isFalse()
+    Assertions.assertThat(session.userId).isBlank()
+  }
+
+  companion object {
+
+    @Container
+    private val postgres = PostgreSQLContainer("postgres:15")
+      .withDatabaseName("feedless")
+      .withUsername("postgres")
+      .withPassword("admin")
+
+    @JvmStatic
+    @DynamicPropertySource
+    fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
+      registry.add("spring.datasource.url") { "jdbc:tc:postgresql:15://localhost:${postgres.firstMappedPort}/${postgres.databaseName}?TC_REUSABLE=true" }
+      registry.add("spring.datasource.username", postgres::getUsername)
+      registry.add("spring.datasource.password", postgres::getPassword)
     }
-
-    companion object {
-
-        @Container
-        private val postgres = PostgreSQLContainer("postgres:15")
-            .withDatabaseName("feedless")
-            .withUsername("postgres")
-            .withPassword("admin")
-
-        @JvmStatic
-        @DynamicPropertySource
-        fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url") { "jdbc:tc:postgresql:15://localhost:${postgres.firstMappedPort}/${postgres.databaseName}?TC_REUSABLE=true" }
-            registry.add("spring.datasource.username", postgres::getUsername)
-            registry.add("spring.datasource.password", postgres::getPassword)
-        }
-    }
+  }
 }

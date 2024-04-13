@@ -109,7 +109,5 @@ export class TrackerEditModalComponent
     this.changeRef.detectChanges();
   }
 
-  createOrUpdatePageTracker() {
-
-  }
+  createOrUpdatePageTracker() {}
 }

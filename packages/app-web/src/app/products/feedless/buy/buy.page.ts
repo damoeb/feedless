@@ -53,9 +53,7 @@ export class BuyPage implements OnInit, OnDestroy {
     const productConfigs = await this.productService.getProductConfigs();
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
-        this.product = productConfigs.find(
-          (p) => p.id === params.productId,
-        );
+        this.product = productConfigs.find((p) => p.id === params.productId);
         this.changeRef.detectChanges();
       }),
     );

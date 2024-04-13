@@ -2,18 +2,34 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TrialWarningComponent } from './trial-warning.component';
 import { TrialWarningModule } from './trial-warning.module';
-import { AppTestModule, mockLicense } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockLicense,
+  mockServerSettings,
+} from '../../app-test.module';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { ApolloClient } from '@apollo/client/core';
 
 describe('TrialWarningComponent', () => {
   let component: TrialWarningComponent;
   let fixture: ComponentFixture<TrialWarningComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [TrialWarningModule, AppTestModule.withDefaults(apolloMockController => {
-        mockLicense(apolloMockController);
-      })],
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        TrialWarningModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockLicense(apolloMockController);
+        }),
+      ],
     }).compileComponents();
+
+    await mockServerSettings(
+      TestBed.inject(ApolloMockController),
+      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ApolloClient),
+    );
 
     fixture = TestBed.createComponent(TrialWarningComponent);
     component = fixture.componentInstance;

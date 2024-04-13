@@ -28,7 +28,7 @@ import { dateFormat, SessionService } from '../../services/session.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { FeedService } from '../../services/feed.service';
-import { RemoteFeed, SourceSubscription } from '../../graphql/types';
+import { SourceSubscription } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { isDefined } from '../scrape-source-modal/scrape-builder';
 import { ArrayElement } from '../../types';

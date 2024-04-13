@@ -2,8 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { PcTrackerProductPage } from './pc-tracker-product.page';
-import { ProductService } from '../../services/product.service';
-import { AuthGuardService } from '../../guards/auth-guard.service';
+import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
@@ -33,7 +32,7 @@ const routes: Routes = [
       },
     ],
   },
-  ...ProductService.defaultRoutes,
+  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

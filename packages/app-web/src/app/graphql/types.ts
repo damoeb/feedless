@@ -4,11 +4,11 @@ import {
   GqlCreateUserSecretMutation,
   GqlListPluginsQuery,
   GqlPlansQuery,
-  GqlSessionQuery,
   GqlRemoteNativeFeedQuery,
   GqlScrapedReadability,
   GqlScrapeQuery,
   GqlSelectors,
+  GqlSessionQuery,
   GqlSourceSubscriptionByIdQuery,
   GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';

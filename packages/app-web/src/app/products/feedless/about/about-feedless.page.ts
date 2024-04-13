@@ -9,8 +9,8 @@ import '@justinribeiro/lite-youtube';
 
 import { fixUrl } from '../../../app.module';
 import {
-  ProductService,
   ProductConfig,
+  ProductService,
 } from '../../../services/product.service';
 
 @Component({

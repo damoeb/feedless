@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { RssBuilderProductPage } from './rss-builder-product.page';
-import { ProductService } from '../../services/product.service';
 import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
 import { AuthGuardService } from '../../guards/auth-guard.service';
+import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
@@ -58,7 +58,7 @@ const routes: Routes = [
       },
     ],
   },
-  ...ProductService.defaultRoutes,
+  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

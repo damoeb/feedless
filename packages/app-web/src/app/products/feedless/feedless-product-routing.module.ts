@@ -2,10 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { FeedlessProductPage } from './feedless-product.page';
-import { ProductService } from '../../services/product.service';
+
+import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
-  ...ProductService.defaultRoutes,
+  ...DefaultRoutes,
   {
     path: '',
     component: FeedlessProductPage,

@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ReaderMenuComponent } from './reader-menu.component';
 import { ReaderMenuModule } from './reader-menu.module';
