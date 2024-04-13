@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ProfileService } from '../../services/profile.service';
+import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router } from '@angular/router';
 import { has } from 'lodash-es';
 import { ProductConfig, ProductService } from '../../services/product.service';
@@ -23,7 +23,7 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
   activePageTitle: string;
 
   constructor(
-    readonly profile: ProfileService,
+    readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly productService: ProductService,

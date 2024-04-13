@@ -16,7 +16,7 @@ import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.mo
     FeedsRoutingModule,
     BubbleModule,
     HistogramModule,
-    OpmlPickerModule
+    OpmlPickerModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],

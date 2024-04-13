@@ -8,7 +8,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { ProfileService } from '../../services/profile.service';
+import { SessionService } from '../../services/session.service';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
@@ -393,7 +393,7 @@ export class ScrapeSourceComponent
   private subscriptions: Subscription[] = [];
 
   constructor(
-    readonly profile: ProfileService,
+    readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
     private readonly modalService: ModalService,

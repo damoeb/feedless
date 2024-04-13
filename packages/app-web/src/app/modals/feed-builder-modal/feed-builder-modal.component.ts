@@ -5,8 +5,8 @@ import { GqlScrapeRequestInput } from '../../../generated/graphql';
 
 export interface FeedBuilderModalComponentProps {
   scrapeRequest?: GqlScrapeRequestInput;
-  modalTitle?: string
-  submitButtonText?: string
+  modalTitle?: string;
+  submitButtonText?: string;
 }
 
 @Component({
@@ -18,8 +18,8 @@ export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps
 {
   scrapeRequest: GqlScrapeRequestInput;
-  modalTitle: string = 'Builder'
-  submitButtonText="Save Feed"
+  modalTitle: string = 'Builder';
+  submitButtonText = 'Save Feed';
 
   constructor(private readonly modalCtrl: ModalController) {}
 

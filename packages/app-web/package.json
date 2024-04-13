@@ -23,7 +23,7 @@
     "build:prod": "ng build -c production",
     "test": "ng test",
     "test:ci": "#ng test -c ci",
-    "lint": "yarn prettier --write --loglevel=warn . && ng lint",
+    "lint": "yarn prettier --write --log-level=warn . && ng lint",
     "e2e": "ng e2e",
     "outdated": "upgrade-interactive --latest",
     "codegen": "graphql-codegen --config codegen.yml && yarn feedless-config"

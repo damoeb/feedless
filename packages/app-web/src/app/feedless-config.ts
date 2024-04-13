@@ -82,8 +82,7 @@ Then, open http://localhost:8080 in your browser`,
       title: 'VisualDiff',
       subtitle: 'Page Change Tracker',
       isUnstable: false,
-      summary:
-        'Detect changes in a website and get a notified',
+      summary: 'Detect changes in a website and get a notified',
       descriptionMarkdown:
         'Detect changes in a website based on image, markup or text and get a notification via mail or feed.',
       costs: 79.99,
@@ -151,7 +150,8 @@ Then, open http://localhost:8080 in your browser
       offlineSupport: true,
       isUnstable: true,
       subtitle: 'Note App',
-      summary: 'Minimalistic, Searchable and Linkable markdown notes the Zettelkasten way',
+      summary:
+        'Minimalistic, Searchable and Linkable markdown notes the Zettelkasten way',
       descriptionMarkdown: `Minimalistic, Searchable and Linkable markdown notes to facilitate
 [Luhmann's Zettelkasten](https://en.wikipedia.org/wiki/Zettelkasten)
 approach in the tradition of [Notational Velocity](https://en.wikipedia.org/wiki/Notational_Velocity)
@@ -169,7 +169,7 @@ way to think, learn and remember.`,
         'Markdown editor (codemirror 6)',
         'Binary Attachments',
         'Self Hosting',
-        'Offline support'
+        'Offline support',
       ],
       localSetup: ``,
     },
@@ -194,7 +194,7 @@ way to think, learn and remember.`,
         'Ranking',
         'Self Hosting',
         'Forward to multiple Email Addresses',
-        'Self Hosting'
+        'Self Hosting',
       ],
       localSetup: ``,
     },
@@ -212,10 +212,7 @@ There is a dual use and everyone should have their well-behaving bots roaming th
 Popular solutions like zapier of ITTT steer into that direction.`,
       costs: -1,
       videoUrl: '',
-      features: [
-        'Workflow Builder',
-        'Self-Hosting or SaaS'
-      ],
+      features: ['Workflow Builder', 'Self-Hosting or SaaS'],
       localSetup: ``,
     },
     {
@@ -235,7 +232,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       features: [
         'Seed Events from Websites',
         'Source Localization',
-        'Self-Hosting or SaaS'
+        'Self-Hosting or SaaS',
       ],
       localSetup: ``,
     },
@@ -256,7 +253,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       features: [
         'Seed Events from Websites',
         'Source Localization',
-        'Self-Hosting or SaaS'
+        'Self-Hosting or SaaS',
       ],
       localSetup: ``,
     },

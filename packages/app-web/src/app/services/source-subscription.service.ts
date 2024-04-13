@@ -24,7 +24,7 @@ import {
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
 import { ServerSettingsService } from './server-settings.service';
-import { ProfileService } from './profile.service';
+import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -35,7 +35,7 @@ export class SourceSubscriptionService {
     private readonly apollo: ApolloClient<any>,
     private readonly serverSetting: ServerSettingsService,
     private readonly router: Router,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
   ) {}
 
   async createSubscriptions(

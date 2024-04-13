@@ -16,7 +16,7 @@ import { FeedBuilderModalModule } from '../../../modals/feed-builder-modal/feed-
     BubbleModule,
     ReactiveFormsModule,
     FeedBuilderModalModule,
-    RemoteFeedPreviewModule
+    RemoteFeedPreviewModule,
   ],
   declarations: [TrackerEditModalComponent],
 })

@@ -11,8 +11,8 @@ import { FetchPolicy } from '@apollo/client/core';
 import { ServerSettingsService } from '../../../../services/server-settings.service';
 import {
   dateTimeFormat,
-  ProfileService,
-} from '../../../../services/profile.service';
+  SessionService,
+} from '../../../../services/session.service';
 import { Subscription } from 'rxjs';
 import { WebDocument } from '../../../../graphql/types';
 import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
@@ -40,7 +40,7 @@ export class RepositoryDataPage implements OnInit, OnDestroy {
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly serverSettings: ServerSettingsService,
     private readonly modalService: ModalService,
     private readonly webDocumentService: WebDocumentService,

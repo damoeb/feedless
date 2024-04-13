@@ -17,7 +17,7 @@ import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.mo
     ProductHeadlineModule,
     SearchbarModule,
     ImportOpmlModalModule,
-    OpmlPickerModule
+    OpmlPickerModule,
   ],
   declarations: [AboutRssBuilderPage],
 })

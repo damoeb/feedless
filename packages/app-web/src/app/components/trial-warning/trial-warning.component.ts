@@ -50,5 +50,4 @@ export class TrialWarningComponent implements OnInit, OnDestroy {
       this.license.trialUntil > new Date().getTime()
     );
   }
-
 }

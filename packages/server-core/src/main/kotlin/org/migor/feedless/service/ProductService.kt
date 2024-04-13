@@ -1,5 +1,6 @@
 package org.migor.feedless.service
 
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

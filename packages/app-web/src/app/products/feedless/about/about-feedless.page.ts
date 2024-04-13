@@ -27,7 +27,7 @@ export class AboutFeedlessPage implements OnInit {
   constructor(
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
-    readonly productService: ProductService,
+    private readonly productService: ProductService,
   ) {}
 
   async handleQuery(url: string) {

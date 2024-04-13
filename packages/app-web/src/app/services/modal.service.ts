@@ -21,7 +21,7 @@ import {
 } from '../modals/generate-feed-modal/generate-feed-modal.component';
 import {
   TrackerEditModalComponent,
-  TrackerEditModalComponentProps
+  TrackerEditModalComponentProps,
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
 
 @Injectable({

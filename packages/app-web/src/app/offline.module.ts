@@ -10,6 +10,6 @@ import { ServiceWorkerModule } from '@angular/service-worker';
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
-  ]
+  ],
 })
 export class OfflineModule {}

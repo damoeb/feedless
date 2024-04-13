@@ -56,7 +56,7 @@ export class FeedsPage implements OnInit, OnDestroy {
   }
 
   getHealthColorForFeed(feed: SourceSubscription): BubbleColor {
-    if (feed.sources.some(source => source.errornous)) {
+    if (feed.sources.some((source) => source.errornous)) {
       return 'red';
     } else {
       return 'blue';

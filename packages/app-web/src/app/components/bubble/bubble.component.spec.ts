@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { BubbleComponent } from './bubble.component';
 import { BubbleModule } from './bubble.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('BubbleComponent', () => {
   let component: BubbleComponent;
@@ -9,7 +10,7 @@ describe('BubbleComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [BubbleModule],
+      imports: [BubbleModule, AppTestModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BubbleComponent);

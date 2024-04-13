@@ -12,6 +12,7 @@ import jakarta.persistence.TemporalType
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.user.UserEntity
 import java.sql.Timestamp
 import java.util.*
 

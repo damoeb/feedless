@@ -18,7 +18,7 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
     ProductsPageRoutingModule,
     NewsletterModule,
     ProductHeadlineModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   declarations: [BuyPage],
 })

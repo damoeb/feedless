@@ -10,7 +10,7 @@ import { SourceSubscription } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
-import { ProfileService } from '../../../services/profile.service';
+import { SessionService } from '../../../services/session.service';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
 import { WebDocumentService } from '../../../services/web-document.service';
@@ -33,7 +33,7 @@ export class RepositoryDetailsPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly serverSettings: ServerSettingsService,
     private readonly modalService: ModalService,
     private readonly webDocumentService: WebDocumentService,

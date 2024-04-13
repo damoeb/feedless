@@ -15,12 +15,6 @@ describe('GenerateFeedModalComponent', () => {
 
     fixture = TestBed.createComponent(RemoteFeedPreviewComponent);
     component = fixture.componentInstance;
-    component.subscription = {
-      sources: [],
-      // nativeFeed: {
-      //   title: '',
-      // } as any,
-    } as any;
     fixture.detectChanges();
   }));
 

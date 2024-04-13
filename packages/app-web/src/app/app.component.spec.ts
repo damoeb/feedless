@@ -6,9 +6,9 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { AppTestModule } from './app-test.module';
 import {
-  GqlProfileQuery,
-  GqlProfileQueryVariables,
-  Profile as ProfileQuery,
+  GqlSessionQuery,
+  GqlSessionQueryVariables,
+  Session,
 } from '../generated/graphql';
 
 describe('AppComponent', () => {
@@ -20,11 +20,11 @@ describe('AppComponent', () => {
         RouterTestingModule.withRoutes([]),
         AppTestModule.withDefaults((apolloMockController) => {
           apolloMockController
-            .mockQuery<GqlProfileQuery, GqlProfileQueryVariables>(ProfileQuery)
+            .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
             .and.resolveOnce(async () => {
               return {
                 data: {
-                  profile: {} as any,
+                  session: {} as any,
                 },
               };
             });

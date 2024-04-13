@@ -32,7 +32,7 @@ export class AgentService implements OnModuleInit {
     const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
     graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
-        this.log.log('incoming event')
+        this.log.log('incoming event');
         if (event.scrape) {
           const startTime = Date.now();
           this.log.log(
@@ -78,7 +78,7 @@ export class AgentService implements OnModuleInit {
       },
       (error) => {
         this.log.error(error);
-        console.log(error)
+        console.log(error);
         // process.exit(1);
       },
     );

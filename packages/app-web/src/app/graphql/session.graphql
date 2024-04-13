@@ -1,0 +1,53 @@
+query session {
+  session {
+    isLoggedIn
+    user {
+      id
+      hasAcceptedTerms
+      purgeScheduledFor
+      secrets {
+        ...SecretFragment
+      }
+      subscription {
+        expiry
+        startedAt
+        plan {
+          ...PlanFragment
+        }
+      }
+    }
+  }
+}
+
+mutation updateCurrentUser($data: UpdateCurrentUserInput!) {
+  updateCurrentUser(data: $data)
+}
+
+mutation createUser($data: CreateUserInput!) {
+  createUser(data: $data) {
+    id
+  }
+}
+
+mutation logout {
+  logout
+}
+
+fragment SecretFragment on UserSecret {
+  id
+  validUntil
+  type
+  lastUsed
+  value
+  valueMasked
+}
+
+mutation createUserSecret {
+  createUserSecret {
+    ...SecretFragment
+  }
+}
+
+mutation deleteUserSecrets($data: DeleteUserSecretsInput!) {
+  deleteUserSecrets(data: $data)
+}

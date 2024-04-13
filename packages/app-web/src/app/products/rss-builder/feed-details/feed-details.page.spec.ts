@@ -1,15 +1,18 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedDetailsPage } from './feed-details.page';
-import { AppTestModule } from '../../../app-test.module';
+import { AppTestModule, mockPlans, mockPlugins, mockSourceSubscription } from '../../../app-test.module';
 import { FeedDetailsPageModule } from './feed-details.module';
 
 describe('FeedDetailsPage', () => {
   let component: FeedDetailsPage;
   let fixture: ComponentFixture<FeedDetailsPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [FeedDetailsPageModule, AppTestModule.withDefaults()],
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FeedDetailsPageModule, AppTestModule.withDefaults((apolloMockController) => {
+        mockPlugins(apolloMockController);
+        mockSourceSubscription(apolloMockController);
+      })],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedDetailsPage);

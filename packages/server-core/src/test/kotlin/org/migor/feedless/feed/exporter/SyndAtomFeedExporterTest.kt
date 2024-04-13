@@ -2,9 +2,9 @@ package org.migor.feedless.feed.exporter
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.harvest.HarvestResponse
-import org.migor.feedless.service.HttpResponse
 
 val rawFeed = """
       <?xml version="1.0" encoding="utf-8"?>

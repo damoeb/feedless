@@ -3,8 +3,8 @@ package org.migor.feedless.web
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
-import org.migor.feedless.service.PropertyService
 import org.mockito.Mockito.mock
 import org.slf4j.LoggerFactory
 import java.util.*

@@ -12,11 +12,11 @@ import {
   FeedlessPlugin,
   SourceSubscription,
   SubscriptionSource,
-  WebDocument
+  WebDocument,
 } from '../../../graphql/types';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
-import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
+import { dateFormat, dateTimeFormat } from '../../../services/session.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
@@ -39,7 +39,7 @@ import { PluginService } from '../../../services/plugin.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
-  busy = false;
+  busy = true;
   documents: WebDocument[];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
@@ -117,7 +117,9 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     });
   }
 
-  getHealthColorForSource(source: ArrayElement<SourceSubscription['sources']>): BubbleColor {
+  getHealthColorForSource(
+    source: ArrayElement<SourceSubscription['sources']>,
+  ): BubbleColor {
     if (source.errornous) {
       return 'red';
     } else {
@@ -185,7 +187,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     await this.sourceSubscriptionService.deleteSubscription({
       id: this.subscription.id,
     });
-    await this.router.navigateByUrl('/feeds')
+    await this.router.navigateByUrl('/feeds');
   }
 
   getRetentionStrategy(): string {
@@ -211,24 +213,35 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   }
 
   hasErrors(): boolean {
-    return this.subscription.sources.some(s => s.errornous)
+    return this.subscription.sources.some((s) => s.errornous);
   }
 
-  getPluginsOfSource(source: ArrayElement<SourceSubscription['sources']>): string {
+  getPluginsOfSource(
+    source: ArrayElement<SourceSubscription['sources']>,
+  ): string {
     if (!this.plugins) {
-      return ''
+      return '';
     }
-    return source.emit.flatMap(emit => emit.selectorBased?.expose.transformers.flatMap(transformer => this.getPluginName(transformer.pluginId))).join(', ')
+    return source.emit
+      .flatMap(
+        (emit) =>
+          emit.selectorBased?.expose.transformers.flatMap((transformer) =>
+            this.getPluginName(transformer.pluginId),
+          ),
+      )
+      .join(', ');
   }
 
   getPluginsOfSubscription(subscription: SourceSubscription) {
     if (!this.plugins) {
-      return ''
+      return '';
     }
-    return subscription.plugins.map(plugin => this.getPluginName(plugin.pluginId)).join(', ')
+    return subscription.plugins
+      .map((plugin) => this.getPluginName(plugin.pluginId))
+      .join(', ');
   }
 
   private getPluginName(pluginId: string) {
-    return this.plugins.find(plugin => plugin.id === pluginId)?.name
+    return this.plugins.find((plugin) => plugin.id === pluginId)?.name;
   }
 }

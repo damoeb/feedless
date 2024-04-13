@@ -10,7 +10,6 @@ describe('UntoldNotesMenuComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [UntoldNotesMenuComponent],
       imports: [UntoldNotesProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 

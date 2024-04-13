@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -10,14 +17,13 @@ import {
   GqlCompositeFilterParamsInput,
   GqlNumberFilterOperator,
   GqlScrapeRequest,
-  GqlStringFilterOperator
+  GqlStringFilterOperator,
 } from '../../../../generated/graphql';
 
-type KindOfTracker = 'static' | 'dynamic'
-type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours'
+type KindOfTracker = 'static' | 'dynamic';
+type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
 
-export interface TrackerEditModalComponentProps {
-}
+export interface TrackerEditModalComponentProps {}
 
 @Component({
   selector: 'app-tracker-edit-page',
@@ -25,19 +31,21 @@ export interface TrackerEditModalComponentProps {
   styleUrls: ['./tracker-edit-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TrackerEditModalComponent implements TrackerEditModalComponentProps, OnInit, OnDestroy {
+export class TrackerEditModalComponent
+  implements TrackerEditModalComponentProps, OnInit, OnDestroy
+{
   private subscriptions: Subscription[] = [];
 
   @ViewChild('remoteFeedPreviewComponent')
   remoteFeedPreview: RemoteFeedPreviewComponent;
 
-  formFg = new FormGroup(({
+  formFg = new FormGroup({
     kind: new FormControl<KindOfTracker>('dynamic'),
     fetchFrequency: new FormControl<string>('0 */15 * * * *'),
     sunset: new FormControl<SunsetPolicy>('24_hours'),
     sensitivity: new FormControl<number>(0),
-    limit: new FormControl<number>(null)
-  }));
+    limit: new FormControl<number>(null),
+  });
   private scrapeRequest: GqlScrapeRequest;
 
   constructor(
@@ -50,7 +58,7 @@ export class TrackerEditModalComponent implements TrackerEditModalComponentProps
     this.subscriptions.push(
       this.formFg.controls.limit.valueChanges.subscribe(async () => {
         await this.updateFeed();
-      })
+      }),
     );
 
     this.changeRef.detectChanges();
@@ -61,15 +69,21 @@ export class TrackerEditModalComponent implements TrackerEditModalComponentProps
   }
 
   async openFeedBuilder() {
-    await this.modalService.openFeedBuilder({
-      modalTitle: 'Pick Link Source',
-      submitButtonText: 'Use Feed'
-    }, async (data: FeedWithRequest, role: String) => {
-      if (data) {
-        this.scrapeRequest = getScrapeRequest(data.feed, data.scrapeRequest as GqlScrapeRequest);
-        await this.updateFeed();
-      }
-    })
+    await this.modalService.openFeedBuilder(
+      {
+        modalTitle: 'Pick Link Source',
+        submitButtonText: 'Use Feed',
+      },
+      async (data: FeedWithRequest, role: String) => {
+        if (data) {
+          this.scrapeRequest = getScrapeRequest(
+            data.feed,
+            data.scrapeRequest as GqlScrapeRequest,
+          );
+          await this.updateFeed();
+        }
+      },
+    );
   }
 
   closeModal() {
@@ -82,17 +96,20 @@ export class TrackerEditModalComponent implements TrackerEditModalComponentProps
     const filters: GqlCompositeFilterParamsInput[] = [];
     if (this.formFg.controls.limit.valid) {
       filters.push({
-          exclude: {
-            index: {
-              operator: GqlNumberFilterOperator.Gt,
-              value: this.formFg.value.limit
-            }
-          }
-        }
-      );
+        exclude: {
+          index: {
+            operator: GqlNumberFilterOperator.Gt,
+            value: this.formFg.value.limit,
+          },
+        },
+      });
     }
 
     await this.remoteFeedPreview.loadFeedPreview([this.scrapeRequest], filters);
     this.changeRef.detectChanges();
+  }
+
+  createOrUpdatePageTracker() {
+
   }
 }

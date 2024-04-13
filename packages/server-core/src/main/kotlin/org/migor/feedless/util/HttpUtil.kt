@@ -18,14 +18,4 @@ object HttpUtil {
     RequestContextHolder.setRequestAttributes(attributes)
     return corrId
   }
-
-  fun toFullURL(request: HttpServletRequest): String {
-    val requestURL = StringBuilder(request.requestURL.toString())
-    val queryString = request.queryString
-    return if (queryString == null) {
-      requestURL.toString()
-    } else {
-      requestURL.append('?').append(queryString).toString()
-    }
-  }
 }

@@ -9,6 +9,7 @@ import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.generated.types.ServerSettings
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.jcache.JCacheCacheManager
@@ -51,7 +52,7 @@ class CacheConfig {
 
     val httpResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
       String::class.java,
-      org.migor.feedless.service.HttpResponse::class.java,
+      HttpResponse::class.java,
       ResourcePoolsBuilder.heap(1000)
         .offheap(25, MemoryUnit.MB)
     )

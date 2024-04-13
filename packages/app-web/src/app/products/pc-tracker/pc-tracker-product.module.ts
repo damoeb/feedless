@@ -21,7 +21,7 @@ import { TrackerEditModalModule } from './tracker-edit/tracker-edit-modal.module
     LoginButtonModule,
     SearchbarModule,
     TrackerEditModalModule,
-    TrialWarningModule
+    TrialWarningModule,
   ],
   declarations: [PcTrackerProductPage],
 })

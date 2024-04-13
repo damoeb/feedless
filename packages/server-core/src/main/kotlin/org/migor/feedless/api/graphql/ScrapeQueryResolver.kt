@@ -5,8 +5,8 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.api.ApiParams
-import org.migor.feedless.api.Throttled
-import org.migor.feedless.api.graphql.DtoResolver.fromDto
+import org.migor.feedless.api.fromDto
+import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.service.ScrapeService

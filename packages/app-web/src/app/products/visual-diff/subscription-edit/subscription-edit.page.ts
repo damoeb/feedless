@@ -32,7 +32,7 @@ import { ScrapedElement } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProfileService } from '../../../services/profile.service';
+import { SessionService } from '../../../services/session.service';
 import { environment } from '../../../../environments/environment';
 
 type Email = string;
@@ -116,7 +116,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly scrapeService: ScrapeService,
     private readonly alertCtrl: AlertController,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
@@ -124,7 +124,11 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.push(
-      merge(this.form.controls.url.valueChanges, this.actions.valueChanges, this.additionalWait.valueChanges)
+      merge(
+        this.form.controls.url.valueChanges,
+        this.actions.valueChanges,
+        this.additionalWait.valueChanges,
+      )
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           if (this.form.controls.url.valid) {

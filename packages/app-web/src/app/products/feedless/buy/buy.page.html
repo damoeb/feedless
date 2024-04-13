@@ -20,14 +20,16 @@
 
         <p>
           {{product?.title}} is a one-man show, that I work on in my spare time.
-          I only sell self-hosting licenses for the current major version, if you look for a SaaS solution, write me a mail. This
-          license includes all minor and patch releases.
+          I only sell self-hosting licenses for the current major version, if
+          you look for a SaaS solution, write me a mail. This license includes
+          all minor and patch releases.
         </p>
 
         <div class="ion-margin-vertical">
           <h4>Zero Risk Policy and Open Source</h4>
           <div>
-            Never do a blind bargain, take advantage of the two month trial. {{product?.title}} is
+            Never do a blind bargain, take advantage of the two month trial.
+            {{product?.title}} is
             <a href="https://en.wikipedia.org/wiki/Source-available_software"
               >Source Available</a
             >
@@ -78,7 +80,8 @@
                       [formControl]="individualFG.controls.email"
                     ></ion-input>
                   </ion-item>
-                  <ion-item color="primary" (click)="buyIndividualLicense()">Confirm
+                  <ion-item color="primary" (click)="buyIndividualLicense()"
+                    >Confirm
                   </ion-item>
                 </ion-content>
               </ng-template>
@@ -90,9 +93,9 @@
           <h4>For Organizations</h4>
           <div>I have no price tag for organizations yet.</div>
           <p>
-            <ion-button color="dark"
-                        shape="round"
-                        id="open-make-offer-modal">Make an offer</ion-button>
+            <ion-button color="dark" shape="round" id="open-make-offer-modal"
+              >Make an offer</ion-button
+            >
 
             <ion-modal trigger="open-make-offer-modal">
               <ng-template>
@@ -153,7 +156,9 @@
                       [formControl]="offerFG.controls.message"
                     ></ion-textarea>
                   </ion-item>
-                  <ion-item color="primary" (click)="sendOfferRequest()">Send Offer</ion-item>
+                  <ion-item color="primary" (click)="sendOfferRequest()"
+                    >Send Offer</ion-item
+                  >
                 </ion-content>
               </ng-template>
             </ion-modal>
@@ -202,7 +207,9 @@
                       [formControl]="freeFG.controls.message"
                     ></ion-textarea>
                   </ion-item>
-                  <ion-item color="primary" (click)="sendFreeLicenseRequest()">Ask for Free License</ion-item>
+                  <ion-item color="primary" (click)="sendFreeLicenseRequest()"
+                    >Ask for Free License</ion-item
+                  >
                 </ion-content>
               </ng-template>
             </ion-modal>

@@ -7,8 +7,8 @@ describe('AboutFeedlessPage', () => {
   let component: AboutFeedlessPage;
   let fixture: ComponentFixture<AboutFeedlessPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [AboutFeedlessModule, AppTestModule.withDefaults()],
     }).compileComponents();
 

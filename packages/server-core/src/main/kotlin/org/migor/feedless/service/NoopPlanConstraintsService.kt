@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

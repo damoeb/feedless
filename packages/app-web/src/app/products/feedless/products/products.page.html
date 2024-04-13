@@ -32,17 +32,23 @@
       <div class="flex__column">
         <app-product-headline [title]="product.title"></app-product-headline>
 
-
         <ng-container *ngIf="product.isUnstable">
-          <ion-toolbar color="warning" class="ion-margin-top ion-padding-horizontal">This product is under development and not yet suitable to be used.</ion-toolbar>
+          <ion-toolbar
+            color="warning"
+            class="ion-margin-top ion-padding-horizontal"
+            >This product is under development and not yet suitable to be
+            used.</ion-toolbar
+          >
           <p>
-<!--            {{product.summary}} <br>-->
-          <span [innerHtml]="product.descriptionHtml"></span>
+            <!--            {{product.summary}} <br>-->
+            <span [innerHtml]="product.descriptionHtml"></span>
           </p>
 
-          <app-newsletter headerText="Support the Mission!"
-                          bodyText="If you endorse this idea, join the list of supporters and get early access"
-                          buttonText="Subscribe Now"></app-newsletter>
+          <app-newsletter
+            headerText="Support the Mission!"
+            bodyText="If you endorse this idea, join the list of supporters and get early access"
+            buttonText="Subscribe Now"
+          ></app-newsletter>
 
           <div>
             <h1>Planned Features</h1>
@@ -112,7 +118,7 @@
             </div>
             <div class="ion-margin-bottom">
               <ion-button color="primary" shape="round" routerLink="./buy"
-              >See Pricing Options</ion-button
+                >See Pricing Options</ion-button
               >
             </div>
           </div>

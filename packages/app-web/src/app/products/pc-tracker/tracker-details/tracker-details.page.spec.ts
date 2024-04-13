@@ -7,8 +7,8 @@ describe('TrackerDetailsPage', () => {
   let component: TrackerDetailsPage;
   let fixture: ComponentFixture<TrackerDetailsPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [TrackerDetailsPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 

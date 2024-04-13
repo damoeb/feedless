@@ -5,7 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { ProfileService } from '../../services/profile.service';
+import { SessionService } from '../../services/session.service';
 
 @Component({
   selector: 'app-terms-modal',
@@ -20,7 +20,7 @@ export class TermsModalComponent implements OnInit {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
   ) {}
 
   ngOnInit() {

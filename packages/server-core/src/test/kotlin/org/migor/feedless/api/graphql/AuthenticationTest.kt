@@ -8,12 +8,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.UserEntity
-import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.generated.types.Authentication
-import org.migor.feedless.service.LicenseService
-import org.migor.feedless.service.UserSecretService
-import org.migor.feedless.service.UserService
+import org.migor.feedless.license.LicenseService
+import org.migor.feedless.secrets.UserSecretEntity
+import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest

@@ -46,17 +46,24 @@
         <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
 
         <div class="ion-align-self-center">
-          <ion-button color="dark" fill="clear" *ngIf="!hasErrors()" id="open-sources-modal">
+          <ion-button
+            color="dark"
+            fill="clear"
+            *ngIf="!hasErrors()"
+            id="open-sources-modal"
+          >
             <ion-label
-            >Sources
+              >Sources
               <ion-note> ({{subscription.sources.length}}) </ion-note>
             </ion-label>
           </ion-button>
 
-          <ion-button color="danger" id="open-sources-modal" *ngIf="hasErrors()">
-            <ion-label
-            >Fix Sources
-            </ion-label>
+          <ion-button
+            color="danger"
+            id="open-sources-modal"
+            *ngIf="hasErrors()"
+          >
+            <ion-label>Fix Sources </ion-label>
           </ion-button>
 
           <ion-modal trigger="open-sources-modal">
@@ -83,7 +90,9 @@
               <ion-content class="ion-padding">
                 <ion-list>
                   <ion-item *ngFor="let source of subscription.sources">
-                    <app-bubble [color]="getHealthColorForSource(source)"></app-bubble>
+                    <app-bubble
+                      [color]="getHealthColorForSource(source)"
+                    ></app-bubble>
                     <ion-label>
                       <h3>From {{source.page.url}}</h3>
                       <p>{{getPluginsOfSource(source)}}</p>
@@ -124,7 +133,11 @@
                   <ion-item button="true" (click)="editSubscription()">
                     <ion-label>Edit </ion-label>
                   </ion-item>
-                  <ion-item color="danger" button="true" (click)="deleteSubscription()">
+                  <ion-item
+                    color="danger"
+                    button="true"
+                    (click)="deleteSubscription()"
+                  >
                     <ion-label>Delete </ion-label>
                   </ion-item>
                 </ion-list>
@@ -137,9 +150,9 @@
         With {{getPluginsOfSubscription(subscription)}}
       </ion-note>
       <p>
-      <ion-note
-        >Created: {{ subscription.createdAt | date: dateFormat }}</ion-note
-      >
+        <ion-note
+          >Created: {{ subscription.createdAt | date: dateFormat }}</ion-note
+        >
       </p>
       <div style="position: relative">
         <app-histogram [data]="subscription.activity"></app-histogram>

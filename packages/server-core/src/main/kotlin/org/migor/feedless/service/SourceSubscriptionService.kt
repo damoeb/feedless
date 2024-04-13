@@ -6,27 +6,23 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.api.graphql.DtoResolver.fromDto
+import org.migor.feedless.api.fromDto
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.models.MailForwardEntity
 import org.migor.feedless.data.jpa.models.PluginExecution
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.MailForwardDAO
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
-import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.ScrapeRequestInput
@@ -35,6 +31,15 @@ import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
 import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
 import org.migor.feedless.generated.types.Visibility
+import org.migor.feedless.mail.MailForwardDAO
+import org.migor.feedless.mail.MailForwardEntity
+import org.migor.feedless.mail.MailService
+import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.session.SessionService
+import org.migor.feedless.user.UserDAO
+import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -67,7 +72,7 @@ class SourceSubscriptionService {
   lateinit var mailService: MailService
 
   @Autowired
-  lateinit var currentUser: CurrentUser
+  lateinit var currentUser: SessionService
 
   @Autowired
   lateinit var userService: UserService

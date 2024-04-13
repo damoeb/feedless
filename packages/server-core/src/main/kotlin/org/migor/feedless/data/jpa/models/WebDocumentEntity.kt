@@ -21,6 +21,7 @@ import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.pipeline.PipelineJobEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import java.util.*

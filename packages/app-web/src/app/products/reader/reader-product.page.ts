@@ -25,7 +25,7 @@ import {
   transformXpathToCssPath,
 } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
-import { ProfileService } from '../../services/profile.service';
+import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl, isValidUrl } from '../../app.module';
 
@@ -89,7 +89,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly scrapeService: ScrapeService,
     private readonly router: Router,
-    readonly profile: ProfileService,
+    readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 

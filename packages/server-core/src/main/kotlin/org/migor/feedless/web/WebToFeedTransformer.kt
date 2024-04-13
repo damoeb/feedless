@@ -9,10 +9,10 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml

@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ProductConfig, ProductService } from '../../../services/product.service';
+import {
+  ProductConfig,
+  ProductService,
+} from '../../../services/product.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
 
@@ -18,12 +27,12 @@ export class BuyPage implements OnInit, OnDestroy {
   individualFG = new FormGroup({
     name: new FormControl(),
     email: new FormControl(),
-  })
+  });
 
   freeFG = new FormGroup({
     name: new FormControl(),
     message: new FormControl(),
-  })
+  });
 
   offerFG = new FormGroup({
     name: new FormControl(),
@@ -31,7 +40,7 @@ export class BuyPage implements OnInit, OnDestroy {
     organization: new FormControl(),
     price: new FormControl(),
     message: new FormControl(),
-  })
+  });
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -41,9 +50,10 @@ export class BuyPage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    const productConfigs = await this.productService.getProductConfigs();
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
-        this.product = (await this.productService.getProductConfigs()).find(
+        this.product = productConfigs.find(
           (p) => p.id === params.productId,
         );
         this.changeRef.detectChanges();
@@ -60,15 +70,9 @@ export class BuyPage implements OnInit, OnDestroy {
     return this.modalCtrl.dismiss();
   }
 
-  sendFreeLicenseRequest() {
+  sendFreeLicenseRequest() {}
 
-  }
+  sendOfferRequest() {}
 
-  sendOfferRequest() {
-
-  }
-
-  buyIndividualLicense() {
-
-  }
+  buyIndividualLicense() {}
 }

@@ -12,7 +12,7 @@ import { WebDocumentService } from '../../../services/web-document.service';
 import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
-import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
+import { dateFormat, dateTimeFormat } from '../../../services/session.service';
 
 type ImageSize = {
   width: number;

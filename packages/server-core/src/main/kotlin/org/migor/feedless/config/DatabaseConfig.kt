@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableScheduling
 @EnableTransactionManagement
 @EnableJpaRepositories(
-  basePackages = ["org.migor.feedless.data.jpa.repositories"],
+  basePackages = ["org.migor.feedless"],
   includeFilters = [ComponentScan.Filter(
     type = FilterType.ASSIGNABLE_TYPE,
     classes = [JpaRepository::class]

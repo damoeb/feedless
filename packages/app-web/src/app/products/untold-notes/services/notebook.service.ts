@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
-import { ProfileService } from '../../../services/profile.service';
+import { SessionService } from '../../../services/session.service';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { WebDocumentService } from '../../../services/web-document.service';
 import { AlertController } from '@ionic/angular';
@@ -165,7 +165,7 @@ export class NotebookService {
   private currentNotebookId: string;
 
   constructor(
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly alertCtrl: AlertController,
     private readonly router: Router,
     private readonly sourceSubscriptionService: SourceSubscriptionService,

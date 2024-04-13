@@ -21,7 +21,7 @@ import { TrialWarningModule } from '../../components/trial-warning/trial-warning
     DarkModeButtonModule,
     LoginButtonModule,
     SearchbarModule,
-    TrialWarningModule
+    TrialWarningModule,
   ],
   declarations: [RssBuilderProductPage],
 })

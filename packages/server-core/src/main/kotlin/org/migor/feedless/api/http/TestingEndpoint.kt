@@ -2,10 +2,10 @@ package org.migor.feedless.api.http
 
 import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.auth.CookieProvider
-import org.migor.feedless.api.auth.TokenProvider
-import org.migor.feedless.data.jpa.repositories.UserDAO
-import org.migor.feedless.service.PropertyService
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.user.UserDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

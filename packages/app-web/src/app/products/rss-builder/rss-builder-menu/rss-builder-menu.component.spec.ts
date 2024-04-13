@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RssBuilderMenuComponent } from './rss-builder-menu.component';
-import { AppTestModule } from '../../../app-test.module';
+import { RssBuilderMenuModule } from './rss-builder-menu.module';
 
 describe('RssBuilderMenuComponent', () => {
   let component: RssBuilderMenuComponent;
@@ -9,8 +9,7 @@ describe('RssBuilderMenuComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [RssBuilderMenuComponent],
-      imports: [AppTestModule.withDefaults()],
+      imports: [RssBuilderMenuModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RssBuilderMenuComponent);

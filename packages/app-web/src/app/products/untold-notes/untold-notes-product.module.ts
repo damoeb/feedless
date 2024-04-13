@@ -25,7 +25,7 @@ import { OfflineModule } from '../../offline.module';
     ReactiveFormsModule,
     FormsModule,
     SearchbarModule,
-    OfflineModule
+    OfflineModule,
   ],
   providers: [NotebookService],
   declarations: [UntoldNotesProductPage],

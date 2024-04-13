@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.agent.AgentDAO
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.data.jpa.repositories.AgentDAO
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
-import org.migor.feedless.service.UserSecretService
-import org.migor.feedless.service.UserService
+import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans

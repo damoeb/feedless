@@ -8,7 +8,7 @@ import {
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
-import { dateFormat } from '../../services/profile.service';
+import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 
 @Component({

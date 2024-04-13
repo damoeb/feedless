@@ -1,5 +1,8 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../../modals/import-opml-modal/import-opml-modal.component';
+import {
+  ImportOpmlModalComponent,
+  ImportOpmlModalComponentProps,
+} from '../../modals/import-opml-modal/import-opml-modal.component';
 import { firstValueFrom } from 'rxjs';
 import { OpmlService } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
@@ -12,14 +15,15 @@ import { Router } from '@angular/router';
   styleUrls: ['./opml-picker.component.scss'],
 })
 export class OpmlPickerComponent {
-
   @ViewChild('opmlPicker')
   opmlPickerElement!: ElementRef<HTMLInputElement>;
 
-  constructor(private readonly omplService: OpmlService,
-              private readonly authService: AuthService,
-              private readonly router: Router,
-              private readonly modalCtrl: ModalController,) {}
+  constructor(
+    private readonly omplService: OpmlService,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly modalCtrl: ModalController,
+  ) {}
 
   async importOpml(uploadEvent: Event) {
     const outlines = await this.omplService.convertOpmlToJson(uploadEvent);

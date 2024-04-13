@@ -5,7 +5,7 @@ import { ProductsPageModule } from './products.module';
 import { AppTestModule, mockPlans } from '../../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('PlansPage', () => {
+describe('ProductsPage', () => {
   let component: ProductsPage;
   let fixture: ComponentFixture<ProductsPage>;
 

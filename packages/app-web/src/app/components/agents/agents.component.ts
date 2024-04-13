@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Agent, AgentService } from '../../services/agent.service';
-import { dateTimeFormat } from '../../services/profile.service';
+import { dateTimeFormat } from '../../services/session.service';
 
 @Component({
   selector: 'app-agents',

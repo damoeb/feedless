@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { SegmentedOutputComponent } from './segmented-output.component';
+import { SegmentedOutputModule } from './segmented-output.module';
 
 describe('SegmentedOutputComponent', () => {
   let component: SegmentedOutputComponent;
@@ -9,8 +9,7 @@ describe('SegmentedOutputComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [SegmentedOutputComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [SegmentedOutputModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SegmentedOutputComponent);

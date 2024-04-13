@@ -6,21 +6,14 @@
     </ion-buttons>
 
     <div class="title">
-      <div
-        class="ion-padding-start"
-        routerLink="/"
-        style="cursor: pointer"
-      >
+      <div class="ion-padding-start" routerLink="/" style="cursor: pointer">
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
     </div>
 
     <ion-buttons slot="end">
       <ng-container *ngIf="serverSettings.isSelfHosted()">
-        <ion-button
-          href="https://discord.gg/6ySGeryD"
-          target="_blank"
-        >
+        <ion-button href="https://discord.gg/6ySGeryD" target="_blank">
           Community
         </ion-button>
         <ion-button

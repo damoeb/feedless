@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { dateTimeFormat, ProfileService } from '../../services/profile.service';
+import { dateTimeFormat, SessionService } from '../../services/session.service';
 import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
 import {
@@ -31,7 +31,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
   ) {}
 
   ngOnDestroy(): void {
@@ -40,7 +40,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.profileService.getProfile().subscribe((profile) => {
+      this.profileService.getSession().subscribe((profile) => {
         if (profile.user.secrets) {
           this.secrets = profile.user.secrets;
         }

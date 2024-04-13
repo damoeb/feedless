@@ -195,14 +195,17 @@ enum ProductName {
   feedless
 
 #  shouldWeLaunchThis
+#  automatedBrowser
+#  feedAnanlytics
+#  communityThreads
   upcoming
   untoldNotes
   pageChangeTracker
   digest
   featureFlags
   feedDump
-  openRoadmap
-  commentOn
+#  openRoadmap
+#  commentOn
 }
 
 type Agent {
@@ -255,7 +258,7 @@ enum PluginType {
   fragment
 }
 
-type Profile {
+type Session {
   isAnonymous: Boolean!
   isLoggedIn: Boolean!
   user: User
@@ -271,10 +274,11 @@ type Query {
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
   plans(product: ProductName!): [Plan!]!
-  profile: Profile!
+  session: Session!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   previewFeed(data: PreviewFeedInput!): RemoteNativeFeed!
+
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
   license: License!
 

@@ -6,6 +6,6 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [OpmlPickerComponent],
   exports: [OpmlPickerComponent],
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule],
 })
 export class OpmlPickerModule {}

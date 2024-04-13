@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { GenerateFeedModalComponent } from './generate-feed-modal.component';
 import { GenerateFeedModalModule } from './generate-feed-modal.module';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule, mocks } from '../../app-test.module';
 
 describe('GenerateFeedModalComponent', () => {
   let component: GenerateFeedModalComponent;
@@ -15,12 +15,7 @@ describe('GenerateFeedModalComponent', () => {
 
     fixture = TestBed.createComponent(GenerateFeedModalComponent);
     component = fixture.componentInstance;
-    component.subscription = {
-      sources: [],
-      // nativeFeed: {
-      //   title: '',
-      // } as any,
-    } as any;
+    component.subscription = mocks.sourceSubscription;
     fixture.detectChanges();
   }));
 

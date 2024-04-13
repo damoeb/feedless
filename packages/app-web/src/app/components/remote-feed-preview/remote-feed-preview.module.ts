@@ -7,10 +7,6 @@ import { RemoteFeedItemModule } from '../../components/remote-feed-item/remote-f
 @NgModule({
   declarations: [RemoteFeedPreviewComponent],
   exports: [RemoteFeedPreviewComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    RemoteFeedItemModule,
-  ],
+  imports: [CommonModule, IonicModule, RemoteFeedItemModule],
 })
 export class RemoteFeedPreviewModule {}

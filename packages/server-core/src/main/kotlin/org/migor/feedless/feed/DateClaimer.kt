@@ -1,6 +1,6 @@
 package org.migor.feedless.feed
 
-import org.migor.feedless.service.PropertyService
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,7 +10,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 @Service
@@ -146,16 +145,16 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
    */
   private fun guessDateFormat(dateString: String): Pair<String, Boolean>? {
     return dateFormatToRegexp
-        .filterTo(ArrayList()) { (regex, dateFormat, _): Triple<Regex, String, Boolean> ->
-            run {
-                val matches = regex.matches(dateString)
-                if (matches) {
-                    log.debug("$dateString looks like $dateFormat")
-                }
-                matches
-            }
+      .filterTo(ArrayList()) { (regex, dateFormat, _): Triple<Regex, String, Boolean> ->
+        run {
+          val matches = regex.matches(dateString)
+          if (matches) {
+            log.debug("$dateString looks like $dateFormat")
+          }
+          matches
         }
-        .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
+      }
+      .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
       .firstOrNull()
   }
 

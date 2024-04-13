@@ -6,8 +6,8 @@ import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.FeedUtil
 import org.springframework.beans.factory.annotation.Autowired

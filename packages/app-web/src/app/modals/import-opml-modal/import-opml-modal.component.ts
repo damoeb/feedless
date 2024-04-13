@@ -3,7 +3,12 @@ import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import { GqlFeedlessPlugins, GqlPluginExecutionInput, GqlProductName, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlPluginExecutionInput,
+  GqlProductName,
+  GqlVisibility,
+} from '../../../generated/graphql';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -21,28 +26,30 @@ type FcOutline = {
 @Component({
   selector: 'app-import-opml',
   templateUrl: './import-opml-modal.component.html',
-  styleUrls: ['./import-opml-modal.component.scss']
+  styleUrls: ['./import-opml-modal.component.scss'],
 })
 export class ImportOpmlModalComponent
-  implements OnInit, ImportOpmlModalComponentProps {
+  implements OnInit, ImportOpmlModalComponentProps
+{
   @Input()
   outlines: Outline[];
   fcOutlines: FcOutline[];
 
   formFg = new FormGroup({
     applyFulltextPlugin: new FormControl<boolean>(false),
-    applyPrivacyPlugin: new FormControl<boolean>(false)
+    applyPrivacyPlugin: new FormControl<boolean>(false),
   });
 
   private formControls: FormControl<boolean>[] = [];
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly sourceSubscriptionService: SourceSubscriptionService) {
-  }
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+  ) {}
 
   ngOnInit() {
     this.fcOutlines = this.outlines.map((outline) =>
-      this.addFormControl(outline)
+      this.addFormControl(outline),
     );
   }
 
@@ -54,58 +61,57 @@ export class ImportOpmlModalComponent
         params: {
           org_feedless_fulltext: {
             readability: true,
-            inheritParams: false
-          }
-        }
+            inheritParams: false,
+          },
+        },
       });
     }
     if (this.formFg.value.applyPrivacyPlugin) {
       plugins.push({
-          pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
-          params: {}
-        }
-      );
+        pluginId: GqlFeedlessPlugins.OrgFeedlessPrivacy,
+        params: {},
+      });
     }
 
     await this.sourceSubscriptionService.createSubscriptions({
-      subscriptions: this.fcOutlines.filter(outline => outline.fc.value)
-        .map(fc => ({
+      subscriptions: this.fcOutlines
+        .filter((outline) => outline.fc.value)
+        .map((fc) => ({
           product: GqlProductName.RssBuilder,
           sources: [
             {
               page: {
-                url: fc.xmlUrl
+                url: fc.xmlUrl,
               },
               emit: [
                 {
                   selectorBased: {
                     xpath: {
-                      value: '/'
+                      value: '/',
                     },
                     expose: {
                       transformers: [
                         {
                           pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-                          params: {}
-                        }
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
+                          params: {},
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
           ],
           sourceOptions: {
-            refreshCron: '0 0 0 * * *'
+            refreshCron: '0 0 0 * * *',
           },
           sinkOptions: {
             title: fc.title,
             description: `${fc.text} ${fc.htmlUrl}`.trim(),
             visibility: GqlVisibility.IsPrivate,
-            plugins
-          }
-        }
-      ))
+            plugins,
+          },
+        })),
     });
   }
 
@@ -129,16 +135,15 @@ export class ImportOpmlModalComponent
         ...outline,
         fc,
         outlines: outline.outlines?.map((childOutline) =>
-          this.addFormControl(childOutline)
-        )
+          this.addFormControl(childOutline),
+        ),
       };
     }
     return {
       ...outline,
       outlines: outline.outlines?.map((childOutline) =>
-        this.addFormControl(childOutline)
-      )
+        this.addFormControl(childOutline),
+      ),
     };
   }
-
 }

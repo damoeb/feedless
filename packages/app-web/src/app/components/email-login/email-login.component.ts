@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { GqlConfirmCode } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { ProfileService } from 'src/app/services/profile.service';
+import { SessionService } from 'src/app/services/session.service';
 import { FormControl, Validators } from '@angular/forms';
 
 @Component({
@@ -25,7 +25,7 @@ export class EmailLoginComponent implements OnDestroy {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -113,7 +113,7 @@ export class EmailLoginComponent implements OnDestroy {
   }
 
   private async handleSuccess() {
-    await this.profileService.fetchProfile('network-only');
+    await this.profileService.fetchSession('network-only');
     await this.router.navigateByUrl('/');
   }
 }

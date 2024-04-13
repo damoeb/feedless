@@ -9,8 +9,11 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.api.graphql.asRemoteNativeFeed
+import org.migor.feedless.common.HttpService
+import org.migor.feedless.feed.FeedParserService
+import org.migor.feedless.feed.asRemoteNativeFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -26,6 +29,7 @@ import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory

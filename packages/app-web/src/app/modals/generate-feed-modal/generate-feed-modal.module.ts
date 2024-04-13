@@ -14,7 +14,7 @@ import { RemoteFeedPreviewModule } from '../../components/remote-feed-preview/re
     IonicModule,
     ReactiveFormsModule,
     RemoteFeedItemModule,
-    RemoteFeedPreviewModule
-  ]
+    RemoteFeedPreviewModule,
+  ],
 })
 export class GenerateFeedModalModule {}

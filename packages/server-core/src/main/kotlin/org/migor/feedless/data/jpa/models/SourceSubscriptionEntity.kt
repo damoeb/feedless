@@ -20,7 +20,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
-import org.migor.feedless.api.graphql.DtoResolver.toDto
+import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -44,6 +44,8 @@ import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.mail.MailForwardEntity
+import org.migor.feedless.user.UserEntity
 import org.springframework.context.annotation.Lazy
 import java.util.*
 

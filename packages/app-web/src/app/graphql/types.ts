@@ -4,7 +4,7 @@ import {
   GqlCreateUserSecretMutation,
   GqlListPluginsQuery,
   GqlPlansQuery,
-  GqlProfileQuery,
+  GqlSessionQuery,
   GqlRemoteNativeFeedQuery,
   GqlScrapedReadability,
   GqlScrapeQuery,
@@ -55,6 +55,6 @@ export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
 export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];
 export type Feature = GetElementType<Plan['features']>;
 export type Plan = GetElementType<GqlPlansQuery['plans']>;
-export type Profile = GqlProfileQuery['profile'];
+export type Session = GqlSessionQuery['session'];
 export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
 export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;

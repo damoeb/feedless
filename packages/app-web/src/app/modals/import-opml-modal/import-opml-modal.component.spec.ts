@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ImportOpmlModalComponent } from './import-opml-modal.component';
 import { ImportOpmlModalModule } from './import-opml-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('ImportOpmlComponent', () => {
   let component: ImportOpmlModalComponent;
@@ -9,7 +10,7 @@ describe('ImportOpmlComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ImportOpmlModalModule],
+      imports: [ImportOpmlModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportOpmlModalComponent);

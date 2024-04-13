@@ -15,12 +15,13 @@
         ></app-product-headline>
 
         <p class="ion-padding-vertical">
-          <em>feedless</em> is a set of tools for web scraping, web
-          automation and workflows. Take back ownership, privacy and get ahead in the signal
-          over noise battle.<br>
-          I like to innovate things that the mainstream does not care about.
-          Due to its complexity in relation to my available time, I started to shape
-          concrete Use-Cases as products that you can already use and run locally.
+          <em>feedless</em> is a set of tools for web scraping, web automation
+          and workflows. Take back ownership, privacy and get ahead in the
+          signal over noise battle.<br />
+          I like to innovate things that the mainstream does not care about. Due
+          to its complexity in relation to my available time, I started to shape
+          concrete Use-Cases as products that you can already use and run
+          locally.
         </p>
 
         <div class="flex__row" style="column-gap: 10px" *ngIf="!waitList">
@@ -77,9 +78,7 @@
                 <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
               </ion-card-header>
 
-              <ion-card-content>
-                {{product.summary}}
-              </ion-card-content>
+              <ion-card-content> {{product.summary}} </ion-card-content>
             </ion-card>
           </div>
         </div>
@@ -87,9 +86,9 @@
         <div style="margin-top: 150px">
           <a name="products"></a>
           <h2>In Progress</h2>
-<!--          <div>-->
-<!--             Give it a try!-->
-<!--          </div>-->
+          <!--          <div>-->
+          <!--             Give it a try!-->
+          <!--          </div>-->
           <div class="products">
             <ion-card
               *ngFor="let product of unstableProducts"
@@ -101,9 +100,7 @@
                 <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
               </ion-card-header>
 
-              <ion-card-content>
-                {{product.summary}}
-              </ion-card-content>
+              <ion-card-content> {{product.summary}} </ion-card-content>
             </ion-card>
           </div>
         </div>

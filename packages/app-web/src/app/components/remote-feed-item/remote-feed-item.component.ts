@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { RemoteFeedItem } from '../../graphql/types';
-import { dateFormat } from '../../services/profile.service';
+import { dateFormat } from '../../services/session.service';
 
 @Component({
   selector: 'app-remote-feed-item',

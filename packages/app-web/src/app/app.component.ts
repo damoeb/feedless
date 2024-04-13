@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
-import { ProfileService } from './services/profile.service';
+import { SessionService } from './services/session.service';
 import { Subscription } from 'rxjs';
 import {
   ProductConfig,
@@ -35,7 +35,7 @@ export class AppComponent implements OnDestroy, OnInit {
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly productService: ProductService,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly authService: AuthService,
   ) {}
 
@@ -61,7 +61,7 @@ export class AppComponent implements OnDestroy, OnInit {
         } else {
           console.log('without token');
           await new Promise((resolve) => setTimeout(resolve, 200));
-          await this.profileService.fetchProfile('network-only');
+          await this.profileService.fetchSession('network-only');
         }
       }),
       this.profileService.watchColorScheme().subscribe((isDarkMode) => {

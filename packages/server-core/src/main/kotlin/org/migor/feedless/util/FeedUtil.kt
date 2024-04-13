@@ -1,8 +1,8 @@
 package org.migor.feedless.util
 
 import org.jsoup.Jsoup
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.FeedType
-import org.migor.feedless.service.HttpResponse
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat

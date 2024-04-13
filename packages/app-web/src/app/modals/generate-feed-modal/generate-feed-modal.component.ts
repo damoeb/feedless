@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
@@ -12,12 +19,12 @@ import {
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { dateFormat, ProfileService } from '../../services/profile.service';
+import { dateFormat, SessionService } from '../../services/session.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { FeedService } from '../../services/feed.service';
@@ -115,8 +122,8 @@ export class GenerateFeedModalComponent
   @Input({ required: true })
   subscription: SourceSubscription;
 
-  @ViewChild('remoteFeedPreviewComponent', {static: true})
-  remoteFeedPreview: RemoteFeedPreviewComponent
+  @ViewChild('remoteFeedPreviewComponent', { static: true })
+  remoteFeedPreview: RemoteFeedPreviewComponent;
 
   loading = false;
   errorMessage: string;
@@ -135,7 +142,7 @@ export class GenerateFeedModalComponent
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly feedService: FeedService,
     readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
@@ -153,12 +160,8 @@ export class GenerateFeedModalComponent
     }
 
     const filter = new FormGroup({
-      type: new FormControl<FilterType>('exclude', [
-        Validators.required,
-      ]),
-      field: new FormControl<FilterField>('title', [
-        Validators.required,
-      ]),
+      type: new FormControl<FilterType>('exclude', [Validators.required]),
+      field: new FormControl<FilterField>('title', [Validators.required]),
       operator: new FormControl<FilterOperator>(
         GqlStringFilterOperator.StartsWidth,
         [Validators.required],
@@ -170,8 +173,12 @@ export class GenerateFeedModalComponent
     });
 
     if (f) {
-      const type = Object.keys(f).find(field => field != '__typename' && !!f[field]);
-      const field = Object.keys(f[type]).find(field => field != '__typename' && !!f[type][field]);
+      const type = Object.keys(f).find(
+        (field) => field != '__typename' && !!f[field],
+      );
+      const field = Object.keys(f[type]).find(
+        (field) => field != '__typename' && !!f[type][field],
+      );
       filter.patchValue({
         type: type as any,
         field: field as any,
@@ -328,24 +335,22 @@ export class GenerateFeedModalComponent
   private async loadFeedPreview() {
     await this.remoteFeedPreview.loadFeedPreview(
       this.subscription.sources as GqlScrapeRequest[],
-      this.getFilterParams())
+      this.getFilterParams(),
+    );
   }
 
   private getFilterParams(): GqlCompositeFilterParamsInput[] {
     return this.filters
       .filter((filterFg) => filterFg.valid)
       .map((filterFg) => filterFg.value)
-      .map<GqlCompositeFilterParamsInput>(
-        (filter) =>
-          ({
-            [filter.type]: {
-              [filter.field]: {
-                value: filter.value,
-                operator: filter.operator,
-              }
-            }
-          }),
-      );
+      .map<GqlCompositeFilterParamsInput>((filter) => ({
+        [filter.type]: {
+          [filter.field]: {
+            value: filter.value,
+            operator: filter.operator,
+          },
+        },
+      }));
   }
 
   isUpdate() {

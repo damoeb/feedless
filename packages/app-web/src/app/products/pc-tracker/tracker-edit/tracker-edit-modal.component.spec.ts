@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TrackerEditModalComponent } from './tracker-edit-modal.component';
 import { AppTestModule } from '../../../app-test.module';
-import { TrackerEditPageModule } from './tracker-edit-modal.module';
+import { TrackerEditModalModule } from './tracker-edit-modal.module';
 
-describe('FeedDetailsPage', () => {
+describe('TrackerEditModalComponent', () => {
   let component: TrackerEditModalComponent;
   let fixture: ComponentFixture<TrackerEditModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TrackerEditPageModule, AppTestModule.withDefaults()],
+      imports: [TrackerEditModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TrackerEditModalComponent);

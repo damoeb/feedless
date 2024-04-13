@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
-import { ProfileService } from 'src/app/services/profile.service';
+import { SessionService } from 'src/app/services/session.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { SourceSubscription } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
@@ -31,7 +31,7 @@ export class RepositoriesPage implements OnInit {
     private readonly apollo: ApolloClient<any>,
     private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly modalCtrl: ModalController,
-    private readonly profileService: ProfileService,
+    private readonly profileService: SessionService,
     private readonly authService: AuthService,
     private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,

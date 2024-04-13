@@ -64,24 +64,22 @@
           interface="popover"
         >
           <ion-select-option disabled value="0 */15 * * * *"
-          >Every 15 min
+            >Every 15 min
           </ion-select-option>
           <ion-select-option disabled value="0 */30 * * * *"
-          >Every 30 min
+            >Every 30 min
           </ion-select-option>
           <ion-select-option disabled value="0 0 * * * *"
-          >Every hour
+            >Every hour
           </ion-select-option>
           <ion-select-option disabled value="0 0 */8 * * *"
-          >Every 6 hours
+            >Every 6 hours
           </ion-select-option>
           <ion-select-option disabled value="0 0 */12 * * *"
-          >Every 12 hours
+            >Every 12 hours
           </ion-select-option>
           <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
-          <ion-select-option value="0 0 0 * * 0"
-          >Every Week</ion-select-option
-          >
+          <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
         </ion-select>
       </ion-item>
     </ion-list>
@@ -110,10 +108,10 @@
           interface="popover"
         >
           <ion-select-option [value]="FilterTypeInclude"
-          >include</ion-select-option
+            >include</ion-select-option
           >
           <ion-select-option [value]="FilterTypeExclude"
-          >exclude</ion-select-option
+            >exclude</ion-select-option
           >
         </ion-select>
         <ion-text class="ion-padding-end"> if </ion-text>
@@ -122,14 +120,12 @@
           fill="outline"
           interface="popover"
         >
-          <ion-select-option [value]="FilterFieldLink"
-          >link</ion-select-option
-          >
+          <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
           <ion-select-option [value]="FilterFieldTitle"
-          >title</ion-select-option
+            >title</ion-select-option
           >
           <ion-select-option [value]="FilterFieldContent"
-          >content</ion-select-option
+            >content</ion-select-option
           >
         </ion-select>
         <ion-select
@@ -138,16 +134,16 @@
           interface="popover"
         >
           <ion-select-option [value]="GqlStringFilterOperator.Contains"
-          >contains</ion-select-option
+            >contains</ion-select-option
           >
           <ion-select-option [value]="GqlStringFilterOperator.Matches"
-          >matches</ion-select-option
+            >matches</ion-select-option
           >
           <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-          >starts with</ion-select-option
+            >starts with</ion-select-option
           >
           <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-          >ends with</ion-select-option
+            >ends with</ion-select-option
           >
         </ion-select>
         <ion-input
@@ -219,7 +215,7 @@
         >
           Fulltext
           <ion-note class="ion-padding-horizontal"
-          >Fetch Fulltext for every Item (static only)</ion-note
+            >Fetch Fulltext for every Item (static only)</ion-note
           >
         </ion-checkbox>
       </ion-item>
@@ -231,7 +227,7 @@
         >
           Privacy & Robustness
           <ion-note class="ion-padding-horizontal"
-          >Inlines images (base64) and unwinds tracking urls</ion-note
+            >Inlines images (base64) and unwinds tracking urls</ion-note
           >
         </ion-checkbox>
       </ion-item>
