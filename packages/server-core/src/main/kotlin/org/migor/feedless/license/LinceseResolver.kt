@@ -53,7 +53,7 @@ class LinceseResolver {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.info("[$corrId] updateLicense")
 
-    licenseService.updateLicense(data.licenseRaw)
+    licenseService.updateLicense(corrId, data.licenseRaw)
     getLicense()
   }
 
@@ -68,8 +68,9 @@ class LinceseResolver {
         LicenseData.newBuilder()
           .name(payload.name)
           .email(payload.email)
-          .type(payload.type)
-          .date(payload.date)
+          .createdAt(payload.createdAt.time)
+          .scope(payload.scope)
+          .version(payload.version)
           .build()
       })
       .build()

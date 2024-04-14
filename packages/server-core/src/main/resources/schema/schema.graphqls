@@ -601,8 +601,9 @@ type License {
 type LicenseData {
   name: String!
   email: String!
-  type: String!
-  date: Long!
+  scope: String!
+  version: Int!
+  createdAt: Long!
 }
 
 type Subscription {

@@ -1,21 +1,10 @@
-package org.migor.feedless.service
+package org.migor.feedless.mail
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.migor.feedless.agent.AgentDAO
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.mail.FtlTemplate
-import org.migor.feedless.mail.MailTrackerAuthorizedTemplate
-import org.migor.feedless.mail.TemplateService
-import org.migor.feedless.mail.VisualDiffChangeDetectedMailTemplate
-import org.migor.feedless.mail.VisualDiffChangeDetectedParams
-import org.migor.feedless.mail.VisualDiffWelcomeMailTemplate
-import org.migor.feedless.mail.VisualDiffWelcomeParams
-import org.migor.feedless.mail.WelcomeFreeMailTemplate
-import org.migor.feedless.mail.WelcomeMailParams
-import org.migor.feedless.mail.WelcomePaidMailTemplate
-import org.migor.feedless.mail.WelcomeWaitListMailTemplate
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired

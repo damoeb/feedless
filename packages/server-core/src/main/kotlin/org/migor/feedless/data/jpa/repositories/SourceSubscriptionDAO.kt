@@ -53,26 +53,24 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
 
   fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
 
-  fun deleteByIdAndOwnerId(id: UUID, userId: UUID)
-
   fun countByOwnerId(id: UUID): Int
   fun countByOwnerIdAndArchived(id: UUID, archived: Boolean): Int
 
 
-  @Modifying
-  @Query(
-    """
-    update SourceSubscriptionEntity e
-    set e.archived = true
-    where e.id IN (
-        select s.id from SourceSubscriptionEntity s
-        where s.ownerId = :ownerId
-          and s.archived = false
-        order by s.createdAt desc
-        limit 1
-    )
-    """
-  )
-  fun updateArchivedForOldestActive(@Param("ownerId") ownerId: UUID)
+//  @Modifying
+//  @Query(
+//    """
+//    update SourceSubscriptionEntity e
+//    set e.archived = true
+//    where e.id IN (
+//        select s.id from SourceSubscriptionEntity s
+//        where s.ownerId = :ownerId
+//          and s.archived = false
+//        order by s.createdAt desc
+//        limit 1
+//    )
+//    """
+//  )
+//  fun updateArchivedForOldestActive(@Param("ownerId") ownerId: UUID)
 
 }

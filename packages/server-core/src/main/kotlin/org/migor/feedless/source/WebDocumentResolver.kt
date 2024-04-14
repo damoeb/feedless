@@ -23,7 +23,6 @@ import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
 import org.migor.feedless.generated.types.WebDocumentsInput
 import org.migor.feedless.service.FrequencyItem
-import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory

@@ -23,7 +23,7 @@ interface PlanConstraintsService {
 
   fun auditScrapeSourceMaxCount(count: Int, userId: UUID)
 
-  fun violatesScrapeSourceMaxActiveCount(activeCount: Int, userId: UUID): Boolean
+  fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean
 
   fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID)
 }

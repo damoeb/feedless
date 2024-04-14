@@ -33,7 +33,7 @@ class SecretsResolver {
   lateinit var userSecretService: UserSecretService
 
   @Autowired
-  lateinit var currentUser: SessionService
+  lateinit var sessionService: SessionService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
@@ -50,7 +50,7 @@ class SecretsResolver {
   suspend fun createUserSecret(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): UserSecret = coroutineScope {
-    userSecretService.createUserSecret(corrId, currentUser.user(corrId)).toDto(false)
+    userSecretService.createUserSecret(corrId, sessionService.user(corrId)).toDto(false)
   }
 
 
@@ -62,7 +62,10 @@ class SecretsResolver {
     @InputArgument data: DeleteUserSecretsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    userSecretService.deleteUserSecrets(corrId, currentUser.user(corrId), data.where.`in`.map { UUID.fromString(it) })
+    userSecretService.deleteUserSecrets(
+      corrId,
+      sessionService.user(corrId),
+      data.where.`in`.map { UUID.fromString(it) })
     true
   }
 }

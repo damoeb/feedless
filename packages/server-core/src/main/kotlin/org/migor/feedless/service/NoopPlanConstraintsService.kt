@@ -60,7 +60,7 @@ class NoopPlanConstraintsService : PlanConstraintsService {
   override fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
   }
 
-  override fun violatesScrapeSourceMaxActiveCount(activeCount: Int, userId: UUID): Boolean {
+  override fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
     return false
   }
 

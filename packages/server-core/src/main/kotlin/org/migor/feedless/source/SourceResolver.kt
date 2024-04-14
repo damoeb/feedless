@@ -22,7 +22,6 @@ import org.migor.feedless.generated.types.SourceSubscriptionWhereInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsInput
 import org.migor.feedless.harvest.toScrapeRequest
-import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

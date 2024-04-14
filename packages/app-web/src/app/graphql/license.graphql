@@ -6,8 +6,9 @@ fragment LicenseFragment on License {
   data {
     name
     email
-    type
-    date
+    version
+    createdAt
+    scope
   }
 }
 

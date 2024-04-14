@@ -99,6 +99,8 @@ dependencies {
   // security
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
+  implementation("com.nimbusds:nimbus-jose-jwt:9.37.3")
 
   // json feed
   implementation("org.json:json:20240303")
@@ -139,6 +141,9 @@ dependencies {
   testImplementation("org.testcontainers:postgresql:1.19.0")
   testImplementation("org.testcontainers:testcontainers:1.19.0")
   testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+//  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
+//  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
+
 
 //  implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4")
 }

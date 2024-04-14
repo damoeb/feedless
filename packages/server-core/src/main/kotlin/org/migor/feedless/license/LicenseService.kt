@@ -1,9 +1,22 @@
 package org.migor.feedless.license
 
-import jakarta.annotation.PostConstruct
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.annotations.SerializedName
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.JWSObject
+import com.nimbusds.jose.JWSSigner
+import com.nimbusds.jose.JWSVerifier
+import com.nimbusds.jose.Payload
+import com.nimbusds.jose.crypto.RSASSASigner
+import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jose.jwk.RSAKey
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
+import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,12 +26,56 @@ import org.springframework.context.ApplicationListener
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
+import org.springframework.util.ResourceUtils
 import java.io.File
 import java.io.FileWriter
 import java.nio.file.Files
+import java.security.KeyFactory
+import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPublicKey
+import java.security.spec.X509EncodedKeySpec
+import java.text.DateFormat
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
 
-data class LicensePayload(val name: String, val email: String, val type: String, val date: Long)
+
+data class LicensePayload(
+  @SerializedName("v") val version: Int,
+  @SerializedName("n") val name: String,
+  @SerializedName("e") val email: String,
+  @SerializedName("c") val createdAt: Date,
+  @SerializedName("s") val scope: String
+) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as LicensePayload
+
+    val trunc = { date: Date? ->
+      date?.toInstant()
+        ?.atZone(ZoneId.systemDefault())
+        ?.toLocalDateTime()
+        ?.truncatedTo(ChronoUnit.DAYS)
+    }
+
+    if (name != other.name) return false
+    if (email != other.email) return false
+    if (trunc(createdAt) != trunc(other.createdAt)
+    ) return false
+
+    return scope == other.scope
+  }
+
+  override fun hashCode(): Int {
+    var result = name.hashCode()
+    result = 31 * result + email.hashCode()
+    result = 31 * result + createdAt.hashCode()
+    result = 31 * result + scope.hashCode()
+    return result
+  }
+}
 
 @Service
 class LicenseService : ApplicationListener<ApplicationReadyEvent> {
@@ -28,17 +85,18 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   @Autowired
   lateinit var environment: Environment
 
-  private var licenseRaw: String? = null
   private var license: LicensePayload? = null
 
   @Value("\${APP_LICENSE_KEY:}")
   var licenseKey: String? = null
 
+  var feedlessPrivateKey: RSAPrivateKey? = null
+  var feedlessPublicKey: RSAPublicKey? = null
+
   @Value("\${APP_BUILD_TIMESTAMP:}")
   var buildTimestamp: String? = null
 
-  @PostConstruct
-  fun postConstruct() {
+  fun initialize() {
     if (NumberUtils.isParsable(buildTimestamp)) {
       val buildTime = buildTimestamp!!.toLong()
       if (buildTime > Date().time) {
@@ -49,21 +107,35 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
 
     if (isSelfHosted()) {
-      licenseRaw = if (getLicenseFile().exists()) {
+      loadPublicKey()
+      val licenseRaw = if (getLicenseFile().exists()) {
         readLicenseFile()
       } else {
         if (StringUtils.isNotBlank(licenseKey)) {
-          log.info("Using license from env")
+          log.info("[boot] Using license from env")
           writeLicenseKeyToFile(licenseKey!!)
           licenseKey!!
         } else {
+          log.warn("[boot] No license found in env APP_LICENSE_KEY or file ${getLicenseFile().absolutePath}")
           null
         }
       }
       licenseRaw?.let {
-        license = parseLicense(it)
+        license = parseLicense("boot", it)
       }
+    } else {
+      loadPrivateKey()
     }
+  }
+
+  private fun loadPrivateKey() {
+
+  }
+
+  private fun loadPublicKey() {
+    val publicKeyFile = getPublicKeyFile()
+    log.info("[boot] loading public key from ${publicKeyFile.absolutePath}")
+    feedlessPublicKey = decodePublicKey(Files.readString(publicKeyFile.toPath()))
   }
 
   private fun writeLicenseKeyToFile(licenseKey: String) {
@@ -72,55 +144,46 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
   }
 
-  private fun parseLicense(licenseRaw: String): LicensePayload? {
+  fun parseLicense(corrId: String, licenseWithHeader: String): LicensePayload? {
     return try {
-      log.info("Parsing license")
-      // todo validate
-      val lines = String(
-        Base64.getDecoder()
-          .decode(licenseRaw.replace("\n", ""))
-      )
-        .split("\n")
-        .map { line -> line.split(":") }
-
-      val extractProperty = { property: String ->
-        lines.filter { it[0] == property }.map { it[1] }.firstOrNull()!!
+      log.info("[$corrId] Parsing license")
+      val payload = gson()
+        .fromJson(
+          String(JWSObject.parse(licenseWithHeader.clearHeaders()).payload.toBytes()),
+          LicensePayload::class.java
+        )
+      log.info("[$corrId] $payload")
+      if (isValidLicense(licenseWithHeader, feedlessPublicKey!!)) {
+        payload
+      } else {
+        log.error("[$corrId] Does not match public key")
+        null
       }
 
-      val name = extractProperty("name")
-      val email = extractProperty("email")
-      val type = extractProperty("type")
-      val date = extractProperty("date").toLong()
-      LicensePayload(
-        name,
-        email,
-        type,
-        date
-      )
     } catch (e: Exception) {
-      log.error("Invalid license: ${e.message}")
+      log.error("[$corrId] Invalid license: ${e.message}")
       null
     }
   }
 
+  private fun gson(): Gson = GsonBuilder()
+    .setDateFormat(DateFormat.FULL, DateFormat.FULL)
+    .create()
+
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     if (isSelfHosted()) {
-      val buildAge = Date().time - buildTimestamp!!.toLong()
-      val ignoreLicense = buildAge > DateUtils.MILLIS_PER_DAY * 365 * 2
-      val enforceLicense = buildAge > DateUtils.MILLIS_PER_DAY * 28 * 3
-
-      if (StringUtils.isBlank(licenseRaw)) {
-        log.info("no license")
-      } else {
-        log.info("found license $license")
+      initialize()
+      if (license != null) {
+        log.info("[boot] License is valid")
       }
     }
   }
 
   private fun readLicenseFile(): String? {
     return try {
-      val license = Files.readString(getLicenseFile().toPath())
-      log.info("Using license from file")
+      val licenseFile = getLicenseFile()
+      val license = Files.readString(licenseFile.toPath())
+      log.info("[boot] Using license from file ${licenseFile.absolutePath}")
       license
     } catch (e: Exception) {
       null
@@ -128,6 +191,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun getLicenseFile() = File("./license.key")
+  private fun getPublicKeyFile(): File = ResourceUtils.getFile("classpath:certs/feedless.pub")
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
@@ -143,7 +207,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     val now = Date().time
     val buildAge = now - buildFrom()
     val licensePeriodExceeded = buildAge > DateUtils.MILLIS_PER_DAY * 365 * 2
-    val enforcePeriodReached = now > getTrialUntil()
+    val enforcePeriodReached = !isTrial()
     return if (enforcePeriodReached) {
       if (licensePeriodExceeded) {
         true
@@ -163,10 +227,67 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return getTrialUntil() > Date().time
   }
 
-  fun updateLicense(licenseRaw: String) {
-    log.info("Updating license at ${getLicenseFile().absolutePath}")
-    license = parseLicense(licenseRaw)
-    writeLicenseKeyToFile(licenseRaw)
+  fun updateLicense(corrId: String, licenseRaw: String) {
+    log.info("[${corrId}] Updating license at ${getLicenseFile().absolutePath}")
+    if (isValidLicense(licenseRaw, feedlessPublicKey!!)) {
+      license = parseLicense(corrId, licenseRaw)
+      writeLicenseKeyToFile(licenseRaw)
+    } else {
+      throw IllegalArgumentException("license does not match with public key")
+    }
   }
 
+  fun createLicenseKey(keyID: String): RSAKey {
+    return RSAKeyGenerator(2048).keyID(keyID).generate()
+  }
+
+  fun createLicense(payload: LicensePayload, rsaJWK: RSAKey): String {
+    val signer: JWSSigner = RSASSASigner(rsaJWK)
+    val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
+    jwsObject.sign(signer)
+    return jwsObject.serialize().withWraps().withHeaders("FEEDLESS KEY")
+  }
+
+  fun isValidLicense(license: String, rsaPublicJWK: RSAPublicKey): Boolean {
+    return try {
+      val verifier: JWSVerifier = RSASSAVerifier(rsaPublicJWK)
+      val jwsObject = JWSObject.parse(license.clearHeaders())
+      jwsObject.verify(verifier)
+    } catch (e: Exception) {
+      false
+    }
+  }
+
+  private fun createJwsObject(
+    rsaJWK: RSAKey,
+    payload: String
+  ) = JWSObject(
+    JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaJWK.keyID).build(), Payload(payload)
+  )
+
+  fun decodePublicKey(publicKeyString: String): RSAPublicKey {
+    val publicKeyByte: ByteArray = Base64.getDecoder().decode(publicKeyString.clearHeaders())
+
+    val keyFactory = KeyFactory.getInstance("RSA")
+    return keyFactory.generatePublic(X509EncodedKeySpec(publicKeyByte)) as RSAPublicKey
+  }
+}
+
+private fun String.clearHeaders(): String {
+  return this.replace("--[^\n]+\n?".toRegex(), "")
+    .replace("\n".toRegex(), "")
+    .trim()
+}
+
+fun String.withWraps(): String {
+  return WordUtils.wrap(this, 64, "\n", true)
+}
+
+fun String.withHeaders(header: String): String {
+  val HEADER = header.uppercase()
+  return """
+-----BEGIN ${HEADER}-----
+$this
+-----END ${HEADER}-----
+  """.trimIndent().trim()
 }

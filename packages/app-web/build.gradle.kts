@@ -48,7 +48,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
 }
 
 val testTask = tasks.register<YarnTask>("test") {
-  args.set(listOf("test", "-c", "ci"))
+  args.set(listOf("test:ci"))
   dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
   inputs.dir("node_modules")

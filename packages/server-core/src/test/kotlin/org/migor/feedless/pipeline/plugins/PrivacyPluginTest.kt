@@ -1,4 +1,4 @@
-package org.migor.feedless.pipeline
+package org.migor.feedless.pipeline.plugins
 
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.pipeline.plugins.PrivacyPlugin
 
-internal class InlineImagesPluginTest {
+internal class PrivacyPluginTest {
 
   @Test
   @Disabled

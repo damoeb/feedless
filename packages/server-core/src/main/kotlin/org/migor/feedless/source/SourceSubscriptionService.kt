@@ -1,4 +1,4 @@
-package org.migor.feedless.service
+package org.migor.feedless.source
 
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
@@ -36,6 +36,7 @@ import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -72,7 +73,7 @@ class SourceSubscriptionService {
   lateinit var mailService: MailService
 
   @Autowired
-  lateinit var currentUser: SessionService
+  lateinit var sessionService: SessionService
 
   @Autowired
   lateinit var userService: UserService
@@ -95,18 +96,19 @@ class SourceSubscriptionService {
 
     val ownerId = getActualUserOrDefaultUser(corrId).id
     val totalCount = sourceSubscriptionDAO.countByOwnerId(ownerId)
-    val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(ownerId, false)
     planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
-    if (planConstraints.violatesScrapeSourceMaxActiveCount(activeCount, ownerId)) {
-      log.info("[$corrId] violates maxActiveCount, archiving oldest")
-      sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
+    if (planConstraints.violatesScrapeSourceMaxActiveCount(ownerId)) {
+      log.info("[$corrId] violates maxActiveCount")
+      throw IllegalArgumentException("violates maxActiveCount")
+//      log.info("[$corrId] violates maxActiveCount, archiving oldest")
+//      sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
     }
     return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
   }
 
   private fun getActualUserOrDefaultUser(corrId: String): UserEntity {
-    return currentUser.userId()?.let {
-      currentUser.user(corrId)
+    return sessionService.userId()?.let {
+      sessionService.user(corrId)
     } ?: userService.getAnonymousUser().also { log.info("[$corrId] fallback to user anonymous") }
   }
 
@@ -245,12 +247,16 @@ class SourceSubscriptionService {
   }
 
   fun delete(corrId: String, id: UUID) {
-    sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user(corrId).id)
+    val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
+    if (sub.ownerId != sessionService.userId()) {
+      throw PermissionDeniedException("not authorized")
+    }
+    sourceSubscriptionDAO.delete(sub)
   }
 
   fun update(corrId: String, id: UUID, data: UpdateSinkOptionsDataInput): SourceSubscriptionEntity {
     val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
-    if (sub.ownerId != currentUser.userId()) {
+    if (sub.ownerId != sessionService.userId()) {
       throw PermissionDeniedException("not authorized")
     }
     data.sinkOptions?.let {

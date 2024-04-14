@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.service.SourceSubscriptionService
+import org.migor.feedless.source.SourceSubscriptionService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

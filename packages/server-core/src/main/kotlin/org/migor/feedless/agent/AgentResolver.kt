@@ -30,7 +30,7 @@ class AgentResolver {
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
   @Autowired
-  lateinit var currentUser: SessionService
+  lateinit var sessionService: SessionService
 
   @Autowired
   lateinit var agentService: AgentService
@@ -59,7 +59,7 @@ class AgentResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
     log.info("[$corrId] agents")
-    agentService.findAll(currentUser.userId()!!).map { it.toDto() }
+    agentService.findAll(sessionService.userId()!!).map { it.toDto() }
   }
 }
 

@@ -5,17 +5,17 @@
     "mustache": "^4.2.0"
   },
   "scripts": {
-    "updateReadme": "for pj in products/*; do mustache packages/app-web/feedless-config.json $pj/README.mustache.md $pj/README.md; done",
+    "updateReadme": "for pj in products/* .; do mustache packages/app-web/feedless-config.json $pj/README.mustache.md $pj/README.md; done",
     "commit": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/damoeb/rich-rss.git"
+    "url": "git+https://github.com/damoeb/feedless.git"
   },
   "keywords": [],
   "author": "Markus Ruepp",
   "bugs": {
-    "url": "https://github.com/damoeb/rich-rss/issues"
+    "url": "https://github.com/damoeb/feedless/issues"
   },
-  "homepage": "https://github.com/damoeb/rich-rss#readme"
+  "homepage": "https://github.com/damoeb/feedless#readme"
 }

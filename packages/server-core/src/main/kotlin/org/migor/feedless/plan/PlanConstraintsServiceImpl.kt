@@ -1,13 +1,13 @@
 package org.migor.feedless.plan
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.BadRequestException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.FeatureValueEntity
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
 import org.migor.feedless.data.jpa.repositories.PlanDAO
+import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toDate
@@ -26,9 +26,11 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsServiceImpl::class.simpleName)
 
+  @Autowired
+  lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var currentUser: SessionService
+  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
 
   @Autowired
   lateinit var featureDAO: FeatureValueDAO
@@ -39,14 +41,18 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   @Autowired
   lateinit var planDAO: PlanDAO
 
-  override fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int? {
-    return (maxItems ?: 2)
-      .coerceAtLeast(10)
-      .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId))
+  override fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID): Int? {
+    val maxItems = getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId)
+    return customMaxItems?.let {
+      maxItems?.let {
+        customMaxItems.coerceAtLeast(2)
+          .coerceAtMost(maxItems)
+      } ?: customMaxItems.coerceAtLeast(2)
+    }
   }
 
   override fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {
-    val minRefreshRateInMinutes = getFeatureInt(FeatureName.minRefreshRateInMinutesInt, userId)
+    val minRefreshRateInMinutes = getFeatureInt(FeatureName.minRefreshRateInMinutesInt, userId)!!
     val minNextDate = toDate(LocalDateTime.now().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES))
 
     return if (nextDate < minNextDate) {
@@ -65,12 +71,12 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   }
 
   override fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
-    return if (visibility === EntityVisibility.isPublic && getFeatureBool(
-        FeatureName.publicScrapeSourceBool,
-        userIdFromRequest()
-      )
-    ) {
-      visibility
+    val canPublic = getFeatureBool(
+      FeatureName.publicScrapeSourceBool,
+      userIdFromRequest()
+    ) ?: false
+    return if (canPublic) {
+      visibility ?: EntityVisibility.isPrivate
     } else {
       EntityVisibility.isPrivate
     }
@@ -80,24 +86,18 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
     actionsCount
       ?.let {
         val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
-        if (maxActions < actionsCount) {
-          throw BadRequestException("Too many actions (limit $maxActions, actual $actionsCount")
+        if (maxActions != null && maxActions < actionsCount) {
+          throw IllegalArgumentException("Too many actions (limit $maxActions, actual $actionsCount")
         }
       }
   }
-
-//  fun coerceScrapeRequestTimeout(timeout: Int?): Int? {
-//    return timeout
-//      ?.coerceAtLeast(10000)
-//      ?.coerceAtMost(getFeatureInt(FeatureName.scrapeRequestTimeout, userIdFromRequest()))
-//  }
 
   override fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
     timeout
       ?.let {
         val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutInt, userId)
-        if (maxTimeout < it) {
-          throw BadRequestException("Timeout exceedes limit (limit $maxTimeout, actual $it")
+        if (maxTimeout != null && maxTimeout < it) {
+          throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
         }
       }
   }
@@ -105,8 +105,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   override fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
     val user = userDAO.findById(userId).orElseThrow()
     return if (user.anonymous) {
-//      val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDaysInt).valueInt!!
-      val days = 1
+      val days = getFeatureInt(FeatureName.scrapeSourceExpiryInDaysInt, userId)!!
       val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
       log.info("[$corrId] assign expiry to $expiry")
       toDate(expiry)
@@ -115,11 +114,12 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
     }
   }
 
-  private fun userIdFromRequest() = currentUser.userId()!!
+  private fun userIdFromRequest() = sessionService.userId()!!
 
-  private fun getFeatureInt(featureName: FeatureName, userId: UUID) = getFeature(featureName, userId)!!.valueInt!!
+  private fun getFeatureInt(featureName: FeatureName, userId: UUID): Int? = getFeature(featureName, userId)?.valueInt
 
-  private fun getFeatureBool(featureName: FeatureName, userId: UUID) = getFeature(featureName, userId)!!.valueBoolean!!
+  private fun getFeatureBool(featureName: FeatureName, userId: UUID): Boolean? =
+    getFeature(featureName, userId)?.valueBoolean
 
   private fun getFeature(featureName: FeatureName, userId: UUID): FeatureValueEntity? {
     val user = userDAO.findById(userId).orElseThrow()
@@ -131,19 +131,20 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
 
   override fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
     val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotalInt, userId)
-    if (maxSubscriptions < count) {
-      throw BadRequestException("Too many subscriptions (limit $maxSubscriptions, actual $count")
+    if (maxSubscriptions != null && maxSubscriptions < count) {
+      throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
     }
   }
 
-  override fun violatesScrapeSourceMaxActiveCount(activeCount: Int, userId: UUID): Boolean {
-    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId) <= activeCount
+  override fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
+    val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(userId, false)
+    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)!! <= activeCount
   }
 
   override fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID) {
     val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId)
-    if (maxRequests < count) {
-      throw BadRequestException("Too many requests in source (limit $maxRequests, actual $count)")
+    if (maxRequests != null && maxRequests < count) {
+      throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }
   }
 }

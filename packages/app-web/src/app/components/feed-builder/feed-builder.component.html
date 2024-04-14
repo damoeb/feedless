@@ -7,7 +7,7 @@
         [loading]="loading"
         (cancelReceived)="handleCancel()"
         buttonText="Create"
-        color="primary"
+        [color]="url?.length > 0 ? undefined : 'primary'"
         placeholder="Type a Url of a website"
       ></app-searchbar>
       <p

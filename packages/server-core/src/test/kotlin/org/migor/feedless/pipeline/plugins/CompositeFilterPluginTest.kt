@@ -1,4 +1,4 @@
-package org.migor.feedless.pipeline
+package org.migor.feedless.pipeline.plugins
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -17,19 +17,19 @@ class CompositeFilterPluginTest {
 
   private lateinit var webDocument: WebDocumentEntity
   private lateinit var service: CompositeFilterPlugin
-  private val corrId = "-"
+  private val corrId = "test"
 
   @BeforeEach
   fun setUp() {
     service = CompositeFilterPlugin()
     webDocument = WebDocumentEntity()
     webDocument.contentTitle = " foo is the perfect title"
-    webDocument.contentText = ""
+    webDocument.contentText = "bar is the payload"
     webDocument.url = ""
   }
 
   @Test
-  fun noFilterWorks() {
+  fun `given no filters are present, it passes`() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
       .org_feedless_filter(listOf())
       .build()
@@ -38,7 +38,7 @@ class CompositeFilterPluginTest {
   }
 
   @Test
-  fun includeNumberFilterWorks() {
+  fun `given a number filter is provided, it works`() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
       .org_feedless_filter(
         listOf(
@@ -62,7 +62,7 @@ class CompositeFilterPluginTest {
   }
 
   @Test
-  fun includeStringFilterWorks() {
+  fun `given a string filter is provided, it works`() {
     val filterParams = PluginExecutionParamsInput.newBuilder()
       .org_feedless_filter(
         listOf(
