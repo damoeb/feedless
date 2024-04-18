@@ -17,7 +17,7 @@ import java.util.*
 @Table(name = "t_notification")
 open class NotificationEntity : EntityWithUUID() {
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "message")
   open lateinit var message: String
 
   @Column(name = "owner_id", nullable = false)

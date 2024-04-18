@@ -620,17 +620,7 @@ export class PuppeteerService {
       let selector: string;
       let frameOrPage: Frame | Page;
 
-      const iframeRef = element.iframe;
-      if (iframeRef) {
-        appendLog(`resolve iframe ${iframeRef.xpath.value}`);
-        await page.waitForXPath(iframeRef.xpath.value, { visible: true });
-        const elementHandle = await page.$(
-          `::-p-xpath(${iframeRef.xpath.value})`,
-        );
-        const frame = await elementHandle.contentFrame();
-        selector = this.resolveSelector(iframeRef.nestedElement);
-        frameOrPage = frame;
-      } else if (element.element) {
+      if (element.element) {
         selector = this.resolveSelector(element.element);
         frameOrPage = page;
       } else {

@@ -213,9 +213,6 @@ fragment ActionFragment on ScrapeAction {
       value
     }
   }
-  cookie {
-    value
-  }
   click {
     element {
       xpath {

@@ -20,10 +20,10 @@ import java.util.*
 @Table(name = "t_otp")
 open class OneTimePasswordEntity : EntityWithUUID() {
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "password")
   open lateinit var password: String
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "valid_until")
   @Temporal(TemporalType.TIMESTAMP)
   open lateinit var validUntil: Timestamp
 

@@ -1,6 +1,7 @@
 package org.migor.feedless.data.jpa.models
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,7 +12,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
-import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
@@ -66,48 +66,47 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "scheduler_expression")
   open lateinit var schedulerExpression: String
 
-  open var tag: String? = null
-
+  @Column(name = "retention_max_items")
   open var retentionMaxItems: Int? = null
 
+  @Column(name = "retention_max_age_days")
   open var retentionMaxAgeDays: Int? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   @UpdateTimestamp
-  @Column
+  @Column(name = "last_updated_at")
   open var lastUpdatedAt: Date = Date()
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column
+  @Column(name = "disabled_from")
   open var disabledFrom: Date? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column
+  @Column(name = "sunset_after")
   open var sunsetAfterTimestamp: Date? = null
 
-  @Column
+  @Column(name = "sunset_after_total_document_count")
   open var sunsetAfterTotalDocumentCount: Int? = null
 
-  @Column
+  @Column(name = "document_count_since_creation")
   open var documentCountSinceCreation: Int = 0
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "is_archived")
   open var archived: Boolean = false
 
-  @Column(nullable = false)
-  @Deprecated("comes from user")
+  @Column(nullable = false, name = "for_product")
   open lateinit var product: ProductName
 
   @Type(JsonBinaryType::class)
-  @Column(columnDefinition = "jsonb", nullable = false)
+  @Column(columnDefinition = "jsonb", nullable = false, name = "plugins")
   @Lazy
   open var plugins: List<org.migor.feedless.data.jpa.models.PluginExecution> = emptyList()
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column
+  @Column(name = "trigger_scheduled_next_at")
   open var triggerScheduledNextAt: Date? = null
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)
@@ -124,7 +123,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   )
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId, cascade = [CascadeType.ALL])
   open var sources: MutableList<ScrapeSourceEntity> = mutableListOf()
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
@@ -144,11 +143,6 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_source_subscription__segmentation")
   )
   open var segmentation: SegmentationEntity? = null
-
-  @PrePersist
-  fun prePersist() {
-//    this.archived = disabledFrom != null
-  }
 }
 
 fun SourceSubscriptionEntity.toDto(): SourceSubscription {

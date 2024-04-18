@@ -63,17 +63,6 @@ subscription registerAgent($data: RegisterAgentInput!) {
             element {
               ...FragmentDOMElementByNameOrXPathInput
             }
-            iframe {
-              xpath {
-                value
-              }
-              nestedElement {
-                ...FragmentDOMElementByNameOrXPathInput
-              }
-            }
-          }
-          cookie {
-            value
           }
         }
       }

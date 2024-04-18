@@ -179,21 +179,6 @@
                   </ion-button>
                 </div>
 
-                <!-- cookie -->
-                <div
-                  *ngIf="action.value.type === 'cookie'"
-                  [formGroup]="action.controls.oneOf.controls.cookie"
-                  class="flex"
-                >
-                  <app-input
-                    [formControl]="
-                      action.controls.oneOf.controls.cookie.controls.value
-                    "
-                    placeholder="Set raw cookie string"
-                    type="text"
-                  ></app-input>
-                </div>
-
                 <!-- wait -->
                 <div
                   *ngIf="action.value.type === 'wait'"

@@ -48,11 +48,7 @@ open class PlanEntity : EntityWithUUID() {
 //  @Enumerated(EnumType.STRING)
   open lateinit var name: String
 
-//  @Column(nullable = false, name = StandardJpaFields.product, length = 50)
-//  @Enumerated(EnumType.STRING)
-//  open lateinit var product: ProductName
-
-  @Column(nullable = false, length = 50)
+  @Column(nullable = false, length = 50, name = "availability")
   @Enumerated(EnumType.STRING)
   open lateinit var availability: PlanAvailability
 
@@ -62,20 +58,6 @@ open class PlanEntity : EntityWithUUID() {
   open var beforeCosts: Double? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id")
-//  @JoinTable(
-//    name = "map_plan_to_feature",
-//    joinColumns = [
-//      JoinColumn(
-//        name = "plan_id", referencedColumnName = "id",
-//        nullable = false, updatable = false
-//      )],
-//    inverseJoinColumns = [
-//      JoinColumn(
-//        name = "feature_id", referencedColumnName = "id",
-//        nullable = false, updatable = false
-//      )
-//    ]
-//  )
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var features: MutableList<FeatureValueEntity> = mutableListOf()
 

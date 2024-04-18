@@ -18,10 +18,10 @@ import java.util.*
 @Table(name = "t_agent")
 open class AgentEntity : EntityWithUUID() {
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "connection_id")
   open lateinit var connectionId: String
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "version")
   open lateinit var version: String
 
   @Column(nullable = false)

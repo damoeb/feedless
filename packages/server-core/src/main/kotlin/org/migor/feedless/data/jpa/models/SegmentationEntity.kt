@@ -16,17 +16,17 @@ import java.util.*
 @Table(name = "t_segment")
 open class SegmentationEntity : EntityWithUUID() {
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "digest")
   open var digest: Boolean = false
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "size")
   @Min(1)
   open var size: Int = 0
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "sort_by")
   open lateinit var sortBy: String
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "sort_Asc")
   open var sortAsc: Boolean = false
 
   @OneToOne(fetch = FetchType.LAZY)

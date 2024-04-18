@@ -46,30 +46,30 @@ enum class FeatureName {
   scrapeSourceMaxCountTotalInt,
 }
 
-fun featureScope(name: FeatureName): FeatureScope {
-  return when (name) {
-    FeatureName.canSignUp,
-    FeatureName.canLogin,
-    FeatureName.canCreateUser,
-    FeatureName.canCreateAsAnonymous,
-    FeatureName.hasWaitList -> FeatureScope.frontend
-
-    FeatureName.rateLimitInt,
-    FeatureName.minRefreshRateInMinutesInt,
-    FeatureName.publicScrapeSourceBool,
-    FeatureName.pluginsBool,
-    FeatureName.scrapeRequestTimeoutInt,
-    FeatureName.scrapeSourceRetentionMaxItemsInt,
-    FeatureName.itemEmailForwardBool,
-    FeatureName.itemWebhookForwardBool,
-    FeatureName.apiBool,
-    FeatureName.scrapeSourceExpiryInDaysInt,
-    FeatureName.scrapeSourceMaxCountActiveInt,
-    FeatureName.scrapeRequestMaxCountPerSourceInt,
-    FeatureName.scrapeRequestActionMaxCountInt,
-    FeatureName.scrapeSourceMaxCountTotalInt -> FeatureScope.backend
-  }
-}
+//fun featureScope(name: FeatureName): FeatureScope {
+//  return when (name) {
+//    FeatureName.canSignUp,
+//    FeatureName.canLogin,
+//    FeatureName.canCreateUser,
+//    FeatureName.canCreateAsAnonymous,
+//    FeatureName.hasWaitList -> FeatureScope.frontend
+//
+//    FeatureName.rateLimitInt,
+//    FeatureName.minRefreshRateInMinutesInt,
+//    FeatureName.publicScrapeSourceBool,
+//    FeatureName.pluginsBool,
+//    FeatureName.scrapeRequestTimeoutInt,
+//    FeatureName.scrapeSourceRetentionMaxItemsInt,
+//    FeatureName.itemEmailForwardBool,
+//    FeatureName.itemWebhookForwardBool,
+//    FeatureName.apiBool,
+//    FeatureName.scrapeSourceExpiryInDaysInt,
+//    FeatureName.scrapeSourceMaxCountActiveInt,
+//    FeatureName.scrapeRequestMaxCountPerSourceInt,
+//    FeatureName.scrapeRequestActionMaxCountInt,
+//    FeatureName.scrapeSourceMaxCountTotalInt -> FeatureScope.backend
+//  }
+//}
 
 
 @Entity
@@ -82,11 +82,13 @@ fun featureScope(name: FeatureName): FeatureScope {
 )
 open class FeatureValueEntity : EntityWithUUID() {
 
+  @Column(name="value_int")
   open var valueInt: Int? = null
 
+  @Column(name="value_bool")
   open var valueBoolean: Boolean? = null
 
-  @Column(nullable = false, length = 50)
+  @Column(nullable = false, length = 50, name = "value_type")
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 

@@ -6,6 +6,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.actions.ClickPositionActionEntity
+import org.migor.feedless.actions.DomActionEntity
+import org.migor.feedless.actions.DomEventType
+import org.migor.feedless.actions.HeaderActionEntity
+import org.migor.feedless.actions.ScrapeActionDAO
+import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
@@ -25,6 +31,7 @@ import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
+import org.migor.feedless.generated.types.ScrapeAction
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
@@ -62,6 +69,9 @@ class SourceSubscriptionService {
 
   @Autowired
   lateinit var mailForwardDAO: MailForwardDAO
+
+  @Autowired
+  lateinit var scrapeActionDAO: ScrapeActionDAO
 
   @Autowired
   lateinit var userDAO: UserDAO
@@ -185,6 +195,7 @@ class SourceSubscriptionService {
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
     entity.timeout = scrapeRequest.page.timeout
+
     scrapeRequest.page.prerender?.let {
       entity.waitUntil = it.waitUntil
       entity.prerender = true
@@ -192,14 +203,23 @@ class SourceSubscriptionService {
       entity.viewport = it.viewport
       entity.language = it.language
     }
-    entity.actions = scrapeRequest.page.actions
+
     entity.debugCookies = BooleanUtils.isTrue(scrapeRequest.debug?.cookies)
     entity.debugHtml = BooleanUtils.isTrue(scrapeRequest.debug?.html)
     entity.debugConsole = BooleanUtils.isTrue(scrapeRequest.debug?.console)
     entity.debugScreenshot = BooleanUtils.isTrue(scrapeRequest.debug?.screenshot)
     entity.debugNetwork = BooleanUtils.isTrue(scrapeRequest.debug?.network)
     entity.subscriptionId = sub.id
-    return scrapeSourceDAO.save(entity)
+    if (scrapeRequest.page.actions != null) {
+      entity.actions = scrapeRequest.page.actions
+        .map {
+          val a = it.fromDto()
+          a.scrapeSourceId = entity.id
+          a
+        }.toMutableList()
+    }
+
+    return entity
   }
 
   @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #subscriptionId")
@@ -285,6 +305,56 @@ class SourceSubscriptionService {
 
     return sourceSubscriptionDAO.save(sub)
   }
+}
+
+private fun ScrapeAction.fromDto(): ScrapeActionEntity {
+  return if (this.click?.position !== null) {
+    val click = ClickPositionActionEntity()
+    click.x = this.click.position.x
+    click.y = this.click.position.y
+    click
+  } else {
+    if (this.header !== null) {
+      val header = HeaderActionEntity()
+
+      header
+    } else {
+      this.toDomAction()
+    }
+  }
+}
+
+private fun ScrapeAction.toDomAction(): DomActionEntity {
+  val a = DomActionEntity()
+  if (this.click != null) {
+    a.event = DomEventType.click
+    a.xpath = this.click.element.xpath.value
+  } else {
+    if (this.select != null) {
+      a.event = DomEventType.select
+      a.xpath = this.select.element.value
+      a.data = this.select.selectValue
+    } else {
+      if (this.purge != null) {
+        a.event = DomEventType.purge
+        a.xpath = this.purge.value
+      } else {
+        if (this.type != null) {
+          a.event = DomEventType.type
+          a.xpath = this.select.element.value
+        } else {
+          if (this.wait != null) {
+            a.event = DomEventType.wait
+            a.xpath = this.select.element.value
+          } else {
+            throw IllegalArgumentException()
+          }
+        }
+      }
+    }
+  }
+
+  return a
 }
 
 private fun Visibility.fromDto(): EntityVisibility {

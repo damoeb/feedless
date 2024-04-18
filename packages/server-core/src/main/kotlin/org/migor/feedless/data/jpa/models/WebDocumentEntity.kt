@@ -22,7 +22,6 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.PipelineJobEntity
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import java.util.*
 
@@ -34,49 +33,50 @@ import java.util.*
 )
 open class WebDocumentEntity : EntityWithUUID() {
 
-  @Transient
-  private val log = LoggerFactory.getLogger(WebDocumentEntity::class.simpleName)
-
   companion object {
     const val LEN_TITLE = 256
     const val LEN_URL = 1000
   }
 
-  @Column(nullable = false, length = LEN_URL)
+  @Column(nullable = false, length = LEN_URL, name = "url")
   open lateinit var url: String
 
-  @Column(length = LEN_TITLE)
+  @Column(length = LEN_TITLE, name = "content_title")
   open var contentTitle: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, LEN_TITLE)
     }
 
-  @Column(length = 50)
+  @Column(length = 50, name = "content_raw_mime")
   open var contentRawMime: String? = null
 
   @Lazy
-  @Column(columnDefinition = "bytea") // bytea
+  @Column(columnDefinition = "bytea", name = "content_raw") // bytea
   open var contentRaw: ByteArray? = null
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT", name = "content_text")
   open var contentText: String? = null
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT", name = "content_html")
   open var contentHtml: String? = null
 
-  @Column(length = LEN_URL)
+  @Column(length = LEN_URL, name = "image_url")
   open var imageUrl: String? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "updated_at")
   open lateinit var updatedAt: Date
 
   @Column(nullable = false, name = StandardJpaFields.releasedAt)
   open lateinit var releasedAt: Date
 
+  @Column(name = "starting_at")
   open var startingAt: Date? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "score")
   open var score: Int = 0
+
+  @Column(name = "scored_at")
+  open var scoredAt: Date? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
   open var plugins: MutableList<PipelineJobEntity> = mutableListOf()

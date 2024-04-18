@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.actions.toDto
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.DOMElementByXPath
@@ -12,6 +13,7 @@ import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeSelector
+import org.migor.feedless.generated.types.ScrapeSelectorExpose
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
@@ -54,6 +56,10 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       .selectorBased(
         ScrapeSelector.newBuilder()
           .xpath(DOMElementByXPath.newBuilder().value("/").build())
+          .expose(
+            ScrapeSelectorExpose.newBuilder()
+              .build()
+          )
           .build()
       )
       .build()
@@ -68,14 +74,14 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
     val source = subscription.sources[0]
     if (BooleanUtils.isTrue(params.org_feedless_fulltext.inheritParams) && source.prerender) {
-      val actions = source.actions
-      request.page.actions = actions
+      request.page.actions = source.actions.map { it.toDto() }
       request.page.prerender = ScrapePrerender.newBuilder()
         .language(source.language)
         .viewport(source.viewport)
         .additionalWaitSec(source.additionalWaitSec ?: 0)
         .waitUntil(source.waitUntil)
         .build()
+      request.emit = emptyList()
     }
 
     val response = scrapeService.scrape(corrId, request)

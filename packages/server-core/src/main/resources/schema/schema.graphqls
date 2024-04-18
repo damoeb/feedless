@@ -352,7 +352,6 @@ type ScrapeAction {
   type: DOMActionType
   wait: WaitAction
   select: DOMActionSelect
-  cookie: CookieValue
   header: RequestHeader
   purge: DOMElementByXPath
 }
@@ -363,21 +362,11 @@ input ScrapeActionInput {
   type: DOMActionTypeInput
   wait: WaitActionInput
   select: DOMActionSelectInput
-  cookie: CookieValueInput
   header: RequestHeaderInput
-}
-
-type CookieValue {
-  value: String!
-}
-
-input CookieValueInput {
-  value: String!
 }
 
 type DOMElement {
   element: DOMElementByNameOrXPath
-  iframe: IframeByXPath
   position: XYPosition
 }
 
@@ -387,30 +376,20 @@ type XYPosition {
 }
 
 type WaitAction {
-  element: DOMElementByNameOrXPath
+  element: DOMElementByNameOrXPath!
 }
 input WaitActionInput {
-  element: DOMElementByNameOrXPathInput
+  element: DOMElementByNameOrXPathInput!
 }
 
-type IframeByXPath {
-  xpath: DOMElementByXPath!
-  nestedElement: DOMElementByNameOrXPath!
-}
 input DOMElementInput {
   element: DOMElementByNameOrXPathInput
-  iframe: IframeByXPathInput
   position: XYPositionInput
 }
 
 input XYPositionInput {
   x: Int!
   y: Int!
-}
-
-input IframeByXPathInput {
-  xpath: DOMElementByXPathInput!
-  nestedElement: DOMElementByNameOrXPathInput
 }
 
 type DOMActionType {

@@ -12,7 +12,6 @@ import { SessionService } from '../../services/session.service';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
-  GqlCookieValueInput,
   GqlDomElementByNameInput,
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
@@ -114,7 +113,6 @@ type OneOfClick = {
 };
 
 type OneOfAction = {
-  cookie?: InputMaybe<GqlCookieValueInput>;
   header?: InputMaybe<GqlRequestHeaderInput>;
   // select?: InputMaybe<GqlDomActionSelectInput>;
   // type?: InputMaybe<GqlDomActionTypeInput>;
@@ -364,10 +362,6 @@ export class ScrapeSourceComponent
     {
       key: 'click',
       label: 'Click',
-    },
-    {
-      key: 'cookie',
-      label: 'Cookie',
     },
     {
       key: 'header',
@@ -670,12 +664,6 @@ export class ScrapeSourceComponent
               },
               newFormGroupOpts(),
             ),
-            cookie: new FormGroup<TypedFormGroup<GqlCookieValueInput>>(
-              {
-                value: newFormControl(),
-              },
-              newFormGroupOpts(),
-            ),
             // select: new FormGroup<TypedFormGroup<GqlDomActionSelectInput>>(
             //   {
             //     selectValue: newFormControl(),
@@ -785,9 +773,6 @@ export class ScrapeSourceComponent
         //   },
         //   typeValue: action?.type?.typeValue,
         // },
-        cookie: {
-          value: action?.cookie?.value,
-        },
         // select: {
         //   selectValue: action?.select?.selectValue,
         //   element: {
@@ -1146,12 +1131,6 @@ export class ScrapeSourceComponent
               } else {
                 throw new Error('unsupported');
               }
-            case 'cookie':
-              return {
-                cookie: {
-                  value: control.oneOf.cookie.value,
-                },
-              };
             case 'purge':
               return {
                 purge: {

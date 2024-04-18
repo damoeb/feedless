@@ -28,7 +28,7 @@ open class FeatureEntity : EntityWithUUID() {
   @Column(nullable = false, name = StandardJpaFields.name, length = 50)
   open lateinit var name: String
 
-  @Column(length = 50)
+  @Column(length = 50, name="scope")
   open var scope: String? = null
 
   @Column(name = StandardJpaFields.productId, nullable = false)

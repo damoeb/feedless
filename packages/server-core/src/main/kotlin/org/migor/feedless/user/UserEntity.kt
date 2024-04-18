@@ -39,9 +39,10 @@ open class UserEntity : EntityWithUUID() {
 
   open var githubId: String? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "has_validated_email")
   open var hasValidatedEmail: Boolean = false
 
+  @Column(name = "validated_email_at")
   open var validatedEmailAt: Timestamp? = null
 
   @Column(nullable = false, length = 50)
@@ -51,26 +52,28 @@ open class UserEntity : EntityWithUUID() {
   @Column(nullable = false, name = StandardJpaFields.product)
   open lateinit var product: ProductName
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "is_root")
   open var root: Boolean = false
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "is_anonymous")
   open var anonymous: Boolean = false
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "hasapprovedterms")
   open var hasAcceptedTerms: Boolean = false
 
+  @Column(name = "approved_terms_at")
   open var acceptedTermsAt: Timestamp? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "is_locked")
   open var locked: Boolean = false
 
+  @Column(name = "purge_scheduled_for")
   open var purgeScheduledFor: Timestamp? = null
 
-  @Column
+  @Column(name = "date_format")
   open var dateFormat: String? = null // todo make nullable=false
 
-  @Column
+  @Column(name = "time_format")
   open var timeFormat: String? = null
 
   @Column(name = "plan_id", nullable = true)
