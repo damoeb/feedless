@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
-import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.mail}")

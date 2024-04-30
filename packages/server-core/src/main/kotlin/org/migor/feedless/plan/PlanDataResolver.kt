@@ -5,7 +5,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.service.FeatureService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import java.util.*
 
 @DgsComponent
 @Profile(AppProfiles.database)

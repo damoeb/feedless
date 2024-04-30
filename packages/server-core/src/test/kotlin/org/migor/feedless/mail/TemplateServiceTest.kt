@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.migor.feedless.agent.AgentDAO
+import org.migor.feedless.community.ScoreService
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles
 @MockBeans(
   value = [
     MockBean(AgentDAO::class),
-    MockBean(UserSecretService::class),
+    MockBean(ScoreService::class),
     MockBean(UserService::class),
     MockBean(LicenseService::class)
   ]

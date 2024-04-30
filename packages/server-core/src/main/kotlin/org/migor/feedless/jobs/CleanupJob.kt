@@ -1,4 +1,4 @@
-package org.migor.feedless.trigger
+package org.migor.feedless.jobs
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
@@ -14,9 +14,9 @@ import java.util.*
 @Service
 @Profile(AppProfiles.database)
 @Transactional(propagation = Propagation.NEVER)
-class TriggerCleanup internal constructor() {
+class CleanupJob internal constructor() {
 
-  private val log = LoggerFactory.getLogger(TriggerCleanup::class.simpleName)
+  private val log = LoggerFactory.getLogger(CleanupJob::class.simpleName)
 
   @Autowired
   lateinit var oneTimePasswordDAO: OneTimePasswordDAO

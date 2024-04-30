@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
@@ -24,12 +25,14 @@ import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.time.Duration
 import java.util.*
 
 @Service
+@Profile(AppProfiles.scrape)
 class FeedParserService {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)

@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.api} & ${AppProfiles.database}")
 class SessionResolver {
 
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)

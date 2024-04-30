@@ -19,12 +19,12 @@ import org.migor.feedless.util.CryptUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestHeader
-import java.util.*
 
 @DgsComponent
-@org.springframework.context.annotation.Profile(AppProfiles.database)
+@Profile("${AppProfiles.agent} & ${AppProfiles.api}")
 class AgentResolver {
 
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -46,7 +47,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @PropertySource("classpath:application.properties")
-//@Profile(AppProfiles.database)
+@Profile(AppProfiles.api)
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
@@ -77,18 +78,18 @@ class SecurityConfig {
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
     return conditionalOauth(http)
-//      .authenticationManager(AuthenticationManagerBuilder())
       .sessionManagement()
-//      .sessionFixation()
       .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       .and()
-      .cors().configurationSource(corsConfigurationSource()).and()
+      .cors().configurationSource(corsConfigurationSource())
+      .and()
       .csrf().disable()
       .formLogin().disable()
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests()
       .requestMatchers(*(whitelistedUrls())).permitAll()
       .requestMatchers("/actuator/**").hasAnyRole(metricRole)
+      .requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
       .and()
       .build()
   }

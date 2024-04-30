@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline
 
 import jakarta.annotation.PostConstruct
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.harvest.mapToPluginInstance
@@ -9,10 +10,12 @@ import org.migor.feedless.pipeline.plugins.MailProvider
 import org.migor.feedless.pipeline.plugins.MailProviderPlugin
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 
 @Service
+@Profile(AppProfiles.scrape)
 class PluginService {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)

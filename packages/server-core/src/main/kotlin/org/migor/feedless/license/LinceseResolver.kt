@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RequestHeader
-import java.util.*
 
 @DgsComponent
 @Profile(AppProfiles.database)

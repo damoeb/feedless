@@ -58,6 +58,27 @@ open class UserEntity : EntityWithUUID() {
   @Column(nullable = false, name = "is_anonymous")
   open var anonymous: Boolean = false
 
+  @Column(nullable = false, name = "last_login")
+  open var lastLogin: Timestamp = Timestamp(System.currentTimeMillis())
+
+  @Column(nullable = false, name = "karma")
+  open var karma: Int = 0
+
+  @Column(nullable = false, name = "is_spamming_submissions")
+  open var spammingSubmissions: Boolean = false
+
+  @Column(nullable = false, name = "is_spamming_votes")
+  open var spammingVotes: Boolean = false
+
+  @Column(nullable = false, name = "is_shaddow_banned")
+  open var shaddowBanned: Boolean = false
+
+  @Column(nullable = false, name = "is_banned")
+  open var banned: Boolean = false
+
+  @Column(name = "is_banned_until")
+  open var bannedUntil: Timestamp? = null
+
   @Column(nullable = false, name = "hasapprovedterms")
   open var hasAcceptedTerms: Boolean = false
 

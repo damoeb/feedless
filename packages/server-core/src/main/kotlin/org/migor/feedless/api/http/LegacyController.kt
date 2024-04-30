@@ -1,6 +1,7 @@
 package org.migor.feedless.api.http
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
@@ -11,6 +12,7 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.FeedUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,6 +31,7 @@ import kotlin.time.toDuration
  * To support the rss-proxy ui
  */
 @Controller
+@Profile("${AppProfiles.feed} & ${AppProfiles.api}")
 class LegacyController {
 
   @Autowired

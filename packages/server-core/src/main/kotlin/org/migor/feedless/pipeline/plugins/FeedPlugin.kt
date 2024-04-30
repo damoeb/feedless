@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.feed.asRemoteNativeFeed
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -12,10 +13,12 @@ import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URL
 
 @Service
+@Profile(AppProfiles.scrape)
 class FeedPlugin : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedPlugin::class.simpleName)

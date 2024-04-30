@@ -39,7 +39,7 @@ import java.util.*
 
 @Service
 @Order(1)
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.seed} & ${AppProfiles.database}")
 class Seeder {
 
   private val log = LoggerFactory.getLogger(Seeder::class.simpleName)

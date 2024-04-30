@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.toDto
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
@@ -24,9 +25,11 @@ import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile(AppProfiles.scrape)
 class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
@@ -74,6 +77,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
     val source = subscription.sources[0]
     if (BooleanUtils.isTrue(params.org_feedless_fulltext.inheritParams) && source.prerender) {
+      log.info("[$corrId] with inheritParams")
       request.page.actions = source.actions.map { it.toDto() }
       request.page.prerender = ScrapePrerender.newBuilder()
         .language(source.language)

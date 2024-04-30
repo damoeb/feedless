@@ -2,19 +2,18 @@ package org.migor.feedless.api.graphql
 
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.agent.AgentDAO
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.JsonUtil
 import org.mockito.ArgumentMatchers.any
@@ -33,13 +32,12 @@ import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 
 @SpringBootTest
-@ActiveProfiles(profiles = ["test"])
+@ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.scrape])
 @MockBeans(
   value = [
-    MockBean(AgentDAO::class),
-    MockBean(UserSecretService::class),
+    MockBean(AgentService::class),
     MockBean(UserService::class),
-    MockBean(OneTimePasswordDAO::class)
+    MockBean(SessionService::class),
   ]
 )
 class ScrapeQueryResolverTest {

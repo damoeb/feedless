@@ -8,6 +8,7 @@ import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.dto.RichFeed
@@ -35,6 +36,7 @@ import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
@@ -42,6 +44,7 @@ import java.nio.charset.Charset
 
 
 @Service
+@Profile(AppProfiles.scrape)
 class ScrapeService {
 
   private val log = LoggerFactory.getLogger(ScrapeService::class.simpleName)

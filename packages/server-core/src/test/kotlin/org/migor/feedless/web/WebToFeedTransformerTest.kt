@@ -4,8 +4,9 @@ import com.google.gson.GsonBuilder
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
@@ -62,110 +63,27 @@ internal class WebToFeedTransformerTest {
     )
   }
 
-  /*
-    'https://bookmarks.kovah.de/guest/links',
-    'https://bulletin.nu/',
-    'https://lukesmith.xyz/',
-    'https://blog.substack.com/',
-    'https://www.slowernews.com/',
-    'https://arxiv.org/search/?query=math&searchtype=all&source=header',
-    'https://duckduckgo.com/html/?q=feynman',
-    'https://github.blog/changelog/',
-    'https://news.ycombinator.com/',
-    'https://ebay.com/',
-    'https://medium.com/',
-   */
-
-  @Test
-  fun testWebiphanyIsSupported() {
-    testSupport("https://webiphany.com/", "10-webiphany-com")
-  }
-
-  @Test
-  fun testSpencermountaIsSupported() {
-    testSupport("https://blog.spencermounta.in", "01-spencermounta-in")
-  }
-
-  @Test
-  fun testSpotifyIsSupported() {
-    testSupport("https://spotify.com", "02-spotify-com")
-  }
-
-  @Test
-  @Disabled
-  fun testTelepolisIsSupported() {
-    testSupport("https://telepolis.de", "03-telepolis-de")
-  }
-
-  @Test
-  fun testArzgIsSupported() {
-    testSupport("https://arzg.github.io/lang", "04-arzg-github-io-lang")
-  }
-
-  @Test
-  @Disabled
-  fun testBrandonsmithIsSupported() {
-    testSupport("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja")
-  }
-
-  @Test
-  fun testJonBoIsSupported() {
-    testSupport("https://jon.bo/posts", "06-jon-bo-posts")
-  }
-
-  @Test
-  fun testPgIsSupported() {
-    testSupport(
-      "https://paulgraham.com",
-      "00-paulgraham-com-articles",
-    )
-  }
-
-  @Test
-  fun testFoolIsSupported() {
-    testSupport("https://www.fool.com/author/20415", "09-fool-com")
-  }
-
-  @Test
-  @Disabled
-  fun testAudacityIsSupported() {
-    testSupport("https://www.audacityteam.org/posts/", "11-audacityteam-org")
-  }
-
-  @Test
-  fun testGoogleBlogIsSupported() {
-    testSupport(
-      "https://cloud.google.com/blog",
-      "13-google-cloud-blog"
-    )
-  }
-
-  @Test
-  fun testLinkAceIsSupported() {
-    testSupport("https://demo.linkace.org/guest/links", "14-linkace-org")
-  }
-
-  @Test
-  @Disabled
-  fun testCraigslistIsSupported() {
-    testSupport("https://abilene.craigslist.org", "07-craigslist")
-  }
-
-  @Test
-  @Disabled
-  fun testArxivIsSupported() {
-    testSupport("https://arxiv.org/list/math.GN/recent", "08-arxiv-org", true)
-  }
-
-  @Test
-  fun testEthzIsSupported() {
-    testSupport("https://sph.ethz.ch/news", "12-sph-ethz-ch") // todo expand context
-  }
-
-  @Test
-  @Disabled
-  fun testLukeSmithIsSupported() {
-    testSupport("https://lukesmith.xyz/articles", "14-lukesmith-xyz", true)
+  @ParameterizedTest
+  @CsvSource(value = [
+    "https://webiphany.com/, 10-webiphany-com",
+    "https://blog.spencermounta.in, 01-spencermounta-in",
+    "https://spotify.com, 02-spotify-com",
+//    "https://telepolis.de, 03-telepolis-de",
+    "https://arzg.github.io/lang, 04-arzg-github-io-lang",
+//    "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
+    "https://jon.bo/posts, 06-jon-bo-posts",
+    "https://paulgraham.com, 00-paulgraham-com-articles",
+    "https://www.fool.com/author/20415, 09-fool-com",
+//    "https://www.audacityteam.org/posts/, 11-audacityteam-org",
+    "https://cloud.google.com/blog, 13-google-cloud-blog",
+    "https://demo.linkace.org/guest/links, 14-linkace-org",
+//    "https://abilene.craigslist.org, 07-craigslist",
+//    "https://arxiv.org/list/math.GN/recent, 08-arxiv-org",
+    "https://sph.ethz.ch/news, 12-sph-ethz-ch", // todo expand context
+//    "https://lukesmith.xyz/articles, 14-lukesmith-xyz",
+  ])
+  fun testSiteIsSupported(url: String, id: String) {
+    testSupport(url, id)
   }
 
   private fun testSupport(url: String, source: String, strictMode: Boolean = false) {

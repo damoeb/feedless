@@ -13,7 +13,7 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
-class TriggerSourceSubscription internal constructor() {
+class SourceSubscriptionJob internal constructor() {
 
   @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO

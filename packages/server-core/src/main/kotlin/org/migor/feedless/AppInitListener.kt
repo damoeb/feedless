@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class AppInitListener : ApplicationListener<ApplicationReadyEvent> {

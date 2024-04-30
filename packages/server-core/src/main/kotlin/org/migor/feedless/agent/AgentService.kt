@@ -2,6 +2,7 @@ package org.migor.feedless.agent
 
 import io.micrometer.core.instrument.MeterRegistry
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.common.PropertyService
@@ -17,6 +18,7 @@ import org.migor.feedless.session.TokenProvider
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
@@ -25,6 +27,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
+@Profile(AppProfiles.agent)
 class AgentService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()

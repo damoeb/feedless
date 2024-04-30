@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.env.Environment
-import java.util.*
 
 @DgsComponent
 @org.springframework.context.annotation.Profile(AppProfiles.database)

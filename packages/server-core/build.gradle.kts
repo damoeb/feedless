@@ -42,7 +42,8 @@ tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 val versions = mapOf(
   "kotlinxCoroutines" to "1.6.0",
 //  "grpc" to "1.53.0",
-  "dgs" to "6.0.5"
+  "dgs" to "6.0.5",
+  "languagetool" to "6.4"
 )
 
 dependencies {
@@ -120,6 +121,15 @@ dependencies {
   implementation("org.postgresql:postgresql:42.7.3")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.3")
 
+  // text
+  // https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common
+  implementation("org.apache.lucene:lucene-analysis-common:9.10.0")
+  implementation("org.apache.opennlp:opennlp-tools:2.3.3")
+  implementation("org.apache.commons:commons-math3:3.6.1")
+  testImplementation("io.jenetics:jenetics:7.2.0")
+  implementation("org.languagetool:language-en:6.4")
+  implementation("org.languagetool:language-de:6.4")
+
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")
@@ -137,6 +147,7 @@ dependencies {
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.testcontainers:postgresql:1.19.0")
   testImplementation("org.testcontainers:testcontainers:1.19.0")

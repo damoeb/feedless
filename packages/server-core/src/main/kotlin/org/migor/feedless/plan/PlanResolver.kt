@@ -9,13 +9,13 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.generated.types.*
+import org.migor.feedless.generated.types.Plan
+import org.migor.feedless.generated.types.ProductName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
-import java.util.*
 
 @DgsComponent
 @org.springframework.context.annotation.Profile(AppProfiles.database)

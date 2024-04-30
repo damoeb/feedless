@@ -27,7 +27,7 @@ import java.util.*
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(name = "scrape_action")
+@Table(name = "t_scrape_action")
 @DiscriminatorColumn(
   name = "action_type",
   discriminatorType = DiscriminatorType.STRING

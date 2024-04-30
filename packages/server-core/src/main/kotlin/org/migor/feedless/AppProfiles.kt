@@ -11,6 +11,12 @@ object AppProfiles {
   const val mail = "mail"
   const val cache = "cache"
   const val nothrottle = "nothrottle"
+  const val community = "community"
+  const val scrape = "scrape"
+  const val agent = "agent"
+  const val api = "api"
+  const val feed = "feed"
+  const val seed = "seed"
   const val legacyV2 = "legacySupport"
   const val autoSignIn = "autoSignIn"
 }

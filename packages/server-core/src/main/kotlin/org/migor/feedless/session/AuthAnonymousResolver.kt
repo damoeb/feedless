@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
@@ -14,11 +15,13 @@ import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 import org.migor.feedless.generated.types.Authentication as AuthenticationDto
 
 @DgsComponent
+@Profile(AppProfiles.api)
 class AuthAnonymousResolver {
 
   private val log = LoggerFactory.getLogger(AuthAnonymousResolver::class.simpleName)

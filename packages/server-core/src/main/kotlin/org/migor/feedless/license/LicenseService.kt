@@ -11,6 +11,7 @@ import com.nimbusds.jose.JWSVerifier
 import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import org.apache.commons.lang3.StringUtils
@@ -31,8 +32,10 @@ import java.io.File
 import java.io.FileWriter
 import java.nio.file.Files
 import java.security.KeyFactory
+import java.security.SecureRandom
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
+import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.text.DateFormat
 import java.time.ZoneId
@@ -149,11 +152,11 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       log.info("[$corrId] Parsing license")
       val payload = gson()
         .fromJson(
-          String(JWSObject.parse(licenseWithHeader.clearHeaders()).payload.toBytes()),
+          String(JWSObject.parse(licenseWithHeader.removeHeaders()).payload.toBytes()),
           LicensePayload::class.java
         )
       log.info("[$corrId] $payload")
-      if (isValidLicense(licenseWithHeader, feedlessPublicKey!!)) {
+      if (verifyTokenAgainstPubKey(licenseWithHeader, feedlessPublicKey!!)) {
         payload
       } else {
         log.error("[$corrId] Does not match public key")
@@ -204,23 +207,30 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun hasValidLicenseOrLicenseNotNeeded(): Boolean {
+    return hasValidLicense() || isLicenseNotNeeded()
+  }
+
+  fun isLicenseNotNeeded(): Boolean {
     val now = Date().time
     val buildAge = now - buildFrom()
     val licensePeriodExceeded = buildAge > DateUtils.MILLIS_PER_DAY * 365 * 2
     val enforcePeriodReached = !isTrial()
     return if (enforcePeriodReached) {
-      if (licensePeriodExceeded) {
-        true
-      } else {
-        license != null
-      }
+      licensePeriodExceeded
     } else {
       true
     }
   }
+  fun hasValidLicense(): Boolean {
+    return license != null
+  }
 
   fun getTrialUntil(): Long {
-    return buildTimestamp!!.toLong() + DateUtils.MILLIS_PER_DAY * 28 * 2
+    return buildTimestamp!!.toLong() + getTrialDuration()
+  }
+
+  fun getTrialDuration(): Long {
+    return DateUtils.MILLIS_PER_DAY * 28 * 2
   }
 
   fun isTrial(): Boolean {
@@ -229,7 +239,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   fun updateLicense(corrId: String, licenseRaw: String) {
     log.info("[${corrId}] Updating license at ${getLicenseFile().absolutePath}")
-    if (isValidLicense(licenseRaw, feedlessPublicKey!!)) {
+    log.debug("[${corrId}] using pK ${feedlessPublicKey}")
+    if (verifyTokenAgainstPubKey(licenseRaw, feedlessPublicKey!!)) {
       license = parseLicense(corrId, licenseRaw)
       writeLicenseKeyToFile(licenseRaw)
     } else {
@@ -237,23 +248,29 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
   }
 
-  fun createLicenseKey(keyID: String): RSAKey {
-    return RSAKeyGenerator(2048).keyID(keyID).generate()
+  fun createLicenseKey(keyID: String, seed: SecureRandom? = null): RSAKey {
+    log.info("createLicenseKey $keyID")
+    return RSAKeyGenerator(2048)
+      .keyUse(KeyUse.SIGNATURE)
+      .secureRandom(seed)
+      .keyID(keyID)
+      .generate()
   }
 
   fun createLicense(payload: LicensePayload, rsaJWK: RSAKey): String {
     val signer: JWSSigner = RSASSASigner(rsaJWK)
     val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
     jwsObject.sign(signer)
-    return jwsObject.serialize().withWraps().withHeaders("FEEDLESS KEY")
+    return jwsObject.serialize().withWraps().addHeaders("FEEDLESS KEY")
   }
 
-  fun isValidLicense(license: String, rsaPublicJWK: RSAPublicKey): Boolean {
+  fun verifyTokenAgainstPubKey(licenseToken: String, rsaPublicJWK: RSAPublicKey): Boolean {
     return try {
       val verifier: JWSVerifier = RSASSAVerifier(rsaPublicJWK)
-      val jwsObject = JWSObject.parse(license.clearHeaders())
+      val jwsObject = JWSObject.parse(licenseToken.removeHeaders())
       jwsObject.verify(verifier)
     } catch (e: Exception) {
+      log.warn(e.message)
       false
     }
   }
@@ -266,25 +283,34 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   )
 
   fun decodePublicKey(publicKeyString: String): RSAPublicKey {
-    val publicKeyByte: ByteArray = Base64.getDecoder().decode(publicKeyString.clearHeaders())
+    val publicKeyByte: ByteArray = Base64.getDecoder().decode(publicKeyString.removeHeaders())
 
     val keyFactory = KeyFactory.getInstance("RSA")
     return keyFactory.generatePublic(X509EncodedKeySpec(publicKeyByte)) as RSAPublicKey
   }
+
+  fun decodePrivateKey(privateKeyString: String): RSAPrivateKey {
+    val privateKKeyByte: ByteArray = Base64.getDecoder().decode(privateKeyString.removeHeaders())
+
+    val keyFactory = KeyFactory.getInstance("RSA")
+    return keyFactory.generatePrivate(PKCS8EncodedKeySpec(privateKKeyByte)) as RSAPrivateKey
+  }
 }
 
-private fun String.clearHeaders(): String {
+fun String.removeHeaders(): String {
   return this.replace("--[^\n]+\n?".toRegex(), "")
-    .replace("\n".toRegex(), "")
+    .replace("\n", "")
     .trim()
 }
 
 fun String.withWraps(): String {
+//  return this
   return WordUtils.wrap(this, 64, "\n", true)
 }
 
-fun String.withHeaders(header: String): String {
-  val HEADER = header.uppercase()
+fun String.addHeaders(header: String): String {
+//  return this
+  val HEADER = header.uppercase().trim()
   return """
 -----BEGIN ${HEADER}-----
 $this

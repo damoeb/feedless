@@ -1,13 +1,14 @@
 package org.migor.feedless.config
 
-import org.junit.jupiter.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.agent.AgentDAO
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
-import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -28,13 +29,10 @@ const val actuatorPassword = "password"
 )
 @MockBeans(
   value = [
-    MockBean(AgentDAO::class),
-    MockBean(UserSecretService::class),
     MockBean(UserService::class),
-    MockBean(OneTimePasswordDAO::class)
   ]
 )
-@ActiveProfiles(profiles = ["test", "metrics"])
+@ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.feed, "metrics"])
 //@TestPropertySource(locations= ["classpath:application-test.properties"])
 class SecurityConfigTest {
 
@@ -56,27 +54,30 @@ class SecurityConfigTest {
   fun whenRequestingActuatorWithoutAuth_ThenFail() {
     val restTemplate = TestRestTemplate()
     val actuatorResponse = restTemplate.getForEntity(actuatorEndpoint, String::class.java)
-    assertEquals(actuatorResponse.statusCode, HttpStatus.UNAUTHORIZED)
+    assertThat(actuatorResponse.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
     val prometheusResponse = restTemplate.getForEntity(prometheusEndpoint, String::class.java)
-    assertEquals(prometheusResponse.statusCode, HttpStatus.UNAUTHORIZED)
+    assertThat(prometheusResponse.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
   }
 
   @Test
   fun whenRequestingActuatorWithAuth_ThenSuccess() {
     val restTemplate = TestRestTemplate("actuator", actuatorPassword)
     val actuatorResponse = restTemplate.getForEntity(actuatorEndpoint, String::class.java)
-    assertEquals(actuatorResponse.statusCode, HttpStatus.OK)
+    assertThat(actuatorResponse.statusCode).isEqualTo(HttpStatus.OK)
+    // todo fix
 //    val prometheusResponse = restTemplate.getForEntity(prometheusEndpoint, String::class.java)
 //    assertEquals(prometheusResponse.statusCode, HttpStatus.OK)
   }
 
-  @Test
-  fun whenCallingWhitelistedUrl_ThenSuccess() {
+  @ParameterizedTest
+  @CsvSource(value = [
+    "graphql",
+    "subscriptions",
+  ])
+  fun whenCallingWhitelistedUrl_ThenSuccess(inputPathPrefix: String) {
     val restTemplate = TestRestTemplate()
-    arrayOf("graphql", "subscriptions").forEach {
-      val response = restTemplate.postForEntity("${baseEndpoint}/$it", "", String::class.java)
-      assertNotEquals(HttpStatus.FORBIDDEN, response.statusCode)
-    }
+    val response = restTemplate.postForEntity("${baseEndpoint}/$inputPathPrefix", "", String::class.java)
+    assertThat(HttpStatus.FORBIDDEN).isNotEqualTo(response.statusCode)
   }
 
   @Test

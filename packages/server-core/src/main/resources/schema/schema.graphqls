@@ -104,6 +104,11 @@ type LoginResponse {
 type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
+  createStory(data: CreateStoryInput!): Story!
+  createComment(data: CreateCommentInput!): Comment!
+  createVote(data: CreateVoteInput!): Vote!
+  deleteVote(data: DeleteVoteInput!): Boolean!
+
   authUser(data: AuthUserInput!): Authentication!
   createUser(data: CreateUserInput!): User!
   createUserSecret: UserSecret!
@@ -119,6 +124,69 @@ type Mutation {
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
 #  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
+}
+
+input DeleteVoteInput {
+  where: EntityUniqueWhere!
+}
+
+input CreateVoteInput {
+  where: StoryOrCommentWhereInput!
+  vote: VoteInput!
+}
+
+input StoryOrCommentWhereInput {
+  story: EntityUniqueWhere
+  comment: EntityUniqueWhere
+}
+
+input EntityUniqueWhere {
+  id: ID!
+}
+
+input VoteInput {
+  upVote: Boolean
+  downVote: Boolean
+  downFlag: Boolean
+}
+
+type Vote {
+  upVote: Boolean!
+  downVote: Boolean!
+  downFlag: Boolean!
+}
+
+input CreateStoryInput {
+  title: String!
+  link: String!
+  content: String!
+}
+
+type Story {
+  id: ID!
+  content: String!
+  title: String!
+  link: String!
+  dead: Boolean!
+  flagged: Boolean!
+  publishedAt: Long!
+  score: Float!
+  comments: [Comment!]!
+}
+
+input CreateCommentInput {
+  data: String!
+  commentId: ID!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  dead: Boolean!
+  flagged: Boolean!
+  score: Float!
+  publishedAt: Long!
+  comments: [Comment!]!
 }
 
 input UpdateLicenseInput {
@@ -269,6 +337,8 @@ type Query {
   agents: [Agent!]!
   plugins: [Plugin!]!
 
+  stories(data: StoriesWhereInput!): [Story!]!
+
   sourceSubscription(data: SourceSubscriptionWhereInput!): SourceSubscription!
   sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
 
@@ -284,6 +354,11 @@ type Query {
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
+}
+
+input StoriesWhereInput {
+  best: Boolean!
+  newest: Boolean!
 }
 
 input PreviewFeedInput {

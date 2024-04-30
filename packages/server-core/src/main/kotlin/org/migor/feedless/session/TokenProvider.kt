@@ -5,12 +5,14 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
@@ -28,6 +30,7 @@ import kotlin.time.toDuration
 
 
 @Service
+@Profile(AppProfiles.api)
 class TokenProvider {
   private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
 

@@ -9,9 +9,10 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.Authentication
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatchers.anyString
@@ -20,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -30,8 +30,17 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles(profiles = ["test", AppProfiles.database])
-@MockBeans(value = [MockBean(JavaMailSender::class), MockBean(LicenseService::class)])
+@ActiveProfiles(profiles = [
+  "test",
+  AppProfiles.api,
+  AppProfiles.database,
+  AppProfiles.authRoot,
+])
+@MockBeans(
+  value = [
+    MockBean(PluginService::class),
+    MockBean(ScrapeService::class)
+])
 @Testcontainers
 class AuthenticationTest {
 
@@ -72,7 +81,6 @@ class AuthenticationTest {
   }
 
   @Test
-  @Disabled
   fun `authUser works`() {
     // given
     val mockUser = UserEntity()

@@ -14,15 +14,13 @@ import java.util.*
 class MarkupSimplifier {
   fun simplify(elementParam: Element?): String {
     return Optional.ofNullable(elementParam).map { context ->
-      run {
-        oneline(flatten(Jsoup.parse(HtmlUtil.cleanHtml(compact(context.clone()).html()))))
-      }
+      oneline(flatten(Jsoup.parse(HtmlUtil.cleanHtml(compact(context.clone()).html()))))
     }.orElse("")
   }
 
   private fun oneline(element: Element): String {
     return "<article>${
-      element.html().replace(Regex("[\n\r\t]+", RegexOption.MULTILINE), " ")
+      element.select("body").html().replace(Regex("[\n\r\t]+", RegexOption.MULTILINE), " ")
         .replace(Regex("[ ]{2,}", RegexOption.MULTILINE), " ")
     }</article>"
   }

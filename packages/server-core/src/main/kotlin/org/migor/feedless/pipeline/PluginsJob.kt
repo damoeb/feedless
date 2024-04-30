@@ -23,9 +23,9 @@ import java.util.*
 @Service
 @Profile(AppProfiles.database)
 @Transactional(propagation = Propagation.NEVER)
-class TriggerPlugins internal constructor() {
+class PluginsJob internal constructor() {
 
-  private val log = LoggerFactory.getLogger(TriggerPlugins::class.simpleName)
+  private val log = LoggerFactory.getLogger(PluginsJob::class.simpleName)
 
   @Autowired
   lateinit var pipelineJobDAO: PipelineJobDAO
