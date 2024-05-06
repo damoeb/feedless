@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.web.WebToArticleTransformer
@@ -37,11 +37,11 @@ class FulltextPluginTest {
   @Disabled
   fun mapEntity() {
     val corrId = "test"
-    val webDocument = Mockito.mock(WebDocumentEntity::class.java)
-    val subscription = Mockito.mock(SourceSubscriptionEntity::class.java)
+    val webDocument = Mockito.mock(DocumentEntity::class.java)
+    val subscription = Mockito.mock(RepositoryEntity::class.java)
     val params = PluginExecutionParamsInput.newBuilder()
 
       .build()
-    fulltextPlugin.mapEntity(corrId = corrId, webDocument = webDocument, subscription = subscription, params = params)
+    fulltextPlugin.mapEntity(corrId = corrId, document = webDocument, repository = subscription, params = params)
   }
 }

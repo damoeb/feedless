@@ -1,7 +1,7 @@
 package org.migor.feedless.mail
 
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.pipeline.plugins.MailProvider
@@ -22,30 +22,30 @@ class MailProviderService : MailProvider {
   @Autowired
   private lateinit var productService: ProductService
 
-  override fun provideWebDocumentMail(
+  override fun provideDocumentMail(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): MailData {
     log.info("[$corrId] prepare email")
 
     val mailData = MailData()
     mailData.subject = "Change"
-    mailData.body = templateService.renderTemplate(corrId, WebDocumentUpdateMailTemplate())
+    mailData.body = templateService.renderTemplate(corrId, DocumentUpdateMailTemplate())
     return mailData
   }
 
   override fun provideWelcomeMail(
     corrId: String,
-    subscription: SourceSubscriptionEntity,
+    repository: RepositoryEntity,
     mailForward: MailForwardEntity
   ): MailData {
     log.info("[$corrId] prepare welcome email")
     val mailData = MailData()
-    mailData.subject = "Welcome to ${productService.getDomain(subscription.product)}"
+    mailData.subject = "Welcome to ${productService.getDomain(repository.product)}"
     val params = WelcomeMailParams(
-      productName = subscription.product.name
+      productName = repository.product.name
     )
     mailData.body = templateService.renderTemplate(corrId, WelcomeFreeMailTemplate(params))
     return mailData

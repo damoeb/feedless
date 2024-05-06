@@ -5,8 +5,11 @@ import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.models.AttachmentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.models.createAttachmentUrl
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
@@ -34,6 +37,9 @@ class PrivacyPlugin : MapEntityPlugin {
   lateinit var httpService: HttpService
 
   @Autowired
+  lateinit var propertyService: PropertyService
+
+  @Autowired
   lateinit var planConstraintsService: PlanConstraintsService
 
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
@@ -44,57 +50,73 @@ class PrivacyPlugin : MapEntityPlugin {
 
   override fun mapEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ) {
-    log.info("[$corrId] mapEntity ${webDocument.url}")
-    val response = httpService.httpGetCaching(corrId, webDocument.url, 200)
-    if (webDocument.url != response.url) {
-      log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
-      webDocument.url = response.url
+    log.info("[$corrId] mapEntity ${document.url}")
+    val response = httpService.httpGetCaching(corrId, document.url, 200)
+    if (document.url != response.url) {
+      log.info("[$corrId] Unwind url shortened urls ${document.url} -> ${response.url}")
+      document.url = response.url
     }
 
 //    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
-    webDocument.contentHtml?.let {
-      webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
-    } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
+    document.contentHtml?.let {
+      val (html, attachments) = inlineImages(corrId, document.id, HtmlUtil.parseHtml(it, document.url))
+      document.contentHtml = html
+      document.attachments = attachments.toMutableList()
+    } ?: log.info("[$corrId] no html content present ${document.id}")
 //    }
   }
 
-  fun inlineImages(corrId: String, document: Document): String {
+  fun inlineImages(corrId: String, documentId: UUID, document: Document): Pair<String, List<AttachmentEntity>> {
     val images = document.body().select("img[src]")
       .filter { imageElement -> imageElement.attr("src").startsWith("http") }
       .filterIndexed { index, _ -> index < 30 }
 
     log.info("[$corrId] inline ${images.size} images")
     val encoder = Base64.getEncoder()
-    images
-      .forEach { imageElement ->
-        runCatching {
-          val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)
-          val imageFormat = response.contentType
-          if (imageFormat.startsWith("image")) {
-            val inlineImage = "data:${imageFormat};base64, " + encoder.encodeToString(
-              resizeImage(response.responseBody)
-            )
-            imageElement.attr("src", inlineImage)
-            val pElement = Element(Tag.valueOf("p"), "")
-            imageElement.replaceWith(pElement)
+    val attachments: List<AttachmentEntity> = images
+      .mapNotNull { imageElement ->
+        run {
+          try {
+            val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)
+            val imageFormat = response.contentType
+            if (imageFormat.startsWith("image")) {
+              val inlineImage = "data:${imageFormat};base64, " + encoder.encodeToString(
+                resizeImage(response.responseBody)
+              )
 
-            val linkElement = Element(Tag.valueOf("a"), "")
-            linkElement.attr("href", imageElement.attr("src"))
-            linkElement.attr("target", "_blank")
-            linkElement.appendText("Link to Image")
+              imageElement.attr("src", inlineImage)
+              val pElement = Element(Tag.valueOf("p"), "")
+              imageElement.replaceWith(pElement)
 
-            pElement.appendChild(imageElement)
-            pElement.appendChild(linkElement)
+              val attachment = AttachmentEntity()
+              attachment.contentType = imageFormat
+              attachment.data = response.responseBody
+              attachment.hasData = false
+              attachment.documentId = documentId
+
+              val linkElement = Element(Tag.valueOf("a"), "")
+              linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
+              linkElement.attr("target", "_blank")
+              linkElement.appendText("Link to Image")
+
+              pElement.appendChild(imageElement)
+              pElement.appendChild(linkElement)
+
+              attachment
+            } else {
+              null
+            }
+          } catch (t: Throwable) {
+            log.warn("[${corrId}] ${t.message}")
+            null
           }
-        }.onFailure {
-          log.warn("[${corrId}] ${it.message}")
         }
       }
-    return document.body().html()
+    return Pair(document.body().html(), attachments)
   }
 
   @Throws(IOException::class)
@@ -115,3 +137,4 @@ class PrivacyPlugin : MapEntityPlugin {
     return baot.toByteArray()
   }
 }
+

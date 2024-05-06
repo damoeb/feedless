@@ -76,13 +76,13 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given an invalid cron string, auditRefreshCron will fail`() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      service.auditRefreshCron("")
+      service.auditCronExpression("")
     }
   }
 
   @Test
   fun `given a valid cron string, auditRefreshCron will pass`() {
-    service.auditRefreshCron("* * * * * 2")
+    service.auditCronExpression("* * * * * 2")
   }
 
   @Test

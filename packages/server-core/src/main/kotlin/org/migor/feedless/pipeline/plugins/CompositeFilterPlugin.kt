@@ -1,6 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.NumberFilterOperator
@@ -23,28 +23,28 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   override fun filterEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
+    document: DocumentEntity,
     params: PluginExecutionParamsInput,
     index: Int
   ): Boolean {
-    log.info("[$corrId] filter ${webDocument.url}")
+    log.info("[$corrId] filter ${document.url}")
     return params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
-        plugin.exclude?.let { !matches(webDocument, it, index) } ?: true
-          && plugin.include?.let { matches(webDocument, it, index) } ?: true
+        plugin.exclude?.let { !matches(document, it, index) } ?: true
+          && plugin.include?.let { matches(document, it, index) } ?: true
       }
     } ?: true
   }
 
   private fun matches(
-    webDocument: WebDocumentEntity,
+    document: DocumentEntity,
     filterParams: CompositeFieldFilterParamsInput,
     index: Int
   ): Boolean {
     return arrayOf(
-      filterParams.content?.let { applyStringOperation(webDocument.contentText!!.trim(), it) },
-      filterParams.title?.let { applyStringOperation(webDocument.contentTitle!!.trim(), it) },
-      filterParams.link?.let { applyStringOperation(webDocument.url, it) },
+      filterParams.content?.let { applyStringOperation(document.contentText!!.trim(), it) },
+      filterParams.title?.let { applyStringOperation(document.contentTitle!!.trim(), it) },
+      filterParams.link?.let { applyStringOperation(document.url, it) },
       filterParams.index?.let { applyNumberOperation(index, it) },
     ).filterNotNull()
       .all { it }

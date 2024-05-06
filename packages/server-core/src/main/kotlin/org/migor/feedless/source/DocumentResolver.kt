@@ -12,18 +12,19 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.repositories.DocumentDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Activity
 import org.migor.feedless.generated.types.ActivityItem
 import org.migor.feedless.generated.types.DeleteWebDocumentInput
-import org.migor.feedless.generated.types.SourceSubscription
+import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
 import org.migor.feedless.generated.types.WebDocumentsInput
+import org.migor.feedless.service.DocumentService
 import org.migor.feedless.service.FrequencyItem
-import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,26 +38,27 @@ import java.util.*
 
 @DgsComponent
 @Profile(AppProfiles.database)
-class WebDocumentResolver {
+class DocumentResolver {
 
-  private val log = LoggerFactory.getLogger(WebDocumentResolver::class.simpleName)
-
-  private val pageSize = 20
+  private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
 
   @Autowired
   lateinit var environment: Environment
 
   @Autowired
-  lateinit var sourceSubscriptionService: SourceSubscriptionService
+  lateinit var repositoryService: RepositoryService
 
   @Autowired
   lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var webDocumentService: WebDocumentService
+  lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var webDocumentDAO: WebDocumentDAO
+  lateinit var documentService: DocumentService
+
+  @Autowired
+  lateinit var documentDAO: DocumentDAO
 
   @Throttled
   @DgsQuery
@@ -66,8 +68,8 @@ class WebDocumentResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
     log.info("[$corrId] webDocument $data")
-    webDocumentService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { NotFoundException("webDocument not found") }.toDto()
+    documentService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { NotFoundException("webDocument not found") }.toDto(propertyService)
   }
 
   @Throttled
@@ -78,17 +80,20 @@ class WebDocumentResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<WebDocument> = coroutineScope {
     log.info("[$corrId] webDocuments $data")
-    val subscriptionId = UUID.fromString(data.where.sourceSubscription.where.id)
+    val repositoryId = UUID.fromString(data.where.repository.where.id)
     // authentication
-    val subscription = sourceSubscriptionService.findById(corrId, subscriptionId)
-    webDocumentService.findAllBySubscriptionId(subscription.id, data.cursor?.page).map { it.toDto() }
+    val repository = repositoryService.findById(corrId, repositoryId)
+    documentService.findAllByRepositoryId(repository.id, data.cursor?.page, data.cursor?.pageSize).map { it.toDto(
+      propertyService
+    )
+    }
   }
 
-  @DgsData(parentType = DgsConstants.SOURCESUBSCRIPTION.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
-    val source: SourceSubscription = dfe.getSource()
-    webDocumentDAO.countBySubscriptionId(UUID.fromString(source.id))
+    val repository: Repository = dfe.getSource()
+    documentDAO.countByRepositoryId(UUID.fromString(repository.id))
   }
 
   @DgsMutation
@@ -98,18 +103,18 @@ class WebDocumentResolver {
     @InputArgument data: DeleteWebDocumentInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    webDocumentService.deleteWebDocumentById(corrId, sessionService.user(corrId), UUID.fromString(data.where.id))
+    documentService.deleteDocumentById(corrId, sessionService.user(corrId), UUID.fromString(data.where.id))
     true
   }
 
-  @DgsData(parentType = DgsConstants.SOURCESUBSCRIPTION.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
   suspend fun activity(
     dfe: DgsDataFetchingEnvironment,
   ): Activity = coroutineScope {
-    val source: SourceSubscription = dfe.getSource()
+    val repository: Repository = dfe.getSource()
 
     Activity.newBuilder()
-      .items(webDocumentService.getWebDocumentFrequency(UUID.fromString(source.id)).map { it.toDto() })
+      .items(documentService.getDocumentFrequency(UUID.fromString(repository.id)).map { it.toDto() })
       .build()
   }
 

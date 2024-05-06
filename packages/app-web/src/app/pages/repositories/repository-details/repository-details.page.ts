@@ -6,14 +6,14 @@ import {
   OnInit,
 } from '@angular/core';
 import { GqlVisibility } from '../../../../generated/graphql';
-import { SourceSubscription } from '../../../graphql/types';
+import { Repository } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { SessionService } from '../../../services/session.service';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
-import { WebDocumentService } from '../../../services/web-document.service';
+import { DocumentService } from '../../../services/document.service';
 
 @Component({
   selector: 'app-repository-details-page',
@@ -23,7 +23,7 @@ import { WebDocumentService } from '../../../services/web-document.service';
 })
 export class RepositoryDetailsPage implements OnInit, OnDestroy {
   loadingSource: boolean;
-  source: SourceSubscription;
+  repository: Repository;
   readonly entityVisibility = GqlVisibility;
   feedUrl: string;
 
@@ -31,12 +31,8 @@ export class RepositoryDetailsPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly profileService: SessionService,
+    private readonly repositoryService: RepositoryService,
     private readonly serverSettings: ServerSettingsService,
-    private readonly modalService: ModalService,
-    private readonly webDocumentService: WebDocumentService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -45,10 +41,9 @@ export class RepositoryDetailsPage implements OnInit, OnDestroy {
       this.activatedRoute.params.subscribe(async (params) => {
         this.loadingSource = true;
         try {
-          this.source =
-            await this.sourceSubscriptionService.getSubscriptionById(
-              params.repositoryId,
-            );
+          this.repository = await this.repositoryService.getRepositoryById(
+            params.repositoryId,
+          );
           this.changeRef.detectChanges();
         } catch (e) {
           console.error(e);

@@ -15,7 +15,7 @@ import { WebDocument } from '../graphql/types';
 @Injectable({
   providedIn: 'root',
 })
-export class WebDocumentService {
+export class DocumentService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByStreamId(

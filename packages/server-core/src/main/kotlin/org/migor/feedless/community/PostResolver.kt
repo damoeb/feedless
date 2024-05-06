@@ -9,10 +9,10 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.generated.types.Comment
-import org.migor.feedless.generated.types.CommentInput
+import org.migor.feedless.generated.types.CreateCommentInput
+import org.migor.feedless.generated.types.CreateStoryInput
 import org.migor.feedless.generated.types.StoriesWhereInput
 import org.migor.feedless.generated.types.Story
-import org.migor.feedless.generated.types.StoryInput
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -30,7 +30,7 @@ class PostResolver {
   suspend fun createStory(
     @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     dfe: DataFetchingEnvironment,
-    @InputArgument data: StoryInput,
+    @InputArgument data: CreateStoryInput,
   ): Story = coroutineScope {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.info("[$corrId] createStory")
@@ -43,7 +43,7 @@ class PostResolver {
   suspend fun createComment(
     @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     dfe: DataFetchingEnvironment,
-    @InputArgument data: CommentInput,
+    @InputArgument data: CreateCommentInput,
   ): Comment = coroutineScope {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.info("[$corrId] createComment")

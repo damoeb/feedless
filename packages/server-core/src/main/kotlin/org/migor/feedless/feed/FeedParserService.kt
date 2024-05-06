@@ -5,7 +5,7 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
@@ -146,8 +146,8 @@ private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInpu
     .build()
 }
 
-private fun WebDocument.asEntity(): WebDocumentEntity {
-  val e = WebDocumentEntity()
+private fun WebDocument.asEntity(): DocumentEntity {
+  val e = DocumentEntity()
   e.contentTitle = contentTitle
 //  if (StringUtils.isNotBlank(contentRawBase64)) {
 //    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
@@ -156,7 +156,7 @@ private fun WebDocument.asEntity(): WebDocumentEntity {
 
   e.contentText = contentText
   e.status = ReleaseStatus.released
-  e.releasedAt = Date(publishedAt)
+  e.publishedAt = Date(publishedAt)
 //  e.updatedAt = Date()
   e.url = url
   return e

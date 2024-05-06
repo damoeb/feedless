@@ -20,7 +20,7 @@ import java.util.*
   name = "t_feature", uniqueConstraints = [
     UniqueConstraint(
       name = "UniqueFeaturePerProduct",
-      columnNames = [StandardJpaFields.productId, StandardJpaFields.name]
+      columnNames = [StandardJpaFields.product_id, StandardJpaFields.name]
     )]
 )
 open class FeatureEntity : EntityWithUUID() {
@@ -31,13 +31,13 @@ open class FeatureEntity : EntityWithUUID() {
   @Column(length = 50, name="scope")
   open var scope: String? = null
 
-  @Column(name = StandardJpaFields.productId, nullable = false)
+  @Column(name = StandardJpaFields.product_id, nullable = false)
   open lateinit var productId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = StandardJpaFields.productId,
+    name = StandardJpaFields.product_id,
     referencedColumnName = "id",
     insertable = false,
     updatable = false

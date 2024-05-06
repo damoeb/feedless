@@ -26,13 +26,14 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
-import org.springframework.util.ResourceUtils
 import java.io.File
 import java.io.FileWriter
 import java.nio.file.Files
 import java.security.KeyFactory
 import java.security.SecureRandom
+import java.security.Signature
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -41,6 +42,7 @@ import java.text.DateFormat
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 
 
 data class LicensePayload(
@@ -108,23 +110,27 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     } else {
       throw IllegalArgumentException("Invalid properties. APP_BUILD_TIMESTAMP expected, found '$buildTimestamp'")
     }
+    loadPublicKey()
 
     if (isSelfHosted()) {
-      loadPublicKey()
-      val licenseRaw = if (getLicenseFile().exists()) {
-        readLicenseFile()
-      } else {
-        if (StringUtils.isNotBlank(licenseKey)) {
-          log.info("[boot] Using license from env")
-          writeLicenseKeyToFile(licenseKey!!)
-          licenseKey!!
+      try {
+        val licenseRaw = if (getLicenseFile().exists()) {
+          readLicenseFile()
         } else {
-          log.warn("[boot] No license found in env APP_LICENSE_KEY or file ${getLicenseFile().absolutePath}")
-          null
+          if (StringUtils.isNotBlank(licenseKey)) {
+            log.info("[boot] Using license from env")
+            writeLicenseKeyToFile(licenseKey!!)
+            licenseKey!!
+          } else {
+            log.warn("[boot] No license found in env APP_LICENSE_KEY or file ${getLicenseFile().absolutePath}")
+            null
+          }
         }
-      }
-      licenseRaw?.let {
-        license = parseLicense("boot", it)
+        licenseRaw?.let {
+          license = parseLicense("boot", it)
+        }
+      } catch (e: Exception) {
+        log.error(e.message)
       }
     } else {
       loadPrivateKey()
@@ -132,12 +138,35 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun loadPrivateKey() {
+    val privateKeyFile = getPrivateKeyFile()
+    log.info("[boot] loading private key")
+    feedlessPrivateKey = decodePrivateKey(Files.readString(privateKeyFile.toPath()))
 
+    log.info("[boot] verifying key pair")
+    val challenge = ByteArray(10000)
+    ThreadLocalRandom.current().nextBytes(challenge)
+
+    // see https://stackoverflow.com/a/49427242
+
+    // sign using the private key
+    val sig = Signature.getInstance("SHA256withRSA")
+    sig.initSign(feedlessPrivateKey)
+    sig.update(challenge)
+    val signature: ByteArray = sig.sign()
+
+
+    // verify signature using the public key
+    sig.initVerify(feedlessPublicKey!!)
+    sig.update(challenge)
+
+    if (!sig.verify(signature)) {
+      throw IllegalStateException("Key verification failed")
+    }
   }
 
   private fun loadPublicKey() {
     val publicKeyFile = getPublicKeyFile()
-    log.info("[boot] loading public key from ${publicKeyFile.absolutePath}")
+    log.info("[boot] loading public key")
     feedlessPublicKey = decodePublicKey(Files.readString(publicKeyFile.toPath()))
   }
 
@@ -186,7 +215,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return try {
       val licenseFile = getLicenseFile()
       val license = Files.readString(licenseFile.toPath())
-      log.info("[boot] Using license from file ${licenseFile.absolutePath}")
+      log.info("[boot] Using license from file $licenseFile")
       license
     } catch (e: Exception) {
       null
@@ -194,7 +223,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun getLicenseFile() = File("./license.key")
-  private fun getPublicKeyFile(): File = ResourceUtils.getFile("classpath:certs/feedless.pub")
+  private fun getPublicKeyFile(): File = ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).file
+  private fun getPrivateKeyFile(): File = File("./feedless.pem")
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
@@ -238,8 +268,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun updateLicense(corrId: String, licenseRaw: String) {
-    log.info("[${corrId}] Updating license at ${getLicenseFile().absolutePath}")
-    log.debug("[${corrId}] using pK ${feedlessPublicKey}")
+    log.info("[${corrId}] Updating license at ${getLicenseFile()}")
+    log.debug("[$corrId] using pK $feedlessPublicKey")
     if (verifyTokenAgainstPubKey(licenseRaw, feedlessPublicKey!!)) {
       license = parseLicense(corrId, licenseRaw)
       writeLicenseKeyToFile(licenseRaw)

@@ -3,7 +3,7 @@ package org.migor.feedless.pipeline.plugins
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.NumberFilterOperator
@@ -14,14 +14,14 @@ import org.migor.feedless.generated.types.StringFilterParamsInput
 
 class CompositeFilterPluginTest {
 
-  private lateinit var webDocument: WebDocumentEntity
+  private lateinit var webDocument: DocumentEntity
   private lateinit var service: CompositeFilterPlugin
   private val corrId = "test"
 
   @BeforeEach
   fun setUp() {
     service = CompositeFilterPlugin()
-    webDocument = WebDocumentEntity()
+    webDocument = DocumentEntity()
     webDocument.contentTitle = " foo is the perfect title"
     webDocument.contentText = "bar is the payload"
     webDocument.url = ""

@@ -2,16 +2,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
-import { SourceSubscription, WebDocument } from '../../../graphql/types';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { Repository, WebDocument } from '../../../graphql/types';
+import { RepositoryService } from '../../../services/repository.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { BubbleColor } from '../../../components/bubble/bubble.component';
+import { GqlVisibility } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-feeds-page',
@@ -19,47 +17,45 @@ import { BubbleColor } from '../../../components/bubble/bubble.component';
   styleUrls: ['./feeds.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedsPage implements OnInit, OnDestroy {
+export class FeedsPage implements OnInit {
   busy = false;
   documents: WebDocument[];
-  private subscriptions: Subscription[] = [];
-  feeds: SourceSubscription[] = [];
+  repositories: Repository[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
     dayjs.extend(relativeTime);
-    //     this.subscriptions.push(
-    // ,
-    //     );
     await this.fetchFeeds();
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   private async fetchFeeds() {
     const page = 0;
-    const sources =
-      await this.sourceSubscriptionService.listSourceSubscriptions({
-        cursor: {
-          page,
-        },
-      });
-    this.feeds.push(...sources);
+    const repositories = await this.repositoryService.listRepositoriess({
+      cursor: {
+        page,
+      },
+    });
+    this.repositories.push(...repositories);
     this.changeRef.detectChanges();
   }
 
-  getHealthColorForFeed(feed: SourceSubscription): BubbleColor {
-    if (feed.sources.some((source) => source.errornous)) {
+  getHealthColorForFeed(repository: Repository): BubbleColor {
+    if (repository.sources.some((source) => source.errornous)) {
       return 'red';
     } else {
       return 'blue';
     }
+  }
+
+  isPrivate(repository: Repository): boolean {
+    return repository.visibility === GqlVisibility.IsPrivate;
+  }
+
+  fromNow(date: number) {
+    return dayjs(date).toNow(true);
   }
 }

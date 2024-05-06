@@ -15,7 +15,7 @@ describe('GenerateFeedModalComponent', () => {
 
     fixture = TestBed.createComponent(GenerateFeedModalComponent);
     component = fixture.componentInstance;
-    component.subscription = mocks.sourceSubscription;
+    component.repository = mocks.repository;
     fixture.detectChanges();
   }));
 

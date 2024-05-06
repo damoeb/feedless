@@ -4,4 +4,10 @@
   (change)="importOpml($event)"
   style="display: none"
 />
-<ion-button expand="block" (click)="openOpmlPicker()">Import OPML</ion-button>
+<ion-button
+  [color]="color"
+  [fill]="fill"
+  [expand]="expand"
+  (click)="openOpmlPicker()"
+  >Import OPML</ion-button
+>

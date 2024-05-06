@@ -3,8 +3,8 @@ package org.migor.feedless.pipeline.plugins
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.toDto
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
@@ -49,11 +49,11 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
   override fun mapEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ) {
-    log.info("[$corrId] mapEntity ${webDocument.url}")
+    log.info("[$corrId] mapEntity ${document.url}")
 
     val emit = ScrapeEmit.newBuilder()
       .selectorBased(
@@ -69,13 +69,13 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     val request = ScrapeRequest.newBuilder()
       .page(
         ScrapePage.newBuilder()
-          .url(webDocument.url)
+          .url(document.url)
           .build()
       )
       .emit(listOf(emit))
       .build()
 
-    val source = subscription.sources[0]
+    val source = repository.sources[0]
     if (BooleanUtils.isTrue(params.org_feedless_fulltext.inheritParams) && source.prerender) {
       log.info("[$corrId] with inheritParams")
       request.page.actions = source.actions.map { it.toDto() }
@@ -96,13 +96,13 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       val element = response.elements.first()!!
       val html = element.selector.html.data
       if (params.org_feedless_fulltext.readability) {
-        val readability = webToArticleTransformer.fromHtml(html, webDocument.url)
-        webDocument.contentHtml = readability.content
-        webDocument.contentText = readability.contentText
-        webDocument.contentTitle = readability.title
+        val readability = webToArticleTransformer.fromHtml(html, document.url)
+        document.contentHtml = readability.content
+        document.contentText = readability.contentText
+        document.contentTitle = readability.title
       } else {
-        webDocument.contentHtml = html
-        webDocument.contentTitle = HtmlUtil.parseHtml(html, webDocument.url).title()
+        document.contentHtml = html
+        document.contentTitle = HtmlUtil.parseHtml(html, document.url).title()
       }
     }
   }

@@ -6,7 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Authentication, AuthService } from '../../../services/auth.service';
@@ -45,7 +45,7 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
   showErrors = false;
 
   constructor(
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly authService: AuthService,
@@ -77,8 +77,8 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
     if (this.authorization.loggedIn) {
       try {
         const form = this.formFg.value;
-        const subs = await this.sourceSubscriptionService.createSubscriptions({
-          subscriptions: [
+        const subs = await this.repositoryService.createRepositories({
+          repositories: [
             {
               sources: [],
               product: environment.product,

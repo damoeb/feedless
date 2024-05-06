@@ -118,22 +118,8 @@ services:
       - postgres
       - monitoring
 
-  prometheus:
-    image: prom/prometheus
-    environment:
-      - APP_ACTUATOR_PASSWORD=${APP_ACTUATOR_PASSWORD}
-    volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-#    extra_hosts:
-#      - "feedless-core:localhost"
-    networks:
-      - postgres
-      - monitoring
-
   feedless-aio-chromium:
-    image: damoeb/feedless:aio-chromium-e75e5f8d295a5d5ec2497266fae6f151ada8709f
+    image: damoeb/feedless:aio-chromium-1c688adc45872e6211f4196734435f0f4e6f1ef6
     restart: unless-stopped
     depends_on:
       - postgres
@@ -148,11 +134,26 @@ services:
       - selfhosting.env
     networks:
       - postgres
+      - monitoring
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING
 # ----------------------------------------------------------------------------------------------------------------------
+
+  prometheus:
+    image: prom/prometheus
+    environment:
+      - APP_ACTUATOR_PASSWORD=${APP_ACTUATOR_PASSWORD}
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    #    extra_hosts:
+    #      - "feedless-core:localhost"
+    networks:
+      - postgres
+      - monitoring
 
   loki:
     image: grafana/loki:2.5.0

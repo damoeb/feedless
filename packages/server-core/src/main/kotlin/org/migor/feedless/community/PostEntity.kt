@@ -14,8 +14,9 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.user.UserEntity
-import java.sql.Timestamp
 import java.util.*
 
 @Entity
@@ -29,9 +30,6 @@ open class PostEntity : EntityWithUUID() {
 
   @Column(nullable = false, length = 1000, name = "content")
   open lateinit var content: String
-
-  @Column(nullable = false, name = "published_at")
-  open lateinit var publishedAt: Timestamp
 
   @Column(nullable = false, name = "is_dead")
   open var dead: Boolean = false
@@ -66,13 +64,13 @@ open class PostEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var children: MutableList<PostEntity> = mutableListOf()
 
-  @Column(name = "owner_id", nullable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "owner_id",
+    name = StandardJpaFields.ownerId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,

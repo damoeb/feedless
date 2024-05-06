@@ -7,7 +7,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -15,7 +14,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
-import org.migor.feedless.actions.ScrapeActionEntity
+import org.migor.feedless.actions.BrowserActionEntity
 import org.migor.feedless.actions.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
@@ -31,7 +30,7 @@ import java.util.*
 
 @Entity
 @Table(name = "t_scrape_source")
-open class ScrapeSourceEntity : EntityWithUUID() {
+open class SourceEntity : EntityWithUUID() {
 
   @Column(name = "timeout")
   open var timeout: Int? = null
@@ -57,8 +56,8 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @Column(name = "additional_wait_sec")
   open var additionalWaitSec: Int? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.scrapeSourceId, cascade = [CascadeType.ALL])
-  open var actions: MutableList<ScrapeActionEntity> = mutableListOf()
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "sourceId", cascade = [CascadeType.ALL])
+  open var actions: MutableList<BrowserActionEntity> = mutableListOf()
 
   @Column(nullable = false, name = "debug_screenshot")
   open var debugScreenshot: Boolean = false
@@ -80,8 +79,8 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @Lazy
   open lateinit var emit: List<ScrapeEmit>
 
-  @Column(name = StandardJpaFields.subscriptionId, nullable = false)
-  open lateinit var subscriptionId: UUID
+  @Column(name = StandardJpaFields.repositoryId, nullable = false)
+  open lateinit var repositoryId: UUID
 
   @Column(nullable = false, name = "erroneous")
   open var erroneous: Boolean = false
@@ -92,16 +91,15 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = StandardJpaFields.subscriptionId,
+    name = StandardJpaFields.repositoryId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_user__stream")
   )
-  open var subscription: SourceSubscriptionEntity? = null
+  open var repository: RepositoryEntity? = null
 }
 
-fun ScrapeSourceEntity.toDto(): ScrapeRequest {
+fun SourceEntity.toDto(): ScrapeRequest {
   return ScrapeRequest.newBuilder()
     .id(id.toString())
     .errornous(erroneous)

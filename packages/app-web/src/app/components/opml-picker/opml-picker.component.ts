@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,
@@ -17,6 +17,15 @@ import { Router } from '@angular/router';
 export class OpmlPickerComponent {
   @ViewChild('opmlPicker')
   opmlPickerElement!: ElementRef<HTMLInputElement>;
+
+  @Input()
+  color: string;
+
+  @Input()
+  fill: string;
+
+  @Input()
+  expand: string;
 
   constructor(
     private readonly omplService: OpmlService,

@@ -5,28 +5,39 @@
       <ion-breadcrumb>Your Feeds</ion-breadcrumb>
     </ion-breadcrumbs>
 
-    <div class="flex__row" style="width: 100%">
-      <h3>Feeds</h3>
-      <ion-buttons slot="end">
-        <app-opml-picker></app-opml-picker>
-      </ion-buttons>
-    </div>
+    <ion-row style="width: 100%">
+      <ion-col size="6">
+        <h3>Feeds</h3>
+      </ion-col>
+      <ion-col size="6">
+        <app-opml-picker
+          color="dark"
+          fill="empty"
+          class="ion-float-end"
+        ></app-opml-picker>
+      </ion-col>
+    </ion-row>
 
     <ion-list>
-      <ion-item *ngIf="feeds?.length === 0">
+      <ion-item *ngIf="repositories?.length === 0">
         <p>You have no feeds yet</p>
       </ion-item>
-      <ion-item *ngFor="let feed of feeds">
+      <ion-item *ngFor="let feed of repositories">
         <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
         <ion-label>
           <h2>
             <a [routerLink]="'/feeds/' + feed.id"> {{ feed.title }} </a>
-            <ion-chip> {{feed.visibility}} </ion-chip>
+            <ion-chip *ngIf="isPrivate(feed)">Private</ion-chip>
           </h2>
           <p>{{ feed.description }}</p>
-          <p>Fine Updated yesterday</p>
+          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
         </ion-label>
-        <app-histogram [data]="feed.activity"></app-histogram>
+        <div class="ion-margin-end" style="position: relative">
+          <app-histogram
+            [data]="feed.activity"
+            class="ion-margin-end"
+          ></app-histogram>
+        </div>
       </ion-item>
     </ion-list>
   </div>

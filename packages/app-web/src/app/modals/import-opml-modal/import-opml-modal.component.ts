@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
-import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
@@ -44,7 +44,7 @@ export class ImportOpmlModalComponent
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   ngOnInit() {
@@ -73,8 +73,8 @@ export class ImportOpmlModalComponent
       });
     }
 
-    await this.sourceSubscriptionService.createSubscriptions({
-      subscriptions: this.fcOutlines
+    await this.repositoryService.createRepositories({
+      repositories: this.fcOutlines
         .filter((outline) => outline.fc.value)
         .map((fc) => ({
           product: GqlProductName.RssBuilder,

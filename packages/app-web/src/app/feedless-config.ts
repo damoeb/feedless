@@ -250,10 +250,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       costs: -1,
       isUnstable: true,
       videoUrl: '',
-      features: [
-        '',
-        'Self-Hosting or SaaS',
-      ],
+      features: ['', 'Self-Hosting or SaaS'],
       localSetup: ``,
     },
     // {

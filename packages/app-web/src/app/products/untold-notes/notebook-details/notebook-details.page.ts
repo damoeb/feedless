@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
-import { SourceSubscription } from '../../../graphql/types';
+import { Repository } from '../../../graphql/types';
 import {
   AppAction,
   Note,
@@ -51,7 +51,7 @@ type NoteReferences = {
 export class NotebookDetailsPage implements OnInit, OnDestroy {
   busy = false;
   private subscriptions: Subscription[] = [];
-  subscription: SourceSubscription;
+  repository: Repository;
   searchResults: SearchResult[] = [];
   focussedIndex: number = -1;
 

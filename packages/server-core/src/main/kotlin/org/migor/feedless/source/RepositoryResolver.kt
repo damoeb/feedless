@@ -12,15 +12,15 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
+import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.RepositoriesCreateInput
+import org.migor.feedless.generated.types.RepositoriesInput
+import org.migor.feedless.generated.types.Repository
+import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.generated.types.RepositoryUpdateInput
+import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.SourceSubscription
-import org.migor.feedless.generated.types.SourceSubscriptionUniqueWhereInput
-import org.migor.feedless.generated.types.SourceSubscriptionUpdateInput
-import org.migor.feedless.generated.types.SourceSubscriptionWhereInput
-import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
-import org.migor.feedless.generated.types.SourceSubscriptionsInput
 import org.migor.feedless.harvest.toScrapeRequest
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
@@ -34,92 +34,92 @@ import java.util.*
 
 @DgsComponent
 @Profile(AppProfiles.database)
-class SourceResolver {
+class RepositoryResolver {
 
-  private val log = LoggerFactory.getLogger(SourceResolver::class.simpleName)
+  private val log = LoggerFactory.getLogger(RepositoryResolver::class.simpleName)
 
   @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var sourceSubscriptionService: SourceSubscriptionService
+  lateinit var repositoryService: RepositoryService
 
   @Autowired
   lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var scrapeRequestDAO: ScrapeSourceDAO
+  lateinit var sourceDAO: SourceDAO
 
 
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun sourceSubscriptions(
-    @InputArgument data: SourceSubscriptionsInput,
+  suspend fun repositories(
+    @InputArgument data: RepositoriesInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<SourceSubscription> = coroutineScope {
-    log.info("[$corrId] sourceSubscriptions $data")
+  ): List<Repository> = coroutineScope {
+    log.info("[$corrId] repositories $data")
     val pageNumber = handlePageNumber(data.cursor.page)
     val pageSize = handlePageSize(data.cursor.pageSize)
     val offset = pageNumber * pageSize
-    sourceSubscriptionService.findAll(offset, pageSize, sessionService.userId())
+    repositoryService.findAll(offset, pageSize, sessionService.userId())
       .map { it.toDto() }
   }
 
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun sourceSubscription(
-    @InputArgument data: SourceSubscriptionWhereInput,
+  suspend fun repository(
+    @InputArgument data: RepositoryWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): SourceSubscription = coroutineScope {
-    log.info("[$corrId] sourceSubscription $data")
-    sourceSubscriptionService.findById(corrId, UUID.fromString(data.where.id)).toDto()
+  ): Repository = coroutineScope {
+    log.info("[$corrId] repository $data")
+    repositoryService.findById(corrId, UUID.fromString(data.where.id)).toDto()
   }
 
   @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createSourceSubscriptions(
-    @InputArgument("data") data: SourceSubscriptionsCreateInput,
+  suspend fun createRepositories(
+    @InputArgument("data") data: RepositoriesCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<SourceSubscription> = coroutineScope {
-    log.info("[$corrId] createSourceSubscriptions $data")
-    sourceSubscriptionService.create(corrId, data)
+  ): List<Repository> = coroutineScope {
+    log.info("[$corrId] createRepositories $data")
+    repositoryService.create(corrId, data)
   }
 
   @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun updateSourceSubscription(
-    @InputArgument("data") data: SourceSubscriptionUpdateInput,
+  suspend fun updateRepository(
+    @InputArgument("data") data: RepositoryUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): SourceSubscription = coroutineScope {
-    log.info("[$corrId] updateSourceSubscription $data")
-    sourceSubscriptionService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
+  ): Repository = coroutineScope {
+    log.info("[$corrId] updateRepository $data")
+    repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
   }
 
   @Throttled
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteSourceSubscription(
-    @InputArgument("data") data: SourceSubscriptionUniqueWhereInput,
+  suspend fun deleteRepository(
+    @InputArgument("data") data: RepositoryUniqueWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteSourceSubscription $data")
-    sourceSubscriptionService.delete(corrId, UUID.fromString(data.id))
+    log.info("[$corrId] deleteRepository $data")
+    repositoryService.delete(corrId, UUID.fromString(data.id))
     true
   }
 
 
-  @DgsData(parentType = DgsConstants.SOURCESUBSCRIPTION.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun sources(dfe: DgsDataFetchingEnvironment): List<ScrapeRequest> = coroutineScope {
-    val source: SourceSubscription = dfe.getSource()
-    scrapeRequestDAO.findAllBySubscriptionId(UUID.fromString(source.id)).map { scrapeSource ->
+    val source: Repository = dfe.getSource()
+    sourceDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { scrapeSource ->
       run {
         val scrapeRequest = scrapeSource.toScrapeRequest()
         scrapeRequest.corrId = null

@@ -1,8 +1,8 @@
-<ion-header *ngIf="subscription?.disabledFrom">
+<ion-header *ngIf="repository?.disabledFrom">
   <ion-toolbar color="danger">
     <ion-text style="font-size: 16px" class="ion-padding-horizontal"
       >This feed will expire in
-      <strong>{{fromNow(subscription.disabledFrom)}}</strong></ion-text
+      <strong>{{fromNow(repository.disabledFrom)}}</strong></ion-text
     >
     <ion-button
       slot="end"
@@ -14,7 +14,7 @@
     </ion-button>
   </ion-toolbar>
 </ion-header>
-<ion-header *ngIf="subscription?.archived">
+<ion-header *ngIf="repository?.archived">
   <ion-toolbar color="medium">
     <ion-text style="font-size: 16px" class="ion-padding-horizontal">
       Feed is archived. It will not be updated.
@@ -34,182 +34,199 @@
     <ion-breadcrumbs>
       <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
       <ion-breadcrumb routerLink="/feeds">Your Feeds</ion-breadcrumb>
-      <ion-breadcrumb>{{ subscription?.title }}</ion-breadcrumb>
+      <ion-breadcrumb>{{ repository?.title }}</ion-breadcrumb>
     </ion-breadcrumbs>
 
     <div *ngIf="busy">
       <ion-spinner name="dots"></ion-spinner>
     </div>
     <div *ngIf="!busy" style="margin-top: 50px">
-      <div class="flex__row">
-        <h2 style="flex: 1">{{ subscription.title }}</h2>
-        <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
-
-        <div class="ion-align-self-center">
-          <ion-button
-            color="dark"
-            fill="clear"
-            *ngIf="!hasErrors()"
-            id="open-sources-modal"
+      <ion-row>
+        <ion-col size="6">
+          <h2 class="ion-no-margin" style="display: inline">
+            {{ repository.title }}
+          </h2>
+          <ion-chip
+            (click)="editRepository()"
+            *ngIf="repository.visibility === GqlVisibility.IsPrivate"
+            >Private</ion-chip
           >
-            <ion-label
-              >Sources
-              <ion-note> ({{subscription.sources.length}}) </ion-note>
-            </ion-label>
-          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <div class="flex__row ion-justify-content-end">
+            <ion-button
+              color="dark"
+              fill="clear"
+              *ngIf="!hasErrors()"
+              id="open-sources-modal"
+            >
+              <ion-label
+                >Sources
+                <ion-note> ({{repository.sources.length}}) </ion-note>
+              </ion-label>
+            </ion-button>
 
-          <ion-button
-            color="danger"
-            id="open-sources-modal"
-            *ngIf="hasErrors()"
-          >
-            <ion-label>Fix Sources </ion-label>
-          </ion-button>
+            <ion-button
+              color="dark"
+              fill="clear"
+              id="open-sources-modal"
+              *ngIf="hasErrors()"
+            >
+              <ion-label color="danger">Fix Sources </ion-label>
+            </ion-button>
 
-          <ion-modal trigger="open-sources-modal">
-            <ng-template>
-              <ion-header>
-                <ion-toolbar>
-                  <ion-buttons slot="start">
-                    <ion-button (click)="dismissModal()">
-                      <ion-icon name="close-outline"></ion-icon>
-                    </ion-button>
-                  </ion-buttons>
-                  <ion-title>Sources</ion-title>
-                  <ion-buttons slot="end">
-                    <!--          <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>-->
-                    <ion-button
-                      color="primary"
-                      fill="solid"
-                      (click)="editSource()"
-                      >Add Source</ion-button
-                    >
-                  </ion-buttons>
-                </ion-toolbar>
-              </ion-header>
-              <ion-content class="ion-padding">
-                <ion-list>
-                  <ion-item *ngFor="let source of subscription.sources">
-                    <app-bubble
-                      [color]="getHealthColorForSource(source)"
-                    ></app-bubble>
-                    <ion-label>
-                      <h3>From {{source.page.url}}</h3>
-                      <p>{{getPluginsOfSource(source)}}</p>
-                      <ion-note color="danger" *ngIf="source.errornous">
-                        {{source.lastErrorMessage}}
-                      </ion-note>
-                    </ion-label>
-                    <ion-buttons>
-                      <ion-button color="danger" (click)="deleteSource(source)">
-                        Delete
-                      </ion-button>
-                      <ion-button (click)="editSource(source)">
-                        Edit
+            <ion-modal trigger="open-sources-modal">
+              <ng-template>
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-buttons slot="start">
+                      <ion-button (click)="dismissModal()">
+                        <ion-icon name="close-outline"></ion-icon>
                       </ion-button>
                     </ion-buttons>
-                  </ion-item>
-                </ion-list>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-          <ion-button [href]="feedUrl">
-            <ion-icon name="logo-rss" slot="start"></ion-icon>
-            Feed
-          </ion-button>
-
-          <ion-button id="open-settings-modal" color="dark" fill="clear">
-            <ion-icon name="settings-outline"></ion-icon>
-          </ion-button>
-
-          <ion-popover
-            [showBackdrop]="true"
-            trigger="open-settings-modal"
-            triggerAction="click"
-          >
-            <ng-template>
-              <ion-content>
-                <ion-list>
-                  <ion-item button="true" (click)="editSubscription()">
-                    <ion-label>Edit </ion-label>
-                  </ion-item>
-                  <ion-item
-                    color="danger"
-                    button="true"
-                    (click)="deleteSubscription()"
-                  >
-                    <ion-label>Delete </ion-label>
-                  </ion-item>
-                </ion-list>
-              </ion-content>
-            </ng-template>
-          </ion-popover>
-        </div>
-      </div>
-      <ion-note *ngIf="subscription.plugins.length > 0">
-        With {{getPluginsOfSubscription(subscription)}}
-      </ion-note>
-      <p>
-        <ion-note
-          >Created: {{ subscription.createdAt | date: dateFormat }}</ion-note
-        >
-      </p>
-      <div style="position: relative">
-        <app-histogram [data]="subscription.activity"></app-histogram>
-      </div>
-
-      <p>{{ subscription.description }}</p>
-      <ion-list>
-        <ion-list-header>
-          <ion-label
-            >Items
-            <ion-note>({{subscription.documentCount}})</ion-note></ion-label
-          >
-          <ion-buttons>
-            <ion-button (click)="editSubscription()">
-              Retention Strategy: {{ getRetentionStrategy() }}
+                    <ion-title>Sources</ion-title>
+                    <ion-buttons slot="end">
+                      <!--          <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>-->
+                      <ion-button
+                        color="primary"
+                        fill="solid"
+                        (click)="editSource()"
+                        >Add Source</ion-button
+                      >
+                    </ion-buttons>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-content class="ion-padding">
+                  <ion-list>
+                    <ion-item *ngIf="repository.sources.length === 0">
+                      <ion-label color="danger">No sources defined</ion-label>
+                    </ion-item>
+                    <ion-item *ngFor="let source of repository.sources">
+                      <app-bubble
+                        [color]="getHealthColorForSource(source)"
+                      ></app-bubble>
+                      <ion-label>
+                        <h3>From {{source.page.url}}</h3>
+                        <p>{{getPluginsOfSource(source)}}</p>
+                        <ion-note color="danger" *ngIf="source.errornous">
+                          {{source.lastErrorMessage}}
+                        </ion-note>
+                      </ion-label>
+                      <ion-buttons>
+                        <ion-button
+                          color="danger"
+                          (click)="deleteSource(source)"
+                        >
+                          Delete
+                        </ion-button>
+                        <ion-button (click)="editSource(source)">
+                          Edit
+                        </ion-button>
+                      </ion-buttons>
+                    </ion-item>
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+            <ion-button [href]="feedUrl">
+              <ion-icon name="logo-rss" slot="start"></ion-icon>
+              Feed
             </ion-button>
-          </ion-buttons>
-        </ion-list-header>
-        <ion-item *ngIf="documents.length === 0">
+
+            <ion-button id="open-settings-modal" color="dark" fill="clear">
+              <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+            </ion-button>
+
+            <ion-popover
+              [showBackdrop]="false"
+              trigger="open-settings-modal"
+              triggerAction="click"
+            >
+              <ng-template>
+                <ion-content>
+                  <ion-list>
+                    <ion-item button="true" (click)="editRepository()">
+                      <ion-icon name="settings-outline" slot="start"></ion-icon>
+                      <ion-label>Edit </ion-label>
+                    </ion-item>
+                    <ion-item button="true" (click)="deleteRepository()">
+                      <ion-icon name="trash-outline" slot="start"></ion-icon>
+                      <ion-label>Delete </ion-label>
+                    </ion-item>
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-popover>
+          </div>
+        </ion-col>
+      </ion-row>
+      <div
+        class="description"
+        [ngClass]="{'description--flat': !showFullDescription}"
+        (click)="showFullDescription = true"
+      >
+        <ion-row>
+          <ion-col>
+            <strong>Description</strong>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col> {{ repository.description }} </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <dl>
+              <dt>Filters</dt>
+              <dd>{{getPluginsOfSubscription(repository)}}</dd>
+              <dt>Created</dt>
+              <dd>{{ repository.createdAt | date: dateFormat }}</dd>
+              <dt>Last Updated</dt>
+              <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
+              <dt>Next Updated</dt>
+              <dd>{{ fromNow(repository.nextUpdateAt) }}</dd>
+              <dt>Retention Strategy</dt>
+              <dd>{{ getRetentionStrategy() }}</dd>
+            </dl>
+          </ion-col>
+        </ion-row>
+      </div>
+      <!--      <div style="position: relative">-->
+      <!--        <app-histogram [data]="repository.activity"></app-histogram>-->
+      <!--      </div>-->
+
+      <div style="border-radius: 8px">
+        <ion-item *ngIf="pages.length === 0">
           <ion-label> Feed has no items.</ion-label>
         </ion-item>
-        <ion-item
-          *ngFor="let document of documents"
-          class="ion-margin-vertical"
-        >
-          <div style="flex: 1">
-            <div class="flex__row">
-              <div style="flex: 1; align-content: center">
-                <ion-note>[{{hostname(document.url)}}]</ion-note>
-              </div>
-              <div style="align-content: center">
-                <ion-note class="ion-float-right"
-                  >{{fromNow(document.publishedAt)}} ago</ion-note
-                >
-              </div>
-              <!--              <ion-buttons slot="end">-->
-              <!--                <ion-button>-->
-              <!--                  <ion-icon name="ellipsis-vertical-outline"></ion-icon>-->
-              <!--                </ion-button>-->
-              <!--              </ion-buttons>-->
-            </div>
-            <ion-label>
-              <h3 class="ion-text-wrap">
-                <a [href]="document.url">{{document.contentTitle}}</a>
-              </h3>
-              <p>{{document.contentText}}</p>
-              <p>{{document.contentRawMime}}</p>
-            </ion-label>
+        <ng-container *ngFor="let documents of pages">
+          <div *ngFor="let document of documents" class="document">
+            <div>{{fromNow(document.publishedAt)}} ago</div>
+            <h4>
+              <a
+                [href]="document.url"
+                target="_blank"
+                referrerpolicy="no-referrer"
+                >{{document.contentTitle}}</a
+              >
+            </h4>
+            <p>on <ion-note>{{hostname(document.url)}}</ion-note></p>
+            <div class="content">{{document.contentText}}</div>
+            <!--            <app-reader [html]="document.contentHtml"></app-reader>-->
           </div>
-          <!--          <ion-label slot="end" class="ion-text-right" style="margin-top: 0">-->
-          <!--            <p>{{fromNow(document.publishedAt)}} ago</p>-->
-          <!--            <ion-button fill="clear" color="dark" (click)="deleteWebDocument(document)">-->
-          <!--              <ion-icon name="trash-outline"></ion-icon>-->
-          <!--            </ion-button>-->
-          <!--          </ion-label>-->
-        </ion-item>
-      </ion-list>
+        </ng-container>
+
+        <div style="text-align: center">
+          <ion-button
+            color="primary"
+            (click)="loadMore()"
+            *ngIf="!hasEndReached()"
+            >Load older items</ion-button
+          >
+        </div>
+        <!--        <ion-infinite-scroll (ionInfinite)="loadMore($event)">-->
+        <!--          <ion-infinite-scroll-content></ion-infinite-scroll-content>-->
+        <!--        </ion-infinite-scroll>-->
+      </div>
     </div>
   </div>
 </ion-content>

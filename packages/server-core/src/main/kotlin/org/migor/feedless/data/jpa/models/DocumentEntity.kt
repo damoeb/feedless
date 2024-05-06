@@ -1,11 +1,11 @@
 package org.migor.feedless.data.jpa.models
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.migor.feedless.api.isHtml
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -23,15 +25,14 @@ import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.springframework.context.annotation.Lazy
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Entity
-@Table(
-  name = "t_web_document", indexes = [
-    Index(name = "idx_web_document_url", columnList = "url")
-  ]
-)
-open class WebDocumentEntity : EntityWithUUID() {
+@Table(name = "t_document", indexes = [
+  Index(name = "idx_document_url", columnList = "url, repository_id")
+])
+open class DocumentEntity : EntityWithUUID() {
 
   companion object {
     const val LEN_TITLE = 256
@@ -51,7 +52,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   open var contentRawMime: String? = null
 
   @Lazy
-  @Column(columnDefinition = "bytea", name = "content_raw") // bytea
+  @Column(columnDefinition = "bytea", name = "content_raw")
   open var contentRaw: ByteArray? = null
 
   @Column(columnDefinition = "TEXT", name = "content_text")
@@ -66,8 +67,8 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(nullable = false, name = "updated_at")
   open lateinit var updatedAt: Date
 
-  @Column(nullable = false, name = StandardJpaFields.releasedAt)
-  open lateinit var releasedAt: Date
+  @Column(nullable = false, name = StandardJpaFields.publishedAt)
+  open lateinit var publishedAt: Date
 
   @Column(name = "starting_at")
   open var startingAt: Date? = null
@@ -78,24 +79,23 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(name = "scored_at")
   open var scoredAt: Date? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "webDocumentId")
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "documentId")
   open var plugins: MutableList<PipelineJobEntity> = mutableListOf()
 
-  @Column(name = "subscriptionId", nullable = false)
-  open lateinit var subscriptionId: UUID
+  @Column(name = StandardJpaFields.repositoryId, nullable = false)
+  open lateinit var repositoryId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "subscriptionId",
+    name = StandardJpaFields.repositoryId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_item__subscritpion")
   )
-  open var subscription: SourceSubscriptionEntity? = null
+  open var repository: RepositoryEntity? = null
 
-  @OneToMany(fetch = FetchType.EAGER, mappedBy = "webDocumentId") // todo should be lazy
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "documentId", cascade = [CascadeType.ALL])
   open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
   @Column(nullable = false, name = StandardJpaFields.status, length = 50)
@@ -131,25 +131,35 @@ open class WebDocumentEntity : EntityWithUUID() {
 
 }
 
-fun WebDocumentEntity.toDto(): WebDocument =
-  WebDocument.newBuilder()
-    .id(id.toString())
-    .imageUrl(imageUrl)
-    .url(url)
-    .contentTitle(contentTitle)
-    .contentText(contentText)
-    .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
-    .contentRawMime(contentRawMime)
-    .updatedAt(updatedAt.time)
-    .createdAt(createdAt.time)
-    .enclosures(attachments.map {
-      Enclosure.newBuilder()
-        .url(it.url)
-        .type(it.type)
+fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument
+  {
+    val builder = WebDocument.newBuilder()
+      .id(id.toString())
+      .imageUrl(imageUrl)
+      .url(url)
+      .contentTitle(contentTitle)
+      .contentText(contentText)
+      .updatedAt(updatedAt.time)
+      .createdAt(createdAt.time)
+      .enclosures(attachments.map {
+        Enclosure.newBuilder()
+          .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))
+          .type(it.contentType)
 //        .duration(it.duration)
 //          .size(it.duration)
+          .build()
+      })
+      .publishedAt(publishedAt.time)
+      .startingAt(startingAt?.time)
+
+    return if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
+      builder.contentHtml(contentRaw?.toString(StandardCharsets.UTF_8))
         .build()
-    })
-    .publishedAt(releasedAt.time)
-    .startingAt(startingAt?.time)
-    .build()
+    } else {
+      builder
+        .contentHtml(contentHtml)
+        .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
+        .contentRawMime(contentRawMime)
+        .build()
+    }
+  }

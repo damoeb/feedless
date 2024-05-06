@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RepositoryDetailsPage } from './repository-details.page';
 import { RepositoryDetailsPageModule } from './repository-details.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  AppTestModule,
-  mockSourceSubscription,
-} from '../../../app-test.module';
+import { AppTestModule, mockRepository } from '../../../app-test.module';
 
 describe('RepositoryDetailsPage', () => {
   let component: RepositoryDetailsPage;
@@ -17,7 +14,7 @@ describe('RepositoryDetailsPage', () => {
       imports: [
         RepositoryDetailsPageModule,
         AppTestModule.withDefaults((apolloMockController) => {
-          mockSourceSubscription(apolloMockController);
+          mockRepository(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],

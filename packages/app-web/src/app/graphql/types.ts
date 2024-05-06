@@ -1,6 +1,6 @@
 import {
   GqlAuthentication,
-  GqlCreateSourceSubscriptionsMutation,
+  GqlCreateRepositoriesMutation,
   GqlCreateUserSecretMutation,
   GqlListPluginsQuery,
   GqlPlansQuery,
@@ -9,19 +9,19 @@ import {
   GqlScrapeQuery,
   GqlSelectors,
   GqlSessionQuery,
-  GqlSourceSubscriptionByIdQuery,
+  GqlRepositoryByIdQuery,
   GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
 export type FeedlessPluginExecution = GetElementType<
-  GqlSourceSubscriptionByIdQuery['sourceSubscription']['plugins']
+  GqlRepositoryByIdQuery['repository']['plugins']
 >['params'];
 export type SubscriptionSource = GetElementType<
-  GqlSourceSubscriptionByIdQuery['sourceSubscription']['sources']
+  GqlRepositoryByIdQuery['repository']['sources']
 >;
-export type SourceSubscription = GetElementType<
-  GqlCreateSourceSubscriptionsMutation['createSourceSubscriptions']
+export type Repository = GetElementType<
+  GqlCreateRepositoriesMutation['createRepositories']
 >;
 
 export type WebDocument = GqlWebDocumentByIdQuery['webDocument'];

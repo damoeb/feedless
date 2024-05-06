@@ -7,30 +7,30 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { WebDocumentService } from '../../../services/web-document.service';
+import { DocumentService } from '../../../services/document.service';
 import {
   FeedlessPlugin,
-  SourceSubscription,
+  Repository,
   SubscriptionSource,
   WebDocument,
 } from '../../../graphql/types';
-import { DomSanitizer } from '@angular/platform-browser';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { dateFormat, dateTimeFormat } from '../../../services/session.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
 import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
-import { GqlScrapeRequest } from '../../../../generated/graphql';
+import { GqlScrapeRequest, GqlVisibility } from '../../../../generated/graphql';
 import {
   GenerateFeedModalComponentProps,
   getScrapeRequest,
 } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
-import { ModalController } from '@ionic/angular';
+import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
 import { BubbleColor } from '../../../components/bubble/bubble.component';
 import { ArrayElement } from '../../../types';
 import { PluginService } from '../../../services/plugin.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -40,15 +40,15 @@ import { PluginService } from '../../../services/plugin.service';
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = true;
-  documents: WebDocument[];
+  pages: WebDocument[][] = [];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  subscription: SourceSubscription;
+  repository: Repository;
 
   protected readonly dateFormat = dateFormat;
-  protected readonly dateTimeFormat = dateTimeFormat;
   feedUrl: string;
   private plugins: FeedlessPlugin[];
+  private repositoryId: string;
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
@@ -56,10 +56,10 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     private readonly modalCtrl: ModalController,
     private readonly router: Router,
     private readonly modalService: ModalService,
+    private readonly titleService: Title,
     private readonly serverSettingsService: ServerSettingsService,
-    private readonly domSanitizer: DomSanitizer,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly webDocumentService: WebDocumentService,
+    private readonly repositoryService: RepositoryService,
+    private readonly documentService: DocumentService,
   ) {}
 
   async ngOnInit() {
@@ -67,7 +67,8 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         if (params.feedId) {
-          this.fetch(params.feedId);
+          this.repositoryId = params.feedId;
+          this.fetch();
         }
       }),
     );
@@ -80,37 +81,46 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     URL.revokeObjectURL(this.diffImageUrl);
   }
 
-  private async fetch(id: string) {
-    const page = 0;
+  private async fetch() {
     this.busy = true;
     this.changeRef.detectChanges();
 
-    this.subscription =
-      await this.sourceSubscriptionService.getSubscriptionById(id);
-    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.subscription.id}`;
-    this.documents = await this.webDocumentService.findAllByStreamId({
+    this.repository = await this.repositoryService.getRepositoryById(
+      this.repositoryId,
+    );
+    this.titleService.setTitle(this.repository.title);
+    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
+
+    await this.fetchNextPage();
+
+    this.busy = false;
+    this.changeRef.detectChanges();
+  }
+
+  private async fetchNextPage() {
+    const documents = await this.documentService.findAllByStreamId({
       cursor: {
-        page,
+        page: this.pages.length,
         pageSize: 10,
       },
       where: {
-        sourceSubscription: {
+        repository: {
           where: {
-            id,
+            id: this.repositoryId,
           },
         },
       },
     });
 
-    this.busy = false;
-    this.changeRef.detectChanges();
+    this.pages.push(documents);
   }
+
   fromNow(futureTimestamp: number): string {
     return dayjs(futureTimestamp).toNow(true);
   }
 
   deleteWebDocument(document: WebDocument) {
-    return this.webDocumentService.removeById({
+    return this.documentService.removeById({
       where: {
         id: document.id,
       },
@@ -118,7 +128,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   }
 
   getHealthColorForSource(
-    source: ArrayElement<SourceSubscription['sources']>,
+    source: ArrayElement<Repository['sources']>,
   ): BubbleColor {
     if (source.errornous) {
       return 'red';
@@ -133,9 +143,9 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       },
       async (data: FeedWithRequest) => {
         if (data) {
-          await this.sourceSubscriptionService.updateSubscription({
+          this.repository = await this.repositoryService.updateRepository({
             where: {
-              id: this.subscription.id,
+              id: this.repository.id,
             },
             data: {
               sources: {
@@ -149,16 +159,17 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
               },
             },
           });
+          this.changeRef.detectChanges();
         }
       },
     );
   }
 
-  deleteSource(source: SubscriptionSource) {
+  async deleteSource(source: SubscriptionSource) {
     console.log('deleteSource', source);
-    return this.sourceSubscriptionService.updateSubscription({
+    this.repository = await this.repositoryService.updateRepository({
       where: {
-        id: this.subscription.id,
+        id: this.repository.id,
       },
       data: {
         sources: {
@@ -166,6 +177,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         },
       },
     });
+    this.changeRef.detectChanges();
   }
 
   dismissModal() {
@@ -176,35 +188,36 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     return new URL(url).hostname;
   }
 
-  async editSubscription() {
+  async editRepository() {
     const componentProps: GenerateFeedModalComponentProps = {
-      subscription: this.subscription,
+      repository: this.repository,
+      modalTitle: `Customize ${this.repository.title}`,
     };
     await this.modalService.openFeedMetaEditor(componentProps);
   }
 
-  async deleteSubscription() {
-    await this.sourceSubscriptionService.deleteSubscription({
-      id: this.subscription.id,
+  async deleteRepository() {
+    await this.repositoryService.deleteRepository({
+      id: this.repository.id,
     });
     await this.router.navigateByUrl('/feeds');
   }
 
   getRetentionStrategy(): string {
     if (
-      this.subscription.retention.maxAgeDays ||
-      this.subscription.retention.maxItems
+      this.repository.retention.maxAgeDays ||
+      this.repository.retention.maxItems
     ) {
       if (
-        this.subscription.retention.maxAgeDays &&
-        this.subscription.retention.maxItems
+        this.repository.retention.maxAgeDays &&
+        this.repository.retention.maxItems
       ) {
-        return `${this.subscription.retention.maxAgeDays} days, ${this.subscription.retention.maxItems} items`;
+        return `${this.repository.retention.maxAgeDays} days, ${this.repository.retention.maxItems} items`;
       } else {
-        if (this.subscription.retention.maxAgeDays) {
-          return `${this.subscription.retention.maxAgeDays} days`;
+        if (this.repository.retention.maxAgeDays) {
+          return `${this.repository.retention.maxAgeDays} days`;
         } else {
-          return `${this.subscription.retention.maxItems} items`;
+          return `${this.repository.retention.maxItems} items`;
         }
       }
     } else {
@@ -213,12 +226,13 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   }
 
   hasErrors(): boolean {
-    return this.subscription.sources.some((s) => s.errornous);
+    return (
+      this.repository.sources.length === 0 ||
+      this.repository.sources.some((s) => s.errornous)
+    );
   }
 
-  getPluginsOfSource(
-    source: ArrayElement<SourceSubscription['sources']>,
-  ): string {
+  getPluginsOfSource(source: ArrayElement<Repository['sources']>): string {
     if (!this.plugins) {
       return '';
     }
@@ -232,7 +246,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       .join(', ');
   }
 
-  getPluginsOfSubscription(subscription: SourceSubscription) {
+  getPluginsOfSubscription(subscription: Repository) {
     if (!this.plugins) {
       return '';
     }
@@ -243,5 +257,19 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   private getPluginName(pluginId: string) {
     return this.plugins.find((plugin) => plugin.id === pluginId)?.name;
+  }
+
+  protected readonly GqlVisibility = GqlVisibility;
+  showFullDescription = false;
+
+  hasEndReached(): boolean {
+    return (
+      this.pages.length > 0 && this.pages[this.pages.length - 1].length === 0
+    );
+  }
+
+  async loadMore() {
+    await this.fetchNextPage();
+    // await (event as InfiniteScrollCustomEvent).target.complete();
   }
 }

@@ -10,10 +10,10 @@ import { Subscription } from 'rxjs';
 import {
   FeedlessPlugin,
   FeedlessPluginExecution,
-  SourceSubscription,
+  Repository,
 } from '../../../../graphql/types';
 import { PluginService } from '../../../../services/plugin.service';
-import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
+import { RepositoryService } from '../../../../services/repository.service';
 
 @Component({
   selector: 'app-repository-data-page',
@@ -24,7 +24,7 @@ import { SourceSubscriptionService } from '../../../../services/source-subscript
 export class RepositoryPluginsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private allPlugins: FeedlessPlugin[];
-  repository: SourceSubscription;
+  repository: Repository;
 
   activePlugins: Array<FeedlessPluginExecution & FeedlessPlugin>;
   inactivePlugins: FeedlessPlugin[];
@@ -32,7 +32,7 @@ export class RepositoryPluginsPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly pluginService: PluginService,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -40,7 +40,7 @@ export class RepositoryPluginsPage implements OnInit, OnDestroy {
     this.allPlugins = await this.pluginService.listPlugins();
     const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
     const repository =
-      await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+      await this.repositoryService.getRepositoryById(repositoryId);
     this.activePlugins = repository.plugins.map((plugin) => {
       return {
         ...plugin,

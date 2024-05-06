@@ -3,13 +3,13 @@ package org.migor.feedless.agent
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
 import java.util.*
@@ -37,21 +37,19 @@ open class AgentEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_agent__user_secrets")
   )
   open var secretKey: UserSecretEntity? = null
 
-  @Column(name = "owner_id", nullable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "owner_id",
+    name = StandardJpaFields.ownerId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_user_secrets__user")
   )
   open var owner: UserEntity? = null
 }

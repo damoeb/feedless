@@ -2,7 +2,7 @@ package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
@@ -17,58 +17,58 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSortingRepository<WebDocumentEntity, UUID> {
+interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, PagingAndSortingRepository<DocumentEntity, UUID> {
 
-  fun findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
-    subscriptionId: UUID,
+  fun findAllByRepositoryIdAndStatusAndPublishedAtBefore(
+    repositoryId: UUID,
     status: ReleaseStatus,
     now: Date,
     pageable: PageRequest
-  ): List<WebDocumentEntity>
+  ): List<DocumentEntity>
 
 
   @Modifying
   @Query(
-    """
-    DELETE FROM WebDocumentEntity d
+      """
+    DELETE FROM DocumentEntity d
     WHERE d.id in (
-        select d1.id from WebDocumentEntity d1
-        where d1.subscriptionId = ?1
+        select d1.id from DocumentEntity d1
+        where d1.repositoryId = ?1
         and d1.status = ?2
-        order by d1.releasedAt desc
+        order by d1.publishedAt desc
         offset ?3 ROWS
     )
     """
   )
-  fun deleteAllBySubscriptionIdAndStatusWithSkip(subscriptionId: UUID, status: ReleaseStatus, skip: Int)
+  fun deleteAllByRepositoryIdAndStatusWithSkip(repositoryId: UUID, status: ReleaseStatus, skip: Int)
 
-  fun deleteAllBySubscriptionIdAndCreatedAtBeforeAndStatus(subscriptionId: UUID, date: Date, status: ReleaseStatus)
+  fun deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(repositoryId: UUID, date: Date, status: ReleaseStatus)
 
   @Modifying
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
 
   @Query(
-    """
-    SELECT D FROM WebDocumentEntity D
-    WHERE D.url = :url and D.subscriptionId = :subscriptionId
+      """
+    SELECT D FROM DocumentEntity D
+    WHERE D.url = :url and D.repositoryId = :repositoryId
     """
   )
-  fun findByUrlAndSubscriptionId(
+  fun findByUrlAndRepositoryId(
     @Param("url") url: String,
-    @Param("subscriptionId") subscriptionId: UUID
-  ): WebDocumentEntity?
+    @Param("repositoryId") repositoryId: UUID
+  ): DocumentEntity?
 
 
-  fun existsByContentTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
+  fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean
 
   @Modifying
   @Query(
     """
-    DELETE FROM WebDocumentEntity d
+    DELETE FROM DocumentEntity d
     WHERE d.id = ?1 and d.id in (
-        select d1.id from WebDocumentEntity d1
-        inner join SourceSubscriptionEntity s
+        select d1.id from DocumentEntity d1
+        inner join RepositoryEntity s
         where d1.id = ?1
         and s.ownerId = ?2
     )
@@ -76,17 +76,17 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   )
   fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
 
-  fun countBySubscriptionId(id: UUID): Long
+  fun countByRepositoryId(id: UUID): Long
 
   @Query(
     """
-    SELECT date_part('year', releasedat\:\:date) as year,
-           date_part('month', releasedat\:\:date) AS month,
-           date_part('day', releasedat\:\:date) AS day,
+    SELECT date_part('year', released_at\:\:date) as year,
+           date_part('month', released_at\:\:date) AS month,
+           date_part('day', released_at\:\:date) AS day,
            COUNT(id)
-    FROM t_web_document
-    WHERE releasedat >= date_trunc('month', current_date - interval '1' month)
-       and subscriptionid = ?1
+    FROM t_document
+    WHERE released_at >= date_trunc('month', current_date - interval '1' month)
+       and repository_id = ?1
     GROUP BY year, month, day
     ORDER BY year, month, day
     """,

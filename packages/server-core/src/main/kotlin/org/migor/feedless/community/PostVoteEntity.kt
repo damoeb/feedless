@@ -9,6 +9,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.user.UserEntity
 import java.util.*
 
@@ -38,13 +39,13 @@ open class PostVoteEntity : EntityWithUUID() {
   )
   open var post: PostEntity? = null
 
-  @Column(name = "owner_id", nullable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "owner_id",
+    name = StandardJpaFields.ownerId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,

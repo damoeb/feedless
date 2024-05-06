@@ -1,0 +1,80 @@
+.reader {
+  p {
+    margin-top: 2em;
+
+    &.readability-styled {
+      display: inline;
+    }
+  }
+
+  blockquote,
+  > div,
+  p[role="note"] {
+    margin-left: 1em;
+  }
+
+  figcaption {
+    p {
+      margin-top: inherit;
+    }
+  }
+
+  --header-margin-top: 2em;
+  --header-font-size: 2.5em;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-align: left;
+    font-size: calc(var(--hl-factor) * var(--header-font-size));
+    margin-top: calc(var(--hl-factor) * var(--header-margin-top));
+  }
+
+  h1 {
+    margin-bottom: 1em;
+    margin-top: var(--header-margin-top);
+    --hl-factor: 1;
+  }
+
+  h2 {
+    --hl-factor: 0.9;
+  }
+
+  h3 {
+    --hl-factor: 0.8;
+  }
+
+  h4 {
+    --hl-factor: 0.6;
+  }
+
+  h5 {
+    --hl-factor: 0.4;
+  }
+
+  h6 {
+    --hl-factor: 0.2;
+  }
+
+  img {
+    max-height: 300px;
+    max-width: 100%;
+  }
+
+  figure {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  td,
+  th {
+    padding: 5px 9px;
+    border: 1px solid var(--app-foreground);
+  }
+
+  tr {
+  }
+}

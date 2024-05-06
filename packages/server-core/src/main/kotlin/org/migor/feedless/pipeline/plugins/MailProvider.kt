@@ -1,8 +1,8 @@
 package org.migor.feedless.pipeline.plugins
 
 import jakarta.mail.util.ByteArrayDataSource
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.mail.MailForwardEntity
 
@@ -16,16 +16,16 @@ class MailData {
 
 interface MailProvider {
 
-  fun provideWebDocumentMail(
+  fun provideDocumentMail(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): MailData
 
   fun provideWelcomeMail(
     corrId: String,
-    subscription: SourceSubscriptionEntity,
+    repository: RepositoryEntity,
     mailForward: MailForwardEntity,
   ): MailData
 

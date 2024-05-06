@@ -14,7 +14,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.generated.types.DOMActionSelect
 import org.migor.feedless.generated.types.DOMActionType
 import org.migor.feedless.generated.types.DOMElement
@@ -27,24 +27,24 @@ import java.util.*
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(name = "t_scrape_action")
+@Table(name = "t_browser_action")
 @DiscriminatorColumn(
   name = "action_type",
   discriminatorType = DiscriminatorType.STRING
 )
-open class ScrapeActionEntity : EntityWithUUID() {
-  @Column(name = StandardJpaFields.scrapeSourceId, nullable = false)
-  open lateinit var scrapeSourceId: UUID
+open class BrowserActionEntity : EntityWithUUID() {
+  @Column(name = StandardJpaFields.sourceId, nullable = false)
+  open lateinit var sourceId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = StandardJpaFields.scrapeSourceId,
+    name = StandardJpaFields.sourceId,
     referencedColumnName = StandardJpaFields.id,
     insertable = false,
     updatable = false
   )
-  open var scrapeSource: ScrapeSourceEntity? = null
+  open var source: SourceEntity? = null
 }
 
 private fun DomActionEntity.toTypeActionDto(): DOMActionType {
@@ -75,7 +75,7 @@ private fun DomActionEntity.toWaitActionDto(): WaitAction {
     .build()
 }
 
-fun ScrapeActionEntity.toDto(): ScrapeAction {
+fun BrowserActionEntity.toDto(): ScrapeAction {
   val builder = ScrapeAction.newBuilder()
   return when (this) {
     is DomActionEntity -> when (event) {

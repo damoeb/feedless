@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
-import { SourceSubscription } from '../../../../graphql/types';
+import { RepositoryService } from '../../../../services/repository.service';
+import { Repository } from '../../../../graphql/types';
 
 @Component({
   selector: 'app-repository-settings-page',
@@ -17,17 +17,17 @@ import { SourceSubscription } from '../../../../graphql/types';
 })
 export class RepositorySettingsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
-  private repository: SourceSubscription;
+  private repository: Repository;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
     const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
     this.repository =
-      await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+      await this.repositoryService.getRepositoryById(repositoryId);
 
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {}),

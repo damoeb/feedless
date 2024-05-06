@@ -64,7 +64,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
       feed.scrapeRequest.page.url,
     );
     const componentProps: GenerateFeedModalComponentProps = {
-      subscription: {
+      repository: {
         title,
         description,
         plugins: [],

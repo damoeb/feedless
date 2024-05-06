@@ -6,15 +6,16 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
-import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { RepositoryService } from '../../services/repository.service';
 import {
   GqlCompositeFieldFilterParamsInput,
   GqlCompositeFilterParamsInput,
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
+  GqlProfileName,
   GqlScrapePage,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
@@ -27,15 +28,15 @@ import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
-import { FeedService } from '../../services/feed.service';
-import { SourceSubscription } from '../../graphql/types';
+import { Repository } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { isDefined } from '../scrape-source-modal/scrape-builder';
 import { ArrayElement } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 
 export interface GenerateFeedModalComponentProps {
-  subscription: SourceSubscription;
+  repository: Repository;
+  modalTitle?: string;
 }
 
 type FilterOperator = GqlStringFilterOperator;
@@ -91,7 +92,7 @@ export function getScrapeRequest(
 }
 
 type FilterParams = ArrayElement<
-  ArrayElement<SourceSubscription['plugins']>['params']['org_feedless_filter']
+  ArrayElement<Repository['plugins']>['params']['org_feedless_filter']
 >;
 
 @Component({
@@ -115,12 +116,13 @@ export class GenerateFeedModalComponent
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
     applyFulltextPlugin: new FormControl<boolean>(false),
+    isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
   });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
 
   @Input({ required: true })
-  subscription: SourceSubscription;
+  repository: Repository;
 
   @ViewChild('remoteFeedPreviewComponent', { static: true })
   remoteFeedPreview: RemoteFeedPreviewComponent;
@@ -138,16 +140,17 @@ export class GenerateFeedModalComponent
   protected FilterFieldLink: FilterField = 'link';
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
+  isThrottled: boolean;
+  modalTitle = 'Finalize Feed';
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly alertCtrl: AlertController,
+    private readonly toastCtrl: ToastController,
     private readonly profileService: SessionService,
-    private readonly feedService: FeedService,
     readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   closeModal() {
@@ -237,22 +240,33 @@ export class GenerateFeedModalComponent
       }
 
       if (this.isUpdate()) {
-        const { title, description, fetchFrequency, maxAgeDays, maxItems } =
-          this.formFg.value;
-        await this.sourceSubscriptionService.updateSubscription({
+        const {
+          title,
+          isPublic,
+          description,
+          fetchFrequency,
+          maxAgeDays,
+          maxItems,
+        } = this.formFg.value;
+        await this.repositoryService.updateRepository({
           where: {
-            id: this.subscription.id,
+            id: this.repository.id,
           },
           data: {
             sinkOptions: {
               plugins,
+              visibility: {
+                set: isPublic
+                  ? GqlVisibility.IsPublic
+                  : GqlVisibility.IsPrivate,
+              },
               title: {
                 set: title,
               },
               description: {
                 set: description,
               },
-              scheduleExpression: {
+              refreshCron: {
                 set: fetchFrequency,
               },
               retention: {
@@ -266,29 +280,37 @@ export class GenerateFeedModalComponent
             },
           },
         });
-      } else {
-        const subscriptions =
-          await this.sourceSubscriptionService.createSubscriptions({
-            subscriptions: [
-              {
-                product: environment.product,
-                sources: this.subscription.sources as GqlScrapeRequestInput[],
-                sourceOptions: {
-                  refreshCron: this.formFg.value.fetchFrequency,
-                },
-                sinkOptions: {
-                  title: this.formFg.value.title,
-                  description: this.formFg.value.description,
-                  visibility: GqlVisibility.IsPrivate,
-                  plugins,
-                },
-              },
-            ],
-          });
+        const toast = await this.toastCtrl.create({
+          message: 'Saved',
+          duration: 3000,
+          color: 'success',
+        });
 
-        const sub = subscriptions[0];
+        await toast.present();
+      } else {
+        const repositories = await this.repositoryService.createRepositories({
+          repositories: [
+            {
+              product: environment.product,
+              sources: this.repository.sources as GqlScrapeRequestInput[],
+              sourceOptions: {
+                refreshCron: this.formFg.value.fetchFrequency,
+              },
+              sinkOptions: {
+                title: this.formFg.value.title,
+                description: this.formFg.value.description,
+                visibility: this.formFg.value.isPublic
+                  ? GqlVisibility.IsPublic
+                  : GqlVisibility.IsPrivate,
+                plugins,
+              },
+            },
+          ],
+        });
+
+        const firstRepository = repositories[0];
         await this.modalCtrl.dismiss();
-        await this.router.navigateByUrl(`/feeds/${sub.id}`);
+        await this.router.navigateByUrl(`/feeds/${firstRepository.id}`);
       }
     } catch (e) {
       this.errorMessage = e.message;
@@ -300,21 +322,27 @@ export class GenerateFeedModalComponent
 
   async ngOnInit(): Promise<void> {
     this.isLoggedIn = this.profileService.isAuthenticated();
-    const retention = this.subscription.retention;
+
+    this.isThrottled = !this.serverSettings.hasProfile(
+      GqlProfileName.SelfHosted,
+    );
+
+    const retention = this.repository.retention;
     this.formFg.patchValue({
-      title: this.subscription.title,
-      description: this.subscription.description,
-      fetchFrequency: this.subscription.scheduleExpression || '0 0 0 * * *',
-      applyFulltextPlugin: this.subscription.plugins.some(
+      title: this.repository.title,
+      isPublic: this.repository.visibility == GqlVisibility.IsPublic,
+      description: this.repository.description,
+      fetchFrequency: this.repository.refreshCron || '0 0 0 * * *',
+      applyFulltextPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
       ),
-      applyPrivacyPlugin: this.subscription.plugins.some(
+      applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),
       maxAgeDays: retention?.maxAgeDays,
       maxItems: retention?.maxItems,
     });
-    const filterPlugin = this.subscription.plugins.find(
+    const filterPlugin = this.repository.plugins.find(
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
     );
     if (filterPlugin) {
@@ -334,7 +362,7 @@ export class GenerateFeedModalComponent
 
   private async loadFeedPreview() {
     await this.remoteFeedPreview.loadFeedPreview(
-      this.subscription.sources as GqlScrapeRequest[],
+      this.repository.sources as GqlScrapeRequest[],
       this.getFilterParams(),
     );
   }
@@ -354,6 +382,6 @@ export class GenerateFeedModalComponent
   }
 
   isUpdate() {
-    return isDefined(this.subscription.id);
+    return isDefined(this.repository.id);
   }
 }

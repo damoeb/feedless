@@ -9,14 +9,14 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.data.jpa.models.PluginExecution
-import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
-import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.repositories.DocumentDAO
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
+import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -30,9 +30,10 @@ import org.migor.feedless.pipeline.PipelineJobDAO
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.service.DocumentService
 import org.migor.feedless.service.NotificationService
 import org.migor.feedless.service.ScrapeService
-import org.migor.feedless.service.WebDocumentService
+import org.migor.feedless.source.RepositoryService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JsonUtil
@@ -53,9 +54,9 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
-class SourceSubscriptionHarvester internal constructor() {
+class RepositoryHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(SourceSubscriptionHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -64,7 +65,7 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var scrapeService: ScrapeService
 
   @Autowired
-  lateinit var webDocumentDAO: WebDocumentDAO
+  lateinit var documentDAO: DocumentDAO
 
   @Autowired
   lateinit var pipelineJobDAO: PipelineJobDAO
@@ -73,44 +74,47 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var planConstraintsService: PlanConstraintsService
 
   @Autowired
-  lateinit var webDocumentService: WebDocumentService
+  lateinit var documentService: DocumentService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var scrapeSourceDAO: ScrapeSourceDAO
+  lateinit var sourceDAO: SourceDAO
 
   @Autowired
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
+
+  @Autowired
+  lateinit var repositoryService: RepositoryService
 
   @Autowired
   lateinit var notificationService: NotificationService
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-  fun handleSourceSubscription(corrId: String, subscription: SourceSubscriptionEntity) {
-    log.info("[${corrId}] handleSourceSubscription ${subscription.id}")
+  fun handleRepository(corrId: String, repository: RepositoryEntity) {
+    log.info("[${corrId}] handleRepository ${repository.id}")
 
     try {
-      scrapeSources(corrId, subscription)
+      scrapeSources(corrId, repository)
         .blockLast()
 
-      webDocumentService.applyRetentionStrategy(corrId, subscription)
+      documentService.applyRetentionStrategy(corrId, repository)
       log.info("[$corrId] Harvesting done")
-      updateScheduledNextAt(corrId, subscription)
-      sourceSubscriptionDAO.updateLastUpdatedAt(subscription.id, Date())
+      updateScheduledNextAt(corrId, repository)
+      repositoryDAO.updateLastUpdatedAt(repository.id, Date())
 
     } catch (it: Exception) {
       log.error(it.message)
-      notificationService.createNotification(corrId, subscription.ownerId, it.message ?: "")
+      notificationService.createNotification(corrId, repository.ownerId, it.message ?: "")
 //      if (log.isDebugEnabled) {
 //        it.printStackTrace()
 //      }
-      updateNextHarvestDateAfterError(corrId, subscription, it)
+      updateNextHarvestDateAfterError(corrId, repository, it)
     }
   }
 
-  fun updateNextHarvestDateAfterError(corrId: String, subscription: SourceSubscriptionEntity, e: Throwable) {
+  fun updateNextHarvestDateAfterError(corrId: String, repository: RepositoryEntity, e: Throwable) {
     log.info("[$corrId] handling ${e.message}")
 //
     val nextHarvestAt = if (e !is ResumableHarvestException) {
@@ -119,25 +123,26 @@ class SourceSubscriptionHarvester internal constructor() {
       log.error("[$corrId] ${e.message}")
       Date.from(Date().toInstant().plus(Duration.of(7, ChronoUnit.DAYS)))
     }
-    subscription.triggerScheduledNextAt = nextHarvestAt
-    sourceSubscriptionDAO.save(subscription)
+    repository.triggerScheduledNextAt = nextHarvestAt
+    repositoryDAO.save(repository)
   }
 
-  private fun updateScheduledNextAt(corrId: String, subscription: SourceSubscriptionEntity) {
-    val scheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(
-      nextCronDate(subscription.schedulerExpression),
-      subscription.ownerId
+  private fun updateScheduledNextAt(corrId: String, repository: RepositoryEntity) {
+    val scheduledNextAt = repositoryService.calculateScheduledNextAt(
+      repository.sourcesSyncExpression,
+      repository.ownerId,
+      LocalDateTime.now()
     )
     log.info("[$corrId] Next harvest scheduled for $scheduledNextAt")
-    sourceSubscriptionDAO.updateScheduledNextAt(subscription.id, scheduledNextAt)
+    repositoryDAO.updateScheduledNextAt(repository.id, scheduledNextAt)
   }
 
   private fun scrapeSources(
     corrId: String,
-    subscription: SourceSubscriptionEntity
+    repository: RepositoryEntity
   ): Flux<Unit> {
-    log.info("[$corrId] scrape ${subscription.sources.size} sources")
-    return Flux.fromIterable(subscription.sources)
+    log.info("[$corrId] scrape ${repository.sources.size} sources")
+    return Flux.fromIterable(repository.sources)
       .flatMap {
         val subCorrId = newCorrId(parentCorrId = corrId)
         try {
@@ -149,8 +154,8 @@ class SourceSubscriptionHarvester internal constructor() {
             log.warn("[$subCorrId] ${e.message}")
           } else {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
-            notificationService.createNotification(corrId, subscription.ownerId, e.message)
-            scrapeSourceDAO.setErrornous(it.id, true, e.message)
+            notificationService.createNotification(corrId, repository.ownerId, e.message)
+            sourceDAO.setErrornous(it.id, true, e.message)
           }
           Flux.empty()
         }
@@ -180,119 +185,119 @@ class SourceSubscriptionHarvester internal constructor() {
 
   }
 
-  private fun scrapeSource(corrId: String, source: ScrapeSourceEntity): Flux<Unit> {
+  private fun scrapeSource(corrId: String, source: SourceEntity): Flux<Unit> {
     return scrapeService.scrape(corrId, source.toScrapeRequest())
       .flatMapMany { scrapeResponse -> Flux.fromIterable(scrapeResponse.elements) }
-      .flatMap { Flux.just(importElement(corrId, it, source.subscription!!.id)) }
+      .flatMap { Flux.just(importElement(corrId, it, source.repository!!.id)) }
   }
 
-  private fun importElement(corrId: String, element: ScrapedElement, subscriptionId: UUID) {
+  private fun importElement(corrId: String, element: ScrapedElement, repositoryId: UUID) {
     log.debug("[$corrId] importElement")
     element.image?.let {
-      importImageElement(corrId, it, subscriptionId)
+      importImageElement(corrId, it, repositoryId)
     }
     element.selector?.let {
-      importSelectorElement(corrId, it, subscriptionId)
+      importSelectorElement(corrId, it, repositoryId)
     }
   }
 
-  private fun importSelectorElement(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
+  private fun importSelectorElement(corrId: String, scrapedData: ScrapedBySelector, repositoryId: UUID) {
     log.debug("[$corrId] importSelectorElement")
     scrapedData.fields?.let { fields ->
       fields.forEach {
         when (it.name) {
           FeedlessPlugins.org_feedless_feed.name -> importFeed(
             corrId,
-            subscriptionId,
+            repositoryId,
             JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java)
           )
 
           else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
         }
       }
-    } ?: importScrapedData(corrId, scrapedData, subscriptionId)
+    } ?: importScrapedData(corrId, scrapedData, repositoryId)
   }
 
-  private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
+  private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, repositoryId: UUID) {
     log.info("[$corrId] importScrapedData")
-    val webDocument = scrapedData.asEntity(subscriptionId)
+    val document = scrapedData.asEntity(repositoryId)
 
-    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
+    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
 
     createOrUpdate(
       corrId,
-      webDocument,
-      webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
-      subscription
+      document,
+      documentDAO.findByUrlAndRepositoryId(document.url, repositoryId),
+      repository
     )
   }
 
-  private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
+  private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed) {
     log.info("[$corrId] importFeed")
-    val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-    feed.items.forEach {
+    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+    feed.items.distinctBy { it.url }.forEach {
       try {
-        val existing = webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)
-
-        val updated = it.asEntity(subscription.id, ReleaseStatus.released)
-        createOrUpdate(corrId, updated, existing, subscription)
+        val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
+        val updated = it.asEntity(repository.id, ReleaseStatus.released)
+        createOrUpdate(corrId, updated, existing, repository)
       } catch (e: Exception) {
         log.error("[$corrId] ${e.message}")
-        notificationService.createNotification(corrId, subscriptionId, e.message)
+        notificationService.createNotification(corrId, repositoryId, e.message)
       }
     }
   }
 
   private fun createOrUpdate(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    existing: WebDocumentEntity?,
-    subscription: SourceSubscriptionEntity
+    document: DocumentEntity,
+    existing: DocumentEntity?,
+    repository: RepositoryEntity
   ) {
     try {
       existing
         ?.let {
-          log.info("[$corrId] skip item ${webDocument.url}")
+          log.info("[$corrId] skip item ${document.url}")
+
         }
         ?: run {
-          meterRegistry.counter(AppMetrics.createWebDocument).increment()
+          meterRegistry.counter(AppMetrics.createDocument).increment()
 
-          webDocument.status = if (subscription.plugins.isEmpty()) {
+          document.status = if (repository.plugins.isEmpty()) {
             ReleaseStatus.released
           } else {
             ReleaseStatus.unreleased
           }
 
-          webDocumentDAO.save(webDocument)
+          documentDAO.save(document)
 
-          webDocument.plugins = subscription.plugins
-            .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, webDocument, index) }
+          document.plugins = repository.plugins
+            .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, document, index) }
             .toMutableList()
 
-          log.info("[$corrId] saved ${subscription.id} ${webDocument.status} ${webDocument.url} with ${webDocument.plugins.size} plugins")
+          log.info("[$corrId] saved ${repository.id} ${document.status} ${document.url} with ${document.plugins.size} plugins")
         }
     } catch (e: Exception) {
       log.error("[$corrId] ${e.message}")
-      notificationService.createNotification(corrId, subscription.ownerId, e.message)
+      notificationService.createNotification(corrId, repository.ownerId, e.message)
       if (log.isDebugEnabled) {
         e.printStackTrace()
       }
     }
   }
 
-  private fun toPipelineJob(plugin: PluginExecution, webDocument: WebDocumentEntity, index: Int): PipelineJobEntity {
+  private fun toPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): PipelineJobEntity {
     val job = PipelineJobEntity()
     job.sequenceId = index
-    job.webDocumentId = webDocument.id
+    job.documentId = document.id
     job.executorId = plugin.id
     job.executorParams = plugin.params
     return pipelineJobDAO.save(job)
   }
 
-  private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, subscriptionId: UUID) {
+  private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, repositoryId: UUID) {
     log.info("[${corrId}] importImageElement")
     val id = CryptUtil.sha1(scrapedData.data.base64Data)
-    if (!webDocumentDAO.existsByContentTitleAndSubscriptionId(id, subscriptionId)) {
+    if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
       log.info("[$corrId] create item $id")
       TODO("not implemented")
 //      webDocumentDAO.save(entity)
@@ -300,7 +305,7 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 }
 
-fun ScrapeSourceEntity.toScrapeRequest(): ScrapeRequest {
+fun SourceEntity.toScrapeRequest(): ScrapeRequest {
   return toDto()
 }
 
@@ -315,9 +320,9 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
     }
 }
 
-private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity {
-  val e = WebDocumentEntity()
-  e.subscriptionId = subscriptionId
+private fun ScrapedBySelector.asEntity(repositoryId: UUID): DocumentEntity {
+  val e = DocumentEntity()
+  e.repositoryId = repositoryId
   pixel?.let {
     e.contentTitle = CryptUtil.sha1(it.base64Data)
     e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
@@ -330,16 +335,16 @@ private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity 
 
   e.contentText = text.data
   e.status = ReleaseStatus.released
-  e.releasedAt = Date()
+  e.publishedAt = Date()
   e.updatedAt = Date()
   e.url = "https://feedless.org/d/${e.id}"
   return e
 }
 
-private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): WebDocumentEntity {
-  val e = WebDocumentEntity()
+private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus): DocumentEntity {
+  val e = DocumentEntity()
   e.contentTitle = contentTitle
-  e.subscriptionId = subscriptionId
+  e.repositoryId = repositoryId
   if (StringUtils.isNotBlank(contentRawBase64)) {
     val tika = Tika()
     val contentRawBytes = contentRawBase64.toByteArray()
@@ -353,12 +358,12 @@ private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): W
   }
   e.contentText = contentText
   e.status = status
-  e.releasedAt = Date(publishedAt)
-  e.updatedAt = updatedAt?.let { Date(updatedAt) } ?: e.releasedAt
+  e.publishedAt = Date(publishedAt)
+  e.updatedAt = updatedAt?.let { Date(updatedAt) } ?: e.publishedAt
   e.url = url
   return e
 }
 
-fun nextCronDate(cronString: String): Date {
-  return Date.from(CronExpression.parse(cronString).next(LocalDateTime.now())!!.toInstant(ZoneOffset.UTC))
+fun nextCronDate(cronString: String, from: LocalDateTime): Date {
+  return Date.from(CronExpression.parse(cronString).next(from)!!.toInstant(ZoneOffset.UTC))
 }

@@ -49,13 +49,13 @@ open class ProductEntity : EntityWithUUID() {
   )
   open var parentProduct: ProductEntity? = null
 
-  @Column(name = "owner_id", nullable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "owner_id",
+    name = StandardJpaFields.ownerId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,

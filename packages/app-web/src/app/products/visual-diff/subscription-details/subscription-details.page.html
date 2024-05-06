@@ -1,10 +1,8 @@
-<ion-header *ngIf="subscription">
+<ion-header *ngIf="repository">
   <ion-toolbar color="danger">
     <ion-text style="font-size: 16px" class="ion-padding-horizontal"
       >This trial subscription will expire at
-      <strong
-        >{{subscription.disabledFrom | date: dateFormat}}</strong
-      ></ion-text
+      <strong>{{repository.disabledFrom | date: dateFormat}}</strong></ion-text
     >
     <ion-button
       slot="end"
@@ -21,8 +19,8 @@
     <ion-spinner name="dots"></ion-spinner>
   </div>
   <div *ngIf="!busy">
-    <h2>{{ subscription.title }}</h2>
-    <p>{{ subscription.description }}</p>
+    <h2>{{ repository.title }}</h2>
+    <p>{{ repository.description }}</p>
 
     <div *ngIf="documents.length === 1">
       <p>Version from {{documents[0].createdAt | date: dateTimeFormat}}</p>

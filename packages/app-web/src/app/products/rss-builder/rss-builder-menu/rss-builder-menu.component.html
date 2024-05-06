@@ -2,7 +2,10 @@
   <ion-item color="primary" routerLink="/builder">
     <ion-label> New Feed </ion-label>
   </ion-item>
-  <ion-item *ngFor="let feed of feeds" [routerLink]="'/feeds/' + feed.id">
+  <ion-item
+    *ngFor="let feed of repositories"
+    [routerLink]="'/feeds/' + feed.id"
+  >
     <ion-label>
       <h3>{{ feed.title }}</h3>
       <p>{{ getPageUrl(feed) }}</p>

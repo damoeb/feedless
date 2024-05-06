@@ -1,8 +1,8 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
@@ -23,11 +23,11 @@ class SpawnPageTrackerPlugin : MapEntityPlugin {
 
   override fun mapEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ) {
-    log.info("[$corrId] mapEntity ${webDocument.url}")
+    log.info("[$corrId] mapEntity ${document.url}")
     // todo create new sourcesubscription tracking this page for n-days
   }
 }

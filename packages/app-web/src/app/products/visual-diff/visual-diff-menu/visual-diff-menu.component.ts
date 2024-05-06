@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
-import { SourceSubscription } from '../../../graphql/types';
+import { Repository } from '../../../graphql/types';
 
 @Component({
   selector: 'app-visual-diff-menu',
@@ -9,33 +9,34 @@ import { SourceSubscription } from '../../../graphql/types';
   styleUrls: ['./visual-diff-menu.component.scss'],
 })
 export class VisualDiffMenuComponent implements OnInit {
-  subscriptions: SourceSubscription[] = [];
+  repositories: Repository[] = [];
 
   constructor(
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
     this.authService.authorizationChange().subscribe((authenticated) => {
       if (authenticated) {
-        this.fetchSubscriptions();
+        this.fetchRepositories();
       }
     });
   }
 
-  getPageUrl(sub: SourceSubscription): string {
-    const url = sub.sources[0].page.url;
-    return new URL(url).hostname;
+  getPageUrl(repository: Repository): string {
+    if (repository.sources.length > 0) {
+      const url = repository.sources[0].page.url;
+      return new URL(url).hostname;
+    }
   }
 
-  private async fetchSubscriptions() {
+  private async fetchRepositories() {
     const page = 0;
-    this.subscriptions =
-      await this.sourceSubscriptionService.listSourceSubscriptions({
-        cursor: {
-          page,
-        },
-      });
+    this.repositories = await this.repositoryService.listRepositoriess({
+      cursor: {
+        page,
+      },
+    });
   }
 }

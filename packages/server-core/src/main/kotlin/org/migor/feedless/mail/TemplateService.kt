@@ -54,7 +54,7 @@ data class VisualDiffWelcomeMailTemplate(override val params: VisualDiffWelcomeP
   FtlTemplate<VisualDiffWelcomeParams>("mail-visual-diff-welcome")
 
 class MailTrackerAuthorizedTemplate(override val params: Unit = Unit) : FtlTemplate<Unit>("page-tracker-authorized")
-class WebDocumentUpdateMailTemplate(override val params: Unit = Unit) :
+class DocumentUpdateMailTemplate(override val params: Unit = Unit) :
   FtlTemplate<Unit>("mail-web-document-update")
 
 @Service

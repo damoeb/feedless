@@ -8,7 +8,7 @@ import jakarta.persistence.Enumerated
 
 @Entity
 @DiscriminatorValue("dom")
-open class DomActionEntity : ScrapeActionEntity() {
+open class DomActionEntity : BrowserActionEntity() {
 
   @Column(name = "xpath")
   open lateinit var xpath: String

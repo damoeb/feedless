@@ -6,10 +6,10 @@ import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
-import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.repositories.DocumentDAO
+import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.WebDocumentField
@@ -39,10 +39,10 @@ import javax.imageio.ImageIO
 import kotlin.math.abs
 
 
-fun getLastWebDocumentBySubscription(webDocumentDAO: WebDocumentDAO, subscriptionId: UUID): WebDocumentEntity? {
+fun getLastDocumentByRepositoryId(webDocumentDAO: DocumentDAO, repositoryId: UUID): DocumentEntity? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
-  return webDocumentDAO.findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
-    subscriptionId,
+  return webDocumentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(
+    repositoryId,
     ReleaseStatus.released,
     Date(),
     pageable
@@ -56,13 +56,13 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   private val log = LoggerFactory.getLogger(DiffDataForwarderPlugin::class.simpleName)
 
   @Autowired
-  lateinit var webDocumentDAO: WebDocumentDAO
+  lateinit var documentDAO: DocumentDAO
 
   @Autowired
   lateinit var productService: ProductService
 
   @Autowired
-  lateinit var scrapeSourceDAO: ScrapeSourceDAO
+  lateinit var sourceDAO: SourceDAO
 
   @Autowired
   lateinit var templateService: TemplateService
@@ -73,36 +73,36 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
   override fun filterEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
+    document: DocumentEntity,
     params: PluginExecutionParamsInput,
     index: Int
   ): Boolean {
-    log.info("[$corrId] filter ${webDocument.url}")
+    log.info("[$corrId] filter ${document.url}")
 
     val increment = params.org_feedless_diff_email_forward.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
-    val previous = getLastWebDocumentBySubscription(webDocumentDAO, webDocument.subscriptionId)
+    val previous = getLastDocumentByRepositoryId(documentDAO, document.repositoryId)
 
     return previous?.let {
       when (params.org_feedless_diff_email_forward.compareBy!!) {
         WebDocumentField.text -> compareByText(
           corrId,
-          webDocument.contentText!!,
+          document.contentText!!,
           previous.contentText!!,
           increment
         )
 
         WebDocumentField.markup -> compareByText(
           corrId,
-          webDocument.contentHtml!!,
+          document.contentHtml!!,
           previous.contentHtml!!,
           increment
         )
 
         WebDocumentField.pixel -> compareByPixel(
           corrId,
-          webDocument,
+          document,
           previous,
           increment
         )
@@ -112,20 +112,20 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
   override fun provideWelcomeMail(
     corrId: String,
-    subscription: SourceSubscriptionEntity,
+    repository: RepositoryEntity,
     mailForward: MailForwardEntity
   ): MailData {
     log.info("[$corrId] prepare welcome mail")
     val mailData = MailData()
-    mailData.subject = "VisualDiff Tracker: ${subscription.title}"
+    mailData.subject = "VisualDiff Tracker: ${repository.title}"
     val website =
-      scrapeSourceDAO.findAllBySubscriptionId(subscription.id).joinToString(", ") { it.url }
+      sourceDAO.findAllByRepositoryId(repository.id).joinToString(", ") { it.url }
 
     val params = VisualDiffWelcomeParams(
-      trackerTitle = subscription.title,
+      trackerTitle = repository.title,
       website = website,
-      trackerInfo = subscription.schedulerExpression,
-      activateTrackerMailsUrl = "${productService.getGatewayUrl(subscription.product)}${ApiUrls.mailForwardingAllow}/${mailForward.id}",
+      trackerInfo = repository.sourcesSyncExpression,
+      activateTrackerMailsUrl = "${productService.getGatewayUrl(repository.product)}${ApiUrls.mailForwardingAllow}/${mailForward.id}",
       info = ""
     )
     mailData.body = templateService.renderTemplate(corrId, VisualDiffWelcomeMailTemplate(params))
@@ -133,10 +133,10 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     return mailData
   }
 
-  override fun provideWebDocumentMail(
+  override fun provideDocumentMail(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): MailData {
     log.info("[$corrId] prepare diff email")
@@ -145,7 +145,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
 
     val mailData = MailData()
 
-    mailData.subject = subscription.title
+    mailData.subject = repository.title
 
     val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
 
@@ -153,18 +153,18 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     config.inlinePreviousImage = false
     config.inlineDiffImage = true
 
-    val latestDateString = sdf.format(webDocument.createdAt)
+    val latestDateString = sdf.format(document.createdAt)
     val images = mutableListOf(
       Triple(
         config.inlineLatestImage,
         "latest-$latestDateString",
-        webDocument.contentRaw!!
+        document.contentRaw!!
       )
     )
 
-    val lastWebDocument = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
+    val lastWebDocument = getLastDocumentByRepositoryId(this.documentDAO, repository.id)
     lastWebDocument?.let {
-      if (webDocument.id.toString() == lastWebDocument.id.toString()) {
+      if (document.id.toString() == lastWebDocument.id.toString()) {
         throw IllegalArgumentException("comparing same document")
       }
       images.add(
@@ -178,7 +178,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
         Triple(
           config.inlineDiffImage,
           "diff-${latestDateString}",
-          createDiffImage(lastWebDocument, webDocument)
+          createDiffImage(lastWebDocument, document)
         )
       )
     }
@@ -194,12 +194,12 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
       }
     }
 
-    val website = scrapeSourceDAO.findAllBySubscriptionId(
-      subscription.id
+    val website = sourceDAO.findAllByRepositoryId(
+      repository.id
     ).joinToString(", ") { s -> s.url }
 
     val templateParams = VisualDiffChangeDetectedParams(
-      trackerTitle = subscription.title,
+      trackerTitle = repository.title,
       website = website,
       inlineImages = inlined.joinToString("\n")
     )
@@ -208,14 +208,14 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     return mailData
   }
 
-  private fun toImage(webDocument: WebDocumentEntity): BufferedImage {
+  private fun toImage(webDocument: DocumentEntity): BufferedImage {
     return ImageIO.read(ByteArrayInputStream(webDocument.contentRaw))
   }
 
   private fun compareByPixel(
     corrId: String,
-    left: WebDocumentEntity,
-    right: WebDocumentEntity,
+    left: DocumentEntity,
+    right: DocumentEntity,
     minIncrement: Double
   ): Boolean {
     val img1 = toImage(left)
@@ -249,7 +249,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     return ratio > minIncrement
   }
 
-  private fun createDiffImage(oldDocument: WebDocumentEntity, newDocument: WebDocumentEntity): ByteArray {
+  private fun createDiffImage(oldDocument: DocumentEntity, newDocument: DocumentEntity): ByteArray {
     val oldImage = toImage(oldDocument)
     val newImage = toImage(newDocument)
 

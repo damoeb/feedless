@@ -14,7 +14,7 @@ describe('SubscriptionDetailsPage', () => {
 
     fixture = TestBed.createComponent(SubscriptionDetailsPage);
     component = fixture.componentInstance;
-    component.subscription = {} as any;
+    component.repository = {} as any;
     component.documents = [];
     fixture.detectChanges();
   }));

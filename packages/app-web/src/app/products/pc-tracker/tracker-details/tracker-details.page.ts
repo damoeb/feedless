@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { SourceSubscription, WebDocument } from '../../../graphql/types';
+import { Repository, WebDocument } from '../../../graphql/types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ModalController } from '@ionic/angular';
@@ -23,7 +23,7 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
   documents: WebDocument[];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  subscription: SourceSubscription;
+  repository: Repository;
 
   feedUrl: string;
   constructor(

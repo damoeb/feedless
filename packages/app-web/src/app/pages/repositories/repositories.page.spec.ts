@@ -4,9 +4,9 @@ import { RepositoriesPage } from './repositories.page';
 import { RepositoriesPageModule } from './repositories.module';
 import { AppTestModule } from '../../app-test.module';
 import {
-  GqlListSourceSubscriptionsQuery,
-  GqlListSourceSubscriptionsQueryVariables,
-  ListSourceSubscriptions,
+  GqlListRepositoriesQuery,
+  GqlListRepositoriesQueryVariables,
+  ListRepositories,
 } from '../../../generated/graphql';
 
 describe('RepositoriesPage', () => {
@@ -20,13 +20,13 @@ describe('RepositoriesPage', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           apolloMockController
             .mockQuery<
-              GqlListSourceSubscriptionsQuery,
-              GqlListSourceSubscriptionsQueryVariables
-            >(ListSourceSubscriptions)
+              GqlListRepositoriesQuery,
+              GqlListRepositoriesQueryVariables
+            >(ListRepositories)
             .and.resolveOnce(async () => {
               return {
                 data: {
-                  sourceSubscriptions: [],
+                  repositories: [],
                 },
               };
             });

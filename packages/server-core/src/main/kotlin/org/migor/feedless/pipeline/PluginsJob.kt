@@ -3,10 +3,10 @@ package org.migor.feedless.pipeline
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
-import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.repositories.DocumentDAO
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
@@ -31,10 +31,10 @@ class PluginsJob internal constructor() {
   lateinit var pipelineJobDAO: PipelineJobDAO
 
   @Autowired
-  lateinit var webDocumentDAO: WebDocumentDAO
+  lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
   lateinit var pluginService: PluginService
@@ -50,14 +50,14 @@ class PluginsJob internal constructor() {
   fun executePlugins() {
     val corrId = newCorrId()
     pipelineJobDAO.findAllPendingBatched()
-      .groupBy { it.webDocumentId }
+      .groupBy { it.documentId }
       .map { processPipelineJob(newCorrId(3, corrId), it.key, it.value) }
   }
 
-  private fun processPipelineJob(corrId: String, webDocumentId: UUID, jobs: List<PipelineJobEntity>) {
-    log.info("[$corrId] ${jobs.size} processPipelineJobs for webDocument $webDocumentId")
-    val webDocument = webDocumentDAO.findById(webDocumentId).orElseThrow()
-    val subscription = sourceSubscriptionDAO.findById(webDocument.subscriptionId).orElseThrow()
+  private fun processPipelineJob(corrId: String, documentId: UUID, jobs: List<PipelineJobEntity>) {
+    log.info("[$corrId] ${jobs.size} processPipelineJobs for webDocument $documentId")
+    val document = documentDAO.findById(documentId).orElseThrow()
+    val repository = repositoryDAO.findById(document.repositoryId).orElseThrow()
     try {
       var omitted = false
       for (job in jobs) {
@@ -68,12 +68,12 @@ class PluginsJob internal constructor() {
 
           val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)
           when (plugin) {
-            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, webDocument, job.executorParams, 0)) {
+            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, document, job.executorParams, 0)) {
               omitted = true
               break
             }
 
-            is MapEntityPlugin -> plugin.mapEntity(corrId, webDocument, subscription, job.executorParams)
+            is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams)
             else -> throw IllegalArgumentException("Invalid executorId ${job.executorId}")
           }
           job.terminated = true
@@ -82,37 +82,37 @@ class PluginsJob internal constructor() {
         } catch (e: ResumableHarvestException) {
           log.info("[$corrId] delaying (${job.executorId}): ${e.message}")
           job.coolDownUntil = Date(System.currentTimeMillis() + e.nextRetryAfter.toMillis())
-          job.attempt = job.attempt + 1
+          job.attempt += 1
           pipelineJobDAO.save(job)
           break
         }
       }
       if (omitted) {
-        webDocumentDAO.delete(webDocument)
+        documentDAO.delete(document)
       } else {
-        forwardToMail(corrId, webDocument, subscription)
-        webDocument.status = ReleaseStatus.released
-        webDocumentDAO.save(webDocument)
+        forwardToMail(corrId, document, repository)
+        document.status = ReleaseStatus.released
+        documentDAO.save(document)
       }
 
     } catch (throwable: Throwable) {
       log.warn("[$corrId] aborting pipeline, cause ${throwable.message}")
-      webDocumentDAO.delete(webDocument)
+      documentDAO.delete(document)
     }
   }
 
-  private fun forwardToMail(corrId: String, webDocument: WebDocumentEntity, subscription: SourceSubscriptionEntity) {
-    val mailForwards = mailForwardDAO.findAllBySubscriptionId(subscription.id)
+  private fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
+    val mailForwards = mailForwardDAO.findAllByRepositoryId(repository.id)
     if (mailForwards.isNotEmpty()) {
       val authorizedMailForwards =
         mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
       if (authorizedMailForwards.isEmpty()) {
         log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
       } else {
-        val (mailFormatter, params) = pluginService.resolveMailFormatter(subscription)
+        val (mailFormatter, params) = pluginService.resolveMailFormatter(repository)
         log.info("[$corrId] using formatter ${mailFormatter::class.java.name}")
 
-        val from = mailService.getNoReplyAddress(subscription.product)
+        val from = mailService.getNoReplyAddress(repository.product)
         val to = authorizedMailForwards.toTypedArray()
 
         log.info("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
@@ -120,7 +120,7 @@ class PluginsJob internal constructor() {
           corrId,
           from,
           to,
-          mailFormatter.provideWebDocumentMail(corrId, webDocument, subscription, params)
+          mailFormatter.provideDocumentMail(corrId, document, repository, params)
         )
       }
     }

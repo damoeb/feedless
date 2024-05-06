@@ -3,7 +3,6 @@ package org.migor.feedless.mail
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -13,7 +12,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import java.util.*
 
 @Entity
@@ -30,16 +29,16 @@ open class MailForwardEntity : EntityWithUUID() {
   @Column
   open var authorizedAt: Date? = null
 
-  @Column(name = StandardJpaFields.subscriptionId, nullable = false)
-  open lateinit var subscriptionId: UUID
+  @Column(name = StandardJpaFields.repositoryId, nullable = false)
+  open lateinit var repositoryId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = StandardJpaFields.subscriptionId,
+    name = StandardJpaFields.repositoryId,
     referencedColumnName = "id",
     insertable = false,
-    updatable = false, foreignKey = ForeignKey(name = "fk_subscription__mail_forward")
+    updatable = false
   )
-  open var subscription: SourceSubscriptionEntity? = null
+  open var repository: RepositoryEntity? = null
 }

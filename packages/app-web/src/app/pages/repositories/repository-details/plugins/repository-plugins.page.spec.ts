@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RepositoryPluginsPage } from './repository-plugins.page';
 import { RepositoryPluginsPageModule } from './repository-plugins.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  AppTestModule,
-  mockSourceSubscription,
-} from '../../../../app-test.module';
+import { AppTestModule, mockRepository } from '../../../../app-test.module';
 import {
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
@@ -22,7 +19,7 @@ describe('RepositoryPluginsPage', () => {
       imports: [
         RepositoryPluginsPageModule,
         AppTestModule.withDefaults((apolloMockController) => {
-          mockSourceSubscription(apolloMockController);
+          mockRepository(apolloMockController);
           apolloMockController
             .mockQuery<GqlListPluginsQuery, GqlListPluginsQueryVariables>(
               ListPlugins,

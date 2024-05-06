@@ -8,10 +8,10 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { SessionService } from 'src/app/services/session.service';
 import { AuthService } from 'src/app/services/auth.service';
-import { SourceSubscription } from '../../graphql/types';
+import { Repository } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
 import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
-import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { RepositoryService } from '../../services/repository.service';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Title } from '@angular/platform-browser';
 
@@ -23,16 +23,13 @@ import { Title } from '@angular/platform-browser';
 })
 export class RepositoriesPage implements OnInit {
   gridLayout = false;
-  entities: SourceSubscription[] = [];
+  repositories: Repository[] = [];
   isLast = false;
   private currentPage = 0;
 
   constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly modalCtrl: ModalController,
-    private readonly profileService: SessionService,
-    private readonly authService: AuthService,
     private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
@@ -41,7 +38,7 @@ export class RepositoriesPage implements OnInit {
   ngOnInit() {
     this.titleService.setTitle('Repositories');
     this.activatedRoute.url.subscribe(async () => {
-      this.entities = [];
+      this.repositories = [];
       this.currentPage = 0;
       await this.refetch('network-only');
     });
@@ -66,18 +63,17 @@ export class RepositoriesPage implements OnInit {
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
-    const entities =
-      await this.sourceSubscriptionService.listSourceSubscriptions(
-        {
-          cursor: {
-            page,
-          },
+    const entities = await this.repositoryService.listRepositoriess(
+      {
+        cursor: {
+          page,
         },
-        fetchPolicy,
-      );
+      },
+      fetchPolicy,
+    );
 
     this.isLast = entities.length < 10;
-    this.entities.push(...entities);
+    this.repositories.push(...entities);
     this.changeRef.detectChanges();
   }
 

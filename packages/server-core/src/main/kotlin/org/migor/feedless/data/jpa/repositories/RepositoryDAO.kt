@@ -1,7 +1,7 @@
 package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -15,26 +15,26 @@ import java.util.stream.Stream
 
 @Repository
 @Profile(AppProfiles.database)
-interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> {
+interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
 
   @Query(
-    """
-      select distinct e from SourceSubscriptionEntity e
+      """
+      select distinct e from RepositoryEntity e
       inner join UserEntity u
         on u.id = e.ownerId
       where e.archived = false
         and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
         and u.locked = false
-        and e.schedulerExpression > ''
+        and e.sourcesSyncExpression > ''
         and (e.disabledFrom is null or e.disabledFrom > :now)
       order by e.lastUpdatedAt asc """,
   )
-  fun findSomeDue(@Param("now") now: Date, pageable: Pageable): Stream<SourceSubscriptionEntity>
+  fun findSomeDue(@Param("now") now: Date, pageable: Pageable): Stream<RepositoryEntity>
 
   @Modifying
   @Query(
     """
-    update SourceSubscriptionEntity e
+    update RepositoryEntity e
     set e.triggerScheduledNextAt = :scheduledNextAt
     where e.id = :id
     """
@@ -44,14 +44,14 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
   @Modifying
   @Query(
     """
-    update SourceSubscriptionEntity e
+    update RepositoryEntity e
     set e.lastUpdatedAt = :lastUpdatedAt
     where e.id = :id
     """
   )
   fun updateLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
-  fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
+  fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<RepositoryEntity>
 
   fun countByOwnerId(id: UUID): Int
   fun countByOwnerIdAndArchived(id: UUID, archived: Boolean): Int

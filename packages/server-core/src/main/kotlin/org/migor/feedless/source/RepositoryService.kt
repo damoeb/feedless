@@ -6,44 +6,44 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.actions.BrowserActionEntity
 import org.migor.feedless.actions.ClickPositionActionEntity
 import org.migor.feedless.actions.DomActionEntity
 import org.migor.feedless.actions.DomEventType
 import org.migor.feedless.actions.HeaderActionEntity
-import org.migor.feedless.actions.ScrapeActionDAO
-import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.data.jpa.models.PluginExecution
-import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.data.jpa.models.createAttachmentUrl
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
+import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
+import org.migor.feedless.generated.types.RepositoriesCreateInput
+import org.migor.feedless.generated.types.Repository
+import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.ScrapeAction
 import org.migor.feedless.generated.types.ScrapeRequestInput
-import org.migor.feedless.generated.types.SourceSubscription
-import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
-import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
 import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
 import org.migor.feedless.generated.types.Visibility
+import org.migor.feedless.harvest.nextCronDate
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.service.WebDocumentService
+import org.migor.feedless.service.DocumentService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -56,28 +56,28 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
+
 
 @Service
 @Profile(AppProfiles.database)
-class SourceSubscriptionService {
+class RepositoryService {
 
-  private val log = LoggerFactory.getLogger(SourceSubscriptionService::class.simpleName)
+  private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
 
   @Autowired
-  lateinit var scrapeSourceDAO: ScrapeSourceDAO
+  lateinit var sourceDAO: SourceDAO
 
   @Autowired
   lateinit var mailForwardDAO: MailForwardDAO
 
   @Autowired
-  lateinit var scrapeActionDAO: ScrapeActionDAO
-
-  @Autowired
   lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired(required = false)
   lateinit var mailService: MailService
@@ -92,7 +92,7 @@ class SourceSubscriptionService {
   lateinit var planConstraints: PlanConstraintsService
 
   @Autowired
-  lateinit var webDocumentService: WebDocumentService
+  lateinit var documentService: DocumentService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -101,19 +101,19 @@ class SourceSubscriptionService {
   lateinit var pluginService: PluginService
 
   @Transactional
-  fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
-    log.info("[$corrId] create sourceSubscription with ${data.subscriptions.size} sources")
+  fun create(corrId: String, data: RepositoriesCreateInput): List<Repository> {
+    log.info("[$corrId] create repository with ${data.repositories.size} sources")
 
     val ownerId = getActualUserOrDefaultUser(corrId).id
-    val totalCount = sourceSubscriptionDAO.countByOwnerId(ownerId)
+    val totalCount = repositoryDAO.countByOwnerId(ownerId)
     planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
     if (planConstraints.violatesScrapeSourceMaxActiveCount(ownerId)) {
       log.info("[$corrId] violates maxActiveCount")
       throw IllegalArgumentException("violates maxActiveCount")
 //      log.info("[$corrId] violates maxActiveCount, archiving oldest")
-//      sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
+//      RepositoryDAO.updateArchivedForOldestActive(ownerId)
     }
-    return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
+    return data.repositories.map { createSubscription(corrId, ownerId, it).toDto() }
   }
 
   private fun getActualUserOrDefaultUser(corrId: String): UserEntity {
@@ -125,9 +125,9 @@ class SourceSubscriptionService {
   private fun createSubscription(
     corrId: String,
     ownerId: UUID,
-    subInput: SourceSubscriptionCreateInput
-  ): SourceSubscriptionEntity {
-    val sub = SourceSubscriptionEntity()
+    subInput: RepositoryCreateInput
+  ): RepositoryEntity {
+    val sub = RepositoryEntity()
 
     sub.title = subInput.sinkOptions.title
     sub.description = subInput.sinkOptions.description
@@ -142,15 +142,15 @@ class SourceSubscriptionService {
       }
       sub.plugins = it.map { plugin -> plugin.fromDto() }
     }
-    sub.schedulerExpression = subInput.sourceOptions?.let {
-      planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
+    sub.sourcesSyncExpression = subInput.sourceOptions?.let {
+      planConstraints.auditCronExpression(subInput.sourceOptions.refreshCron)
     } ?: ""
     sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
     sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays)
     sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
     sub.product = subInput.product.fromDto()
 
-    val saved = sourceSubscriptionDAO.save(sub)
+    val saved = repositoryDAO.save(sub)
 
     subInput.additionalSinks?.let { sink ->
       val owner = userDAO.findById(ownerId).orElseThrow()
@@ -163,16 +163,16 @@ class SourceSubscriptionService {
   }
 
   private fun createMailForwarder(
-    corrId: String,
-    email: String,
-    sub: SourceSubscriptionEntity,
-    owner: UserEntity,
-    product: ProductName
+      corrId: String,
+      email: String,
+      sub: RepositoryEntity,
+      owner: UserEntity,
+      product: ProductName
   ): MailForwardEntity {
     val forward = MailForwardEntity()
     forward.email = email
     forward.authorized = email == owner.email
-    forward.subscriptionId = sub.id
+    forward.repositoryId = sub.id
 
     val (mailFormatter) = pluginService.resolveMailFormatter(sub)
     val from = mailService.getNoReplyAddress(product)
@@ -185,9 +185,9 @@ class SourceSubscriptionService {
     corrId: String,
     ownerId: UUID,
     req: ScrapeRequestInput,
-    sub: SourceSubscriptionEntity
-  ): ScrapeSourceEntity {
-    val entity = ScrapeSourceEntity()
+    sub: RepositoryEntity
+  ): SourceEntity {
+    val entity = SourceEntity()
     val scrapeRequest = req.fromDto()
     log.info("[$corrId] create source ${scrapeRequest.page.url}")
     planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
@@ -209,12 +209,12 @@ class SourceSubscriptionService {
     entity.debugConsole = BooleanUtils.isTrue(scrapeRequest.debug?.console)
     entity.debugScreenshot = BooleanUtils.isTrue(scrapeRequest.debug?.screenshot)
     entity.debugNetwork = BooleanUtils.isTrue(scrapeRequest.debug?.network)
-    entity.subscriptionId = sub.id
+    entity.repositoryId = sub.id
     if (scrapeRequest.page.actions != null) {
       entity.actions = scrapeRequest.page.actions
         .map {
           val a = it.fromDto()
-          a.scrapeSourceId = entity.id
+          a.sourceId = entity.id
           a
         }.toMutableList()
     }
@@ -222,39 +222,39 @@ class SourceSubscriptionService {
     return entity
   }
 
-  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #subscriptionId")
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #repositoryId")
   @Transactional(readOnly = true)
-  fun getFeedBySubscriptionId(subscriptionId: String, page: Int): RichFeed {
-    val id = UUID.fromString(subscriptionId)
-    val subscription = sourceSubscriptionDAO.findById(id).orElseThrow { NotFoundException("subscription not found") }
-    val items = webDocumentService.findAllBySubscriptionId(id, page, ReleaseStatus.released)
-      .map { it.toRichArticle() }
+  fun getFeedByRepositoryId(repositoryId: String, page: Int): RichFeed {
+    val id = UUID.fromString(repositoryId)
+    val repository = repositoryDAO.findById(id).orElseThrow { NotFoundException("repository not found") }
+    val items = documentService.findAllByRepositoryId(id, page, 10, status = ReleaseStatus.released)
+      .map { it.toRichArticle(propertyService) }
 
     val richFeed = RichFeed()
-    richFeed.id = "subscription:${subscriptionId}"
-    richFeed.title = subscription.title
-    richFeed.description = subscription.description
-    richFeed.websiteUrl = "${propertyService.appHost}/feed/$subscriptionId"
+    richFeed.id = "repository:${repositoryId}"
+    richFeed.title = repository.title
+    richFeed.description = repository.description
+    richFeed.websiteUrl = "${propertyService.appHost}/feed/$repositoryId"
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.expired = false
     richFeed.selfPage = page
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed/${subscriptionId}/atom"
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom"
 
     return richFeed
   }
 
-  fun findAll(offset: Int, pageSize: Int, userId: UUID?): List<SourceSubscriptionEntity> {
+  fun findAll(offset: Int, pageSize: Int, userId: UUID?): List<RepositoryEntity> {
     val pageable =
-      PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))
+      PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     return (userId
-      ?.let { sourceSubscriptionDAO.findAllByOwnerId(it, pageable) }
+      ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
       ?: emptyList())
   }
 
-  fun findById(corrId: String, id: UUID): SourceSubscriptionEntity {
-    val sub = sourceSubscriptionDAO.findById(id).orElseThrow { NotFoundException("not found ($corrId)") }
+  fun findById(corrId: String, id: UUID): RepositoryEntity {
+    val sub = repositoryDAO.findById(id).orElseThrow { NotFoundException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
@@ -267,47 +267,72 @@ class SourceSubscriptionService {
   }
 
   fun delete(corrId: String, id: UUID) {
-    val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
+    val sub = repositoryDAO.findById(id).orElseThrow()
     if (sub.ownerId != sessionService.userId()) {
       throw PermissionDeniedException("not authorized")
     }
-    sourceSubscriptionDAO.delete(sub)
+    repositoryDAO.delete(sub)
   }
 
-  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsDataInput): SourceSubscriptionEntity {
-    val sub = sourceSubscriptionDAO.findById(id).orElseThrow()
-    if (sub.ownerId != sessionService.userId()) {
+  fun calculateScheduledNextAt(cron: String, ownerId: UUID, after: LocalDateTime): Date {
+    return planConstraints.coerceMinScheduledNextAt(
+      nextCronDate(cron, after),
+      ownerId
+    )
+  }
+
+
+  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsDataInput): RepositoryEntity {
+    val repository = repositoryDAO.findById(id).orElseThrow()
+    if (repository.ownerId != sessionService.userId()) {
       throw PermissionDeniedException("not authorized")
     }
     data.sinkOptions?.let {
-      it.title?.set?.let { sub.title = it }
-      it.description?.set?.let { sub.description = it }
-      it.visibility?.set?.let { sub.visibility = planConstraints.coerceVisibility(it.fromDto()) }
-      it.plugins?.let {
-        sub.plugins = it.map { it.fromDto() }
+      it.title?.set?.let { repository.title = it }
+      it.description?.set?.let { repository.description = it }
+      it.refreshCron?.let {
+        it.set?.let {
+          repository.sourcesSyncExpression = planConstraints.auditCronExpression(it)
+          repository.triggerScheduledNextAt = calculateScheduledNextAt(it, repository.ownerId,
+            LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault()))
+        }
+      }
+      it.visibility?.set?.let { repository.visibility = planConstraints.coerceVisibility(it.fromDto()) }
+      it.plugins?.let { plugins ->
+        val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
+        if (newPlugins != repository.plugins) {
+          repository.plugins = newPlugins
+        }
       }
       it.retention?.let {
         it.maxAgeDays?.set?.let {
-          sub.retentionMaxAgeDays = it
+          repository.retentionMaxAgeDays = it
         }
         it.maxItems?.set?.let {
-          sub.retentionMaxItems = it
+          repository.retentionMaxItems = it
         }
-      }
-    }
-    data.sources?.let {
-      it.add?.let { it.forEach { createScrapeSource(corrId, sub.ownerId, it, sub) } }
-      it.remove?.let {
-        scrapeSourceDAO.deleteAllById(it.map { UUID.fromString(it) }
-          .filter { sub.sources.any { otherSource -> otherSource.id == it } })
+        if (it.maxAgeDays!=null || it.maxItems!=null) {
+          documentService.applyRetentionStrategy(corrId, repository)
+        }
       }
     }
 
-    return sourceSubscriptionDAO.save(sub)
+    data.sources?.let {
+      it.add?.let {
+        repository.sources.addAll(it.map { createScrapeSource(corrId, repository.ownerId, it, repository) })
+      }
+      it.remove?.let {
+        val deleteIds = it.map { UUID.fromString(it) }
+        sourceDAO.deleteAllById(deleteIds.filter { id -> repository.sources.any { it.id == id } }.toMutableList())
+        repository.sources = repository.sources.filter { source -> deleteIds.none { it == source.id } }.toMutableList()
+      }
+    }
+
+    return repositoryDAO.save(repository)
   }
 }
 
-private fun ScrapeAction.fromDto(): ScrapeActionEntity {
+private fun ScrapeAction.fromDto(): BrowserActionEntity {
   return if (this.click?.position !== null) {
     val click = ClickPositionActionEntity()
     click.x = this.click.position.x
@@ -368,15 +393,15 @@ private fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = this.pluginId, params = this.params)
 }
 
-private fun WebDocumentEntity.toRichArticle(): RichArticle {
+private fun DocumentEntity.toRichArticle(propertyService: PropertyService): RichArticle {
   val article = RichArticle()
   article.id = this.id.toString()
   article.title = StringUtils.trimToEmpty(this.contentTitle)
   article.url = this.url
   article.attachments = this.attachments.map {
     val a = JsonAttachment()
-    a.url = it.url
-    a.type = it.type
+    a.url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id)
+    a.type = it.contentType
 //                a.size = it.size
 //        a.duration = it.duration
     a
@@ -384,7 +409,7 @@ private fun WebDocumentEntity.toRichArticle(): RichArticle {
   article.contentText = StringUtils.trimToEmpty(this.contentText)
   article.contentRawBase64 = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }
   article.contentRawMime = this.contentRawMime
-  article.publishedAt = this.releasedAt
+  article.publishedAt = this.publishedAt
   article.startingAt = this.startingAt
   article.imageUrl = this.imageUrl
   return article

@@ -17,8 +17,8 @@ import {
   GqlLicenseQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
-  GqlListSourceSubscriptionsQuery,
-  GqlListSourceSubscriptionsQueryVariables,
+  GqlListRepositoriesQuery,
+  GqlListRepositoriesQueryVariables,
   GqlPlansQuery,
   GqlPlansQueryVariables,
   GqlProductName,
@@ -28,17 +28,17 @@ import {
   GqlServerSettings,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  GqlSourceSubscription,
-  GqlSourceSubscriptionByIdQuery,
-  GqlSourceSubscriptionByIdQueryVariables,
+  GqlRepository,
+  GqlRepositoryByIdQuery,
+  GqlRepositoryByIdQueryVariables,
   GqlVisibility,
   License,
   ListPlugins,
-  ListSourceSubscriptions,
+  ListRepositories,
   Plans,
   Scrape,
   ServerSettings,
-  SourceSubscriptionById,
+  RepositoryById,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -246,12 +246,12 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
 }
 
 export type Mocks = {
-  sourceSubscription: GqlSourceSubscription;
+  repository: GqlRepository;
   scrapeResponse: GqlScrapeResponse;
   license: GqlLicenseQuery['license'];
 };
 export const mocks: Mocks = {
-  sourceSubscription: {
+  repository: {
     id: '',
     description: '',
     title: '',
@@ -262,11 +262,11 @@ export const mocks: Mocks = {
     activity: {
       items: [],
     },
-    scheduleExpression: '',
+    refreshCron: '',
     plugins: [],
     visibility: GqlVisibility.IsPrivate,
     createdAt: 0,
-    updatedAt: new Date(),
+    lastUpdatedAt: new Date(),
     retention: {},
     documentCountSinceCreation: 0,
   },
@@ -297,35 +297,29 @@ export const mocks: Mocks = {
   },
 };
 
-export function mockSourceSubscription(
-  apolloMockController: ApolloMockController,
-) {
+export function mockRepository(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlSourceSubscriptionByIdQuery,
-      GqlSourceSubscriptionByIdQueryVariables
-    >(SourceSubscriptionById)
+    .mockQuery<GqlRepositoryByIdQuery, GqlRepositoryByIdQueryVariables>(
+      RepositoryById,
+    )
     .and.resolveOnce(async () => {
       return {
         data: {
-          sourceSubscription: mocks.sourceSubscription,
+          repository: mocks.repository,
         },
       };
     });
 }
 
-export function mockSourceSubscriptions(
-  apolloMockController: ApolloMockController,
-) {
+export function mockRepositories(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlListSourceSubscriptionsQuery,
-      GqlListSourceSubscriptionsQueryVariables
-    >(ListSourceSubscriptions)
+    .mockQuery<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>(
+      ListRepositories,
+    )
     .and.resolveOnce(async () => {
       return {
         data: {
-          sourceSubscriptions: [mocks.sourceSubscription],
+          repositories: [mocks.repository],
         },
       };
     });

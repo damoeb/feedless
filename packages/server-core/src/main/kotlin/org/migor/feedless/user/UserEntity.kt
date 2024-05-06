@@ -5,7 +5,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -97,15 +96,14 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "time_format")
   open var timeFormat: String? = null
 
-  @Column(name = "plan_id", nullable = true)
+  @Column(name = StandardJpaFields.planId, nullable = true)
   open var planId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   @JoinColumn(
-    name = "plan_id",
+    name = StandardJpaFields.planId,
     referencedColumnName = "id",
-    foreignKey = ForeignKey(name = "fk_user__plan"),
     insertable = false,
     updatable = false
   )

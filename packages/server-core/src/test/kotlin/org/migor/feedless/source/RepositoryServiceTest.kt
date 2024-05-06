@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
+import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
 import org.migor.feedless.generated.types.ProductName
 import org.migor.feedless.generated.types.SinkOptionsInput
-import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
-import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
+import org.migor.feedless.generated.types.RepositoriesCreateInput
+import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
@@ -30,12 +30,12 @@ import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class SourceSubscriptionServiceTest {
+class RepositoryServiceTest {
 
   private val corrId = "test"
 
   @Mock
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Mock
   lateinit var sessionService: SessionService
@@ -44,7 +44,7 @@ class SourceSubscriptionServiceTest {
   lateinit var planConstraintsService: PlanConstraintsService
 
   @InjectMocks
-  lateinit var sourceSubscriptionService: SourceSubscriptionService
+  lateinit var repositoryService: RepositoryService
 
   private lateinit var userId: UUID
 
@@ -55,33 +55,33 @@ class SourceSubscriptionServiceTest {
     `when`(user.id).thenReturn(userId)
     `when`(sessionService.userId()).thenReturn(userId)
     `when`(sessionService.user(any(String::class.java))).thenReturn(user)
-    `when`(sourceSubscriptionDAO.save(any(SourceSubscriptionEntity::class.java)))
+    `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
       .thenAnswer { it.getArgument(0) }
   }
 
   @Test
-  fun `given maxActiveCount is reached, when creating a new sourceSubscription, then return error`() {
+  fun `given maxActiveCount is reached, when creating a new repositoru, then return error`() {
     `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
       .thenReturn(true)
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      sourceSubscriptionService.create(
-        "-", SourceSubscriptionsCreateInput.newBuilder()
-          .subscriptions(listOf())
+      repositoryService.create(
+        "-", RepositoriesCreateInput.newBuilder()
+          .repositories(listOf())
           .build()
       )
     }
   }
 
   @Test
-  fun `given maxActiveCount is not reached, when creating a new sourceSubscription, then sourceSubscription is created`() {
+  fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() {
     `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(Mockito.any()))
       .thenReturn(EntityVisibility.isPublic)
 
-    val sourceSubscriptions = listOf<SourceSubscriptionCreateInput>(
-      SourceSubscriptionCreateInput.newBuilder()
+    val repositories = listOf<RepositoryCreateInput>(
+      RepositoryCreateInput.newBuilder()
         .sources(listOf())
 //        .sourceOptions(
 //          SourceOptionsInput.newBuilder()
@@ -97,55 +97,55 @@ class SourceSubscriptionServiceTest {
         )
         .build()
     )
-    val createdSourceSubscriptions = sourceSubscriptionService.create(
-      corrId, SourceSubscriptionsCreateInput.newBuilder()
-        .subscriptions(sourceSubscriptions)
+    val createdRepositories = repositoryService.create(
+      corrId, RepositoriesCreateInput.newBuilder()
+        .repositories(repositories)
         .build()
     )
 
-    assertThat(createdSourceSubscriptions.size).isEqualTo(sourceSubscriptions.size)
+    assertThat(createdRepositories.size).isEqualTo(repositories.size)
   }
 
   @Test
-  fun `given user is owner, updating SourceSubscription works`() {
+  fun `given user is owner, updating repository works`() {
     val ssId = UUID.randomUUID()
     val data = UpdateSinkOptionsDataInput.newBuilder()
       .build()
-    val mockSourceSubscription = mock(SourceSubscriptionEntity::class.java)
-    `when`(mockSourceSubscription.ownerId).thenReturn(userId)
+    val mockRepository = mock(RepositoryEntity::class.java)
+    `when`(mockRepository.ownerId).thenReturn(userId)
 
-    `when`(sourceSubscriptionDAO.findById(any(UUID::class.java)))
-      .thenReturn(Optional.of(mockSourceSubscription))
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(mockRepository))
 
-    val update = sourceSubscriptionService.update(corrId, ssId, data)
+    val update = repositoryService.update(corrId, ssId, data)
     assertThat(update).isNotNull()
   }
 
   @Test
-  fun `given user is not owner, updating SourceSubscription fails`() {
+  fun `given user is not owner, updating repository fails`() {
     val ssId = UUID.randomUUID()
-    val mockSourceSubscription = mock(SourceSubscriptionEntity::class.java)
-    `when`(mockSourceSubscription.ownerId).thenReturn(UUID.randomUUID())
+    val mockRepository = mock(RepositoryEntity::class.java)
+    `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
 
-    `when`(sourceSubscriptionDAO.findById(any(UUID::class.java)))
-      .thenReturn(Optional.of(mockSourceSubscription))
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(mockRepository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      sourceSubscriptionService.update(corrId, ssId, mock(UpdateSinkOptionsDataInput::class.java))
+      repositoryService.update(corrId, ssId, mock(UpdateSinkOptionsDataInput::class.java))
     }
   }
 
   @Test
-  fun `given user is not owner, deleting SourceSubscription fails`() {
+  fun `given user is not owner, deleting repository fails`() {
     val ssId = UUID.randomUUID()
-    val mockSourceSubscription = mock(SourceSubscriptionEntity::class.java)
-    `when`(mockSourceSubscription.ownerId).thenReturn(UUID.randomUUID())
+    val mockRepository = mock(RepositoryEntity::class.java)
+    `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
 
-    `when`(sourceSubscriptionDAO.findById(any(UUID::class.java)))
-      .thenReturn(Optional.of(mockSourceSubscription))
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(mockRepository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      sourceSubscriptionService.delete(corrId, ssId)
+      repositoryService.delete(corrId, ssId)
     }
   }
 }

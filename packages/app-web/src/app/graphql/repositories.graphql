@@ -1,0 +1,27 @@
+mutation createRepositories($data: RepositoriesCreateInput!) {
+  createRepositories(data: $data) {
+    ...RepositoryFragment
+  }
+}
+
+mutation deleteRepository($data: RepositoryUniqueWhereInput!) {
+  deleteRepository(data: $data)
+}
+
+mutation updateRepository($data: RepositoryUpdateInput!) {
+  updateRepository(data: $data) {
+    ...RepositoryFragment
+  }
+}
+
+query listRepositories($data: RepositoriesInput!) {
+  repositories(data: $data) {
+    ...RepositoryFragment
+  }
+}
+
+query repositoryById($data: RepositoryWhereInput!) {
+  repository(data: $data) {
+    ...RepositoryFragment
+  }
+}

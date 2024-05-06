@@ -6,8 +6,8 @@ import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.HarvestAbortedException
 import org.migor.feedless.data.jpa.models.AttachmentEntity
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.data.jpa.repositories.AttachmentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -49,11 +49,11 @@ class DetectMediaPlugin : MapEntityPlugin {
   @Transactional(propagation = Propagation.NESTED)
   override fun mapEntity(
     corrId: String,
-    webDocument: WebDocumentEntity,
-    subscription: SourceSubscriptionEntity,
+    document: DocumentEntity,
+    repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ) {
-    val url = webDocument.url
+    val url = document.url
     log.info("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
       throw HarvestAbortedException(corrId, "illegal url $url")
@@ -63,7 +63,7 @@ class DetectMediaPlugin : MapEntityPlugin {
 
       ytdl(corrId, url, mediaItems)
 
-      webDocument.contentHtml?.let {
+      document.contentHtml?.let {
         Jsoup.parse(it).select("iframe[src]").toList()
           .firstOrNull { it.attr("src").startsWith("https://www.youtube.com") }?.let {
             ytdl(corrId, it.attr("src"), mediaItems)
@@ -72,7 +72,7 @@ class DetectMediaPlugin : MapEntityPlugin {
 
       log.info("[$corrId] detected media items ${mediaItems.isNotEmpty()}")
 
-      webDocument.attachments = attachmentDAO.saveAll(mediaItems.map { it.toEntity(webDocument.id) })
+      document.attachments = attachmentDAO.saveAll(mediaItems.map { it.toEntity(document.id) })
 
     }.onFailure {
       log.error("[$corrId] ${it.message}")
@@ -113,10 +113,10 @@ class DetectMediaPlugin : MapEntityPlugin {
 
 private fun MediaItem.toEntity(id: UUID): AttachmentEntity {
   val a = AttachmentEntity()
-  a.webDocumentId = id
-  a.remoteData = true
-  a.type = this.format!!
-  a.url = this.url
+  a.documentId = id
+  a.hasData = true
+  a.contentType = this.format!!
+  a.remoteDataUrl = this.url
   return a
 }
 

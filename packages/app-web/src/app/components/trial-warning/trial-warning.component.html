@@ -1,8 +1,7 @@
 <ng-container *ngIf="serverSettings.isSelfHosted()">
   <ion-toolbar color="primary" *ngIf="isTrialPeriod()">
     <ion-text class="ion-margin-horizontal">
-      <strong>Your Trial Period</strong> ends in {{ trialEndIn }}, it's free for
-      personal use.
+      <strong>Your Trial Period</strong> ends in {{ trialEndIn }}
     </ion-text>
     <ion-button
       slot="end"

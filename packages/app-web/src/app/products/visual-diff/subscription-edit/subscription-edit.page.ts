@@ -29,7 +29,7 @@ import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
 import { ScrapedElement } from '../../../graphql/types';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../services/session.service';
@@ -119,7 +119,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     private readonly profileService: SessionService,
     private readonly scrapeService: ScrapeService,
     private readonly alertCtrl: AlertController,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   ngOnInit() {
@@ -272,8 +272,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     if (this.form.invalid) {
       return;
     }
-    const sub = await this.sourceSubscriptionService.createSubscriptions({
-      subscriptions: [
+    const sub = await this.repositoryService.createRepositories({
+      repositories: [
         {
           sources: [
             {

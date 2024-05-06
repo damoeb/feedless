@@ -9,7 +9,7 @@ import jakarta.persistence.Entity
 //  name = "t_action_click_position"
 //)
 @DiscriminatorValue("xy")
-open class ClickPositionActionEntity : ScrapeActionEntity() {
+open class ClickPositionActionEntity : BrowserActionEntity() {
 
   @Column
   open var x: Int = 0

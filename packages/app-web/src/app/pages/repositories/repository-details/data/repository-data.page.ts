@@ -5,19 +5,12 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, ToastController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { FetchPolicy } from '@apollo/client/core';
-import { ServerSettingsService } from '../../../../services/server-settings.service';
-import {
-  dateTimeFormat,
-  SessionService,
-} from '../../../../services/session.service';
+import { dateTimeFormat } from '../../../../services/session.service';
 import { Subscription } from 'rxjs';
 import { WebDocument } from '../../../../graphql/types';
-import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
-import { ModalService } from '../../../../services/modal.service';
-import { WebDocumentService } from '../../../../services/web-document.service';
+import { DocumentService } from '../../../../services/document.service';
 
 @Component({
   selector: 'app-repository-data-page',
@@ -36,14 +29,7 @@ export class RepositoryDataPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-    private readonly toastCtrl: ToastController,
-    private readonly alertCtrl: AlertController,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly profileService: SessionService,
-    private readonly serverSettings: ServerSettingsService,
-    private readonly modalService: ModalService,
-    private readonly webDocumentService: WebDocumentService,
+    private readonly webDocumentService: DocumentService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -63,7 +49,7 @@ export class RepositoryDataPage implements OnInit, OnDestroy {
           page,
         },
         where: {
-          sourceSubscription: {
+          repository: {
             where: {
               id: this.repositoryId,
             },

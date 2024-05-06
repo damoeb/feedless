@@ -4,9 +4,9 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
-import { SourceSubscription } from '../../../graphql/types';
+import { Repository } from '../../../graphql/types';
 import { filter } from 'rxjs';
 
 @Component({
@@ -16,10 +16,10 @@ import { filter } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RssBuilderMenuComponent implements OnInit {
-  feeds: SourceSubscription[] = [];
+  repositories: Repository[] = [];
 
   constructor(
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
@@ -35,14 +35,16 @@ export class RssBuilderMenuComponent implements OnInit {
       });
   }
 
-  getPageUrl(sub: SourceSubscription): string {
-    const url = sub.sources[0].page.url;
-    return new URL(url).hostname;
+  getPageUrl(repository: Repository): string {
+    if (repository.sources.length > 0) {
+      const url = repository.sources[0].page.url;
+      return new URL(url).hostname;
+    }
   }
 
   private async fetchFeeds() {
     const page = 0;
-    this.feeds = await this.sourceSubscriptionService.listSourceSubscriptions({
+    this.repositories = await this.repositoryService.listRepositoriess({
       cursor: {
         page,
       },

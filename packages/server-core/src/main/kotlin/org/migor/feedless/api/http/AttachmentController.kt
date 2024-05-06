@@ -38,8 +38,8 @@ class AttachmentController {
     return if (attachment.isPresent) {
       val a = attachment.get()
       ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_TYPE, a.type)
-        .body(Base64.getDecoder().decode(a.data))
+        .header(HttpHeaders.CONTENT_TYPE, a.contentType)
+        .body(a.data)
     } else {
       ResponseEntity.notFound().build()
     }

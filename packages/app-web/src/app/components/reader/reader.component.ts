@@ -7,15 +7,12 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
-import { Maybe } from 'graphql/jsutils/Maybe';
 import {
   ReaderLinkTarget,
   ReaderTextTransform,
 } from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
 import { isDefined } from '../../modals/scrape-source-modal/scrape-builder';
-import { GqlFeedlessPlugins } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-reader',
@@ -26,16 +23,16 @@ import { GqlFeedlessPlugins } from '../../../generated/graphql';
 })
 export class ReaderComponent implements OnChanges {
   @Input()
-  scrapeResponse: ScrapeResponse;
+  linkTarget: ReaderLinkTarget = 'blank';
 
   @Input()
-  linkTarget: ReaderLinkTarget;
+  verboseLink: boolean = true;
 
   @Input()
-  verboseLink: boolean;
+  textTransform: ReaderTextTransform = 'normal';
 
-  @Input()
-  textTransform: ReaderTextTransform;
+  @Input({ required: true })
+  html: string;
 
   content: string;
   private useBionic: boolean;
@@ -45,8 +42,8 @@ export class ReaderComponent implements OnChanges {
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes.scrapeResponse && changes.scrapeResponse.currentValue) {
-      this.scrapeResponse = changes.scrapeResponse.currentValue;
+    if (changes.html && changes.html.currentValue) {
+      this.html = changes.html.currentValue;
     }
 
     if (changes.linkTarget && changes.linkTarget.currentValue) {
@@ -70,23 +67,12 @@ export class ReaderComponent implements OnChanges {
   }
 
   hasReadability(): boolean {
-    return isDefined(this.getReadability());
-  }
-
-  private getReadability(): Maybe<ScrapedReadability> {
-    return JSON.parse(
-      this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
-      ).value.one.data,
-    ) as ScrapedReadability;
+    return isDefined(this.html);
   }
 
   private getContent(): string {
     if (this.hasReadability()) {
-      const document = new DOMParser().parseFromString(
-        this.getReadability().content,
-        'text/html',
-      );
+      const document = new DOMParser().parseFromString(this.html, 'text/html');
       Array.from(document.body.querySelectorAll('a[href]')).forEach((ahref) => {
         ahref.setAttribute('referrerpolicy', 'no-referrer');
         const url = ahref.getAttribute('href');

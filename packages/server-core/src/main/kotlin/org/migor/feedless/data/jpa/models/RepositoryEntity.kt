@@ -7,7 +7,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -38,10 +37,10 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.mail.MailForwardEntity
@@ -52,8 +51,8 @@ import java.util.*
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
 
 @Entity
-@Table(name = "t_source_subscription")
-open class SourceSubscriptionEntity : EntityWithUUID() {
+@Table(name = "t_repository")
+open class RepositoryEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.title, nullable = false)
   @Size(min = 3, max = 50)
@@ -67,7 +66,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
   @Column(nullable = false, name = "scheduler_expression")
-  open lateinit var schedulerExpression: String
+  open lateinit var sourcesSyncExpression: String
 
   @Column(name = "retention_max_items")
   open var retentionMaxItems: Int? = null
@@ -119,18 +118,17 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
     referencedColumnName = StandardJpaFields.id,
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_native_feed__user")
   )
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId, cascade = [CascadeType.ALL])
-  open var sources: MutableList<ScrapeSourceEntity> = mutableListOf()
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId", cascade = [CascadeType.ALL])
+  open var sources: MutableList<SourceEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId")
   open var mailForwards: MutableList<MailForwardEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = StandardJpaFields.subscriptionId)
-  open var documents: MutableList<WebDocumentEntity> = mutableListOf()
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId")
+  open var documents: MutableList<DocumentEntity> = mutableListOf()
 
   @Column(name = "segmentation_id", insertable = false, updatable = false)
   open var segmentationId: UUID? = null
@@ -140,13 +138,12 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @JoinColumn(
     name = "segmentation_id",
     referencedColumnName = "id",
-    foreignKey = ForeignKey(name = "fk_source_subscription__segmentation")
   )
   open var segmentation: SegmentationEntity? = null
 }
 
-fun SourceSubscriptionEntity.toDto(): SourceSubscription {
-  return SourceSubscription.newBuilder()
+fun RepositoryEntity.toDto(): Repository {
+  return Repository.newBuilder()
     .id(id.toString())
     .ownerId(ownerId.toString())
     .disabledFrom(disabledFrom?.time)
@@ -160,11 +157,12 @@ fun SourceSubscriptionEntity.toDto(): SourceSubscription {
     )
     .visibility(visibility.toDto())
     .createdAt(createdAt.time)
-    .updatedAt(lastUpdatedAt.time)
+    .lastUpdatedAt(lastUpdatedAt.time)
+    .nextUpdateAt(triggerScheduledNextAt?.time)
     .description(description)
     .title(title)
     .segmented(segmentation?.toDto())
-    .scheduleExpression(schedulerExpression)
+    .refreshCron(sourcesSyncExpression)
     .build()
 }
 

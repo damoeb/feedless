@@ -61,26 +61,26 @@
   <ion-router-outlet></ion-router-outlet>
 </ion-content>
 
-<ion-footer>
-  <div class="ion-text-right">
-    <ion-chip>v.{{serverSettings.getVersion()}}</ion-chip>
-    <ng-container *ngIf="serverSettings.isSelfHosted() && license">
-      <ion-chip *ngIf="license.isValid && !license.isTrial"
-        >Open Source Apache 2</ion-chip
-      >
-      <ion-chip
-        *ngIf="license.isValid && license.isTrial && !license.isLocated"
-        color="primary"
-        routerLink="/license"
-        >Trial</ion-chip
-      >
-      <ion-chip
-        *ngIf="license.isValid && license.isLocated"
-        color="dark"
-        routerLink="/license"
-      >
-        {{ license.data.name }}
-      </ion-chip>
-    </ng-container>
-  </div>
-</ion-footer>
+<!--<ion-footer>-->
+<!--  <div class="ion-text-right">-->
+<!--    <ion-chip>v.{{serverSettings.getVersion()}}</ion-chip>-->
+<!--    <ng-container *ngIf="serverSettings.isSelfHosted() && license">-->
+<!--      <ion-chip *ngIf="license.isValid && !license.isTrial"-->
+<!--        >Open Source Apache 2</ion-chip-->
+<!--      >-->
+<!--      <ion-chip-->
+<!--        *ngIf="license.isValid && license.isTrial && !license.isLocated"-->
+<!--        color="primary"-->
+<!--        routerLink="/license"-->
+<!--        >Trial</ion-chip-->
+<!--      >-->
+<!--      <ion-chip-->
+<!--        *ngIf="license.isValid && license.isLocated"-->
+<!--        color="dark"-->
+<!--        routerLink="/license"-->
+<!--      >-->
+<!--        {{ license.data.name }}-->
+<!--      </ion-chip>-->
+<!--    </ng-container>-->
+<!--  </div>-->
+<!--</ion-footer>-->

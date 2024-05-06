@@ -70,16 +70,17 @@ type ActivityItem {
   index: String!
 }
 
-type SourceSubscription {
+type Repository {
   id: ID!
   description: String!
   title: String!
   ownerId: ID!
   visibility: Visibility!
-  scheduleExpression: String!
+  refreshCron: String!
   sunset: SunSetPolicy
   createdAt: Long!
-  updatedAt: Long!
+  lastUpdatedAt: Long!
+  nextUpdateAt: Long
   documentCount: Long!
   documentCountSinceCreation: Long!
   disabledFrom: Long
@@ -113,9 +114,11 @@ type Mutation {
   createUser(data: CreateUserInput!): User!
   createUserSecret: UserSecret!
   deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
-  createSourceSubscriptions(data: SourceSubscriptionsCreateInput!): [SourceSubscription!]!
-  updateSourceSubscription(data: SourceSubscriptionUpdateInput!): SourceSubscription!
-  deleteSourceSubscription(data: SourceSubscriptionUniqueWhereInput!): Boolean!
+
+  createRepositories(data: RepositoriesCreateInput!): [Repository!]!
+  updateRepository(data: RepositoryUpdateInput!): Repository!
+  deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
+
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
@@ -193,8 +196,8 @@ input UpdateLicenseInput {
   licenseRaw: String!
 }
 
-input SourceSubscriptionUpdateInput {
-  where: SourceSubscriptionUniqueWhereInput!
+input RepositoryUpdateInput {
+  where: RepositoryUniqueWhereInput!
   data: UpdateSinkOptionsDataInput!
 }
 
@@ -210,7 +213,7 @@ input SourcesUpdateInput {
 
 input UpdateSinkOptionsInput {
   description: NullableStringUpdateOperationsInput
-  scheduleExpression: NullableStringUpdateOperationsInput
+  refreshCron: NullableStringUpdateOperationsInput
   title: StringUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
   retention: RetentionUpdateInput
@@ -266,6 +269,7 @@ enum ProductName {
 #  automatedBrowser
 #  feedAnanlytics
 #  communityThreads
+#  teamDraft
   upcoming
   untoldNotes
   pageChangeTracker
@@ -339,8 +343,8 @@ type Query {
 
   stories(data: StoriesWhereInput!): [Story!]!
 
-  sourceSubscription(data: SourceSubscriptionWhereInput!): SourceSubscription!
-  sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
+  repository(data: RepositoryWhereInput!): Repository!
+  repositories(data: RepositoriesInput!): [Repository!]!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
   plans(product: ProductName!): [Plan!]!
@@ -372,7 +376,7 @@ input WebDocumentsInput {
 }
 
 input WebDocumentsWhereInput {
-  sourceSubscription: SourceSubscriptionWhereInput!
+  repository: RepositoryWhereInput!
   updatedAt: DatesWhereInput
 }
 
@@ -730,6 +734,7 @@ type UserSecret {
 type WebDocument {
   contentRawBase64: String
   contentRawMime: String
+  contentHtml: String
   contentText: String
   contentTitle: String
   createdAt: Long!
@@ -882,13 +887,13 @@ input WebhookUniqueWhereInput {
   id: ID!
 }
 
-input SourceSubscriptionsInput {
+input RepositoriesInput {
   cursor: Cursor!
   orderBy: OrderByInput
-  where: SourceSubscriptionsWhereInput
+  where: RepositoriesWhereInput
 }
 
-input SourceSubscriptionsWhereInput {
+input RepositoriesWhereInput {
   pluginIds: [String!]
 }
 
@@ -925,19 +930,19 @@ type BoundingBox {
   h: Int!
 }
 
-input SourceSubscriptionWhereInput {
-  where: SourceSubscriptionUniqueWhereInput!
+input RepositoryWhereInput {
+  where: RepositoryUniqueWhereInput!
 }
 
-input SourceSubscriptionUniqueWhereInput {
+input RepositoryUniqueWhereInput {
   id: ID!
 }
 
-input SourceSubscriptionsCreateInput {
-  subscriptions: [SourceSubscriptionCreateInput!]!
+input RepositoriesCreateInput {
+  repositories: [RepositoryCreateInput!]!
 }
 
-input SourceSubscriptionCreateInput {
+input RepositoryCreateInput {
   product: ProductName!
   sources: [ScrapeRequestInput!]!
   sourceOptions: SourceOptionsInput
@@ -950,7 +955,7 @@ input SinkOptionsInput {
   title: String!
   description: String!
   retention: RetentionInput
-  scheduleExpression: String
+  refreshCron: String
   sunset: SunSetPolicyInput
   visibility: Visibility
   plugins: [PluginExecutionInput!]

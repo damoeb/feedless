@@ -8,7 +8,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SubscriptionSource } from '../../../../graphql/types';
-import { SourceSubscriptionService } from '../../../../services/source-subscription.service';
+import { RepositoryService } from '../../../../services/repository.service';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -24,14 +24,13 @@ export class RepositorySourcesPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
     const repositoryId = this.activatedRoute.snapshot.params.repositoryId;
     const repository =
-      await this.sourceSubscriptionService.getSubscriptionById(repositoryId);
+      await this.repositoryService.getRepositoryById(repositoryId);
     this.sources = repository.sources;
     this.changeRef.detectChanges();
     this.subscriptions.push();

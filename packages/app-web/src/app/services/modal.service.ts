@@ -63,7 +63,7 @@ export class ModalService {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,
-      cssClass: 'modal-dialog',
+      cssClass: 'fullscreen-modal',
       showBackdrop: true,
       backdropDismiss: false,
     });

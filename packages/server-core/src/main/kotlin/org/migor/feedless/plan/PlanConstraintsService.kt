@@ -11,7 +11,7 @@ interface PlanConstraintsService {
 
   fun coerceRetentionMaxAgeDays(maxAge: Int?): Int?
 
-  fun auditRefreshCron(cronString: String): String
+  fun auditCronExpression(cronString: String): String
 
   fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility
 

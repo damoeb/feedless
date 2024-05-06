@@ -25,7 +25,7 @@ fragment SelectorsFragment on Selectors {
   dateIsStartOfEvent
 }
 
-fragment SourceSubscriptionFragment on SourceSubscription {
+fragment RepositoryFragment on Repository {
   id
   ownerId
   title
@@ -38,7 +38,8 @@ fragment SourceSubscriptionFragment on SourceSubscription {
       index
     }
   }
-  updatedAt
+  lastUpdatedAt
+  nextUpdateAt
   plugins {
     pluginId
     params {
@@ -77,7 +78,7 @@ fragment SourceSubscriptionFragment on SourceSubscription {
     sortAsc
     sortBy
   }
-  scheduleExpression
+  refreshCron
   disabledFrom
   archived
   documentCount
@@ -291,6 +292,7 @@ fragment WebDocumentFragment on WebDocument {
   contentTitle
   contentRawMime
   contentRawBase64
+  contentHtml
   contentText
   url
   imageUrl

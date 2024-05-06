@@ -3,54 +3,61 @@ package org.migor.feedless.data.jpa.models
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
-import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
+import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.springframework.context.annotation.Lazy
 import java.util.*
 
 @Entity
-@Table(
-  name = "t_attachment", indexes = [
-    Index(name = "idx_attachment_url", columnList = "url")
-  ]
-)
+@Table(name = "t_attachment")
 open class AttachmentEntity : EntityWithUUID() {
 
-  @Column(nullable = false)
-  open lateinit var url: String
+  @Column(nullable = false, name = "has_data")
+  open var hasData: Boolean = false
 
-  @Column(nullable = false)
-  open lateinit var type: String
+  @Column(name = "remote_data_url")
+  open var remoteDataUrl: String? = null
 
-  @Column(nullable = false)
-  open var remoteData: Boolean = false
 
-  @Column(columnDefinition = "TEXT")
-  open var data: String? = null
+  @Column(nullable = false, name = "content_type")
+  open lateinit var contentType: String
 
-  @Column(name = "webDocumentId", nullable = false)
-  open lateinit var webDocumentId: UUID
+  @Lazy
+  @Column(columnDefinition = "bytea", name = "data")
+  open var data: ByteArray? = null
+
+  @Column(name = StandardJpaFields.documentId, nullable = false)
+  open lateinit var documentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "webDocumentId",
+    name = StandardJpaFields.documentId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_attachment__web_document")
   )
-  open var webDocument: WebDocumentEntity? = null
+  open var document: DocumentEntity? = null
 
   @PrePersist
   fun prePersist() {
-    this.remoteData = data != null
+    this.hasData = data != null
+    if (hasData && StringUtils.isNotBlank(remoteDataUrl)) {
+      throw IllegalArgumentException("Data and remoteDataUrl is present")
+    }
+    if (!hasData && StringUtils.isBlank(remoteDataUrl)) {
+      throw IllegalArgumentException("Neither data nor remoteDataUrl is present")
+    }
   }
 
 }
+
+fun createAttachmentUrl(propertyService: PropertyService, id: UUID): String = "${propertyService.apiGatewayUrl}/attachment/${id}"

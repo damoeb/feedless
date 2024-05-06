@@ -1,7 +1,7 @@
 package org.migor.feedless.harvest
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -13,20 +13,20 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
-class SourceSubscriptionJob internal constructor() {
+class RepositoryHarvesterJob internal constructor() {
 
   @Autowired
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var sourceSubscriptionHarvester: SourceSubscriptionHarvester
+  lateinit var repositoryHarvester: RepositoryHarvester
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   @Transactional(readOnly = true)
   fun refreshSubscriptions() {
     val pageable = PageRequest.ofSize(10)
     val corrId = newCorrId()
-    sourceSubscriptionDAO.findSomeDue(Date(), pageable)
-      .forEach { sourceSubscriptionHarvester.handleSourceSubscription(corrId, it) }
+    repositoryDAO.findSomeDue(Date(), pageable)
+      .forEach { repositoryHarvester.handleRepository(corrId, it) }
   }
 }

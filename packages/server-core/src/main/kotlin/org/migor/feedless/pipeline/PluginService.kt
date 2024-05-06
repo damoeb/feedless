@@ -2,7 +2,7 @@ package org.migor.feedless.pipeline
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
+import org.migor.feedless.data.jpa.models.RepositoryEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.harvest.mapToPluginInstance
 import org.migor.feedless.mail.MailProviderService
@@ -61,7 +61,7 @@ class PluginService {
       .firstOrNull()
   }
 
-  fun resolveMailFormatter(sub: SourceSubscriptionEntity): Pair<MailProvider, PluginExecutionParamsInput> {
+  fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
     return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
       .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput.newBuilder().build())
   }

@@ -4,7 +4,6 @@ import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
@@ -13,7 +12,8 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.models.DocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import java.util.*
 
@@ -48,19 +48,18 @@ open class PipelineJobEntity : EntityWithUUID() {
 //  @Column(columnDefinition = "TEXT")
 //  open var logs: String? = null
 
-  @Column(name = "webdocument_id", nullable = false)
-  open lateinit var webDocumentId: UUID
+  @Column(name = StandardJpaFields.documentId, nullable = false)
+  open lateinit var documentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = "webdocument_id",
+    name = StandardJpaFields.documentId,
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_attachment__web_document")
   )
-  open var webDocument: WebDocumentEntity? = null
+  open var document: DocumentEntity? = null
 
   @PrePersist
   fun prePersist() {

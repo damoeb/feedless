@@ -295,16 +295,31 @@ private fun ExtendContext.toDto(): ExtendContentOptions {
   }
 }
 
-private fun RichArticle.toDto(): WebDocument = WebDocument.newBuilder()
-  .id(UUID.randomUUID().toString())
-  .url(url)
-  .contentText(contentText)
-  .contentRawBase64(contentRawBase64)
-  .contentRawMime(contentRawMime)
-  .publishedAt(publishedAt.time)
-  .updatedAt(publishedAt.time)
-  .createdAt(Date().time)
-  .build()
+private fun RichArticle.toDto(): WebDocument {
+  val builder = WebDocument.newBuilder()
+    .id(UUID.randomUUID().toString())
+    .url(url)
+    .contentText(contentText)
+    .publishedAt(publishedAt.time)
+    .updatedAt(publishedAt.time)
+    .createdAt(Date().time)
+
+  return if (isHtml(contentRawMime)) {
+    try {
+      builder.contentHtml(String(Base64.getDecoder().decode(contentRawBase64)))
+    } catch (e: Exception) {
+      builder.contentHtml(contentRawBase64)
+    }.build()
+  } else {
+    builder
+      .contentRawBase64(contentRawBase64)
+       .contentRawMime(contentRawMime)
+      .build()
+  }
+}
+
+
+fun isHtml(contentRawMime: String?): Boolean = contentRawMime?.lowercase()?.startsWith("text/html") == true
 
 private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams = DiffEmailForwardParams.newBuilder()
   .inlineLatestImage(inlineLatestImage)

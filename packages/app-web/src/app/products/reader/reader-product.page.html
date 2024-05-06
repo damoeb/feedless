@@ -307,7 +307,7 @@
         <app-reader
           *ngIf="output === 'article'"
           [linkTarget]="readerOptions.linkTarget"
-          [scrapeResponse]="scrapeResponse"
+          [html]="getReadability().content"
           [textTransform]="readerOptions.textTransform"
           [verboseLink]="readerOptions.verboseLink"
         ></app-reader>

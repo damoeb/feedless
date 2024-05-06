@@ -5,7 +5,7 @@
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Finalize Feed</ion-title>
+    <ion-title>{{ modalTitle }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="createOrUpdateFeed()"
@@ -63,19 +63,19 @@
           fill="outline"
           interface="popover"
         >
-          <ion-select-option disabled value="0 */15 * * * *"
+          <ion-select-option [disabled]="isThrottled" value="0 */15 * * * *"
             >Every 15 min
           </ion-select-option>
-          <ion-select-option disabled value="0 */30 * * * *"
+          <ion-select-option [disabled]="isThrottled" value="0 */30 * * * *"
             >Every 30 min
           </ion-select-option>
-          <ion-select-option disabled value="0 0 * * * *"
+          <ion-select-option [disabled]="isThrottled" value="0 0 * * * *"
             >Every hour
           </ion-select-option>
-          <ion-select-option disabled value="0 0 */8 * * *"
+          <ion-select-option [disabled]="isThrottled" value="0 0 */8 * * *"
             >Every 6 hours
           </ion-select-option>
-          <ion-select-option disabled value="0 0 */12 * * *"
+          <ion-select-option [disabled]="isThrottled" value="0 0 */12 * * *"
             >Every 12 hours
           </ion-select-option>
           <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
@@ -199,6 +199,25 @@
           [clearInput]="true"
           placeholder="<Auto>"
         ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>Visibility</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-checkbox
+          labelPlacement="end"
+          justify="start"
+          [formControl]="formFg.controls.isPublic"
+        >
+          Public
+          <ion-note class="ion-padding-horizontal"
+            >Eveyrone can see the feed url and sources</ion-note
+          >
+        </ion-checkbox>
       </ion-item>
     </ion-list>
 

@@ -3,7 +3,7 @@
     <ion-breadcrumbs>
       <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
       <ion-breadcrumb routerLink="/feeds">Your Feeds</ion-breadcrumb>
-      <ion-breadcrumb>{{ subscription?.title }}</ion-breadcrumb>
+      <ion-breadcrumb>{{ repository?.title }}</ion-breadcrumb>
     </ion-breadcrumbs>
 
     <div *ngIf="busy">
@@ -11,7 +11,7 @@
     </div>
     <div *ngIf="!busy" style="margin-top: 50px">
       <div class="flex__row">
-        <h2 style="flex: 1">{{ subscription.title }}</h2>
+        <h2 style="flex: 1">{{ repository.title }}</h2>
         <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
       </div>
     </div>

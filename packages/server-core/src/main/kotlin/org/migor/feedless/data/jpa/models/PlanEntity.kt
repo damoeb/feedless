@@ -39,7 +39,7 @@ enum class PlanName {
   name = "t_plan", uniqueConstraints = [
     UniqueConstraint(
       name = "UniquePlanNamePerProduct",
-      columnNames = [StandardJpaFields.name, StandardJpaFields.productId]
+      columnNames = [StandardJpaFields.name, StandardJpaFields.product_id]
     )]
 )
 open class PlanEntity : EntityWithUUID() {
@@ -74,13 +74,13 @@ open class PlanEntity : EntityWithUUID() {
   )
   open var parentPlan: PlanEntity? = null
 
-  @Column(name = StandardJpaFields.productId, nullable = false)
+  @Column(name = StandardJpaFields.product_id, nullable = false)
   open lateinit var productId: UUID
 
   @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   @JoinColumn(
-    name = StandardJpaFields.productId,
+    name = StandardJpaFields.product_id,
     referencedColumnName = "id",
     insertable = false,
     updatable = false

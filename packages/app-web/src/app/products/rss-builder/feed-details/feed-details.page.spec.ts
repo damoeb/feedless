@@ -3,7 +3,7 @@ import { FeedDetailsPage } from './feed-details.page';
 import {
   AppTestModule,
   mockPlugins,
-  mockSourceSubscription,
+  mockRepository,
 } from '../../../app-test.module';
 import { FeedDetailsPageModule } from './feed-details.module';
 
@@ -17,14 +17,14 @@ describe('FeedDetailsPage', () => {
         FeedDetailsPageModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockPlugins(apolloMockController);
-          mockSourceSubscription(apolloMockController);
+          mockRepository(apolloMockController);
         }),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedDetailsPage);
     component = fixture.componentInstance;
-    component.subscription = {} as any;
+    component.repository = {} as any;
     component.documents = [];
     fixture.detectChanges();
   }));

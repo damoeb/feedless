@@ -9,6 +9,7 @@ import { FeedBuilderModalModule } from '../../../modals/feed-builder-modal/feed-
 import { BubbleModule } from '../../../components/bubble/bubble.module';
 import { LoginButtonModule } from '../../../components/login-button/login-button.module';
 import { HistogramModule } from '../../../components/histogram/histogram.module';
+import { ReaderModule } from '../../../components/reader/reader.module';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { HistogramModule } from '../../../components/histogram/histogram.module'
     BubbleModule,
     LoginButtonModule,
     HistogramModule,
+    ReaderModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.http.RepositoryController
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.secrets.UserSecretEntity
@@ -65,11 +66,11 @@ class AuthenticationTest {
   fun `authAnonymous works`() {
     val response = monoGraphQLClient.reactiveExecuteQuery(
       """
-            mutation {
-                authAnonymous {
-                    token
-                }
+        mutation {
+            authAnonymous {
+                token
             }
+        }
         """.trimIndent()
     ).blockOptional()
       .orElseThrow()
@@ -92,11 +93,11 @@ class AuthenticationTest {
     // when
     val response = monoGraphQLClient.reactiveExecuteQuery(
       """
-            mutation {
-                authUser(data: {email: "fooEmail", secretKey: "barKey"}) {
-                    token
-                }
+        mutation {
+            authUser(data: {email: "fooEmail", secretKey: "barKey"}) {
+                token
             }
+        }
         """.trimIndent()
     ).blockOptional()
       .orElseThrow()

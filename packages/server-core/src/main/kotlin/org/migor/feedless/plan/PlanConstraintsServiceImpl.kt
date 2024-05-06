@@ -7,7 +7,7 @@ import org.migor.feedless.data.jpa.models.FeatureValueEntity
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
 import org.migor.feedless.data.jpa.repositories.PlanDAO
-import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
+import org.migor.feedless.data.jpa.repositories.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toDate
@@ -30,7 +30,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
   lateinit var featureDAO: FeatureValueDAO
@@ -64,7 +64,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
 
   override fun coerceRetentionMaxAgeDays(maxAge: Int?): Int? = maxAge?.coerceAtLeast(2)
 
-  override fun auditRefreshCron(cronString: String): String {
+  override fun auditCronExpression(cronString: String): String {
     CronExpression.isValidExpression(cronString)
     CronExpression.parse(cronString)
     return cronString
@@ -137,7 +137,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   }
 
   override fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
-    val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(userId, false)
+    val activeCount = repositoryDAO.countByOwnerIdAndArchived(userId, false)
     return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)!! <= activeCount
   }
 

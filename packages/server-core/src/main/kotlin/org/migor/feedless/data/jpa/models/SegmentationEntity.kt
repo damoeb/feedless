@@ -30,7 +30,7 @@ open class SegmentationEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  open var subscription: SourceSubscriptionEntity? = null
+  open var repository: RepositoryEntity? = null
 }
 
 fun SegmentationEntity.toDto(): Segment {

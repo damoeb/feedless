@@ -15,7 +15,7 @@ import {
   GqlVisibility,
 } from '../../../generated/graphql';
 import { cloneDeep, omit, uniq, unset } from 'lodash-es';
-import { Agent, AgentService } from '../../services/agent.service';
+import { Agent } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
 import { ModalController } from '@ionic/angular';
@@ -29,7 +29,7 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../services/modal.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { RepositoryService } from '../../services/repository.service';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { PluginService } from '../../services/plugin.service';
 import { environment } from '../../../environments/environment';
@@ -277,10 +277,9 @@ export class ScrapeSourceModalComponent
     private readonly scrapeService: ScrapeService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
-    private readonly subscriptionService: SourceSubscriptionService,
+    private readonly repositoryService: RepositoryService,
     private readonly modalCtrl: ModalController,
-    private readonly agentService: AgentService,
-    private readonly plguinService: PluginService,
+    private readonly pluginService: PluginService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -343,7 +342,7 @@ export class ScrapeSourceModalComponent
 
     this.parse(this.feedBuilder);
 
-    const plugins = await this.plguinService.listPlugins();
+    const plugins = await this.pluginService.listPlugins();
     this.entryPlugins = plugins
       .filter((plugin) => plugin.type === GqlPluginType.Entity)
       .map((plugin) => {
@@ -475,8 +474,8 @@ export class ScrapeSourceModalComponent
     }
 
     const bucket = this.feedBuilderFg.value.sink;
-    await this.subscriptionService.createSubscriptions({
-      subscriptions: [
+    await this.repositoryService.createRepositories({
+      repositories: [
         {
           sources: this.feedBuilderFg.value.source.map(
             (source) => source.request,
@@ -490,7 +489,7 @@ export class ScrapeSourceModalComponent
             visibility: bucket.visibility,
             plugins: this.getPluginExecutions(),
             title: bucket.title,
-            scheduleExpression:
+            refreshCron:
               this.feedBuilderFg.value.sink.segmented.scheduled.cronString,
             description: bucket.description,
             // filters: this.feedBuilderFg.value.filters.map(filter => {

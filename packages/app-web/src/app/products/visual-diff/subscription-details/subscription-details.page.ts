@@ -8,10 +8,10 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import pixelmatch from 'pixelmatch';
-import { WebDocumentService } from '../../../services/web-document.service';
-import { SourceSubscription, WebDocument } from '../../../graphql/types';
+import { DocumentService } from '../../../services/document.service';
+import { Repository, WebDocument } from '../../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { RepositoryService } from '../../../services/repository.service';
 import { dateFormat, dateTimeFormat } from '../../../services/session.service';
 
 type ImageSize = {
@@ -31,14 +31,14 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
   safeDiffImageUrl: SafeResourceUrl;
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  subscription: SourceSubscription;
+  repository: Repository;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
     private readonly domSanitizer: DomSanitizer,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
-    private readonly webDocumentService: WebDocumentService,
+    private readonly repositoryService: RepositoryService,
+    private readonly documentService: DocumentService,
   ) {}
 
   ngOnInit() {
@@ -61,15 +61,14 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     this.busy = true;
     this.changeRef.detectChanges();
 
-    this.subscription =
-      await this.sourceSubscriptionService.getSubscriptionById(id);
-    this.documents = await this.webDocumentService.findAllByStreamId({
+    this.repository = await this.repositoryService.getRepositoryById(id);
+    this.documents = await this.documentService.findAllByStreamId({
       cursor: {
         page,
         pageSize: 2,
       },
       where: {
-        sourceSubscription: {
+        repository: {
           where: {
             id,
           },

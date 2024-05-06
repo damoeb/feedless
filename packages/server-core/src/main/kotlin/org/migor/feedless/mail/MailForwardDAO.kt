@@ -9,6 +9,6 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface MailForwardDAO : JpaRepository<MailForwardEntity, UUID> {
-  fun findAllBySubscriptionId(id: UUID): List<MailForwardEntity>
+  fun findAllByRepositoryId(id: UUID): List<MailForwardEntity>
 
 }

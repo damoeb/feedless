@@ -9,6 +9,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -21,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @DgsComponent
@@ -67,18 +69,30 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .publishedAt(publishedAt.time)
     .expired(BooleanUtils.isTrue(expired))
     .items(items.map {
-      WebDocument.newBuilder()
+      val builder = WebDocument.newBuilder()
         .id(it.url)
         .contentTitle(it.title)
         .contentText(it.contentText)
-        .contentRawBase64(it.contentRawBase64)
-        .contentRawMime(it.contentRawMime)
         .publishedAt(it.publishedAt.time)
         .startingAt(it.startingAt?.time)
         .createdAt(Date().time)
         .url(it.url)
         .imageUrl(it.imageUrl)
-        .build()
+
+      if (isHtml(it.contentRawMime)) {
+        try {
+          builder
+            .contentHtml(Base64.getDecoder().decode(it.contentRawBase64).toString(StandardCharsets.UTF_8))
+        } catch (e: Exception) {
+          builder
+            .contentHtml(it.contentRawBase64)
+        }.build()
+      } else {
+        builder
+          .contentRawBase64(it.contentRawBase64)
+          .contentRawMime(it.contentRawMime)
+          .build()
+      }
     })
     .build()
 

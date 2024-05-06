@@ -6,7 +6,7 @@ import jakarta.persistence.Entity
 
 @Entity
 @DiscriminatorValue("header")
-open class HeaderActionEntity : ScrapeActionEntity() {
+open class HeaderActionEntity : BrowserActionEntity() {
 
   @Column(name = "header")
   open lateinit var xpath: String
