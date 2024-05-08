@@ -33,8 +33,7 @@ import java.io.FileWriter
 import java.nio.file.Files
 import java.security.KeyFactory
 import java.security.SecureRandom
-import java.security.Signature
-import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
@@ -42,7 +41,6 @@ import java.text.DateFormat
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 
 
 data class LicensePayload(
@@ -95,7 +93,10 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   @Value("\${APP_LICENSE_KEY:}")
   var licenseKey: String? = null
 
-  var feedlessPrivateKey: RSAPrivateKey? = null
+  @Value("\${APP_PEM_FILE:}")
+  var pemFile: String? = null
+
+  var feedlessPrivateKey: RSAPrivateCrtKey? = null
   var feedlessPublicKey: RSAPublicKey? = null
 
   @Value("\${APP_BUILD_TIMESTAMP:}")
@@ -139,27 +140,19 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   private fun loadPrivateKey() {
     val privateKeyFile = getPrivateKeyFile()
-    log.info("[boot] loading private key")
+    log.info("[boot] loading private key from $pemFile")
     feedlessPrivateKey = decodePrivateKey(Files.readString(privateKeyFile.toPath()))
 
     log.info("[boot] verifying key pair")
-    val challenge = ByteArray(10000)
-    ThreadLocalRandom.current().nextBytes(challenge)
 
-    // see https://stackoverflow.com/a/49427242
+    val privKey = feedlessPrivateKey!!
+    val pubKey = feedlessPublicKey!!
+    val keyPairMatches = privKey.modulus.equals(pubKey.modulus) &&
+      privKey.publicExponent.equals(pubKey.publicExponent)
 
-    // sign using the private key
-    val sig = Signature.getInstance("SHA256withRSA")
-    sig.initSign(feedlessPrivateKey)
-    sig.update(challenge)
-    val signature: ByteArray = sig.sign()
-
-
-    // verify signature using the public key
-    sig.initVerify(feedlessPublicKey!!)
-    sig.update(challenge)
-
-    if (!sig.verify(signature)) {
+    if (keyPairMatches) {
+      log.info("[boot] key pair is valid")
+    } else {
       throw IllegalStateException("Key verification failed")
     }
   }
@@ -188,8 +181,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       if (verifyTokenAgainstPubKey(licenseWithHeader, feedlessPublicKey!!)) {
         payload
       } else {
-        log.error("[$corrId] Does not match public key")
-        null
+        throw IllegalStateException("Does not match public key")
       }
 
     } catch (e: Exception) {
@@ -203,8 +195,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     .create()
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
+    initialize()
     if (isSelfHosted()) {
-      initialize()
       if (license != null) {
         log.info("[boot] License is valid")
       }
@@ -224,7 +216,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   private fun getLicenseFile() = File("./license.key")
   private fun getPublicKeyFile(): File = ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).file
-  private fun getPrivateKeyFile(): File = File("./feedless.pem")
+  private fun getPrivateKeyFile(): File = File(pemFile!!)
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
@@ -319,11 +311,11 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return keyFactory.generatePublic(X509EncodedKeySpec(publicKeyByte)) as RSAPublicKey
   }
 
-  fun decodePrivateKey(privateKeyString: String): RSAPrivateKey {
+  fun decodePrivateKey(privateKeyString: String): RSAPrivateCrtKey {
     val privateKKeyByte: ByteArray = Base64.getDecoder().decode(privateKeyString.removeHeaders())
 
     val keyFactory = KeyFactory.getInstance("RSA")
-    return keyFactory.generatePrivate(PKCS8EncodedKeySpec(privateKKeyByte)) as RSAPrivateKey
+    return keyFactory.generatePrivate(PKCS8EncodedKeySpec(privateKKeyByte)) as RSAPrivateCrtKey
   }
 }
 
