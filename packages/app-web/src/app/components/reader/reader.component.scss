@@ -1,4 +1,13 @@
 .reader {
+  &--hide-images {
+    svg,
+    imag,
+    picture,
+    figure {
+      display: none;
+    }
+  }
+
   p {
     margin-top: 2em;
 

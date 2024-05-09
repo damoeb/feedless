@@ -6,12 +6,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.FeatureValueEntity
-import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.source.any
-import org.migor.feedless.source.eq
+import org.migor.feedless.document.any
+import org.migor.feedless.document.eq
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toDate

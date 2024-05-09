@@ -99,7 +99,7 @@ class AgentService {
 
   private fun removeAgent(corrId: String, agentRef: AgentRef) {
     agentRefs.remove(agentRef)
-    log.info("[$corrId] Removed Agent")
+    log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
     agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }
@@ -156,7 +156,7 @@ class AgentService {
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
 
-  fun findAll(userId: UUID): List<AgentEntity> {
+  fun findAll(userId: UUID?): List<AgentEntity> {
     return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
 }

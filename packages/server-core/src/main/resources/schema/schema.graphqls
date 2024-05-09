@@ -77,6 +77,7 @@ type Repository {
   ownerId: ID!
   visibility: Visibility!
   refreshCron: String!
+#  pulls: Int
   sunset: SunSetPolicy
   createdAt: Long!
   lastUpdatedAt: Long!
@@ -345,6 +346,7 @@ type Query {
 
   repository(data: RepositoryWhereInput!): Repository!
   repositories(data: RepositoriesInput!): [Repository!]!
+  countRepositories: Int!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
   plans(product: ProductName!): [Plan!]!

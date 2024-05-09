@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -30,6 +31,7 @@ const val actuatorPassword = "password"
 @MockBeans(
   value = [
     MockBean(UserService::class),
+    MockBean(LicenseService::class),
   ]
 )
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.feed, "metrics"])

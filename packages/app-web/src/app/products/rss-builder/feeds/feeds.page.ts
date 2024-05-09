@@ -34,7 +34,7 @@ export class FeedsPage implements OnInit {
 
   private async fetchFeeds() {
     const page = 0;
-    const repositories = await this.repositoryService.listRepositoriess({
+    const repositories = await this.repositoryService.listRepositories({
       cursor: {
         page,
       },

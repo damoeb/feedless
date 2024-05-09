@@ -4,8 +4,6 @@ import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.PlanEntity
-import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.slf4j.LoggerFactory

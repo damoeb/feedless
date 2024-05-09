@@ -6,10 +6,10 @@ import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.models.AttachmentEntity
-import org.migor.feedless.data.jpa.models.DocumentEntity
-import org.migor.feedless.data.jpa.models.RepositoryEntity
-import org.migor.feedless.data.jpa.models.createAttachmentUrl
+import org.migor.feedless.attachment.AttachmentEntity
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin

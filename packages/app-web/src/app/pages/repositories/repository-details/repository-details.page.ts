@@ -8,12 +8,9 @@ import {
 import { GqlVisibility } from '../../../../generated/graphql';
 import { Repository } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { RepositoryService } from '../../../services/repository.service';
-import { SessionService } from '../../../services/session.service';
 import { ServerSettingsService } from '../../../services/server-settings.service';
-import { ModalService } from '../../../services/modal.service';
-import { DocumentService } from '../../../services/document.service';
 
 @Component({
   selector: 'app-repository-details-page',

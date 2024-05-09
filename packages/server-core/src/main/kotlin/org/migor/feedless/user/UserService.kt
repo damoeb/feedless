@@ -10,12 +10,12 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.PlanName
-import org.migor.feedless.data.jpa.repositories.PlanDAO
+import org.migor.feedless.plan.FeatureName
+import org.migor.feedless.plan.PlanName
+import org.migor.feedless.plan.PlanDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.mail.MailService
-import org.migor.feedless.service.FeatureService
+import org.migor.feedless.plan.FeatureService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -58,12 +58,12 @@ class UserService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
-    corrId: String,
-    email: String?,
-    productName: ProductName,
-    authSource: AuthSource,
-    planName: PlanName,
-    githubId: String? = null,
+      corrId: String,
+      email: String?,
+      productName: ProductName,
+      authSource: AuthSource,
+      planName: PlanName,
+      githubId: String? = null,
   ): UserEntity {
     if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
       throw BadRequestException("sign-up is deactivated")

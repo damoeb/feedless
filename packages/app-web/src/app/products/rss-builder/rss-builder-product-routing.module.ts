@@ -45,6 +45,12 @@ const routes: Routes = [
           import('./feeds/feeds.module').then((m) => m.FeedsPageModule),
       },
       {
+        path: 'agents',
+        canActivate: [AuthGuardService],
+        loadChildren: () =>
+          import('./agents/agents.module').then((m) => m.AgentsPageModule),
+      },
+      {
         path: 'plans',
         loadChildren: () =>
           import('./plans/plans.module').then((m) => m.PlansPageModule),

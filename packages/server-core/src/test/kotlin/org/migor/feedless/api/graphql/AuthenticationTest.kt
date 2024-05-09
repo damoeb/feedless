@@ -5,11 +5,10 @@ import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.http.RepositoryController
 import org.migor.feedless.generated.types.Authentication
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
@@ -40,6 +39,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @MockBeans(
   value = [
     MockBean(PluginService::class),
+    MockBean(LicenseService::class),
     MockBean(ScrapeService::class)
 ])
 @Testcontainers

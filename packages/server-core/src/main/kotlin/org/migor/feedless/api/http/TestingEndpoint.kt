@@ -39,7 +39,7 @@ class TestingEndpoint {
 
   @GetMapping("testing/create-token")
   fun createTestToken(response: HttpServletResponse) {
-    val user = userDAO.findRootUser() ?: throw IllegalArgumentException("root user not found")
+    val user = userDAO.findFirstByRootIsTrue() ?: throw IllegalArgumentException("root user not found")
     if (!user.hasAcceptedTerms) {
       user.hasAcceptedTerms = true
       user.acceptedTermsAt = Timestamp.from(Date().toInstant())

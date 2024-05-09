@@ -17,9 +17,9 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
-import org.migor.feedless.data.jpa.models.PlanEntity
-import org.migor.feedless.data.jpa.models.UserPlanSubscriptionEntity
+import org.migor.feedless.secrets.OneTimePasswordEntity
+import org.migor.feedless.plan.PlanEntity
+import org.migor.feedless.subscription.UserPlanSubscriptionEntity
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.secrets.UserSecretEntity
 import java.sql.Timestamp

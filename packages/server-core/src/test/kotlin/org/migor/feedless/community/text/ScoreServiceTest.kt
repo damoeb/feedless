@@ -24,7 +24,8 @@ import org.migor.feedless.community.text.complex.RelevanceWeights
 import org.migor.feedless.community.text.simple.EngagementScorer
 import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.secrets.UserSecretService
-import org.migor.feedless.source.any
+import org.migor.feedless.document.any
+import org.migor.feedless.license.LicenseService
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
@@ -44,6 +45,7 @@ import kotlin.math.pow
 @MockBeans(
   value = [
     MockBean(UserSecretService::class),
+    MockBean(LicenseService::class),
   ]
 )
 class ScoreServiceTest {
@@ -68,7 +70,7 @@ class ScoreServiceTest {
   fun score() {
     assertThat(scoreService).isNotNull
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.content).thenReturn("Du erzählst nur scheisse")
+    Mockito.`when`(comment.contentText).thenReturn("Du erzählst nur scheisse")
 
     val neutral = 1.0
     val weights = ScoreWeights(
@@ -206,7 +208,7 @@ class ScoreServiceTest {
     var sum = 0
     for (comments in commentsGroups) {
       val parent = mock(CommentEntity::class.java)
-      Mockito.`when`(parent.content).thenReturn(patchCommentValue(comments[0]!!))
+      Mockito.`when`(parent.contentText).thenReturn(patchCommentValue(comments[0]!!))
       val commentGraphService = mock(CommentGraphService::class.java)
       Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
       Mockito.`when`(commentGraphService.getReplyCount(any(CommentEntity::class.java))).thenReturn(0)
@@ -233,7 +235,7 @@ class ScoreServiceTest {
     val order = comments.filterKeys { it != 0 }
       .map {
         val comment = mock(CommentEntity::class.java)
-        Mockito.`when`(comment.content).thenReturn(it.value)
+        Mockito.`when`(comment.contentText).thenReturn(it.value)
 
         scoreService.score(comment, weights)
       }

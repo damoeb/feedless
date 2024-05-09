@@ -3,8 +3,8 @@ package org.migor.feedless.pipeline.plugins
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.toDto
-import org.migor.feedless.data.jpa.models.DocumentEntity
-import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
@@ -98,7 +98,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       if (params.org_feedless_fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, document.url)
         document.contentHtml = readability.content
-        document.contentText = readability.contentText
+        document.contentText = readability.contentText!!
         document.contentTitle = readability.title
       } else {
         document.contentHtml = html

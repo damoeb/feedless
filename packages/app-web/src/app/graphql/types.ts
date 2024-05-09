@@ -5,11 +5,11 @@ import {
   GqlListPluginsQuery,
   GqlPlansQuery,
   GqlRemoteNativeFeedQuery,
+  GqlRepositoryByIdQuery,
   GqlScrapedReadability,
   GqlScrapeQuery,
   GqlSelectors,
   GqlSessionQuery,
-  GqlRepositoryByIdQuery,
   GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';
 

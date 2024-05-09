@@ -124,17 +124,18 @@ class LicenseServiceTest {
 
   @Test
   fun `given a valid publicKey, it can be serialized and used`() {
-//    val privateKeyString: String = licenseKeyPair.toRSAPrivateKey().asString()
+    val privateKeyString: String = thisKeyPair.toRSAPrivateKey().encoodeAsString()
     val publicKeyString: String = thisKeyPair.toRSAPublicKey().encoodeAsString()
     val publicKey = service.decodePublicKey(publicKeyString)
-    assertThat(service.verifyTokenAgainstPubKey(createLicenseString(), publicKey)).isTrue()
+    val licenseToken = createLicenseString()
+    assertThat(service.verifyTokenAgainstPubKey(licenseToken, publicKey)).isTrue()
 
     // check no ket present
     assertThatExceptionOfType(NullPointerException::class.java).isThrownBy {
-      service.updateLicense(corrId, createLicenseString())
+      service.updateLicense(corrId, licenseToken)
     }
     mockPublicKey(publicKey)
-    service.updateLicense(corrId, createLicenseString())
+    service.updateLicense(corrId, licenseToken)
   }
 
   @Test

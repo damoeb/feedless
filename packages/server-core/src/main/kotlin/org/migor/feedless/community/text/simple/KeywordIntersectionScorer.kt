@@ -35,8 +35,8 @@ class KeywordIntersectionScorer {
   }
 
   fun calculateKeywordIntersection(parent: CommentEntity, child: CommentEntity): Double {
-    val parentLocale = languageService.bestLocale(parent.content)
-    val childLocale = languageService.bestLocale(child.content)
+    val parentLocale = languageService.bestLocale(parent.contentText)
+    val childLocale = languageService.bestLocale(child.contentText)
 
     return if (parentLocale.language != childLocale.language) {
       0.1
@@ -57,7 +57,7 @@ class KeywordIntersectionScorer {
   }
 
   private fun getKeywordsWIthFreq(source: CommentEntity, locale: Locale): Map<String, Double> {
-    val text = source.content
+    val text = source.contentText
     val nouns = partOfSpeechService.tag(text, locale)
       .filter { (_, tag) -> tag == "NOUN" || tag == "PROPN" }
     return nouns

@@ -1,11 +1,15 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 import org.migor.feedless.common.HttpService
+import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import java.util.*
 
 internal class PrivacyPluginTest {
 
@@ -43,7 +47,7 @@ internal class PrivacyPluginTest {
 """.trimIndent(),
       "https://www.heise.de/hintergrund/Missing-Link-Was-es-mit-der-radikalen-Theorie-zur-Dunklen-Energie-auf-sich-hat-8988403.html"
     )
-    val markup = plugin.inlineImages("", d)
+    val (markup, _) = plugin.inlineImages("", mock(UUID::class.java), d)
     val images = Jsoup.parse(markup).select("img[src]")
     Assertions.assertTrue(images.isNotEmpty())
     val src = images.first()!!.attr("src")

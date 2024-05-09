@@ -20,6 +20,10 @@ query listRepositories($data: RepositoriesInput!) {
   }
 }
 
+query countRepositories {
+  countRepositories
+}
+
 query repositoryById($data: RepositoryWhereInput!) {
   repository(data: $data) {
     ...RepositoryFragment

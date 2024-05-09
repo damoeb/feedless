@@ -68,7 +68,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     url: '',
     font: 'serif',
     linkTarget: 'reader',
-    contentWidth: 700,
+    contentWidth: 900,
     letterSpacing: 0.05,
     textAlignment: 'left',
     textTransform: 'normal',

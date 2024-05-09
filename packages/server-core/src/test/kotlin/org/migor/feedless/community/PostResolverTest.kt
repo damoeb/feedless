@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.service.ScrapeService
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
   value = [
     MockBean(PluginService::class),
     MockBean(ScrapeService::class),
+    MockBean(LicenseService::class),
   ]
 )
 @Testcontainers

@@ -14,14 +14,23 @@
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
 
-      <ion-button
-        routerLink="/feeds"
-        color="dark"
-        class="ion-margin-horizontal"
-        fill="clear"
-      >
-        Your Feeds
-      </ion-button>
+      <ion-buttons class="ion-margin-horizontal">
+        <ion-button routerLink="/feeds">
+          Feeds
+          <ion-chip>{{ feedCount }}</ion-chip>
+        </ion-button>
+        <ion-button
+          routerLink="/agents"
+          *ngIf="serverSettings.isSelfHosted()"
+          fill="clear"
+        >
+          <ion-label>
+            Agents
+            <app-bubble *ngIf="agentCount === 0" color="red"></app-bubble>
+          </ion-label>
+          <ion-chip *ngIf="agentCount > 0">{{ agentCount }}</ion-chip>
+        </ion-button>
+      </ion-buttons>
     </div>
 
     <ion-buttons slot="end">
@@ -29,6 +38,7 @@
         *ngIf="serverSettings.isSelfHosted()"
         href="https://discord.gg/6ySGeryD"
         target="_blank"
+        class="ion-hide-md-down"
       >
         Community
       </ion-button>
@@ -38,7 +48,7 @@
         href="https://gihub.com/damoeb/rss-proxy"
       >
         <ion-icon name="logo-github" slot="start"></ion-icon>
-        Documentation
+        <span class="ion-hide-md-down"> Documentation </span>
       </ion-button>
       <ion-button
         fill="solid"

@@ -19,8 +19,8 @@ import {
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
-import { Router } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
+import { ServerSettingsService } from '../../services/server-settings.service';
 
 type BrowserActionType = 'click';
 
@@ -60,8 +60,8 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
-    private readonly router: Router,
     private readonly scrapeService: ScrapeService,
+    protected readonly serverSettings: ServerSettingsService,
   ) {}
 
   ngOnInit() {

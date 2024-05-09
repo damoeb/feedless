@@ -26,8 +26,8 @@ import org.migor.feedless.generated.types.XYPosition
 import java.util.*
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "t_browser_action")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
   name = "action_type",
   discriminatorType = DiscriminatorType.STRING

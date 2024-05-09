@@ -34,6 +34,9 @@ export class ReaderComponent implements OnChanges {
   @Input({ required: true })
   html: string;
 
+  @Input()
+  showImages: boolean = false;
+
   content: string;
   private useBionic: boolean;
   private openLinkInReader: boolean;

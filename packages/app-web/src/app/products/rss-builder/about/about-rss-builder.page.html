@@ -1,120 +1,117 @@
 <ion-content>
-  <div style="display: flex; justify-content: center">
-    <div style="max-width: 700px; margin-top: 150px; margin-bottom: 100px">
-      <app-product-headline title="RSS Proxy"></app-product-headline>
+  <app-product-header title="RSS Proxy">
+    <p>
+      Easily generate feeds from many sources with just a few clicks, tailor
+      delivery with advanced filter criteria.
+    </p>
 
-      <p>
-        Easily generate feeds from many sources with just a few clicks, tailor
-        delivery with advanced filter criteria.
-      </p>
+    <app-searchbar
+      (querySubmit)="handleQuery($event)"
+      buttonText="Create Feed"
+      color="primary"
+      placeholder="Type a Url of a website"
+    ></app-searchbar>
 
-      <app-searchbar
-        (querySubmit)="handleQuery($event)"
-        buttonText="Create Feed"
-        color="primary"
-        placeholder="Type a Url of a website"
-      ></app-searchbar>
-
-      <div *ngIf="serverSettings.isSelfHosted()">
-        <div style="margin-top: 50px"></div>
-        <div class="ion-margin-vertical">
-          <h2>Hello, fellow Self-Hoster,</h2>
-          <p>
-            Checkout the <a href="" target="_blank">documentation</a> and
-            <a href="https://discord.gg/6ySGeryD" target="_blank"
-              >join us on discord</a
-            >
-            to help us strengthening the feed community. Now, fastest way to get
-            started is by importing an OPML file.
-          </p>
-          <app-opml-picker
-            color="primary"
-            fill="solid"
-            expand="block"
-          ></app-opml-picker>
-        </div>
-
-        <div style="margin-top: 50px">
-          <h2>Customization</h2>
-          <p>
-            RSS-proxy is a custom tailored user interface for feed building,
-            based on the
-            <a href="httos://github.com/damoeb/feedless">feedless</a> backend.
-            You may customize your instance with plugins, which are native
-            citizen of feedless.
-          </p>
-        </div>
-
-        <div style="margin-top: 50px">
-          <h2>Free for Personal Use</h2>
-          <p>
-            RSS-Proxy is released under a
-            <a href="https://fsl.software/" target="_blank"
-              >non-competitive license</a
-            >
-            that will become Open Source (Apache 2) after 2 years ({{
-            getLicenseExpiry() | date: dateFormat }}). Within this period you
-            need to activate the software, <strong>it's free</strong> for e.g.
-            students.
-          </p>
-          <p>
-            After the 2-month trial period you need to activate the software to
-            keep all working.
-          </p>
-        </div>
+    <div *ngIf="serverSettings.isSelfHosted()">
+      <div style="margin-top: 50px"></div>
+      <div class="ion-margin-vertical">
+        <h2>Hello, fellow Self-Hoster,</h2>
+        <p>
+          Checkout the <a href="" target="_blank">documentation</a> and
+          <a href="https://discord.gg/6ySGeryD" target="_blank"
+            >join us on discord</a
+          >
+          to help us strengthening the feed community. Now, fastest way to get
+          started is by importing an OPML file.
+        </p>
+        <app-opml-picker
+          color="primary"
+          fill="solid"
+          expand="block"
+        ></app-opml-picker>
       </div>
 
-      <div *ngIf="!serverSettings.isSelfHosted()">
-        <div style="margin-top: 150px"></div>
-        <div>
-          <h2>Why choose RSS Proxy?</h2>
-          <p>
-            Try it at no cost, no signup – just pure performance at your
-            fingertips. For maximum independence you might self-host
-            <s
-              ><a
-                href="https://github.com/damoeb/feedless/wiki/Frequently-Asked-Questions"
-                target="_blank"
-                >or subscribe</a
-              ></s
-            >
-            to unleash its full potential.
-          </p>
-          <p>
-            RSS Proxy is released under non-competitive FSL license, that falls
-            back to Open Source Apache 2 after two years (<a
-              href="https://fsl.software/"
-              >FSL-1.0-Apache-2.0</a
-            >).
-          </p>
-        </div>
+      <div style="margin-top: 50px">
+        <h2>Customization</h2>
+        <p>
+          RSS-proxy is a custom tailored user interface for feed building, based
+          on the
+          <a href="httos://github.com/damoeb/feedless">feedless</a> backend. You
+          may customize your instance with plugins, which are native citizen of
+          feedless.
+        </p>
+      </div>
 
-        <div>
-          <h2>Let the Video speak for itself</h2>
-          <p>[video]</p>
-        </div>
-
-        <div>
-          <h2>Self Hosting Guide</h2>
-          <p>
-            Once you have
-            <a href="https://docs.docker.com/compose/install/" target="_blank"
-              >docker-compose</a
-            >
-            or
-            <a
-              href="https://docs.podman.io/en/latest/markdown/podman-compose.1.html"
-              target="_blank"
-              >podman-compose</a
-            >, this is the basic setup. It will start a database and feedless
-            serving the RSS Proxy user interface.
-          </p>
-          <pre>
-wget https://raw.githubusercontent.com/damoeb/rss-proxy/master/docker-compose.yml
-docker-compose up
-          </pre>
-        </div>
+      <div style="margin-top: 50px">
+        <h2>Free for Personal Use</h2>
+        <p>
+          RSS-Proxy is released under a
+          <a href="https://fsl.software/" target="_blank"
+            >non-competitive license</a
+          >
+          that will become Open Source (Apache 2) after 2 years ({{
+          getLicenseExpiry() | date: dateFormat }}). Within this period you need
+          to activate the software, <strong>it's free</strong> for e.g.
+          students.
+        </p>
+        <p>
+          After the 2-month trial period you need to activate the software to
+          keep all working.
+        </p>
       </div>
     </div>
-  </div>
+
+    <div *ngIf="!serverSettings.isSelfHosted()">
+      <div style="margin-top: 150px"></div>
+      <div>
+        <h2>Why choose RSS Proxy?</h2>
+        <p>
+          Try it at no cost, no signup – just pure performance at your
+          fingertips. For maximum independence you might self-host
+          <s
+            ><a
+              href="https://github.com/damoeb/feedless/wiki/Frequently-Asked-Questions"
+              target="_blank"
+              >or subscribe</a
+            ></s
+          >
+          to unleash its full potential.
+        </p>
+        <p>
+          RSS Proxy is released under non-competitive FSL license, that falls
+          back to Open Source Apache 2 after two years (<a
+            href="https://fsl.software/"
+            >FSL-1.0-Apache-2.0</a
+          >).
+        </p>
+      </div>
+
+      <div>
+        <h2>Let the Video speak for itself</h2>
+        <p>[video]</p>
+      </div>
+
+      <div>
+        <h2>Self Hosting Guide</h2>
+        <p>
+          Once you have
+          <a href="https://docs.docker.com/compose/install/" target="_blank"
+            >docker-compose</a
+          >
+          or
+          <a
+            href="https://docs.podman.io/en/latest/markdown/podman-compose.1.html"
+            target="_blank"
+            >podman-compose</a
+          >, this is the basic setup. It will start a database and feedless
+          serving the RSS Proxy user interface.
+        </p>
+        <pre>
+wget https://raw.githubusercontent.com/damoeb/rss-proxy/master/docker-compose.yml
+docker-compose up
+          </pre
+        >
+      </div>
+    </div>
+  </app-product-header>
 </ion-content>

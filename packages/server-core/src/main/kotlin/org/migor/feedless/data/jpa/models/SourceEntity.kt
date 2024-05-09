@@ -25,6 +25,7 @@ import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ViewPort
+import org.migor.feedless.repository.RepositoryEntity
 import org.springframework.context.annotation.Lazy
 import java.util.*
 

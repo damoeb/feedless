@@ -9,7 +9,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SubscriptionSource } from '../../../../graphql/types';
 import { RepositoryService } from '../../../../services/repository.service';
-import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-repository-sources-page',

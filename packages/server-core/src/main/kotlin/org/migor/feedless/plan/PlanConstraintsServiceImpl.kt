@@ -2,12 +2,7 @@ package org.migor.feedless.plan
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.FeatureValueEntity
-import org.migor.feedless.data.jpa.models.PlanName
-import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
-import org.migor.feedless.data.jpa.repositories.PlanDAO
-import org.migor.feedless.data.jpa.repositories.RepositoryDAO
+import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toDate

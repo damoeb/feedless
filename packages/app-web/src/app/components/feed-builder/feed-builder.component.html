@@ -10,13 +10,17 @@
         [color]="url?.length > 0 ? undefined : 'primary'"
         placeholder="Type a Url of a website"
       ></app-searchbar>
-      <p
-        style="color: var(--ion-color-danger)"
-        *ngIf="errorMessage"
-        class="ion-margin-horizontal"
-      >
-        We ran into a problem! {{ errorMessage }}
-      </p>
+      <ng-container *ngIf="errorMessage">
+        <p style="color: var(--ion-color-danger)" class="ion-margin">
+          We ran into a problem! {{ errorMessage }}.
+        </p>
+        <p class="ion-margin">
+          Some errors can be resolved by
+          <a href="javascript:void(0)" (click)="showActionsModal()"
+            >enabling JavaScript</a
+          >
+        </p>
+      </ng-container>
     </ion-toolbar>
   </div>
   <div class="flex">

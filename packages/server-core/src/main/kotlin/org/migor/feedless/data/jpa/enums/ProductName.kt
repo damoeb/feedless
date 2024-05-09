@@ -9,7 +9,6 @@ enum class ProductName {
   digest,
   feedless,
   untoldNotes,
-  custom,
   system
 }
 

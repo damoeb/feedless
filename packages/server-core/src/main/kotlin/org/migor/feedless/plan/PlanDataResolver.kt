@@ -2,7 +2,6 @@ package org.migor.feedless.plan
 
 import com.netflix.graphql.dgs.DgsComponent
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.service.FeatureService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 

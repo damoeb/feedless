@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
+  CountRepositories,
   CreateRepositories,
   DeleteRepository,
+  GqlCountRepositoriesQuery,
+  GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,
   GqlCreateRepositoriesMutationVariables,
   GqlDeleteRepositoryMutation,
@@ -9,10 +12,10 @@ import {
   GqlFeatureName,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
+  GqlRepositoriesCreateInput,
+  GqlRepositoriesInput,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
-  GqlRepositoryCreateInput,
-  GqlRepositoriesInput,
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
   GqlUpdateRepositoryMutation,
@@ -20,13 +23,14 @@ import {
   ListRepositories,
   RepositoryById,
   UpdateRepository,
-  GqlRepositoriesCreateInput,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository } from '../graphql/types';
 import { ServerSettingsService } from './server-settings.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
+import { zenToRx } from './agent.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -98,7 +102,7 @@ export class RepositoryService {
       .then((response) => response.data.updateRepository);
   }
 
-  listRepositoriess(
+  listRepositories(
     data: GqlRepositoriesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<Repository[]> {
@@ -111,6 +115,22 @@ export class RepositoryService {
         fetchPolicy,
       })
       .then((response) => response.data.repositories);
+  }
+
+  countRepositories(
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Observable<number> {
+    return zenToRx(
+      this.apollo
+        .watchQuery<
+          GqlCountRepositoriesQuery,
+          GqlCountRepositoriesQueryVariables
+        >({
+          query: CountRepositories,
+          fetchPolicy,
+        })
+        .map((response) => response.data.countRepositories),
+    );
   }
 
   async getRepositoryById(

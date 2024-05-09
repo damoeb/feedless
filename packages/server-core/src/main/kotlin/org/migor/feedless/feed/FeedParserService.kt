@@ -5,7 +5,7 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser

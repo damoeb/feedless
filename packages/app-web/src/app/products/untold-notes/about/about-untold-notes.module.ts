@@ -6,6 +6,7 @@ import { AboutUntoldNotesRoutingModule } from './about-untold-notes-routing.modu
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import { AboutUntoldNotesPage } from './about-untold-notes.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
+import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     AboutUntoldNotesRoutingModule,
     ProductHeadlineModule,
     SearchbarModule,
+    ProductHeaderModule,
   ],
   declarations: [AboutUntoldNotesPage],
 })

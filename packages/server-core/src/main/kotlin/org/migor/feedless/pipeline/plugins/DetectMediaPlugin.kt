@@ -5,10 +5,10 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.HarvestAbortedException
-import org.migor.feedless.data.jpa.models.AttachmentEntity
-import org.migor.feedless.data.jpa.models.DocumentEntity
-import org.migor.feedless.data.jpa.models.RepositoryEntity
-import org.migor.feedless.data.jpa.repositories.AttachmentDAO
+import org.migor.feedless.attachment.AttachmentEntity
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin

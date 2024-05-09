@@ -1,7 +1,7 @@
 package org.migor.feedless.jobs
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
+import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

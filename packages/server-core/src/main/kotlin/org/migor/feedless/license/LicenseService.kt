@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
+import org.flywaydb.core.internal.scanner.Scanner
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,7 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.FileWriter
+import java.io.InputStream
 import java.nio.file.Files
 import java.security.KeyFactory
 import java.security.SecureRandom
@@ -158,9 +160,16 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun loadPublicKey() {
-    val publicKeyFile = getPublicKeyFile()
-    log.info("[boot] loading public key")
-    feedlessPublicKey = decodePublicKey(Files.readString(publicKeyFile.toPath()))
+    getPublicKeyFile().use { publicKeyFile ->
+      log.info("[boot] loading public key")
+      val scanner = Scanner(publicKeyFile)
+      val data = StringBuilder()
+      while(scanner.hasNextLine()) {
+        data.appendLine(scanner.nextLine())
+      }
+
+      feedlessPublicKey = decodePublicKey(data.toString())
+    }
   }
 
   private fun writeLicenseKeyToFile(licenseKey: String) {
@@ -215,10 +224,10 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun getLicenseFile() = File("./license.key")
-  private fun getPublicKeyFile(): File = ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).file
+  private fun getPublicKeyFile(): InputStream = ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).inputStream
   private fun getPrivateKeyFile(): File = File(pemFile!!)
 
-  private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+  fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   fun getLicensePayload(): LicensePayload? {
     return license

@@ -1,48 +1,31 @@
 <ion-content>
-  <div style="display: flex; justify-content: center; margin: 20px">
-    <div
-      style="
-        max-width: 700px;
-        margin-bottom: 100px;
-        display: flex;
-        flex-direction: column;
-      "
-    >
-      <!--      <app-newsletter>-->
+  <app-product-header title="VisualDiff">
+    <p class="ion-padding-vertical">
+      With VisualDiff, you can effortlessly monitor visual, textual, or markup
+      changes on entire pages or specific fragments. Whether you're safeguarding
+      brand consistency, tracking competitor activity, or ensuring compliance,
+      VisualDiff notifies you what changed.
+    </p>
 
-      <!--      </app-newsletter>-->
-      <div class="flex__column" style="margin-top: 150px">
-        <app-product-headline title="VisualDiff"></app-product-headline>
+    <app-searchbar
+      (querySubmit)="handleQuery($event)"
+      placeholder="Type your URL"
+      buttonText="Track Page Now"
+      color="primary"
+    ></app-searchbar>
 
-        <p class="ion-padding-vertical">
-          With VisualDiff, you can effortlessly monitor visual, textual, or
-          markup changes on entire pages or specific fragments. Whether you're
-          safeguarding brand consistency, tracking competitor activity, or
-          ensuring compliance, VisualDiff notifies you what changed.
-        </p>
-
-        <app-searchbar
-          (querySubmit)="handleQuery($event)"
-          placeholder="Type your URL"
-          buttonText="Track Page Now"
-          color="primary"
-        ></app-searchbar>
-
-        <div style="margin-top: 150px">
-          <h2>Why choose VisualDiff?</h2>
-          <p>
-            Try it at no cost, no signup - no commitments, no hassle – just pure
-            performance at your fingertips. Take control and self-host to
-            unleash its full potential, running at maximum capacity tailored to
-            your needs.
-          </p>
-        </div>
-
-        <div>
-          <h2>Let the Video speak for itself</h2>
-          <p>[video]</p>
-        </div>
-      </div>
+    <div style="margin-top: 150px">
+      <h2>Why choose VisualDiff?</h2>
+      <p>
+        Try it at no cost, no signup - no commitments, no hassle – just pure
+        performance at your fingertips. Take control and self-host to unleash
+        its full potential, running at maximum capacity tailored to your needs.
+      </p>
     </div>
-  </div>
+
+    <div>
+      <h2>Let the Video speak for itself</h2>
+      <p>[video]</p>
+    </div>
+  </app-product-header>
 </ion-content>

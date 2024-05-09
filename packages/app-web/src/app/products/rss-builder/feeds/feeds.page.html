@@ -2,7 +2,7 @@
   <div class="limited-width-pane">
     <ion-breadcrumbs>
       <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
-      <ion-breadcrumb>Your Feeds</ion-breadcrumb>
+      <ion-breadcrumb>Feeds</ion-breadcrumb>
     </ion-breadcrumbs>
 
     <ion-row style="width: 100%">
@@ -10,6 +10,11 @@
         <h3>Feeds</h3>
       </ion-col>
       <ion-col size="6">
+        <ion-button
+          routerLink="/builder"
+        >
+          Create Feed
+        </ion-button>
         <app-opml-picker
           color="dark"
           fill="empty"

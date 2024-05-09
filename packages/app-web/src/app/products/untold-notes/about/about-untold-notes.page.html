@@ -1,70 +1,66 @@
 <ion-content>
-  <div style="display: flex; justify-content: center">
-    <div style="max-width: 700px; margin-top: 150px; margin-bottom: 100px">
-      <app-product-headline title="Untold Notes"></app-product-headline>
-
-      <p>
-        Minimalistic, Searchable and Linkable markdown notes to facilitate
-        <a
-          href="https://en.wikipedia.org/wiki/Zettelkasten"
-          target="_blank"
-          referrerpolicy="no-referrer"
-          >Luhmann's Zettelkasten</a
-        >
-        approach in the tradition of
-        <a
-          href="https://en.wikipedia.org/wiki/Notational_Velocity"
-          target="_blank"
-          referrerpolicy="no-referrer"
-          >Notational Velocity</a
-        >
-        and
-        <a
-          href="https://zettelkasten.de/the-archive/"
-          target="_blank"
-          referrerpolicy="no-referrer"
-          >The Archive</a
-        >. Untold Notes follows it's unopinionated approach and lifts it to an
-        open web platform.
-      </p>
-
-      <app-searchbar
-        (querySubmit)="createNotebook($event)"
-        buttonText="Create Notebook"
-        color="primary"
-        [loading]="busy"
-        placeholder="Name your new Notebook"
-      ></app-searchbar>
-
-      <ion-list
-        *ngIf="notebooks?.length > 0"
-        class="ion-margin-top notebooks"
-        style="background: transparent"
+  <app-product-header title="Untold Notes">
+    <p>
+      Minimalistic, Searchable and Linkable markdown notes to facilitate
+      <a
+        href="https://en.wikipedia.org/wiki/Zettelkasten"
+        target="_blank"
+        referrerpolicy="no-referrer"
+        >Luhmann's Zettelkasten</a
       >
-        <ion-list-header class="ion-no-padding">
-          <ion-label color="medium"> Existing Repositories </ion-label>
-        </ion-list-header>
-        <ion-item
-          *ngFor="let notebook of notebooks"
-          [routerLink]="'/notebook/'+notebook.id"
-        >
-          <ion-label>{{notebook.name}}</ion-label>
-          <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
-        </ion-item>
-      </ion-list>
+      approach in the tradition of
+      <a
+        href="https://en.wikipedia.org/wiki/Notational_Velocity"
+        target="_blank"
+        referrerpolicy="no-referrer"
+        >Notational Velocity</a
+      >
+      and
+      <a
+        href="https://zettelkasten.de/the-archive/"
+        target="_blank"
+        referrerpolicy="no-referrer"
+        >The Archive</a
+      >. Untold Notes follows it's unopinionated approach and lifts it to an
+      open web platform.
+    </p>
 
-      <div style="margin-top: 150px">
-        <h2>Why choose Untold Notes?</h2>
-        <p>
-          For maximum independence you can self-host or subscribe for ultimate
-          comfort. Import and export data using common formats.
-        </p>
-      </div>
+    <app-searchbar
+      (querySubmit)="createNotebook($event)"
+      buttonText="Create Notebook"
+      color="primary"
+      [loading]="busy"
+      placeholder="Name your new Notebook"
+    ></app-searchbar>
 
-      <div class="ion-padding-top">
-        <h2>Demo</h2>
-        <p>[video]</p>
-      </div>
+    <ion-list
+      *ngIf="notebooks?.length > 0"
+      class="ion-margin-top notebooks"
+      style="background: transparent"
+    >
+      <ion-list-header class="ion-no-padding">
+        <ion-label color="medium"> Existing Repositories </ion-label>
+      </ion-list-header>
+      <ion-item
+        *ngFor="let notebook of notebooks"
+        [routerLink]="'/notebook/'+notebook.id"
+      >
+        <ion-label>{{notebook.name}}</ion-label>
+        <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+      </ion-item>
+    </ion-list>
+
+    <div style="margin-top: 150px">
+      <h2>Why choose Untold Notes?</h2>
+      <p>
+        For maximum independence you can self-host or subscribe for ultimate
+        comfort. Import and export data using common formats.
+      </p>
     </div>
-  </div>
+
+    <div class="ion-padding-top">
+      <h2>Demo</h2>
+      <p>[video]</p>
+    </div>
+  </app-product-header>
 </ion-content>

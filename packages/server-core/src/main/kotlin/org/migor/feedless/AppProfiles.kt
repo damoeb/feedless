@@ -13,6 +13,7 @@ object AppProfiles {
   const val nothrottle = "nothrottle"
   const val community = "community"
   const val scrape = "scrape"
+  const val prometheus = "prometheus"
   const val agent = "agent"
   const val api = "api"
   const val feed = "feed"

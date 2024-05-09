@@ -12,8 +12,11 @@
   <form (ngSubmit)="scrape()">
     <ion-toolbar color="danger" *ngIf="errorMessage">
       <ion-label class="ion-margin-horizontal"
-        >{{ errorMessage }}. Please try later.</ion-label
-      >
+        >{{ errorMessage }}.
+
+        <span *ngIf="!serverSettings.isSelfHosted()">Please try later.</span>
+        <span *ngIf="serverSettings.isSelfHosted()"></span>
+      </ion-label>
     </ion-toolbar>
     <ion-row
       [ngClass]="{ 'busy-cursor': busy, 'website--pick-mode': isPickMode() }"

@@ -33,7 +33,7 @@ class CivilityScorerTest {
     fun scoreSentiment() {
       val comment = Mockito.mock(CommentEntity::class.java)
 //      Mockito.`when`(comment.value).thenReturn("In general I would agree with this assessment. I really like your idea.")
-      Mockito.`when`(comment.content).thenReturn("Du erzählst nur scheisse")
+      Mockito.`when`(comment.contentText).thenReturn("Du erzählst nur scheisse")
       civilityScorer.scoreSentiment(comment)
     }
 }

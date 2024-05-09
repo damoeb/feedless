@@ -6,18 +6,18 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.FeatureEntity
-import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.FeatureValueEntity
-import org.migor.feedless.data.jpa.models.FeatureValueType
-import org.migor.feedless.data.jpa.models.PlanAvailability
-import org.migor.feedless.data.jpa.models.PlanEntity
-import org.migor.feedless.data.jpa.models.PlanName
-import org.migor.feedless.data.jpa.models.ProductEntity
-import org.migor.feedless.data.jpa.repositories.FeatureDAO
-import org.migor.feedless.data.jpa.repositories.FeatureValueDAO
-import org.migor.feedless.data.jpa.repositories.PlanDAO
-import org.migor.feedless.data.jpa.repositories.ProductDAO
+import org.migor.feedless.plan.FeatureEntity
+import org.migor.feedless.plan.FeatureName
+import org.migor.feedless.plan.FeatureValueEntity
+import org.migor.feedless.plan.FeatureValueType
+import org.migor.feedless.plan.PlanAvailability
+import org.migor.feedless.plan.PlanEntity
+import org.migor.feedless.plan.PlanName
+import org.migor.feedless.plan.ProductEntity
+import org.migor.feedless.plan.FeatureDAO
+import org.migor.feedless.plan.FeatureValueDAO
+import org.migor.feedless.plan.PlanDAO
+import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretType
@@ -90,7 +90,7 @@ class Seeder {
 
   private fun seedRootUser(): UserEntity {
     val root =
-      userDAO.findRootUser() ?: createUser(
+      userDAO.findFirstByRootIsTrue() ?: createUser(
         propertyService.rootEmail,
         isRoot = true,
         authSource = AuthSource.none,
@@ -241,12 +241,12 @@ class Seeder {
   }
 
   private fun persistPlan(
-    name: PlanName,
-    costs: Double,
-    availability: PlanAvailability,
-    product: ProductEntity,
-    features: Map<FeatureName, FeatureValueEntity>,
-    parentPlan: PlanEntity? = null
+      name: PlanName,
+      costs: Double,
+      availability: PlanAvailability,
+      product: ProductEntity,
+      features: Map<FeatureName, FeatureValueEntity>,
+      parentPlan: PlanEntity? = null
   ): PlanEntity {
     val plan = resolvePlan(name, costs, availability, product, parentPlan)
     persistFeatures(product, plan, features)
@@ -254,11 +254,11 @@ class Seeder {
   }
 
   private fun resolvePlan(
-    name: PlanName,
-    costs: Double,
-    availability: PlanAvailability,
-    product: ProductEntity,
-    parentPlan: PlanEntity?,
+      name: PlanName,
+      costs: Double,
+      availability: PlanAvailability,
+      product: ProductEntity,
+      parentPlan: PlanEntity?,
   ): PlanEntity {
     val plan = PlanEntity()
     plan.name = name.name
@@ -271,9 +271,9 @@ class Seeder {
   }
 
   private fun persistFeatures(
-    product: ProductEntity,
-    plan: PlanEntity,
-    features: Map<FeatureName, FeatureValueEntity>
+      product: ProductEntity,
+      plan: PlanEntity,
+      features: Map<FeatureName, FeatureValueEntity>
   ) {
     features.forEach { (featureName, featureValue) ->
       run {

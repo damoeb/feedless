@@ -8,7 +8,7 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.data.jpa.models.PlanName
+import org.migor.feedless.plan.PlanName
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.TokenProvider

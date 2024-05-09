@@ -9,7 +9,7 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.models.fromDto
+import org.migor.feedless.plan.fromDto
 import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User

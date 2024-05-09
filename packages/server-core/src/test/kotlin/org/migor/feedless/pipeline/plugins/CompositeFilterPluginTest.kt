@@ -3,7 +3,7 @@ package org.migor.feedless.pipeline.plugins
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.NumberFilterOperator

@@ -10,6 +10,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.generated.types.Segment
+import org.migor.feedless.repository.RepositoryEntity
 
 @Entity
 @Table(name = "t_segment")

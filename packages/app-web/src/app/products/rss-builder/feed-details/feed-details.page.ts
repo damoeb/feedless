@@ -15,7 +15,7 @@ import {
   WebDocument,
 } from '../../../graphql/types';
 import { RepositoryService } from '../../../services/repository.service';
-import { dateFormat, dateTimeFormat } from '../../../services/session.service';
+import { dateFormat } from '../../../services/session.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
@@ -26,7 +26,7 @@ import {
   GenerateFeedModalComponentProps,
   getScrapeRequest,
 } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
-import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { BubbleColor } from '../../../components/bubble/bubble.component';
 import { ArrayElement } from '../../../types';
 import { PluginService } from '../../../services/plugin.service';
@@ -49,6 +49,13 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   feedUrl: string;
   private plugins: FeedlessPlugin[];
   private repositoryId: string;
+
+  protected readonly GqlVisibility = GqlVisibility;
+  showFullDescription = false;
+  showImages = false;
+  showFullArticle = false;
+  protected errorMessage: string;
+
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
@@ -85,13 +92,19 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.busy = true;
     this.changeRef.detectChanges();
 
-    this.repository = await this.repositoryService.getRepositoryById(
-      this.repositoryId,
-    );
-    this.titleService.setTitle(this.repository.title);
-    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
+    try {
 
-    await this.fetchNextPage();
+      this.repository = await this.repositoryService.getRepositoryById(
+        this.repositoryId,
+      );
+      this.titleService.setTitle(this.repository.title);
+      this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
+
+      await this.fetchNextPage();
+
+    } catch (e) {
+      this.errorMessage = e.message
+    }
 
     this.busy = false;
     this.changeRef.detectChanges();
@@ -258,9 +271,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   private getPluginName(pluginId: string) {
     return this.plugins.find((plugin) => plugin.id === pluginId)?.name;
   }
-
-  protected readonly GqlVisibility = GqlVisibility;
-  showFullDescription = false;
 
   hasEndReached(): boolean {
     return (

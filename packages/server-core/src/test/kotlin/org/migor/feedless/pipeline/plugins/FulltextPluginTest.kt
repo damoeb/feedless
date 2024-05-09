@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.data.jpa.models.RepositoryEntity
-import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.web.WebToArticleTransformer

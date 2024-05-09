@@ -4,10 +4,8 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { ApolloClient, FetchPolicy } from '@apollo/client/core';
+import { FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
-import { SessionService } from 'src/app/services/session.service';
-import { AuthService } from 'src/app/services/auth.service';
 import { Repository } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
 import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
@@ -63,7 +61,7 @@ export class RepositoriesPage implements OnInit {
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
-    const entities = await this.repositoryService.listRepositoriess(
+    const entities = await this.repositoryService.listRepositories(
       {
         cursor: {
           page,

@@ -12,7 +12,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.RepositoryEntity
+import org.migor.feedless.repository.RepositoryEntity
 import java.util.*
 
 @Entity

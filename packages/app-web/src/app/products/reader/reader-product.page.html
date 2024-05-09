@@ -81,13 +81,13 @@
                     >{{ readerOptions.fontSize }}</ion-text
                   >
                   <ion-button
-                    (click)="changeNumOption('fontSize', -2, {min: 16, max: 22})"
+                    (click)="changeNumOption('fontSize', -2, {min: 16, max: 24})"
                     color="light"
                     size="medium"
                     >-
                   </ion-button>
                   <ion-button
-                    (click)="changeNumOption('fontSize', 2, {min: 16, max: 22})"
+                    (click)="changeNumOption('fontSize', 2, {min: 16, max: 24})"
                     color="light"
                     size="medium"
                     >+
@@ -136,13 +136,13 @@
                     >{{ readerOptions.contentWidth }}</ion-text
                   >
                   <ion-button
-                    (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 800})"
+                    (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 1400})"
                     color="light"
                     size="medium"
                     >-
                   </ion-button>
                   <ion-button
-                    (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 800})"
+                    (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 1400})"
                     color="light"
                     size="medium"
                     >+

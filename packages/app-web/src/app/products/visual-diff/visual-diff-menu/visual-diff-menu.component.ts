@@ -33,7 +33,7 @@ export class VisualDiffMenuComponent implements OnInit {
 
   private async fetchRepositories() {
     const page = 0;
-    this.repositories = await this.repositoryService.listRepositoriess({
+    this.repositories = await this.repositoryService.listRepositories({
       cursor: {
         page,
       },

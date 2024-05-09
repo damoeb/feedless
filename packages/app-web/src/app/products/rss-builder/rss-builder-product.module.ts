@@ -11,6 +11,7 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
 import { RssBuilderMenuModule } from './rss-builder-menu/rss-builder-menu.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
+import { BubbleModule } from '../../components/bubble/bubble.module';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { TrialWarningModule } from '../../components/trial-warning/trial-warning
     LoginButtonModule,
     SearchbarModule,
     TrialWarningModule,
+    BubbleModule,
   ],
   declarations: [RssBuilderProductPage],
 })

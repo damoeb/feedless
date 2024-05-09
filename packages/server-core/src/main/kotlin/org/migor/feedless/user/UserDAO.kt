@@ -13,13 +13,7 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
   fun findByEmail(name: String): UserEntity?
   fun existsByEmail(email: String): Boolean
 
-  @Query(
-    """
-    select u from UserEntity u
-    where u.root = true
-  """
-  )
-  fun findRootUser(): UserEntity?
+  fun findFirstByRootIsTrue(): UserEntity?
 
   fun findByAnonymousIsTrue(): UserEntity
   fun findByGithubId(githubId: String): UserEntity?

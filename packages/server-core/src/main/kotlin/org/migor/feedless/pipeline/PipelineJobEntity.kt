@@ -13,7 +13,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import java.util.*
 

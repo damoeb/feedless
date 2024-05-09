@@ -1,4 +1,8 @@
-<div *ngIf="hasReadability()" class="reader">
+<div
+  *ngIf="hasReadability()"
+  class="reader"
+  [ngClass]="{ 'reader--hide-images': !showImages }"
+>
   <ion-row>
     <ion-col [innerHTML]="content" size="12"></ion-col>
   </ion-row>

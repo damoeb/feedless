@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.TokenizerService
-import org.migor.feedless.source.any
+import org.migor.feedless.document.any
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
@@ -26,14 +26,14 @@ class CitationScorerTest {
     scorer.commentGraphService = commentGraphService
 
     val parent = mock(CommentEntity::class.java)
-    Mockito.`when`(parent.content).thenReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
+    Mockito.`when`(parent.contentText).thenReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
     Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
   }
 
   @Test
   fun score_block_quote() {
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.content).thenReturn("""
+    Mockito.`when`(comment.contentText).thenReturn("""
 > Ut enim ad minim veniam, quis nostrud exercitation
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
     """.trimIndent())
@@ -44,7 +44,7 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
   @Test
   fun score_inline_quote() {
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.content).thenReturn("""
+    Mockito.`when`(comment.contentText).thenReturn("""
 Duis aute irure dolor "quis nostrud exercitation" in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
     """.trimIndent())
 

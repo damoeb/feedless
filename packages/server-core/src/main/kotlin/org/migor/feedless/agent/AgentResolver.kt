@@ -54,12 +54,11 @@ class AgentResolver {
 
   @Throttled
   @DgsQuery
-  @PreAuthorize("hasAuthority('USER')")
   suspend fun agents(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
     log.info("[$corrId] agents")
-    agentService.findAll(sessionService.userId()!!).map { it.toDto() }
+    agentService.findAll(sessionService.userId()).map { it.toDto() }
   }
 }
 

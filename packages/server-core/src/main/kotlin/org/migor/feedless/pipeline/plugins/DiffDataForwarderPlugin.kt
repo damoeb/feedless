@@ -6,9 +6,9 @@ import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.DocumentEntity
-import org.migor.feedless.data.jpa.models.RepositoryEntity
-import org.migor.feedless.data.jpa.repositories.DocumentDAO
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -20,7 +20,7 @@ import org.migor.feedless.mail.VisualDiffChangeDetectedParams
 import org.migor.feedless.mail.VisualDiffWelcomeMailTemplate
 import org.migor.feedless.mail.VisualDiffWelcomeParams
 import org.migor.feedless.pipeline.FilterEntityPlugin
-import org.migor.feedless.service.ProductService
+import org.migor.feedless.plan.ProductService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -111,9 +111,9 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   }
 
   override fun provideWelcomeMail(
-    corrId: String,
-    repository: RepositoryEntity,
-    mailForward: MailForwardEntity
+      corrId: String,
+      repository: RepositoryEntity,
+      mailForward: MailForwardEntity
   ): MailData {
     log.info("[$corrId] prepare welcome mail")
     val mailData = MailData()

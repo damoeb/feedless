@@ -13,6 +13,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.JsonUtil
@@ -38,6 +39,7 @@ import java.nio.file.Files
     MockBean(AgentService::class),
     MockBean(UserService::class),
     MockBean(SessionService::class),
+    MockBean(LicenseService::class),
   ]
 )
 class ScrapeQueryResolverTest {

@@ -8,13 +8,14 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.models.toDto
+import org.migor.feedless.repository.toDto
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.service.FeatureService
-import org.migor.feedless.service.ProductService
+import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.plan.ProductService
+import org.migor.feedless.plan.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -72,6 +73,5 @@ class ServerSettingsResolver {
       .features(featureService.findAllByProduct(product).map { it.toDto() })
       .build()
   }
-
 }
 

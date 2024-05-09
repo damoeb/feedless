@@ -1,6 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
-import org.migor.feedless.data.jpa.models.DocumentEntity
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.NumberFilterOperator
@@ -22,10 +22,10 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun name(): String = "Filter"
 
   override fun filterEntity(
-    corrId: String,
-    document: DocumentEntity,
-    params: PluginExecutionParamsInput,
-    index: Int
+      corrId: String,
+      document: DocumentEntity,
+      params: PluginExecutionParamsInput,
+      index: Int
   ): Boolean {
     log.info("[$corrId] filter ${document.url}")
     return params.org_feedless_filter?.let { plugins ->
@@ -37,9 +37,9 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   }
 
   private fun matches(
-    document: DocumentEntity,
-    filterParams: CompositeFieldFilterParamsInput,
-    index: Int
+      document: DocumentEntity,
+      filterParams: CompositeFieldFilterParamsInput,
+      index: Int
   ): Boolean {
     return arrayOf(
       filterParams.content?.let { applyStringOperation(document.contentText!!.trim(), it) },

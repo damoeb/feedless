@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.Session
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.service.ScrapeService
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @MockBeans(value = [
   MockBean(PluginService::class),
   MockBean(ScrapeService::class),
+  MockBean(LicenseService::class),
 ])
 @Testcontainers
 class QueryResolverTest {
