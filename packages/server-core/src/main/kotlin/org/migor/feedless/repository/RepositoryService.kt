@@ -14,16 +14,17 @@ import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.data.jpa.models.SourceEntity
-import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.data.jpa.repositories.SourceDAO
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
@@ -38,7 +39,6 @@ import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.document.DocumentService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity

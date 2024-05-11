@@ -22,6 +22,44 @@ CREATE TABLE t_agent (
 
 
 --
+-- Name: t_annotation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE t_annotation (
+    type character varying(31) NOT NULL,
+    id uuid NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    document_id uuid NOT NULL,
+    owner_id uuid NOT NULL
+);
+
+
+--
+-- Name: t_annotation_text; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE t_annotation_text (
+    comment_id uuid NOT NULL,
+    from_char integer,
+    to_char integer NOT NULL,
+    id uuid NOT NULL,
+    CONSTRAINT t_annotation_text_to_char_check CHECK ((to_char >= 0))
+);
+
+
+--
+-- Name: t_annotation_vote; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE t_annotation_vote (
+    is_downvote boolean NOT NULL,
+    is_flag boolean NOT NULL,
+    is_upvote boolean NOT NULL,
+    id uuid NOT NULL
+);
+
+
+--
 -- Name: t_attachment; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -59,14 +97,18 @@ CREATE TABLE t_browser_action (
 --
 
 CREATE TABLE t_document (
+    type character varying(31) NOT NULL,
     id uuid NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     content_html text,
     content_raw bytea,
     content_raw_mime character varying(50),
-    content_text text,
+    content_text text NOT NULL,
     content_title character varying(256),
     image_url character varying(1000),
+    is_dead boolean NOT NULL,
+    is_flagged boolean NOT NULL,
+    parent_id uuid,
     released_at timestamp(6) without time zone NOT NULL,
     repository_id uuid NOT NULL,
     score integer NOT NULL,
@@ -74,7 +116,8 @@ CREATE TABLE t_document (
     starting_at timestamp(6) without time zone,
     status character varying(50) NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    url character varying(1000) NOT NULL
+    url character varying(1000) NOT NULL,
+    is_original_poster boolean
 );
 
 
@@ -180,42 +223,6 @@ CREATE TABLE t_plan (
 
 
 --
--- Name: t_post; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE t_post (
-    type character varying(31) NOT NULL,
-    id uuid NOT NULL,
-    created_at timestamp(6) without time zone NOT NULL,
-    base_score double precision NOT NULL,
-    content character varying(1000) NOT NULL,
-    is_controversial boolean NOT NULL,
-    is_dead boolean NOT NULL,
-    is_flagged boolean NOT NULL,
-    owner_id uuid NOT NULL,
-    parent_id uuid NOT NULL,
-    is_original_poster boolean NOT NULL,
-    link character varying(500),
-    title character varying(200) NOT NULL
-);
-
-
---
--- Name: t_post_vote; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE t_post_vote (
-    id uuid NOT NULL,
-    created_at timestamp(6) without time zone NOT NULL,
-    is_downvote boolean NOT NULL,
-    is_flag boolean NOT NULL,
-    is_upvote boolean NOT NULL,
-    owner_id uuid NOT NULL,
-    post_id uuid NOT NULL
-);
-
-
---
 -- Name: t_product; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -233,6 +240,7 @@ CREATE TABLE t_product (
 --
 
 CREATE TABLE t_repository (
+    type character varying(31) NOT NULL,
     id uuid NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     is_archived boolean NOT NULL,
@@ -358,10 +366,6 @@ CREATE TABLE t_user_secret (
     value character varying(400) NOT NULL
 );
 
---
--- Data for Name: t_agent; Type: TABLE DATA; Schema: public; Owner: -
---
-
 
 --
 -- Name: t_agent t_agent_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -369,6 +373,30 @@ CREATE TABLE t_user_secret (
 
 ALTER TABLE ONLY t_agent
     ADD CONSTRAINT t_agent_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: t_annotation t_annotation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation
+    ADD CONSTRAINT t_annotation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: t_annotation_text t_annotation_text_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation_text
+    ADD CONSTRAINT t_annotation_text_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: t_annotation_vote t_annotation_vote_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation_vote
+    ADD CONSTRAINT t_annotation_vote_pkey PRIMARY KEY (id);
 
 
 --
@@ -449,22 +477,6 @@ ALTER TABLE ONLY t_pipeline_job
 
 ALTER TABLE ONLY t_plan
     ADD CONSTRAINT t_plan_pkey PRIMARY KEY (id);
-
-
---
--- Name: t_post t_post_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY t_post
-    ADD CONSTRAINT t_post_pkey PRIMARY KEY (id);
-
-
---
--- Name: t_post_vote t_post_vote_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY t_post_vote
-    ADD CONSTRAINT t_post_vote_pkey PRIMARY KEY (id);
 
 
 --
@@ -564,18 +576,19 @@ ALTER TABLE ONLY t_user
 
 
 --
--- Name: idx_document_url; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_document_url ON t_document USING btree (url, repository_id);
-
-
---
 -- Name: t_repository fk1bvl5tll4isnaxnyjqq1shtld; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY t_repository
     ADD CONSTRAINT fk1bvl5tll4isnaxnyjqq1shtld FOREIGN KEY (segmentation_id) REFERENCES t_segment(id);
+
+
+--
+-- Name: t_annotation_text fk2wrv2qn79kvxyjtbe7mach2vg; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation_text
+    ADD CONSTRAINT fk2wrv2qn79kvxyjtbe7mach2vg FOREIGN KEY (id) REFERENCES t_annotation(id);
 
 
 --
@@ -651,6 +664,14 @@ ALTER TABLE ONLY t_user_plan_subscription
 
 
 --
+-- Name: t_annotation_vote fk8v9srbb30wqn2nbn8t3yy5i1e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation_vote
+    ADD CONSTRAINT fk8v9srbb30wqn2nbn8t3yy5i1e FOREIGN KEY (id) REFERENCES t_annotation(id);
+
+
+--
 -- Name: t_user_plan_subscription fk9fe7lce4xahbf06k9eiwgy02h; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -659,27 +680,11 @@ ALTER TABLE ONLY t_user_plan_subscription
 
 
 --
--- Name: t_post_vote fk9orb09dtmh4mdors05aw7pwbr; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY t_post_vote
-    ADD CONSTRAINT fk9orb09dtmh4mdors05aw7pwbr FOREIGN KEY (post_id) REFERENCES t_post(id) ON DELETE CASCADE;
-
-
---
 -- Name: t_notification fkboru2k9q1whuculc2axpggcpa; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY t_notification
     ADD CONSTRAINT fkboru2k9q1whuculc2axpggcpa FOREIGN KEY (owner_id) REFERENCES t_user(id) ON DELETE CASCADE;
-
-
---
--- Name: t_post_vote fkc45kyl6ap1iblfacf9l4dmp9b; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY t_post_vote
-    ADD CONSTRAINT fkc45kyl6ap1iblfacf9l4dmp9b FOREIGN KEY (owner_id) REFERENCES t_user(id) ON DELETE CASCADE;
 
 
 --
@@ -715,6 +720,14 @@ ALTER TABLE ONLY t_plan
 
 
 --
+-- Name: t_annotation_text fkdu83owfk735ovcjk9mb9ngpdg; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation_text
+    ADD CONSTRAINT fkdu83owfk735ovcjk9mb9ngpdg FOREIGN KEY (comment_id) REFERENCES t_document(id) ON DELETE CASCADE;
+
+
+--
 -- Name: t_feature_value fke5debxvklvw4odvwapar7u1qg; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -739,19 +752,19 @@ ALTER TABLE ONLY t_agent
 
 
 --
--- Name: t_post fknby2mx58d898rya8fm7wb0tdf; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: t_annotation fkkluvd7rpx2upem1423ynecjwn; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY t_post
-    ADD CONSTRAINT fknby2mx58d898rya8fm7wb0tdf FOREIGN KEY (owner_id) REFERENCES t_user(id) ON DELETE CASCADE;
+ALTER TABLE ONLY t_annotation
+    ADD CONSTRAINT fkkluvd7rpx2upem1423ynecjwn FOREIGN KEY (document_id) REFERENCES t_document(id) ON DELETE CASCADE;
 
 
 --
--- Name: t_post fkni4euylhtpn6v5e4qhqmy4gsi; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: t_document fkkwqbkpxrw6bibp88dqy6d4ueh; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY t_post
-    ADD CONSTRAINT fkni4euylhtpn6v5e4qhqmy4gsi FOREIGN KEY (parent_id) REFERENCES t_post(id) ON DELETE CASCADE;
+ALTER TABLE ONLY t_document
+    ADD CONSTRAINT fkkwqbkpxrw6bibp88dqy6d4ueh FOREIGN KEY (parent_id) REFERENCES t_document(id) ON DELETE CASCADE;
 
 
 --
@@ -792,6 +805,14 @@ ALTER TABLE ONLY t_browser_action
 
 ALTER TABLE ONLY t_feature_value
     ADD CONSTRAINT fkr8txka4ino7s5t1eux397j2ln FOREIGN KEY (plan_id) REFERENCES t_plan(id) ON DELETE CASCADE;
+
+
+--
+-- Name: t_annotation fksbaduv38d2d4ew34q5rop3ibr; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY t_annotation
+    ADD CONSTRAINT fksbaduv38d2d4ew34q5rop3ibr FOREIGN KEY (owner_id) REFERENCES t_user(id) ON DELETE CASCADE;
 
 
 --

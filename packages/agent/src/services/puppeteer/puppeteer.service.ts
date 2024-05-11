@@ -257,7 +257,7 @@ export class PuppeteerService {
         timeout,
       });
     } catch (e) {
-      this.log.warn(e.message);
+      this.log.log(e.message);
     }
   }
 

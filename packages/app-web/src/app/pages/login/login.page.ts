@@ -18,7 +18,6 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginPage implements OnInit, OnDestroy {
-  // showUserPasswordLogin: boolean;
   showMailLogin: boolean;
   showSSO: boolean;
   loginUrl: string;
@@ -32,7 +31,7 @@ export class LoginPage implements OnInit, OnDestroy {
   errorMessage: string;
 
   constructor(
-    private readonly serverSettings: ServerSettingsService,
+    protected readonly serverSettings: ServerSettingsService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,

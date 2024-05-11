@@ -4,10 +4,10 @@ import jakarta.mail.internet.MimeMessage
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.pipeline.plugins.MailAttachment
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.plan.ProductService
+import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

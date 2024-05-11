@@ -15,16 +15,17 @@ export class AuthGuardService implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean | UrlTree> {
+    console.log('isSelfHosted', this.serverSettings.isSelfHosted())
     if (this.serverSettings.isSelfHosted()) {
       return this.authService.authorizationChange().pipe(
-        switchMap((authenticated) => {
-          console.log('authenticated', authenticated);
-          if (authenticated) {
+        switchMap((authentication) => {
+          console.log('authenticated', authentication?.loggedIn);
+          if (authentication?.loggedIn) {
             return of(true);
           } else {
             return of(
               this.router.createUrlTree(['/login'], {
-                queryParams: { redirectUrl: '/builder' },
+                queryParams: { redirectUrl: location.pathname },
                 queryParamsHandling: 'merge',
               }),
             );
@@ -32,7 +33,7 @@ export class AuthGuardService implements CanActivate {
         }),
       );
     } else {
-      return of(true);
+      return of(false);
     }
   }
 }

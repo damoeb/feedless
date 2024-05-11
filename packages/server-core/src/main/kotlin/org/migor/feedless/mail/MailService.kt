@@ -2,8 +2,8 @@ package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.pipeline.plugins.MailData
+import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.user.UserEntity
 import java.util.*
 

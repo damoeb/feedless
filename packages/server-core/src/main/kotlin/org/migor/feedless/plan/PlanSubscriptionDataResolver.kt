@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.repository.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.PlanSubscription

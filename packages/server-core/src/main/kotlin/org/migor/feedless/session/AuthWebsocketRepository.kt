@@ -1,8 +1,8 @@
 package org.migor.feedless.session
 
 import org.migor.feedless.common.InMemorySinkRepository
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.generated.types.AuthenticationEvent
+import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.springframework.stereotype.Service
 import reactor.core.publisher.FluxSink
 

@@ -106,10 +106,8 @@ type LoginResponse {
 type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
-  createStory(data: CreateStoryInput!): Story!
-  createComment(data: CreateCommentInput!): Comment!
-  createVote(data: CreateVoteInput!): Vote!
-  deleteVote(data: DeleteVoteInput!): Boolean!
+  createAnnotation(data: CreateAnnotationInput!): Annotation!
+  deleteAnnotation(data: DeleteAnnotationInput!): Boolean!
 
   authUser(data: AuthUserInput!): Authentication!
   createUser(data: CreateUserInput!): User!
@@ -126,71 +124,36 @@ type Mutation {
   updateLicense(data: UpdateLicenseInput!): License!
 
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
-#  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
+  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
 }
 
-input DeleteVoteInput {
-  where: EntityUniqueWhere!
+input DeleteAnnotationInput {
+  where: WebDocumentUniqueWhereInput!
 }
 
-input CreateVoteInput {
-  where: StoryOrCommentWhereInput!
-  vote: VoteInput!
+input CreateAnnotationInput {
+  where: WebDocumentUniqueWhereInput!
+  annotation: OneOfAnnotationInput!
 }
 
-input StoryOrCommentWhereInput {
-  story: EntityUniqueWhere
-  comment: EntityUniqueWhere
+input OneOfAnnotationInput {
+  upVote: BoolUpdateOperationsInput
+  downVote: BoolUpdateOperationsInput
+  flag: BoolUpdateOperationsInput
+  text: TextAnnotationInput
 }
 
-input EntityUniqueWhere {
-  id: ID!
+input TextAnnotationInput {
+  fromChar: Int!
+  toChar: Int!
+  document: CreateWebDocumentInput!
 }
 
-input VoteInput {
-  upVote: Boolean
-  downVote: Boolean
-  downFlag: Boolean
-}
-
-type Vote {
+type Annotation {
   upVote: Boolean!
   downVote: Boolean!
-  downFlag: Boolean!
-}
-
-input CreateStoryInput {
-  title: String!
-  link: String!
-  content: String!
-}
-
-type Story {
-  id: ID!
-  content: String!
-  title: String!
-  link: String!
-  dead: Boolean!
-  flagged: Boolean!
-  publishedAt: Long!
-  score: Float!
-  comments: [Comment!]!
-}
-
-input CreateCommentInput {
-  data: String!
-  commentId: ID!
-}
-
-type Comment {
-  id: ID!
-  content: String!
-  dead: Boolean!
-  flagged: Boolean!
-  score: Float!
-  publishedAt: Long!
-  comments: [Comment!]!
+  flag: Boolean!
 }
 
 input UpdateLicenseInput {
@@ -233,8 +196,9 @@ input CreateWebDocumentInput {
   contentText: String
   contentTitle: String!
   createdAt: Long!
-  updatedAt: Long
   url: String!
+  repositoryId: RepositoryUniqueWhereInput!
+  parent: WebDocumentUniqueWhereInput
 }
 
 input DeleteWebDocumentInput {
@@ -243,14 +207,15 @@ input DeleteWebDocumentInput {
 
 input UpdateWebDocumentInput {
   where: WebDocumentUniqueWhereInput!
-  data: WebDocumentInput!
+  data: WebDocumentUpdateInput!
 }
 
-input WebDocumentInput {
+input WebDocumentUpdateInput {
   contentRawBase64: NullableStringUpdateOperationsInput
   contentRawMime: NullableStringUpdateOperationsInput
   contentText: StringUpdateOperationsInput
   contentTitle: StringUpdateOperationsInput
+  url: StringUpdateOperationsInput
 }
 
 input CreateUserInput {
@@ -341,8 +306,6 @@ type Session {
 type Query {
   agents: [Agent!]!
   plugins: [Plugin!]!
-
-  stories(data: StoriesWhereInput!): [Story!]!
 
   repository(data: RepositoryWhereInput!): Repository!
   repositories(data: RepositoriesInput!): [Repository!]!

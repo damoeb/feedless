@@ -2,12 +2,12 @@ package org.migor.feedless.pipeline
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.repository.mapToPluginInstance
 import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.pipeline.plugins.MailProvider
 import org.migor.feedless.pipeline.plugins.MailProviderPlugin
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.mapToPluginInstance
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

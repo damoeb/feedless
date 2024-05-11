@@ -3,8 +3,8 @@ package org.migor.feedless.mail
 import jakarta.mail.internet.MimeMessage
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.pipeline.plugins.MailData
+import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.user.UserEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

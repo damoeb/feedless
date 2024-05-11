@@ -71,10 +71,10 @@ export class ProductService {
     },
     {
       id: 'rss-proxy',
-      sideMenu: {
-        width: 200,
-        breakpoint: 'xl',
-      },
+      // sideMenu: {
+      //   width: 200,
+      //   breakpoint: 'xl',
+      // },
       routes: [
         {
           path: '',

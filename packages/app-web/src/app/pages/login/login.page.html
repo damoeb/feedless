@@ -124,6 +124,12 @@
           </div>
         </div>
       </div>
+
+      <ion-item color="dark" class="ion-margin" *ngIf="serverSettings.isSelfHosted()">
+        <ion-label>
+          <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and <code>APP_ROOT_SECRET_KEY</code> to log in.
+        </ion-label>
+      </ion-item>
     </div>
   </div>
 </ion-content>

@@ -5,7 +5,7 @@
   <timestamp key="timestamp-by-second" datePattern="yyyyMMdd'T'HHmmss"/>
   <appender name="Console-Appender" class="ch.qos.logback.core.ConsoleAppender">
     <layout>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
     </layout>
   </appender>
 <!--  <appender name="File-Appender" class="ch.qos.logback.core.FileAppender">-->

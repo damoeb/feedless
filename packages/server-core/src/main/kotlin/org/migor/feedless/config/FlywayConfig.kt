@@ -1,14 +1,5 @@
 package org.migor.feedless.config
 
-import org.flywaydb.core.api.callback.Callback
-import org.flywaydb.core.api.callback.Context
-import org.flywaydb.core.api.callback.Event
-import org.flywaydb.core.api.configuration.FluentConfiguration
-import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-
 
 //@Configuration
 //class FlywayFactory {

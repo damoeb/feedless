@@ -9,10 +9,10 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.plan.fromDto
 import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.plan.fromDto
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

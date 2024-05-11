@@ -4,7 +4,6 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.toDto
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
@@ -19,6 +18,7 @@ import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.WebToArticleTransformer

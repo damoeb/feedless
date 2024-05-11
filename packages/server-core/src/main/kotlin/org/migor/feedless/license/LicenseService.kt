@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
-import org.flywaydb.core.internal.scanner.Scanner
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

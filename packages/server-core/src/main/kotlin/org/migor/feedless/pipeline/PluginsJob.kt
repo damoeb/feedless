@@ -3,13 +3,13 @@ package org.migor.feedless.pipeline
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.document.DocumentDAO
-import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
+import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

@@ -8,7 +8,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.repository.toDto
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput

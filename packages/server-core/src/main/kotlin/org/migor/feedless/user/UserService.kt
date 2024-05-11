@@ -10,12 +10,12 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
-import org.migor.feedless.plan.FeatureName
-import org.migor.feedless.plan.PlanName
-import org.migor.feedless.plan.PlanDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.mail.MailService
+import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.plan.PlanDAO
+import org.migor.feedless.plan.PlanName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

@@ -1,8 +1,12 @@
-package org.migor.feedless.community
+package org.migor.feedless.annotation
 
 import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorColumn
+import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.Inheritance
+import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -15,17 +19,13 @@ import org.migor.feedless.user.UserEntity
 import java.util.*
 
 @Entity
-@Table(name = "t_document_vote")
-open class DocumentVoteEntity : EntityWithUUID() {
-
-  @Column(nullable = false, name = "is_upvote")
-  open var isUpVote: Boolean = false
-
-  @Column(nullable = false, name = "is_downvote")
-  open var isDownVote: Boolean = false
-
-  @Column(nullable = false, name = "is_flag")
-  open var isFlag: Boolean = false
+@Table(name = "t_annotation")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(
+  name = "type",
+  discriminatorType = DiscriminatorType.STRING
+)
+open class AnnotationEntity : EntityWithUUID() {
 
   @Column(name = "document_id", nullable = false)
   open lateinit var documentId: UUID

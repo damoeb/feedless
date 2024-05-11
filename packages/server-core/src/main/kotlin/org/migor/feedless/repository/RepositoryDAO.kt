@@ -18,7 +18,7 @@ import java.util.stream.Stream
 interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
 
   @Query(
-      """
+    """
       select distinct e from RepositoryEntity e
       inner join UserEntity u
         on u.id = e.ownerId

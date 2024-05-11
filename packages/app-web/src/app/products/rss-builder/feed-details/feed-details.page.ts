@@ -93,7 +93,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     try {
-
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
       );
@@ -101,9 +100,8 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
 
       await this.fetchNextPage();
-
     } catch (e) {
-      this.errorMessage = e.message
+      this.errorMessage = e.message;
     }
 
     this.busy = false;

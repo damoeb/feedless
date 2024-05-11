@@ -2,9 +2,9 @@ package org.migor.feedless.pipeline.plugins
 
 import jakarta.mail.util.ByteArrayDataSource
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.mail.MailForwardEntity
+import org.migor.feedless.repository.RepositoryEntity
 
 data class MailAttachment(val id: String, val resource: ByteArrayDataSource, val inline: Boolean = false)
 
