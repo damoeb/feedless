@@ -1,19 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentService } from '../../../services/document.service';
-import {
-  FeedlessPlugin,
-  Repository,
-  SubscriptionSource,
-  WebDocument,
-} from '../../../graphql/types';
+import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../../graphql/types';
 import { RepositoryService } from '../../../services/repository.service';
 import { dateFormat } from '../../../services/session.service';
 import dayjs from 'dayjs';
@@ -21,11 +10,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
 import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
-import { GqlScrapeRequest, GqlVisibility } from '../../../../generated/graphql';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../../modals/generate-feed-modal/generate-feed-modal.component';
+import { GqlProfileName, GqlScrapeRequest, GqlVisibility } from '../../../../generated/graphql';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalController } from '@ionic/angular';
 import { BubbleColor } from '../../../components/bubble/bubble.component';
 import { ArrayElement } from '../../../types';
@@ -52,9 +38,9 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   protected readonly GqlVisibility = GqlVisibility;
   showFullDescription = false;
-  showImages = false;
-  showFullArticle = false;
+  showImages = true;
   protected errorMessage: string;
+  renderText: boolean = true;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -204,6 +190,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       repository: this.repository,
       modalTitle: `Customize ${this.repository.title}`,
     };
+    console.log(this.repository)
     await this.modalService.openFeedMetaEditor(componentProps);
   }
 
@@ -279,5 +266,9 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   async loadMore() {
     await this.fetchNextPage();
     // await (event as InfiniteScrollCustomEvent).target.complete();
+  }
+
+  hasDevProfile() {
+    return this.serverSettingsService.hasProfile(GqlProfileName.Dev)
   }
 }

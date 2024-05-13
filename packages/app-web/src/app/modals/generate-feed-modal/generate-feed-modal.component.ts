@@ -116,6 +116,7 @@ export class GenerateFeedModalComponent
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
     applyFulltextPlugin: new FormControl<boolean>(false),
+    applyFiltersLast: new FormControl<boolean>(true),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
   });
@@ -213,6 +214,22 @@ export class GenerateFeedModalComponent
 
     try {
       const plugins: GqlPluginExecutionInput[] = [];
+
+      const hasFilters = this.filters.length > 0;
+      const applyFiltersLast = this.formFg.value.applyFiltersLast;
+
+      const appendFilterPlugin = () => {
+        plugins.push({
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+          params: {
+            org_feedless_filter: this.getFilterParams(),
+          },
+        })
+      };
+
+      if (!applyFiltersLast && hasFilters) {
+        appendFilterPlugin()
+      }
       if (this.formFg.value.applyFulltextPlugin) {
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
@@ -230,15 +247,9 @@ export class GenerateFeedModalComponent
           params: {},
         });
       }
-      if (this.filters.length > 0) {
-        plugins.push({
-          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-          params: {
-            org_feedless_filter: this.getFilterParams(),
-          },
-        });
+      if (applyFiltersLast && hasFilters) {
+        appendFilterPlugin()
       }
-
       if (this.isUpdate()) {
         const {
           title,

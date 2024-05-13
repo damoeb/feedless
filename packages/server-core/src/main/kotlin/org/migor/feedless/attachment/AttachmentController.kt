@@ -2,6 +2,7 @@ package org.migor.feedless.attachment
 
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.common.HttpService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @Profile(AppProfiles.database)
@@ -20,6 +22,9 @@ class AttachmentController {
 
   @Autowired
   lateinit var attachmentService: AttachmentService
+
+  @Autowired
+  lateinit var httpService: HttpService
 
   @GetMapping(
     "/attachment/{attachmentId}",
@@ -41,6 +46,21 @@ class AttachmentController {
     } else {
       ResponseEntity.notFound().build()
     }
+  }
+
+  @GetMapping(
+    "/attachment/proxy",
+  )
+  fun attachmentProxy(
+    request: HttpServletRequest,
+    @RequestParam("url") url: String,
+  ): ResponseEntity<ByteArray> {
+    val corrId = createCorrId(request)
+    log.info("[$corrId] GET proxy attachment url=$url")
+    val attachment = httpService.httpGet(corrId, url, 200)
+    return ResponseEntity.ok()
+      .header(HttpHeaders.CONTENT_TYPE, attachment.contentType)
+      .body(attachment.responseBody)
   }
 
 }

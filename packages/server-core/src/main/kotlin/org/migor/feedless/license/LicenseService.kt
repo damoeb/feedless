@@ -205,7 +205,14 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     initialize()
     if (isSelfHosted()) {
-      if (license != null) {
+      if (license == null) {
+        val trialUntil = Date(getTrialUntil())
+        if (isTrial()) {
+          log.info("[boot] Your trial lasts until $trialUntil")
+        } else {
+          log.warn("[boot] Trial expired at ${trialUntil}, you need to activate the product, see http://localhost:8080/license")
+        }
+      } else {
         log.info("[boot] License is valid")
       }
     }

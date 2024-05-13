@@ -10,6 +10,7 @@ import { BubbleModule } from '../../../components/bubble/bubble.module';
 import { LoginButtonModule } from '../../../components/login-button/login-button.module';
 import { HistogramModule } from '../../../components/histogram/histogram.module';
 import { ReaderModule } from '../../../components/reader/reader.module';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { ReaderModule } from '../../../components/reader/reader.module';
     LoginButtonModule,
     HistogramModule,
     ReaderModule,
+    FormsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],

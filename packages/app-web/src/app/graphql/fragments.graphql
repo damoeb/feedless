@@ -146,16 +146,7 @@ fragment RepositoryFragment on Repository {
       }
     }
     page {
-      url
-      timeout
-      prerender {
-        viewport {
-          ...ViewportFragment
-        }
-      }
-      actions {
-        ...ActionFragment
-      }
+      ...ScrapePageFragment
     }
   }
 }
@@ -215,6 +206,10 @@ fragment ActionFragment on ScrapeAction {
     }
   }
   click {
+    position {
+      x
+      y
+    }
     element {
       xpath {
         value
@@ -245,18 +240,28 @@ fragment ActionFragment on ScrapeAction {
     }
   }
 }
+fragment ScrapePrerenderFragment on ScrapePrerender {
+  viewport {
+    ...ViewportFragment
+  }
+  additionalWaitSec
+  language
+  waitUntil
+}
+
+fragment ScrapePageFragment on ScrapePage {
+  prerender {
+    ...ScrapePrerenderFragment
+  }
+  actions {
+    ...ActionFragment
+  }
+  url
+  timeout
+}
 fragment ScrapeOptionsFragment on ScrapeRequest {
   page {
-    prerender {
-      viewport {
-        ...ViewportFragment
-      }
-    }
-    actions {
-      ...ActionFragment
-    }
-    url
-    timeout
+    ...ScrapePageFragment
   }
 }
 

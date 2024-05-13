@@ -129,7 +129,7 @@ class HttpService {
           429 -> throw HostOverloadingException(corrId, "429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException(corrId, "400 received", Duration.ofHours(1))
           HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          404, 403 -> throw SiteNotFoundException()
+          404, 403 -> throw SiteNotFoundException(response.uri.toUrl())
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
@@ -148,7 +148,7 @@ class HttpService {
 
       val response = req.execute().get()
       if (response.statusCode == 404) {
-        throw SiteNotFoundException()
+        throw SiteNotFoundException(url)
       }
       if (response.statusCode == 405) {
         throw MethodNotAllowedException(corrId)
@@ -167,13 +167,6 @@ class HttpService {
 
   private fun supportsHead(url: String): Boolean = true
 
-  private fun rewriteUrl(url: URL): String {
-    val hosts = arrayOf("twitter.com" to "nitter.net")
-    val match = hosts.firstOrNull { url.host === it.first }
-    return Optional.ofNullable(match).map {
-      url.toString().replaceFirst(it.first, it.second)
-    }.orElse(url.toString())
-  }
 }
 
 data class HttpResponse(

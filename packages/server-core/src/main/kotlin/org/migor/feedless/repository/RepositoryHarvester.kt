@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
@@ -29,6 +31,7 @@ import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.PipelineJobDAO
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
@@ -244,11 +247,34 @@ class RepositoryHarvester internal constructor() {
       try {
         val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
         val updated = it.asEntity(repository.id, ReleaseStatus.released)
+        updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
         createOrUpdate(corrId, updated, existing, repository)
       } catch (e: Exception) {
         log.error("[$corrId] ${e.message}")
         notificationService.createNotification(corrId, repositoryId, e.message)
       }
+    }
+  }
+
+  fun detectMainImageUrl(corrId: String, contentHtml: String?): String? {
+    return contentHtml?.let {
+      Jsoup.parse(contentHtml).images()
+        .sortedByDescending { calculateSize(corrId, it) }
+        .map { it.attr("src") }
+        .firstOrNull()
+    }
+  }
+
+  private fun calculateSize(corrId: String, el: Element): Int {
+    return if (el.hasAttr("width") && el.hasAttr("height")) {
+      try {
+        el.attr("width").toInt() * el.attr("height").toInt()
+      } catch (e: Exception) {
+        log.warn("[$corrId] during detectMainImageUrl: ${e.message}")
+        400
+      }
+    } else {
+      0
     }
   }
 
@@ -361,6 +387,8 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus): Doc
     }
     e.contentRawMime = mime
   }
+  e.contentHtml = contentHtml
+  e.imageUrl = ""
   e.contentText = contentText
   e.status = status
   e.publishedAt = Date(publishedAt)

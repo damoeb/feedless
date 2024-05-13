@@ -731,6 +731,7 @@ enum ExtendContentOptions {
 }
 
 enum ProfileName {
+  dev
   authSSO
   authMail
   selfHosted

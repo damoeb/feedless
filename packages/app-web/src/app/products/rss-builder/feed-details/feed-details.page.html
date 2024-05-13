@@ -236,10 +236,28 @@
         <!--            </ion-button>-->
         <!--          </ion-buttons>-->
         <!--        </ion-toolbar>-->
-        <ion-item *ngIf="pages.length === 0">
+
+        <div *ngIf="hasDevProfile()">
+          <ion-segment
+            [(ngModel)]="renderText"
+            mode="ios"
+            style="max-width: 200px; margin: auto"
+          >
+            <ion-segment-button [value]="true">
+              <ion-label>Text</ion-label>
+            </ion-segment-button>
+            <ion-segment-button [value]="false">
+              <ion-label>HTML</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <ion-item *ngIf="pages.length === 0 || pages[0].length === 0">
           <ion-label> Feed has no items.</ion-label>
         </ion-item>
+
         <ng-container *ngFor="let documents of pages">
+
           <div *ngFor="let document of documents" class="document">
             <div>{{fromNow(document.publishedAt)}} ago</div>
             <h4>
@@ -252,11 +270,11 @@
             </h4>
             <p>on {{hostname(document.url)}}</p>
 
-            <div class="content" *ngIf="!showFullArticle">
+            <div class="content" *ngIf="renderText">
               {{document.contentText}}
             </div>
             <app-reader
-              *ngIf="showFullArticle"
+              *ngIf="!renderText"
               [html]="document.contentHtml"
               [showImages]="showImages"
               style="font-size: 1.1rem; line-height: 1.3rem"

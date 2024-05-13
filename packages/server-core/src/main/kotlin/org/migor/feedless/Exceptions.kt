@@ -8,7 +8,7 @@ class BadRequestException(override val message: String) : RuntimeException()
 
 class UnavailableException(override val message: String) : RuntimeException()
 class NotFoundException(override val message: String) : RuntimeException()
-class SiteNotFoundException : HarvestException("site not found")
+class SiteNotFoundException(url: String) : HarvestException("$url not found")
 class MethodNotAllowedException(corrId: String) : HarvestException("method not allowed ($corrId)")
 class ServiceUnavailableException(corrId: String) : HarvestException("site unavailable ($corrId)")
 class HarvestAbortedException(corrId: String, message: String) : HarvestException("$message ($corrId)")

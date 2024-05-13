@@ -9,7 +9,8 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <form (ngSubmit)="scrape()">
+  <form (ngSubmit)="scrape()" style="position: relative">
+    <div *ngIf="busy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; cursor: progress"></div>
     <ion-toolbar color="danger" *ngIf="errorMessage">
       <ion-label class="ion-margin-horizontal"
         >{{ errorMessage }}.
@@ -19,7 +20,7 @@
       </ion-label>
     </ion-toolbar>
     <ion-row
-      [ngClass]="{ 'busy-cursor': busy, 'website--pick-mode': isPickMode() }"
+      [ngClass]="{ 'website--pick-mode': isPickMode() }"
       class="website flex_column"
     >
       <div *ngIf="!embedScreenshot" style="margin: auto">

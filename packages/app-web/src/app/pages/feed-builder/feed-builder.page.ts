@@ -85,7 +85,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     } else {
       const url = new URL(urlString);
       return {
-        title: `Feed from ${url.host}`,
+        title: `Feed from ${url.host}${url.pathname}`,
         description: `Source: ${url}`,
       };
     }

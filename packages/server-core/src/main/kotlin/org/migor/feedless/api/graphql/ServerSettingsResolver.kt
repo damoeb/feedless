@@ -65,6 +65,7 @@ class ServerSettingsResolver {
           AppProfiles.authMail -> ProfileName.authMail
           AppProfiles.authSSO -> ProfileName.authSSO
           AppProfiles.selfHosted -> ProfileName.selfHosted
+          AppProfiles.dev -> ProfileName.dev
           else -> null
         }
       }.filterNotNull())

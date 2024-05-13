@@ -27,9 +27,14 @@ open class AttachmentEntity : EntityWithUUID() {
   @Column(name = "remote_data_url")
   open var remoteDataUrl: String? = null
 
-
   @Column(nullable = false, name = "content_type")
   open lateinit var contentType: String
+
+  @Column(name = "original_url")
+  open var originalUrl: String? = null
+
+  @Column(name = "name")
+  open var name: String? = null
 
   @Lazy
   @Column(columnDefinition = "bytea", name = "data")

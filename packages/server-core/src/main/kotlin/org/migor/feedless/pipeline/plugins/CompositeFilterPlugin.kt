@@ -27,13 +27,20 @@ class CompositeFilterPlugin : FilterEntityPlugin {
       params: PluginExecutionParamsInput,
       index: Int
   ): Boolean {
-    log.info("[$corrId] filter ${document.url}")
-    return params.org_feedless_filter?.let { plugins ->
+    val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
         plugin.exclude?.let { !matches(document, it, index) } ?: true
           && plugin.include?.let { matches(document, it, index) } ?: true
       }
     } ?: true
+
+    if (keep) {
+      log.info("[$corrId] keep ${document.url}")
+    } else {
+      log.info("[$corrId] drop ${document.url}")
+    }
+
+    return keep
   }
 
   private fun matches(
@@ -42,7 +49,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
       index: Int
   ): Boolean {
     return arrayOf(
-      filterParams.content?.let { applyStringOperation(document.contentText!!.trim(), it) },
+      filterParams.content?.let { applyStringOperation(document.contentText.trim(), it) },
       filterParams.title?.let { applyStringOperation(document.contentTitle!!.trim(), it) },
       filterParams.link?.let { applyStringOperation(document.url, it) },
       filterParams.index?.let { applyNumberOperation(index, it) },
