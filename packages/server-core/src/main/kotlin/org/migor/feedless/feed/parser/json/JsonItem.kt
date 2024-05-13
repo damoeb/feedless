@@ -28,6 +28,9 @@ open class GenericFeedItem : Serializable {
   @SerializedName("content_raw_mime")
   var contentRawMime: String? = null
 
+  @SerializedName("content_html")
+  var contentHtml: String? = null
+
   @SerializedName("summary")
   var summary: String? = null
 

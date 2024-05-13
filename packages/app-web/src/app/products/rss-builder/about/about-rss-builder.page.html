@@ -36,22 +36,20 @@
         <p>[video]</p>
       </div>
 
-<!--      <div style="margin-top: 50px">-->
-<!--        <h2>Customization</h2>-->
-<!--        <p>-->
-<!--          RSS-proxy is a custom tailored user interface for feed building, based-->
-<!--          on the-->
-<!--          <a href="httos://github.com/damoeb/feedless">feedless</a> backend. You-->
-<!--          may customize your instance with plugins, which are native citizen of-->
-<!--          feedless.-->
-<!--        </p>-->
-<!--      </div>-->
+      <!--      <div style="margin-top: 50px">-->
+      <!--        <h2>Customization</h2>-->
+      <!--        <p>-->
+      <!--          RSS-proxy is a custom tailored user interface for feed building, based-->
+      <!--          on the-->
+      <!--          <a href="httos://github.com/damoeb/feedless">feedless</a> backend. You-->
+      <!--          may customize your instance with plugins, which are native citizen of-->
+      <!--          feedless.-->
+      <!--        </p>-->
+      <!--      </div>-->
 
       <div style="margin-top: 50px" *ngIf="license?.isLocated">
         <h2>License Prompt</h2>
-        <ion-item color="success"
-                  [button]="true"
-                  routerLink="/license">
+        <ion-item color="success" [button]="true" routerLink="/license">
           Registered to {{license.data.name}}
         </ion-item>
       </div>

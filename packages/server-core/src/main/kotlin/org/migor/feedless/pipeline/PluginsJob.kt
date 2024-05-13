@@ -83,6 +83,7 @@ class PluginsJob internal constructor() {
           log.info("[$corrId] delaying (${job.executorId}): ${e.message}")
           job.coolDownUntil = Date(System.currentTimeMillis() + e.nextRetryAfter.toMillis())
           job.attempt += 1
+          documentDAO.save(document)
           pipelineJobDAO.save(job)
           break
         }

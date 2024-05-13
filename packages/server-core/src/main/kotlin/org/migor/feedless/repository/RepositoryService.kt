@@ -396,15 +396,15 @@ private fun Visibility.fromDto(): EntityVisibility {
 }
 
 private fun PluginExecutionInput.fromDto(): PluginExecution {
-  return PluginExecution(id = this.pluginId, params = this.params)
+  return PluginExecution(id = pluginId, params = params)
 }
 
 private fun DocumentEntity.toRichArticle(propertyService: PropertyService): RichArticle {
   val article = RichArticle()
-  article.id = this.id.toString()
-  article.title = StringUtils.trimToEmpty(this.contentTitle)
-  article.url = this.url
-  article.attachments = this.attachments.map {
+  article.id = id.toString()
+  article.title = StringUtils.trimToEmpty(contentTitle)
+  article.url = url
+  article.attachments = attachments.map {
     val a = JsonAttachment()
     a.url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id)
     a.type = it.contentType
@@ -412,12 +412,14 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService): Rich
 //        a.duration = it.duration
     a
   }
-  article.contentText = StringUtils.trimToEmpty(this.contentText)
-  article.contentRawBase64 = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }
-  article.contentRawMime = this.contentRawMime
-  article.publishedAt = this.publishedAt
-  article.startingAt = this.startingAt
-  article.imageUrl = this.imageUrl
+  article.contentText = StringUtils.trimToEmpty(contentText)
+  article.contentRawBase64 = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
+  article.contentRawMime = contentRawMime
+  article.contentHtml = contentHtml
+  article.publishedAt = publishedAt
+  article.modifiedAt = updatedAt
+  article.startingAt = startingAt
+  article.imageUrl = imageUrl
   return article
 
 }

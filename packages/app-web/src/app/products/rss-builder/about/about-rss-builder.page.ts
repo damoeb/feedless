@@ -1,10 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
-import { GqlLicense, GqlLicenseData, Maybe } from '../../../../generated/graphql';
+import {
+  GqlLicense,
+  GqlLicenseData,
+  Maybe,
+} from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -17,8 +28,13 @@ export class AboutRssBuilderPage implements OnInit {
   opmlPickerElement!: ElementRef<HTMLInputElement>;
 
   protected readonly dateFormat = dateFormat;
-  protected license: Pick<GqlLicense, 'isValid' | 'isLocated' | 'trialUntil' | 'isTrial'> & {
-    data?: Maybe<Pick<GqlLicenseData, 'name' | 'email' | 'version' | 'createdAt' | 'scope'>>
+  protected license: Pick<
+    GqlLicense,
+    'isValid' | 'isLocated' | 'trialUntil' | 'isTrial'
+  > & {
+    data?: Maybe<
+      Pick<GqlLicenseData, 'name' | 'email' | 'version' | 'createdAt' | 'scope'>
+    >;
   };
 
   constructor(
@@ -47,9 +63,9 @@ export class AboutRssBuilderPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.licenseService.licenseChange.subscribe(license => {
+    this.licenseService.licenseChange.subscribe((license) => {
       this.license = license;
-      this.changeRef.detectChanges()
+      this.changeRef.detectChanges();
     });
   }
 }

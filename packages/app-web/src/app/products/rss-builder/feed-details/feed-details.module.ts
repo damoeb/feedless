@@ -22,7 +22,7 @@ import { FormsModule } from '@angular/forms';
     LoginButtonModule,
     HistogramModule,
     ReaderModule,
-    FormsModule
+    FormsModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],

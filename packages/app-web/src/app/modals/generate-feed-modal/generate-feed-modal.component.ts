@@ -224,11 +224,11 @@ export class GenerateFeedModalComponent
           params: {
             org_feedless_filter: this.getFilterParams(),
           },
-        })
+        });
       };
 
       if (!applyFiltersLast && hasFilters) {
-        appendFilterPlugin()
+        appendFilterPlugin();
       }
       if (this.formFg.value.applyFulltextPlugin) {
         plugins.push({
@@ -248,7 +248,7 @@ export class GenerateFeedModalComponent
         });
       }
       if (applyFiltersLast && hasFilters) {
-        appendFilterPlugin()
+        appendFilterPlugin();
       }
       if (this.isUpdate()) {
         const {

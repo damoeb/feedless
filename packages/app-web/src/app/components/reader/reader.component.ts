@@ -43,8 +43,10 @@ export class ReaderComponent implements OnChanges {
   private openLinkInReader: boolean;
   private showLinksHostname: boolean;
 
-  constructor(private readonly serverSettings: ServerSettingsService,
-              private readonly changeRef: ChangeDetectorRef) {}
+  constructor(
+    private readonly serverSettings: ServerSettingsService,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes.html && changes.html.currentValue) {
@@ -79,10 +81,15 @@ export class ReaderComponent implements OnChanges {
     if (this.hasReadability()) {
       const document = new DOMParser().parseFromString(this.html, 'text/html');
       Array.from(document.body.querySelectorAll('img[src]'))
-        .filter(img => img.getAttribute('src').startsWith('http'))
+        .filter((img) => img.getAttribute('src').startsWith('http'))
         .forEach((img) => {
-        img.setAttribute('src', this.serverSettings.apiUrl + '/attachment/proxy?url=' +encodeURIComponent(img.getAttribute('src')))
-      });
+          img.setAttribute(
+            'src',
+            this.serverSettings.apiUrl +
+              '/attachment/proxy?url=' +
+              encodeURIComponent(img.getAttribute('src')),
+          );
+        });
       Array.from(document.body.querySelectorAll('a[href]')).forEach((ahref) => {
         ahref.setAttribute('referrerpolicy', 'no-referrer');
         const url = ahref.getAttribute('href');

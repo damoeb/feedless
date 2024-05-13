@@ -27,7 +27,7 @@ interface PipelineJobDAO : JpaRepository<PipelineJobEntity, UUID> {
       where g.cool_down_until is null
          or g.cool_down_until < current_timestamp)
       order by document_id, sequence_id
-      limit 20
+      limit 100
     """
   )
   fun findAllPendingBatched(): List<PipelineJobEntity>

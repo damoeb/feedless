@@ -70,6 +70,8 @@ CREATE TABLE t_attachment (
     data bytea,
     document_id uuid NOT NULL,
     has_data boolean NOT NULL,
+    name character varying(255),
+    original_url character varying(255),
     remote_data_url character varying(255)
 );
 

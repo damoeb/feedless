@@ -6,7 +6,9 @@ import org.migor.feedless.actions.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.FulltextPluginParams
 import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapePage
@@ -14,6 +16,7 @@ import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeSelector
 import org.migor.feedless.generated.types.ScrapeSelectorExpose
+import org.migor.feedless.generated.types.ScrapeSelectorExposeInput
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
@@ -85,7 +88,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
         .additionalWaitSec(source.additionalWaitSec ?: 0)
         .waitUntil(source.waitUntil)
         .build()
-      request.emit = emptyList()
+      request.emit = listOf(emit)
     }
 
     val response = scrapeService.scrape(corrId, request)
