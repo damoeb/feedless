@@ -2,6 +2,7 @@ package org.migor.feedless.repository
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -10,19 +11,20 @@ import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.util.ResourceUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
-import java.nio.file.Files
+import java.util.*
 
 @Controller
 @Profile(AppProfiles.database)
 class RepositoryController {
 
+  private lateinit var feedXsl: String
   private val log = LoggerFactory.getLogger(RepositoryController::class.simpleName)
 
   @Autowired
@@ -95,6 +97,16 @@ class RepositoryController {
     "/feed/static/feed.xsl", produces = ["text/xsl"]
   )
   fun xsl(request: HttpServletRequest): ResponseEntity<String> {
-    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:feed.xsl").toPath()))
+    return ResponseEntity.ok(feedXsl)
+  }
+
+  @PostConstruct
+  fun postConstruct() {
+    val scanner = Scanner(ClassPathResource("/feed.xsl", this.javaClass.classLoader).inputStream)
+    val data = StringBuilder()
+    while(scanner.hasNextLine()) {
+      data.appendLine(scanner.nextLine())
+    }
+    feedXsl = data.toString()
   }
 }

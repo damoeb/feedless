@@ -13,4 +13,7 @@ interface AgentDAO : JpaRepository<AgentEntity, UUID> {
   @Transactional
   fun deleteByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UUID)
   fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UUID?): List<AgentEntity>
+  fun deleteAllByLastSyncedAtBefore(date: Date)
+
+  fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UUID): AgentEntity
 }

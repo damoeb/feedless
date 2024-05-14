@@ -45,7 +45,7 @@ export const feedlessConfig: FeedlessConfig = {
   apps: [
     {
       id: 'rss-proxy',
-      product: GqlProductName.RssBuilder,
+      product: GqlProductName.RssProxy,
       title: 'RSS-proxy',
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',

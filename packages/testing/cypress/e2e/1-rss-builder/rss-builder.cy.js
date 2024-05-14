@@ -4,7 +4,7 @@
 
 describe('builder', () => {
   beforeEach(() => {
-    // cy.visit('http://localhost:4200?forceProduct=rssBuilder');
+    // cy.visit('http://localhost:4200?forceProduct=rssProxy');
     cy.visit('http://localhost:4200');
     cy.clearAllCookies();
     cy.get('.cy-product-header').should('contain.text', 'RSS Builder');

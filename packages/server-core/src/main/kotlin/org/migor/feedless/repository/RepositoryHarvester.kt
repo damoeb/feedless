@@ -158,9 +158,7 @@ class RepositoryHarvester internal constructor() {
             .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
         } catch (e: Exception) {
           log.warn("[$subCorrId] ${e.message}")
-          if (e is ResumableHarvestException) {
-            log.warn("[$subCorrId] ${e.message}")
-          } else {
+          if (e !is ResumableHarvestException) {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
             notificationService.createNotification(corrId, repository.ownerId, e.message)
             sourceDAO.setErrornous(it.id, true, e.message)

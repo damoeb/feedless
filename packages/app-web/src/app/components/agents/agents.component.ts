@@ -6,9 +6,10 @@ import {
   OnInit,
 } from '@angular/core';
 import { Agent, AgentService } from '../../services/agent.service';
-import { dateTimeFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { ServerSettingsService } from '../../services/server-settings.service';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 @Component({
   selector: 'app-agents',
@@ -19,7 +20,6 @@ import { ServerSettingsService } from '../../services/server-settings.service';
 export class AgentsComponent implements OnInit, OnDestroy {
   agents: Agent[] = [];
   private subscriptions: Subscription[] = [];
-  protected readonly dateTimeFormat = dateTimeFormat;
 
   constructor(
     private readonly agentService: AgentService,
@@ -28,6 +28,7 @@ export class AgentsComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    dayjs.extend(relativeTime);
     this.subscriptions.push(
       this.agentService.getAgents().subscribe((agents) => {
         this.agents = agents;
@@ -38,5 +39,9 @@ export class AgentsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  fromNow(futureTimestamp: number): string {
+    return dayjs(futureTimestamp).toNow(true);
   }
 }

@@ -14,6 +14,8 @@ CREATE TABLE t_agent (
     id uuid NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     connection_id character varying(255) NOT NULL,
+    lastsyncedat timestamp(6) without time zone NOT NULL,
+    name character varying(255) NOT NULL,
     openinstance boolean NOT NULL,
     owner_id uuid NOT NULL,
     secret_id uuid NOT NULL,

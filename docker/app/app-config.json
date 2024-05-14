@@ -1,6 +1,6 @@
 {
   "apiUrl": "http://localhost:8080",
-  "forceProduct": "rssBuilder",
+  "forceProduct": "rssProxy",
   "products": [
     {
       "product": "feedless",
@@ -12,10 +12,6 @@
     },
     {
       "product": "reader",
-      "hostname": ""
-    },
-    {
-      "product": "rssBuilder",
       "hostname": ""
     },
     {

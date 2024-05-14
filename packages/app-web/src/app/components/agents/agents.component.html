@@ -8,7 +8,7 @@
   </ion-item>
   <ion-item *ngIf="agents.length === 0" color="danger">
     <ion-label>
-      <p>No Agents found.</p>
+      <p>No Agents connected.</p>
     </ion-label>
   </ion-item>
   <ion-item *ngFor="let agent of agents">
@@ -16,7 +16,7 @@
     <ion-chip *ngIf="!agent.openInstance" slot="start" color="success"
       >Private</ion-chip
     >
-    <ion-label> version {{ agent.version }} </ion-label>
-    <ion-label> added {{ agent.addedAt | date: dateTimeFormat }} </ion-label>
+    <ion-label> {{ agent.name }}, version {{ agent.version }} </ion-label>
+    <ion-label> added {{ fromNow(agent.addedAt) }} ago </ion-label>
   </ion-item>
 </ion-list>

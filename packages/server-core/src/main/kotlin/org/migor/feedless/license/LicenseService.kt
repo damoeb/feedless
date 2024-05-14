@@ -19,6 +19,7 @@ import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -331,6 +332,11 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
     val keyFactory = KeyFactory.getInstance("RSA")
     return keyFactory.generatePrivate(PKCS8EncodedKeySpec(privateKKeyByte)) as RSAPrivateCrtKey
+  }
+
+  fun isLicensedForProduct(product: ProductName): Boolean {
+    // todo
+    return true
   }
 }
 

@@ -93,7 +93,7 @@ class SyndAtomFeedExporter {
     entry.title = article.title
     entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
     entry.contents = toSyndContents(article)
-    entry.description = toSyndContentPlain(article)
+    entry.description = toSyndDescription(article)
 
     article.imageUrl?.let {
       val image = Element("image", Namespace.getNamespace("image", "http://web.resource.org/rss/1.0/modules/image/"))
@@ -112,6 +112,18 @@ class SyndAtomFeedExporter {
     entryInformation.author = article.authors?.firstOrNull()?.name
 
     entry.modules.add(entryInformation)
+//    article.contentHtml?.let {
+////      val module: ContentModule = ContentModuleImpl()
+////
+////      val item = ContentItem()
+////      item.contentFormat = "text/html"
+////      item.contentValue = it
+////      module.contentItems = listOf(item)
+////      entry.modules.add(module)
+//      val module: ContentModule = ContentModuleImpl()
+//      module.encodeds = listOf(it)
+//      entry.modules.add(module)
+//    }
 
     entry.link = article.url
     entry.author = URL(article.url).host
@@ -121,16 +133,17 @@ class SyndAtomFeedExporter {
     return entry
   }
 
-
-  private fun toSyndContentPlain(article: RichArticle): SyndContent {
-    val plain = SyndContentImpl()
-    plain.value = if (StringUtils.isBlank(article.contentText)) {
-      article.contentRawMime
+  private fun toSyndDescription(article: RichArticle): SyndContent {
+    val content = SyndContentImpl()
+    if (StringUtils.isBlank(article.contentHtml)) {
+      content.value = article.contentText
+      content.type = "text/plain"
     } else {
-      article.contentText
+      content.value = article.contentHtml
+      content.type = "text/html"
     }
-    plain.type = "text/plain"
-    return plain
+
+    return content
   }
 
   private fun toSyndEnclosure(it: JsonAttachment): SyndEnclosure {
@@ -155,7 +168,15 @@ class SyndAtomFeedExporter {
       contents.add(other)
     }
 
-    contents.add(toSyndContentPlain(it))
+    if (StringUtils.isNoneBlank(it.contentHtml)) {
+      val other = SyndContentImpl()
+      other.value = it.contentHtml
+      other.type = "text/html"
+      other.mode = "encoded"
+      contents.add(other)
+    }
+
+//    contents.add(toSyndDescription(it))
 
     return contents
   }

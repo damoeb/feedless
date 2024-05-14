@@ -167,7 +167,7 @@ class Seeder {
 
     if (!isSelfHosted()) {
       seedPlansForProduct(ProductName.feedless, root, systemProduct)
-      seedPlansForProduct(ProductName.rssBuilder, root, systemProduct)
+      seedPlansForProduct(ProductName.rssProxy, root, systemProduct)
       seedPlansForProduct(ProductName.visualDiff, root, systemProduct)
       seedPlansForProduct(ProductName.untoldNotes, root, systemProduct)
     }

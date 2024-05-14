@@ -77,7 +77,7 @@ export class ImportOpmlModalComponent
       repositories: this.fcOutlines
         .filter((outline) => outline.fc.value)
         .map((fc) => ({
-          product: GqlProductName.RssBuilder,
+          product: GqlProductName.RssProxy,
           sources: [
             {
               page: {

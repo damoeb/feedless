@@ -27,6 +27,12 @@ open class AgentEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var openInstance: Boolean = false
 
+  @Column(nullable = false)
+  open lateinit var name: String
+
+  @Column(nullable = false)
+  open lateinit var lastSyncedAt: Date
+
   @Column(name = "secret_id", nullable = false)
   open var secretKeyId: UUID? = null
 

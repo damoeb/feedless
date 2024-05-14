@@ -56,6 +56,10 @@ class ServerSettingsResolver {
     log.info("serverSettings $data")
     val product = data.product.fromDto()
 
+    if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(product)) {
+      throw IllegalArgumentException("license does not support product ${product.name}")
+    }
+
     ServerSettings.newBuilder()
       .appUrl(productService.getAppUrl(product))
       .version(version)

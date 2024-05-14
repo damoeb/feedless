@@ -65,6 +65,7 @@ class AgentResolver {
 private fun AgentEntity.toDto(): Agent {
   return Agent.newBuilder()
     .ownerId(ownerId.toString())
+    .name(name)
     .addedAt(createdAt.time)
     .version(version)
     .openInstance(openInstance)

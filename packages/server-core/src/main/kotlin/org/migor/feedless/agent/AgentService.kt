@@ -58,7 +58,7 @@ class AgentService {
           } else {
             userSecretService.updateLastUsed(securityKey.id, Date())
             val agentRef =
-              AgentRef(securityKey.id, securityKey.ownerId, data.version, data.connectionId, data.os, Date(), emitter)
+              AgentRef(securityKey.id, securityKey.ownerId, data.name, data.version, data.connectionId, data.os, Date(), emitter)
 
             emitter.onDispose {
               removeAgent(corrId, agentRef)
@@ -86,9 +86,13 @@ class AgentService {
 
     log.info("[$corrId] Added Agent $agentRef")
 
+    agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+
     val agent = AgentEntity()
     agent.secretKeyId = agentRef.secretKeyId
+    agent.name = agentRef.name
     agent.version = agentRef.version
+    agent.lastSyncedAt = Date()
     agent.connectionId = agentRef.connectionId
     agent.ownerId = agentRef.ownerId
     agent.openInstance = true
@@ -159,11 +163,16 @@ class AgentService {
   fun findAll(userId: UUID?): List<AgentEntity> {
     return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
+
+  fun agentRefs(): ArrayList<AgentRef> {
+    return agentRefs
+  }
 }
 
 data class AgentRef(
   val secretKeyId: UUID,
   val ownerId: UUID,
+  val name: String,
   val version: String,
   val connectionId: String,
   val os: OsInfo,
@@ -171,6 +180,6 @@ data class AgentRef(
   val emitter: FluxSink<AgentEvent>
 ) {
   override fun toString(): String {
-    return "AgentRef(connectionId=$connectionId, secretKeyId=$secretKeyId, ownerId=$ownerId, version='$version', os=$os)"
+    return "AgentRef(connectionId=$connectionId, secretKeyId=$secretKeyId, name=$name, version='$version', os=$os)"
   }
 }

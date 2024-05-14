@@ -24,7 +24,7 @@ class ProductService {
     return when (product) {
       ProductName.visualDiff -> "visualdiff.com"
       ProductName.pageChangeTracker -> "pagechangetracker.com"
-      ProductName.rssBuilder -> "rssproxy.migor.org"
+      ProductName.rssProxy -> "rssproxy.migor.org"
       ProductName.feedless -> "feedless.org"
       ProductName.untoldNotes -> "untoldnotes.com"
       ProductName.upcoming -> "upcoming.feedless.org"

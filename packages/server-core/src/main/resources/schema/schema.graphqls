@@ -226,7 +226,7 @@ input CreateUserInput {
 }
 
 enum ProductName {
-  rssBuilder
+  rssProxy
   visualDiff
   reader
   feedless
@@ -250,6 +250,7 @@ type Agent {
   secretKeyId: ID!
   ownerId: ID!
   version: String!
+  name: String!
   addedAt: Long!
   openInstance: Boolean!
 }
@@ -992,6 +993,7 @@ input RegisterAgentInput {
   secretKey: SecretKey!
   os: OsInfo!
   version: String!
+  name: String!
   connectionId: String!
 }
 

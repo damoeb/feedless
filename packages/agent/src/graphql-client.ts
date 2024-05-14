@@ -46,7 +46,14 @@ export class GraphqlClient {
       retryWait: () => new Promise((resolve) => setTimeout(resolve, 30000)),
     });
     const connectionId = (Math.random() + 1).toString(36).substring(7);
-    return this.subscribeAgent(email, secretKey, version, connectionId);
+    const agentName = `${process.env.APP_AGENT_NAME || 'unnamed'}`;
+    return this.subscribeAgent(
+      agentName,
+      email,
+      secretKey,
+      version,
+      connectionId,
+    );
   }
 
   submitJobResponse(data: SubmitAgentDataInput) {
@@ -62,6 +69,7 @@ export class GraphqlClient {
   }
 
   private subscribeAgent(
+    agentName: string,
     email: string,
     secretKey: string,
     version: string,
@@ -73,6 +81,7 @@ export class GraphqlClient {
           query: RegisterAgent,
           variables: {
             data: {
+              name: agentName,
               version,
               connectionId,
               os: {
