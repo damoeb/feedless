@@ -32,15 +32,16 @@
       <div class="flex__column">
         <app-product-headline [title]="product.title"></app-product-headline>
 
-        <ng-container *ngIf="product.isUnstable">
+        <ng-container *ngIf="!isReleased()">
           <ion-toolbar
             color="warning"
             class="ion-margin-top ion-padding-horizontal"
             >This product is under development and not yet suitable to be
             used.</ion-toolbar
           >
+          <p>Version {{product.version.join('.')}}</p>
           <p>
-            <!--            {{product.summary}} <br>-->
+            {{product.summary}} <br>
             <span [innerHtml]="product.descriptionHtml"></span>
           </p>
 
@@ -51,8 +52,8 @@
           ></app-newsletter>
 
           <div>
-            <h1>Planned Features</h1>
-            <p>Among others, here are some of the features:</p>
+            <h1>Upcoming Features</h1>
+            <p>Among others, here are some of the main features:</p>
             <div>
               <ul>
                 <li *ngFor="let feature of product.features">{{feature}}</li>
@@ -62,7 +63,7 @@
           </div>
         </ng-container>
 
-        <ng-container *ngIf="!product.isUnstable">
+        <ng-container *ngIf="isReleased()">
           <p class="ion-padding-vertical">{{product.descriptionMarkdown}}</p>
 
           <div class="flex__row" style="column-gap: 10px">
@@ -100,9 +101,19 @@
             <div>
               <ul>
                 <li *ngFor="let feature of product.features">{{feature}}</li>
-                <li>Source Available</li>
+<!--                <li>Source Available</li>-->
               </ul>
             </div>
+          </div>
+
+          <div style="margin-top: 50px" *ngIf="videoUrl">
+            <h1>Demo Video</h1>
+            <iframe width="560" height="315" [src]="videoUrl"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
           </div>
 
           <div style="margin-top: 50px">

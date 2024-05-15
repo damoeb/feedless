@@ -10,9 +10,11 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Activity
 import org.migor.feedless.generated.types.ActivityItem
@@ -65,8 +67,10 @@ class DocumentResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
     log.info("[$corrId] webDocument $data")
-    documentService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { NotFoundException("webDocument not found") }.toDto(propertyService)
+    val document = documentService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { NotFoundException("webDocument not found") }
+    repositoryService.findById(corrId, document.repositoryId)
+    document.toDto(propertyService)
   }
 
   @Throttled
@@ -78,7 +82,7 @@ class DocumentResolver {
   ): List<WebDocument> = coroutineScope {
     log.info("[$corrId] webDocuments $data")
     val repositoryId = UUID.fromString(data.where.repository.where.id)
-    // authentication
+
     val repository = repositoryService.findById(corrId, repositoryId)
     documentService.findAllByRepositoryId(repository.id, data.cursor?.page, data.cursor?.pageSize).map { it.toDto(
       propertyService

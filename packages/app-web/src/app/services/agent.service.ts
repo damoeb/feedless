@@ -7,8 +7,9 @@ import {
   GqlAgentsQueryVariables,
 } from '../../generated/graphql';
 import { GetElementType } from '../graphql/types';
-import { Observable } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import Zen from 'zen-observable-ts';
+import { AuthService } from './auth.service';
 
 export type Agent = GetElementType<GqlAgentsQuery['agents']>;
 
@@ -19,17 +20,26 @@ export const zenToRx = <T>(zenObservable: Zen.Observable<T>): Observable<T> =>
   providedIn: 'root',
 })
 export class AgentService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(private readonly authService: AuthService,
+              private readonly apollo: ApolloClient<any>) {}
 
   getAgents(): Observable<Array<Agent>> {
-    return zenToRx(
-      this.apollo
-        .watchQuery<GqlAgentsQuery, GqlAgentsQueryVariables>({
-          query: Agents,
-        })
-        .map((response) => {
-          return response.data.agents;
-        }),
-    );
+    return this.authService
+      .authorizationChange()
+      .pipe(switchMap(authentication => {
+        if (authentication?.loggedIn) {
+          return zenToRx(
+            this.apollo
+              .watchQuery<GqlAgentsQuery, GqlAgentsQueryVariables>({
+                query: Agents,
+              })
+              .map((response) => {
+                return response.data.agents;
+              }),
+          )
+        } else {
+          return of([])
+        }
+      }))
   }
 }

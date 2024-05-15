@@ -6,7 +6,8 @@ export type ProductId =
   | 'visual-diff'
   | 'reader'
   | 'upcoming'
-  | 'mail-digest'
+  | 'digest'
+  | 'feedDump'
   | 'untold'
   | 'feedless';
 
@@ -23,11 +24,13 @@ export type AppConfig = {
   subtitle: string;
   summary: string;
   // stage: AppStage;
-  isUnstable: boolean;
+  version?: (number|string)[]
+  phase: 'planning' | 'design' | 'development' | 'alpha' | 'beta' | 'rc' | 'ga';
   descriptionMarkdown: string;
   descriptionHtml?: string;
   videoUrl: string;
   costs: number;
+  listed: boolean;
   features: string[];
 };
 
@@ -50,29 +53,52 @@ export const feedlessConfig: FeedlessConfig = {
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',
       subtitle: 'RSS Feed Builder',
-      isUnstable: false,
+      version: [3,0,0, 'rc-1'],
+      phase: 'rc',
+      listed: true,
       summary: 'Create feeds from Websites',
       descriptionMarkdown: `RSS-proxy allows you to do create an ATOM or JSON feed of any static website or feeds (web to feed),
 just by analyzing just the HTML structure. Usually the structuring to a feed works automatically.`,
       costs: 29.99,
-      videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
+      videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
       features: [
         'Web to Feed',
-        '[Filters](https://github.com/damoeb/feedless/blob/master/docs/filters.md)',
+        'Filters',
+        'Fulltext Feed',
+        'Privacy Plugins',
         'Custom feed parser rules',
-        'Pre-rendering in chromium',
+        'JavaScript Support using chromium',
         'Self Hosting',
       ],
       localSetup: `It will start a database and feedless serving the RSS Proxy user interface.
 \`\`\`bash
-wget https://raw.githubusercontent.com/damoeb/rss-proxy/master/selfhosting.env \\
-  https://raw.githubusercontent.com/damoeb/rss-proxy/master/docker-compose.yml \\
-  https://raw.githubusercontent.com/damoeb/rss-proxy/master/chrome.json
 
+wget https://raw.githubusercontent.com/damoeb/rss-proxy/develop/selfhosting.env \\
+  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/docker-compose.yml \\
+  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/chrome.json
+touch your-license.key
 docker-compose up
 \`\`\`
 
 Then, open http://localhost:8080 in your browser`,
+    },
+    {
+      id: 'feedDump',
+      product: GqlProductName.FeedDump,
+      title: 'FeedDump',
+      titleHtml: '<strong>Feed</strong><em>Dump</em>',
+      pageTitle: 'Feed Dump',
+      subtitle: 'Alternative feeds',
+      version: [3,0,0, 'rc-1'],
+      phase: 'rc',
+      listed: false,
+      summary: 'Create feeds from Websites',
+      descriptionMarkdown: ``,
+      costs: 0,
+      videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
+      features: [
+      ],
+      localSetup: ``,
     },
     {
       id: 'visual-diff',
@@ -81,7 +107,9 @@ Then, open http://localhost:8080 in your browser`,
       pageTitle: 'VisualDiff',
       title: 'VisualDiff',
       subtitle: 'Page Change Tracker',
-      isUnstable: false,
+      version: [0,1,0],
+      listed: true,
+      phase: 'alpha',
       summary: 'Detect changes in a website and get a notified',
       descriptionMarkdown:
         'Detect changes in a website based on image, markup or text and get a notification via mail or feed.',
@@ -114,7 +142,9 @@ Then, open http://localhost:8080 in your browser`,
       pageTitle: 'Reader',
       title: 'Reader',
       subtitle: 'Reader Mode',
-      isUnstable: false,
+      phase: 'alpha',
+      version: [0,1,0],
+      listed: false,
       summary:
         'Unclutter a website and transform it into a version optimized for reading',
       descriptionMarkdown: `Unclutter a website and transform it into a version optimized for reading.
@@ -148,7 +178,9 @@ Then, open http://localhost:8080 in your browser
       pageTitle: 'Untold Notes',
       title: 'Untold Notes',
       offlineSupport: true,
-      isUnstable: true,
+      listed: false,
+      version: [0,1,0],
+      phase: 'development',
       subtitle: 'Note App',
       summary:
         'Minimalistic, Searchable and Linkable markdown notes the Zettelkasten way',
@@ -174,13 +206,14 @@ way to think, learn and remember.`,
       localSetup: ``,
     },
     {
-      id: 'mail-digest',
+      id: 'digest',
       product: GqlProductName.Digest,
-      titleHtml: '<strong>mail</strong><em>digest</em>',
+      titleHtml: '<strong>Digest</strong><em>this</em>',
       pageTitle: 'Mail Digest',
       title: 'Mail Digest',
       offlineSupport: false,
-      isUnstable: true,
+      listed: false,
+      phase: 'planning',
       subtitle: 'Digest Service',
       summary: 'Get the gist of your feeds or data streams.',
       descriptionMarkdown: `'If you don't have the capacity to stay on top of all
@@ -189,10 +222,7 @@ way to think, learn and remember.`,
       costs: -1,
       videoUrl: '',
       features: [
-        'Aggregate',
-        'Filter & Refine',
         'Ranking',
-        'Self Hosting',
         'Forward to multiple Email Addresses',
         'Self Hosting',
       ],
@@ -204,8 +234,10 @@ way to think, learn and remember.`,
       title: 'Feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
-      subtitle: 'Workflow builder',
-      isUnstable: true,
+      subtitle: 'All In One',
+      version: [0,7,0],
+      phase: 'development',
+      listed: true,
       summary: 'Build automated worflows visually or using code',
       descriptionMarkdown: `It's quite astoinding that the web is so hard to automate, the word _bot_ mainly has a negative connotation. I believe the opposite.
 There is a dual use and everyone should have their well-behaving bots roaming the web in their interest.
@@ -221,13 +253,14 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       title: 'Upcoming',
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',
+      listed: false,
       subtitle: 'Localized event sourcing',
       summary: 'Searchable geo-located events sources from any sources',
       descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
       popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,
       therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
       costs: -1,
-      isUnstable: true,
+      phase: 'development',
       videoUrl: '',
       features: [
         'Seed Events from Websites',
@@ -240,39 +273,20 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       id: 'pageChangeTracker',
       product: GqlProductName.PageChangeTracker,
       title: 'Page Change Tracker',
+      listed: false,
       titleHtml: '<strong>Page</strong><em>Change</em>',
       pageTitle: 'Page Change Tracker',
       subtitle: 'Track any change of a website',
-      summary: 'Searchable geo-located events sources from any sources',
-      descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
-      popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,
-      therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
+      summary: '',
+      descriptionMarkdown: `revisions of website`,
       costs: -1,
-      isUnstable: true,
+      phase: 'planning',
       videoUrl: '',
-      features: ['', 'Self-Hosting or SaaS'],
+      features: [
+        'Page Revisions',
+        'Self-Hosting or SaaS'
+      ],
       localSetup: ``,
     },
-    // {
-    //   id: 'feedArchive',
-    //   product: GqlProductName.FeedDump,
-    //   title: 'Upcoming',
-    //   titleHtml: '<strong>Up</strong><em>coming</em>',
-    //   pageTitle: 'Upcoming',
-    //   subtitle: 'Localized event sourcing',
-    //   summary: 'Searchable geo-located events sources from any sources',
-    //   descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
-    //   popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,
-    //   therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
-    //   costs: -1,
-    //   isUnstable: true,
-    //   videoUrl: '',
-    //   features: [
-    //     'Seed Events from Websites',
-    //     'Source Localization',
-    //     'Self-Hosting or SaaS'
-    //   ],
-    //   localSetup: ``,
-    // }
   ],
 };

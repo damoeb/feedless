@@ -26,6 +26,7 @@ describe('ProductsPage', () => {
 
     fixture = TestBed.createComponent(ProductsPage);
     component = fixture.componentInstance;
+    component.videoUrl = '';
     fixture.detectChanges();
   }));
 

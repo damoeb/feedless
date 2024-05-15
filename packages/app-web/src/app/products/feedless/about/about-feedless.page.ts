@@ -21,7 +21,7 @@ import {
 })
 export class AboutFeedlessPage implements OnInit {
   waitList: boolean;
-  stableProducts: ProductConfig[];
+  listedProducts: ProductConfig[];
   unstableProducts: ProductConfig[];
 
   constructor(
@@ -44,8 +44,8 @@ export class AboutFeedlessPage implements OnInit {
 
   async ngOnInit() {
     const allProducts = await this.productService.getProductConfigs();
-    this.stableProducts = allProducts.filter((p) => !p.isUnstable);
-    this.unstableProducts = allProducts.filter((p) => p.isUnstable);
+    this.listedProducts = allProducts.filter((p) => p.listed);
+    // this.unstableProducts = allProducts.filter((p) => !p.listed);
     this.waitList = false;
     this.changeRef.detectChanges();
   }

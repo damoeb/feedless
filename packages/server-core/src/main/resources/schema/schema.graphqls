@@ -172,6 +172,7 @@ input UpdateSinkOptionsDataInput {
 
 input SourcesUpdateInput {
   remove: [ID!]
+  update: [ScrapeRequestUpdateInput!]
   add: [ScrapeRequestInput!]
 }
 
@@ -194,6 +195,7 @@ input CreateWebDocumentInput {
   contentRawBase64: String
   contentRawMime: String
   contentText: String
+  tags: [String!]
   contentTitle: String!
   createdAt: Long!
   url: String!
@@ -215,6 +217,7 @@ input WebDocumentUpdateInput {
   contentRawMime: NullableStringUpdateOperationsInput
   contentText: StringUpdateOperationsInput
   contentTitle: StringUpdateOperationsInput
+  tags: StringArrayUpdateOperationsInput
   url: StringUpdateOperationsInput
 }
 
@@ -235,7 +238,9 @@ enum ProductName {
 #  automatedBrowser
 #  feedAnanlytics
 #  communityThreads
-#  teamDraft
+  teamDraft
+#  feedReader
+#  blog
   upcoming
   untoldNotes
   pageChangeTracker
@@ -703,6 +708,7 @@ type WebDocument {
   contentHtml: String
   contentText: String
   contentTitle: String
+  tags: [String!]
   createdAt: Long!
   enclosures: [Enclosure!]
   id: ID!
@@ -972,8 +978,8 @@ input NullableLongUpdateOperationsInput {
   set: Long
 }
 
-input NullableStringArrayUpdateOperationsInput {
-  set: [String!]
+input StringArrayUpdateOperationsInput {
+  set: [String!]!
 }
 
 input NullableStringUpdateOperationsInput {
@@ -1155,6 +1161,19 @@ type TextData {
   data: String!
 }
 
+input ScrapeRequestUpdateInput {
+  where: ScrapeSourceUniqueWhereInput!
+  data: ScrapeRequestUpdateDataInput!
+}
+
+input ScrapeRequestUpdateDataInput {
+  tags: StringArrayUpdateOperationsInput!
+}
+
+input ScrapeSourceUniqueWhereInput {
+  id: ID!
+}
+
 input ScrapeRequestInput {
   corrId: ID
   id: ID
@@ -1245,7 +1264,6 @@ enum FeedlessPlugins {
   org_feedless_privacy
   org_feedless_detect_media
   org_feedless_diff_email_forward
-  org_feedless_spawn_page_tracker
 }
 
 enum WebDocumentField {

@@ -188,6 +188,7 @@ class RepositoryService {
     planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
+    entity.tags = scrapeRequest.tags?.toTypedArray() ?: emptyArray()
     entity.timeout = scrapeRequest.page.timeout
 
     scrapeRequest.page.prerender?.let {
@@ -320,6 +321,16 @@ class RepositoryService {
     data.sources?.let {
       it.add?.let {
         repository.sources.addAll(it.map { createScrapeSource(corrId, repository.ownerId, it, repository) })
+      }
+      it.update?.let {
+        val sources: List<SourceEntity> = it.mapNotNull{ scrapeRequestUpdate -> run {
+            val source = repository.sources.firstOrNull { it.id.toString() == scrapeRequestUpdate.where.id }
+            source?.tags = scrapeRequestUpdate.data.tags.set.toTypedArray()
+            source
+          }
+        }
+
+        sourceDAO.saveAll(sources)
       }
       it.remove?.let {
         val deleteIds = it.map { UUID.fromString(it) }

@@ -17,7 +17,7 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil

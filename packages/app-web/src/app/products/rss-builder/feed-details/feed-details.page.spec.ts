@@ -25,7 +25,7 @@ describe('FeedDetailsPage', () => {
     fixture = TestBed.createComponent(FeedDetailsPage);
     component = fixture.componentInstance;
     component.repository = {} as any;
-    component.documents = [];
+    // component.documents = [];
     fixture.detectChanges();
   }));
 

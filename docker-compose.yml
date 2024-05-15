@@ -119,7 +119,7 @@ services:
       - monitoring
 
   feedless-aio-chromium:
-    image: damoeb/feedless:aio-chromium-fba67d2eb7b6221b03f9cfefba69dd35fd8e7119
+    image: damoeb/feedless:aio-chromium-94064b6fb68a0fd55af2eb689812d4a71f01cfa2
     restart: unless-stopped
     depends_on:
       - postgres

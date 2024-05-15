@@ -200,9 +200,11 @@ export class AppTestModule {
       descriptionHtml: '',
       videoUrl: '',
       costs: 0,
+      version: [],
+      listed: true,
       features: [],
       summary: '',
-      isUnstable: false,
+      phase: 'planning',
       offlineSupport: false,
       sideMenu: null,
     };

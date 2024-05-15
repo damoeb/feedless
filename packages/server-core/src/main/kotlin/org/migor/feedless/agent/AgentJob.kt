@@ -24,7 +24,7 @@ class AgentJob {
   @Transactional
   fun executeSync() {
     agentDAO.saveAll(
-      agentService.agentRefs().map {
+      agentService.agentRefs().mapNotNull {
         agentDAO.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
       }.map {
         it.lastSyncedAt = Date()

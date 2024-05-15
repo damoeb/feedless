@@ -1,0 +1,29 @@
+<ion-list>
+  <ion-item href="/agents" routerLinkActive="active">
+    Agents
+    <ng-container *ngIf="loggedIn">
+      <ion-chip slot="end" *ngIf="agentCount">{{ agentCount }}</ion-chip>
+      <app-bubble *ngIf="!agentCount" color="red"></app-bubble>
+    </ng-container>
+  </ion-item>
+  <ion-item routerLink="/feeds" routerLinkActive="active">
+    Feeds
+    <ion-chip slot="end" *ngIf="loggedIn">{{ feedCount }}</ion-chip>
+  </ion-item>
+  <ion-item routerLink="/trackers" routerLinkActive="active">
+    Trackers
+    <ion-chip slot="end" *ngIf="loggedIn">{{ feedCount }}</ion-chip>
+  </ion-item>
+<!--  <ion-item routerLink="/feeds">-->
+<!--    Notes-->
+<!--    <ion-chip slot="end" *ngIf="authentication.loggedIn">{{ feedCount }}</ion-chip>-->
+<!--  </ion-item>-->
+<!--  <ion-item routerLink="/feeds">-->
+<!--    Flows-->
+<!--    <ion-chip slot="end" *ngIf="authentication.loggedIn">{{ feedCount }}</ion-chip>-->
+<!--  </ion-item>-->
+<!--  <ion-item routerLink="/feeds">-->
+<!--    Credentials-->
+<!--    <ion-chip slot="end" *ngIf="authentication.loggedIn">{{ feedCount }}</ion-chip>-->
+<!--  </ion-item>-->
+</ion-list>

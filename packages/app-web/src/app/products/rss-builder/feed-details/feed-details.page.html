@@ -126,8 +126,11 @@
                                   [color]="getHealthColorForSource(source)"
                                 ></app-bubble>
                                 <ion-label>
-                                  <h3>From {{source.page.url}}</h3>
-                                  <p>{{getPluginsOfSource(source)}}</p>
+                                  <h3 class="ion-padding-horizontal">From {{source.page.url}}</h3>
+                                  <p class="ion-padding-horizontal">{{getPluginsOfSource(source)}}</p>
+                                  <p>
+                                    <ion-button fill="clear" (click)="editTags(source)">{{ stringifyTags(source) }}</ion-button>
+                                  </p>
                                   <ion-note
                                     color="danger"
                                     *ngIf="source.errornous"
@@ -135,7 +138,7 @@
                                     {{source.lastErrorMessage}}
                                   </ion-note>
                                 </ion-label>
-                                <ion-buttons>
+                                <ion-buttons [collapse]="true">
                                   <ion-button
                                     color="danger"
                                     (click)="deleteSource(source)"
@@ -267,7 +270,7 @@
                 >{{document.contentTitle}}</a
               >
             </h4>
-            <p>on {{hostname(document.url)}}</p>
+            <p>on {{hostname(document.url)}} <em class="ion-padding-start">{{getTags(document)}}</em></p>
 
             <div class="content" *ngIf="renderText">
               {{document.contentText}}

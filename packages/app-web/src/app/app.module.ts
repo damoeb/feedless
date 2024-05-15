@@ -28,7 +28,6 @@ import { GqlProductName } from '../generated/graphql';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
-import { ScrapeSourceModalModule } from './modals/scrape-source-modal/scrape-source-modal.module';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
 
@@ -109,7 +108,6 @@ export const fixUrl = (value: string): string => {
     ProductTitleModule,
     // test
     TransformWebsiteToFeedModalModule,
-    ScrapeSourceModalModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

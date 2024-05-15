@@ -29,7 +29,7 @@ import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
 import org.migor.feedless.generated.types.TextData
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil

@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.agent.AgentJob
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -37,6 +38,7 @@ import java.nio.file.Files
 @MockBeans(
   value = [
     MockBean(AgentService::class),
+    MockBean(AgentJob::class),
     MockBean(UserService::class),
     MockBean(SessionService::class),
     MockBean(LicenseService::class),

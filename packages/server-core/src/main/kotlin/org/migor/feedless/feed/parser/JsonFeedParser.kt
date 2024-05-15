@@ -3,7 +3,7 @@ package org.migor.feedless.feed.parser
 import com.google.gson.GsonBuilder
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 import org.slf4j.LoggerFactory
 
 class JsonFeedParser : FeedBodyParser {

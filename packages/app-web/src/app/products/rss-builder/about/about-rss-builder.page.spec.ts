@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import {
   ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
+  AppTestModule, mockLicense,
+  mockServerSettings
 } from '../../../app-test.module';
 import { AboutRssBuilderModule } from './about-rss-builder.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
@@ -15,7 +15,9 @@ describe('AboutRssBuilderPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AboutRssBuilderModule, AppTestModule.withDefaults()],
+      imports: [AboutRssBuilderModule, AppTestModule.withDefaults(apolloMockController => {
+        mockLicense(apolloMockController)
+      })],
     }).compileComponents();
 
     await mockServerSettings(

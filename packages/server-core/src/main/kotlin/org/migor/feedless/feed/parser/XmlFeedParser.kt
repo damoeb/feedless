@@ -17,7 +17,7 @@ import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichEnclosure
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.parser.json.JsonAuthor
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory

@@ -9,6 +9,7 @@ import { FeedlessProductPage } from './feedless-product.page';
 import { ProductTitleModule } from '../../components/product-title/product-title.module';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
+import { FeedlessMenuModule } from './feedless-menu/feedless-menu.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
     IonicModule,
     FeedlessProductRoutingModule,
     ProductTitleModule,
+    FeedlessMenuModule,
     DarkModeButtonModule,
     LoginButtonModule,
   ],

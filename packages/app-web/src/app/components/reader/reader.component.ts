@@ -12,8 +12,8 @@ import {
   ReaderTextTransform,
 } from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
-import { isDefined } from '../../modals/scrape-source-modal/scrape-builder';
 import { ServerSettingsService } from '../../services/server-settings.service';
+import { isDefined } from '../../types';
 
 @Component({
   selector: 'app-reader',

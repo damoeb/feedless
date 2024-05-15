@@ -1,31 +1,119 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeRequestInput,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlRetentionInput, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   FeedBuilderActionsModalComponent,
-  FeedBuilderData,
+  FeedBuilderData
 } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
+import { ModalService } from '../../services/modal.service';
+import { Agent } from '../../services/agent.service';
+
+/**
+ * IDEEN
+ *     create feed from website
+ *     merge 2 feeds and deduplicate using url/id
+ *     use feed and filter title not includes 'Ad'
+ *     track pixel page changes of [url], but ship latest text and latest image
+ *     track text page changes of [url], but ship diff to first for 2 weeks
+ *     track price of product on [url] by extracting field, but shipping product fragment as pixel and markup
+ *     use existing feed -> readability, inline images and untrack urls
+ *     generate feed, fix title by removing prefix, trim after length 20
+ *     inbox: select feeds, filter last 24h, order by quality, pick best 12
+ *     digest: select feed, send best 10 end of week as digest via mail
+ *     create feed activate tracking
+ *     create just the feed sink
+ */
+
+export enum FeedBuilderModalComponentExitRole {
+  dismiss = 'dismiss',
+  login = 'login',
+}
+
+type SinkTargetType = 'email' | 'webhook';
+
+type ScheduledPolicy = {
+  cronString: string;
+};
+
+type PluginRef = {
+  id: string;
+  data: object;
+};
+
+type FetchPolicy = {
+  plugins?: PluginRef[];
+} & ScheduledPolicy;
+
+type FieldFilterType = 'include' | 'exclude';
+
+type FieldFilterOperator = 'matches' | 'contains' | 'endsWith' | 'startsWith';
+type FieldFilter = {
+  type: FieldFilterType;
+  field: string;
+  negate: boolean;
+  operator: FieldFilterOperator;
+  value: string;
+};
+
+export type SegmentedOutput = {
+  filter?: string;
+  orderBy?: string;
+  orderAsc?: boolean;
+  size?: number;
+  digest?: boolean;
+  scheduled?: ScheduledPolicy;
+};
+
+type SinkTargetWrapper = {
+  type: SinkTargetType;
+  oneOf: SinkTarget;
+};
+
+type EmailSink = {
+  address: string;
+};
+type WebhookSink = {
+  url: string;
+};
+type SinkTarget = {
+  email?: EmailSink;
+  webhook?: WebhookSink;
+};
+
+export type Sink = {
+  isSegmented: boolean;
+  segmented?: SegmentedOutput;
+  targets: SinkTargetWrapper[];
+  hasRetention: boolean;
+  retention: GqlRetentionInput;
+  visibility: GqlVisibility;
+  title: string;
+  description: string;
+};
+
+export type Source = {
+  // output?: ScrapeField | ScrapeField[]
+  request: GqlScrapeRequestInput;
+  response?: ScrapeResponse;
+};
+
+export type FeedBuilder = {
+  sources: Source[];
+  agent?: Agent;
+  fetch: ScheduledPolicy;
+  filters: FieldFilter[];
+  sink: Sink;
+};
+
 
 export type FeedWithRequest = {
   scrapeRequest: GqlScrapeRequestInput;
@@ -60,15 +148,16 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   @Output()
   selectedFeedChanged = new EventEmitter<FeedWithRequest>();
+  private tags: string[];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
     private readonly apolloAbortController: ApolloAbortControllerService,
     private readonly scrapeService: ScrapeService,
+    private readonly modalService: ModalService,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
-    private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -109,6 +198,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       this.changeRef.detectChanges();
 
       this.scrapeRequest = {
+        tags: [],
         page: {
           url: this.url,
         },
@@ -157,6 +247,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.scrapeRequest.tags = this.tags;
     this.selectedFeedChanged.emit({
       scrapeRequest: this.scrapeRequest,
       feed: this.selectedFeed,
@@ -209,5 +300,26 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     } else {
       console.warn(`Unsupported contentType ${contentType}`);
     }
+  }
+
+  async showTagsModal() {
+    this.tags = await this.modalService.openTagModal({
+      tags: this.tags || []
+    });
+    this.changeRef.detectChanges();
+  }
+
+  getTagsString() {
+    if (this.tags) {
+      return tagsToString(this.tags)
+    } else {
+      return ''
+    }
+  }
+}
+
+export function tagsToString(tags: string[]): string {
+  if (tags) {
+    return tags.map(tag => `#${tag}`).join(' ')
   }
 }

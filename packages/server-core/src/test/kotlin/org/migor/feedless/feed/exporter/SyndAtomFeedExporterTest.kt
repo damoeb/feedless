@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.XmlFeedParser
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 
 val rawFeed = """
       <?xml version="1.0" encoding="utf-8"?>

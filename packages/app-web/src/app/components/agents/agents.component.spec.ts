@@ -2,34 +2,42 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsComponent } from './agents.component';
 import { AgentsModule } from './agents.module';
-import { AppTestModule } from '../../app-test.module';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
 import {
   Agents,
   GqlAgentsQuery,
   GqlAgentsQueryVariables,
 } from '../../../generated/graphql';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { ApolloClient } from '@apollo/client/core';
 
 describe('AgentsComponent', () => {
   let component: AgentsComponent;
   let fixture: ComponentFixture<AgentsComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AgentsModule,
         AppTestModule.withDefaults((apolloMockController) => {
           apolloMockController
             .mockQuery<GqlAgentsQuery, GqlAgentsQueryVariables>(Agents)
             .and.resolveOnce(async () => {
-              return {
-                data: {
-                  agents: [],
-                },
-              };
-            });
+            return {
+              data: {
+                agents: [],
+              },
+            };
+          });
         }),
       ],
     }).compileComponents();
+
+    await mockServerSettings(
+      TestBed.inject(ApolloMockController),
+      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ApolloClient),
+    );
 
     fixture = TestBed.createComponent(AgentsComponent);
     component = fixture.componentInstance;

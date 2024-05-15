@@ -1,7 +1,7 @@
 package org.migor.feedless.feed.parser
 
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.harvest.HarvestResponse
+import org.migor.feedless.common.HarvestResponse
 
 class NullFeedParser : FeedBodyParser {
 

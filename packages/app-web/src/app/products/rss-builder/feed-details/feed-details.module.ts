@@ -11,6 +11,7 @@ import { LoginButtonModule } from '../../../components/login-button/login-button
 import { HistogramModule } from '../../../components/histogram/histogram.module';
 import { ReaderModule } from '../../../components/reader/reader.module';
 import { FormsModule } from '@angular/forms';
+import { TagsModalModule } from '../../../modals/tags-modal/tags-modal.module';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { FormsModule } from '@angular/forms';
     BubbleModule,
     LoginButtonModule,
     HistogramModule,
+    TagsModalModule,
     ReaderModule,
     FormsModule,
   ],

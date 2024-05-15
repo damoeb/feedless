@@ -89,6 +89,7 @@ fragment RepositoryFragment on Repository {
   sources {
     id
     errornous
+    tags
     lastErrorMessage
     debug {
       network
@@ -294,6 +295,7 @@ fragment PaginationFragment on Pagination {
 
 fragment WebDocumentFragment on WebDocument {
   id
+  tags
   contentTitle
   contentRawMime
   contentRawBase64

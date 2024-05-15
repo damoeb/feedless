@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.annotations.Type
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.attachment.createAttachmentUrl
@@ -62,6 +64,10 @@ open class DocumentEntity : EntityWithUUID() {
 
   @Column(length = 50, name = "content_raw_mime")
   open var contentRawMime: String? = null
+
+  @Type(StringArrayType::class)
+  @Column(name = "tags", columnDefinition = "text[]")
+  open var tags: Array<String> = emptyArray()
 
   @Lazy
   @Column(columnDefinition = "bytea", name = "content_raw")
@@ -183,6 +189,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument
       .contentText(contentText)
       .updatedAt(updatedAt.time)
       .createdAt(createdAt.time)
+      .tags(tags.asList())
       .enclosures(attachments.map {
         Enclosure.newBuilder()
           .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))

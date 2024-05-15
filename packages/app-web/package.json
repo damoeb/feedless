@@ -9,6 +9,8 @@
     "start:feedless": "ng serve",
     "prestart:rss-proxy": "yarn graphql-codegen && sh prepare-product.sh rssProxy false",
     "start:rss-proxy": "ng serve",
+    "prestart:feed-dump": "yarn graphql-codegen && sh prepare-product.sh feedDump false",
+    "start:feed-dump": "ng serve",
     "prestart:page-change-tracker": "yarn graphql-codegen && sh prepare-product.sh pageChangeTracker false",
     "start:page-change-tracker": "ng serve",
     "prestart:untold-notes": "yarn graphql-codegen && sh prepare-product.sh untoldNotes true",

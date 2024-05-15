@@ -71,6 +71,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .items(items.map {
       val builder = WebDocument.newBuilder()
         .id(it.url)
+        .tags(it.tags)
         .contentTitle(it.title)
         .contentText(it.contentText)
         .publishedAt(it.publishedAt.time)

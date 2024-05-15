@@ -194,20 +194,25 @@ class RepositoryHarvester internal constructor() {
   private fun scrapeSource(corrId: String, source: SourceEntity): Flux<Unit> {
     return scrapeService.scrape(corrId, source.toScrapeRequest())
       .flatMapMany { scrapeResponse -> Flux.fromIterable(scrapeResponse.elements) }
-      .flatMap { Flux.just(importElement(corrId, it, source.repository!!.id)) }
+      .flatMap { Flux.just(importElement(corrId, it, source.repository!!.id, source)) }
   }
 
-  private fun importElement(corrId: String, element: ScrapedElement, repositoryId: UUID) {
+  private fun importElement(corrId: String, element: ScrapedElement, repositoryId: UUID, source: SourceEntity) {
     log.debug("[$corrId] importElement")
     element.image?.let {
-      importImageElement(corrId, it, repositoryId)
+      importImageElement(corrId, it, repositoryId, source)
     }
     element.selector?.let {
-      importSelectorElement(corrId, it, repositoryId)
+      importSelectorElement(corrId, it, repositoryId, source)
     }
   }
 
-  private fun importSelectorElement(corrId: String, scrapedData: ScrapedBySelector, repositoryId: UUID) {
+  private fun importSelectorElement(
+    corrId: String,
+    scrapedData: ScrapedBySelector,
+    repositoryId: UUID,
+    source: SourceEntity
+  ) {
     log.debug("[$corrId] importSelectorElement")
     scrapedData.fields?.let { fields ->
       fields.forEach {
@@ -215,18 +220,24 @@ class RepositoryHarvester internal constructor() {
           FeedlessPlugins.org_feedless_feed.name -> importFeed(
             corrId,
             repositoryId,
-            JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java)
+            JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java),
+            source
           )
 
           else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
         }
       }
-    } ?: importScrapedData(corrId, scrapedData, repositoryId)
+    } ?: importScrapedData(corrId, scrapedData, repositoryId, source)
   }
 
-  private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, repositoryId: UUID) {
+  private fun importScrapedData(
+    corrId: String,
+    scrapedData: ScrapedBySelector,
+    repositoryId: UUID,
+    source: SourceEntity
+  ) {
     log.info("[$corrId] importScrapedData")
-    val document = scrapedData.asEntity(repositoryId)
+    val document = scrapedData.asEntity(repositoryId, source.tags)
 
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
 
@@ -238,13 +249,13 @@ class RepositoryHarvester internal constructor() {
     )
   }
 
-  private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed) {
+  private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed, source: SourceEntity) {
     log.info("[$corrId] importFeed")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
     feed.items.distinctBy { it.url }.forEach {
       try {
         val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
-        val updated = it.asEntity(repository.id, ReleaseStatus.released)
+        val updated = it.asEntity(repository.id, ReleaseStatus.released, source.tags)
         updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
         createOrUpdate(corrId, updated, existing, repository)
       } catch (e: Exception) {
@@ -323,7 +334,12 @@ class RepositoryHarvester internal constructor() {
     return pipelineJobDAO.save(job)
   }
 
-  private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, repositoryId: UUID) {
+  private fun importImageElement(
+    corrId: String,
+    scrapedData: ScrapedByBoundingBox,
+    repositoryId: UUID,
+    source: SourceEntity
+  ) {
     log.info("[${corrId}] importImageElement")
     val id = CryptUtil.sha1(scrapedData.data.base64Data)
     if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
@@ -349,7 +365,7 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
     }
 }
 
-private fun ScrapedBySelector.asEntity(repositoryId: UUID): DocumentEntity {
+private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>): DocumentEntity {
   val e = DocumentEntity()
   e.repositoryId = repositoryId
   pixel?.let {
@@ -363,6 +379,7 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID): DocumentEntity {
   }
 
   e.contentText = text.data
+  e.tags = tags
   e.status = ReleaseStatus.released
   e.publishedAt = Date()
   e.updatedAt = Date()
@@ -370,7 +387,7 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID): DocumentEntity {
   return e
 }
 
-private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus): DocumentEntity {
+private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags: Array<String>): DocumentEntity {
   val e = DocumentEntity()
   e.contentTitle = contentTitle
   e.repositoryId = repositoryId
@@ -385,6 +402,7 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus): Doc
     }
     e.contentRawMime = mime
   }
+  e.tags = tags
   e.contentHtml = contentHtml
   e.imageUrl = ""
   e.contentText = contentText

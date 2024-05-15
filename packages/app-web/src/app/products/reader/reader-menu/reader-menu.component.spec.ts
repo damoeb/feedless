@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ReaderMenuComponent } from './reader-menu.component';
 import { ReaderMenuModule } from './reader-menu.module';
+import { AppTestModule } from '../../../app-test.module';
 
 describe('ReaderMenuComponent', () => {
   let component: ReaderMenuComponent;
@@ -9,7 +10,10 @@ describe('ReaderMenuComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ReaderMenuModule],
+      imports: [ReaderMenuModule, AppTestModule.withDefaults()],
+      providers: [
+        // { provide: ApolloMockController, useValue: AgentService }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReaderMenuComponent);

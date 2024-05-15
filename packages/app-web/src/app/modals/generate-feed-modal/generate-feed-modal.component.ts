@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlCompositeFieldFilterParamsInput,
@@ -30,8 +29,7 @@ import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { Repository } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { isDefined } from '../scrape-source-modal/scrape-builder';
-import { ArrayElement } from '../../types';
+import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 
 export interface GenerateFeedModalComponentProps {
@@ -69,6 +67,7 @@ export function getScrapeRequest(
   return {
     id: null,
     page,
+    tags: scrapeRequest.tags,
     emit: [
       {
         selectorBased: {

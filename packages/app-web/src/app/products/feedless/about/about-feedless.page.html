@@ -21,16 +21,6 @@
         See products
         <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
       </ion-button>
-      <!--          <ion-button-->
-      <!--            color="dark"-->
-      <!--            fill="outline"-->
-      <!--            shape="round"-->
-      <!--            size="small"-->
-      <!--            style="height: 40px"-->
-      <!--          >-->
-      <!--            Local Setup-->
-      <!--            <ion-icon name="download-outline" slot="end"></ion-icon>-->
-      <!--          </ion-button>-->
       <div class="ion-align-self-center">
         <a href="https://discord.gg/6ySGeryD" target="_blank">
           Join us on discord
@@ -47,20 +37,21 @@
 
     <div style="margin-top: 150px">
       <a name="products"></a>
-      <h2>Products</h2>
+      <h2>Available Products</h2>
       <div>
         I have a couple of product in development, the following are stable
         enough to be self hosted.
       </div>
       <div class="products">
         <ion-card
-          *ngFor="let product of stableProducts"
+          *ngFor="let product of listedProducts"
           [routerLink]="'/products/'+product.id"
         >
           <img alt="Silhouette of mountains" [src]="product.imageUrl" />
           <ion-card-header>
             <ion-card-title>{{product.title}}</ion-card-title>
             <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
+            <ion-card-subtitle>Version {{product.version.join('.')}}</ion-card-subtitle>
           </ion-card-header>
 
           <ion-card-content> {{product.summary}} </ion-card-content>
@@ -68,27 +59,27 @@
       </div>
     </div>
 
-    <div style="margin-top: 150px">
-      <a name="products"></a>
-      <h2>In Progress</h2>
-      <!--          <div>-->
-      <!--             Give it a try!-->
-      <!--          </div>-->
-      <div class="products">
-        <ion-card
-          *ngFor="let product of unstableProducts"
-          [routerLink]="'/products/'+product.id"
-        >
-          <img alt="Silhouette of mountains" [src]="product.imageUrl" />
-          <ion-card-header>
-            <ion-card-title>{{product.title}}</ion-card-title>
-            <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>
-          </ion-card-header>
+<!--    <div style="margin-top: 150px">-->
+<!--      <a name="products"></a>-->
+<!--      <h2>In Progress</h2>-->
+<!--      &lt;!&ndash;          <div>&ndash;&gt;-->
+<!--      &lt;!&ndash;             Give it a try!&ndash;&gt;-->
+<!--      &lt;!&ndash;          </div>&ndash;&gt;-->
+<!--      <div class="products">-->
+<!--        <ion-card-->
+<!--          *ngFor="let product of unstableProducts"-->
+<!--          [routerLink]="'/products/'+product.id"-->
+<!--        >-->
+<!--          <img alt="Silhouette of mountains" [src]="product.imageUrl" />-->
+<!--          <ion-card-header>-->
+<!--            <ion-card-title>{{product.title}}</ion-card-title>-->
+<!--            <ion-card-subtitle>{{product.subtitle}}</ion-card-subtitle>-->
+<!--          </ion-card-header>-->
 
-          <ion-card-content> {{product.summary}} </ion-card-content>
-        </ion-card>
-      </div>
-    </div>
+<!--          <ion-card-content> {{product.summary}} </ion-card-content>-->
+<!--        </ion-card>-->
+<!--      </div>-->
+<!--    </div>-->
 
     <div style="margin-top: 100px">
       <h2>Why Feedless?</h2>

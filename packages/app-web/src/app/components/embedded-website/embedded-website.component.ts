@@ -13,7 +13,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { isDefined } from '../../modals/scrape-source-modal/scrape-builder';
+import { isDefined } from '../../types';
 
 interface Viewport {
   width: number;

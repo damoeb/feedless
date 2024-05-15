@@ -1,9 +1,27 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Field } from '../../modals/scrape-source-modal/scrape-builder';
-import { SegmentedOutput } from '../../modals/scrape-source-modal/scrape-source-modal.component';
 import { KeyLabelOption } from '../../elements/select/select.component';
 
 type SortDirection = 'asc' | 'desc';
+
+export interface Field {
+  type: 'text' | 'markup' | 'base64' | 'url' | 'date';
+  name: string;
+}
+
+
+type ScheduledPolicy = {
+  cronString: string;
+};
+
+export type SegmentedOutput = {
+  filter?: string;
+  orderBy?: string;
+  orderAsc?: boolean;
+  size?: number;
+  digest?: boolean;
+  scheduled?: ScheduledPolicy;
+};
+
 
 @Component({
   selector: 'app-segmented-output',

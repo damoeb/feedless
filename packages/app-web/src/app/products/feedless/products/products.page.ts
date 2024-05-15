@@ -12,6 +12,7 @@ import {
   ProductConfig,
   ProductService,
 } from '../../../services/product.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-feedless-products-page',
@@ -23,10 +24,12 @@ import {
 export class ProductsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   product: ProductConfig;
+  videoUrl: SafeResourceUrl;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
+    private readonly domSanitizer: DomSanitizer,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -36,6 +39,9 @@ export class ProductsPage implements OnInit, OnDestroy {
         this.product = (await this.productService.getProductConfigs()).find(
           (p) => p.id === params.productId,
         );
+        if (this.product?.videoUrl) {
+          this.videoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.product.videoUrl.replace('watch?v=', 'embed/'))
+        }
         this.changeRef.detectChanges();
       }),
     );
@@ -48,4 +54,9 @@ export class ProductsPage implements OnInit, OnDestroy {
   getImageUrl() {
     return `url("${this.product?.imageUrl}")`;
   }
+
+  isReleased() {
+    return parseInt(`${this.product.version[0]}`) > 0
+  }
+
 }

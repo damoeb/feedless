@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -29,8 +30,9 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.springframework.context.annotation.Lazy
 import java.util.*
 
+
 @Entity
-@Table(name = "t_scrape_source")
+@Table(name = "t_source")
 open class SourceEntity : EntityWithUUID() {
 
   @Column(name = "timeout")
@@ -49,6 +51,10 @@ open class SourceEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = "prerender")
   open var prerender: Boolean = false
+
+  @Type(StringArrayType::class)
+  @Column(name = "tags", columnDefinition = "text[]")
+  open var tags: Array<String> = emptyArray()
 
   @Enumerated(EnumType.STRING)
   @Column(name = "wait_until")
@@ -105,6 +111,7 @@ fun SourceEntity.toDto(): ScrapeRequest {
     .id(id.toString())
     .errornous(erroneous)
     .lastErrorMessage(lastErrorMessage)
+    .tags(tags.asList())
     .debug(
       ScrapeDebugOptions.newBuilder()
         .screenshot(debugScreenshot)

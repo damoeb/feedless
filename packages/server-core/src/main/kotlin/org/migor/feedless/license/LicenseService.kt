@@ -160,8 +160,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun loadPublicKey() {
+    log.info("[boot] loading public key")
     getPublicKeyFile().use { publicKeyFile ->
-      log.info("[boot] loading public key")
       val scanner = Scanner(publicKeyFile)
       val data = StringBuilder()
       while(scanner.hasNextLine()) {

@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { FeedlessProductPage } from './feedless-product.page';
 
 import { DefaultRoutes } from '../default-routes';
+import { FeedlessMenuComponent } from './feedless-menu/feedless-menu.component';
+import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
   ...DefaultRoutes,
@@ -20,6 +22,7 @@ const routes: Routes = [
       },
       {
         path: 'agents',
+        canActivate: [AuthGuardService],
         loadChildren: () =>
           import('../../pages/agents/agents.module').then(
             (m) => m.AgentsPageModule,
@@ -27,6 +30,7 @@ const routes: Routes = [
       },
       {
         path: 'repositories',
+        canActivate: [AuthGuardService],
         loadChildren: () =>
           import('../../pages/repositories/repositories.module').then(
             (m) => m.RepositoriesPageModule,
@@ -56,6 +60,11 @@ const routes: Routes = [
         redirectTo: '',
       },
     ],
+  },
+  {
+    path: '',
+    outlet: 'sidemenu',
+    component: FeedlessMenuComponent,
   },
   {
     path: '**',

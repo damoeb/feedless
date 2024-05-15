@@ -1,0 +1,34 @@
+<ion-header [translucent]="true">
+  <app-trial-warning></app-trial-warning>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <div class="title">
+      <div class="ion-padding-start" routerLink="/" style="cursor: pointer">
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </div>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button *ngIf="authorization?.loggedIn"
+                  (click)="openFeedBuilder()"
+                  color="primary"
+                  fill="solid">
+        Add Feed
+      </ion-button>
+      <ng-container *ngIf="serverSettings.isSelfHosted()">
+        <ion-button href="https://discord.gg/6ySGeryD" target="_blank">
+          Community
+        </ion-button>
+      </ng-container>
+      <app-dark-mode-button></app-dark-mode-button>
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>

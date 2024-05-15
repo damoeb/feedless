@@ -114,6 +114,7 @@ fun ScrapeRequestInput.fromDto(): ScrapeRequest = ScrapeRequest.newBuilder()
   .emit(emit?.map { it.fromDto() })
   .page(page.fromDto())
   .debug(debug?.fromDto())
+  .tags(tags)
   .build()
 
 private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext = when (extendContext) {

@@ -17,41 +17,7 @@ describe('ReaderComponent', () => {
 
     fixture = TestBed.createComponent(ReaderComponent);
     component = fixture.componentInstance;
-    const readability: ScrapedReadability = {};
-    component.scrapeResponse = {
-      url: '',
-      failed: false,
-      debug: {
-        html: '',
-        cookies: [],
-        metrics: {
-          queue: 0,
-          render: 0,
-        },
-        screenshot: '',
-        contentType: '',
-        console: [],
-        statusCode: 200,
-      },
-      elements: [
-        {
-          selector: {
-            xpath: { value: '/' },
-            fields: [
-              {
-                name: GqlFeedlessPlugins.OrgFeedlessFulltext,
-                value: {
-                  one: {
-                    mimeType: 'application/json',
-                    data: JSON.stringify(readability),
-                  },
-                },
-              },
-            ],
-          },
-        },
-      ],
-    };
+    component.html = '';
     fixture.detectChanges();
   }));
 

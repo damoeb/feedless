@@ -4,17 +4,12 @@ import {
   CodeEditorModalComponentProps,
 } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
-import {
-  DeepPartial,
-  FeedBuilder,
-  FeedBuilderModalComponentExitRole,
-} from '../modals/scrape-source-modal/scrape-source-modal.component';
 import { Router } from '@angular/router';
 import {
   FeedBuilderModalComponent,
   FeedBuilderModalComponentProps,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { FeedWithRequest } from '../components/feed-builder/feed-builder.component';
+import { FeedBuilder, FeedBuilderModalComponentExitRole, FeedWithRequest } from '../components/feed-builder/feed-builder.component';
 import {
   GenerateFeedModalComponent,
   GenerateFeedModalComponentProps,
@@ -23,6 +18,8 @@ import {
   TrackerEditModalComponent,
   TrackerEditModalComponentProps,
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
+import { TagsModalComponent, TagsModalComponentProps } from '../modals/tags-modal/tags-modal.component';
+import { DeepPartial } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -82,6 +79,21 @@ export class ModalService {
           break;
       }
     }
+  }
+
+  async openTagModal(
+    componentProps: TagsModalComponentProps,
+  ): Promise<string[]> {
+    const modal = await this.modalCtrl.create({
+      component: TagsModalComponent,
+      componentProps,
+      // cssClass: 'fullscreen-modal',
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss<string[]>();
+    return data;
   }
 
   hasPendingWizardState(): boolean {

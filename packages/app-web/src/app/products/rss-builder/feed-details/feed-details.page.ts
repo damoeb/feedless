@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
-import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
+import { FeedWithRequest, tagsToString } from '../../../components/feed-builder/feed-builder.component';
 import {
   GqlProfileName,
   GqlScrapeRequest,
@@ -148,7 +148,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     if (source.errornous) {
       return 'red';
     } else {
-      return 'blue';
+      return 'green';
     }
   }
   async editSource(source: SubscriptionSource = null) {
@@ -208,7 +208,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       repository: this.repository,
       modalTitle: `Customize ${this.repository.title}`,
     };
-    console.log(this.repository);
     await this.modalService.openFeedMetaEditor(componentProps);
   }
 
@@ -288,5 +287,41 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   hasDevProfile() {
     return this.serverSettingsService.hasProfile(GqlProfileName.Dev);
+  }
+
+  async editTags(source: ArrayElement<Repository['sources']>) {
+    const tags = await this.modalService.openTagModal({
+      tags: source.tags || []
+    });
+    this.repository = await this.repositoryService.updateRepository({
+      where: {
+        id: this.repository.id,
+      },
+      data: {
+        sources: {
+          update: [
+            {
+              where: {
+                id: source.id
+              },
+              data: {
+                tags: {
+                  set: tags
+                }
+              }
+            }
+          ],
+        },
+      },
+    });
+    this.changeRef.detectChanges();
+  }
+
+  getTags(document: WebDocument) {
+    return tagsToString(document.tags);
+  }
+
+  stringifyTags(source: ArrayElement<Repository['sources']>) {
+    return tagsToString(source.tags) || 'Add tags';
   }
 }

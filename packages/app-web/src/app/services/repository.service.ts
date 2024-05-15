@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
+  Agents,
   CountRepositories,
   CreateRepositories,
-  DeleteRepository,
+  DeleteRepository, GqlAgentsQuery, GqlAgentsQueryVariables,
   GqlCountRepositoriesQuery,
   GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,
@@ -22,7 +23,7 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository,
+  UpdateRepository
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository } from '../graphql/types';
@@ -30,7 +31,8 @@ import { ServerSettingsService } from './server-settings.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 import { zenToRx } from './agent.service';
-import { Observable } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +41,7 @@ export class RepositoryService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly serverSetting: ServerSettingsService,
+    private readonly authService: AuthService,
     private readonly router: Router,
     private readonly profileService: SessionService,
   ) {}
@@ -120,17 +123,25 @@ export class RepositoryService {
   countRepositories(
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Observable<number> {
-    return zenToRx(
-      this.apollo
-        .watchQuery<
-          GqlCountRepositoriesQuery,
-          GqlCountRepositoriesQueryVariables
-        >({
-          query: CountRepositories,
-          fetchPolicy,
-        })
-        .map((response) => response.data.countRepositories),
-    );
+    return this.authService
+      .authorizationChange()
+      .pipe(switchMap(authentication => {
+        if (authentication?.loggedIn) {
+          return zenToRx(
+            this.apollo
+              .watchQuery<
+                GqlCountRepositoriesQuery,
+                GqlCountRepositoriesQueryVariables
+              >({
+                query: CountRepositories,
+                fetchPolicy,
+              })
+              .map((response) => response.data.countRepositories),
+          )
+        } else {
+          return of(0)
+        }
+      }));
   }
 
   async getRepositoryById(

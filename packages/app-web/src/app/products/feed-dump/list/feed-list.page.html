@@ -1,0 +1,38 @@
+<ion-content>
+  <app-product-header title="Feeds">
+    <p>My personal list of feeds for alternative sources that I find useful for some reason. </p>
+
+<!--    <div>-->
+<!--      <app-searchbar-->
+<!--        (querySubmit)="handleQuery($event)"-->
+<!--        buttonText="Search"-->
+<!--        color="light"-->
+<!--        placeholder="Type here"-->
+<!--      ></app-searchbar>-->
+<!--    </div>-->
+  </app-product-header>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    <ion-card *ngFor="let repository of repositories"
+              class="feed"
+              [routerLink]="'/feed/'+repository.id"
+              style="width: 350px; flex-grow: 0">
+      <ion-card-header>
+        <ion-card-title>{{ repository.title }}</ion-card-title>
+        <ion-card-subtitle>
+          <div>
+            <ion-icon name="arrow-down-outline" color="primary"></ion-icon>
+            2.3k
+          </div>
+          <div class="ion-margin-top">
+            <a href="">#podcast</a>
+<!--            <ion-chip>scientist</ion-chip>-->
+          </div>
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        {{ repository.description }}
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

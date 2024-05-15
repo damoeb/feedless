@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Tags</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    <app-searchbar
+      (querySubmit)="addTag($event)"
+      buttonText="Add Tag"
+      color="primary"
+      placeholder="Type a tag"
+    ></app-searchbar>
+
+    <ion-item *ngFor="let tag of tags">
+      #{{tag}}
+      <ion-button fill="clear" (click)="removeTag(tag)" slot="end">
+        <ion-icon name="trash-outline" color="danger"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

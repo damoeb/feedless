@@ -277,6 +277,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         {
           sources: [
             {
+              tags: [],
               page: {
                 url: this.form.value.url,
                 prerender: {

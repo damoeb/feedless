@@ -1,16 +1,15 @@
 <ion-content>
   <div class="limited-width-pane">
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          <p>
-            Agents are responsible to render websites in a browser. You run an
-            agent using docker and control source IP.
-          </p>
-        </ion-label>
-        <ion-button (click)="createAgent()">New Agent</ion-button>
-      </ion-item>
-    </ion-list>
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+      <ion-breadcrumb>Agents</ion-breadcrumb>
+    </ion-breadcrumbs>
+
+    <ion-row style="width: 100%">
+      <ion-col size="6">
+        <h3>Agents</h3>
+      </ion-col>
+    </ion-row>
 
     <app-agents></app-agents>
   </div>

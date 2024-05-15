@@ -58,6 +58,18 @@ export class ProductService {
       ],
     },
     {
+      id: 'feedDump',
+      routes: [
+        {
+          path: '',
+          loadChildren: () =>
+            import('../products/feed-dump/feed-dump-product.module').then(
+              (m) => m.FeedDumpProductModule,
+            ),
+        },
+      ],
+    },
+    {
       id: 'pageChangeTracker',
       routes: [
         {
@@ -103,10 +115,10 @@ export class ProductService {
     },
     {
       id: 'feedless',
-      // sideMenu: {
-      //   width: 200,
-      //   breakpoint: 'xl',
-      // },
+      sideMenu: {
+        width: 200,
+        breakpoint: 'xl',
+      },
       routes: [
         {
           path: '',
