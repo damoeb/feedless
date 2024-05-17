@@ -73,6 +73,97 @@
               <!--                <ion-chip>231</ion-chip>-->
               <!--              </ion-button>-->
 
+              <ion-button id="open-sources-modal">
+                <ion-icon
+                  name="git-branch-outline"
+                  slot="start"
+                ></ion-icon>
+                <ion-label>
+                  Sources
+                  <app-bubble
+                    *ngIf="hasErrors()"
+                    color="red"
+                    slot="end"
+                  ></app-bubble>
+                </ion-label>
+                <ion-chip *ngIf="!hasErrors()"
+                >{{repository.sources.length}}</ion-chip
+                >
+              </ion-button>
+
+              <ion-modal trigger="open-sources-modal">
+                <ng-template>
+                  <ion-header>
+                    <ion-toolbar>
+                      <ion-buttons slot="start">
+                        <ion-button (click)="dismissModal()">
+                          <ion-icon name="close-outline"></ion-icon>
+                        </ion-button>
+                      </ion-buttons>
+                      <ion-title>Sources</ion-title>
+                      <ion-buttons slot="end">
+                        <!--          <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>-->
+                        <ion-button
+                          color="primary"
+                          fill="solid"
+                          (click)="editSource()"
+                        >Add Source</ion-button
+                        >
+                      </ion-buttons>
+                    </ion-toolbar>
+                  </ion-header>
+                  <ion-content class="ion-padding">
+                    <ion-list>
+                      <ion-item *ngIf="repository.sources.length === 0">
+                        <ion-label color="danger"
+                        >No sources defined</ion-label
+                        >
+                      </ion-item>
+                      <ion-item
+                        *ngFor="let source of repository.sources"
+                      >
+                        <app-bubble
+                          [color]="getHealthColorForSource(source)"
+                        ></app-bubble>
+                        <ion-label>
+                          <h3 class="ion-padding-horizontal">
+                            From {{source.page.url}}
+                          </h3>
+                          <p class="ion-padding-horizontal">
+                            {{getPluginsOfSource(source)}}
+                          </p>
+                          <p>
+                            <ion-button
+                              fill="clear"
+                              [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
+                              (click)="editTags(source)"
+                            >{{ stringifyTags(source) }}</ion-button
+                            >
+                          </p>
+                          <ion-note
+                            color="danger"
+                            *ngIf="source.errornous"
+                          >
+                            {{source.lastErrorMessage}}
+                          </ion-note>
+                        </ion-label>
+                        <ion-buttons [collapse]="true">
+                          <ion-button
+                            color="danger"
+                            (click)="deleteSource(source)"
+                          >
+                            Delete
+                          </ion-button>
+                          <ion-button (click)="editSource(source)">
+                            Edit
+                          </ion-button>
+                        </ion-buttons>
+                      </ion-item>
+                    </ion-list>
+                  </ion-content>
+                </ng-template>
+              </ion-modal>
+
               <ion-button [href]="feedUrl" color="primary" fill="solid">
                 <ion-icon name="logo-rss" slot="start"></ion-icon>
                 Feed
@@ -91,86 +182,6 @@
                 <ng-template>
                   <ion-content>
                     <ion-list>
-                      <ion-modal trigger="open-sources-modal">
-                        <ng-template>
-                          <ion-header>
-                            <ion-toolbar>
-                              <ion-buttons slot="start">
-                                <ion-button (click)="dismissModal()">
-                                  <ion-icon name="close-outline"></ion-icon>
-                                </ion-button>
-                              </ion-buttons>
-                              <ion-title>Sources</ion-title>
-                              <ion-buttons slot="end">
-                                <!--          <ion-button (click)="confirm()" [strong]="true">Confirm</ion-button>-->
-                                <ion-button
-                                  color="primary"
-                                  fill="solid"
-                                  (click)="editSource()"
-                                  >Add Source</ion-button
-                                >
-                              </ion-buttons>
-                            </ion-toolbar>
-                          </ion-header>
-                          <ion-content class="ion-padding">
-                            <ion-list>
-                              <ion-item *ngIf="repository.sources.length === 0">
-                                <ion-label color="danger"
-                                  >No sources defined</ion-label
-                                >
-                              </ion-item>
-                              <ion-item
-                                *ngFor="let source of repository.sources"
-                              >
-                                <app-bubble
-                                  [color]="getHealthColorForSource(source)"
-                                ></app-bubble>
-                                <ion-label>
-                                  <h3 class="ion-padding-horizontal">From {{source.page.url}}</h3>
-                                  <p class="ion-padding-horizontal">{{getPluginsOfSource(source)}}</p>
-                                  <p>
-                                    <ion-button fill="clear" (click)="editTags(source)">{{ stringifyTags(source) }}</ion-button>
-                                  </p>
-                                  <ion-note
-                                    color="danger"
-                                    *ngIf="source.errornous"
-                                  >
-                                    {{source.lastErrorMessage}}
-                                  </ion-note>
-                                </ion-label>
-                                <ion-buttons [collapse]="true">
-                                  <ion-button
-                                    color="danger"
-                                    (click)="deleteSource(source)"
-                                  >
-                                    Delete
-                                  </ion-button>
-                                  <ion-button (click)="editSource(source)">
-                                    Edit
-                                  </ion-button>
-                                </ion-buttons>
-                              </ion-item>
-                            </ion-list>
-                          </ion-content>
-                        </ng-template>
-                      </ion-modal>
-                      <ion-item id="open-sources-modal" button="true">
-                        <ion-icon
-                          name="git-branch-outline"
-                          slot="start"
-                        ></ion-icon>
-                        <ion-label>
-                          Sources
-                          <app-bubble
-                            *ngIf="hasErrors()"
-                            color="red"
-                            slot="end"
-                          ></app-bubble>
-                        </ion-label>
-                        <ion-chip *ngIf="!hasErrors()"
-                          >{{repository.sources.length}}</ion-chip
-                        >
-                      </ion-item>
                       <ion-item button="true" (click)="editRepository()">
                         <ion-icon
                           name="settings-outline"
@@ -270,7 +281,10 @@
                 >{{document.contentTitle}}</a
               >
             </h4>
-            <p>on {{hostname(document.url)}} <em class="ion-padding-start">{{getTags(document)}}</em></p>
+            <p>
+              on {{hostname(document.url)}}
+              <em class="ion-padding-start">{{getTags(document)}}</em>
+            </p>
 
             <div class="content" *ngIf="renderText">
               {{document.contentText}}
@@ -284,17 +298,19 @@
           </div>
         </ng-container>
 
-        <div style="text-align: center">
-          <ion-button
-            color="primary"
-            (click)="loadMore()"
-            *ngIf="!hasEndReached()"
-            >Load older items</ion-button
-          >
-        </div>
-        <!--        <ion-infinite-scroll (ionInfinite)="loadMore($event)">-->
-        <!--          <ion-infinite-scroll-content></ion-infinite-scroll-content>-->
-        <!--        </ion-infinite-scroll>-->
+<!--        <div style="text-align: center">-->
+<!--          <ion-button-->
+<!--            color="primary"-->
+<!--            (click)="loadMore()"-->
+<!--            *ngIf="!hasEndReached()"-->
+<!--            >Load older items</ion-button-->
+<!--          >-->
+<!--        </div>-->
+        <ion-infinite-scroll
+          *ngIf="!hasEndReached()"
+          (ionInfinite)="loadMore($event)">
+          <ion-infinite-scroll-content></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
       </div>
     </div>
   </div>

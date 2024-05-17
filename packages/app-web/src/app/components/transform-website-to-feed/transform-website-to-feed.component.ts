@@ -1,19 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
   GqlScrapedFeeds,
+  GqlScrapeRequest,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -21,6 +14,9 @@ import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
+import { ModalService } from '../../services/modal.service';
+import { FeedService } from '../../services/feed.service';
+import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -90,7 +86,9 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   private selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef,
+              private readonly feedService: FeedService,
+              private readonly modalService: ModalService) {}
 
   async ngOnInit() {
     try {
@@ -221,5 +219,16 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   private emitSelectedFeed() {
     this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     this.selectedFeedChange.emit(this.selectedFeed);
+  }
+
+  async previewGenericFeed() {
+    await this.modalService.openRemoteFeedModal({
+      feedProvider: () => this.feedService.previewFeed({
+        requests: [
+          getScrapeRequest(this.selectedFeed, this.scrapeRequest as GqlScrapeRequest)
+        ],
+        filters: [],
+      })
+    })
   }
 }

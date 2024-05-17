@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { RemoteFeedComponent } from './remote-feed.component';
-import { RemoteFeedModule } from './remote-feed.module';
+import { NativeFeedComponent } from './native-feed.component';
+import { NativeFeedModule } from './native-feed.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('RemoteFeedComponent', () => {
-  let component: RemoteFeedComponent;
-  let fixture: ComponentFixture<RemoteFeedComponent>;
+  let component: NativeFeedComponent;
+  let fixture: ComponentFixture<NativeFeedComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RemoteFeedModule, AppTestModule.withDefaults()],
+      imports: [NativeFeedModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RemoteFeedComponent);
+    fixture = TestBed.createComponent(NativeFeedComponent);
     component = fixture.componentInstance;
 
     // component.handler = new WizardHandler(

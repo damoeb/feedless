@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ProductConfig, ProductService } from '../../services/product.service';
@@ -33,13 +39,13 @@ export class FeedDumpProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-        this.authService
-          .authorizationChange()
-          .subscribe(async (authorization) => {
-            this.authorization = authorization;
-            this.changeRef.detectChanges();
-          }),
-    this.productService
+      this.authService
+        .authorizationChange()
+        .subscribe(async (authorization) => {
+          this.authorization = authorization;
+          this.changeRef.detectChanges();
+        }),
+      this.productService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -58,6 +64,6 @@ export class FeedDumpProductPage implements OnInit, OnDestroy {
   }
 
   async openFeedBuilder() {
-    await this.modalService.openFeedBuilder({})
+    await this.modalService.openFeedBuilder({});
   }
 }

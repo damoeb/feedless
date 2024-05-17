@@ -40,7 +40,9 @@ export class ProductsPage implements OnInit, OnDestroy {
           (p) => p.id === params.productId,
         );
         if (this.product?.videoUrl) {
-          this.videoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.product.videoUrl.replace('watch?v=', 'embed/'))
+          this.videoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
+            this.product.videoUrl.replace('watch?v=', 'embed/'),
+          );
         }
         this.changeRef.detectChanges();
       }),
@@ -56,7 +58,6 @@ export class ProductsPage implements OnInit, OnDestroy {
   }
 
   isReleased() {
-    return parseInt(`${this.product.version[0]}`) > 0
+    return parseInt(`${this.product.version[0]}`) > 0;
   }
-
 }

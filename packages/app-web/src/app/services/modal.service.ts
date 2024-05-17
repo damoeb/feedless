@@ -9,7 +9,11 @@ import {
   FeedBuilderModalComponent,
   FeedBuilderModalComponentProps,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { FeedBuilder, FeedBuilderModalComponentExitRole, FeedWithRequest } from '../components/feed-builder/feed-builder.component';
+import {
+  FeedBuilder,
+  FeedBuilderModalComponentExitRole,
+  FeedWithRequest,
+} from '../components/feed-builder/feed-builder.component';
 import {
   GenerateFeedModalComponent,
   GenerateFeedModalComponentProps,
@@ -18,8 +22,12 @@ import {
   TrackerEditModalComponent,
   TrackerEditModalComponentProps,
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
-import { TagsModalComponent, TagsModalComponentProps } from '../modals/tags-modal/tags-modal.component';
+import {
+  TagsModalComponent,
+  TagsModalComponentProps,
+} from '../modals/tags-modal/tags-modal.component';
 import { DeepPartial } from '../types';
+import { RemoteFeedModalComponent, RemoteFeedModalComponentProps } from '../modals/remote-feed-modal/remote-feed-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -87,7 +95,7 @@ export class ModalService {
     const modal = await this.modalCtrl.create({
       component: TagsModalComponent,
       componentProps,
-      // cssClass: 'fullscreen-modal',
+      cssClass: 'tiny-modal',
       showBackdrop: true,
       backdropDismiss: false,
     });
@@ -96,21 +104,17 @@ export class ModalService {
     return data;
   }
 
-  hasPendingWizardState(): boolean {
-    return localStorage.getItem(this.unfinishedWizardKey)?.length > 0;
-  }
-
-  getPendingWizardState(): DeepPartial<FeedBuilder> {
-    return JSON.parse(localStorage.getItem(this.unfinishedWizardKey));
-  }
-
-  async resumeFeedWizard() {
-    // const feedBuilder: DeepPartial<FeedBuilder> = this.getPendingWizardState();
-    // const componentProps: ScrapeSourceModalComponentProps = {
-    //   feedBuilder: feedBuilder ?? {},
-    // };
-    // // this.resetWizardState();
-    // await this.openFeedBuilder(componentProps);
+  async openRemoteFeedModal(
+    componentProps: RemoteFeedModalComponentProps,
+  ): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: RemoteFeedModalComponent,
+      componentProps,
+      // cssClass: 'fullscreen-modal',
+      showBackdrop: true,
+      backdropDismiss: true,
+    });
+    await modal.present();
   }
 
   async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {

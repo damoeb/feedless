@@ -1,0 +1,9 @@
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+
+app-remote-feed-preview {
+  display: flex;
+  flex: 1;
+}

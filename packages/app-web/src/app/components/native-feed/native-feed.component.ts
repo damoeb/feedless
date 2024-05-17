@@ -9,12 +9,12 @@ import { RemoteFeedItem } from '../../graphql/types';
 import { FeedService } from '../../services/feed.service';
 
 @Component({
-  selector: 'app-remote-feed',
-  templateUrl: './remote-feed.component.html',
-  styleUrls: ['./remote-feed.component.scss'],
+  selector: 'app-native-feed',
+  templateUrl: './native-feed.component.html',
+  styleUrls: ['./native-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RemoteFeedComponent implements OnInit {
+export class NativeFeedComponent implements OnInit {
   @Input({ required: true })
   feedUrl: string;
   @Input({ required: true })

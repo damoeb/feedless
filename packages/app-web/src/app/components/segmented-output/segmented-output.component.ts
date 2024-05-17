@@ -8,7 +8,6 @@ export interface Field {
   name: string;
 }
 
-
 type ScheduledPolicy = {
   cronString: string;
 };
@@ -21,7 +20,6 @@ export type SegmentedOutput = {
   digest?: boolean;
   scheduled?: ScheduledPolicy;
 };
-
 
 @Component({
   selector: 'app-segmented-output',

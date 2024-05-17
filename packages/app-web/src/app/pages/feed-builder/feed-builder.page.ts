@@ -1,20 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ModalController, ToastController } from '@ionic/angular';
-import { ScrapeService } from '../../services/scrape.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
@@ -32,14 +19,8 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
-    private readonly apolloAbortController: ApolloAbortControllerService,
-    private readonly scrapeService: ScrapeService,
-    private readonly modalCtrl: ModalController,
     private readonly modalService: ModalService,
-    private readonly toastCtrl: ToastController,
-    private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 

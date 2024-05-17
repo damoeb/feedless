@@ -12,10 +12,12 @@
     </div>
 
     <ion-buttons slot="end">
-      <ion-button *ngIf="authorization?.loggedIn"
-                  (click)="openFeedBuilder()"
-                  color="primary"
-                  fill="solid">
+      <ion-button
+        *ngIf="authorization?.loggedIn"
+        (click)="openFeedBuilder()"
+        color="primary"
+        fill="solid"
+      >
         Add Feed
       </ion-button>
       <ng-container *ngIf="serverSettings.isSelfHosted()">

@@ -1,28 +1,34 @@
 <ion-content>
-  <div class="limited-width-pane">
+  <ion-spinner *ngIf="!repository" name="dots"></ion-spinner>
+  <div class="limited-width-pane" *ngIf="repository">
     <div class="ion-margin-vertical ion-padding">
       <div>
-        <h2 class="title">
-          Echo der Zeit
-        </h2>
-<!--        <div class="subtitle">-->
-<!--          Schweizer Radio und Fernsehen (SRF)-->
-<!--        </div>-->
+        <h2 class="title">{{ repository.title }}</h2>
+        <!--        <div class="subtitle">-->
+        <!--          Schweizer Radio und Fernsehen (SRF)-->
+        <!--        </div>-->
         <div class="ion-margin-vertical">
           <ion-buttons>
             <ion-button>
-              <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>
+              <ion-icon
+                name="globe-outline"
+                color="primary"
+                slot="start"
+              ></ion-icon>
               Visit website
             </ion-button>
             <ion-button title="Pulls per week">
-              <ion-icon name="arrow-down-outline" color="primary" slot="start"></ion-icon>
-              Pull
-              2.3k
+              <ion-icon
+                name="arrow-down-outline"
+                color="primary"
+                slot="start"
+              ></ion-icon>
+              Pull 2.3k
             </ion-button>
-<!--            <ion-button>-->
-<!--              <ion-icon name="star-outline" color="primary" slot="start"></ion-icon>-->
-<!--              1.7k-->
-<!--            </ion-button>-->
+            <!--            <ion-button>-->
+            <!--              <ion-icon name="star-outline" color="primary" slot="start"></ion-icon>-->
+            <!--              1.7k-->
+            <!--            </ion-button>-->
             <ion-button color="primary" fill="solid">
               <ion-icon name="logo-rss"></ion-icon>
               Feed
@@ -30,30 +36,27 @@
           </ion-buttons>
         </div>
         <div class="description">
-          «Echo der Zeit» ist die älteste politische Hintergrundsendung von Radio SRF: Seit 1945 vermittelt die Sendung täglich die wichtigsten Nachrichten, Berichte, Reportagen, Interviews und Analysen über das aktuelle Zeitgeschehen. Abonnieren Sie den «Echo der Zeit» Newsletter und erhalten Sie jeden Samstag das Beste der Woche.
+          {{ repository.description }}
         </div>
       </div>
     </div>
 
-    <div style="margin-top: 50px;" class="ion-padding">
-      <h3>
-        Available articles
-      </h3>
+    <div style="margin-top: 50px" class="ion-padding">
+      <h3>Available articles</h3>
     </div>
 
-    <ion-list>
-      <ion-item lines="inset"
-                *ngFor="let item of items">
+    <ion-spinner *ngIf="!items" name="dots"></ion-spinner>
+
+    <ion-list *ngIf="items">
+      <ion-item lines="inset" *ngFor="let item of items">
         <ion-label>
           <ion-note>4 days ago</ion-note>
-          <a href="wefwef">
-            <h2>Episode {{ item }} Title</h2>
+          <a [href]="item.url" target="_blank" referrerpolicy="no-referrer">
+            <h2>{{ item.contentTitle }}</h2>
           </a>
-          <p>Episode {{ item }} description...</p>
+          <p>{{ item.contentText }}</p>
         </ion-label>
       </ion-item>
-
     </ion-list>
-
   </div>
 </ion-content>

@@ -20,7 +20,10 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ModalService } from '../../../services/modal.service';
-import { FeedWithRequest, tagsToString } from '../../../components/feed-builder/feed-builder.component';
+import {
+  FeedWithRequest,
+  tagsToString,
+} from '../../../components/feed-builder/feed-builder.component';
 import {
   GqlProfileName,
   GqlScrapeRequest,
@@ -30,7 +33,7 @@ import {
   GenerateFeedModalComponentProps,
   getScrapeRequest,
 } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
-import { ModalController } from '@ionic/angular';
+import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
 import { BubbleColor } from '../../../components/bubble/bubble.component';
 import { ArrayElement } from '../../../types';
 import { PluginService } from '../../../services/plugin.service';
@@ -280,9 +283,9 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     );
   }
 
-  async loadMore() {
+  async loadMore(event: any) {
     await this.fetchNextPage();
-    // await (event as InfiniteScrollCustomEvent).target.complete();
+    await (event as InfiniteScrollCustomEvent).target.complete();
   }
 
   hasDevProfile() {
@@ -291,7 +294,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
 
   async editTags(source: ArrayElement<Repository['sources']>) {
     const tags = await this.modalService.openTagModal({
-      tags: source.tags || []
+      tags: source.tags || [],
     });
     this.repository = await this.repositoryService.updateRepository({
       where: {
@@ -302,14 +305,14 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
           update: [
             {
               where: {
-                id: source.id
+                id: source.id,
               },
               data: {
                 tags: {
-                  set: tags
-                }
-              }
-            }
+                  set: tags,
+                },
+              },
+            },
           ],
         },
       },

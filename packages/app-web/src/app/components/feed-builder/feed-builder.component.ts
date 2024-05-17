@@ -1,7 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
-import { GqlFeedlessPlugins, GqlRetentionInput, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlRetentionInput,
+  GqlScrapeRequestInput,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute } from '@angular/router';
@@ -10,7 +24,7 @@ import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-moda
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   FeedBuilderActionsModalComponent,
-  FeedBuilderData
+  FeedBuilderData,
 } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -114,7 +128,6 @@ export type FeedBuilder = {
   sink: Sink;
 };
 
-
 export type FeedWithRequest = {
   scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;
@@ -148,7 +161,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   @Output()
   selectedFeedChanged = new EventEmitter<FeedWithRequest>();
-  private tags: string[];
+  protected tags: string[] = [];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -304,22 +317,22 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   async showTagsModal() {
     this.tags = await this.modalService.openTagModal({
-      tags: this.tags || []
+      tags: this.tags || [],
     });
     this.changeRef.detectChanges();
   }
 
   getTagsString() {
     if (this.tags) {
-      return tagsToString(this.tags)
+      return tagsToString(this.tags);
     } else {
-      return ''
+      return '';
     }
   }
 }
 
 export function tagsToString(tags: string[]): string {
   if (tags) {
-    return tags.map(tag => `#${tag}`).join(' ')
+    return tags.map((tag) => `#${tag}`).join(' ');
   }
 }

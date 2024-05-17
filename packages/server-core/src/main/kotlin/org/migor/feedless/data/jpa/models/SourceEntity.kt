@@ -54,7 +54,7 @@ open class SourceEntity : EntityWithUUID() {
 
   @Type(StringArrayType::class)
   @Column(name = "tags", columnDefinition = "text[]")
-  open var tags: Array<String> = emptyArray()
+  open var tags: Array<String>? = emptyArray()
 
   @Enumerated(EnumType.STRING)
   @Column(name = "wait_until")
@@ -111,7 +111,7 @@ fun SourceEntity.toDto(): ScrapeRequest {
     .id(id.toString())
     .errornous(erroneous)
     .lastErrorMessage(lastErrorMessage)
-    .tags(tags.asList())
+    .tags(tags?.asList() ?: emptyList() )
     .debug(
       ScrapeDebugOptions.newBuilder()
         .screenshot(debugScreenshot)

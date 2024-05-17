@@ -122,6 +122,14 @@
       </ng-container>
     </ion-list>
 
+    <ion-item
+      *ngIf="currentGenericFeed"
+      (click)="previewGenericFeed()"
+      [button]="true"
+    >
+      Preview Feed
+      <ion-icon name="eye-outline" slot="end" color="primary"></ion-icon>
+    </ion-item>
     <ng-content select="[bottomSlot]"></ng-content>
   </div>
 
@@ -133,12 +141,12 @@
       class="flex"
     ></app-embedded-website>
 
-    <app-remote-feed
+    <app-native-feed
       *ngIf="currentNativeFeed"
       [feedUrl]="currentNativeFeed.feedUrl"
       [title]="currentNativeFeed.title"
       class="flex"
-    ></app-remote-feed>
+    ></app-native-feed>
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>
       <ion-spinner name="dots"></ion-spinner>

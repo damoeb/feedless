@@ -12,9 +12,7 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () =>
-          import('./list/feed-list.module').then(
-            (m) => m.FeedListModule,
-          ),
+          import('./list/feed-list.module').then((m) => m.FeedListModule),
       },
       {
         path: 'feed',
@@ -22,7 +20,7 @@ const routes: Routes = [
           import('./details/feed-details.module').then(
             (m) => m.FeedDetailsModule,
           ),
-      }
+      },
     ],
   },
   ...DefaultRoutes,

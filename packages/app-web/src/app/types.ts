@@ -11,16 +11,16 @@ export type TypedFormGroup<TYPE> = {
   [K in keyof TYPE]: TYPE[K] extends AnyPrimitive
     ? FormControl<TYPE[K] | null>
     : TYPE[K] extends Array<infer U>
-      ? U extends AnyPrimitive
-        ? FormArray<FormControl<U | null>>
-        : FormArray<FormGroup<TypedFormGroup<U>>>
-      : FormGroup<TypedFormGroup<TYPE[K]>>;
+    ? U extends AnyPrimitive
+      ? FormArray<FormControl<U | null>>
+      : FormArray<FormGroup<TypedFormGroup<U>>>
+    : FormGroup<TypedFormGroup<TYPE[K]>>;
 };
 
 export type DeepPartial<T> = T extends object
   ? {
-    [P in keyof T]?: DeepPartial<T[P]>;
-  }
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
   : T;
 
 export function isDefined(v: any | undefined): boolean {

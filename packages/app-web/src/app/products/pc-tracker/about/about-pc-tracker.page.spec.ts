@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AboutPcTrackerPage } from './about-pc-tracker.page';
 import {
   ApolloMockController,
-  AppTestModule, mockRepositories,
-  mockServerSettings
+  AppTestModule,
+  mockRepositories,
+  mockServerSettings,
 } from '../../../app-test.module';
 import { AboutPcTrackerModule } from './about-pc-tracker.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
@@ -15,9 +16,12 @@ describe('AboutPcTrackerPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AboutPcTrackerModule, AppTestModule.withDefaults(apolloMockController => {
-        mockRepositories(apolloMockController)
-      })],
+      imports: [
+        AboutPcTrackerModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockRepositories(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     await mockServerSettings(

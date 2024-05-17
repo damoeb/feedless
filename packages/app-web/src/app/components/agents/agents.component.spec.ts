@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsComponent } from './agents.component';
 import { AgentsModule } from './agents.module';
-import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../app-test.module';
 import {
   Agents,
   GqlAgentsQuery,
@@ -23,12 +27,12 @@ describe('AgentsComponent', () => {
           apolloMockController
             .mockQuery<GqlAgentsQuery, GqlAgentsQueryVariables>(Agents)
             .and.resolveOnce(async () => {
-            return {
-              data: {
-                agents: [],
-              },
-            };
-          });
+              return {
+                data: {
+                  agents: [],
+                },
+              };
+            });
         }),
       ],
     }).compileComponents();

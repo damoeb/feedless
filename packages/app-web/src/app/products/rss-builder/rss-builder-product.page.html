@@ -13,7 +13,7 @@
       <ion-buttons class="ion-margin-horizontal">
         <ion-button routerLink="/feeds">
           Feeds
-          <ion-chip>{{ feedCount }}</ion-chip>
+          <ion-chip *ngIf="isLoggedIn">{{ feedCount }}</ion-chip>
         </ion-button>
         <ion-button
           routerLink="/agents"

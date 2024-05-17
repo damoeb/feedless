@@ -151,17 +151,18 @@ class RepositoryHarvester internal constructor() {
   ): Flux<Unit> {
     log.info("[$corrId] scrape ${repository.sources.size} sources")
     return Flux.fromIterable(repository.sources)
-      .flatMap {
+      .flatMap { source ->
         val subCorrId = newCorrId(parentCorrId = corrId)
         try {
-          scrapeSource(corrId, it)
+          scrapeSource(corrId, source)
             .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
+            .also { recoverErrorState(source) }
         } catch (e: Exception) {
           log.warn("[$subCorrId] ${e.message}")
           if (e !is ResumableHarvestException) {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
             notificationService.createNotification(corrId, repository.ownerId, e.message)
-            sourceDAO.setErrornous(it.id, true, e.message)
+            sourceDAO.setErrorState(source.id, true, e.message)
           }
           Flux.empty()
         }
@@ -189,6 +190,12 @@ class RepositoryHarvester internal constructor() {
 //
 //    refineAndImportArticlesScheduled(corrId, articles, importer)
 
+  }
+
+  private fun recoverErrorState(source: SourceEntity) {
+    if (source.erroneous) {
+      sourceDAO.setErrorState(source.id, false, null)
+    }
   }
 
   private fun scrapeSource(corrId: String, source: SourceEntity): Flux<Unit> {
@@ -365,7 +372,7 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
     }
 }
 
-private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>): DocumentEntity {
+private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>?): DocumentEntity {
   val e = DocumentEntity()
   e.repositoryId = repositoryId
   pixel?.let {
@@ -387,7 +394,7 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>):
   return e
 }
 
-private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags: Array<String>): DocumentEntity {
+private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags: Array<String>?): DocumentEntity {
   val e = DocumentEntity()
   e.contentTitle = contentTitle
   e.repositoryId = repositoryId

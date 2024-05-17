@@ -3,7 +3,9 @@ import {
   Agents,
   CountRepositories,
   CreateRepositories,
-  DeleteRepository, GqlAgentsQuery, GqlAgentsQueryVariables,
+  DeleteRepository,
+  GqlAgentsQuery,
+  GqlAgentsQueryVariables,
   GqlCountRepositoriesQuery,
   GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,
@@ -23,7 +25,7 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository
+  UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository } from '../graphql/types';
@@ -123,9 +125,8 @@ export class RepositoryService {
   countRepositories(
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Observable<number> {
-    return this.authService
-      .authorizationChange()
-      .pipe(switchMap(authentication => {
+    return this.authService.authorizationChange().pipe(
+      switchMap((authentication) => {
         if (authentication?.loggedIn) {
           return zenToRx(
             this.apollo
@@ -137,11 +138,12 @@ export class RepositoryService {
                 fetchPolicy,
               })
               .map((response) => response.data.countRepositories),
-          )
+          );
         } else {
-          return of(0)
+          return of(0);
         }
-      }));
+      }),
+    );
   }
 
   async getRepositoryById(

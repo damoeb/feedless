@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedListPage } from './feed-list.page';
 import {
   ApolloMockController,
-  AppTestModule, mockRepositories,
-  mockServerSettings
+  AppTestModule,
+  mockRepositories,
+  mockServerSettings,
 } from '../../../app-test.module';
 import { FeedListModule } from './feed-list.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
@@ -15,9 +16,12 @@ describe('FeedListPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [FeedListModule, AppTestModule.withDefaults(apolloMockController => {
-        mockRepositories(apolloMockController)
-      })],
+      imports: [
+        FeedListModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockRepositories(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     await mockServerSettings(

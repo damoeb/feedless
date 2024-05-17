@@ -50,8 +50,16 @@
         [button]="true"
         topSlot
       >
-        Tags <em class="ion-padding-start">{{getTagsString()}}</em>
-        <ion-icon name="pricetags-outline" color="primary" slot="end"></ion-icon>
+        <ion-label>
+        Source Tags
+          <ion-note *ngIf="tags.length > 0">{{ getTagsString() }}</ion-note>
+          <ion-note *ngIf="tags.length === 0">Tag items for aggregated feeds</ion-note>
+        </ion-label>
+        <ion-icon
+          name="pricetags-outline"
+          color="primary"
+          slot="end"
+        ></ion-icon>
       </ion-item>
       <ion-item
         (click)="finalizeFeed()"

@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { Repository } from '../../../graphql/types';
@@ -37,7 +42,7 @@ export class FeedListPage implements OnInit {
     const repositories = await this.repositoryService.listRepositories({
       cursor: {
         page: 0,
-        pageSize: 30
+        pageSize: 30,
       },
     });
     this.repositories.push(...repositories);

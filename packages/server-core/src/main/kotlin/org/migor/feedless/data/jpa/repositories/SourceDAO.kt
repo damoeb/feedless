@@ -17,17 +17,16 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
 
   @Modifying
   @Query(
-      """
+    """
       update SourceEntity C
         set C.erroneous = :erroneous,
             C.lastErrorMessage = :errorMessage
       where C.id = :id
     """
   )
-  fun setErrornous(
+  fun setErrorState(
     @Param("id") id: UUID,
     @Param("erroneous") erroneous: Boolean,
     @Param("errorMessage") errorMessage: String? = null
   )
-
 }

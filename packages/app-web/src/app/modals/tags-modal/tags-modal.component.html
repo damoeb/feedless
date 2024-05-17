@@ -17,9 +17,14 @@
       placeholder="Type a tag"
     ></app-searchbar>
 
+    <ion-item *ngIf="!tags">
+      <ion-label>
+        <em>No tags yet</em>
+      </ion-label>
+    </ion-item>
     <ion-item *ngFor="let tag of tags">
-      #{{tag}}
-      <ion-button fill="clear" (click)="removeTag(tag)" slot="end">
+      #{{ tag }}
+      <ion-button fill="clear" (click)="removeTag(tag)" slot="end" title="Remove">
         <ion-icon name="trash-outline" color="danger"></ion-icon>
       </ion-button>
     </ion-item>

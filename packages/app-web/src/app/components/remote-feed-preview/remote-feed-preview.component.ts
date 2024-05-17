@@ -1,12 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-} from '@angular/core';
-import {
-  GqlCompositeFilterParamsInput,
-  GqlScrapeRequest,
-} from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { GqlCompositeFilterParamsInput, GqlScrapeRequest } from '../../../generated/graphql';
 import { FeedService } from '../../services/feed.service';
 import { RemoteFeed } from '../../graphql/types';
 
@@ -17,8 +10,11 @@ import { RemoteFeed } from '../../graphql/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteFeedPreviewComponent {
-  protected previewFeed: RemoteFeed;
+  @Input()
+  feed: RemoteFeed;
   protected busy: boolean = false;
+  @Input()
+  noMetaColumn: boolean = false;
 
   constructor(
     private readonly feedService: FeedService,
@@ -32,7 +28,7 @@ export class RemoteFeedPreviewComponent {
     this.busy = true;
     this.changeRef.detectChanges();
     try {
-      this.previewFeed = await this.feedService.previewFeed({
+      this.feed = await this.feedService.previewFeed({
         requests,
         filters,
       });

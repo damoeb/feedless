@@ -30,6 +30,8 @@ import { ApolloAbortControllerService } from './services/apollo-abort-controller
 import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
+import { CodeEditorModule } from './elements/code-editor/code-editor.module';
+import { CodeEditorModalModule } from './modals/code-editor-modal/code-editor-modal.module';
 
 export interface AppEnvironment {
   production: boolean;
@@ -108,6 +110,7 @@ export const fixUrl = (value: string): string => {
     ProductTitleModule,
     // test
     TransformWebsiteToFeedModalModule,
+    CodeEditorModalModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

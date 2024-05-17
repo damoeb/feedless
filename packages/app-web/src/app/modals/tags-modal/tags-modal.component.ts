@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { sortedUniq, without } from 'lodash-es';
 
 export interface TagsModalComponentProps {
-  tags: string[]
+  tags: string[];
 }
 
 @Component({
@@ -12,7 +12,6 @@ export interface TagsModalComponentProps {
   styleUrls: ['./tags-modal.component.scss'],
 })
 export class TagsModalComponent implements TagsModalComponentProps {
-
   tags: string[] = [];
 
   constructor(private readonly modalCtrl: ModalController) {}
@@ -22,7 +21,7 @@ export class TagsModalComponent implements TagsModalComponentProps {
   }
 
   removeTag(tag: string) {
-    this.tags = without(this.tags, tag)
+    this.tags = without(this.tags, tag);
   }
 
   addTag(value: string | number) {

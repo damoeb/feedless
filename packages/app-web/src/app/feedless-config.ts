@@ -24,7 +24,7 @@ export type AppConfig = {
   subtitle: string;
   summary: string;
   // stage: AppStage;
-  version?: (number|string)[]
+  version?: (number | string)[];
   phase: 'planning' | 'design' | 'development' | 'alpha' | 'beta' | 'rc' | 'ga';
   descriptionMarkdown: string;
   descriptionHtml?: string;
@@ -53,7 +53,7 @@ export const feedlessConfig: FeedlessConfig = {
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',
       subtitle: 'RSS Feed Builder',
-      version: [3,0,0, 'rc-1'],
+      version: [3, 0, 0, 'rc-1'],
       phase: 'rc',
       listed: true,
       summary: 'Create feeds from Websites',
@@ -89,15 +89,14 @@ Then, open http://localhost:8080 in your browser`,
       titleHtml: '<strong>Feed</strong><em>Dump</em>',
       pageTitle: 'Feed Dump',
       subtitle: 'Alternative feeds',
-      version: [3,0,0, 'rc-1'],
+      version: [3, 0, 0, 'rc-1'],
       phase: 'rc',
       listed: false,
       summary: 'Create feeds from Websites',
       descriptionMarkdown: ``,
       costs: 0,
       videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
-      features: [
-      ],
+      features: [],
       localSetup: ``,
     },
     {
@@ -107,7 +106,7 @@ Then, open http://localhost:8080 in your browser`,
       pageTitle: 'VisualDiff',
       title: 'VisualDiff',
       subtitle: 'Page Change Tracker',
-      version: [0,1,0],
+      version: [0, 1, 0],
       listed: true,
       phase: 'alpha',
       summary: 'Detect changes in a website and get a notified',
@@ -143,7 +142,7 @@ Then, open http://localhost:8080 in your browser`,
       title: 'Reader',
       subtitle: 'Reader Mode',
       phase: 'alpha',
-      version: [0,1,0],
+      version: [0, 1, 0],
       listed: false,
       summary:
         'Unclutter a website and transform it into a version optimized for reading',
@@ -179,7 +178,7 @@ Then, open http://localhost:8080 in your browser
       title: 'Untold Notes',
       offlineSupport: true,
       listed: false,
-      version: [0,1,0],
+      version: [0, 1, 0],
       phase: 'development',
       subtitle: 'Note App',
       summary:
@@ -235,7 +234,7 @@ way to think, learn and remember.`,
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
       subtitle: 'All In One',
-      version: [0,7,0],
+      version: [0, 7, 0],
       phase: 'development',
       listed: true,
       summary: 'Build automated worflows visually or using code',
@@ -282,10 +281,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       costs: -1,
       phase: 'planning',
       videoUrl: '',
-      features: [
-        'Page Revisions',
-        'Self-Hosting or SaaS'
-      ],
+      features: ['Page Revisions', 'Self-Hosting or SaaS'],
       localSetup: ``,
     },
   ],

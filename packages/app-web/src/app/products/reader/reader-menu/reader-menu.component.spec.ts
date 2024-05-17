@@ -13,7 +13,7 @@ describe('ReaderMenuComponent', () => {
       imports: [ReaderMenuModule, AppTestModule.withDefaults()],
       providers: [
         // { provide: ApolloMockController, useValue: AgentService }
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReaderMenuComponent);

@@ -20,13 +20,14 @@ export const zenToRx = <T>(zenObservable: Zen.Observable<T>): Observable<T> =>
   providedIn: 'root',
 })
 export class AgentService {
-  constructor(private readonly authService: AuthService,
-              private readonly apollo: ApolloClient<any>) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly apollo: ApolloClient<any>,
+  ) {}
 
   getAgents(): Observable<Array<Agent>> {
-    return this.authService
-      .authorizationChange()
-      .pipe(switchMap(authentication => {
+    return this.authService.authorizationChange().pipe(
+      switchMap((authentication) => {
         if (authentication?.loggedIn) {
           return zenToRx(
             this.apollo
@@ -36,10 +37,11 @@ export class AgentService {
               .map((response) => {
                 return response.data.agents;
               }),
-          )
+          );
         } else {
-          return of([])
+          return of([]);
         }
-      }))
+      }),
+    );
   }
 }

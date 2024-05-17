@@ -8,6 +8,6 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 @NgModule({
   declarations: [TagsModalComponent],
   exports: [TagsModalComponent],
-  imports: [CommonModule, IonicModule, FormsModule, SearchbarModule]
+  imports: [CommonModule, IonicModule, FormsModule, SearchbarModule],
 })
 export class TagsModalModule {}

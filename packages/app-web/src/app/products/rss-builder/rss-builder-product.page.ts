@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { AgentService } from '../../services/agent.service';
 import { RepositoryService } from '../../services/repository.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -34,9 +35,11 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   protected readonly dateFormat = dateFormat;
   feedCount: number = 0;
   agentCount: number = 0;
+  isLoggedIn: boolean;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
+    private readonly authService: AuthService,
     private readonly productService: ProductService,
     private readonly repositoryService: RepositoryService,
     private readonly licenseService: LicenseService,
@@ -49,6 +52,10 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
+      this.authService.authorizationChange().subscribe((authorization) => {
+        this.isLoggedIn = authorization?.loggedIn;
+        this.changeRef.detectChanges();
+      }),
       this.productService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {

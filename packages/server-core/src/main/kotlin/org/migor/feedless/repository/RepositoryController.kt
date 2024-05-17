@@ -49,9 +49,7 @@ class RepositoryController {
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
         Tag.of("type", "repository"),
-        Tag.of("page", page.toString()),
         Tag.of("id", repositoryId),
-        Tag.of("format", "atom")
       )
     ).increment()
     log.info("[$corrId] GET feed/atom id=$repositoryId page=$page")
@@ -80,8 +78,6 @@ class RepositoryController {
       AppMetrics.fetchRepository, listOf(
         Tag.of("type", "repository"),
         Tag.of("id", repositoryId),
-        Tag.of("page", page.toString()),
-        Tag.of("format", "json")
       )
     ).increment()
     log.info("[$corrId] GET feed/json id=$repositoryId page=$page")

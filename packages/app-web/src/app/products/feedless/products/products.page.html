@@ -41,7 +41,7 @@
           >
           <p>Version {{product.version.join('.')}}</p>
           <p>
-            {{product.summary}} <br>
+            {{product.summary}} <br />
             <span [innerHtml]="product.descriptionHtml"></span>
           </p>
 
@@ -101,19 +101,23 @@
             <div>
               <ul>
                 <li *ngFor="let feature of product.features">{{feature}}</li>
-<!--                <li>Source Available</li>-->
+                <!--                <li>Source Available</li>-->
               </ul>
             </div>
           </div>
 
           <div style="margin-top: 50px" *ngIf="videoUrl">
             <h1>Demo Video</h1>
-            <iframe width="560" height="315" [src]="videoUrl"
-                    title="YouTube video player"
-                    frameborder="0"
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen></iframe>
+            <iframe
+              width="560"
+              height="315"
+              [src]="videoUrl"
+              title="YouTube video player"
+              frameborder="0"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
           </div>
 
           <div style="margin-top: 50px">

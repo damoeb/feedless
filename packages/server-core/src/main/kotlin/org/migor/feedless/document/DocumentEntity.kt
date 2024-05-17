@@ -67,7 +67,7 @@ open class DocumentEntity : EntityWithUUID() {
 
   @Type(StringArrayType::class)
   @Column(name = "tags", columnDefinition = "text[]")
-  open var tags: Array<String> = emptyArray()
+  open var tags: Array<String>? = emptyArray()
 
   @Lazy
   @Column(columnDefinition = "bytea", name = "content_raw")
@@ -189,7 +189,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument
       .contentText(contentText)
       .updatedAt(updatedAt.time)
       .createdAt(createdAt.time)
-      .tags(tags.asList())
+      .tags(tags?.asList() ?: emptyList())
       .enclosures(attachments.map {
         Enclosure.newBuilder()
           .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))

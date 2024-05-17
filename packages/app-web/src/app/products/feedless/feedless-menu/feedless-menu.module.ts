@@ -8,11 +8,6 @@ import { BubbleModule } from '../../../components/bubble/bubble.module';
 @NgModule({
   declarations: [FeedlessMenuComponent],
   exports: [FeedlessMenuComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterModule,
-    BubbleModule
-  ]
+  imports: [CommonModule, IonicModule, RouterModule, BubbleModule],
 })
 export class FeedlessMenuModule {}
