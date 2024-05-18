@@ -1,62 +1,6 @@
 <ion-content>
   <ion-spinner *ngIf="!repository" name="dots"></ion-spinner>
   <div class="limited-width-pane" *ngIf="repository">
-    <div class="ion-margin-vertical ion-padding">
-      <div>
-        <h2 class="title">{{ repository.title }}</h2>
-        <!--        <div class="subtitle">-->
-        <!--          Schweizer Radio und Fernsehen (SRF)-->
-        <!--        </div>-->
-        <div class="ion-margin-vertical">
-          <ion-buttons>
-            <ion-button>
-              <ion-icon
-                name="globe-outline"
-                color="primary"
-                slot="start"
-              ></ion-icon>
-              Visit website
-            </ion-button>
-            <ion-button title="Pulls per week">
-              <ion-icon
-                name="arrow-down-outline"
-                color="primary"
-                slot="start"
-              ></ion-icon>
-              Pull 2.3k
-            </ion-button>
-            <!--            <ion-button>-->
-            <!--              <ion-icon name="star-outline" color="primary" slot="start"></ion-icon>-->
-            <!--              1.7k-->
-            <!--            </ion-button>-->
-            <ion-button color="primary" fill="solid">
-              <ion-icon name="logo-rss"></ion-icon>
-              Feed
-            </ion-button>
-          </ion-buttons>
-        </div>
-        <div class="description">
-          {{ repository.description }}
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top: 50px" class="ion-padding">
-      <h3>Available articles</h3>
-    </div>
-
-    <ion-spinner *ngIf="!items" name="dots"></ion-spinner>
-
-    <ion-list *ngIf="items">
-      <ion-item lines="inset" *ngFor="let item of items">
-        <ion-label>
-          <ion-note>4 days ago</ion-note>
-          <a [href]="item.url" target="_blank" referrerpolicy="no-referrer">
-            <h2>{{ item.contentTitle }}</h2>
-          </a>
-          <p>{{ item.contentText }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+    <app-feed-details [repository]="repository"></app-feed-details>
   </div>
 </ion-content>

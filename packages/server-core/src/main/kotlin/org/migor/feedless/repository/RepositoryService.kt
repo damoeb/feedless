@@ -188,7 +188,7 @@ class RepositoryService {
     planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
-    entity.tags = scrapeRequest.tags?.toTypedArray() ?: emptyArray()
+    entity.tags = scrapeRequest.tags?.toTypedArray()
     entity.timeout = scrapeRequest.page.timeout
 
     scrapeRequest.page.prerender?.let {

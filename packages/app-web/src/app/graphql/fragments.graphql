@@ -31,6 +31,7 @@ fragment RepositoryFragment on Repository {
   title
   description
   visibility
+  tags
   createdAt
   activity {
     items {
@@ -306,6 +307,9 @@ fragment WebDocumentFragment on WebDocument {
   createdAt
   publishedAt
   startingAt
+  enclosures {
+    ...EnclosureFragment
+  }
 }
 
 fragment EnclosureFragment on Enclosure {
@@ -313,22 +317,6 @@ fragment EnclosureFragment on Enclosure {
   duration
   type
   url
-}
-
-fragment ContentFragment on WebDocument {
-  contentTitle
-  contentText
-  contentRawBase64
-  contentRawMime
-  url
-  imageUrl
-  publishedAt
-  startingAt
-  updatedAt
-  createdAt
-  enclosures {
-    ...EnclosureFragment
-  }
 }
 
 fragment NativeFeedFragment on NativeFeed {

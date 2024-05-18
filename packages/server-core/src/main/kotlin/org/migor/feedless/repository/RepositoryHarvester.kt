@@ -10,6 +10,7 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.SourceEntity
@@ -18,6 +19,7 @@ import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -314,7 +316,6 @@ class RepositoryHarvester internal constructor() {
           } else {
             ReleaseStatus.unreleased
           }
-
           documentDAO.save(document)
 
           document.plugins = repository.plugins
@@ -395,29 +396,41 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>?)
 }
 
 private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags: Array<String>?): DocumentEntity {
-  val e = DocumentEntity()
-  e.contentTitle = contentTitle
-  e.repositoryId = repositoryId
+  val d = DocumentEntity()
+  d.contentTitle = contentTitle
+  d.repositoryId = repositoryId
   if (StringUtils.isNotBlank(contentRawBase64)) {
     val tika = Tika()
     val contentRawBytes = contentRawBase64.toByteArray()
     val mime = tika.detect(contentRawBytes)
-    e.contentRaw = if (mime.startsWith("text/")) {
+    d.contentRaw = if (mime.startsWith("text/")) {
       contentRawBytes
     } else {
       Base64.getDecoder().decode(contentRawBase64)
     }
-    e.contentRawMime = mime
+    d.contentRawMime = mime
   }
-  e.tags = tags
-  e.contentHtml = contentHtml
-  e.imageUrl = ""
-  e.contentText = contentText
-  e.status = status
-  e.publishedAt = Date(publishedAt)
-  e.updatedAt = updatedAt?.let { Date(updatedAt) } ?: e.publishedAt
-  e.url = url
-  return e
+  d.tags = tags
+  d.contentHtml = contentHtml
+  d.imageUrl = ""
+  d.contentText = contentText
+  d.status = status
+  enclosures?.let {
+    d.attachments = it.map { it.toAttachment(d) } .toMutableList()
+  }
+  d.publishedAt = Date(publishedAt)
+  d.updatedAt = updatedAt?.let { Date(updatedAt) } ?: d.publishedAt
+  d.url = url
+  return d
+}
+
+private fun Enclosure.toAttachment(document: DocumentEntity): AttachmentEntity {
+  val a = AttachmentEntity()
+  a.contentType = type
+  a.remoteDataUrl = url
+  a.originalUrl = url
+  a.documentId = document.id
+  return a
 }
 
 fun nextCronDate(cronString: String, from: LocalDateTime): Date {

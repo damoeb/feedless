@@ -47,7 +47,7 @@ export class FeedsPage implements OnInit {
     if (repository.sources.some((source) => source.errornous)) {
       return 'red';
     } else {
-      return 'blue';
+      return 'green';
     }
   }
 

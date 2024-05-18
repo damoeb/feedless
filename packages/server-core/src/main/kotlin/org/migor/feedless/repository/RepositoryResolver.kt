@@ -53,36 +53,36 @@ class RepositoryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun repositories(
-      @InputArgument data: RepositoriesInput,
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: RepositoriesInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Repository> = coroutineScope {
-      log.info("[$corrId] repositories $data")
-      val pageNumber = handlePageNumber(data.cursor.page)
-      val pageSize = handlePageSize(data.cursor.pageSize)
-      val offset = pageNumber * pageSize
-      repositoryService.findAll(offset, pageSize, sessionService.userId())
-          .map { it.toDto() }
+    log.info("[$corrId] repositories $data")
+    val pageNumber = handlePageNumber(data.cursor.page)
+    val pageSize = handlePageSize(data.cursor.pageSize)
+    val offset = pageNumber * pageSize
+    repositoryService.findAll(offset, pageSize, sessionService.userId())
+      .map { it.toDto() }
   }
 
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun countRepositories(
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Int = coroutineScope {
-      log.info("[$corrId] countRepositories")
-      repositoryService.countAll(sessionService.userId())
+    log.info("[$corrId] countRepositories")
+    repositoryService.countAll(sessionService.userId())
   }
 
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun repository(
-      @InputArgument data: RepositoryWhereInput,
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: RepositoryWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = coroutineScope {
-      log.info("[$corrId] repository $data")
-      repositoryService.findById(corrId, UUID.fromString(data.where.id)).toDto()
+    log.info("[$corrId] repository $data")
+    repositoryService.findById(corrId, UUID.fromString(data.where.id)).toDto()
   }
 
   @Throttled
@@ -90,11 +90,11 @@ class RepositoryResolver {
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createRepositories(
-      @InputArgument("data") data: RepositoriesCreateInput,
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument("data") data: RepositoriesCreateInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Repository> = coroutineScope {
-      log.info("[$corrId] createRepositories $data")
-      repositoryService.create(corrId, data)
+    log.info("[$corrId] createRepositories $data")
+    repositoryService.create(corrId, data)
   }
 
   @Throttled
@@ -102,11 +102,11 @@ class RepositoryResolver {
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateRepository(
-      @InputArgument("data") data: RepositoryUpdateInput,
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument("data") data: RepositoryUpdateInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = coroutineScope {
-      log.info("[$corrId] updateRepository $data")
-      repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
+    log.info("[$corrId] updateRepository $data")
+    repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
   }
 
   @Throttled
@@ -114,26 +114,36 @@ class RepositoryResolver {
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteRepository(
-      @InputArgument("data") data: RepositoryUniqueWhereInput,
-      @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument("data") data: RepositoryUniqueWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-      log.info("[$corrId] deleteRepository $data")
-      repositoryService.delete(corrId, UUID.fromString(data.id))
-      true
+    log.info("[$corrId] deleteRepository $data")
+    repositoryService.delete(corrId, UUID.fromString(data.id))
+    true
   }
 
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun sources(dfe: DgsDataFetchingEnvironment): List<ScrapeRequest> = coroutineScope {
-      val source: Repository = dfe.getSource()
-      sourceDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { scrapeSource ->
-          run {
-              val scrapeRequest = scrapeSource.toScrapeRequest()
-              scrapeRequest.corrId = null
-              scrapeRequest
-          }
+    val source: Repository = dfe.getSource()
+    sourceDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { scrapeSource ->
+      run {
+        val scrapeRequest = scrapeSource.toScrapeRequest()
+        scrapeRequest.corrId = null
+        scrapeRequest
       }
+    }
+  }
+
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
+    val source: Repository = dfe.getSource()
+    sourceDAO.findAllByRepositoryId(UUID.fromString(source.id))
+      .mapNotNull { it.tags?.asList() }
+      .flatten()
+      .distinct()
   }
 
 }

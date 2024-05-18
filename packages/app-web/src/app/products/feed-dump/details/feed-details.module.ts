@@ -7,6 +7,7 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
 import { FeedDetailsPage } from './feed-details.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
+import { FeedDetailsModule as FeedDetailsComponentModule } from '../../../components/feed-details/feed-details.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { ProductHeaderModule } from '../../../components/product-header/product-
     ProductHeadlineModule,
     SearchbarModule,
     ProductHeaderModule,
+    FeedDetailsComponentModule,
   ],
   declarations: [FeedDetailsPage],
 })

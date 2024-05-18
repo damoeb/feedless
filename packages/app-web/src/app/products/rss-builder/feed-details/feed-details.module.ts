@@ -12,6 +12,7 @@ import { HistogramModule } from '../../../components/histogram/histogram.module'
 import { ReaderModule } from '../../../components/reader/reader.module';
 import { FormsModule } from '@angular/forms';
 import { TagsModalModule } from '../../../modals/tags-modal/tags-modal.module';
+import { FeedDetailsModule } from '../../../components/feed-details/feed-details.module';
 
 @NgModule({
   imports: [
@@ -25,6 +26,7 @@ import { TagsModalModule } from '../../../modals/tags-modal/tags-modal.module';
     TagsModalModule,
     ReaderModule,
     FormsModule,
+    FeedDetailsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],

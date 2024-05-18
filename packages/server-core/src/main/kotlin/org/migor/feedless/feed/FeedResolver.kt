@@ -11,6 +11,8 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
@@ -78,6 +80,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         .startingAt(it.startingAt?.time)
         .createdAt(Date().time)
         .url(it.url)
+        .enclosures(it.attachments.map { it.toEnclosure() })
         .imageUrl(it.imageUrl)
 
       if (isHtml(it.contentRawMime)) {
@@ -98,3 +101,10 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .build()
 
 }
+
+private fun JsonAttachment.toEnclosure(): Enclosure = Enclosure.newBuilder()
+  .url(url)
+  .type(type)
+  .size(size)
+  .duration(duration)
+  .build()

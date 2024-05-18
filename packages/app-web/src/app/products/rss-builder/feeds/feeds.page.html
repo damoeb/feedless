@@ -17,11 +17,11 @@
       </ion-col>
     </ion-row>
 
-    <ion-list>
+    <ion-list style="border-radius: 8px">
       <ion-item *ngIf="repositories?.length === 0">
         <p>You have no feeds yet</p>
       </ion-item>
-      <ion-item *ngFor="let feed of repositories">
+      <ion-item *ngFor="let feed of repositories" lines="inset">
         <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
         <ion-label>
           <h2>
