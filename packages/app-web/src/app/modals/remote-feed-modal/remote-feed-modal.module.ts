@@ -9,6 +9,12 @@ import { RemoteFeedPreviewModule } from '../../components/remote-feed-preview/re
 @NgModule({
   declarations: [RemoteFeedModalComponent],
   exports: [RemoteFeedModalComponent],
-  imports: [CommonModule, IonicModule, FormsModule, SearchbarModule, RemoteFeedPreviewModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    FormsModule,
+    SearchbarModule,
+    RemoteFeedPreviewModule,
+  ],
 })
 export class RemoteFeedModalModule {}

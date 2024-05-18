@@ -1,10 +1,32 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
-import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  FeedlessPlugin,
+  Repository,
+  SubscriptionSource,
+  WebDocument,
+} from '../../graphql/types';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
-import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  InfiniteScrollCustomEvent,
+  ModalController,
+  PopoverController,
+} from '@ionic/angular';
+import {
+  FeedWithRequest,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -12,49 +34,65 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
-import { dateFormat } from '../../services/session.service';
+import { dateFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-feed-details',
   templateUrl: './feed-details.component.html',
   styleUrls: ['./feed-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedDetailsComponent implements OnInit {
+export class FeedDetailsComponent implements OnInit, OnDestroy {
+  @Input({ required: true })
+  repository: Repository;
 
-  @Input({required: true})
-  repository: Repository
+  @Input()
+  track: boolean;
 
   protected pages: WebDocument[][] = [];
-  protected feedUrl: string
+  protected feedUrl: string;
 
   private plugins: FeedlessPlugin[];
 
   protected readonly GqlVisibility = GqlVisibility;
   protected readonly dateFormat = dateFormat;
   showFullDescription: boolean = false;
-  renderText = true;
-  showImages = false;
   protected playDocument: WebDocument;
+  private userId: string;
+  private subscriptions: Subscription[] = [];
 
-  constructor(private readonly modalService: ModalService,
-              private readonly pluginService: PluginService,
-              private readonly documentService: DocumentService,
-              private readonly router: Router,
-              private readonly domSanitizer: DomSanitizer,
-              private readonly repositoryService: RepositoryService,
-              private readonly serverSettingsService: ServerSettingsService,
-              private readonly changeRef: ChangeDetectorRef,
-              private readonly modalCtrl: ModalController) {}
+  constructor(
+    private readonly modalService: ModalService,
+    private readonly pluginService: PluginService,
+    private readonly popoverCtrl: PopoverController,
+    private readonly documentService: DocumentService,
+    private readonly router: Router,
+    private readonly domSanitizer: DomSanitizer,
+    private readonly sessionService: SessionService,
+    private readonly repositoryService: RepositoryService,
+    private readonly serverSettingsService: ServerSettingsService,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly modalCtrl: ModalController,
+  ) {}
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
 
   async ngOnInit() {
     dayjs.extend(relativeTime);
-    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`
+    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
     this.plugins = await this.pluginService.listPlugins();
+    this.subscriptions.push(
+      this.sessionService.getSession().subscribe((session) => {
+        this.userId = session.user?.id;
+      }),
+    );
     await this.fetchNextPage();
     this.changeRef.detectChanges();
   }
@@ -69,7 +107,11 @@ export class FeedDetailsComponent implements OnInit {
   }
 
   hostname(url: string): string {
-    return new URL(url).hostname;
+    try {
+      return new URL(url).hostname;
+    } catch (e) {
+      return 'Unknown';
+    }
   }
 
   async editRepository() {
@@ -78,6 +120,7 @@ export class FeedDetailsComponent implements OnInit {
       modalTitle: `Customize ${this.repository.title}`,
     };
     await this.modalService.openFeedMetaEditor(componentProps);
+    await this.popoverCtrl.dismiss();
   }
 
   hasErrors(): boolean {
@@ -153,13 +196,20 @@ export class FeedDetailsComponent implements OnInit {
   }
 
   fromNow(futureTimestamp: number): string {
-    return dayjs(futureTimestamp).toNow(true);
+    const now = dayjs();
+    const ts = dayjs(futureTimestamp);
+    if (now.subtract(2, 'weeks').isAfter(ts)) {
+      return ts.format('DD.MMMM YYYY');
+    } else {
+      return ts.toNow(true) + ' ago';
+    }
   }
 
   async deleteRepository() {
     await this.repositoryService.deleteRepository({
       id: this.repository.id,
     });
+    await this.popoverCtrl.dismiss();
     await this.router.navigateByUrl('/feeds');
   }
 
@@ -262,7 +312,7 @@ export class FeedDetailsComponent implements OnInit {
   }
 
   hasAudioStream(document: WebDocument): boolean {
-    return document.enclosures.some(e => e.type.startsWith('audio/'));
+    return document.enclosures.some((e) => e.type.startsWith('audio/'));
   }
 
   playAudio(document: WebDocument): void {
@@ -270,9 +320,23 @@ export class FeedDetailsComponent implements OnInit {
   }
 
   firstAudioStream(document: WebDocument): SafeResourceUrl {
-    const audioStream = first(document.enclosures.filter(e => e.type.startsWith('audio/')));
+    const audioStream = first(
+      document.enclosures.filter((e) => e.type.startsWith('audio/')),
+    );
     if (audioStream) {
-      return this.domSanitizer.bypassSecurityTrustResourceUrl(audioStream.url)
+      return this.domSanitizer.bypassSecurityTrustResourceUrl(audioStream.url);
+    }
+  }
+
+  isOwner(): boolean {
+    return this.repository.ownerId === this.userId;
+  }
+
+  getDocumentUrl(document: WebDocument): string {
+    if (this.track) {
+      return `${this.serverSettingsService.gatewayUrl}/article/${document.id}`;
+    } else {
+      return document.url;
     }
   }
 }

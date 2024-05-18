@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedModalComponent } from './transform-website-to-feed-modal.component';
 import { TransformWebsiteToFeedModalModule } from './transform-website-to-feed-modal.module';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule, mockRepositories } from '../../app-test.module';
 import {
   GqlFeedlessPlugins,
   GqlScrapedFeeds,
@@ -12,11 +12,13 @@ describe('TransformWebsiteToFeedModalComponent', () => {
   let component: TransformWebsiteToFeedModalComponent;
   let fixture: ComponentFixture<TransformWebsiteToFeedModalComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         TransformWebsiteToFeedModalModule,
-        AppTestModule.withDefaults(),
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockRepositories(apolloMockController);
+        }),
       ],
     }).compileComponents();
 

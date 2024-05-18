@@ -135,15 +135,6 @@ export class ServerSettingsService {
     });
   }
 
-  isEnabled(featureName: GqlFeatureName): boolean {
-    const feature = this.features.find((ft) => ft.name === featureName);
-    if (feature) {
-      return feature.value.boolVal.value;
-    }
-    console.warn(`Feature ${featureName} not listed`);
-    return false;
-  }
-
   private async showToast({
     header,
     message,
@@ -175,5 +166,25 @@ export class ServerSettingsService {
 
   getVersion() {
     return this.version;
+  }
+
+  getFeatureValueInt(featureName: GqlFeatureName): number | undefined {
+    const feature = this.getFeature(featureName);
+    if (feature) {
+      return feature.value.numVal.value;
+    }
+  }
+
+  isEnabled(featureName: GqlFeatureName): boolean {
+    const feature = this.getFeature(featureName);
+    if (feature) {
+      return feature.value.boolVal.value;
+    }
+    console.warn(`Feature ${featureName} not listed`);
+    return false;
+  }
+
+  private getFeature(featureName: GqlFeatureName): Feature {
+    return this.features.find((ft) => ft.name === featureName);
   }
 }

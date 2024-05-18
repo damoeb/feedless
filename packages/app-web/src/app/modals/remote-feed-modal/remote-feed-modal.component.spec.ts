@@ -14,6 +14,7 @@ describe('RemoteFeedModalComponent', () => {
 
     fixture = TestBed.createComponent(RemoteFeedModalComponent);
     component = fixture.componentInstance;
+    component.feedProvider = jasmine.createSpy();
     fixture.detectChanges();
   }));
 

@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-  Agents,
   CountRepositories,
   CreateRepositories,
   DeleteRepository,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
   GqlCountRepositoriesQuery,
   GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,

@@ -20,7 +20,7 @@ open class GenericFeedItem : Serializable {
   var tags: List<String>? = null
 
   @SerializedName("content_text")
-  lateinit var contentText: String
+  var contentText: String? = null
 
   @SerializedName("content_raw")
   var contentRawBase64: String? = null

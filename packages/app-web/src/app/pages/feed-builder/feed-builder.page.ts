@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProductConfig, ProductService } from '../../services/product.service';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
 import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';

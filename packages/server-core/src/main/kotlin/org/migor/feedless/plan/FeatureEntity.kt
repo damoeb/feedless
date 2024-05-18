@@ -44,9 +44,3 @@ open class FeatureEntity : EntityWithUUID() {
   )
   open var product: ProductEntity? = null
 }
-
-fun FeatureEntity.toDto(): Feature {
-  return Feature.newBuilder()
-    .name(name)
-    .build()
-}

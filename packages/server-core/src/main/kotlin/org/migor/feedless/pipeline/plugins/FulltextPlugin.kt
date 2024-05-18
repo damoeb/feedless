@@ -55,7 +55,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
-  ) {
+  ): DocumentEntity {
     log.info("[$corrId] mapEntity ${document.url}")
 
     val emit = ScrapeEmit.newBuilder()
@@ -108,6 +108,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
         document.contentTitle = HtmlUtil.parseHtml(html, document.url).title()
       }
     }
+    return document
   }
 
   override fun transformFragment(

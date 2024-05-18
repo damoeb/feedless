@@ -413,7 +413,7 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags
   d.tags = tags
   d.contentHtml = contentHtml
   d.imageUrl = ""
-  d.contentText = contentText
+  d.contentText = StringUtils.trimToEmpty(contentText)
   d.status = status
   enclosures?.let {
     d.attachments = it.map { it.toAttachment(d) } .toMutableList()

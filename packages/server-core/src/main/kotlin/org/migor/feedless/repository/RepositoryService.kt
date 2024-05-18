@@ -140,7 +140,7 @@ class RepositoryService {
       planConstraints.auditCronExpression(subInput.sourceOptions.refreshCron)
     } ?: ""
     sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
-    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays)
+    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays, ownerId)
     sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
     sub.product = subInput.product.fromDto()
 
@@ -254,12 +254,7 @@ class RepositoryService {
         PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     return (userId
       ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
-      ?: findAllPublic())
-  }
-
-  private fun findAllPublic(): List<RepositoryEntity> {
-    // todo implement
-    return emptyList()
+      ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable))
   }
 
   fun findById(corrId: String, id: UUID): RepositoryEntity {

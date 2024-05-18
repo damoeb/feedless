@@ -11,6 +11,6 @@ interface MapEntityPlugin : FeedlessPlugin {
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
-  )
+  ): DocumentEntity
 
 }

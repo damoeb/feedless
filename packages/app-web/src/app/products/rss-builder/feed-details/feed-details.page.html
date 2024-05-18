@@ -47,8 +47,11 @@
       </ion-item>
     </div>
 
-    <app-feed-details *ngIf="!busy && !errorMessage" style="margin-top: 50px" [repository]="repository">
-
+    <app-feed-details
+      *ngIf="!busy && !errorMessage"
+      style="margin-top: 50px"
+      [repository]="repository"
+    >
     </app-feed-details>
   </div>
 </ion-content>

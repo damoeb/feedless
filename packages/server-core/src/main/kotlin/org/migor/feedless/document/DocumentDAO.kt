@@ -26,24 +26,40 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
   ): Page<DocumentEntity>
 
 //  @Query("""
-//    SELECT * FROM t_document
-//    where repository_id = :repositoryId
-//    and status = :status
-//    and released_at < :now
-//    and :tag = ANY(tags)
+//    SELECT d.* FROM t_document d
+//    where repository_id = ?1
+//    and status = ?2
+//    and released_at < ?3
+//    and ?4 = ANY(tags)
 //    order by released_at DESC
-//    limit :limit
+//    limit ?5
+//    offset ?6
 //  """, nativeQuery = true)
-//  fun findAllByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
-//    @Param("repositoryId") repositoryId: UUID,
-//    @Param("status") status: ReleaseStatus,
-//    @Param("now") now: Date,
-//    @Param("tag") tag: String,
-//    @Param("limit") limit: Int,
-////    @Param("offset") offset: Int,
-////    limit: Int,
-////    offset: Int,
+//  fun findAllIdsByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
+//    repositoryId: UUID,
+//    status: ReleaseStatus,
+//    now: Date,
+//    tag: String,
+//    limit: Int,
+//    offset: Int,
 //  ): List<DocumentEntity>
+
+//  @Query("""
+//    SELECT count(*) FROM t_document d
+//    where repository_id = ?1
+//    and status = ?2
+//    and released_at < ?3
+//    and ?4 = ANY(tags)
+//    order by released_at DESC
+//  """, nativeQuery = true)
+//  fun countByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
+//    repositoryId: UUID,
+//    status: ReleaseStatus,
+//    now: Date,
+//    tag: String,
+//    limit: Int,
+//    offset: Int,
+//  ): Long
 
 
   @Modifying

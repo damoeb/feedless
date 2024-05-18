@@ -105,7 +105,11 @@ export class TrackerEditModalComponent
       });
     }
 
-    await this.remoteFeedPreview.loadFeedPreview([this.scrapeRequest], filters);
+    await this.remoteFeedPreview.loadFeedPreview(
+      [this.scrapeRequest],
+      filters,
+      [],
+    );
     this.changeRef.detectChanges();
   }
 

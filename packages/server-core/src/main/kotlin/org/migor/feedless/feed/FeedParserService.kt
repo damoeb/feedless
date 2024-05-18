@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.HttpService
@@ -18,7 +19,11 @@ import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.document.toDto
+import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
@@ -42,6 +47,9 @@ class FeedParserService {
 
   @Autowired
   lateinit var filterPlugin: CompositeFilterPlugin
+
+  @Autowired
+  lateinit var conditionalTagPlugin: ConditionalTagPlugin
 
   @Autowired
   lateinit var httpService: HttpService
@@ -102,10 +110,15 @@ class FeedParserService {
   fun parseFeedFromRequest(
     corrId: String,
     scrapeRequests: List<ScrapeRequest>,
-    filters: List<CompositeFilterParamsInput>
+    filters: List<CompositeFilterParamsInput>,
+    tags: List<ConditionalTagInput>
   ): RemoteNativeFeed {
     val params = filters.toPluginExecutionParamsInput()
 
+    val dummyRepository = RepositoryEntity()
+    val conditionalTagsParams = PluginExecutionParamsInput.newBuilder()
+      .org_feedless_conditional_tag(tags)
+      .build()
     val items = Flux.fromIterable(scrapeRequests)
       .flatMap { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
       .map { response -> response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!! }
@@ -122,10 +135,14 @@ class FeedParserService {
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
           corrId,
-          item.asEntity(),
+          item.asEntity(dummyRepository),
           params,
           index
         )
+      }
+      .map {
+        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
+          .toDto(propertyService)
       }
 
     val feed = RemoteNativeFeed()
@@ -146,18 +163,18 @@ private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInpu
     .build()
 }
 
-private fun WebDocument.asEntity(): DocumentEntity {
+private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
   val e = DocumentEntity()
   e.contentTitle = contentTitle
 //  if (StringUtils.isNotBlank(contentRawBase64)) {
 //    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
 //    e.contentRawMime = contentRawMime
 //  }
-
-  e.contentText = contentText
+  e.repositoryId = repository.id
+  e.contentText = StringUtils.trimToEmpty(contentText)
   e.status = ReleaseStatus.released
   e.publishedAt = Date(publishedAt)
-//  e.updatedAt = Date()
+  e.updatedAt = Date(publishedAt)
   e.url = url
   return e
 }

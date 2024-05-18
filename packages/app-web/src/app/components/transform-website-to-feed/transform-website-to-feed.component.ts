@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -6,7 +14,7 @@ import {
   GqlScrapedFeeds,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -86,9 +94,11 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   private selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
 
-  constructor(private readonly changeRef: ChangeDetectorRef,
-              private readonly feedService: FeedService,
-              private readonly modalService: ModalService) {}
+  constructor(
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly feedService: FeedService,
+    private readonly modalService: ModalService,
+  ) {}
 
   async ngOnInit() {
     try {
@@ -223,12 +233,17 @@ export class TransformWebsiteToFeedComponent implements OnInit {
 
   async previewGenericFeed() {
     await this.modalService.openRemoteFeedModal({
-      feedProvider: () => this.feedService.previewFeed({
-        requests: [
-          getScrapeRequest(this.selectedFeed, this.scrapeRequest as GqlScrapeRequest)
-        ],
-        filters: [],
-      })
-    })
+      feedProvider: () =>
+        this.feedService.previewFeed({
+          requests: [
+            getScrapeRequest(
+              this.selectedFeed,
+              this.scrapeRequest as GqlScrapeRequest,
+            ),
+          ],
+          filters: [],
+          tags: [],
+        }),
+    });
   }
 }

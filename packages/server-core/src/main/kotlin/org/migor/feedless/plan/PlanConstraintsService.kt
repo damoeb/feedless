@@ -9,7 +9,7 @@ interface PlanConstraintsService {
 
   fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date
 
-  fun coerceRetentionMaxAgeDays(maxAge: Int?): Int?
+  fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID): Int?
 
   fun auditCronExpression(cronString: String): String
 

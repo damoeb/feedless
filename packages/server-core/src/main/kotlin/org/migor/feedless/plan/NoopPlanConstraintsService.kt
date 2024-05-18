@@ -30,7 +30,7 @@ class NoopPlanConstraintsService : PlanConstraintsService {
     }
   }
 
-  override fun coerceRetentionMaxAgeDays(maxAge: Int?): Int? = maxAge?.coerceAtLeast(2)
+  override fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID): Int? = maxAge?.coerceAtLeast(2)
 
   override fun auditCronExpression(cronString: String): String {
     CronExpression.isValidExpression(cronString)

@@ -61,16 +61,16 @@ export class PlansComponent implements OnInit {
     //   title: 'Feed Refresh Rate',
     //   subtitle: 'minutes',
     // },
+    // {
+    //   featureName: GqlFeatureName.Api,
+    //   title: 'API',
+    // },
     {
-      featureName: GqlFeatureName.Api,
-      title: 'API',
-    },
-    {
-      featureName: GqlFeatureName.PublicScrapeSource,
+      featureName: GqlFeatureName.PublicRepository,
       title: 'Public Subscriptions',
     },
     {
-      featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
+      featureName: GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
       title: 'Items per Subscription',
     },
     {
@@ -82,14 +82,14 @@ export class PlansComponent implements OnInit {
       title: 'Plugins Support',
       subtitle: 'e.g. Fulltext, Privacy',
     },
-    {
-      featureName: GqlFeatureName.ItemEmailForward,
-      title: 'Email Forwards',
-    },
-    {
-      featureName: GqlFeatureName.ItemWebhookForward,
-      title: 'Webhooks',
-    },
+    // {
+    //   featureName: GqlFeatureName.ItemEmailForward,
+    //   title: 'Email Forwards',
+    // },
+    // {
+    //   featureName: GqlFeatureName.ItemWebhookForward,
+    //   title: 'Webhooks',
+    // },
   ];
   finalPlans: PlanForUi[];
 

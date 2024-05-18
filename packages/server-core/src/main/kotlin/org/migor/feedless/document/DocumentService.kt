@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -50,11 +51,19 @@ class DocumentService {
     val pageable = PageRequest.of(fixedPage, fixedPageSize, Sort.by(Sort.Direction.DESC, "publishedAt"))
 
 //    return tag
-//      ?.let { documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(repositoryId, status, Date(), tag,
-//        limit = fixedPageSize)
-//      //        , offset = fixedPage * fixedPageSize)
+//      ?.let {
+//        val count = documentDAO.countByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
+//          repositoryId, status, Date(), tag,
+//          limit = fixedPageSize, offset = fixedPage * fixedPageSize
+//        )
+//        val documents = documentDAO.findAllIdsByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
+//          repositoryId, status, Date(), tag,
+//          limit = fixedPageSize, offset = fixedPage * fixedPageSize
+//        )
+//        PageImpl(documents, pageable, count)
 //        }
-//      ?:
+//      ?: documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repositoryId, status, Date(), pageable)
+
     return documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repositoryId, status, Date(), pageable)
   }
 
@@ -69,7 +78,7 @@ class DocumentService {
     }
 
 
-    planConstraintsService.coerceRetentionMaxAgeDays(repository.retentionMaxAgeDays)
+    planConstraintsService.coerceRetentionMaxAgeDays(repository.retentionMaxAgeDays, repository.ownerId)
       ?.let { maxAgeDays ->
         log.info("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
         val maxDate = Date.from(

@@ -39,6 +39,9 @@ import {
   Scrape,
   ServerSettings,
   RepositoryById,
+  WebDocumentByIds,
+  GqlWebDocumentByIdsQuery,
+  GqlWebDocumentByIdsQueryVariables,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -246,6 +249,19 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
       };
     });
 }
+export function mockDocuments(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables>(
+      WebDocumentByIds,
+    )
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          webDocuments: [],
+        },
+      };
+    });
+}
 
 export type Mocks = {
   repository: GqlRepository;
@@ -257,6 +273,7 @@ export const mocks: Mocks = {
     id: '',
     description: '',
     title: '',
+    tags: [],
     ownerId: '',
     sources: [],
     archived: false,

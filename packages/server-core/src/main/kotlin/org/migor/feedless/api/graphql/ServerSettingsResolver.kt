@@ -14,7 +14,6 @@ import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.plan.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -74,8 +73,7 @@ class ServerSettingsResolver {
         }
       }.filterNotNull())
       .gatewayUrl(productService.getGatewayUrl(product))
-      .features(featureService.findAllByProduct(product).map { it.toDto() })
+      .features(featureService.findAllByProduct(product)) // todo return only UI relevant ones
       .build()
   }
 }
-

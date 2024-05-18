@@ -31,7 +31,7 @@
   <app-remote-feed-preview #remoteFeedPreviewComponent>
     <ion-list>
       <ion-item>
-        <ion-label>Feed Title</ion-label>
+        <ion-label>Title</ion-label>
       </ion-item>
       <ion-item>
         <ion-input
@@ -49,223 +49,390 @@
           [autoGrow]="true"
           rows="3"
           fill="outline"
+          [counter]="true"
           placeholder="#tags, urls,..."
           [formControl]="formFg.controls.description"
           aria-label="Describe the feed with #tags and urls"
         ></ion-textarea>
       </ion-item>
-      <ion-item>
-        <ion-label>Fetch Frequency</ion-label>
-      </ion-item>
-      <ion-item>
-        <ion-select
-          [formControl]="formFg.controls.fetchFrequency"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option [disabled]="isThrottled" value="0 */15 * * * *"
-            >Every 15 min
-          </ion-select-option>
-          <ion-select-option [disabled]="isThrottled" value="0 */30 * * * *"
-            >Every 30 min
-          </ion-select-option>
-          <ion-select-option [disabled]="isThrottled" value="0 0 * * * *"
-            >Every hour
-          </ion-select-option>
-          <ion-select-option [disabled]="isThrottled" value="0 0 */8 * * *"
-            >Every 6 hours
-          </ion-select-option>
-          <ion-select-option [disabled]="isThrottled" value="0 0 */12 * * *"
-            >Every 12 hours
-          </ion-select-option>
-          <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
-          <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
-        </ion-select>
-      </ion-item>
     </ion-list>
 
-    <ion-list class="filters">
-      <ion-item>
-        <ion-label>
-          Filters
-          <a
-            (click)="addFilter()"
-            *ngIf="filters.length === 0"
-            href="javascript:void(0)"
-          >
-            Add Filter
-          </a>
-        </ion-label>
-      </ion-item>
-
-      <div
-        *ngFor="let filter of filters; let i = index"
-        class="flex ion-margin-bottom ion-margin-start ion-align-items-center"
-      >
-        <ion-select
-          [formControl]="filter.controls.type"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option [value]="FilterTypeInclude"
-            >include</ion-select-option
-          >
-          <ion-select-option [value]="FilterTypeExclude"
-            >exclude</ion-select-option
-          >
-        </ion-select>
-        <ion-text class="ion-padding-end"> if </ion-text>
-        <ion-select
-          [formControl]="filter.controls.field"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
-          <ion-select-option [value]="FilterFieldTitle"
-            >title</ion-select-option
-          >
-          <ion-select-option [value]="FilterFieldContent"
-            >content</ion-select-option
-          >
-        </ion-select>
-        <ion-select
-          [formControl]="filter.controls.operator"
-          fill="outline"
-          interface="popover"
-        >
-          <ion-select-option [value]="GqlStringFilterOperator.Contains"
-            >contains</ion-select-option
-          >
-          <ion-select-option [value]="GqlStringFilterOperator.Matches"
-            >matches</ion-select-option
-          >
-          <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-            >starts with</ion-select-option
-          >
-          <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-            >ends with</ion-select-option
-          >
-        </ion-select>
-        <ion-input
-          [formControl]="filter.controls.value"
-          placeholder="Type a value"
-          fill="outline"
-        ></ion-input>
-
-        <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </div>
-      <div class="ion-padding-start">
-        <a
-          (click)="addFilter()"
-          *ngIf="filters.length > 0 && filters.length < 4"
-          href="javascript:void(0)"
-        >
-          Add Filter
-        </a>
-      </div>
-    </ion-list>
-
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          Retention Strategy
-          <a
-            (click)="showRetention = !showRetention"
-            *ngIf="!showRetention"
-            href="javascript:void(0)"
-          >
-            Customize
-          </a>
-        </ion-label>
-      </ion-item>
-      <ion-item *ngIf="showRetention">
-        <ion-input
-          label="Delete after days"
-          labelPlacement="start"
-          fill="outline"
-          [formControl]="formFg.controls.maxAgeDays"
-          [clearInput]="true"
-          placeholder="<Auto>"
-        ></ion-input>
-      </ion-item>
-      <ion-item *ngIf="showRetention">
-        <ion-input
-          label="Keep max items"
-          labelPlacement="start"
-          fill="outline"
-          [formControl]="formFg.controls.maxItems"
-          [clearInput]="true"
-          placeholder="<Auto>"
-        ></ion-input>
-      </ion-item>
-    </ion-list>
-
-    <ion-list>
-      <ion-item>
-        <ion-label>Visibility</ion-label>
-      </ion-item>
-
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.isPublic"
-        >
-          Public
-          <ion-note class="ion-padding-horizontal"
-            >Eveyrone can see the feed url and sources</ion-note
-          >
-        </ion-checkbox>
-      </ion-item>
-    </ion-list>
-
-    <ion-list>
-      <ion-item>
-        <ion-label>Plugins</ion-label>
-      </ion-item>
-
-      <ion-item *ngIf="filters.length > 0">
-        <ion-checkbox
-          color="danger"
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.applyFiltersLast"
-        >
-          <ion-label color="danger">
-            <strong>Apply Filters after plugins</strong>
-            <ion-note class="ion-padding-horizontal"
-              >Or before applying plugins. Plugins will change the
-              content.</ion-note
-            >
+    <ion-accordion-group [multiple]="true">
+      <ion-accordion value="visibility" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Visibility
+            <ion-note>Everyone can see access the feed url </ion-note>
           </ion-label>
-        </ion-checkbox>
-      </ion-item>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.applyFulltextPlugin"
-        >
-          Fulltext
-          <ion-note class="ion-padding-horizontal"
-            >Fetch Fulltext for every Item (static only)</ion-note
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item>
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="isPublic__label"
+              [formControl]="formFg.controls.isPublic"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="isPublic__label"
+              class="ion-text-left"
+            >
+              Public Listing
+              <ion-note> Others can find your feed </ion-note>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-accordion>
+
+      <ion-accordion value="filter" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Filters
+            <ion-note>Remove feed items</ion-note>
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item [disabled]="filters.length === 0">
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="applyFiltersLast__label"
+              [formControl]="formFg.controls.applyFiltersLast"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="applyFiltersLast__label"
+              class="ion-text-left"
+            >
+              Filter items after plugins are executed
+            </ion-label>
+          </ion-item>
+          <ion-row>
+            <ion-col
+              size="3"
+              style="align-content: center"
+              class="ion-text-right"
+            >
+              Filter Conditions
+            </ion-col>
+            <ion-col size="9">
+              <ion-button
+                [color]="filters.length === 0 ? 'primary' : 'medium'"
+                (click)="addGeneralFilter()"
+                [disabled]="filters.length >= 4"
+              >
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add Filter
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <div
+            *ngFor="let filter of filters; let i = index"
+            class="flex ion-align-items-center"
           >
-        </ion-checkbox>
-      </ion-item>
-      <ion-item>
-        <ion-checkbox
-          labelPlacement="end"
-          justify="start"
-          [formControl]="formFg.controls.applyPrivacyPlugin"
-        >
-          Privacy & Robustness
-          <ion-note class="ion-padding-horizontal"
-            >Inlines images (base64) and unwinds tracking urls</ion-note
+            <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
+            <ion-select
+              [formControl]="filter.controls.type"
+              fill="outline"
+              interface="popover"
+              [interfaceOptions]="{ subHeader: 'Filter Type', size: 'auto' }"
+            >
+              <ion-select-option [value]="FilterTypeInclude"
+                >include
+              </ion-select-option>
+              <ion-select-option [value]="FilterTypeExclude"
+                >exclude
+              </ion-select-option>
+            </ion-select>
+            <ion-text class="ion-padding-horizontal">if</ion-text>
+            <ion-select
+              [formControl]="filter.controls.field"
+              fill="outline"
+              interface="popover"
+              [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
+            >
+              <ion-select-option [value]="FilterFieldLink"
+                >link</ion-select-option
+              >
+              <ion-select-option [value]="FilterFieldTitle"
+                >title
+              </ion-select-option>
+              <ion-select-option [value]="FilterFieldContent"
+                >content
+              </ion-select-option>
+            </ion-select>
+            <ion-select
+              [formControl]="filter.controls.operator"
+              fill="outline"
+              class="ion-margin-horizontal"
+              interface="popover"
+              [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
+            >
+              <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                >contains
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.Matches"
+                >matches
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
+                >starts with
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                >ends with
+              </ion-select-option>
+            </ion-select>
+            <ion-input
+              [formControl]="filter.controls.value"
+              placeholder="Type a value"
+              fill="outline"
+            ></ion-input>
+
+            <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-list>
+      </ion-accordion>
+      <ion-accordion value="enrich" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Enrich
+            <ion-note>Improve feed items</ion-note>
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <!-- -- FULLTEXT ------------------------------------------------- -->
+
+          <ion-item>
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="applyFulltextPlugin__label"
+              [formControl]="formFg.controls.applyFulltextPlugin"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="applyFulltextPlugin__label"
+              class="ion-text-left"
+            >
+              Fetch Fulltext for every item
+            </ion-label>
+          </ion-item>
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="readability__label"
+              [formControl]="formFg.controls.transformToReadability"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="readability__label"
+              class="ion-text-left"
+            >
+              Transform to readability
+            </ion-label>
+          </ion-item>
+
+          <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
+
+          <!--          <ion-row>-->
+          <!--            <ion-col size="3" style="align-content: center;" class="ion-text-right">-->
+          <!--              Conditional Tags-->
+          <!--            </ion-col>-->
+          <!--            <ion-col size="9">-->
+          <!--              <ion-button [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"-->
+          <!--                          (click)="addConditionalTag()"-->
+          <!--                          [disabled]="conditionalTags.length >= 4">-->
+          <!--                <ion-icon name="add-outline"-->
+          <!--                          slot="start"></ion-icon>-->
+          <!--                Add Tag-->
+          <!--              </ion-button>-->
+          <!--            </ion-col>-->
+          <!--          </ion-row>-->
+
+          <div
+            *ngFor="let conditionalTag of conditionalTags; let i = index"
+            class="flex ion-align-items-center"
           >
-        </ion-checkbox>
-      </ion-item>
-    </ion-list>
+            <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
+            <ion-input
+              [formControl]="conditionalTag.controls.tag"
+              placeholder="Tag"
+              fill="outline"
+            ></ion-input>
+            <ion-text class="ion-padding-horizontal">if</ion-text>
+            <ion-select
+              [formControl]="conditionalTag.controls.field"
+              fill="outline"
+              interface="popover"
+              [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
+            >
+              <ion-select-option [value]="FilterFieldLink"
+                >link</ion-select-option
+              >
+              <ion-select-option [value]="FilterFieldTitle"
+                >title
+              </ion-select-option>
+              <ion-select-option [value]="FilterFieldContent"
+                >content
+              </ion-select-option>
+            </ion-select>
+            <ion-select
+              [formControl]="conditionalTag.controls.operator"
+              fill="outline"
+              class="ion-margin-horizontal"
+              interface="popover"
+              [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
+            >
+              <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                >contains
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.Matches"
+                >matches
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
+                >starts with
+              </ion-select-option>
+              <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                >ends with
+              </ion-select-option>
+            </ion-select>
+            <ion-input
+              [formControl]="conditionalTag.controls.value"
+              placeholder="Type a value"
+              fill="outline"
+            ></ion-input>
+
+            <ion-button
+              (click)="removeConditionalTag(i)"
+              color="medium"
+              fill="clear"
+            >
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-list>
+      </ion-accordion>
+
+      <ion-accordion value="refresh" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Refresh and Storage
+            <ion-note>Fetch frequency and persistence </ion-note>
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-row>
+            <ion-col size="3" class="ion-align-self-center ion-text-right">
+              Fetch Frequency
+            </ion-col>
+            <ion-col size="9">
+              <ion-select
+                [formControl]="formFg.controls.fetchFrequency"
+                fill="outline"
+                interface="popover"
+              >
+                <ion-select-option
+                  [disabled]="isThrottled"
+                  value="0 */15 * * * *"
+                  >Every 15 min
+                </ion-select-option>
+                <ion-select-option
+                  [disabled]="isThrottled"
+                  value="0 */30 * * * *"
+                  >Every 30 min
+                </ion-select-option>
+                <ion-select-option [disabled]="isThrottled" value="0 0 * * * *"
+                  >Every hour
+                </ion-select-option>
+                <ion-select-option
+                  [disabled]="isThrottled"
+                  value="0 0 */8 * * *"
+                  >Every 6 hours
+                </ion-select-option>
+                <ion-select-option
+                  [disabled]="isThrottled"
+                  value="0 0 */12 * * *"
+                  >Every 12 hours
+                </ion-select-option>
+                <ion-select-option value="0 0 0 * * *"
+                  >Every Day</ion-select-option
+                >
+                <ion-select-option value="0 0 0 * * 0"
+                  >Every Week</ion-select-option
+                >
+              </ion-select>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="3" class="ion-align-self-center ion-text-right"
+              >Delete after days</ion-col
+            >
+            <ion-col size="9">
+              <ion-input
+                aria-label=""
+                fill="outline"
+                [formControl]="formFg.controls.maxAgeDays"
+                [clearInput]="true"
+                placeholder="<Auto>"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="3" class="ion-align-self-center ion-text-right"
+              >Keep max items</ion-col
+            >
+            <ion-col size="9">
+              <ion-input
+                aria-label=""
+                fill="outline"
+                [formControl]="formFg.controls.maxItems"
+                [clearInput]="true"
+                placeholder="<Auto>"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-list>
+      </ion-accordion>
+      <ion-accordion value="second" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Anonymity & Robustness
+            <!--            <ion-note>-->
+            <!--              Harvest artefacts (images, pdfs,...), rewrite urls and unwinds tracking urls-->
+            <!--            </ion-note>-->
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item>
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="applyPrivacyPlugin__label"
+              [formControl]="formFg.controls.applyPrivacyPlugin"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="applyPrivacyPlugin__label"
+              class="ion-text-left"
+            >
+              Enable
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-accordion>
+    </ion-accordion-group>
   </app-remote-feed-preview>
 </ion-content>

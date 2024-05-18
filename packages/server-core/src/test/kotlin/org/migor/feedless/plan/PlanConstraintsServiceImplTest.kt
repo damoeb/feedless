@@ -56,7 +56,7 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `give maxItems is defined when coerceRetentionMaxItems works`() {
     val maxItems = 50
-    mockFeatureValue(FeatureName.scrapeSourceRetentionMaxItemsInt, intValue = maxItems)
+    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = maxItems)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
@@ -64,7 +64,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() {
-    mockFeatureValue(FeatureName.scrapeSourceRetentionMaxItemsInt, intValue = null)
+    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = null)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(56)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
@@ -84,7 +84,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is true, when coerceVisibility works`() {
-    mockFeatureValue(FeatureName.publicScrapeSourceBool, boolValue = true)
+    mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = true)
     // fallback
     assertThat(service.coerceVisibility(null)).isEqualTo(EntityVisibility.isPrivate)
     // isPrivate
@@ -95,7 +95,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is false, when coerceVisibility works`() {
-    mockFeatureValue(FeatureName.publicScrapeSourceBool, boolValue = false)
+    mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = false)
 
     // fallback
     assertThat(service.coerceVisibility(null)).isEqualTo(EntityVisibility.isPrivate)
@@ -107,7 +107,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given invalid refreshRate when coerceMinScheduledNextAt returns minimum rate`() {
-    mockFeatureValue(FeatureName.minRefreshRateInMinutesInt, intValue = 4)
+    mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
     val minNext = toDate(now.plusMinutes(4))
 
@@ -121,7 +121,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given valid refreshRate when coerceMinScheduledNextAt returns refreshRate`() {
-    mockFeatureValue(FeatureName.minRefreshRateInMinutesInt, intValue = 4)
+    mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
     val future = toDate(now.plusDays(2))
 
@@ -135,14 +135,15 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given maxAge is undefined, RetentionMaxAgeDays is undefined`() {
-    assertThat(service.coerceRetentionMaxAgeDays(null)).isEqualTo(null)
+    assertThat(service.coerceRetentionMaxAgeDays(null, userId)).isEqualTo(null)
   }
 
   @Test
   fun `given maxAge is defined, RetentionMaxAgeDays is at least 2`() {
-    assertThat(service.coerceRetentionMaxAgeDays(-3)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(0)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(12)).isEqualTo(12)
+    mockFeatureValue(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, intValue = 2)
+    assertThat(service.coerceRetentionMaxAgeDays(-3, userId)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(0, userId)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(12, userId)).isEqualTo(12)
   }
 
   @Test
@@ -186,7 +187,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given user is anonymous, scrapeSourceExpiry will be assigned`() {
-    mockFeatureValue(FeatureName.scrapeSourceExpiryInDaysInt, intValue = 4)
+    mockFeatureValue(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, intValue = 4)
     `when`(user.anonymous).thenReturn(true)
 
     val future = toDate(LocalDateTime.now().plusDays(4))
@@ -201,7 +202,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given user is not anonymous, scrapeSourceExpiry won't be set`() {
-    mockFeatureValue(FeatureName.scrapeSourceExpiryInDaysInt, intValue = 4)
+    mockFeatureValue(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, intValue = 4)
     `when`(user.anonymous).thenReturn(false)
 
     assertThat(

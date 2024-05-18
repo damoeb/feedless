@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-team-draft-product-page',

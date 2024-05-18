@@ -1,6 +1,9 @@
 <ion-content>
   <ion-spinner *ngIf="!repository" name="dots"></ion-spinner>
   <div class="limited-width-pane" *ngIf="repository">
-    <app-feed-details [repository]="repository"></app-feed-details>
+    <app-feed-details
+      [repository]="repository"
+      [track]="true"
+    ></app-feed-details>
   </div>
 </ion-content>

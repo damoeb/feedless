@@ -26,8 +26,10 @@ import {
   TagsModalComponent,
   TagsModalComponentProps,
 } from '../modals/tags-modal/tags-modal.component';
-import { DeepPartial } from '../types';
-import { RemoteFeedModalComponent, RemoteFeedModalComponentProps } from '../modals/remote-feed-modal/remote-feed-modal.component';
+import {
+  RemoteFeedModalComponent,
+  RemoteFeedModalComponentProps,
+} from '../modals/remote-feed-modal/remote-feed-modal.component';
 
 @Injectable({
   providedIn: 'root',

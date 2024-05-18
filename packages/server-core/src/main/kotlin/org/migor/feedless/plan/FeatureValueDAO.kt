@@ -31,6 +31,16 @@ interface FeatureValueDAO : JpaRepository<FeatureValueEntity, UUID> {
   ): FeatureValueEntity
 
   @Query(
+    """
+    select FV from FeatureValueEntity FV
+    inner join PlanEntity P
+    on FV.planId = P.id
+    where P.name = :product
+  """
+  )
+  fun findAllByProductName(@Param("product") product: String): List<FeatureValueEntity>
+
+  @Query(
 //    value = """
 //      select * from t_feature_value
 //  """,

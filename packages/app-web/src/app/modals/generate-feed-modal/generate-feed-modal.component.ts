@@ -12,6 +12,8 @@ import { RepositoryService } from '../../services/repository.service';
 import {
   GqlCompositeFieldFilterParamsInput,
   GqlCompositeFilterParamsInput,
+  GqlConditionalTagInput,
+  GqlFeatureName,
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
   GqlProfileName,
@@ -41,8 +43,15 @@ type FilterOperator = GqlStringFilterOperator;
 type FilterField = keyof GqlCompositeFieldFilterParamsInput;
 type FilterType = keyof GqlCompositeFilterParamsInput;
 
-interface FilterData {
+interface GeneralFilterData {
   type: FilterType;
+  field: FilterField;
+  operator: FilterOperator;
+  value: string;
+}
+
+interface TagConditionData {
+  tag: string;
   field: FilterField;
   operator: FilterOperator;
   value: string;
@@ -90,8 +99,12 @@ export function getScrapeRequest(
   };
 }
 
-type FilterParams = ArrayElement<
+type GeneralFilterParams = ArrayElement<
   ArrayElement<Repository['plugins']>['params']['org_feedless_filter']
+>;
+
+type ConditionalTagParams = ArrayElement<
+  ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
 >;
 
 @Component({
@@ -107,7 +120,7 @@ export class GenerateFeedModalComponent
     title: new FormControl<string>('', {
       validators: [Validators.required, Validators.minLength(3)],
     }),
-    description: new FormControl<string>('', [Validators.maxLength(250)]),
+    description: new FormControl<string>('', [Validators.maxLength(500)]),
     maxItems: new FormControl<number>(null),
     maxAgeDays: new FormControl<number>(null),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
@@ -115,11 +128,14 @@ export class GenerateFeedModalComponent
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
     applyFulltextPlugin: new FormControl<boolean>(false),
-    applyFiltersLast: new FormControl<boolean>(true),
+    transformToReadability: new FormControl<boolean>(true),
+    applyFiltersLast: new FormControl<boolean>(false),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
+    applyConditionalTagsPlugin: new FormControl<boolean>(false),
   });
-  filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
+  filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
+  conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
 
   @Input({ required: true })
   repository: Repository;
@@ -134,7 +150,6 @@ export class GenerateFeedModalComponent
 
   protected readonly dateFormat = dateFormat;
   protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
-  showRetention: boolean;
   protected FilterTypeInclude: FilterType = 'include';
   protected FilterTypeExclude: FilterType = 'exclude';
   protected FilterFieldLink: FilterField = 'link';
@@ -157,7 +172,7 @@ export class GenerateFeedModalComponent
     return this.modalCtrl.dismiss();
   }
 
-  addFilter(f: FilterParams = null) {
+  addGeneralFilter(data: GeneralFilterParams = null) {
     if (this.filters.some((filter) => filter.invalid)) {
       return;
     }
@@ -166,7 +181,7 @@ export class GenerateFeedModalComponent
       type: new FormControl<FilterType>('exclude', [Validators.required]),
       field: new FormControl<FilterField>('title', [Validators.required]),
       operator: new FormControl<FilterOperator>(
-        GqlStringFilterOperator.StartsWidth,
+        GqlStringFilterOperator.Contains,
         [Validators.required],
       ),
       value: new FormControl<string>('', [
@@ -175,18 +190,18 @@ export class GenerateFeedModalComponent
       ]),
     });
 
-    if (f) {
-      const type = Object.keys(f).find(
-        (field) => field != '__typename' && !!f[field],
+    if (data) {
+      const type = Object.keys(data).find(
+        (field) => field != '__typename' && !!data[field],
       );
-      const field = Object.keys(f[type]).find(
-        (field) => field != '__typename' && !!f[type][field],
+      const field = Object.keys(data[type]).find(
+        (field) => field != '__typename' && !!data[type][field],
       );
       filter.patchValue({
         type: type as any,
         field: field as any,
-        value: f[type][field].value,
-        operator: f[type][field].operator,
+        value: data[type][field].value,
+        operator: data[type][field].operator,
       });
     }
 
@@ -198,8 +213,57 @@ export class GenerateFeedModalComponent
     });
   }
 
+  addConditionalTag(data: ConditionalTagParams = null) {
+    if (this.conditionalTags.some((filter) => filter.invalid)) {
+      return;
+    }
+
+    const filter = new FormGroup({
+      tag: new FormControl<string>('', [Validators.required]),
+      field: new FormControl<FilterField>('title', [Validators.required]),
+      operator: new FormControl<FilterOperator>(
+        GqlStringFilterOperator.Contains,
+        [Validators.required],
+      ),
+      value: new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(1),
+      ]),
+    });
+
+    // if (data) {
+    //   const type = Object.keys(data).find(
+    //     (field) => field != '__typename' && !!data[field],
+    //   );
+    //   const field = Object.keys(data[type]).find(
+    //     (field) => field != '__typename' && !!data[type][field],
+    //   );
+    //   filter.patchValue({
+    //     tag: type as any,
+    //     field: field as any,
+    //     value: data[type][field].value,
+    //     operator: data[type][field].operator,
+    //   });
+    // }
+
+    this.conditionalTags.push(filter);
+    filter.statusChanges.subscribe((status) => {
+      if (status === 'VALID') {
+        this.filterChanges.next();
+      }
+    });
+  }
+
   removeFilter(index: number) {
     this.filters = without(this.filters, this.filters[index]);
+    this.filterChanges.next();
+  }
+
+  removeConditionalTag(index: number) {
+    this.conditionalTags = without(
+      this.conditionalTags,
+      this.conditionalTags[index],
+    );
     this.filterChanges.next();
   }
 
@@ -221,7 +285,8 @@ export class GenerateFeedModalComponent
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
-            org_feedless_filter: this.getFilterParams(),
+            org_feedless_filter: this.getGeneralFilterParams(),
+            org_feedless_conditional_tag: this.getConditionalTagsParams(),
           },
         });
       };
@@ -234,7 +299,7 @@ export class GenerateFeedModalComponent
           pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
           params: {
             org_feedless_fulltext: {
-              readability: true,
+              readability: this.formFg.value.transformToReadability,
               inheritParams: true,
             },
           },
@@ -333,6 +398,32 @@ export class GenerateFeedModalComponent
   async ngOnInit(): Promise<void> {
     this.isLoggedIn = this.profileService.isAuthenticated();
 
+    const maxItemsLowerLimit = this.serverSettings.getFeatureValueInt(
+      GqlFeatureName.RepositoryRetentionMaxItemsLowerLimitInt,
+    );
+    if (maxItemsLowerLimit) {
+      this.formFg.controls.maxItems.addValidators([
+        Validators.min(maxItemsLowerLimit),
+      ]);
+    }
+    const maxItemsUpperLimit = this.serverSettings.getFeatureValueInt(
+      GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
+    );
+    if (maxItemsUpperLimit) {
+      this.formFg.controls.maxItems.addValidators([
+        Validators.min(maxItemsUpperLimit),
+      ]);
+    }
+
+    const maxDaysLowerLimit = this.serverSettings.getFeatureValueInt(
+      GqlFeatureName.RepositoryRetentionMaxDaysLowerLimitInt,
+    );
+    if (maxDaysLowerLimit) {
+      this.formFg.controls.maxAgeDays.addValidators([
+        Validators.min(maxDaysLowerLimit),
+      ]);
+    }
+
     this.isThrottled = !this.serverSettings.hasProfile(
       GqlProfileName.SelfHosted,
     );
@@ -356,11 +447,11 @@ export class GenerateFeedModalComponent
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
     );
     if (filterPlugin) {
-      filterPlugin.params.org_feedless_filter.forEach((f) => this.addFilter(f));
+      filterPlugin.params.org_feedless_filter.forEach((f) =>
+        this.addGeneralFilter(f),
+      );
     }
 
-    this.showRetention =
-      isDefined(retention?.maxAgeDays) || isDefined(retention?.maxItems);
     this.filterChanges
       .pipe(debounce(() => interval(800)))
       .subscribe(async () => {
@@ -373,11 +464,12 @@ export class GenerateFeedModalComponent
   private async loadFeedPreview() {
     await this.remoteFeedPreview.loadFeedPreview(
       this.repository.sources as GqlScrapeRequest[],
-      this.getFilterParams(),
+      this.getGeneralFilterParams(),
+      this.getConditionalTagsParams(),
     );
   }
 
-  private getFilterParams(): GqlCompositeFilterParamsInput[] {
+  private getGeneralFilterParams(): GqlCompositeFilterParamsInput[] {
     return this.filters
       .filter((filterFg) => filterFg.valid)
       .map((filterFg) => filterFg.value)
@@ -386,6 +478,21 @@ export class GenerateFeedModalComponent
           [filter.field]: {
             value: filter.value,
             operator: filter.operator,
+          },
+        },
+      }));
+  }
+
+  private getConditionalTagsParams(): GqlConditionalTagInput[] {
+    return this.conditionalTags
+      .filter((filterFg) => filterFg.valid)
+      .map((filterFg) => filterFg.value)
+      .map<GqlConditionalTagInput>((data) => ({
+        tag: data.tag,
+        filter: {
+          [data.field]: {
+            value: data.value,
+            operator: data.operator,
           },
         },
       }));

@@ -35,15 +35,15 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     } ?: true
 
     if (keep) {
-      log.info("[$corrId] keep ${document.url}")
+      log.debug("[$corrId] qualified ${document.url}")
     } else {
-      log.info("[$corrId] drop ${document.url}")
+      log.debug("[$corrId] disqualified ${document.url}")
     }
 
     return keep
   }
 
-  private fun matches(
+  fun matches(
       document: DocumentEntity,
       filterParams: CompositeFieldFilterParamsInput,
       index: Int

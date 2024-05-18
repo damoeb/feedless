@@ -23,6 +23,9 @@
                     section {
                         margin:30px 15px
                     }
+                    * {
+                      height: auto!important;
+                    }
                     h1 {
                         font-size:2em;
                         margin:.67em 0;
@@ -187,7 +190,12 @@
                 </a>
             </h3>
             <p>
-              <xsl:value-of select="atom:link/@href"/>
+              Link: <xsl:value-of select="atom:link/@href"/>
+            </p>
+            <p>
+              Tags: <xsl:for-each select="atom:category">
+                #<xsl:value-of select="@term"/>
+              </xsl:for-each>
             </p>
             <p>
                 <xsl:value-of select="atom:summary" disable-output-escaping="yes" />

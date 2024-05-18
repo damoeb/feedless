@@ -8,11 +8,7 @@ import {
 import { dateTimeFormat, SessionService } from '../../services/session.service';
 import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
-import {
-  AlertController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -29,7 +25,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
-    private readonly modalCtrl: ModalController,
     private readonly alertCtrl: AlertController,
     private readonly profileService: SessionService,
   ) {}

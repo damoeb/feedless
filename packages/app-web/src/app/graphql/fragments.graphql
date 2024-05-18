@@ -70,6 +70,12 @@ fragment RepositoryFragment on Repository {
         readability
         inheritParams
       }
+      org_feedless_conditional_tag {
+        tag
+        filter {
+          ...CompositeFieldFilterParamsFragment
+        }
+      }
       jsonData
     }
   }

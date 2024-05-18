@@ -37,17 +37,18 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   lateinit var planDAO: PlanDAO
 
   override fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID): Int? {
-    val maxItems = getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId)
+    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, userId)!!
+    val maxItems = getFeatureInt(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, userId)
     return customMaxItems?.let {
       maxItems?.let {
-        customMaxItems.coerceAtLeast(2)
+        customMaxItems.coerceAtLeast(minItems)
           .coerceAtMost(maxItems)
-      } ?: customMaxItems.coerceAtLeast(2)
+      } ?: customMaxItems.coerceAtLeast(minItems)
     }
   }
 
   override fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {
-    val minRefreshRateInMinutes = getFeatureInt(FeatureName.minRefreshRateInMinutesInt, userId)!!
+    val minRefreshRateInMinutes = getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId)!!
     val minNextDate = toDate(LocalDateTime.now().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES))
 
     return if (nextDate < minNextDate) {
@@ -57,7 +58,10 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
     }
   }
 
-  override fun coerceRetentionMaxAgeDays(maxAge: Int?): Int? = maxAge?.coerceAtLeast(2)
+  override fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID): Int? {
+    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId)!!
+    return maxAge?.coerceAtLeast(minItems)
+  }
 
   override fun auditCronExpression(cronString: String): String {
     CronExpression.isValidExpression(cronString)
@@ -67,7 +71,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
 
   override fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
     val canPublic = getFeatureBool(
-      FeatureName.publicScrapeSourceBool,
+      FeatureName.publicRepositoryBool,
       userIdFromRequest()
     ) ?: false
     return if (canPublic) {
@@ -100,7 +104,7 @@ class PlanConstraintsServiceImpl : PlanConstraintsService {
   override fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
     val user = userDAO.findById(userId).orElseThrow()
     return if (user.anonymous) {
-      val days = getFeatureInt(FeatureName.scrapeSourceExpiryInDaysInt, userId)!!
+      val days = getFeatureInt(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, userId)!!
       val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
       log.info("[$corrId] assign expiry to $expiry")
       toDate(expiry)

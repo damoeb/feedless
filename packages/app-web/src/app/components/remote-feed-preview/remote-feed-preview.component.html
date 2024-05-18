@@ -1,5 +1,5 @@
 <div class="flex__row">
-  <div class="flex__column" *ngIf="!noMetaColumn">
+  <div class="flex__column" *ngIf="!noMetaColumn" style="max-width: 600px">
     <ng-content></ng-content>
   </div>
   <div style="display: flex; flex-direction: column; flex: 1">
@@ -7,9 +7,7 @@
       <ion-item>
         <ion-label>
           Feed Preview
-          <ion-note *ngIf="feed"
-            >({{ feed.items?.length }})</ion-note
-          >
+          <ion-note *ngIf="feed">({{ feed.items?.length }})</ion-note>
           <ion-note class="ion-margin-horizontal"
             >(Plugins are not applied in Preview)</ion-note
           >

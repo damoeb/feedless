@@ -144,28 +144,46 @@ class Seeder {
 
   private fun seedProductsAndPlans(root: UserEntity) {
     val systemProduct = resolveProduct(ProductName.system, root)
-    persistPlan(
-      PlanName.system, 0.0, PlanAvailability.unavailable, systemProduct, features = mapOf(
-        FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(7),
-//        FeatureName.rateLimitInt to asIntFeature(40),
-        FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
-        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
-        FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
-        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
-        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
-        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
-        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
-        FeatureName.publicScrapeSourceBool to asBoolFeature(false),
-        FeatureName.apiBool to asBoolFeature(false),
-        FeatureName.canLogin to asBoolFeature(true),
-        FeatureName.canCreateUser to asBoolFeature(false),
-        FeatureName.pluginsBool to asBoolFeature(true),
-        FeatureName.itemEmailForwardBool to asBoolFeature(true),
-        FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+    if (isSelfHosted()) {
+      persistPlan(
+        PlanName.system, 0.0, PlanAvailability.unavailable, systemProduct, features = mapOf(
+          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryRetentionMaxItemsLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryRetentionMaxItemsUpperLimitInt to asIntFeature(10),
+          FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
+          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
+          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+          FeatureName.canLogin to asBoolFeature(true),
+          FeatureName.canCreateUser to asBoolFeature(false),
+          FeatureName.pluginsBool to asBoolFeature(true),
+          FeatureName.itemEmailForwardBool to asBoolFeature(true),
+        )
       )
-    )
+    } else {
+      persistPlan(
+        PlanName.system, 0.0, PlanAvailability.unavailable, systemProduct, features = mapOf(
+          FeatureName.repositoryWhenAnonymousExpiryInDaysInt to asIntFeature(7),
+//        FeatureName.rateLimitInt to asIntFeature(40),
+          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryRetentionMaxItemsLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryRetentionMaxItemsUpperLimitInt to asIntFeature(10),
+          FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
+          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
+          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+//          FeatureName.publicRepositoryBool to asBoolFeature(false),
+//          FeatureName.canLogin to asBoolFeature(true),
+//          FeatureName.canCreateUser to asBoolFeature(true),
+//          FeatureName.pluginsBool to asBoolFeature(true),
+//          FeatureName.itemEmailForwardBool to asBoolFeature(true),
+        )
+      )
 
-    if (!isSelfHosted()) {
       seedPlansForProduct(ProductName.feedless, root, systemProduct)
       seedPlansForProduct(ProductName.rssProxy, root, systemProduct)
       seedPlansForProduct(ProductName.visualDiff, root, systemProduct)
@@ -199,15 +217,15 @@ class Seeder {
       persistPlan(
         PlanName.free, 0.0, PlanAvailability.available, product, parentPlan = it, features = mapOf(
           FeatureName.rateLimitInt to asIntFeature(40),
-          FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
-          FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
+          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+          FeatureName.repositoryRetentionMaxItemsUpperLimitInt to asIntFeature(10),
           FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
           FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
           FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(5),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
           FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
-          FeatureName.publicScrapeSourceBool to asBoolFeature(false),
-          FeatureName.apiBool to asBoolFeature(false),
+          FeatureName.publicRepositoryBool to asBoolFeature(false),
+//          FeatureName.apiBool to asBoolFeature(false),
           FeatureName.pluginsBool to asBoolFeature(true),
           FeatureName.canLogin to asBoolFeature(true),
           FeatureName.canCreateUser to asBoolFeature(true), // wait list

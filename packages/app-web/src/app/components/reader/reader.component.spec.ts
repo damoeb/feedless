@@ -3,8 +3,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ReaderComponent } from './reader.component';
 import { ReaderModule } from './reader.module';
 import { AppTestModule } from '../../app-test.module';
-import { GqlFeedlessPlugins } from '../../../generated/graphql';
-import { ScrapedReadability } from '../../graphql/types';
 
 describe('ReaderComponent', () => {
   let component: ReaderComponent;

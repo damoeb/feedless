@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
-import { SessionService } from '../../../services/session.service';
-import { RepositoryService } from '../../../services/repository.service';
-import { DocumentService } from '../../../services/document.service';
 import { AlertController } from '@ionic/angular';
 import { debounce, DebouncedFunc, omit } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';

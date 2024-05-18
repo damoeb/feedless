@@ -20,6 +20,9 @@
       Published
       {{ toDate(feedItem.publishedAt) | date: dateFormat }}
     </p>
+    <p *ngIf="feedItem.tags?.length > 0">
+      <ion-chip *ngFor="let tag of feedItem.tags">{{ tag }}</ion-chip>
+    </p>
     <p *ngIf="feedItem.startingAt">
       Starting
       {{ toDate(feedItem.startingAt) | date: dateFormat }}

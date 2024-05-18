@@ -52,7 +52,7 @@ class DetectMediaPlugin : MapEntityPlugin {
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
-  ) {
+  ): DocumentEntity {
     val url = document.url
     log.info("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
@@ -77,6 +77,7 @@ class DetectMediaPlugin : MapEntityPlugin {
     }.onFailure {
       log.error("[$corrId] ${it.message}")
     }
+    return document
   }
 
   private fun ytdl(corrId: String, url: String, attachments: MutableList<MediaItem>) {

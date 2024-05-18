@@ -23,11 +23,11 @@ export class PlansPage implements OnInit {
   featureGroups: FeatureGroup<GqlFeatureName>[];
   labels: FeatureLabel[] = [
     {
-      featureName: GqlFeatureName.PublicScrapeSource,
+      featureName: GqlFeatureName.PublicRepository,
       title: 'Public Trackers',
     },
     {
-      featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
+      featureName: GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
       title: 'Items per Tracker',
     },
     {
@@ -50,22 +50,14 @@ export class PlansPage implements OnInit {
         features: [
           GqlFeatureName.RateLimit,
           GqlFeatureName.Plugins,
-          GqlFeatureName.PublicScrapeSource,
+          GqlFeatureName.PublicRepository,
         ],
       },
       {
         groupLabel: 'Storage',
         features: [
           GqlFeatureName.ScrapeSourceMaxCountTotal,
-          GqlFeatureName.ScrapeSourceRetentionMaxItems,
-        ],
-      },
-      {
-        groupLabel: 'Integration',
-        features: [
-          GqlFeatureName.ItemWebhookForward,
-          GqlFeatureName.Api,
-          GqlFeatureName.ItemEmailForward,
+          GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
         ],
       },
     ];

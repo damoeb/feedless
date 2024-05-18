@@ -23,11 +23,11 @@ export class PlansPage implements OnInit {
   featureGroups: FeatureGroup<GqlFeatureName>[];
   labels: FeatureLabel[] = [
     {
-      featureName: GqlFeatureName.PublicScrapeSource,
+      featureName: GqlFeatureName.PublicRepository,
       title: 'Public Feeds',
     },
     {
-      featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
+      featureName: GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
       title: 'Items per Feed',
     },
     {
@@ -50,20 +50,20 @@ export class PlansPage implements OnInit {
         features: [
           GqlFeatureName.RateLimit,
           GqlFeatureName.Plugins,
-          GqlFeatureName.PublicScrapeSource,
+          GqlFeatureName.PublicRepository,
         ],
       },
       {
         groupLabel: 'Storage',
         features: [
           GqlFeatureName.ScrapeSourceMaxCountTotal,
-          GqlFeatureName.ScrapeSourceRetentionMaxItems,
+          GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
         ],
       },
-      {
-        groupLabel: 'Integration',
-        features: [GqlFeatureName.Api],
-      },
+      // {
+      //   groupLabel: 'Integration',
+      //   features: [GqlFeatureName.Api],
+      // },
     ];
 
     this.changeRef.detectChanges();

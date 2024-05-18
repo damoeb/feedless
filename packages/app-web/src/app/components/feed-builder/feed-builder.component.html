@@ -51,9 +51,11 @@
         topSlot
       >
         <ion-label>
-        Source Tags
+          Source Tags
           <ion-note *ngIf="tags.length > 0">{{ getTagsString() }}</ion-note>
-          <ion-note *ngIf="tags.length === 0">Tag items for aggregated feeds</ion-note>
+          <ion-note *ngIf="tags.length === 0"
+            >Tag items for aggregated feeds</ion-note
+          >
         </ion-label>
         <ion-icon
           name="pricetags-outline"

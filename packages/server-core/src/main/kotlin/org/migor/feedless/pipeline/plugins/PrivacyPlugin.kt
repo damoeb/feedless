@@ -61,7 +61,7 @@ class PrivacyPlugin : MapEntityPlugin {
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
-  ) {
+  ): DocumentEntity {
     log.info("[$corrId] mapEntity ${document.url}")
     val response = httpService.httpGetCaching(corrId, document.url, 200)
     if (document.url != response.url) {
@@ -76,6 +76,8 @@ class PrivacyPlugin : MapEntityPlugin {
       document.attachments = attachments.toMutableList()
     } ?: log.info("[$corrId] no html content present ${document.id}")
 //    }
+
+    return document
   }
 
   fun extractAttachments(corrId: String, documentId: UUID, document: Document): Pair<String, List<AttachmentEntity>> {

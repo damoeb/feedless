@@ -30,6 +30,7 @@ ion-textarea {
 ion-input,
 ion-select {
   --border-radius: 8px;
+  min-height: 45px !important;
 
   &.has-focus,
   &.select-expanded {
@@ -42,6 +43,7 @@ ion-select {
 }
 
 ion-select {
+  min-height: 45px;
   &::part(container) {
     width: 100%;
   }
@@ -68,4 +70,18 @@ ion-select {
 app-remote-feed-preview {
   flex: 1;
   display: flex;
+}
+
+*[slot="content"] {
+  padding-left: 50px;
+  margin-left: 1px;
+  margin-right: 1px;
+  border-style: solid;
+  border-top-width: 0;
+  border-left-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-color: rgba(var(--ion-color-dark-rgb), 0.2);
 }

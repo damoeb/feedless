@@ -7,51 +7,8 @@ import {
   GqlScrapedFeeds,
 } from '../../../generated/graphql';
 import { TransformWebsiteToFeedModule } from './transform-website-to-feed.module';
+import { AppTestModule, mockRepositories } from '../../app-test.module';
 
-// const markupResponse: ScrapeResponse = {
-//   url: 'https://foo.bar',
-//   debug: {
-//     console: [],
-//     cookies: [],
-//     contentType: 'text/html; charset=UTF-8',
-//     statusCode: 200,
-//     screenshot: null,
-//     html: '',
-//     viewport: null,
-//     metrics: {
-//       queue: 0,
-//       render: 239,
-//       // '__typename': 'ScrapeDebugTimes'
-//     },
-//     // '__typename': 'ScrapeDebugResponse'
-//   },
-//   failed: false,
-//   errorMessage: null,
-//   elements: [
-//     {
-//       image: null,
-//       selector: {
-//         xpath: {
-//           value: '/',
-//           // '__typename': 'DOMElementByXPath'
-//         },
-//         html: {
-//           data: '',
-//           // '__typename': 'TextData'
-//         },
-//         pixel: null,
-//         text: {
-//           data: '',
-//           // '__typename': 'TextData'
-//         },
-//         fields: [],
-//         // '__typename': 'ScrapedBySelector'
-//       },
-//       // '__typename': 'ScrapedElement'
-//     },
-//   ],
-//   // '__typename': 'ScrapeResponse'
-// };
 const jsonFeed = {
   description: 'Nachrichten nicht nur aus der Welt der Computer',
   expired: false,
@@ -158,7 +115,12 @@ describe('TransformWebsiteToFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TransformWebsiteToFeedModule],
+      imports: [
+        TransformWebsiteToFeedModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockRepositories(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TransformWebsiteToFeedComponent);

@@ -9,9 +9,10 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <ion-spinner name="dots"
-               *ngIf="!feed"></ion-spinner>
-  <app-remote-feed-preview *ngIf="feed"
-                           [noMetaColumn]="true"
-                           [feed]="feed"></app-remote-feed-preview>
+  <ion-spinner name="dots" *ngIf="!feed"></ion-spinner>
+  <app-remote-feed-preview
+    *ngIf="feed"
+    [noMetaColumn]="true"
+    [feed]="feed"
+  ></app-remote-feed-preview>
 </ion-content>

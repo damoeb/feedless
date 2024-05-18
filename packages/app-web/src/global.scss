@@ -158,10 +158,10 @@ ion-item {
 a {
   color: var(--ion-color-dark);
   text-decoration: none;
-  border-bottom: 1px solid var(--ion-color-primary);
   cursor: pointer;
   &:hover {
     border-bottom-style: none;
+    text-decoration: underline;
   }
 }
 

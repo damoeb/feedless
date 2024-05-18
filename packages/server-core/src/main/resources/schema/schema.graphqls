@@ -44,7 +44,8 @@ type Enclosure {
 }
 
 type Feature {
-  name: String!
+#  name: String!
+  name: FeatureName!
   value: FeatureValue!
 }
 
@@ -340,6 +341,7 @@ input StoriesWhereInput {
 input PreviewFeedInput {
   requests: [ScrapeRequestInput!]!
   filters: [CompositeFilterParamsInput!]!
+  tags: [ConditionalTagInput!]!
 }
 
 input WebDocumentsInput {
@@ -753,16 +755,17 @@ enum FeatureName {
   canCreateAsAnonymous
 
   rateLimit
-  minRefreshRateInMinutes
-  publicScrapeSource
+  refreshRateInMinutesLowerLimit
+  publicRepository
 
   scrapeRequestTimeout
-  scrapeSourceRetentionMaxItems
-  itemEmailForward
-  itemWebhookForward
-  api
+  repositoryRetentionMaxDaysLowerLimitInt
+  repositoryRetentionMaxItemsLowerLimitInt
+  repositoryRetentionMaxItemsUpperLimitInt
+#  itemEmailForward
+#  itemWebhookForward
   plugins
-  scrapeSourceExpiryInDays
+#  scrapeSourceExpiryInDays
   scrapeSourceMaxCountActive
   scrapeRequestMaxCountPerSource
   scrapeRequestActionMaxCount
@@ -1221,8 +1224,13 @@ input PluginExecutionParamsInput {
   org_feedless_filter: [CompositeFilterParamsInput!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
+  org_feedless_conditional_tag: [ConditionalTagInput!]
 }
 
+input ConditionalTagInput {
+  tag: String!
+  filter: CompositeFieldFilterParamsInput!
+}
 input CompositeFilterParamsInput {
   exclude: CompositeFieldFilterParamsInput
   include: CompositeFieldFilterParamsInput
@@ -1263,6 +1271,7 @@ enum FeedlessPlugins {
   org_feedless_feeds
   org_feedless_fulltext
   org_feedless_filter
+  org_feedless_conditional_tag
   org_feedless_privacy
   org_feedless_detect_media
   org_feedless_diff_email_forward
@@ -1351,7 +1360,14 @@ type PluginExecutionParams {
   org_feedless_filter: [CompositeFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
+  org_feedless_conditional_tag: [ConditionalTag!]
 }
+
+type ConditionalTag {
+  tag: String!
+  filter: CompositeFieldFilterParams!
+}
+
 
 type CompositeFilterParams {
   exclude: CompositeFieldFilterParams
