@@ -95,7 +95,7 @@ class XmlFeedParser : FeedBodyParser {
     val richFeed = RichFeed()
     richFeed.id = feed.uri ?: FeedUtil.toURI("native", feed.link)
     richFeed.title = feed.title
-    richFeed.link = feed.link
+//    richFeed.link = feed.link
     richFeed.description = feed.description
 //      icon_url = "",
 //    richFeed.author = feed.author

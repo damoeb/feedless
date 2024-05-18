@@ -6,9 +6,6 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 
 class RichFeed() : GenericFeed<RichArticle>() {
 
-  var selfPage: Int? = null
-  var link: String? = null
-
   constructor(feed: JsonFeed) : this() {
     id = feed.id
     title = feed.title
@@ -26,5 +23,7 @@ class RichFeed() : GenericFeed<RichArticle>() {
     feedUrl = feed.feedUrl
     expired = feed.expired
     tags = feed.tags
+    nextUrl = feed.nextUrl
+    previousUrl = feed.previousUrl
   }
 }

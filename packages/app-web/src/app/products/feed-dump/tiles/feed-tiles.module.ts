@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { IonicModule } from '@ionic/angular';
-import { FeedListRoutingModule } from './feed-list-routing.module';
+import { FeedTilesRoutingModule } from './feed-tiles-routing.module';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
-import { FeedListPage } from './feed-list.page';
+import { FeedTilesPage } from './feed-tiles.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 
@@ -12,11 +12,11 @@ import { ProductHeaderModule } from '../../../components/product-header/product-
   imports: [
     CommonModule,
     IonicModule,
-    FeedListRoutingModule,
+    FeedTilesRoutingModule,
     ProductHeadlineModule,
     SearchbarModule,
     ProductHeaderModule,
   ],
-  declarations: [FeedListPage],
+  declarations: [FeedTilesPage],
 })
-export class FeedListModule {}
+export class FeedTilesModule {}

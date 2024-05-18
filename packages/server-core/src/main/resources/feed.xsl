@@ -89,11 +89,44 @@
                     <a class="head_link" target="_blank" href="https://github.com/voidfiles/awesome-rss">
                       What is an RSS Feed &#x2192;
                     </a>
-
                   </p>
 
+                  <xsl:if test="atom:feed/atom:category">
+                    <h2>Categories</h2>
+                    <ul>
+                      <xsl:for-each select="atom:feed/atom:category">
+                        <li>
+  <!--                        <a>-->
+  <!--                          <xsl:attribute name="href">-->
+  <!--                            <xsl:value-of select="concat(atom:feed/atom:link[@rel='self']/@href,'?tag=', @term)"  disable-output-escaping="yes" />-->
+  <!--                          </xsl:attribute>-->
+
+                            <xsl:value-of select="@term"/>
+  <!--                        </a>-->
+                        </li>
+                      </xsl:for-each>
+                    </ul>
+                  </xsl:if>
+
                   <h2>Recent Items</h2>
-                    <xsl:apply-templates select="atom:feed/atom:entry" />
+                  <xsl:apply-templates select="atom:feed/atom:entry" />
+
+                  <p>
+<!--                    <xsl:if test="atom:feed/atom:link[@rel='previous'] != ''">-->
+<!--                      <a>-->
+<!--                        <xsl:attribute name="href">-->
+<!--                          <xsl:value-of select="atom:feed/atom:link[@rel='previous']/@href"  disable-output-escaping="yes" />-->
+<!--                        </xsl:attribute>-->
+<!--                        Previous Page-->
+<!--                      </a>-->
+<!--                    </xsl:if>-->
+<!--                    <a>-->
+<!--                      <xsl:attribute name="href">-->
+<!--                        <xsl:value-of select="atom:feed/atom:link[@rel='next']/@href"  disable-output-escaping="yes" />-->
+<!--                      </xsl:attribute>-->
+<!--                      Next Page-->
+<!--                    </a>-->
+                  </p>
                 </section>
             </body>
         </html>
@@ -148,11 +181,14 @@
             <h3>
                 <a target="_blank">
                     <xsl:attribute name="href">
-                        <xsl:value-of select="atom:id"/>
+                        <xsl:value-of select="atom:link/@href"/>
                     </xsl:attribute>
                     <xsl:value-of select="atom:title"/>
                 </a>
             </h3>
+            <p>
+              <xsl:value-of select="atom:link/@href"/>
+            </p>
             <p>
                 <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
             </p>
@@ -161,14 +197,14 @@
                 test="atom:content[starts-with(@type,'image/')]">
                 <xsl:value-of select="concat('&lt;img src=data:image/png;base64,', atom:content[starts-with(@type,'image/')], '&gt;')"  disable-output-escaping="yes" />
               </xsl:if>
-              <xsl:if
-                test="atom:content[starts-with(@type,'html')]">
-                <xsl:value-of select="atom:content[starts-with(@type,'html')]" disable-output-escaping="yes" />
-              </xsl:if>
-              <xsl:if
-                test="atom:content[starts-with(@type,'text')]">
-                <xsl:value-of select="atom:content[starts-with(@type,'text')]" disable-output-escaping="yes" />
-              </xsl:if>
+<!--              <xsl:if-->
+<!--                test="atom:content[starts-with(@type,'html')]">-->
+<!--                <xsl:value-of select="atom:content[starts-with(@type,'html')]" disable-output-escaping="yes" />-->
+<!--              </xsl:if>-->
+<!--              <xsl:if-->
+<!--                test="atom:content[starts-with(@type,'text')]">-->
+<!--                <xsl:value-of select="atom:content[starts-with(@type,'text')]" disable-output-escaping="yes" />-->
+<!--              </xsl:if>-->
             </p>
             <small>
                 Published: <xsl:value-of select="atom:updated" />

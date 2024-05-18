@@ -8,6 +8,7 @@ import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -15,6 +16,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 data class FrequencyItem(val year: Int, val month: Int, val day: Int, val count: Int)
@@ -32,19 +34,27 @@ class DocumentService {
   @Autowired
   lateinit var planConstraintsService: PlanConstraintsService
 
-  fun findById(id: UUID): Optional<DocumentEntity> {
-    return documentDAO.findById(id)
+  fun findById(id: UUID): DocumentEntity? {
+    return documentDAO.findById(id).getOrNull()
   }
 
   fun findAllByRepositoryId(
     repositoryId: UUID,
     page: Int?,
     pageSize: Int? = null,
-    status: ReleaseStatus = ReleaseStatus.released
-  ): List<DocumentEntity> {
+    status: ReleaseStatus = ReleaseStatus.released,
+    tag: String? = null
+  ): Page<DocumentEntity> {
     val fixedPage = (page ?: 0).coerceAtLeast(0)
     val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(50)
     val pageable = PageRequest.of(fixedPage, fixedPageSize, Sort.by(Sort.Direction.DESC, "publishedAt"))
+
+//    return tag
+//      ?.let { documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(repositoryId, status, Date(), tag,
+//        limit = fixedPageSize)
+//      //        , offset = fixedPage * fixedPageSize)
+//        }
+//      ?:
     return documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repositoryId, status, Date(), pageable)
   }
 

@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.ApiParams
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
@@ -43,7 +44,8 @@ class RepositoryController {
   fun atomFeed(
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
-    @RequestParam("page", required = false, defaultValue = "0") page: Int
+    @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
+    @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     meterRegistry.counter(
@@ -57,7 +59,7 @@ class RepositoryController {
       corrId,
       HttpStatus.OK,
       "atom",
-      repositoryService.getFeedByRepositoryId(repositoryId, page)
+      repositoryService.getFeedByRepositoryId(repositoryId, page, tag)
     )
   }
 
@@ -71,7 +73,8 @@ class RepositoryController {
   fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
-    @RequestParam("page", required = false, defaultValue = "0") page: Int
+    @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
+    @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     meterRegistry.counter(
@@ -80,12 +83,12 @@ class RepositoryController {
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.info("[$corrId] GET feed/json id=$repositoryId page=$page")
+    log.info("[$corrId] GET feed/json id=$repositoryId page=$page tag=$tag")
     return feedExporter.to(
       corrId,
       HttpStatus.OK,
       "json",
-      repositoryService.getFeedByRepositoryId(repositoryId, page)
+      repositoryService.getFeedByRepositoryId(repositoryId, page, tag)
     )
   }
 

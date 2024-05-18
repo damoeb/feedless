@@ -1,6 +1,8 @@
 package org.migor.feedless.feed.parser.json
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 
@@ -62,12 +64,9 @@ open class GenericFeed<ITEM> : Serializable {
   @SerializedName(value = "tags")
   var tags: List<String>? = null
 
-//  @SerializedName(value = "previous_url")
-//  var previousUrl: String? = null
+  @Transient
+  var previousUrl: String? = null
 
-//  @SerializedName(value = "next_url")
-//  var nextUrl: String? = null
-
-//  @SerializedName(value = "last_url")
-//  var lastUrl: String? = null
+  @Transient
+  var nextUrl: String? = null
 }

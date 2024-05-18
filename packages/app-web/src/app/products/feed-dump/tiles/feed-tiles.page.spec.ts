@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FeedListPage } from './feed-list.page';
+import { FeedTilesPage } from './feed-tiles.page';
 import {
   ApolloMockController,
   AppTestModule,
   mockRepositories,
   mockServerSettings,
 } from '../../../app-test.module';
-import { FeedListModule } from './feed-list.module';
+import { FeedTilesModule } from './feed-tiles.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('FeedListPage', () => {
-  let component: FeedListPage;
-  let fixture: ComponentFixture<FeedListPage>;
+  let component: FeedTilesPage;
+  let fixture: ComponentFixture<FeedTilesPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FeedListModule,
+        FeedTilesModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockRepositories(apolloMockController);
         }),
@@ -30,7 +30,7 @@ describe('FeedListPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(FeedListPage);
+    fixture = TestBed.createComponent(FeedTilesPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

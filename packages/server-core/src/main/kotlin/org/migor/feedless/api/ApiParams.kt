@@ -2,6 +2,8 @@ package org.migor.feedless.api
 
 object ApiParams {
   const val corrId = "x-corr-id"
+  const val tag = "tag"
+  const val page = "page"
 }
 
 object WebToFeedParamsV2 {

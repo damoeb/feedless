@@ -3,11 +3,11 @@ package org.migor.feedless.document
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
@@ -16,14 +16,34 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, PagingAndSortingRepository<DocumentEntity, UUID> {
+interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
 
   fun findAllByRepositoryIdAndStatusAndPublishedAtBefore(
     repositoryId: UUID,
     status: ReleaseStatus,
     now: Date,
     pageable: PageRequest
-  ): List<DocumentEntity>
+  ): Page<DocumentEntity>
+
+//  @Query("""
+//    SELECT * FROM t_document
+//    where repository_id = :repositoryId
+//    and status = :status
+//    and released_at < :now
+//    and :tag = ANY(tags)
+//    order by released_at DESC
+//    limit :limit
+//  """, nativeQuery = true)
+//  fun findAllByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
+//    @Param("repositoryId") repositoryId: UUID,
+//    @Param("status") status: ReleaseStatus,
+//    @Param("now") now: Date,
+//    @Param("tag") tag: String,
+//    @Param("limit") limit: Int,
+////    @Param("offset") offset: Int,
+////    limit: Int,
+////    offset: Int,
+//  ): List<DocumentEntity>
 
 
   @Modifying

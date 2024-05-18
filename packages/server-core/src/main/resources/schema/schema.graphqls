@@ -349,6 +349,7 @@ input WebDocumentsInput {
 input WebDocumentsWhereInput {
   repository: RepositoryWhereInput!
   updatedAt: DatesWhereInput
+  tags: StringFilter
 }
 
 input DatesWhereInput {

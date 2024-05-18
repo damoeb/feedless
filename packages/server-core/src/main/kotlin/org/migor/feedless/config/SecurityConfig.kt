@@ -110,11 +110,11 @@ class SecurityConfig {
       "/stream/bucket/**",
       "/feed/**",
       "/feed:**",
+      "/article/**",
+      "/a/**",
       "/bucket/**",
       "/bucket:**",
-//      "/f/**",
       "/attachment/**",
-      "/a/**",
     )
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       urls.add("/login/oauth2/**")

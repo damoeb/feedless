@@ -217,16 +217,19 @@ class RepositoryService {
     return entity
   }
 
-  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #repositoryId")
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"repo/\" + #repositoryId + #tag")
   @Transactional(readOnly = true)
-  fun getFeedByRepositoryId(repositoryId: String, page: Int): RichFeed {
+  fun getFeedByRepositoryId(repositoryId: String, page: Int, tag: String? = null): RichFeed {
     val id = UUID.fromString(repositoryId)
     val repository = repositoryDAO.findById(id).orElseThrow { NotFoundException("repository not found") }
-    val items = documentService.findAllByRepositoryId(id, page, 10, status = ReleaseStatus.released)
-      .map { it.toRichArticle(propertyService) }
+    val pageResult = documentService.findAllByRepositoryId(id, page, 10, status = ReleaseStatus.released, tag)
+    val items = pageResult.get().map { it.toRichArticle(propertyService) }.toList()
+
+    val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
     val richFeed = RichFeed()
     richFeed.id = "repository:${repositoryId}"
+    richFeed.tags = tags
     richFeed.title = repository.title
     richFeed.description = repository.description
     richFeed.websiteUrl = "${propertyService.appHost}/feed/$repositoryId"
@@ -234,8 +237,14 @@ class RepositoryService {
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.expired = false
-    richFeed.selfPage = page
     richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom"
+
+    if (!pageResult.isLast) {
+      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom?page=${page+1}"
+    }
+    if (!pageResult.isFirst) {
+      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom?page=${page-1}"
+    }
 
     return richFeed
   }
@@ -429,6 +438,7 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService): Rich
   article.contentHtml = contentHtml
   article.publishedAt = publishedAt
   article.modifiedAt = updatedAt
+  article.tags = tags?.asList()
   article.startingAt = startingAt
   article.imageUrl = imageUrl
   return article

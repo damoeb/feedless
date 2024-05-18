@@ -19,6 +19,7 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.feed.synd.SyndFeedImpl
 import com.rometools.rome.feed.synd.SyndImage
 import com.rometools.rome.feed.synd.SyndImageImpl
+import com.rometools.rome.feed.synd.SyndLink
 import com.rometools.rome.feed.synd.SyndLinkImpl
 import com.rometools.rome.io.SyndFeedOutput
 import org.apache.commons.lang3.StringUtils
@@ -59,6 +60,13 @@ class SyndAtomFeedExporter {
     val feedInformation = FeedInformationImpl()
     richFeed.tags?.let {
       feedInformation.keywords = it.toTypedArray()
+      feed.categories = it.map { category ->
+        run {
+          val c = SyndCategoryImpl()
+          c.name = category
+          c
+        }
+      }
     }
     richFeed.authors?.let {
       feedInformation.author = it.firstOrNull()?.name
@@ -77,11 +85,29 @@ class SyndAtomFeedExporter {
     link.rel = "self"
     link.href = richFeed.feedUrl
     link.type = "application/atom+xml"
+
     val website = SyndLinkImpl()
     website.rel = "alternate"
     website.href = richFeed.websiteUrl
     website.type = "text/html"
-    feed.links = listOf(link, website)
+
+    val links = mutableListOf(link, website)
+
+    richFeed.nextUrl?.let {
+      val next = SyndLinkImpl()
+      next.rel = "next"
+      next.href = richFeed.nextUrl
+      next.type = "application/atom+xml"
+    }
+
+    richFeed.previousUrl?.let {
+      val previous = SyndLinkImpl()
+      previous.rel = "previous"
+      previous.href = richFeed.previousUrl
+      previous.type = "application/atom+xml"
+    }
+
+    feed.links = links.toList()
 
     feed.entries = richFeed.items.map { toSyndEntry(it) }
     return feed

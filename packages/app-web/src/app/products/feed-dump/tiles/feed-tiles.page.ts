@@ -9,12 +9,12 @@ import { RepositoryService } from '../../../services/repository.service';
 import { Repository } from '../../../graphql/types';
 
 @Component({
-  selector: 'app-feed-list-page',
-  templateUrl: './feed-list.page.html',
-  styleUrls: ['./feed-list.page.scss'],
+  selector: 'app-feed-tiles-page',
+  templateUrl: './feed-tiles.page.html',
+  styleUrls: ['./feed-tiles.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedListPage implements OnInit {
+export class FeedTilesPage implements OnInit {
   repositories: Repository[] = [];
 
   constructor(

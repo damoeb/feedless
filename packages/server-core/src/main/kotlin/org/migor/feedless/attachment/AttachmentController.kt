@@ -28,7 +28,6 @@ class AttachmentController {
 
   @GetMapping(
     "/attachment/{attachmentId}",
-    "/a/{attachmentId}"
   )
   fun attachmentById(
     request: HttpServletRequest,
