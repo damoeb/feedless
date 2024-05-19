@@ -57,6 +57,7 @@ class PlanConstraintsServiceImplTest {
   fun `give maxItems is defined when coerceRetentionMaxItems works`() {
     val maxItems = 50
     mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = maxItems)
+    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
@@ -65,6 +66,7 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() {
     mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = null)
+    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(56)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
