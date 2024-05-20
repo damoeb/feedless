@@ -11,6 +11,8 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { VisualDiffMenuModule } from './visual-diff-menu/visual-diff-menu.module';
 import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
+import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
+import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
 
 @NgModule({
   imports: [
@@ -22,6 +24,8 @@ import { TrialWarningModule } from '../../components/trial-warning/trial-warning
     LoginButtonModule,
     SearchbarModule,
     TrialWarningModule,
+    AgentsButtonModule,
+    RepositoriesButtonModule
   ],
   declarations: [VisualDiffProductPage],
 })

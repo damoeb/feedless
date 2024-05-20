@@ -1,0 +1,11 @@
+<ion-button
+  routerLink="/agents"
+  *ngIf="serverSettings.isSelfHosted()"
+  fill="clear"
+>
+  <ion-label>
+    Agents
+    <app-bubble *ngIf="isLoggedIn && agentCount === 0" color="red"></app-bubble>
+  </ion-label>
+  <ion-chip *ngIf="isLoggedIn && agentCount > 0">{{ agentCount }}</ion-chip>
+</ion-button>

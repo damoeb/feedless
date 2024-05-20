@@ -1,5 +1,9 @@
 @import "../../../mixins";
 
+ion-content {
+  line-height: 1.4rem;
+}
+
 a,
 a:visited,
 a:active {
@@ -12,4 +16,12 @@ ion-textarea {
   --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
   min-height: 400px;
   @include control();
+}
+
+.plans {
+  display: flex; --faint-color: #8d8d8d;;
+
+  app-plan-column {
+    flex: 1;
+  }
 }

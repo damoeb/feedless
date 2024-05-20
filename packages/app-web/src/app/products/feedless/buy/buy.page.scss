@@ -28,3 +28,12 @@ ion-segment-button {
     padding-bottom: 5px;
   }
 }
+
+.offers {
+  display: flex;
+  flex-direction: row;
+  column-gap: 20px;
+  & > * {
+    flex: 1;
+  }
+}

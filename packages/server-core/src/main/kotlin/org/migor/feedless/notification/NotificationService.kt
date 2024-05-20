@@ -16,9 +16,9 @@ class NotificationService {
   lateinit var notificationDAO: NotificationDAO
 
   fun createNotification(corrId: String, ownerId: UUID, message: String?) {
-    val notification = NotificationEntity()
-    notification.ownerId = ownerId
-    notification.message = "${message}"
-    notificationDAO.save(notification)
+//    val notification = NotificationEntity()
+//    notification.ownerId = ownerId
+//    notification.message = "${message}"
+//    notificationDAO.save(notification)
   }
 }

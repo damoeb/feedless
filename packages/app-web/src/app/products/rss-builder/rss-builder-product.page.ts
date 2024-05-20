@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
@@ -15,7 +9,6 @@ import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { AgentService } from '../../services/agent.service';
 import { RepositoryService } from '../../services/repository.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -33,9 +26,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   license: GqlLicenseQuery['license'];
 
   protected readonly dateFormat = dateFormat;
-  feedCount: number = 0;
-  agentCount: number = 0;
-  isLoggedIn: boolean;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -43,7 +33,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
     private readonly productService: ProductService,
     private readonly repositoryService: RepositoryService,
     private readonly licenseService: LicenseService,
-    private readonly agentService: AgentService,
     readonly serverSettings: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
   ) {
@@ -52,10 +41,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.authService.authorizationChange().subscribe((authorization) => {
-        this.isLoggedIn = authorization?.loggedIn;
-        this.changeRef.detectChanges();
-      }),
       this.productService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
@@ -70,14 +55,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
         if (queryParams.url) {
           this.url = queryParams.url;
         }
-      }),
-      this.agentService.getAgents().subscribe((agents) => {
-        this.agentCount = agents.length;
-        this.changeRef.detectChanges();
-      }),
-      this.repositoryService.countRepositories().subscribe((repoCount) => {
-        this.feedCount = repoCount;
-        this.changeRef.detectChanges();
       }),
     );
   }

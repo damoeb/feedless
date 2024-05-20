@@ -11,21 +11,8 @@
       </div>
 
       <ion-buttons class="ion-margin-horizontal">
-        <ion-button routerLink="/feeds">
-          Feeds
-          <ion-chip *ngIf="isLoggedIn">{{ feedCount }}</ion-chip>
-        </ion-button>
-        <ion-button
-          routerLink="/agents"
-          *ngIf="serverSettings.isSelfHosted()"
-          fill="clear"
-        >
-          <ion-label>
-            Agents
-            <app-bubble *ngIf="isLoggedIn && agentCount === 0" color="red"></app-bubble>
-          </ion-label>
-          <ion-chip *ngIf="isLoggedIn && agentCount > 0">{{ agentCount }}</ion-chip>
-        </ion-button>
+        <app-repositories-button name="Feeds" link="/feeds"></app-repositories-button>
+        <app-agents-button></app-agents-button>
       </ion-buttons>
     </div>
 

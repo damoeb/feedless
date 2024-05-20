@@ -21,16 +21,20 @@ import java.util.*
 @Table(name = "t_attachment")
 open class AttachmentEntity : EntityWithUUID() {
 
+  companion object {
+    const val LEN_URL = 1000
+  }
+
   @Column(nullable = false, name = "has_data")
   open var hasData: Boolean = false
 
-  @Column(name = "remote_data_url")
+  @Column(length = LEN_URL, name = "remote_data_url")
   open var remoteDataUrl: String? = null
 
   @Column(nullable = false, name = "content_type")
   open lateinit var contentType: String
 
-  @Column(name = "original_url")
+  @Column(length = LEN_URL, name = "original_url")
   open var originalUrl: String? = null
 
   @Column(name = "name")

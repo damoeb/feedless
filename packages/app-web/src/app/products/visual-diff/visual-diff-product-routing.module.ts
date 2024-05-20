@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { VisualDiffProductPage } from './visual-diff-product.page';
 import { VisualDiffMenuComponent } from './visual-diff-menu/visual-diff-menu.component';
 import { DefaultRoutes } from '../default-routes';
+import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
   {
@@ -25,13 +26,11 @@ const routes: Routes = [
       },
       {
         path: 'plans',
-        data: { title: 'Plans' },
         loadChildren: () =>
           import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
       {
         path: 'builder',
-        data: { title: 'Builder' },
         loadChildren: () =>
           import('./subscription-edit/subscription-edit.module').then(
             (m) => m.SubscriptionEditPageModule,
@@ -39,15 +38,22 @@ const routes: Routes = [
       },
       {
         path: 'trackers',
-        data: { title: 'Page Trackers' },
+        canActivate: [AuthGuardService],
         loadChildren: () =>
           import('./subscriptions/subscriptions.module').then(
             (m) => m.SubscriptionsPageModule,
           ),
       },
       {
+        path: 'agents',
+        canActivate: [AuthGuardService],
+        loadChildren: () =>
+          import('../../pages/agents/agents.module').then(
+            (m) => m.AgentsPageModule,
+          ),
+      },
+      {
         path: 'trackers/:id',
-        data: { title: 'Page Tracker' },
         loadChildren: () =>
           import('./subscription-details/subscription-details.module').then(
             (m) => m.SubscriptionDetailsPageModule,

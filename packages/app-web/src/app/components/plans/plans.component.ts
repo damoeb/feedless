@@ -5,6 +5,7 @@ import {
   GqlPlan,
   GqlPlanAvailability,
 } from '../../../generated/graphql';
+import { StringFeature, StringFeatureGroup } from '../plan-column/plan-column.component';
 
 export type PlanAction = {
   label: string;
@@ -18,7 +19,7 @@ export type FeatureGroup<T> = {
 };
 
 export type PlanForUi = Partial<GqlPlan> & {
-  featureGroups: FeatureGroup<Feature>[];
+  featureGroups: StringFeatureGroup[];
   action: PlanAction;
   color?: string;
 };
@@ -108,7 +109,7 @@ export class PlansComponent implements OnInit {
       //   ? 'var(--ion-color-primary)'
       //   : 'var(--ion-color-dark)',
       action: this.getAction(plan.availability),
-      featureGroups: toFeatureGroups(plan.features),
+      featureGroups: this.toStringFeatureGroup(toFeatureGroups(plan.features)),
     }));
   }
 
@@ -124,15 +125,11 @@ export class PlansComponent implements OnInit {
     };
   }
 
-  isFalse(feature: Feature): boolean {
-    return this.isBoolean(feature) && !feature.value.boolVal.value;
-  }
-
-  isTrue(feature: Feature): boolean {
+  private isTrue(feature: Feature): boolean {
     return this.isBoolean(feature) && feature.value.boolVal.value;
   }
 
-  isBoolean(feature: Feature): boolean {
+  private isBoolean(feature: Feature): boolean {
     return !!feature.value.boolVal;
   }
 
@@ -140,19 +137,19 @@ export class PlansComponent implements OnInit {
     return price.toFixed(2);
   }
 
-  getFeatureTitle(feature: Feature): string {
+  private getFeatureTitle(feature: Feature): string {
     const resolver = (label) => label.featureName === feature.name;
     return (this.customLabels?.find(resolver) ?? this.labels.find(resolver))
       .title;
   }
 
-  getFeatureSubTitle(feature: Feature): string {
+  private getFeatureSubTitle(feature: Feature): string {
     const resolver = (label) => label.featureName === feature.name;
     return (this.customLabels?.find(resolver) ?? this.labels.find(resolver))
       .subtitle;
   }
 
-  getFeatureValue(feature: Feature): number | boolean {
+  private getFeatureValue(feature: Feature): number | boolean {
     return feature.value.boolVal
       ? feature.value.boolVal.value
       : feature.value.numVal.value;
@@ -182,5 +179,32 @@ export class PlansComponent implements OnInit {
       color: 'primary',
       redirectTo: '/signup',
     };
+  }
+
+  toStringFeatureGroup(featureGroups: FeatureGroup<Feature>[]): StringFeatureGroup[] {
+    return featureGroups.map<StringFeatureGroup>(featureGroup => {
+      return {
+        groupLabel: featureGroup.groupLabel,
+        features: featureGroup.features.map<StringFeature>(feature => {
+          return {
+            title: this.getFeatureTitle(feature),
+            subtitle: this.getFeatureSubTitle(feature),
+            valueHtml: this.getFeatureValueHtml(feature)
+          }
+        })
+      }
+    });
+  }
+
+  private getFeatureValueHtml(feature: Feature): string {
+    if (this.isBoolean(feature)) {
+      if (this.isTrue(feature)) {
+        return `<ion-icon color="success" name="checkmark-outline"></ion-icon>`
+      } else {
+        return `<ion-icon color="danger" name="close-outline"></ion-icon>`;
+      }
+    } else {
+      return ''+ this.getFeatureValue(feature);
+    }
   }
 }

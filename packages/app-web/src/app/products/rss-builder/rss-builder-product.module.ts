@@ -12,6 +12,8 @@ import { RssBuilderMenuModule } from './rss-builder-menu/rss-builder-menu.module
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
+import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
+import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
 
 @NgModule({
   imports: [
@@ -24,6 +26,8 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     SearchbarModule,
     TrialWarningModule,
     BubbleModule,
+    AgentsButtonModule,
+    RepositoriesButtonModule
   ],
   declarations: [RssBuilderProductPage],
 })

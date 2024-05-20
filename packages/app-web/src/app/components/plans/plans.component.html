@@ -1,69 +1,28 @@
 <div class="plans ion-margin">
-  <div
-    *ngFor="let plan of finalPlans"
-    [ngStyle]="{ '--color': plan.color }"
-    class="plan"
-  >
-    <h2 class="plan__title">
-      <div *ngIf="planHeaders" [innerHtml]="planHeaders[plan.name]"></div>
+  <app-plan-column *ngFor="let plan of finalPlans"
+                   [price]="'$' + formatPrice(plan.currentCosts)"
+                   [featureGroups]="plan.featureGroups"
+                   [ngStyle]="{ '--color': plan.color }">
+    <div planHeader>
+      <div *ngIf="planHeaders"
+           [innerHtml]="planHeaders[plan.name]"></div>
       <ng-container *ngIf="!planHeaders">
         {{ plan.name }}
       </ng-container>
-    </h2>
-    <div class="plan__price">
-      ${{ formatPrice(plan.currentCosts) }}
-      <span class="plan__price--info">/ Month</span>
     </div>
-    <div class="plan__action ion-margin-vertical">
-      <ion-button
-        [color]="plan.action.color"
-        [routerLink]="plan.action.redirectTo"
-        expand="block"
-      >
-        {{ plan.action.label }}
-      </ion-button>
-    </div>
-    <div (scroll)="onScroll($event)" [scrollTop]="scrollTop" class="features">
-      <ng-container *ngFor="let featureGroup of plan.featureGroups">
-        <div class="feature__group">{{ featureGroup.groupLabel }}</div>
-        <ion-row *ngFor="let feature of featureGroup.features" class="feature">
-          <ion-col class="feature__name" size="8">
-            <span class="feature__title">
-              {{ getFeatureTitle(feature) }}
-            </span>
-            <span *ngIf="getFeatureSubTitle(feature)" class="feature__subtitle"
-              >({{ getFeatureSubTitle(feature) }})</span
-            >
-          </ion-col>
-          <ion-col class="feature__value" size="4">
-            <ion-icon
-              *ngIf="isFalse(feature)"
-              color="danger"
-              name="close-outline"
-            ></ion-icon>
-            <ion-icon
-              *ngIf="isTrue(feature)"
-              color="success"
-              name="checkmark-outline"
-            ></ion-icon>
-            <span *ngIf="!isBoolean(feature)">{{
-              getFeatureValue(feature)
-            }}</span>
-          </ion-col>
-        </ion-row>
-      </ng-container>
-    </div>
-    <div class="plan__action ion-margin-top">
-      <ion-button
-        [color]="plan.action.color"
-        [routerLink]="plan.action.redirectTo"
-        expand="block"
-      >
-        {{ plan.action.label }}
-      </ion-button>
-    </div>
-  </div>
+
+    <ion-button
+      planAction
+      [color]="plan.action.color"
+      [routerLink]="plan.action.redirectTo"
+      expand="block"
+    >
+      {{ plan.action.label }}
+    </ion-button>
+
+  </app-plan-column>
 </div>
+
 <div class="ion-margin">
   <sup>1</sup> Beta and <sup>2</sup> Experimental features can be opted-in in
   profile

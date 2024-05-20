@@ -75,6 +75,7 @@ just by analyzing just the HTML structure. Usually the structuring to a feed wor
 
 wget https://raw.githubusercontent.com/damoeb/rss-proxy/develop/selfhosting.env \\
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/docker-compose.yml \\
+  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/docker/feedless/ui-config.json \\
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/chrome.json
 touch your-license.key
 docker-compose up
