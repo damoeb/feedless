@@ -32,7 +32,7 @@ class ConditionalTagPlugin : MapEntityPlugin {
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): DocumentEntity {
-    log.info("[$corrId] mapEntity ${document.url}")
+    log.debug("[$corrId] mapEntity ${document.url}")
     val newTags = params.org_feedless_conditional_tag.filter {
       filterPlugin.matches(document, it.filter, 0)
     }.map { it.tag }.toMutableSet()

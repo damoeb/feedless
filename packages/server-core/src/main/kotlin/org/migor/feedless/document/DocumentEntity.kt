@@ -33,14 +33,18 @@ import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.addListenableTag
+import org.migor.feedless.repository.classifyDuration
 import org.springframework.context.annotation.Lazy
 import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Entity
-@Table(name = "t_document", indexes = [
+@Table(
+  name = "t_document", indexes = [
 //  Index(name = "idx_document_url", columnList = "url, repository_id")
-])
+  ]
+)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
   name = "type",
@@ -179,36 +183,40 @@ open class DocumentEntity : EntityWithUUID() {
 
 }
 
-fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument
-  {
-    val builder = WebDocument.newBuilder()
-      .id(id.toString())
-      .imageUrl(imageUrl)
-      .url(url)
-      .contentTitle(contentTitle)
-      .contentText(contentText)
-      .updatedAt(updatedAt.time)
-      .createdAt(createdAt.time)
-      .tags(tags?.asList() ?: emptyList())
-      .enclosures(attachments.map {
-        Enclosure.newBuilder()
-          .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))
-          .type(it.contentType)
-//        .duration(it.duration)
-//          .size(it.duration)
-          .build()
-      })
-      .publishedAt(publishedAt.time)
-      .startingAt(startingAt?.time)
+fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
+  val builder = WebDocument.newBuilder()
+    .id(id.toString())
+    .imageUrl(imageUrl)
+    .url(url)
+    .contentTitle(contentTitle)
+    .contentText(contentText)
+    .updatedAt(updatedAt.time)
+    .createdAt(createdAt.time)
+    .tags((tags?.asList() ?: emptyList()).plus(
+      addListenableTag(attachments.filter { it.contentType.startsWith("audio/") && it.duration != null }
+        .map { classifyDuration(it.duration!!) }.distinct()
+      )
+    )
+    )
+    .enclosures(attachments.map {
+      Enclosure.newBuilder()
+        .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))
+        .type(it.contentType)
+        .duration(it.duration)
+        .size(it.size)
+        .build()
+    })
+    .publishedAt(publishedAt.time)
+    .startingAt(startingAt?.time)
 
-    return if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
-      builder.contentHtml(contentRaw?.toString(StandardCharsets.UTF_8))
-        .build()
-    } else {
-      builder
-        .contentHtml(contentHtml)
-        .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
-        .contentRawMime(contentRawMime)
-        .build()
-    }
+  return if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
+    builder.contentHtml(contentRaw?.toString(StandardCharsets.UTF_8))
+      .build()
+  } else {
+    builder
+      .contentHtml(contentHtml)
+      .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
+      .contentRawMime(contentRawMime)
+      .build()
   }
+}

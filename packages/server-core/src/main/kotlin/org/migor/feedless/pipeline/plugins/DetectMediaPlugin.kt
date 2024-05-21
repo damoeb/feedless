@@ -54,7 +54,7 @@ class DetectMediaPlugin : MapEntityPlugin {
     params: PluginExecutionParamsInput
   ): DocumentEntity {
     val url = document.url
-    log.info("[$corrId] mapEntity $url")
+    log.debug("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
       throw HarvestAbortedException(corrId, "illegal url $url")
     }

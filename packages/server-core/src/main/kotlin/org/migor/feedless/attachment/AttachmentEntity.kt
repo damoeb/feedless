@@ -40,6 +40,12 @@ open class AttachmentEntity : EntityWithUUID() {
   @Column(name = "name")
   open var name: String? = null
 
+  @Column(name = "size")
+  open var size: Long? = null
+
+  @Column(name = "duration")
+  open var duration: Long? = null
+
   @Lazy
   @Column(columnDefinition = "bytea", name = "data")
   open var data: ByteArray? = null

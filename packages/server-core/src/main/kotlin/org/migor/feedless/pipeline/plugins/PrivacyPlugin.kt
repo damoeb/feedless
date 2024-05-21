@@ -62,10 +62,10 @@ class PrivacyPlugin : MapEntityPlugin {
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): DocumentEntity {
-    log.info("[$corrId] mapEntity ${document.url}")
+    log.debug("[$corrId] mapEntity ${document.url}")
     val response = httpService.httpGetCaching(corrId, document.url, 200)
     if (document.url != response.url) {
-      log.info("[$corrId] Unwind url shortened urls ${document.url} -> ${response.url}")
+      log.debug("[$corrId] Unwind url shortened urls ${document.url} -> ${response.url}")
       document.url = response.url
     }
 
@@ -74,7 +74,7 @@ class PrivacyPlugin : MapEntityPlugin {
       val (html, attachments) = extractAttachments(corrId, document.id, HtmlUtil.parseHtml(it, document.url))
       document.contentHtml = html
       document.attachments = attachments.toMutableList()
-    } ?: log.info("[$corrId] no html content present ${document.id}")
+    } ?: log.debug("[$corrId] no html content present ${document.id}")
 //    }
 
     return document

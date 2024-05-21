@@ -77,7 +77,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     params: PluginExecutionParamsInput,
     index: Int
   ): Boolean {
-    log.info("[$corrId] filter ${document.url}")
+    log.debug("[$corrId] filter ${document.url}")
 
     val increment = params.org_feedless_diff_email_forward.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")

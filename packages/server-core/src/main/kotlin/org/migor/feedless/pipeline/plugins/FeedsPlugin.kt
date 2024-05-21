@@ -40,10 +40,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
     plugin: PluginExecution,
     url: String
   ): ScrapedFeeds {
-    log.info("[$corrId] transformFragment")
+    log.debug("[$corrId] transformFragment")
 
     val document = HtmlUtil.parseHtml(element.selector.html.data, url)
-    log.info("[$corrId] extracting feeds")
+    log.debug("[$corrId] extracting feeds")
     val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)
     return ScrapedFeeds.newBuilder()
       .genericFeeds(genericFeeds.map { it.toDto() })

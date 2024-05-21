@@ -58,36 +58,6 @@
     </ion-list>
 
     <ion-accordion-group [multiple]="true">
-      <ion-accordion value="privacy" toggleIconSlot="start">
-        <ion-item slot="header">
-          <ion-label>
-            Privacy
-            <ion-note *ngIf="formFg.value.isPublic">Visible to everyone</ion-note>
-            <ion-note *ngIf="!formFg.value.isPublic">Visible to you</ion-note>
-          </ion-label>
-        </ion-item>
-        <ion-list slot="content">
-          <ion-item>
-            <ion-checkbox
-              style="flex: 3"
-              class="ion-margin-end"
-              aria-label=""
-              justify="end"
-              aria-labelledby="isPublic__label"
-              [formControl]="formFg.controls.isPublic"
-            ></ion-checkbox>
-            <ion-label
-              style="flex: 9"
-              id="isPublic__label"
-              class="ion-text-left"
-            >
-              Public Listing
-              <ion-note> Others can find your feed </ion-note>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-accordion>
-
       <ion-accordion value="filter" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
@@ -406,7 +376,38 @@
           </ion-row>
         </ion-list>
       </ion-accordion>
-      <ion-accordion value="second" toggleIconSlot="start">
+
+      <ion-accordion value="privacy" toggleIconSlot="start">
+        <ion-item slot="header">
+          <ion-label>
+            Privacy
+            <ion-note *ngIf="formFg.value.isPublic">Visible to everyone</ion-note>
+            <ion-note *ngIf="!formFg.value.isPublic">Visible to you</ion-note>
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item>
+            <ion-checkbox
+              style="flex: 3"
+              class="ion-margin-end"
+              aria-label=""
+              justify="end"
+              aria-labelledby="isPublic__label"
+              [formControl]="formFg.controls.isPublic"
+            ></ion-checkbox>
+            <ion-label
+              style="flex: 9"
+              id="isPublic__label"
+              class="ion-text-left"
+            >
+              Public Listing
+              <ion-note> Others can find your feed </ion-note>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-accordion>
+
+      <ion-accordion value="robustness" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
             Anonymity & Robustness

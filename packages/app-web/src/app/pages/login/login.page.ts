@@ -29,6 +29,7 @@ export class LoginPage implements OnInit, OnDestroy {
   showNoSignupBanner: boolean;
   showUserPasswordLogin: boolean;
   errorMessage: string;
+  loading: boolean = true;
 
   constructor(
     protected readonly serverSettings: ServerSettingsService,
@@ -73,6 +74,8 @@ export class LoginPage implements OnInit, OnDestroy {
             GqlProfileName.AuthMail,
           );
         }
+        this.loading = false;
+        this.changeRef.detectChanges();
       }),
     );
   }

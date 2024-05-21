@@ -429,6 +429,8 @@ private fun Enclosure.toAttachment(document: DocumentEntity): AttachmentEntity {
   a.contentType = type
   a.remoteDataUrl = url
   a.originalUrl = url
+  a.size = size
+  a.duration = duration
   a.documentId = document.id
   return a
 }

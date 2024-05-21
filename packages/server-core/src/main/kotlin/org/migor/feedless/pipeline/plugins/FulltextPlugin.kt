@@ -56,7 +56,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): DocumentEntity {
-    log.info("[$corrId] mapEntity ${document.url}")
+    log.debug("[$corrId] mapEntity ${document.url}")
 
     val emit = ScrapeEmit.newBuilder()
       .selectorBased(
@@ -80,7 +80,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
     val source = repository.sources[0]
     if (BooleanUtils.isTrue(params.org_feedless_fulltext.inheritParams) && source.prerender) {
-      log.info("[$corrId] with inheritParams")
+      log.debug("[$corrId] with inheritParams")
       request.page.actions = source.actions.map { it.toDto() }
       request.page.prerender = ScrapePrerender.newBuilder()
         .language(source.language)

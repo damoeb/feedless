@@ -423,8 +423,8 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService): Rich
     val a = JsonAttachment()
     a.url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id)
     a.type = it.contentType
-//                a.size = it.size
-//        a.duration = it.duration
+    a.size = it.size
+    a.duration = it.duration
     a
   }
   article.contentText = StringUtils.trimToEmpty(contentText)
@@ -433,9 +433,32 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService): Rich
   article.contentHtml = contentHtml
   article.publishedAt = publishedAt
   article.modifiedAt = updatedAt
-  article.tags = tags?.asList()
+  article.tags = (tags?.asList() ?: emptyList()).plus(getAttachmentTags(article))
   article.startingAt = startingAt
   article.imageUrl = imageUrl
   return article
 
 }
+
+private fun getAttachmentTags(article: RichArticle): List<String> {
+  return addListenableTag(article.attachments.filter { it.type.startsWith("audio/") && it.duration != null }
+    .map { classifyDuration(it.duration!!) }
+    .distinct()
+  )
+}
+
+fun addListenableTag(tags: List<String>): List<String> {
+  return if (tags.isEmpty()) {
+    tags
+  } else {
+    tags.plus("listenable")
+  }
+}
+
+fun classifyDuration(duration: Long): String {
+  return when(duration.div(60.0)) {
+    in 0.0..1.0 -> "brief"
+    in 1.0 .. 5.0 -> "short"
+    in 5.0 .. 30.0 -> "medium"
+    else -> "long"
+  }}

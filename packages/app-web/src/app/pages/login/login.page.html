@@ -14,7 +14,8 @@
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
   >
-    <div style="width: 400px">
+    <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+    <div style="width: 400px" *ngIf="!loading">
       <form
         *ngIf="showUserPasswordLogin"
         (ngSubmit)="loginWithUserPassword(email.value, password.value)"
