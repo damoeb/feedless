@@ -30,6 +30,9 @@ open class PipelineJobEntity : EntityWithUUID() {
   @Column(nullable = false)
   open lateinit var executorId: String
 
+  @Column(nullable = false, name = "schema_version")
+  open var schemaVersion: Int = 0
+
   @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb")
   open lateinit var executorParams: PluginExecutionParamsInput

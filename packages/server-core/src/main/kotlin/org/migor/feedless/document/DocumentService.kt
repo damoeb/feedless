@@ -1,15 +1,18 @@
 package org.migor.feedless.document
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -31,6 +34,9 @@ class DocumentService {
 
   @Autowired
   lateinit var documentDAO: DocumentDAO
+
+  @Autowired
+  lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
   lateinit var planConstraintsService: PlanConstraintsService
@@ -92,8 +98,27 @@ class DocumentService {
       } ?: log.info("[$corrId] no retention with maxAgeDays given")
   }
 
-  fun deleteDocumentById(corrId: String, user: UserEntity, id: UUID) {
-    documentDAO.deleteByIdAndOwnerId(id, user.id)
+  fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+    if (repository.ownerId != user.id) {
+      throw PermissionDeniedException("current user ist not owner ($corrId)")
+    }
+
+    if (documentIds.`in` != null) {
+      documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+    } else {
+      if (documentIds.notIn != null) {
+        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+      } else {
+        if (documentIds.equals != null) {
+          documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
+        } else {
+          throw IllegalArgumentException("operation not supported")
+        }
+
+      }
+
+    }
   }
 
   fun getDocumentFrequency(

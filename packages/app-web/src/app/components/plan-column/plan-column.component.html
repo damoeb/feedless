@@ -2,15 +2,17 @@
   <h2 class="plan__title">
     <ng-content select="[planHeader]"></ng-content>
   </h2>
-  <div class="plan__price">
+  <div class="plan__price" *ngIf="price">
     {{ price }}
     <span class="plan__price--info">{{ pricePerUnit }}</span>
   </div>
+  <ng-content></ng-content>
 <!--  <div class="plan__action ion-margin-vertical">-->
 <!--    <ng-content select="[planAction]"></ng-content>-->
 <!--  </div>-->
   <div (scroll)="onScroll($event)"
        [scrollTop]="scrollTop"
+       *ngIf="featureGroups"
        class="features">
     <ng-container *ngFor="let featureGroup of featureGroups">
       <div class="feature__group">{{ featureGroup.groupLabel }}</div>

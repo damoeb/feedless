@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ServerSettingsService } from '../../services/server-settings.service';
 import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { StringFeatureGroup } from '../../components/plan-column/plan-column.component';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { ModalController } from '@ionic/angular';
+import { BuyModalComponent } from '../../modals/buy-modal/buy-modal.component';
 
 function bold(v: string): string {
   return `<strong>${v}</strong>`;
@@ -13,14 +16,14 @@ function bold(v: string): string {
 function bool(value: boolean) {
   return {
     value
-  }
+  };
 }
 
 @Component({
   selector: 'app-license-page',
   templateUrl: './license.page.html',
   styleUrls: ['./license.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;
@@ -59,8 +62,8 @@ export class LicensePage implements OnInit, OnDestroy {
           title: 'Full Source Available',
           valueBool: bool(true)
         }
-      ],
-    },
+      ]
+    }
   ];
   featureGroupsRA: StringFeatureGroup[] = [
     {
@@ -94,15 +97,22 @@ export class LicensePage implements OnInit, OnDestroy {
           title: 'Full Source Available',
           valueBool: bool(false)
         }
-      ],
-    },
+      ]
+    }
   ];
 
 
   constructor(
     private readonly licenseService: LicenseService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
+    private readonly modalCtrl: ModalController,
+    private readonly changeRef: ChangeDetectorRef
+  ) {
+    dayjs.extend(relativeTime);
+  }
+
+  fromNow(timestamp: number): string {
+    return dayjs(timestamp).toNow(true);
+  }
 
   async ngOnInit() {
     this.subscriptions.push(
@@ -110,7 +120,7 @@ export class LicensePage implements OnInit, OnDestroy {
         this.license = license;
         this.loading = false;
         this.changeRef.detectChanges();
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }
@@ -124,8 +134,19 @@ export class LicensePage implements OnInit, OnDestroy {
   applyLicense(licenseRaw: string) {
     if (licenseRaw.trim().length > 0) {
       return this.licenseService.updateLicense({
-        licenseRaw,
+        licenseRaw
       });
     }
+  }
+
+  async openBuyModal() {
+    const modal = await this.modalCtrl.create({
+      component: BuyModalComponent
+    });
+    await modal.present();
+  }
+
+  getRelativeTrialDaysLeft(): number {
+    return dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') / (28 * 2.0);
   }
 }

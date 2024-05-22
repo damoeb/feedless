@@ -20,10 +20,10 @@ export type StringFeatureGroup = {
   styleUrls: ['./plan-column.component.scss'],
 })
 export class PlanColumnComponent {
-  @Input({ required: true })
+  @Input()
   price: string
 
-  @Input({ required: true })
+  @Input()
   featureGroups: StringFeatureGroup[]
 
   @Input()

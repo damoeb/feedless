@@ -128,5 +128,8 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
     nativeQuery = true
   )
   fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
+  fun deleteAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>)
+  fun deleteAllByRepositoryIdAndIdNotIn(repositoryId: UUID, ids: List<UUID>)
+  fun deleteAllByRepositoryIdAndId(repositoryId: UUID, fromString: UUID?)
 
 }

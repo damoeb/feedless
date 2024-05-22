@@ -1,31 +1,20 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import {
-  ImportOpmlModalComponent,
-  ImportOpmlModalComponentProps,
-} from '../../modals/import-opml-modal/import-opml-modal.component';
-import { firstValueFrom } from 'rxjs';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
-import { ModalController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../../modals/import-opml-modal/import-opml-modal.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-opml-picker',
-  templateUrl: './opml-picker.component.html',
-  styleUrls: ['./opml-picker.component.scss'],
+  selector: 'app-import-button',
+  templateUrl: './import-button.component.html',
+  styleUrls: ['./import-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpmlPickerComponent {
+export class ImportButtonComponent {
   @ViewChild('opmlPicker')
   opmlPickerElement!: ElementRef<HTMLInputElement>;
-
-  @Input()
-  color: string;
-
-  @Input()
-  fill: string;
-
-  @Input()
-  expand: string;
 
   constructor(
     private readonly omplService: OpmlService,
@@ -55,4 +44,7 @@ export class OpmlPickerComponent {
       await this.router.navigateByUrl('/login');
     }
   }
+
+
+
 }

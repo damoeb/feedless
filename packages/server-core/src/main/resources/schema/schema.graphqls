@@ -127,7 +127,7 @@ type Mutation {
 
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
   updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
-  deleteWebDocument(data: DeleteWebDocumentInput!): Boolean!
+  deleteWebDocuments(data: DeleteWebDocumentsInput!): Boolean!
 }
 
 input DeleteAnnotationInput {
@@ -205,8 +205,8 @@ input CreateWebDocumentInput {
   parent: WebDocumentUniqueWhereInput
 }
 
-input DeleteWebDocumentInput {
-  where: WebDocumentUniqueWhereInput!
+input DeleteWebDocumentsInput {
+  where: WebDocumentsWhereInput!
 }
 
 input UpdateWebDocumentInput {
@@ -350,6 +350,7 @@ input WebDocumentsInput {
 }
 
 input WebDocumentsWhereInput {
+  id: StringFilter
   repository: RepositoryWhereInput!
   updatedAt: DatesWhereInput
   tags: StringFilter

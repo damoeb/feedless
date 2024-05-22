@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.pipeline.plugins.MailProvider
@@ -29,8 +30,14 @@ class PluginService {
   @Autowired
   lateinit var plugins: List<FeedlessPlugin>
 
+//  @Autowired
+//  lateinit var pipelineJobDAO: PipelineJobDAO
+
   @Autowired
   lateinit var environment: Environment
+
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   @Autowired
   lateinit var defaultMailFormatterService: MailProviderService
@@ -45,7 +52,17 @@ class PluginService {
     for (plugin in entityPlugins) {
       log.info("Plugin ${plugin.id()}")
     }
+//    migrateJsonSchema()
   }
+
+//  private fun migrateJsonSchema() {
+//    val schemaVersion = propertyService.schemaVersion
+//    pipelineJobDAO.findAllBySchemaVersionNot(schemaVersion).forEach { migrateJsonSchema(it, it.schemaVersion, schemaVersion) }
+//  }
+//
+//  private fun migrateJsonSchema(it: PipelineJobEntity, fromSchemaVersion: Int, targetSchemaVersion: Int) {
+//
+//  }
 
   fun resolveFragmentTransformerById(pluginId: String): FragmentTransformerPlugin? {
     return transformerPlugins.find { plugin -> plugin.id() == pluginId }

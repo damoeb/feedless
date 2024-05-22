@@ -1,0 +1,7 @@
+<ion-toolbar>
+  <ion-buttons class="ion-justify-content-center">
+    <ion-button (click)="pageChange.emit(currentPage-1)" [disabled]="currentPage === 0">Previous</ion-button>
+    <ion-button>{{ currentPage+1 }}</ion-button>
+    <ion-button (click)="pageChange.emit(currentPage+1)">Next</ion-button>
+  </ion-buttons>
+</ion-toolbar>

@@ -10,9 +10,12 @@ import { Subscription } from 'rxjs';
 import {
   ProductConfig,
   ProductService,
-} from '../../../services/product.service';
+} from '../../services/product.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
+
+type TargetGroup = 'organization' | 'individual' | 'other'
+type ServiceFlavor = 'self' | 'cloud'
 
 @Component({
   selector: 'app-buy-page',
@@ -41,6 +44,13 @@ export class BuyPage implements OnInit, OnDestroy {
     price: new FormControl(),
     message: new FormControl(),
   });
+  targetGroup = new FormControl<TargetGroup>('individual');
+  serviceFlavor = new FormControl<ServiceFlavor>('self');
+  serviceFlavorSelf: ServiceFlavor = 'self';
+  serviceFlavorCloud: ServiceFlavor = 'cloud';
+  targetGroupOrganization: TargetGroup = 'organization';
+  targetGroupIndividual: TargetGroup = 'individual';
+  targetGroupOther: TargetGroup = 'other';
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,

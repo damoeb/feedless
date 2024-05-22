@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { BuyPage } from './buy.page';
 import { ProductsPageModule } from './buy.module';
-import { AppTestModule, mockPlans } from '../../../app-test.module';
+import { AppTestModule, mockPlans } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ProductService } from '../../../services/product.service';
+import { ProductService } from '../../services/product.service';
 
 describe('BuyPage', () => {
   let component: BuyPage;

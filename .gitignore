@@ -12,3 +12,4 @@ docs/network.dia
 node_modules
 packages/server-mgmt
 build-cache
+.env

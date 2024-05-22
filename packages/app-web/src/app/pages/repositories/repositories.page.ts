@@ -8,7 +8,6 @@ import { FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { Repository } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
-import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
 import { RepositoryService } from '../../services/repository.service';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Title } from '@angular/platform-browser';
@@ -27,7 +26,6 @@ export class RepositoriesPage implements OnInit {
 
   constructor(
     private readonly repositoryService: RepositoryService,
-    private readonly modalCtrl: ModalController,
     private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
@@ -42,13 +40,13 @@ export class RepositoriesPage implements OnInit {
     });
   }
 
-  async handleExport() {
-    const modal = await this.modalCtrl.create({
-      component: ExportModalComponent,
-      showBackdrop: true,
-    });
-    await modal.present();
-  }
+  // async handleExport() {
+  //   const modal = await this.modalCtrl.create({
+  //     component: ExportModalComponent,
+  //     showBackdrop: true,
+  //   });
+  //   await modal.present();
+  // }
 
   async nextPage(event: any) {
     console.log('nextPage');

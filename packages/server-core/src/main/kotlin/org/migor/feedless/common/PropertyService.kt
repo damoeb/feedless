@@ -32,6 +32,7 @@ class PropertyService {
   lateinit var defaultLocale: String
   lateinit var jwtSecret: String
   lateinit var rootEmail: String
+  var schemaVersion: Int = 0
   lateinit var rootSecretKey: String
 
   @PostConstruct

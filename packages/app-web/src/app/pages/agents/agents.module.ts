@@ -9,7 +9,6 @@ import { AgentsPageRoutingModule } from './agents-routing.module';
 import { AgentsPage } from './agents.page';
 import { PlansModule } from '../../components/plans/plans.module';
 import { AgentsModule } from '../../components/agents/agents.module';
-import { OpmlPickerModule } from '../../components/opml-picker/opml-picker.module';
 
 @NgModule({
   imports: [
@@ -19,7 +18,6 @@ import { OpmlPickerModule } from '../../components/opml-picker/opml-picker.modul
     AgentsPageRoutingModule,
     PlansModule,
     AgentsModule,
-    OpmlPickerModule,
   ],
   declarations: [AgentsPage],
 })

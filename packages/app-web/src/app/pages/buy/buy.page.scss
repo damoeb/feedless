@@ -29,11 +29,10 @@ ion-segment-button {
   }
 }
 
+
 .offers {
   display: flex;
-  flex-direction: row;
-  column-gap: 20px;
-  & > * {
+  app-plan-column {
     flex: 1;
   }
 }

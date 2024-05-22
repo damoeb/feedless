@@ -6,6 +6,8 @@ import { BubbleModule } from '../bubble/bubble.module';
 import { ReaderModule } from '../reader/reader.module';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/generate-feed-modal.module';
+import { PaginationModule } from '../pagination/pagination.module';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
@@ -17,6 +19,8 @@ import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/genera
     ReaderModule,
     FeedBuilderModalModule,
     GenerateFeedModalModule,
-  ],
+    PaginationModule,
+    ReactiveFormsModule
+  ]
 })
 export class FeedDetailsModule {}

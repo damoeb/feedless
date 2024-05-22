@@ -8,10 +8,14 @@ const routes: Routes = [
     path: '',
     component: BuyPage,
   },
+  {
+    path: ':productId',
+    component: BuyPage,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ProductsPageRoutingModule {}
+export class BuyPageRoutingModule {}

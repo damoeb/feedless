@@ -16,7 +16,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Activity
 import org.migor.feedless.generated.types.ActivityItem
-import org.migor.feedless.generated.types.DeleteWebDocumentInput
+import org.migor.feedless.generated.types.DeleteWebDocumentsInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
@@ -97,11 +97,11 @@ class DocumentResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteWebDocument(
-    @InputArgument data: DeleteWebDocumentInput,
+  suspend fun deleteWebDocuments(
+    @InputArgument data: DeleteWebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    documentService.deleteDocumentById(corrId, sessionService.user(corrId), UUID.fromString(data.where.id))
+    documentService.deleteDocuments(corrId, sessionService.user(corrId), UUID.fromString(data.where.repository.where.id), data.where.id)
     true
   }
 

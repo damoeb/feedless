@@ -1,0 +1,134 @@
+<ion-content>
+  <div style="display: flex; justify-content: center; margin: 20px">
+    <div
+      style="
+        max-width: 900px;
+        width: 1120px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      "
+    >
+      <ion-breadcrumbs style="margin-bottom: 150px">
+        <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+        <ion-breadcrumb routerLink="../">{{ product?.title }}</ion-breadcrumb>
+        <ion-breadcrumb>Pricing</ion-breadcrumb>
+      </ion-breadcrumbs>
+
+      <div class="flex__column">
+        <h1>Pricing Options for {{ product?.title }}</h1>
+
+        <p>
+          {{ product?.title }} is a one-man show, that I work on in my spare time.
+          I only sell self-hosting licenses for the current major version. This license includes
+          all minor and patch releases.
+        </p>
+        <div>
+          <ion-segment mode="ios" [formControl]="serviceFlavor"
+                       style="max-width: 400px;  height: 50px;;">
+            <ion-segment-button [value]="serviceFlavorSelf">
+              <ion-label>Self-Hosting</ion-label>
+            </ion-segment-button>
+            <ion-segment-button [value]="serviceFlavorCloud">
+              <ion-label>Cloud</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <div *ngIf="serviceFlavor.value === serviceFlavorSelf" class="ion-padding-top">
+          <div>
+            <ion-segment mode="ios"
+                         [formControl]="targetGroup"
+                         style="max-width: 800px; height: 50px;">
+              <ion-segment-button [value]="targetGroupOrganization">
+                <ion-label>For Organizations</ion-label>
+              </ion-segment-button>
+              <ion-segment-button [value]="targetGroupIndividual">
+                <ion-label>For Individual Use</ion-label>
+              </ion-segment-button>
+              <ion-segment-button [value]="targetGroupOther">
+                <ion-label>Supported Categories</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+
+          <div class="ion-margin-top">
+            <ng-container *ngIf="targetGroup.value === targetGroupIndividual">
+              <p>Hobbyists, professionals, or casual users who seek to enhance their personal experience or skills.</p>
+              <div class="offers">
+                <app-plan-column
+                  style="--color: var(--ion-color-primary);"
+                >
+                  <h3>RSS-Proxy</h3>
+                  <p>Version 3 inkl. minor and patch</p>
+                  <ion-row>
+                    <ion-col size="6" style="align-content: center"><ion-note>First Major Release</ion-note></ion-col>
+                    <ion-col size="6" class="ion-text-right"><h1>$39.99</h1></ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col size="6" style="align-content: center"><ion-note>Second Major Release onwards</ion-note></ion-col>
+                    <ion-col size="6" class="ion-text-right"><h3>$29.99</h3></ion-col>
+                  </ion-row>
+
+                  <ion-button
+                    planAction
+                    color="primary"
+                    expand="block"
+                  >
+                    Buy
+                  </ion-button>
+                </app-plan-column>
+
+                <app-plan-column
+                  style="--color: var(--ion-color-primary);"
+                >
+                  <h3>Pioneer</h3>
+                  <p>Everything released under the feedless umbrella, forever</p>
+
+                  <ion-row>
+                    <ion-col size="6" style="align-content: center"><ion-note>Once</ion-note></ion-col>
+                    <ion-col size="6" class="ion-text-right"><h1>$299.99</h1></ion-col>
+                  </ion-row>
+
+                  <ion-button
+                    planAction
+                    color="primary"
+                    expand="block"
+                  >
+                    Buy
+                  </ion-button>
+                </app-plan-column>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="targetGroup.value === targetGroupOrganization">
+              <p>Commercial enterprises, Non-Profit Organizations, Educational Institutions and Governmental Bodies who
+                use the product as part of their activities.</p>
+              <p>
+                <ion-button color="primary" shape="round">Notify me</ion-button>
+              </p>
+            </ng-container>
+
+            <ng-container *ngIf="targetGroup.value === targetGroupOther">
+              <p>Students or teachers who use the product as part of their studies and Open Source contributors who
+                integrate the product into their project it's free.</p>
+              <p>
+                <ion-button color="primary" shape="round">Apply for free License</ion-button>
+              </p>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <ng-container *ngIf="serviceFlavor.value === serviceFlavorCloud">
+          <p>
+            A limited but <strong>free</strong> product experience can be used as a service.
+          </p>
+          <p>
+            <ion-button shape="round" routerLink="/login">Login or Sign up</ion-button>
+          </p>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</ion-content>

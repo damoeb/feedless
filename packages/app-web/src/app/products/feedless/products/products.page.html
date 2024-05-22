@@ -83,7 +83,7 @@
               shape="round"
               size="small"
               *ngIf="product.costs !== 0"
-              routerLink="./buy"
+              [routerLink]="'/buy/'+product.id"
               style="height: 40px"
             >
               Pricing

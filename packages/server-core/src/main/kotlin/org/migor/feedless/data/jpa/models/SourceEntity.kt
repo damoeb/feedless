@@ -81,6 +81,9 @@ open class SourceEntity : EntityWithUUID() {
   @Column(nullable = false, name = "debug_html")
   open var debugHtml: Boolean = false
 
+  @Column(nullable = false, name = "schema_version")
+  open var schemaVersion: Int = 0
+
   @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb", nullable = false, name = "emit")
   @Lazy

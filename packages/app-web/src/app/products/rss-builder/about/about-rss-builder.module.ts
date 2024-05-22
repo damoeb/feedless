@@ -7,8 +7,8 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ImportOpmlModalModule } from '../../../modals/import-opml-modal/import-opml-modal.module';
-import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
+import { ImportButtonModule } from '../../../components/import-button/import-button.module';
 
 @NgModule({
   imports: [
@@ -18,8 +18,8 @@ import { ProductHeaderModule } from '../../../components/product-header/product-
     ProductHeadlineModule,
     SearchbarModule,
     ImportOpmlModalModule,
-    OpmlPickerModule,
     ProductHeaderModule,
+    ImportButtonModule
   ],
   declarations: [AboutRssBuilderPage],
 })

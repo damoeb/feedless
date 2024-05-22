@@ -7,7 +7,7 @@ import 'img-comparison-slider';
 import { FeedsRoutingModule } from './feeds-routing.module';
 import { BubbleModule } from '../../../components/bubble/bubble.module';
 import { HistogramModule } from '../../../components/histogram/histogram.module';
-import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.module';
+import { ImportButtonModule } from '../../../components/import-button/import-button.module';
 
 @NgModule({
   imports: [
@@ -16,7 +16,7 @@ import { OpmlPickerModule } from '../../../components/opml-picker/opml-picker.mo
     FeedsRoutingModule,
     BubbleModule,
     HistogramModule,
-    OpmlPickerModule,
+    ImportButtonModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],

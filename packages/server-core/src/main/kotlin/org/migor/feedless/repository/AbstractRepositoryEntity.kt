@@ -116,6 +116,9 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "trigger_scheduled_next_at")
   open var triggerScheduledNextAt: Date? = null
 
+  @Column(nullable = false, name = "schema_version")
+  open var schemaVersion: Int = 0
+
   @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb", nullable = false, name = "plugins")
   @Lazy

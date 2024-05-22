@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.util.*
+import java.util.stream.Stream
 
 @Repository
 @Profile(AppProfiles.database)
@@ -31,5 +32,7 @@ interface PipelineJobDAO : JpaRepository<PipelineJobEntity, UUID> {
     """
   )
   fun findAllPendingBatched(): List<PipelineJobEntity>
+
+  fun findAllBySchemaVersionNot(schemaVersion: Int): Stream<PipelineJobEntity>
 
 }

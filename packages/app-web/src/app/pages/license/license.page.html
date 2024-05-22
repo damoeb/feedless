@@ -19,13 +19,18 @@
             <p>No License needed, its now Apache 2</p>
           </ion-item>
 
-          <ion-item
-            *ngIf="license.isValid && license.isTrial && !license.isLocated"
-            color="warning"
-          >
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            <p>Trial period until {{license.trialUntil | date: dateFormat}}</p>
-          </ion-item>
+          <div style="position: relative">
+            <ion-item
+              *ngIf="license.isValid && license.isTrial && !license.isLocated"
+              style="--background: transparent"
+            >
+              <ion-icon name="time-outline" slot="start"></ion-icon>
+              <p>Trial period {{fromNow(license.trialUntil)}} (until {{license.trialUntil | date: dateFormat}})</p>
+            </ion-item>
+            <ion-progress-bar [value]="getRelativeTrialDaysLeft()"
+                              color="danger"
+                              style="height: 100%; position: absolute; width: 100%; opacity: 0.5; top: 0"></ion-progress-bar>
+          </div>
 
           <ng-container *ngIf="!license.isLocated">
             <ion-item *ngIf="!license.isValid" color="warning">
@@ -70,8 +75,8 @@
               <ion-button
                 planAction
                 color="primary"
-
                 expand="block"
+                (click)="openBuyModal()"
               >
                 Buy or Negotiate
               </ion-button>

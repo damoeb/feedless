@@ -3,7 +3,7 @@ import { GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
 import { FeedlessPlugin, GetElementType, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
 import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { InfiniteScrollCustomEvent, ModalController, PopoverController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
@@ -16,10 +16,13 @@ import { dateFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { first } from 'lodash-es';
+import { first, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
+import { FormControl } from '@angular/forms';
 
 type Enclosure = GetElementType<WebDocument['enclosures']>
+
+type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean>}
 
 @Component({
   selector: 'app-feed-details',
@@ -34,7 +37,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input()
   track: boolean;
 
-  protected pages: WebDocument[][] = [];
+  protected documents: WebDocumentWithFornmControl[] = [];
   protected feedUrl: string;
 
   private plugins: FeedlessPlugin[];
@@ -45,6 +48,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected playDocument: WebDocument;
   private userId: string;
   private subscriptions: Subscription[] = [];
+  currentPage: number;
+  protected loading: boolean;
+  protected isOwner: boolean;
+  protected selectAllFc = new FormControl<boolean>(false);
+  protected selectedCount: number = 0;
 
   constructor(
     private readonly modalService: ModalService,
@@ -71,9 +79,19 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
         this.userId = session.user?.id;
+        this.assessIsOwner();
       }),
+      this.selectAllFc.valueChanges.subscribe(isChecked => {
+        this.documents.forEach(document => document.fc.setValue(isChecked, {emitEvent: false}));
+        if (isChecked) {
+          this.selectedCount = this.documents.length;
+        } else {
+          this.selectedCount = 0;
+        }
+        this.changeRef.detectChanges();
+      })
     );
-    await this.fetchNextPage();
+    await this.fetchPage();
     this.changeRef.detectChanges();
   }
 
@@ -124,21 +142,14 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasEndReached(): boolean {
-    return (
-      this.pages.length > 0 && this.pages[this.pages.length - 1].length === 0
-    );
-  }
-
-  async loadMore(event: any) {
-    await this.fetchNextPage();
-    await (event as InfiniteScrollCustomEvent).target.complete();
-  }
-
-  private async fetchNextPage() {
+  protected async fetchPage(page: number = 0) {
+    this.currentPage = page;
+    this.selectAllFc.setValue(false)
+    this.loading = true;
+    this.changeRef.detectChanges();
     const documents = await this.documentService.findAllByStreamId({
       cursor: {
-        page: this.pages.length,
+        page,
         pageSize: 10,
       },
       where: {
@@ -149,8 +160,26 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
+    this.documents = documents.map(document => {
 
-    this.pages.push(documents);
+      const fc = new FormControl<boolean>(false);
+      this.subscriptions.push(
+        fc.valueChanges.subscribe(isChecked => {
+          this.selectAllFc.setValue(isChecked, {emitEvent: false});
+          if (isChecked) {
+            this.selectedCount ++;
+          } else {
+            this.selectedCount --;
+          }
+        })
+      )
+      return {
+        ...document,
+        fc: fc
+      }
+    });
+    this.loading = false;
+    this.changeRef.detectChanges();
   }
 
   getRetentionStrategy(): string {
@@ -227,6 +256,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
+    this.assessIsOwner();
     this.changeRef.detectChanges();
   }
 
@@ -312,10 +342,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  isOwner(): boolean {
-    return this.repository.ownerId === this.userId;
-  }
-
   getDocumentUrl(document: WebDocument): string {
     if (this.track) {
       return `${this.serverSettingsService.gatewayUrl}/article/${document.id}`;
@@ -329,5 +355,29 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     if (audioStream) {
       return `${parseInt(`${audioStream.duration / 60}`)}  Min.`;
     }
+  }
+
+  private assessIsOwner() {
+    this.isOwner = this.repository?.ownerId === this.userId;
+  }
+
+  async deleteAllSelected() {
+    const selected = this.documents.filter(document => document.fc.value);
+    await this.documentService.removeById({
+      where: {
+        repository: {
+          where: {
+            id: this.repository.id
+          }
+        },
+        id: {
+          in: selected.map(document => document.id)
+        }
+      }
+    });
+    this.documents = without(this.documents, ...selected);
+    this.selectAllFc.setValue(false);
+    this.changeRef.detectChanges();
+
   }
 }

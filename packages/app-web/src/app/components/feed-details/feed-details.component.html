@@ -5,7 +5,8 @@
   <ion-chip
     (click)="editRepository()"
     *ngIf="repository.visibility === GqlVisibility.IsPrivate"
-    >Private</ion-chip
+  >Private
+  </ion-chip
   >
 </ion-row>
 <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -28,7 +29,7 @@
     </ion-button>
   </ion-buttons>
 
-  <ion-buttons slot="end" *ngIf="isOwner()">
+  <ion-buttons slot="end" *ngIf="isOwner">
     <ion-button id="open-sources-modal">
       <ion-icon name="git-branch-outline" slot="start"></ion-icon>
       <ion-label>
@@ -52,7 +53,7 @@
         </ion-header>
         <ion-content class="ion-padding">
           <ion-toolbar style="--background: transparent">
-            <ion-title> {{ repository.sources.length }} Sources </ion-title>
+            <ion-title> {{ repository.sources.length }} Sources</ion-title>
             <ion-buttons slot="end">
               <!--              <ion-button>-->
               <!--                <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
@@ -60,7 +61,8 @@
               <!--              </ion-button>-->
               <ion-button (click)="editSource()">
                 <ion-icon name="add-outline" slot="start"></ion-icon>
-                Add Source</ion-button
+                Add Source
+              </ion-button
               >
             </ion-buttons>
           </ion-toolbar>
@@ -84,7 +86,8 @@
                     fill="clear"
                     [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
                     (click)="editTags(source)"
-                    >{{ stringifyTags(source) }}</ion-button
+                  >{{ stringifyTags(source) }}
+                  </ion-button
                   >
                 </p>
                 <ion-note color="danger" *ngIf="source.errornous">
@@ -95,7 +98,7 @@
                 <ion-button color="danger" (click)="deleteSource(source)">
                   Delete
                 </ion-button>
-                <ion-button (click)="editSource(source)"> Edit </ion-button>
+                <ion-button (click)="editSource(source)"> Edit</ion-button>
               </ion-buttons>
             </ion-item>
           </ion-list>
@@ -120,11 +123,11 @@
           <ion-list>
             <ion-item button="true" (click)="editRepository()">
               <ion-icon name="settings-outline" slot="start"></ion-icon>
-              <ion-label>Edit </ion-label>
+              <ion-label>Edit</ion-label>
             </ion-item>
             <ion-item button="true" (click)="deleteRepository()">
               <ion-icon name="trash-outline" slot="start"></ion-icon>
-              <ion-label>Delete </ion-label>
+              <ion-label>Delete</ion-label>
             </ion-item>
           </ion-list>
         </ion-content>
@@ -142,7 +145,7 @@
     </ion-col>
   </ion-row>
   <ion-row>
-    <ion-col> {{ repository.description }} </ion-col>
+    <ion-col> {{ repository.description }}</ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
@@ -183,81 +186,80 @@
     <h3>Available articles</h3>
   </div>
 
-  <ion-list style="border-radius: 8px">
-    <ion-item *ngIf="pages.length === 0 || pages[0].length === 0">
-      <ion-label> Feed is empty.</ion-label>
+  <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+  <ion-list style="border-radius: 8px" *ngIf="!loading">
+    <ion-item *ngIf="documents.length === 0">
+      <ion-label> Page is empty.</ion-label>
     </ion-item>
-    <ng-container *ngFor="let documents of pages">
-      <div *ngFor="let document of documents">
-        <ion-item lines="full">
-          <ion-label>
-            <ion-toolbar style="--background: transparent">
-              <ion-buttons>
-                <ion-note
-                  >{{ fromNow(document.publishedAt) }} on
-                  {{ hostname(document.url) }}</ion-note
-                >
-                <ion-note *ngIf="document.tags.length > 0">
-                  <em class="ion-padding-start">{{ getTags(document) }}</em>
-                </ion-note>
-              </ion-buttons>
-            </ion-toolbar>
+    <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
+      <ion-buttons slot="start">
+        <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
+        <ng-container *ngIf="selectedCount>0">
+          <ion-text class="ion-padding-horizontal">({{selectedCount}})</ion-text>
+          <ion-button (click)="deleteAllSelected()">
+            Delete
+          </ion-button>
+        </ng-container>
+      </ion-buttons>
+    </ion-toolbar>
+    <div *ngFor="let document of documents">
+      <ion-item lines="full">
+        <ion-checkbox slot="start" *ngIf="isOwner" [formControl]="document.fc" aria-label="toggle document"></ion-checkbox>
+        <ion-label>
+          <ion-toolbar style="--background: transparent">
+            <ion-buttons>
+              <ion-note
+              >{{ fromNow(document.publishedAt) }} on
+                {{ hostname(document.url) }}
+              </ion-note
+              >
+              <ion-note *ngIf="document.tags.length > 0">
+                <em class="ion-padding-start">{{ getTags(document) }}</em>
+              </ion-note>
+            </ion-buttons>
+          </ion-toolbar>
 
-            <h2 style="padding-bottom: 5px">
-              <a
-                [href]="getDocumentUrl(document)"
-                target="_blank"
-                referrerpolicy="no-referrer"
-              >
-                {{ document.contentTitle }}
-              </a>
-            </h2>
+          <h2 style="padding-bottom: 5px">
+            <a
+              [href]="getDocumentUrl(document)"
+              target="_blank"
+              referrerpolicy="no-referrer"
+            >
+              {{ document.contentTitle }}
+            </a>
+          </h2>
 
-            <p>{{ document.contentText }}</p>
-            <div class="ion-margin-top" *ngIf="hasAudioStream(document)">
-              <ion-button
-                shape="round"
-                fill="clear"
-                color="dark"
-                *ngIf="playDocument !== document"
-                (click)="playAudio(document)"
-              >
-                <ion-icon
-                  name="play-outline"
-                  color="primary"
-                  slot="start"
-                ></ion-icon>
-                Play
-                <ion-note class="ion-padding-start">{{firstAudioLength(document)}}</ion-note>
-              </ion-button>
-              <audio
-                controls
-                autoplay
-                style="width: 100%"
-                *ngIf="playDocument === document"
-              >
-                <source [src]="firstAudioStream(document)" />
-              </audio>
-            </div>
-          </ion-label>
-        </ion-item>
-      </div>
-      <ion-item-divider></ion-item-divider>
-    </ng-container>
+          <p>{{ document.contentText }}</p>
+          <div class="ion-margin-top" *ngIf="hasAudioStream(document)">
+            <ion-button
+              shape="round"
+              fill="clear"
+              color="dark"
+              *ngIf="playDocument !== document"
+              (click)="playAudio(document)"
+            >
+              <ion-icon
+                name="play-outline"
+                color="primary"
+                slot="start"
+              ></ion-icon>
+              Play
+              <ion-note class="ion-padding-start">{{ firstAudioLength(document) }}</ion-note>
+            </ion-button>
+            <audio
+              controls
+              autoplay
+              style="width: 100%"
+              *ngIf="playDocument === document"
+            >
+              <source [src]="firstAudioStream(document)" />
+            </audio>
+          </div>
+        </ion-label>
+      </ion-item>
+    </div>
   </ion-list>
 
-  <!--        <div style="text-align: center">-->
-  <!--          <ion-button-->
-  <!--            color="primary"-->
-  <!--            (click)="loadMore()"-->
-  <!--            *ngIf="!hasEndReached()"-->
-  <!--            >Load older items</ion-button-->
-  <!--          >-->
-  <!--        </div>-->
-  <ion-infinite-scroll
-    *ngIf="!hasEndReached()"
-    (ionInfinite)="loadMore($event)"
-  >
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
-  </ion-infinite-scroll>
+  <app-pagination [currentPage]="currentPage" (pageChange)="fetchPage($event)"></app-pagination>
+
 </div>

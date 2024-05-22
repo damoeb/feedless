@@ -73,23 +73,24 @@ export class LoginPage implements OnInit, OnDestroy {
           this.showMailLogin = this.serverSettings.hasProfile(
             GqlProfileName.AuthMail,
           );
+          this.loading = false;
+          this.changeRef.detectChanges();
         }
-        this.loading = false;
-        this.changeRef.detectChanges();
       }),
     );
   }
 
-  loginWithUserPassword(email: string | number, password: string | number) {
+  async loginWithUserPassword(email: string | number, password: string | number) {
     this.errorMessage = null;
-    return this.authService
-      .authorizeUser({
-        email: `${email}`,
-        secretKey: `${password}`,
-      })
-      .catch((e) => {
-        this.errorMessage = e.message;
-        this.changeRef.detectChanges();
-      });
+    try {
+      return await this.authService
+        .authorizeUser({
+          email: `${email}`,
+          secretKey: `${password}`
+        });
+    } catch (e) {
+      this.errorMessage = e.message;
+      this.changeRef.detectChanges();
+    }
   }
 }

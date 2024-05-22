@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { ExportModalComponent } from './export-modal.component';
-import { ExportModalModule } from './export-modal.module';
+import { BuyModalComponent } from './buy-modal.component';
+import { BuyModalModule } from './buy-modal.module';
 
 describe('ExportModalComponent', () => {
-  let component: ExportModalComponent;
-  let fixture: ComponentFixture<ExportModalComponent>;
+  let component: BuyModalComponent;
+  let fixture: ComponentFixture<BuyModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ExportModalModule],
+      imports: [BuyModalModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ExportModalComponent);
+    fixture = TestBed.createComponent(BuyModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
