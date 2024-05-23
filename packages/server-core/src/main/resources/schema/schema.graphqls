@@ -377,6 +377,7 @@ type RemoteNativeFeed {
   expired: Boolean!
   feedUrl: String!
   publishedAt: Long!
+  tags: [String!]
   title: String!
   author: String
   description: String

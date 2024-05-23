@@ -313,6 +313,7 @@ fragment WebDocumentFragment on WebDocument {
   createdAt
   publishedAt
   startingAt
+  tags
   enclosures {
     ...EnclosureFragment
   }

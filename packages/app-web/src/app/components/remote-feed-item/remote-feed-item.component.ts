@@ -10,16 +10,16 @@ import { dateFormat } from '../../services/session.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteFeedItemComponent {
-  @Input({ required: true })
-  feedItem: RemoteFeedItem;
+  protected readonly dateFormat = dateFormat;
 
   @Input({ required: true })
+  feedItem: RemoteFeedItem;
+  @Input({ required: true })
   feedItemIndex: number;
+
   constructor() {}
 
   toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
     return new Date(date);
   }
-
-  protected readonly dateFormat = dateFormat;
 }

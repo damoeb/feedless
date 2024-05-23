@@ -2,6 +2,7 @@ fragment RemoteNativeFeedFragment on RemoteNativeFeed {
   title
   description
   websiteUrl
+  tags
   feedUrl
   items {
     ...WebDocumentFragment

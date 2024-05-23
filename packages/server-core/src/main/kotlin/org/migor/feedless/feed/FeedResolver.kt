@@ -71,6 +71,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .websiteUrl(websiteUrl)
     .language(language)
     .publishedAt(publishedAt.time)
+    .tags(tags)
     .expired(BooleanUtils.isTrue(expired))
     .items(items.map {
       val builder = WebDocument.newBuilder()

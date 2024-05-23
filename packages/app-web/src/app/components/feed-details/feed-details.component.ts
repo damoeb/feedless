@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
-import { FeedlessPlugin, GetElementType, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
+import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
 import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
 import { ModalController, PopoverController } from '@ionic/angular';
@@ -15,12 +15,9 @@ import { Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { first, without } from 'lodash-es';
+import { without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
-
-type Enclosure = GetElementType<WebDocument['enclosures']>
 
 type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean>}
 
@@ -60,7 +57,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly popoverCtrl: PopoverController,
     private readonly documentService: DocumentService,
     private readonly router: Router,
-    private readonly domSanitizer: DomSanitizer,
     private readonly sessionService: SessionService,
     private readonly repositoryService: RepositoryService,
     private readonly serverSettingsService: ServerSettingsService,
@@ -321,25 +317,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  hasAudioStream(document: WebDocument): boolean {
-    return document.enclosures.some((e) => e.type.startsWith('audio/'));
-  }
-
   playAudio(document: WebDocument): void {
     this.playDocument = document;
-  }
-
-  firstAudioStream(document: WebDocument): SafeResourceUrl {
-    const audioStream = this.firstAudioEnclosure(document);
-    if (audioStream) {
-      return this.domSanitizer.bypassSecurityTrustResourceUrl(audioStream.url);
-    }
-  }
-
-  private firstAudioEnclosure(document: WebDocument): Enclosure {
-    return first(
-      document.enclosures.filter((e) => e.type.startsWith('audio/')),
-    );
   }
 
   getDocumentUrl(document: WebDocument): string {
@@ -347,13 +326,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       return `${this.serverSettingsService.gatewayUrl}/article/${document.id}`;
     } else {
       return document.url;
-    }
-  }
-
-  firstAudioLength(document: WebDocument): string {
-    const audioStream = this.firstAudioEnclosure(document);
-    if (audioStream) {
-      return `${parseInt(`${audioStream.duration / 60}`)}  Min.`;
     }
   }
 

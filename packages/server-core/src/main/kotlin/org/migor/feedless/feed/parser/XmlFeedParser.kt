@@ -2,6 +2,7 @@ package org.migor.feedless.feed.parser
 
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
+import com.rometools.modules.itunes.io.ITunesParser
 import com.rometools.modules.mediarss.MediaEntryModule
 import com.rometools.modules.mediarss.types.PlayerReference
 import com.rometools.modules.mediarss.types.UrlReference
@@ -106,12 +107,19 @@ class XmlFeedParser : FeedBodyParser {
     richFeed.publishedAt = feed.publishedDate ?: Date()
     richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
     richFeed.feedUrl = feedUrl
+    val tags = mutableListOf<String>()
     feedInformation?.let {
       if (StringUtils.isNotBlank(it.author)) {
         richFeed.authors = listOf(JsonAuthor(name = it.author))
       }
-      richFeed.tags = it.keywords?.toList()
+      it.keywords?.toList()?.let {
+        tags.plus(it)
+      }
     }
+    feed.categories?.let {
+      tags.plus(it.map { it.name })
+    }
+    richFeed.tags = tags
 
     return richFeed
   }
@@ -127,7 +135,15 @@ class XmlFeedParser : FeedBodyParser {
     val richArticle = RichArticle()
     richArticle.id = entry.uri
     richArticle.title = entry.title
-    richArticle.tags = entry.categories.map { it.name }
+
+    val tags = mutableListOf<String>()
+    tags.addAll(entry.categories.map { it.name })
+    mediaEntryModule?.let {
+      tags.addAll(it.metadata.keywords)
+      tags.addAll(it.metadata.categories.map { it.label })
+    }
+
+    richArticle.tags = tags
 
     // content
     val hasText = StringUtils.isNotBlank(contentText)

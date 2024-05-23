@@ -230,31 +230,10 @@
           </h2>
 
           <p>{{ document.contentText }}</p>
-          <div class="ion-margin-top" *ngIf="hasAudioStream(document)">
-            <ion-button
-              shape="round"
-              fill="clear"
-              color="dark"
-              *ngIf="playDocument !== document"
-              (click)="playAudio(document)"
-            >
-              <ion-icon
-                name="play-outline"
-                color="primary"
-                slot="start"
-              ></ion-icon>
-              Play
-              <ion-note class="ion-padding-start">{{ firstAudioLength(document) }}</ion-note>
-            </ion-button>
-            <audio
-              controls
-              autoplay
-              style="width: 100%"
-              *ngIf="playDocument === document"
-            >
-              <source [src]="firstAudioStream(document)" />
-            </audio>
-          </div>
+
+          <app-player [document]="document"
+                      (playback)="playAudio(document)"
+                      [isPlaying]="playDocument === document"></app-player>
         </ion-label>
       </ion-item>
     </div>
