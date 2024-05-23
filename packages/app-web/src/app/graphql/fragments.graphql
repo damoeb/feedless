@@ -45,11 +45,13 @@ fragment RepositoryFragment on Repository {
     pluginId
     params {
       org_feedless_feed {
-        extendContext
-        linkXPath
-        contextXPath
-        dateIsStartOfEvent
-        dateXPath
+        generic {
+          extendContext
+          linkXPath
+          contextXPath
+          dateIsStartOfEvent
+          dateXPath
+        }
       }
       org_feedless_diff_email_forward {
         inlineDiffImage
@@ -134,11 +136,13 @@ fragment RepositoryFragment on Repository {
             pluginId
             params {
               org_feedless_feed {
-                contextXPath
-                dateXPath
-                dateIsStartOfEvent
-                extendContext
-                linkXPath
+                generic {
+                  contextXPath
+                  dateXPath
+                  dateIsStartOfEvent
+                  extendContext
+                  linkXPath
+                }
               }
             }
           }

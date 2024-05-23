@@ -88,7 +88,9 @@ export function getScrapeRequest(
               {
                 pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
                 params: {
-                  org_feedless_feed: feed.genericFeed?.selectors,
+                  org_feedless_feed: {
+                    generic: feed.genericFeed?.selectors
+                  },
                 },
               },
             ],

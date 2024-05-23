@@ -37,7 +37,7 @@ class FeedPlugin : FragmentTransformerPlugin {
   ): RemoteNativeFeed {
     log.debug("[$corrId] transformFragment using selectors ${JsonUtil.gson.toJson(plugin.params.org_feedless_feed)}")
     val feed = webToFeedTransformer.getFeedBySelectors(
-      corrId, plugin.params.org_feedless_feed.fromDto(),
+      corrId, plugin.params.org_feedless_feed.generic.fromDto(),
       HtmlUtil.parseHtml(element.selector.html.data, url), URL(url)
     )
       .asRemoteNativeFeed()

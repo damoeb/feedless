@@ -38,6 +38,8 @@ import org.migor.feedless.generated.types.CompositeFilterParams
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.DiffEmailForwardParams
 import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
+import org.migor.feedless.generated.types.FeedParams
+import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.NumericalFilterParams
@@ -196,6 +198,12 @@ private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
     .org_feedless_diff_email_forward(org_feedless_diff_email_forward?.toDto())
     .jsonData(jsonData)
     .org_feedless_filter(org_feedless_filter?.map { it.toDto() })
+    .build()
+}
+
+private fun FeedParamsInput.toDto(): FeedParams {
+  return FeedParams.newBuilder()
+    .generic(generic?.toDto())
     .build()
 }
 

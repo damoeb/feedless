@@ -188,9 +188,6 @@
 
   <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
   <ion-list style="border-radius: 8px" *ngIf="!loading">
-    <ion-item *ngIf="documents.length === 0">
-      <ion-label> Page is empty.</ion-label>
-    </ion-item>
     <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
       <ion-buttons slot="start">
         <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
@@ -202,6 +199,9 @@
         </ng-container>
       </ion-buttons>
     </ion-toolbar>
+    <ion-item *ngIf="documents.length === 0">
+      <ion-label> Page is empty.</ion-label>
+    </ion-item>
     <div *ngFor="let document of documents">
       <ion-item lines="full">
         <ion-checkbox slot="start" *ngIf="isOwner" [formControl]="document.fc" aria-label="toggle document"></ion-checkbox>

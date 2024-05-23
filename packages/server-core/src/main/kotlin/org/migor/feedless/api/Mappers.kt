@@ -153,6 +153,12 @@ private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams = Plugin
   .org_feedless_fulltext(org_feedless_fulltext?.fromDto())
   .build()
 
+private fun FeedParamsInput.fromDto(): FeedParams {
+  return FeedParams.newBuilder()
+    .generic(generic?.fromDto())
+    .build()
+}
+
 private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams = FulltextPluginParams.newBuilder()
   .readability(readability)
   .build()
