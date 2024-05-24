@@ -336,7 +336,6 @@ CREATE TABLE t_user (
     is_spamming_submissions boolean NOT NULL,
     is_spamming_votes boolean NOT NULL,
     time_format character varying(255),
-    usesauthsource character varying(50) NOT NULL,
     validated_email_at timestamp(6) without time zone
 );
 

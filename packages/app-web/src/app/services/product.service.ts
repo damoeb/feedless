@@ -177,7 +177,11 @@ export class ProductService {
         return {
           ...meta,
           ...ui,
-          localSetup: await marked(meta.localSetup),
+          localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
+\`\`\`bash
+${meta.localSetupBash}
+\`\`\`
+${await marked(meta.localSetupAfterMarkup || '')}`,
           descriptionHtml: await marked(meta.descriptionMarkdown),
           imageUrl: `/assets/${meta.id}.jpeg`,
         };

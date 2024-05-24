@@ -57,6 +57,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly popoverCtrl: PopoverController,
     private readonly documentService: DocumentService,
     private readonly router: Router,
+    protected readonly serverSettings: ServerSettingsService,
     private readonly sessionService: SessionService,
     private readonly repositoryService: RepositoryService,
     private readonly serverSettingsService: ServerSettingsService,
@@ -161,12 +162,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       const fc = new FormControl<boolean>(false);
       this.subscriptions.push(
         fc.valueChanges.subscribe(isChecked => {
-          this.selectAllFc.setValue(isChecked, {emitEvent: false});
           if (isChecked) {
             this.selectedCount ++;
           } else {
             this.selectedCount --;
           }
+          this.selectAllFc.setValue(this.selectedCount !== 0, {emitEvent: false})
         })
       )
       return {

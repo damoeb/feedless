@@ -1,0 +1,48 @@
+-- user
+ALTER TABLE t_user
+  RENAME COLUMN createdat to created_at;
+ALTER TABLE t_user
+  RENAME COLUMN approvedtermsat to approved_terms_at;
+ALTER TABLE t_user
+  RENAME COLUMN isroot to is_root;
+ALTER TABLE t_user
+  RENAME COLUMN locked to is_locked;
+
+ALTER TABLE t_feed_native
+  RENAME TO t_source;
+
+ALTER  TABLE t_article DROP constraint fk5a2eyi09un1yg3xls70asf5va;
+ALTER  TABLE t_hyperlink DROP constraint fkgd7hbkkhrefq82vngp00so06d;
+ALTER  TABLE t_hyperlink DROP constraint fkixc22j33g4ov6eskdww7884ci;
+DROP TABLE t_web_document;
+DROP TABLE t_article;
+DROP TABLE t_hyperlink;
+
+-- repository
+ALTER TABLE t_bucket
+  RENAME TO t_repository;
+
+ALTER TABLE t_repository
+  RENAME COLUMN createdat to created_at;
+
+ALTER TABLE t_repository
+  RENAME COLUMN ownerid to owner_id;
+
+ALTER TABLE t_repository
+  RENAME COLUMN lastupdatedat to last_updated_at;
+
+-- source
+ALTER TABLE t_source
+  RENAME COLUMN createdat to created_at;
+
+ALTER TABLE t_source
+  RENAME COLUMN feedurl to url;
+
+-- cause: native feeds keep the default
+ALTER TABLE IF EXISTS t_source
+  ADD COLUMN emit jsonb NOT NULL default '[{"imageBased": null, "selectorBased": {"max": null, "min": null, "xpath": {"value": "/"}, "expose": {"pixel": null, "fields": null, "transformers": [{"params": {"jsonData": null, "org_feedless_feed": null, "org_feedless_filter": null, "org_feedless_fulltext": null, "org_feedless_conditional_tag": null, "org_feedless_diff_email_forward": null}, "pluginId": "org_feedless_feed"}]}}}]';
+
+UPDATE t_source S
+  SET emit = (SELECT '[{"imageBased": null, "selectorBased": {"max": null, "min": null, "xpath": {"value": "/"}, "expose": {"pixel": null, "fields": null, "transformers": [{"params": {"jsonData": null, "org_feedless_feed": ' || feedspecification || '"org_feedless_filter": null, "org_feedless_fulltext": null, "org_feedless_conditional_tag": null, "org_feedless_diff_email_forward": null}, "pluginId": "org_feedless_feed"}]}}}]' from t_feed_generic G where S.generic_feed_id = G.id),
+      url = (SELECT websiteurl from t_feed_generic G where S.generic_feed_id = G.id)
+  WHERE S.generic_feed_id is not null

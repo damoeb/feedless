@@ -66,6 +66,12 @@ open class SourceEntity : EntityWithUUID() {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "sourceId", cascade = [CascadeType.ALL])
   open var actions: MutableList<BrowserActionEntity> = mutableListOf()
 
+//  @Column(name = "lat")
+//  open var lat: Long = 0
+//
+//  @Column(name = "lon")
+//  open var lon: Long = 0
+
   @Column(nullable = false, name = "debug_screenshot")
   open var debugScreenshot: Boolean = false
 

@@ -4,7 +4,6 @@ import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.plan.FeatureDAO
 import org.migor.feedless.plan.FeatureEntity
@@ -93,7 +92,6 @@ class Seeder {
       userDAO.findFirstByRootIsTrue() ?: createUser(
         propertyService.rootEmail,
         isRoot = true,
-        authSource = AuthSource.none,
       )
     if (root.email != propertyService.rootEmail) {
       log.info("Updated rootEmail")
@@ -118,12 +116,10 @@ class Seeder {
   private fun createAnonymousUser() = createUser(
     propertyService.anonymousEmail,
     isAnonymous = true,
-    authSource = AuthSource.none,
   )
 
   private fun createUser(
     email: String,
-    authSource: AuthSource,
     isRoot: Boolean = false,
     isAnonymous: Boolean = false
   ): UserEntity {
@@ -136,7 +132,6 @@ class Seeder {
     user.root = isRoot
     user.product = ProductName.system
     user.anonymous = isAnonymous
-    user.usesAuthSource = authSource
     user.hasAcceptedTerms = isRoot || isAnonymous
 //    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
     return userDAO.saveAndFlush(user)

@@ -192,7 +192,7 @@ export class AppTestModule {
     const productConfig: ProductConfig = {
       id: 'feedless',
       product: GqlProductName.Feedless,
-      localSetup: '',
+      localSetupBash: '',
       title: '',
       titleHtml: '',
       imageUrl: '',

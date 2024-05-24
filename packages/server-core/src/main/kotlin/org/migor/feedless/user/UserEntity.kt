@@ -2,8 +2,6 @@ package org.migor.feedless.user
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -15,7 +13,6 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.agent.AgentEntity
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.plan.PlanEntity
@@ -43,10 +40,6 @@ open class UserEntity : EntityWithUUID() {
 
   @Column(name = "validated_email_at")
   open var validatedEmailAt: Timestamp? = null
-
-  @Column(nullable = false, length = 50)
-  @Enumerated(EnumType.STRING)
-  open lateinit var usesAuthSource: AuthSource
 
   @Column(nullable = false, name = StandardJpaFields.product)
   open lateinit var product: ProductName

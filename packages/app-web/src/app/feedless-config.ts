@@ -16,7 +16,9 @@ export type ProductId =
 export type AppConfig = {
   id: ProductId;
   product: GqlProductName;
-  localSetup: string;
+  localSetupBeforeMarkup?: string;
+  localSetupBash: string;
+  localSetupAfterMarkup?: string;
   title: string;
   titleHtml: string;
   pageTitle: string;
@@ -70,18 +72,14 @@ just by analyzing just the HTML structure. Usually the structuring to a feed wor
         'JavaScript Support using chromium',
         'Self Hosting',
       ],
-      localSetup: `It will start a database and feedless serving the RSS Proxy user interface.
-\`\`\`bash
-
-wget https://raw.githubusercontent.com/damoeb/rss-proxy/develop/selfhosting.env \\
+      localSetupBeforeMarkup: `It will start a database and feedless serving the RSS Proxy user interface.`,
+      localSetupBash: `wget https://raw.githubusercontent.com/damoeb/rss-proxy/develop/selfhosting.env \\
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/docker-compose.yml \\
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/ui-config.json \\
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/chrome.json
 touch your-license.key
-docker-compose up
-\`\`\`
-
-Then, open http://localhost:8080 in your browser`,
+docker-compose up`,
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
     },
     {
       id: 'feedDump',
@@ -98,7 +96,7 @@ Then, open http://localhost:8080 in your browser`,
       costs: 0,
       videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
       features: [],
-      localSetup: ``,
+      localSetupBash: ``,
     },
     {
       id: 'visual-diff',
@@ -124,16 +122,13 @@ Then, open http://localhost:8080 in your browser`,
         'Email notifications',
         'Self Hosting',
       ],
-      localSetup: `It will start a database, feedless and a headless chromium serving the VisualDiff user interface.
-\`\`\`bash
-wget https://raw.githubusercontent.com/damoeb/visual-diff/master/selfhosting.env \\
+      localSetupBeforeMarkup: `It will start a database, feedless and a headless chromium serving the VisualDiff user interface.`,
+      localSetupBash: `wget https://raw.githubusercontent.com/damoeb/visual-diff/master/selfhosting.env \\
   https://raw.githubusercontent.com/damoeb/visual-diff/master/docker-compose.yml \\
   https://raw.githubusercontent.com/damoeb/visual-diff/master/chrome.json
 
-docker-compose up
-\`\`\`
-
-Then, open http://localhost:8080 in your browser`,
+docker-compose up`,
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
     },
     {
       id: 'reader',
@@ -159,17 +154,14 @@ Then, open http://localhost:8080 in your browser`,
         'Bionic Font',
         'Self Hosting',
       ],
-      localSetup: `It will just feedless.
-\`\`\`bash
+      localSetupBeforeMarkup: `It will just feedless.`,
+      localSetupBash: `bash
 wget https://raw.githubusercontent.com/damoeb/reader/master/selfhosting.env \\
   https://raw.githubusercontent.com/damoeb/reader/master/docker-compose.yml \\
   https://raw.githubusercontent.com/damoeb/reader/master/chrome.json
 
-docker-compose up
-\`\`\`
-
-Then, open http://localhost:8080 in your browser
-`,
+docker-compose up`,
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
     },
     {
       id: 'untold',
@@ -203,7 +195,7 @@ way to think, learn and remember.`,
         'Self Hosting',
         'Offline support',
       ],
-      localSetup: ``,
+      localSetupBash: ``,
     },
     {
       id: 'digest',
@@ -226,7 +218,7 @@ way to think, learn and remember.`,
         'Forward to multiple Email Addresses',
         'Self Hosting',
       ],
-      localSetup: ``,
+      localSetupBash: ``,
     },
     {
       id: 'feedless',
@@ -245,7 +237,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       costs: -1,
       videoUrl: '',
       features: ['Workflow Builder', 'Self-Hosting or SaaS'],
-      localSetup: ``,
+      localSetupBash: ``,
     },
     {
       id: 'upcoming',
@@ -267,7 +259,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
         'Source Localization',
         'Self-Hosting or SaaS',
       ],
-      localSetup: ``,
+      localSetupBash: ``,
     },
     {
       id: 'pageChangeTracker',
@@ -283,7 +275,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       phase: 'planning',
       videoUrl: '',
       features: ['Page Revisions', 'Self-Hosting or SaaS'],
-      localSetup: ``,
+      localSetupBash: ``,
     },
   ],
 };

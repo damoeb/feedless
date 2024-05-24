@@ -6,7 +6,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.plan.PlanName
 import org.migor.feedless.session.CookieProvider
@@ -174,7 +173,6 @@ class SecurityConfig {
       newCorrId(),
       email = email,
       githubId = githubId,
-      authSource = AuthSource.oauth,
       planName = PlanName.free,
       productName = ProductName.feedless
     )
@@ -186,7 +184,6 @@ class SecurityConfig {
     return resolveUserByEmail(email) ?: userService.createUser(
       newCorrId(),
       email,
-      authSource = AuthSource.oauth,
       planName = PlanName.free,
       productName = ProductName.feedless
     )

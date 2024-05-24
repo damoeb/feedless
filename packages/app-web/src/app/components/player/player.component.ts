@@ -43,7 +43,11 @@ export class PlayerComponent {
   firstAudioLength(document: WebDocument): string {
     const audioStream = this.firstAudioEnclosure(document);
     if (audioStream) {
-      return `${parseInt(`${audioStream.duration / 60}`)}  Min.`;
+      if (audioStream.duration <= 60) {
+        return `${audioStream.duration}  Sec.`;
+      } else {
+        return `${parseInt(`${audioStream.duration / 60}`)}  Min.`;
+      }
     }
   }
 

@@ -305,8 +305,7 @@ class RepositoryHarvester internal constructor() {
     try {
       existing
         ?.let {
-          log.info("[$corrId] skip item ${document.url}")
-
+          log.debug("[$corrId] skip item ${document.url}")
         }
         ?: run {
           meterRegistry.counter(AppMetrics.createDocument).increment()

@@ -141,8 +141,11 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun loadPrivateKey() {
+    if (StringUtils.isBlank(pemFile)) {
+      throw IllegalArgumentException("APP_PEM_FILE is not provided")
+    }
     val privateKeyFile = getPrivateKeyFile()
-    log.info("[boot] loading private key from $pemFile")
+    log.info("[boot] loading private key from ${privateKeyFile.absolutePath}")
     feedlessPrivateKey = decodePrivateKey(Files.readString(privateKeyFile.toPath()))
 
     log.info("[boot] verifying key pair")

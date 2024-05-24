@@ -5,7 +5,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
@@ -114,7 +113,7 @@ class MailAuthenticationService {
   }
 
   private fun createUser(corrId: String, email: String, product: ProductName): UserEntity {
-    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.free)
+    return userService.createUser(corrId, email, product.fromDto(), PlanName.free)
   }
 
   //  @Transactional

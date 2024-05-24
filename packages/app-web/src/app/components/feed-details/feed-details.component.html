@@ -1,4 +1,4 @@
-<ion-row class="ion-margin-top">
+<ion-row style="margin-top: 50px">
   <h2 class="ion-no-margin" style="display: inline">
     {{ repository.title }}
   </h2>
@@ -9,13 +9,13 @@
   </ion-chip
   >
 </ion-row>
-<ion-toolbar class="ion-margin-vertical" style="--background: transparent">
+<ion-toolbar class="ion-margin-vertical" style="--background: transparent;">
   <ion-buttons slot="start">
     <ion-button>
       <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>
       Visit website
     </ion-button>
-    <ion-button title="Pulls per week">
+    <ion-button title="Pulls per week" *ngIf="!serverSettings.isSelfHosted()">
       <ion-icon
         name="arrow-down-outline"
         color="primary"
@@ -191,12 +191,15 @@
     <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
       <ion-buttons slot="start">
         <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
-        <ng-container *ngIf="selectedCount>0">
-          <ion-text class="ion-padding-horizontal">({{selectedCount}})</ion-text>
-          <ion-button (click)="deleteAllSelected()">
-            Delete
+        <div class="ion-padding-horizontal flex">
+          <ion-text class="ion-margin-end"
+                    *ngIf="selectedCount > 0"
+                    style="align-content: center;">({{ selectedCount }})</ion-text>
+          <ion-button (click)="deleteAllSelected()"
+                      [disabled]="selectedCount === 0">
+            Bulk delete
           </ion-button>
-        </ng-container>
+        </div>
       </ion-buttons>
     </ion-toolbar>
     <ion-item *ngIf="documents.length === 0">
@@ -204,7 +207,9 @@
     </ion-item>
     <div *ngFor="let document of documents">
       <ion-item lines="full">
-        <ion-checkbox slot="start" *ngIf="isOwner" [formControl]="document.fc" aria-label="toggle document"></ion-checkbox>
+        <ion-checkbox slot="start" *ngIf="isOwner"
+                      [formControl]="document.fc"
+                      aria-label="toggle document"></ion-checkbox>
         <ion-label>
           <ion-toolbar style="--background: transparent">
             <ion-buttons>
@@ -239,6 +244,7 @@
     </div>
   </ion-list>
 
-  <app-pagination [currentPage]="currentPage" (pageChange)="fetchPage($event)"></app-pagination>
+  <app-pagination [currentPage]="currentPage"
+                  (pageChange)="fetchPage($event)"></app-pagination>
 
 </div>

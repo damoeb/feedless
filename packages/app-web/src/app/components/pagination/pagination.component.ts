@@ -11,8 +11,8 @@ export class PaginationComponent {
   @Input({required: true})
   currentPage: number
 
-  // @Input()
-  // lastPage: number
+  @Input()
+  isLastPage: boolean
 
   @Output()
   pageChange: EventEmitter<number> = new EventEmitter<number>()

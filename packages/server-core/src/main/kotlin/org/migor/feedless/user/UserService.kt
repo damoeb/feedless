@@ -8,7 +8,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.mail.MailService
@@ -61,7 +60,6 @@ class UserService {
       corrId: String,
       email: String?,
       productName: ProductName,
-      authSource: AuthSource,
       planName: PlanName,
       githubId: String? = null,
   ): UserEntity {
@@ -94,7 +92,6 @@ class UserService {
     user.anonymous = false
     user.hasAcceptedTerms = isSelfHosted()
     user.product = productName
-    user.usesAuthSource = authSource
 //    user.planId = planDAO.findByNameAndProductId(planName, productName)!!.id
 
     if (!user.anonymous && !user.root) {
