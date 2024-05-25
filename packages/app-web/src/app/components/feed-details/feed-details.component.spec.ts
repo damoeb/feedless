@@ -2,13 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FeedDetailsComponent } from './feed-details.component';
 import { FeedDetailsModule } from './feed-details.module';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockDocuments,
-  mockPlugins,
-  mockServerSettings,
-} from '../../app-test.module';
+import { ApolloMockController, AppTestModule, mockDocuments, mockPlugins, mockServerSettings } from '../../app-test.module';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';
 

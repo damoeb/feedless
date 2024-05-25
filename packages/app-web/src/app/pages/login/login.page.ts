@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';

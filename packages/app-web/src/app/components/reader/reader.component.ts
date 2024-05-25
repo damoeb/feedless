@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewEncapsulation,
-} from '@angular/core';
-import {
-  ReaderLinkTarget,
-  ReaderTextTransform,
-} from '../../products/reader/reader-product.page';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { ReaderLinkTarget, ReaderTextTransform } from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { isDefined } from '../../types';

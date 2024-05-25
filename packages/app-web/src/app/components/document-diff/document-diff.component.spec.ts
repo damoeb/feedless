@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { SubscriptionDetailsPage } from './subscription-details.page';
+import { DocumentDiffComponent } from './document-diff.component';
 import { AppTestModule } from '../../../app-test.module';
-import { SubscriptionDetailsPageModule } from './subscription-details.module';
+import { DocumentDiffModule } from './document-diff.module';
 
 describe('SubscriptionDetailsPage', () => {
-  let component: SubscriptionDetailsPage;
-  let fixture: ComponentFixture<SubscriptionDetailsPage>;
+  let component: DocumentDiffComponent;
+  let fixture: ComponentFixture<DocumentDiffComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SubscriptionDetailsPageModule, AppTestModule.withDefaults()],
+      imports: [DocumentDiffModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SubscriptionDetailsPage);
+    fixture = TestBed.createComponent(DocumentDiffComponent);
     component = fixture.componentInstance;
     component.repository = {} as any;
     component.documents = [];

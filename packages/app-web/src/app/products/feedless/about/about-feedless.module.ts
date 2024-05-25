@@ -7,6 +7,7 @@ import { AboutFeedlessRoutingModule } from './about-feedless-routing.module';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import { NewsletterModule } from '../../../components/newsletter/newsletter.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
+import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { ProductHeaderModule } from '../../../components/product-header/product-
     ProductHeadlineModule,
     NewsletterModule,
     ProductHeaderModule,
+    SearchbarModule
   ],
   declarations: [AboutFeedlessPage],
 })

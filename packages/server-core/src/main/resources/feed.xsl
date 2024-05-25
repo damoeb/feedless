@@ -49,6 +49,7 @@
                       border: 1px solid black;
                       max-width: 80dvw;
                       max-height: 20dvh;
+                      overflow: hidden;
                     }
                     .entry h3 {
                         margin-bottom:0

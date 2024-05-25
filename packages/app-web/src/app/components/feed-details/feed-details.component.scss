@@ -10,8 +10,8 @@ dl {
   }
 }
 
-.document {
-  margin-bottom: 20px;
+//.document {
+//  margin-bottom: 20px;
 
   .content {
     max-height: 120px;
@@ -21,9 +21,9 @@ dl {
     font-size: 1.02em;
     opacity: 0.8;
   }
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(var(--app-foreground-rgb), 0.4);
-}
+//  padding-bottom: 20px;
+//  border-bottom: 1px solid rgba(var(--app-foreground-rgb), 0.4);
+//}
 
 .description {
   border-radius: 8px;
@@ -38,4 +38,8 @@ dl {
       padding-right: 4px;
     }
   }
+}
+.doc__checkbox {
+  align-self: flex-start;
+  margin-top: 70px;
 }

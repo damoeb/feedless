@@ -32,6 +32,8 @@ import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.generated.types.CompareBy
+import org.migor.feedless.generated.types.CompareByInput
 import org.migor.feedless.generated.types.CompositeFieldFilterParams
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParams
@@ -47,6 +49,7 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.ProductName as ProductNameDto
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
@@ -164,6 +167,7 @@ fun RepositoryEntity.toDto(): Repository {
   return Repository.newBuilder()
     .id(id.toString())
     .ownerId(ownerId.toString())
+    .product(product.toDto())
     .disabledFrom(disabledFrom?.time)
     .plugins(plugins.map { it.toDto() })
     .archived(archived)
@@ -182,6 +186,14 @@ fun RepositoryEntity.toDto(): Repository {
     .segmented(segmentation?.toDto())
     .refreshCron(sourcesSyncExpression)
     .build()
+}
+
+private fun ProductName.toDto(): ProductNameDto {
+  return when(this) {
+    ProductName.rssProxy -> ProductNameDto.rssProxy
+    ProductName.visualDiff -> ProductNameDto.visualDiff
+    else -> throw IllegalArgumentException("Unsupported product name: $this")
+  }
 }
 
 private fun org.migor.feedless.repository.PluginExecution.toDto(): PluginExecution {
@@ -239,11 +251,18 @@ private fun StringFilterParamsInput.toDto(): StringFilterParams {
 
 private fun DiffEmailForwardParamsInput.toDto(): DiffEmailForwardParams {
   return DiffEmailForwardParams.newBuilder()
-    .compareBy(compareBy)
+    .compareBy(compareBy.toDto())
     .nextItemMinIncrement(nextItemMinIncrement)
     .inlineDiffImage(inlineDiffImage)
     .inlineLatestImage(inlineLatestImage)
     .inlinePreviousImage(inlinePreviousImage)
+    .build()
+}
+
+private fun CompareByInput.toDto(): CompareBy {
+  return CompareBy.newBuilder()
+    .field(field)
+    .fragmentNameRef(fragmentNameRef)
     .build()
 }
 

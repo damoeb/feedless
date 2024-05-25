@@ -1,33 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
-import {
-  FeedlessPlugin,
-  Repository,
-  SubscriptionSource,
-  WebDocument,
-} from '../../graphql/types';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { GqlFeedlessPlugins, GqlProductName, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
+import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
 import { ModalController, PopoverController } from '@ionic/angular';
-import {
-  FeedWithRequest,
-  tagsToString,
-} from '../feed-builder/feed-builder.component';
+import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
@@ -36,8 +16,16 @@ import { ServerSettingsService } from '../../services/server-settings.service';
 import { without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
+import { relativeTimeOrElse } from '../agents/agents.component';
 
-type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean> };
+export type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean> };
+
+type ViewMode = 'list' | 'diff' | 'histogram'
+
+type Pair<A, B> = {
+  a: A
+  b: B
+}
 
 @Component({
   selector: 'app-feed-details',
@@ -68,6 +56,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected isOwner: boolean;
   protected selectAllFc = new FormControl<boolean>(false);
   protected selectedCount: number = 0;
+  viewModeFc = new FormControl<ViewMode>('list');
+  viewModeList: ViewMode = 'list';
+  viewModeHistogram: ViewMode = 'histogram';
+  viewModeDiff: ViewMode = 'diff';
 
   constructor(
     private readonly modalService: ModalService,
@@ -88,7 +80,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    dayjs.extend(relativeTime);
     this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
@@ -222,15 +213,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  fromNow(futureTimestamp: number): string {
-    const now = dayjs();
-    const ts = dayjs(futureTimestamp);
-    if (now.subtract(2, 'weeks').isAfter(ts)) {
-      return ts.format('DD.MMMM YYYY');
-    } else {
-      return ts.toNow(true) + ' ago';
-    }
-  }
+  fromNow = relativeTimeOrElse
 
   async deleteRepository() {
     await this.repositoryService.deleteRepository({
@@ -372,5 +355,23 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.documents = without(this.documents, ...selected);
     this.selectAllFc.setValue(false);
     this.changeRef.detectChanges();
+  }
+
+  protected readonly GqlProductName = GqlProductName;
+
+  getDocumentPairs() {
+    const pairs: Pair<WebDocument, WebDocument>[] = [];
+    for(let i=0; i < this.documents.length -1; i++) {
+      pairs.push({
+        a: this.documents[i+1],
+        b: this.documents[i],
+      })
+    }
+    return pairs;
+  }
+
+  getCompareBy(): GqlWebDocumentField {
+    const diffPlugin = this.repository.plugins.find(plugin => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward);
+    return diffPlugin.params.org_feedless_diff_email_forward.compareBy.field;
   }
 }

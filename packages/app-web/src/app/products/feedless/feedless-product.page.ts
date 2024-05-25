@@ -1,16 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ScrapeService } from '../../services/scrape.service';
 import { ScrapeResponse } from '../../graphql/types';
 import { SessionService } from '../../services/session.service';
-import { ModalController, ToastController } from '@ionic/angular';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { fixUrl } from '../../app.module';
 import { Authentication, AuthService } from '../../services/auth.service';
@@ -32,10 +24,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
     private readonly authService: AuthService,
-    private readonly scrapeService: ScrapeService,
-    private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly toastCtrl: ToastController,
     private readonly router: Router,
     readonly profile: SessionService,
   ) {}

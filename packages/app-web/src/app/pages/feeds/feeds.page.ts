@@ -1,15 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
-import { Repository, WebDocument } from '../../../graphql/types';
-import { RepositoryService } from '../../../services/repository.service';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import { BubbleColor } from '../../../components/bubble/bubble.component';
-import { GqlVisibility } from '../../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Repository, WebDocument } from '../../graphql/types';
+import { RepositoryService } from '../../services/repository.service';
+import { BubbleColor } from '../../components/bubble/bubble.component';
+import { GqlProductName, GqlVisibility } from '../../../generated/graphql';
+import { relativeTimeOrElse } from '../../components/agents/agents.component';
 
 @Component({
   selector: 'app-feeds-page',
@@ -28,7 +22,6 @@ export class FeedsPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    dayjs.extend(relativeTime);
     await this.fetchFeeds();
   }
 
@@ -38,6 +31,11 @@ export class FeedsPage implements OnInit {
       cursor: {
         page,
       },
+      where: {
+        product: {
+          in: [GqlProductName.RssProxy]
+        }
+      }
     });
     this.repositories.push(...repositories);
     this.changeRef.detectChanges();
@@ -55,7 +53,5 @@ export class FeedsPage implements OnInit {
     return repository.visibility === GqlVisibility.IsPrivate;
   }
 
-  fromNow(date: number) {
-    return dayjs(date).toNow(true);
-  }
+  fromNow = relativeTimeOrElse
 }

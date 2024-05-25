@@ -14,14 +14,19 @@ export const DefaultRoutes: Routes = [
         (m) => m.ContactPageModule,
       ),
   },
-  // {
-  //   path: 'join',
-  //   data: { title: 'Wait List' },
-  //   loadChildren: () =>
-  //     import('../pages/wait-list/wait-list-page.module').then(
-  //       (m) => m.WaitListPageModule,
-  //     ),
-  // },
+  {
+    path: 'feeds/:feedId',
+    loadChildren: () =>
+      import('../pages/feed-details/feed-details.module').then(
+        (m) => m.FeedDetailsPageModule,
+      ),
+  },
+  {
+    path: 'feeds',
+    canActivate: [AuthGuardService],
+    loadChildren: () =>
+      import('../pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+  },
   {
     path: 'profile',
     canActivate: [AuthGuardService],

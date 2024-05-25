@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
 import { ServerSettingsService } from '../../services/server-settings.service';
@@ -28,7 +22,6 @@ export class AgentsComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    dayjs.extend(relativeTime);
     this.subscriptions.push(
       this.agentService.getAgents().subscribe((agents) => {
         this.agents = agents;
@@ -40,8 +33,16 @@ export class AgentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
+  fromNow = relativeTimeOrElse
+}
 
-  fromNow(futureTimestamp: number): string {
-    return dayjs(futureTimestamp).toNow(true);
+export function relativeTimeOrElse(futureTimestamp: number): string {
+  dayjs.extend(relativeTime);
+  const now = dayjs();
+  const ts = dayjs(futureTimestamp);
+  if (now.subtract(2, 'weeks').isAfter(ts)) {
+    return ts.format('DD.MMMM YYYY');
+  } else {
+    return ts.toNow(true) + ' ago';
   }
 }

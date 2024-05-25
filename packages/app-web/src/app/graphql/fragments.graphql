@@ -30,6 +30,7 @@ fragment RepositoryFragment on Repository {
   ownerId
   title
   description
+  product
   visibility
   tags
   createdAt
@@ -57,7 +58,10 @@ fragment RepositoryFragment on Repository {
         inlineDiffImage
         inlineLatestImage
         inlinePreviousImage
-        compareBy
+        compareBy {
+          field
+          fragmentNameRef
+        }
         nextItemMinIncrement
       }
       org_feedless_filter {
@@ -108,6 +112,7 @@ fragment RepositoryFragment on Repository {
       screenshot
     }
     emit {
+      fragmentName
       selectorBased {
         min
         max

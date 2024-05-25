@@ -5,7 +5,7 @@
   <ion-chip
     (click)="editRepository()"
     *ngIf="repository.visibility === GqlVisibility.IsPrivate"
-    >Private
+  >Private
   </ion-chip>
 </ion-row>
 <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -84,7 +84,7 @@
                     fill="clear"
                     [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
                     (click)="editTags(source)"
-                    >{{ stringifyTags(source) }}
+                  >{{ stringifyTags(source) }}
                   </ion-button>
                 </p>
                 <ion-note color="danger" *ngIf="source.errornous">
@@ -179,82 +179,119 @@
 <!--      </div>-->
 
 <div style="border-radius: 8px">
-  <div style="margin-top: 50px" class="ion-padding">
-    <h3>Available articles</h3>
+  <div style="margin-top: 50px; display: flex" class="ion-padding">
+    <h3 style="flex: 1">
+      <span *ngIf="viewModeFc.value === viewModeList">Available articles</span>
+      <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
+    </h3>
+
+    <div style="align-content: center;">
+      <ion-segment mode="ios" style="max-width: 300px" [formControl]="viewModeFc">
+        <ion-segment-button [value]="viewModeList">List</ion-segment-button>
+<!--        <ion-segment-button [value]="viewModeHistogram">Histogram</ion-segment-button>-->
+        <ion-segment-button [value]="viewModeDiff" *ngIf="repository.product === GqlProductName.VisualDiff">Diff</ion-segment-button>
+      </ion-segment>
+    </div>
   </div>
 
   <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
-  <ion-list style="border-radius: 8px" *ngIf="!loading">
-    <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
-      <ion-buttons slot="start">
-        <ion-checkbox
-          [formControl]="selectAllFc"
-          aria-label="toggle all"
-        ></ion-checkbox>
-        <div class="ion-padding-horizontal flex">
-          <ion-text
-            class="ion-margin-end"
-            *ngIf="selectedCount > 0"
-            style="align-content: center"
-            >({{ selectedCount }})</ion-text
-          >
-          <ion-button
-            (click)="deleteAllSelected()"
-            [disabled]="selectedCount === 0"
-          >
-            Bulk delete
-          </ion-button>
-        </div>
-      </ion-buttons>
-    </ion-toolbar>
-    <ion-item *ngIf="documents.length === 0">
-      <ion-label> Page is empty.</ion-label>
-    </ion-item>
-    <div *ngFor="let document of documents">
-      <ion-item lines="full">
-        <ion-checkbox
-          slot="start"
-          *ngIf="isOwner"
-          [formControl]="document.fc"
-          aria-label="toggle document"
-        ></ion-checkbox>
-        <ion-label>
-          <ion-toolbar style="--background: transparent">
-            <ion-buttons>
-              <ion-note
-                >{{ fromNow(document.publishedAt) }} on
-                {{ hostname(document.url) }}
-              </ion-note>
-              <ion-note *ngIf="document.tags.length > 0">
-                <em class="ion-padding-start">{{ getTags(document) }}</em>
-              </ion-note>
-            </ion-buttons>
-          </ion-toolbar>
 
-          <h2 style="padding-bottom: 5px">
-            <a
-              [href]="getDocumentUrl(document)"
-              target="_blank"
-              referrerpolicy="no-referrer"
-            >
-              {{ document.contentTitle }}
-            </a>
-          </h2>
-
-          <p>{{ document.contentText }}</p>
-
-          <app-player
-            [document]="document"
-            (playback)="playAudio(document)"
-            [isPlaying]="playDocument === document"
-          ></app-player>
-        </ion-label>
+  <ng-container *ngIf="!loading">
+    <ng-container *ngIf="viewModeFc.value === viewModeDiff">
+      <ion-item *ngIf="documents.length === 0">
+        <ion-label> Page is empty.</ion-label>
       </ion-item>
-    </div>
-  </ion-list>
+      <app-document-diff *ngIf="documents.length === 1"
+                         [compareBy]="getCompareBy()"
+                         [before]="documents[0]"></app-document-diff>
 
-  <app-pagination
-    [currentPage]="currentPage"
-    (pageChange)="fetchPage($event)"
-  ></app-pagination>
+      <ng-container *ngIf="documents.length > 1">
+        <div *ngFor="let pair of getDocumentPairs()">
+          <app-document-diff [before]="pair.a"
+                             [compareBy]="getCompareBy()"
+                             [after]="pair.b"></app-document-diff>
+        </div>
+      </ng-container>
+
+    </ng-container>
+
+    <ng-container *ngIf="viewModeFc.value === viewModeList">
+      <ion-list style="border-radius: 8px">
+        <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
+          <ion-buttons slot="start">
+            <ion-checkbox
+              [formControl]="selectAllFc"
+              aria-label="toggle all"
+            ></ion-checkbox>
+            <div class="ion-padding-horizontal flex">
+              <ion-text
+                class="ion-margin-end"
+                *ngIf="selectedCount > 0"
+                style="align-content: center"
+              >({{ selectedCount }})
+              </ion-text
+              >
+              <ion-button
+                (click)="deleteAllSelected()"
+                [disabled]="selectedCount === 0"
+              >
+                Bulk delete
+              </ion-button>
+            </div>
+          </ion-buttons>
+        </ion-toolbar>
+        <ion-item *ngIf="documents.length === 0">
+          <ion-label> Page is empty.</ion-label>
+        </ion-item>
+        <div *ngFor="let document of documents">
+          <ion-item lines="full">
+            <ion-checkbox
+              slot="start"
+              *ngIf="isOwner"
+              class="doc__checkbox"
+              [formControl]="document.fc"
+              aria-label="toggle document"
+            ></ion-checkbox>
+            <ion-label>
+              <ion-toolbar style="--background: transparent">
+                <ion-buttons>
+                  <ion-note
+                  >{{ fromNow(document.publishedAt) }} on
+                    {{ hostname(document.url) }}
+                  </ion-note>
+                  <ion-note *ngIf="document.tags.length > 0">
+                    <em class="ion-padding-start">{{ getTags(document) }}</em>
+                  </ion-note>
+                </ion-buttons>
+              </ion-toolbar>
+
+              <h2 style="padding-bottom: 5px">
+                <a
+                  [href]="getDocumentUrl(document)"
+                  target="_blank"
+                  referrerpolicy="no-referrer"
+                >
+                  {{ document.contentTitle }}
+                </a>
+              </h2>
+
+              <p class="content">{{ document.contentText }}</p>
+
+              <app-player
+                [document]="document"
+                (playback)="playAudio(document)"
+                [isPlaying]="playDocument === document"
+              ></app-player>
+            </ion-label>
+          </ion-item>
+        </div>
+      </ion-list>
+      <app-pagination
+        [currentPage]="currentPage"
+        (pageChange)="fetchPage($event)"
+      ></app-pagination>
+    </ng-container>
+  </ng-container>
+
+
 </div>

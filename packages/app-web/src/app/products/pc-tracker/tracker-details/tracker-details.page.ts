@@ -1,15 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Repository, WebDocument } from '../../../graphql/types';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -33,7 +25,6 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    dayjs.extend(relativeTime);
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         if (params.trackerId) {

@@ -13,21 +13,10 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables,
+  GqlConfirmCodeMutationVariables
 } from '../../generated/graphql';
-import {
-  ApolloClient,
-  FetchResult,
-  Observable as ApolloObservable,
-} from '@apollo/client/core';
-import {
-  BehaviorSubject,
-  firstValueFrom,
-  map,
-  Observable,
-  Subject,
-  take,
-} from 'rxjs';
+import { ApolloClient, FetchResult, Observable as ApolloObservable } from '@apollo/client/core';
+import { BehaviorSubject, firstValueFrom, map, Observable, Subject, take } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';

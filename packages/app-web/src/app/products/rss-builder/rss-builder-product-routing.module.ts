@@ -34,19 +34,6 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'feeds/:feedId',
-        loadChildren: () =>
-          import('./feed-details/feed-details.module').then(
-            (m) => m.FeedDetailsPageModule,
-          ),
-      },
-      {
-        path: 'feeds',
-        canActivate: [AuthGuardService],
-        loadChildren: () =>
-          import('./feeds/feeds.module').then((m) => m.FeedsPageModule),
-      },
-      {
         path: 'agents',
         canActivate: [AuthGuardService],
         loadChildren: () =>

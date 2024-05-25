@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { ApolloClient } from '@apollo/client/core';
 import { ToastController } from '@ionic/angular';
 
 export interface Outline {
@@ -15,7 +14,6 @@ export interface Outline {
 })
 export class OpmlService {
   constructor(
-    private readonly apollo: ApolloClient<any>,
     private readonly toastCtrl: ToastController,
   ) {}
 

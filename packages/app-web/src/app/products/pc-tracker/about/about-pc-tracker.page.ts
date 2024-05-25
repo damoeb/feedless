@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerSettingsService } from '../../../services/server-settings.service';

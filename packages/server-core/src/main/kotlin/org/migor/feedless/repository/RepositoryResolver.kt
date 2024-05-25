@@ -62,7 +62,7 @@ class RepositoryResolver {
     val pageNumber = handlePageNumber(data.cursor.page)
     val pageSize = handlePageSize(data.cursor.pageSize)
     val offset = pageNumber * pageSize
-    repositoryService.findAll(offset, pageSize, sessionService.userId())
+    repositoryService.findAll(offset, pageSize, data.where, sessionService.userId())
       .map { it.toDto() }
   }
 

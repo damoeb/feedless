@@ -1,19 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
-import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-team-draft-product-page',
@@ -35,7 +26,6 @@ export class FeedDumpProductPage implements OnInit, OnDestroy {
     readonly serverSettings: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
   ) {
-    dayjs.extend(relativeTime);
   }
 
   async ngOnInit() {

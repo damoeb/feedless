@@ -9,7 +9,6 @@ import { VisualDiffProductPage } from './visual-diff-product.page';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
-import { VisualDiffMenuModule } from './visual-diff-menu/visual-diff-menu.module';
 import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
 import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
 import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
@@ -18,7 +17,6 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
   imports: [
     CommonModule,
     IonicModule,
-    VisualDiffMenuModule,
     VisualDiffProductRoutingModule,
     DarkModeButtonModule,
     LoginButtonModule,

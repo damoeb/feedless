@@ -75,6 +75,7 @@ type Repository {
   description: String!
   title: String!
   ownerId: ID!
+  product: ProductName!
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
@@ -900,7 +901,7 @@ input RepositoriesInput {
 }
 
 input RepositoriesWhereInput {
-  pluginIds: [String!]
+  product: StringFilter
 }
 
 input ConfirmAuthCodeInput {
@@ -1225,6 +1226,7 @@ input LocalizedSourceInput {
 }
 
 input ScrapeEmitInput {
+  fragmentName: String
   imageBased: ScrapeBoundingBoxInput
   selectorBased: ScrapeSelectorInput
 }
@@ -1287,10 +1289,15 @@ input NumericalFilterParamsInput {
 
 input DiffEmailForwardParamsInput {
   nextItemMinIncrement: Float!
-  compareBy: WebDocumentField!
+  compareBy: CompareByInput!
   inlineLatestImage: Boolean
   inlinePreviousImage: Boolean
   inlineDiffImage: Boolean
+}
+
+input CompareByInput {
+  fragmentNameRef: String
+  field: WebDocumentField!
 }
 
 input FulltextPluginParamsInput {
@@ -1359,6 +1366,7 @@ type LocalizedSource {
 }
 
 type ScrapeEmit {
+  fragmentName: String
   imageBased: ScrapeBoundingBox
   selectorBased: ScrapeSelector
 }
@@ -1429,10 +1437,15 @@ type NumericalFilterParams {
 
 type DiffEmailForwardParams {
   nextItemMinIncrement: Float!
-  compareBy: WebDocumentField!
+  compareBy: CompareBy!
   inlineLatestImage: Boolean
   inlineDiffImage: Boolean
   inlinePreviousImage: Boolean
+}
+
+type CompareBy {
+  fragmentNameRef: String
+  field: WebDocumentField!
 }
 
 type FulltextPluginParams {

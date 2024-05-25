@@ -67,6 +67,7 @@ subscription registerAgent($data: RegisterAgentInput!) {
         }
       }
       emit {
+        fragmentName
         imageBased {
           boundingBox {
             y

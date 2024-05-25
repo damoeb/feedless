@@ -1,17 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import '@justinribeiro/lite-youtube';
-
-import { fixUrl } from '../../../app.module';
-import {
-  ProductConfig,
-  ProductService,
-} from '../../../services/product.service';
+import { ProductConfig, ProductService } from '../../../services/product.service';
+import { IonPopover } from '@ionic/angular';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -20,33 +10,21 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutFeedlessPage implements OnInit {
-  waitList: boolean;
+
+  @ViewChild('createOptions')
+  createOptionsPopover: IonPopover
+
   listedProducts: ProductConfig[];
-  unstableProducts: ProductConfig[];
 
   constructor(
-    private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly productService: ProductService,
   ) {}
-
-  async handleQuery(url: string) {
-    try {
-      await this.router.navigate(['/builder'], {
-        queryParams: {
-          url: fixUrl(url),
-        },
-      });
-    } catch (e) {
-      console.warn(e);
-    }
-  }
 
   async ngOnInit() {
     const allProducts = await this.productService.getProductConfigs();
     this.listedProducts = allProducts.filter((p) => p.listed);
     // this.unstableProducts = allProducts.filter((p) => !p.listed);
-    this.waitList = false;
     this.changeRef.detectChanges();
   }
 }

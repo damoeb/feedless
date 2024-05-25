@@ -1,12 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedDumpProductPage } from './feed-dump-product.page';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockLicense,
-  mockScrape,
-  mockServerSettings,
-} from '../../app-test.module';
+import { ApolloMockController, AppTestModule, mockLicense, mockScrape, mockServerSettings } from '../../app-test.module';
 import { FeedDumpProductModule } from './feed-dump-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerSettingsService } from '../../services/server-settings.service';

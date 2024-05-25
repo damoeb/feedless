@@ -2,16 +2,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsComponent } from './agents.component';
 import { AgentsModule } from './agents.module';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../app-test.module';
-import {
-  Agents,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
-} from '../../../generated/graphql';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
+import { Agents, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';
 

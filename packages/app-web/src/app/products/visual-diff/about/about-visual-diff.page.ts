@@ -15,7 +15,7 @@ export class AboutVisualDiffPage {
 
   async handleQuery(url: string) {
     try {
-      await this.router.navigate(['/builder'], {
+      await this.router.navigate(['/tracker'], {
         queryParams: {
           url: fixUrl(url),
         },

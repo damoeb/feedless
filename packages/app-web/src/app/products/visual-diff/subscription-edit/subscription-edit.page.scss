@@ -28,6 +28,9 @@ ion-header {
     color-mix(in srgb, var(--ion-color-light) 80%, var(--ion-color-dark)) 20px
   );
   border-radius: var(--border-radius);
+  ion-toolbar {
+    display: none;
+  }
 
   &--mark {
     border-style: solid;
@@ -39,15 +42,25 @@ ion-header {
     width: 100%;
     height: 100%;
     z-index: 10;
+    ion-toolbar {
+      display: block;
+    }
   }
 
   //box-shadow: inset 0px 0px 5px var(--app-foreground);
 }
 
-app-embedded-image {
+app-embedded-image,
+app-embedded-website {
   display: flex;
   flex: 1;
   min-height: 550px;
+}
+.controls {
+  column-gap: 8px;
+  & > * {
+    flex: 1;
+  }
 }
 
 .viewport {
@@ -83,10 +96,6 @@ ion-input {
 ion-select {
   @include control();
   --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
-
-  &:not(:last-child) {
-    padding-right: 10px;
-  }
 
   &::part(container),
   &::part(text),

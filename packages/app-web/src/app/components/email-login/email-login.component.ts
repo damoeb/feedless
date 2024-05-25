@@ -25,7 +25,7 @@ export class EmailLoginComponent implements OnDestroy {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -113,7 +113,7 @@ export class EmailLoginComponent implements OnDestroy {
   }
 
   private async handleSuccess() {
-    await this.profileService.fetchSession('network-only');
+    await this.sessionService.fetchSession('network-only');
     await this.router.navigateByUrl('/');
   }
 }

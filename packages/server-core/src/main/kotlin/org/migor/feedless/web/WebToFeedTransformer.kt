@@ -886,6 +886,11 @@ class WebToFeedTransformer(
       .forEach { link ->
         link.attr("href", toAbsoluteUrl(url, link.attr("href")))
       }
+    element.select("img[src]")
+      .filter { img -> !img.attr("src").startsWith("data:") }
+      .forEach { link ->
+        link.attr("src", toAbsoluteUrl(url, link.attr("src")))
+      }
     return element
   }
 

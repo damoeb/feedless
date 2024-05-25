@@ -28,6 +28,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
+import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.ScrapeAction
@@ -249,7 +250,7 @@ class RepositoryService {
     return richFeed
   }
 
-  fun findAll(offset: Int, pageSize: Int, userId: UUID?): List<RepositoryEntity> {
+  fun findAll(offset: Int, pageSize: Int, where: RepositoriesWhereInput?, userId: UUID?): List<RepositoryEntity> {
     val pageable =
         PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     return (userId

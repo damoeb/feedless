@@ -1,19 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { StringFeatureGroup } from '../../components/plan-column/plan-column.component';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { ModalController } from '@ionic/angular';
 import { BuyModalComponent } from '../../modals/buy-modal/buy-modal.component';
+import { relativeTimeOrElse } from '../../components/agents/agents.component';
 
 function bold(v: string): string {
   return `<strong>${v}</strong>`;
@@ -112,12 +106,9 @@ export class LicensePage implements OnInit, OnDestroy {
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
   ) {
-    dayjs.extend(relativeTime);
   }
 
-  fromNow(timestamp: number): string {
-    return dayjs(timestamp).toNow(true);
-  }
+  fromNow = relativeTimeOrElse
 
   async ngOnInit() {
     this.subscriptions.push(

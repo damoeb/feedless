@@ -16,7 +16,7 @@ import {
   GqlUpdateCurrentUserMutationVariables,
   Logout,
   Session as SessionQuery,
-  UpdateCurrentUser,
+  UpdateCurrentUser
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';

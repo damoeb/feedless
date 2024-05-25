@@ -23,7 +23,7 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository,
+  UpdateRepository
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository } from '../graphql/types';
@@ -43,14 +43,14 @@ export class RepositoryService {
     private readonly serverSetting: ServerSettingsService,
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async createRepositories(
     data: GqlRepositoriesCreateInput,
   ): Promise<Repository[]> {
     if (
-      this.profileService.isAuthenticated() ||
+      this.sessionService.isAuthenticated() ||
       this.serverSetting.isEnabled(GqlFeatureName.CanCreateAsAnonymous)
     ) {
       return this.apollo

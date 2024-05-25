@@ -6,24 +6,14 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
-import {
-  ScrapedReadability,
-  ScrapeResponse,
-  Selectors,
-} from '../../graphql/types';
-import {
-  Embeddable,
-  transformXpathToCssPath,
-} from '../../components/embedded-website/embedded-website.component';
+import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
+import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
+import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';

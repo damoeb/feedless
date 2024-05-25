@@ -1,14 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
-import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,7 +19,7 @@ export class SecretsPage implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly alertCtrl: AlertController,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
   ) {}
 
   ngOnDestroy(): void {
@@ -35,7 +28,7 @@ export class SecretsPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.profileService.getSession().subscribe((profile) => {
+      this.sessionService.getSession().subscribe((profile) => {
         if (profile.user.secrets) {
           this.secrets = profile.user.secrets;
         }
@@ -69,13 +62,13 @@ export class SecretsPage implements OnInit, OnDestroy {
     await promptName.present();
     const data = await promptName.onDidDismiss();
     if (data.role === 'persist' && data.data.values.name) {
-      const apiToken = await this.profileService.createUserSecret();
+      const apiToken = await this.sessionService.createUserSecret();
       this.secrets.push(apiToken);
     }
   }
 
   async deleteSecret(secret: UserSecret) {
-    await this.profileService.deleteUserSecrets({
+    await this.sessionService.deleteUserSecrets({
       where: {
         in: [secret.id],
       },

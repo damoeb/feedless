@@ -1,21 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
-import {
-  GqlLicense,
-  GqlLicenseData,
-  Maybe,
-} from '../../../../generated/graphql';
+import { GqlLicense, GqlLicenseData, Maybe } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-about-rss-builder',

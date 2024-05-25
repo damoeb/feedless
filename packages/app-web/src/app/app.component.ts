@@ -35,7 +35,7 @@ export class AppComponent implements OnDestroy, OnInit {
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly productService: ProductService,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
     private readonly authService: AuthService,
   ) {}
 
@@ -61,10 +61,10 @@ export class AppComponent implements OnDestroy, OnInit {
         } else {
           console.log('without token');
           await new Promise((resolve) => setTimeout(resolve, 200));
-          await this.profileService.fetchSession('network-only');
+          await this.sessionService.fetchSession('network-only');
         }
       }),
-      this.profileService.watchColorScheme().subscribe((isDarkMode) => {
+      this.sessionService.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
         this.propagateColorModeAndProduct();
       }),

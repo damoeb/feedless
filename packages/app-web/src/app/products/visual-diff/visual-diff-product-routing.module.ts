@@ -2,16 +2,10 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { VisualDiffProductPage } from './visual-diff-product.page';
-import { VisualDiffMenuComponent } from './visual-diff-menu/visual-diff-menu.component';
 import { DefaultRoutes } from '../default-routes';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
-  {
-    path: '',
-    outlet: 'sidemenu',
-    component: VisualDiffMenuComponent,
-  },
   {
     path: '',
     component: VisualDiffProductPage,
@@ -30,18 +24,11 @@ const routes: Routes = [
           import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
       {
-        path: 'builder',
+        path: 'tracker',
+        canActivate: [AuthGuardService],
         loadChildren: () =>
           import('./subscription-edit/subscription-edit.module').then(
             (m) => m.SubscriptionEditPageModule,
-          ),
-      },
-      {
-        path: 'trackers',
-        canActivate: [AuthGuardService],
-        loadChildren: () =>
-          import('./subscriptions/subscriptions.module').then(
-            (m) => m.SubscriptionsPageModule,
           ),
       },
       {
@@ -50,13 +37,6 @@ const routes: Routes = [
         loadChildren: () =>
           import('../../pages/agents/agents.module').then(
             (m) => m.AgentsPageModule,
-          ),
-      },
-      {
-        path: 'trackers/:id',
-        loadChildren: () =>
-          import('./subscription-details/subscription-details.module').then(
-            (m) => m.SubscriptionDetailsPageModule,
           ),
       },
       ...DefaultRoutes,

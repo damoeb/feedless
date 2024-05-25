@@ -52,8 +52,8 @@ type VisualDiffScrapeResponse = Pick<
   elements: Array<ScrapedElement>;
 };
 
-type Screen = 'area' | 'page';
-type BrowserActionType = 'click';
+type Screen = 'area' | 'page' | 'mobile' | 'element';
+type BrowserActionType = keyof GqlScrapeActionInput;
 
 interface BrowserAction {
   type: FormControl<BrowserActionType>;
@@ -69,6 +69,7 @@ interface BrowserAction {
 export class SubscriptionEditPage implements OnInit, OnDestroy {
   embedScreenshot: Embeddable;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
+  pickXPathDelegate: (xpath: string | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
   additionalWait = new FormControl<number>(0, [
     Validators.required,
@@ -101,6 +102,10 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         { disabled: true, value: null },
         [Validators.required],
       ),
+      elementXpath: new FormControl<string>(
+        { disabled: true, value: null },
+        [Validators.required],
+      )
     },
     { updateOn: 'change' },
   );
@@ -114,12 +119,17 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   showErrors: boolean;
   isThrottled: boolean;
   protected embedWebsite: Embeddable;
+  screenArea: Screen = 'area';
+  screenPage: Screen = 'page';
+  screenMobile: Screen = 'mobile';
+  screenElement: Screen = 'element';
+  highlightXpath: string;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
     private readonly scrapeService: ScrapeService,
     private readonly serverSettings: ServerSettingsService,
     private readonly alertCtrl: AlertController,
@@ -153,6 +163,16 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         }
         this.changeRef.detectChanges();
       }),
+      this.form.controls.compareType.valueChanges.subscribe((compareType) => {
+        if (compareType === 'pixel') {
+          this.form.controls.screen.enable();
+          this.form.controls.elementXpath.disable();
+        } else {
+          this.form.controls.screen.disable();
+          this.form.controls.elementXpath.enable();
+        }
+        this.changeRef.detectChanges();
+      }),
     );
 
     this.changeRef.detectChanges();
@@ -166,6 +186,16 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     if (this.pickPositionDelegate) {
       this.pickPositionDelegate(position);
       this.pickPositionDelegate = null;
+      this.changeRef.detectChanges();
+    }
+  }
+
+  handlePickedXPath(xpath: string | null) {
+    console.log(xpath)
+    if (this.pickXPathDelegate) {
+      this.pickXPathDelegate(xpath);
+      this.highlightXpath = xpath;
+      this.pickXPathDelegate = null;
       this.changeRef.detectChanges();
     }
   }
@@ -214,6 +244,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         emit: [],
         debug: {
           screenshot: true,
+          html: true
         },
       };
 
@@ -238,7 +269,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
         this.embedWebsite = {
           mimeType: 'text/html',
-          data: this.scrapeResponse.elements[0].selector.html.data,
+          data: scrapeResponse.debug.html,
           url: this.form.value.url,
         };
         this.scrapeResponse = scrapeResponse;
@@ -321,7 +352,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
                   [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
                     inlineDiffImage: true,
                     inlineLatestImage: true,
-                    compareBy: this.form.value.compareType,
+                    compareBy: {
+                      field: this.form.value.compareType,
+                    },
                     nextItemMinIncrement: this.form.value.sinkCondition,
                   },
                 },
@@ -332,7 +365,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       ],
     });
 
-    if (!this.profileService.isAuthenticated()) {
+    if (!this.sessionService.isAuthenticated()) {
       await this.showAnonymousSuccessAlert();
     }
     await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
@@ -362,6 +395,14 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     };
   }
 
+  pickXPath() {
+    this.pickXPathDelegate = (xpath: string) => {
+      this.form.controls.elementXpath.setValue(xpath)
+      this.changeRef.detectChanges();
+    };
+  }
+
+
   removeAction(index: number) {
     this.actions.removeAt(index);
   }
@@ -375,9 +416,19 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     }
   }
 
+  getBoundingBoxLabel(action: FormControl<BoundingBox | null>) {
+    const boundingBox = action.value;
+    if (boundingBox) {
+      return `(${boundingBox.x}, ${boundingBox.y}; ${boundingBox.w}, ${boundingBox.h})`;
+    } else {
+      return 'Draw Area';
+    }
+  }
+
   isPickPositionMode() {
     return (
       this.isDefined(this.pickPositionDelegate) ||
+      this.isDefined(this.pickXPathDelegate) ||
       this.isDefined(this.pickBoundingBoxDelegate)
     );
   }
@@ -397,10 +448,10 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       return {
         selectorBased: {
           xpath: {
-            value: '/',
+            value: this.form.controls.elementXpath.enabled ? this.form.value.elementXpath : '/',
           },
           expose: {
-            pixel: this.form.value.compareType === GqlWebDocumentField.Pixel,
+            pixel: true,
           },
         },
       };
@@ -435,5 +486,13 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
+  }
+
+  getXPathLabel(formControl: FormControl<string | null>) {
+    if (formControl.valid) {
+      return formControl.value
+    } else {
+      return 'Choose Element';
+    }
   }
 }

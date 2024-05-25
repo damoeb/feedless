@@ -10,7 +10,7 @@ import {
   GqlScrapeQuery,
   GqlSelectors,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery,
+  GqlWebDocumentByIdQuery
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;

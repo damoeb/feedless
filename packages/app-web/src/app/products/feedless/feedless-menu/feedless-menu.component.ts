@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
@@ -21,7 +15,9 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   agentCount: number;
   feedCount: number;
+  trackerCount: number;
   loggedIn: boolean;
+  libraryCount: number = 0;
 
   constructor(
     private readonly agentService: AgentService,
@@ -46,6 +42,12 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
           this.feedCount = repoCount;
           this.changeRef.detectChanges();
         }),
+      this.repositoryService
+        .countRepositories({ product: GqlProductName.VisualDiff })
+        .subscribe((repoCount) => {
+          this.trackerCount = repoCount;
+          this.changeRef.detectChanges();
+        })
     );
   }
 

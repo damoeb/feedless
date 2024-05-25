@@ -9,6 +9,7 @@ import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/genera
 import { PaginationModule } from '../pagination/pagination.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { PlayerModule } from '../player/player.module';
+import { DocumentDiffModule } from '../document-diff/document-diff.module';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
@@ -23,6 +24,7 @@ import { PlayerModule } from '../player/player.module';
     PaginationModule,
     ReactiveFormsModule,
     PlayerModule,
-  ],
+    DocumentDiffModule
+  ]
 })
 export class FeedDetailsModule {}

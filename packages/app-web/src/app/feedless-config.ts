@@ -73,10 +73,8 @@ just by analyzing just the HTML structure. Usually the structuring to a feed wor
         'Self Hosting',
       ],
       localSetupBeforeMarkup: `It will start a database and feedless serving the RSS Proxy user interface.`,
-      localSetupBash: `wget https://raw.githubusercontent.com/damoeb/rss-proxy/develop/selfhosting.env \\
-  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/docker-compose.yml \\
-  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/ui-config.json \\
-  https://raw.githubusercontent.com/damoeb/rss-proxy/develop/chrome.json
+      localSetupBash: `git clone --depth=1 https://github.com/damoeb/rss-proxy.git
+cd rss-proxy
 touch your-license.key
 docker-compose up`,
       localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`,
@@ -229,7 +227,7 @@ way to think, learn and remember.`,
       subtitle: 'All In One',
       version: [0, 7, 0],
       phase: 'development',
-      listed: true,
+      listed: false,
       summary: 'Build automated worflows visually or using code',
       descriptionMarkdown: `It's quite astoinding that the web is so hard to automate, the word _bot_ mainly has a negative connotation. I believe the opposite.
 There is a dual use and everyone should have their well-behaving bots roaming the web in their interest.

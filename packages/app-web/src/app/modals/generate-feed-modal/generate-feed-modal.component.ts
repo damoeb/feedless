@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
@@ -21,7 +14,7 @@ import {
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility,
+  GqlVisibility
 } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
@@ -163,7 +156,7 @@ export class GenerateFeedModalComponent
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
     readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
@@ -398,7 +391,7 @@ export class GenerateFeedModalComponent
   }
 
   async ngOnInit(): Promise<void> {
-    this.isLoggedIn = this.profileService.isAuthenticated();
+    this.isLoggedIn = this.sessionService.isAuthenticated();
 
     const maxItemsLowerLimit = this.serverSettings.getFeatureValueInt(
       GqlFeatureName.RepositoryRetentionMaxItemsLowerLimitInt,

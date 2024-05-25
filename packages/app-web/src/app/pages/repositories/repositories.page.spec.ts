@@ -3,11 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RepositoriesPage } from './repositories.page';
 import { RepositoriesPageModule } from './repositories.module';
 import { AppTestModule } from '../../app-test.module';
-import {
-  GqlListRepositoriesQuery,
-  GqlListRepositoriesQueryVariables,
-  ListRepositories,
-} from '../../../generated/graphql';
+import { GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables, ListRepositories } from '../../../generated/graphql';
 
 describe('RepositoriesPage', () => {
   let component: RepositoriesPage;

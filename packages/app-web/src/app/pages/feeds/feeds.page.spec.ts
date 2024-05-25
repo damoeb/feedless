@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedsPage } from './feeds.page';
-import { AppTestModule, mockRepositories } from '../../../app-test.module';
+import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { FeedsPageModule } from './feeds.module';
 
 describe('FeedsPage', () => {

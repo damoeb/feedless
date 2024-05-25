@@ -1,0 +1,28 @@
+<div *ngIf="!after">
+  <p>Snapshot {{before.id}} from {{before.createdAt | date: dateTimeFormat}}</p>
+  <img
+    [src]="'data:image/png;base64, '+before.contentRawBase64"
+    alt=""
+  />
+</div>
+<div *ngIf="after">
+  <img-comparison-slider style="width: auto; margin: auto">
+    <img
+      [src]="'data:image/png;base64, '+before.contentRawBase64"
+      alt=""
+      slot="first"
+    />
+    <img [src]="safeDiffImageUrl" alt="" slot="second" />
+  </img-comparison-slider>
+
+  <img
+    [src]="'data:image/png;base64, '+before.contentRawBase64"
+    alt=""
+  />
+
+  <img
+    [src]="'data:image/png;base64, '+after.contentRawBase64"
+    alt=""
+  />
+
+</div>

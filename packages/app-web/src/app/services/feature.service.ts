@@ -6,7 +6,7 @@ import {
   GqlUpdateFeatureInput,
   GqlUpdateFeatureMutation,
   GqlUpdateFeatureMutationVariables,
-  UpdateFeature,
+  UpdateFeature
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Feature } from '../graphql/types';

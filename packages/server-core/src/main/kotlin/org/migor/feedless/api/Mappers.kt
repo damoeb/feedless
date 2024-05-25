@@ -333,5 +333,12 @@ private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams = Diff
   .inlineDiffImage(inlineDiffImage)
   .inlinePreviousImage(inlinePreviousImage)
   .nextItemMinIncrement(nextItemMinIncrement)
-  .compareBy(compareBy)
+  .compareBy(compareBy.fromDto())
   .build()
+
+private fun CompareByInput.fromDto(): CompareBy {
+  return CompareBy.newBuilder()
+    .field(field)
+    .fragmentNameRef(fragmentNameRef)
+    .build()
+}

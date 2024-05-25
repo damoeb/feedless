@@ -26,29 +26,7 @@
       <!--      <ion-button fill="outline">-->
       <!--        {{openedNotes.length}}-->
       <!--      </ion-button>-->
-      <ion-button id="open-settings-modal">
-        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-      </ion-button>
-
-      <ion-popover
-        [showBackdrop]="false"
-        trigger="open-settings-modal"
-        triggerAction="click"
-      >
-        <ng-template>
-          <!--          <ion-header>-->
-          <!--            <ion-toolbar>-->
-          <!--              <ion-title>Text Preferences</ion-title>-->
-          <!--            </ion-toolbar>-->
-          <!--          </ion-header>-->
-          <ion-content class="ion-padding">
-            <ion-list>
-              <ion-item routerLink="/plans"> Pricing </ion-item>
-              <app-login-button tabindex="-1"></app-login-button>
-            </ion-list>
-          </ion-content>
-        </ng-template>
-      </ion-popover>
+      <app-login-button tabindex="-1"></app-login-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

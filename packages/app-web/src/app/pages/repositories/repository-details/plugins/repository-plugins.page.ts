@@ -1,17 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import {
-  FeedlessPlugin,
-  FeedlessPluginExecution,
-  Repository,
-} from '../../../../graphql/types';
+import { FeedlessPlugin, FeedlessPluginExecution, Repository } from '../../../../graphql/types';
 import { PluginService } from '../../../../services/plugin.service';
 import { RepositoryService } from '../../../../services/repository.service';
 

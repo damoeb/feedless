@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TrackerEditModalComponent } from './tracker-edit-modal.component';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../../app-test.module';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../../app-test.module';
 import { TrackerEditModalModule } from './tracker-edit-modal.module';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';

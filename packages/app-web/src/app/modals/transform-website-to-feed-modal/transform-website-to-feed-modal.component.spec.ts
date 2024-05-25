@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TransformWebsiteToFeedModalComponent } from './transform-website-to-feed-modal.component';
 import { TransformWebsiteToFeedModalModule } from './transform-website-to-feed-modal.module';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
 
 describe('TransformWebsiteToFeedModalComponent', () => {
   let component: TransformWebsiteToFeedModalComponent;

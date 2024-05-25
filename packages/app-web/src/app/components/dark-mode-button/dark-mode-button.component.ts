@@ -18,11 +18,11 @@ export class DarkModeButtonComponent implements OnInit, OnDestroy {
   @Input()
   color: string;
 
-  constructor(readonly profileService: SessionService) {}
+  constructor(readonly sessionService: SessionService) {}
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(
-      this.profileService.watchColorScheme().subscribe((isDarkMode) => {
+      this.sessionService.watchColorScheme().subscribe((isDarkMode) => {
         this.darkMode = isDarkMode;
       }),
     );

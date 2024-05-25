@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { SessionService } from '../../services/session.service';
 
@@ -20,7 +15,7 @@ export class TermsModalComponent implements OnInit {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
   ) {}
 
   ngOnInit() {
@@ -34,7 +29,7 @@ export class TermsModalComponent implements OnInit {
   async accept() {
     this.loading = true;
     this.changeRef.detectChanges();
-    await this.profileService.acceptTermsAndConditions();
+    await this.sessionService.acceptTermsAndConditions();
     await new Promise((resolve) => setTimeout(resolve, 500));
     await this.modalCtrl.dismiss();
   }

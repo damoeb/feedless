@@ -5,9 +5,9 @@ import { IonicModule } from '@ionic/angular';
 import { FeedsPage } from './feeds.page';
 import 'img-comparison-slider';
 import { FeedsRoutingModule } from './feeds-routing.module';
-import { BubbleModule } from '../../../components/bubble/bubble.module';
-import { HistogramModule } from '../../../components/histogram/histogram.module';
-import { ImportButtonModule } from '../../../components/import-button/import-button.module';
+import { BubbleModule } from '../../components/bubble/bubble.module';
+import { HistogramModule } from '../../components/histogram/histogram.module';
+import { ImportButtonModule } from '../../components/import-button/import-button.module';
 
 @NgModule({
   imports: [

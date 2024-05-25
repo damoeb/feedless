@@ -35,14 +35,11 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly authService: AuthService,
     private readonly productService: ProductService,
-    private readonly repositoryService: RepositoryService,
     private readonly licenseService: LicenseService,
     readonly serverSettings: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
   ) {
-    dayjs.extend(relativeTime);
   }
 
   async ngOnInit() {

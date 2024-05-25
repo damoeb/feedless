@@ -1,17 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { FeatureService } from '../../services/feature.service';
 import { Feature } from '../../graphql/types';
-import { FormArray, FormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -31,11 +23,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     private readonly featureService: FeatureService,
     private readonly changeRef: ChangeDetectorRef,
   ) {
-    dayjs.extend(relativeTime);
-  }
-
-  fromNow(timestamp: number): string {
-    return dayjs(timestamp).toNow(true);
   }
 
   async ngOnInit() {

@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -19,16 +10,10 @@ import {
   keymap,
   lineNumbers,
   showTooltip,
-  Tooltip,
+  Tooltip
 } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import {
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-  indentOnInput,
-  syntaxTree,
-} from '@codemirror/language';
+import { bracketMatching, foldGutter, foldKeymap, indentOnInput, syntaxTree } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 import {
   autocompletion,
@@ -38,14 +23,10 @@ import {
   CompletionContext,
   completionKeymap,
   CompletionResult,
-  startCompletion,
+  startCompletion
 } from '@codemirror/autocomplete';
 
-import {
-  markdownLanguageSupport,
-  NODE_HASHTAG,
-  NODE_LINK,
-} from './markdown.lang';
+import { markdownLanguageSupport, NODE_HASHTAG, NODE_LINK } from './markdown.lang';
 import { theme } from './theme';
 import { markdownDecorator } from './markdown.decorator';
 import { hashtagMatcher } from './hashtag.widget';

@@ -85,11 +85,15 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val previous = getLastDocumentByRepositoryId(documentDAO, document.repositoryId)
 
     return previous?.let {
-      when (params.org_feedless_diff_email_forward.compareBy!!) {
+      val compareBy = params.org_feedless_diff_email_forward.compareBy!!
+      compareBy.fragmentNameRef?.let {
+        log.warn("[$corrId] resolving named fragment '${compareBy.fragmentNameRef}' not yet supported. Falling back to document")
+      }
+      when (compareBy.field!!) {
         WebDocumentField.text -> compareByText(
           corrId,
-          document.contentText!!,
-          previous.contentText!!,
+          document.contentText,
+          previous.contentText,
           increment
         )
 
@@ -221,8 +225,8 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val img1 = toImage(left)
     val img2 = toImage(right)
 
-    val width = img1.width.coerceAtLeast(img2.width)
-    val height = img1.height.coerceAtLeast(img2.height)
+    val width = img1.width.coerceAtMost(img2.width)
+    val height = img1.height.coerceAtMost(img2.height)
     var changes = 0
     for (x in 0 until width) {
       for (y in 0 until height) {
@@ -237,7 +241,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     )
     val total = (width * height)
     val ratio = changes / total.toDouble()
-    log.info("[$corrId] pixelDistance=$changes total=$total ratio=$ratio")
+    log.info("[$corrId] pixelDistance=$changes total=$total ratio=$ratio minIncrement=$minIncrement")
     return ratio > minIncrement
   }
 
@@ -245,7 +249,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val changes = LevenshteinDistance.getDefaultInstance().apply(left, right)
     val len = left.length.coerceAtLeast(right.length)
     val ratio = changes / len.toDouble()
-    log.info("[$corrId] editDistance=$changes total=$len ratio=$ratio")
+    log.info("[$corrId] editDistance=$changes total=$len ratio=$ratio minIncrement=$minIncrement")
     return ratio > minIncrement
   }
 

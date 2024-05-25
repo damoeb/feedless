@@ -1,21 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { XyPosition } from '../../components/embedded-image/embedded-image.component';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeActionInput,
-  GqlScrapeRequestInput,
-  GqlXyPosition,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapeActionInput, GqlScrapeRequestInput, GqlXyPosition } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';

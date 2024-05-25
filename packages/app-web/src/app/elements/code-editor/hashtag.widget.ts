@@ -1,12 +1,4 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  MatchDecorator,
-  PluginValue,
-  ViewPlugin,
-  ViewUpdate,
-} from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView, MatchDecorator, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
 
 const hashtagMatchDecoration = Decoration.mark({
   class: 'cm-hashtag',

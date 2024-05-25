@@ -1,18 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import pixelmatch from 'pixelmatch';
-import { DocumentService } from '../../../services/document.service';
-import { Repository, WebDocument } from '../../../graphql/types';
+import { WebDocument } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RepositoryService } from '../../../services/repository.service';
-import { dateFormat, dateTimeFormat } from '../../../services/session.service';
+import { dateFormat, dateTimeFormat } from '../../services/session.service';
+import { GqlDiffEmailForwardParamsInput, GqlWebDocumentField } from '../../../generated/graphql';
 
 type ImageSize = {
   width: number;
@@ -20,73 +11,45 @@ type ImageSize = {
 };
 
 @Component({
-  selector: 'app-visual-diff-details-page',
-  templateUrl: './subscription-details.page.html',
-  styleUrls: ['./subscription-details.page.scss'],
+  selector: 'app-document-diff',
+  templateUrl: './document-diff.component.html',
+  styleUrls: ['./document-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubscriptionDetailsPage implements OnInit, OnDestroy {
-  busy = false;
-  documents: WebDocument[];
+export class DocumentDiffComponent implements OnInit, OnDestroy {
+  @Input({required: true})
+  before: WebDocument;
+
+  @Input()
+  after: WebDocument;
+
+  @Input()
+  compareBy: GqlWebDocumentField = GqlWebDocumentField.Pixel
+
   safeDiffImageUrl: SafeResourceUrl;
-  private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  repository: Repository;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
     private readonly domSanitizer: DomSanitizer,
-    private readonly repositoryService: RepositoryService,
-    private readonly documentService: DocumentService,
   ) {}
 
-  ngOnInit() {
-    this.subscriptions.push(
-      this.activatedRoute.params.subscribe((params) => {
-        if (params.id) {
-          this.fetch(params.id);
-        }
-      }),
-    );
-  }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
     URL.revokeObjectURL(this.diffImageUrl);
   }
 
-  private async fetch(id: string) {
-    const page = 0;
-    this.busy = true;
-    this.changeRef.detectChanges();
-
-    this.repository = await this.repositoryService.getRepositoryById(id);
-    this.documents = await this.documentService.findAllByStreamId({
-      cursor: {
-        page,
-        pageSize: 2,
-      },
-      where: {
-        repository: {
-          where: {
-            id,
-          },
-        },
-      },
-    });
-
-    if (this.documents.length > 1) {
+  async ngOnInit() {
+    if (this.after) {
       this.diffImageUrl = await this.createImageDiff(
-        this.documents[0].contentRawBase64,
-        this.documents[1].contentRawBase64,
+        this.before.contentRawBase64,
+        this.after.contentRawBase64,
       );
       this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
         this.diffImageUrl,
       );
     }
 
-    this.busy = false;
     this.changeRef.detectChanges();
   }
 

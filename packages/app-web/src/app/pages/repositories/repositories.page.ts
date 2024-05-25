@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FetchPolicy } from '@apollo/client/core';
-import { ModalController } from '@ionic/angular';
 import { Repository } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
 import { RepositoryService } from '../../services/repository.service';

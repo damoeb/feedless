@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -13,12 +6,7 @@ import { ModalController } from '@ionic/angular';
 import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
-import {
-  GqlCompositeFilterParamsInput,
-  GqlNumberFilterOperator,
-  GqlScrapeRequest,
-  GqlStringFilterOperator,
-} from '../../../../generated/graphql';
+import { GqlCompositeFilterParamsInput, GqlNumberFilterOperator, GqlScrapeRequest } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 
 type KindOfTracker = 'static' | 'dynamic';

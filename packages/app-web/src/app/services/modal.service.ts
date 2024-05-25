@@ -1,35 +1,16 @@
 import { Injectable } from '@angular/core';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import {
-  FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps,
-} from '../modals/feed-builder-modal/feed-builder-modal.component';
-import {
-  FeedBuilder,
-  FeedBuilderModalComponentExitRole,
-  FeedWithRequest,
-} from '../components/feed-builder/feed-builder.component';
-import {
-  GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps,
-} from '../modals/generate-feed-modal/generate-feed-modal.component';
+import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
+import { FeedBuilder, FeedBuilderModalComponentExitRole, FeedWithRequest } from '../components/feed-builder/feed-builder.component';
+import { GenerateFeedModalComponent, GenerateFeedModalComponentProps } from '../modals/generate-feed-modal/generate-feed-modal.component';
 import {
   TrackerEditModalComponent,
-  TrackerEditModalComponentProps,
+  TrackerEditModalComponentProps
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
-import {
-  TagsModalComponent,
-  TagsModalComponentProps,
-} from '../modals/tags-modal/tags-modal.component';
-import {
-  RemoteFeedModalComponent,
-  RemoteFeedModalComponentProps,
-} from '../modals/remote-feed-modal/remote-feed-modal.component';
+import { TagsModalComponent, TagsModalComponentProps } from '../modals/tags-modal/tags-modal.component';
+import { RemoteFeedModalComponent, RemoteFeedModalComponentProps } from '../modals/remote-feed-modal/remote-feed-modal.component';
 
 @Injectable({
   providedIn: 'root',

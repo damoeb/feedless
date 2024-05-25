@@ -4,11 +4,7 @@ import { RepositoryPluginsPage } from './repository-plugins.page';
 import { RepositoryPluginsPageModule } from './repository-plugins.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppTestModule, mockRepository } from '../../../../app-test.module';
-import {
-  GqlListPluginsQuery,
-  GqlListPluginsQueryVariables,
-  ListPlugins,
-} from '../../../../../generated/graphql';
+import { GqlListPluginsQuery, GqlListPluginsQueryVariables, ListPlugins } from '../../../../../generated/graphql';
 
 describe('RepositoryPluginsPage', () => {
   let component: RepositoryPluginsPage;
