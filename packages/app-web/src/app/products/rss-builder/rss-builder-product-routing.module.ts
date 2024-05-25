@@ -5,6 +5,8 @@ import { RssBuilderProductPage } from './rss-builder-product.page';
 import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { DefaultRoutes } from '../default-routes';
+import { SaasGuardService } from '../../guards/saas-guard.service';
+import { SelfHostingGuardService } from '../../guards/self-hosting-guard.service';
 
 const routes: Routes = [
   {
@@ -54,19 +56,37 @@ const routes: Routes = [
       },
       {
         path: 'plans',
+        canActivate: [SaasGuardService],
         loadChildren: () =>
           import('./plans/plans.module').then((m) => m.PlansPageModule),
       },
       {
+        path: 'secrets',
+        canActivate: [AuthGuardService],
+        loadChildren: () =>
+          import('../../pages/secrets/secrets.module').then(
+            (m) => m.SecretsPageModule,
+          ),
+      },
+      {
+        path: 'settings',
+        canActivate: [AuthGuardService],
+        loadChildren: () =>
+          import('../../pages/settings/settings.module').then(
+            (m) => m.SettingsPageModule,
+          ),
+      },
+      {
         path: 'license',
+        canActivate: [SelfHostingGuardService],
         loadChildren: () =>
           import('../../pages/license/license.module').then(
             (m) => m.LicensePageModule,
           ),
       },
+      ...DefaultRoutes,
     ],
   },
-  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

@@ -36,7 +36,7 @@ class PlanConstraintsServiceImplTest {
   lateinit var sessionService: SessionService
 
   @InjectMocks
-  lateinit var service: PlanConstraintsServiceImpl
+  lateinit var service: PlanConstraintsService
 
   private lateinit var userId: UUID
   private lateinit var user: UserEntity
@@ -58,7 +58,7 @@ class PlanConstraintsServiceImplTest {
     val maxItems = 50
     mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
+    assertThat(service.coerceRetentionMaxItems(null, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
   }
@@ -261,7 +261,7 @@ class PlanConstraintsServiceImplTest {
     `when`(feature.valueInt).thenReturn(intValue)
     `when`(
       featureDAO.findByPlanIdAndName(
-        any(String::class.java),
+        any(UUID::class.java),
         eq(featureName.name),
       )
     ).thenReturn(

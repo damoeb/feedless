@@ -1,16 +1,28 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { SubscriptionEditPage } from './subscription-edit.page';
-import { AppTestModule } from '../../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../../app-test.module';
 import { SubscriptionEditPageModule } from './subscription-edit.module';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ApolloClient } from '@apollo/client/core';
 
 describe('SubscriptionEditPage', () => {
   let component: SubscriptionEditPage;
   let fixture: ComponentFixture<SubscriptionEditPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [SubscriptionEditPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
+
+    await mockServerSettings(
+      TestBed.inject(ApolloMockController),
+      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ApolloClient),
+    );
 
     fixture = TestBed.createComponent(SubscriptionEditPage);
     component = fixture.componentInstance;

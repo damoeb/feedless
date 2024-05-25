@@ -5,24 +5,30 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <div class="title">
+    <div style="display: flex">
       <div
         class="ion-hide-xl-up ion-hide-md-down"
         routerLink="/"
-        style="cursor: pointer"
+        style="cursor: pointer; align-content: center"
       >
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
 
       <ion-buttons class="ion-margin-horizontal">
-        <app-repositories-button name="Trackers" link="/trackers"></app-repositories-button>
+        <app-repositories-button
+          name="Trackers"
+          link="/trackers"
+          [product]="GqlProductName.VisualDiff"
+        ></app-repositories-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>
     </div>
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button routerLink="/plans">Pricing</ion-button>
+      <ion-button routerLink="/plans" *ngIf="!serverSettings.isSelfHosted()"
+        >Pricing</ion-button
+      >
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>

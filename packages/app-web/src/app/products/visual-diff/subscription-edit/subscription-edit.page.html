@@ -55,10 +55,16 @@
                         (pickedPosition)="handlePickedPosition($event)"
                         *ngIf="embedScreenshot"
                         [embed]="embedScreenshot"
+                        [ngClass]="{'hidden': form.value.compareType !== GqlWebDocumentField.Pixel}"
                         [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
                         [pickPosition]="isPickPositionMode()"
                         strokeStyle="red"
                       ></app-embedded-image>
+
+                      <app-embedded-website
+                        [embed]="embedWebsite"
+                        [ngClass]="{'hidden':form.value.compareType === GqlWebDocumentField.Pixel}"
+                      ></app-embedded-website>
                     </div>
                   </div>
                   <ion-progress-bar
@@ -213,9 +219,8 @@
                 <ion-button
                   (click)="pickBoundingBox()"
                   *ngIf="form.controls.areaBoundingBox.enabled"
-                  [ngClass]="{ 'ng-invalid': form.controls.areaBoundingBox.invalid}"
                   class="ion-margin-end"
-                  color="light"
+                  [color]="form.controls.areaBoundingBox.invalid ? 'primary' : 'light'"
                 >
                   <ion-icon name="scan-outline"></ion-icon>
                 </ion-button>
@@ -225,19 +230,29 @@
                   interface="popover"
                   placeholder="Frequency"
                 >
-                  <ion-select-option disabled value="0 */15 * * * *"
+                  <ion-select-option
+                    [disabled]="isThrottled"
+                    value="0 */15 * * * *"
                     >Every 15 min
                   </ion-select-option>
-                  <ion-select-option disabled value="0 */30 * * * *"
+                  <ion-select-option
+                    [disabled]="isThrottled"
+                    value="0 */30 * * * *"
                     >Every 30 min
                   </ion-select-option>
-                  <ion-select-option disabled value="0 0 * * * *"
+                  <ion-select-option
+                    [disabled]="isThrottled"
+                    value="0 0 * * * *"
                     >Every hour
                   </ion-select-option>
-                  <ion-select-option disabled value="0 0 */8 * * *"
+                  <ion-select-option
+                    [disabled]="isThrottled"
+                    value="0 0 */8 * * *"
                     >Every 6 hours
                   </ion-select-option>
-                  <ion-select-option disabled value="0 0 */12 * * *"
+                  <ion-select-option
+                    [disabled]="isThrottled"
+                    value="0 0 */12 * * *"
                     >Every 12 hours
                   </ion-select-option>
                   <ion-select-option value="0 0 0 * * *"

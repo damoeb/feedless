@@ -10,7 +10,13 @@ import { LicensePage } from './license.page';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, LicensePageRoutingModule, PlanColumnModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    LicensePageRoutingModule,
+    PlanColumnModule,
+  ],
   declarations: [LicensePage],
 })
 export class LicensePageModule {}

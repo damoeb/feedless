@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
+import { GqlProductName } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-feedless-menu',
@@ -39,10 +40,12 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
         this.agentCount = agents.length;
         this.changeRef.detectChanges();
       }),
-      this.repositoryService.countRepositories().subscribe((repoCount) => {
-        this.feedCount = repoCount;
-        this.changeRef.detectChanges();
-      }),
+      this.repositoryService
+        .countRepositories({ product: GqlProductName.RssProxy })
+        .subscribe((repoCount) => {
+          this.feedCount = repoCount;
+          this.changeRef.detectChanges();
+        }),
     );
   }
 

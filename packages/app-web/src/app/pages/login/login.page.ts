@@ -80,14 +80,16 @@ export class LoginPage implements OnInit, OnDestroy {
     );
   }
 
-  async loginWithUserPassword(email: string | number, password: string | number) {
+  async loginWithUserPassword(
+    email: string | number,
+    password: string | number,
+  ) {
     this.errorMessage = null;
     try {
-      return await this.authService
-        .authorizeUser({
-          email: `${email}`,
-          secretKey: `${password}`
-        });
+      return await this.authService.authorizeUser({
+        email: `${email}`,
+        secretKey: `${password}`,
+      });
     } catch (e) {
       this.errorMessage = e.message;
       this.changeRef.detectChanges();

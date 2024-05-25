@@ -4,7 +4,7 @@ import { PlayerComponent } from './player.component';
 import { PlayerModule } from './player.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('BubbleComponent', () => {
+describe('PlayerComponent', () => {
   let component: PlayerComponent;
   let fixture: ComponentFixture<PlayerComponent>;
 
@@ -15,6 +15,7 @@ describe('BubbleComponent', () => {
 
     fixture = TestBed.createComponent(PlayerComponent);
     component = fixture.componentInstance;
+    component.document = { enclosures: [] } as any;
     fixture.detectChanges();
   }));
 

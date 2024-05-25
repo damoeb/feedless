@@ -11,8 +11,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
@@ -69,9 +71,10 @@ class RepositoryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun countRepositories(
     @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: CountRepositoriesInput,
   ): Int = coroutineScope {
     log.info("[$corrId] countRepositories")
-    repositoryService.countAll(sessionService.userId())
+    repositoryService.countAll(sessionService.userId(), data.product.fromDto())
   }
 
   @Throttled

@@ -19,7 +19,7 @@ import { ImportButtonModule } from '../../../components/import-button/import-but
     SearchbarModule,
     ImportOpmlModalModule,
     ProductHeaderModule,
-    ImportButtonModule
+    ImportButtonModule,
   ],
   declarations: [AboutRssBuilderPage],
 })

@@ -346,9 +346,9 @@ class RepositoryService {
     return repositoryDAO.save(repository)
   }
 
-  fun countAll(userId: UUID?): Int {
+  fun countAll(userId: UUID?, product: ProductName): Int {
     return userId
-      ?.let { repositoryDAO.countAllByOwnerId(it) }
+      ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)
   }
 }

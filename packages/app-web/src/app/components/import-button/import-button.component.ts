@@ -1,9 +1,17 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../../modals/import-opml-modal/import-opml-modal.component';
+import {
+  ImportOpmlModalComponent,
+  ImportOpmlModalComponentProps,
+} from '../../modals/import-opml-modal/import-opml-modal.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -44,7 +52,4 @@ export class ImportButtonComponent {
       await this.router.navigateByUrl('/login');
     }
   }
-
-
-
 }

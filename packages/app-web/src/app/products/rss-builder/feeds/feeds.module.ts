@@ -16,7 +16,7 @@ import { ImportButtonModule } from '../../../components/import-button/import-but
     FeedsRoutingModule,
     BubbleModule,
     HistogramModule,
-    ImportButtonModule
+    ImportButtonModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],

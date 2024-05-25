@@ -5,7 +5,10 @@ import {
   GqlPlan,
   GqlPlanAvailability,
 } from '../../../generated/graphql';
-import { StringFeature, StringFeatureGroup } from '../plan-column/plan-column.component';
+import {
+  StringFeature,
+  StringFeatureGroup,
+} from '../plan-column/plan-column.component';
 
 export type PlanAction = {
   label: string;
@@ -181,30 +184,32 @@ export class PlansComponent implements OnInit {
     };
   }
 
-  toStringFeatureGroup(featureGroups: FeatureGroup<Feature>[]): StringFeatureGroup[] {
-    return featureGroups.map<StringFeatureGroup>(featureGroup => {
+  toStringFeatureGroup(
+    featureGroups: FeatureGroup<Feature>[],
+  ): StringFeatureGroup[] {
+    return featureGroups.map<StringFeatureGroup>((featureGroup) => {
       return {
         groupLabel: featureGroup.groupLabel,
-        features: featureGroup.features.map<StringFeature>(feature => {
+        features: featureGroup.features.map<StringFeature>((feature) => {
           return {
             title: this.getFeatureTitle(feature),
             subtitle: this.getFeatureSubTitle(feature),
-            valueHtml: this.getFeatureValueHtml(feature)
-          }
-        })
-      }
+            valueHtml: this.getFeatureValueHtml(feature),
+          };
+        }),
+      };
     });
   }
 
   private getFeatureValueHtml(feature: Feature): string {
     if (this.isBoolean(feature)) {
       if (this.isTrue(feature)) {
-        return `<ion-icon color="success" name="checkmark-outline"></ion-icon>`
+        return `<ion-icon color="success" name="checkmark-outline"></ion-icon>`;
       } else {
         return `<ion-icon color="danger" name="close-outline"></ion-icon>`;
       }
     } else {
-      return ''+ this.getFeatureValue(feature);
+      return '' + this.getFeatureValue(feature);
     }
   }
 }

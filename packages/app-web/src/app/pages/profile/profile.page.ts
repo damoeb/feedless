@@ -1,105 +1,27 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { dateTimeFormat, SessionService } from '../../services/session.service';
+import { Component } from '@angular/core';
+import { SessionService } from '../../services/session.service';
 import { Router } from '@angular/router';
-import { UserSecret } from '../../graphql/types';
-import { AlertController, ToastController } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile-page',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfilePage implements OnInit, OnDestroy {
-  secrets: UserSecret[] = [];
-  private subscriptions: Subscription[] = [];
-
+export class ProfilePage {
   constructor(
-    private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
-    private readonly alertCtrl: AlertController,
-    private readonly profileService: SessionService,
+    private readonly sessionService: SessionService,
   ) {}
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  ngOnInit(): void {
-    this.subscriptions.push(
-      this.profileService.getSession().subscribe((profile) => {
-        if (profile.user.secrets) {
-          this.secrets = profile.user.secrets;
-        }
-        // this.plugins = profile.user.plugins.map((plugin) => {
-        //   const formControl = new FormControl<boolean>(plugin.value);
-        //
-        //   formControl.valueChanges.subscribe((value) =>
-        //     this.updatePluginValue(plugin.id, value),
-        //   );
-        //   return {
-        //     plugin,
-        //     fc: formControl,
-        //   };
-        // });
-        this.changeRef.detectChanges();
-      }),
-    );
-  }
-
   async logout() {
-    await this.profileService.logout();
+    await this.sessionService.logout();
     await this.router.navigateByUrl('/');
   }
 
-  async createUserSecret() {
-    const promptName = await this.alertCtrl.create({
-      message: 'Set a name for the key',
-      inputs: [
-        {
-          name: 'name',
-          type: 'text',
-          min: 3,
-          placeholder: 'Type name here',
-        },
-      ],
-      buttons: [
-        {
-          role: 'cancel',
-          text: 'Cancel',
-        },
-        {
-          text: 'Create Secret Key',
-          role: 'persist',
-        },
-      ],
-    });
-    await promptName.present();
-    const data = await promptName.onDidDismiss();
-    if (data.role === 'persist' && data.data.values.name) {
-      const apiToken = await this.profileService.createUserSecret();
-      this.secrets.push(apiToken);
-    }
-  }
-
-  async deleteSecret(secret: UserSecret) {
-    await this.profileService.deleteUserSecrets({
-      where: {
-        in: [secret.id],
-      },
-    });
-  }
-
   async deleteAccount() {
-    await this.profileService.updateCurrentUser({
+    await this.sessionService.updateCurrentUser({
       purgeScheduledFor: {
         assignNull: false,
       },
@@ -125,5 +47,4 @@ export class ProfilePage implements OnInit, OnDestroy {
   //     ],
   //   });
   // }
-  protected readonly dateTimeFormat = dateTimeFormat;
 }

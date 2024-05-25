@@ -11,7 +11,11 @@
       </div>
 
       <ion-buttons class="ion-margin-horizontal">
-        <app-repositories-button name="Feeds" link="/feeds"></app-repositories-button>
+        <app-repositories-button
+          name="Feeds"
+          link="/feeds"
+          [product]="GqlProductName.RssProxy"
+        ></app-repositories-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>
     </div>

@@ -19,6 +19,7 @@ import {
   GqlScrapeRequest,
   GqlStringFilterOperator,
 } from '../../../../generated/graphql';
+import { ServerSettingsService } from '../../../services/server-settings.service';
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -35,6 +36,7 @@ export class TrackerEditModalComponent
   implements TrackerEditModalComponentProps, OnInit, OnDestroy
 {
   private subscriptions: Subscription[] = [];
+  isThrottled: boolean;
 
   @ViewChild('remoteFeedPreviewComponent')
   remoteFeedPreview: RemoteFeedPreviewComponent;
@@ -51,10 +53,12 @@ export class TrackerEditModalComponent
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
+    private readonly serverSettings: ServerSettingsService,
     private readonly modalCtrl: ModalController,
   ) {}
 
   async ngOnInit() {
+    this.isThrottled = !this.serverSettings.isSelfHosted();
     this.subscriptions.push(
       this.formFg.controls.limit.valueChanges.subscribe(async () => {
         await this.updateFeed();
@@ -89,8 +93,6 @@ export class TrackerEditModalComponent
   closeModal() {
     return this.modalCtrl.dismiss();
   }
-
-  protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
 
   private async updateFeed() {
     const filters: GqlCompositeFilterParamsInput[] = [];

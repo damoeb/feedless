@@ -15,7 +15,6 @@ export class AuthGuardService implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean | UrlTree> {
-    console.log('isSelfHosted', this.serverSettings.isSelfHosted());
     if (this.serverSettings.isSelfHosted()) {
       return this.authService.authorizationChange().pipe(
         switchMap((authentication) => {

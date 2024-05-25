@@ -22,7 +22,7 @@ import { PlayerModule } from '../player/player.module';
     GenerateFeedModalModule,
     PaginationModule,
     ReactiveFormsModule,
-    PlayerModule
-  ]
+    PlayerModule,
+  ],
 })
 export class FeedDetailsModule {}

@@ -1,0 +1,11 @@
+mutation updateFeature($data: UpdateFeatureInput!) {
+  updateFeature(data: $data) {
+    ...FeatureFragment
+  }
+}
+
+query features {
+  features {
+    ...FeatureFragment
+  }
+}

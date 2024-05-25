@@ -44,7 +44,6 @@ type Enclosure {
 }
 
 type Feature {
-#  name: String!
   name: FeatureName!
   value: FeatureValue!
 }
@@ -128,6 +127,26 @@ type Mutation {
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
   updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocuments(data: DeleteWebDocumentsInput!): Boolean!
+
+  updateFeature(data: UpdateFeatureInput!): Feature!
+}
+
+input UpdateFeatureInput {
+  name: FeatureName!
+  value: FeatureValueInput!
+}
+
+input FeatureValueInput {
+  boolVal: FeatureBooleanValueInput
+  numVal: FeatureIntValueInput
+}
+
+input FeatureBooleanValueInput {
+  value: Boolean!
+}
+
+input FeatureIntValueInput {
+  value: Int!
 }
 
 input DeleteAnnotationInput {
@@ -231,6 +250,7 @@ input CreateUserInput {
 }
 
 enum ProductName {
+  system
   rssProxy
   visualDiff
   reader
@@ -317,7 +337,7 @@ type Query {
 
   repository(data: RepositoryWhereInput!): Repository!
   repositories(data: RepositoriesInput!): [Repository!]!
-  countRepositories: Int!
+  countRepositories(data: CountRepositoriesInput!): Int!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
   plans(product: ProductName!): [Plan!]!
@@ -331,6 +351,12 @@ type Query {
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
+
+  features: [Feature!]!
+}
+
+input CountRepositoriesInput {
+  product: ProductName!
 }
 
 input StoriesWhereInput {
@@ -1331,7 +1357,6 @@ type LocalizedSource {
   lat: Long!
   lon: Long!
 }
-
 
 type ScrapeEmit {
   imageBased: ScrapeBoundingBox

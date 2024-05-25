@@ -8,6 +8,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [AgentsButtonComponent],
   exports: [AgentsButtonComponent],
-  imports: [CommonModule, IonicModule, BubbleModule, RouterLink]
+  imports: [CommonModule, IonicModule, BubbleModule, RouterLink],
 })
 export class AgentsButtonModule {}

@@ -7,6 +7,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 @NgModule({
   declarations: [TrialWarningComponent],
   exports: [TrialWarningComponent],
-  imports: [CommonModule, IonicModule, RouterLink, RouterLinkActive]
+  imports: [CommonModule, IonicModule, RouterLink, RouterLinkActive],
 })
 export class TrialWarningModule {}

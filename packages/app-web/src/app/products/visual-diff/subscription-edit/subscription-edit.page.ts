@@ -34,6 +34,7 @@ import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../services/session.service';
 import { environment } from '../../../../environments/environment';
+import { ServerSettingsService } from '../../../services/server-settings.service';
 
 type Email = string;
 
@@ -111,6 +112,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   errorMessage: null;
   private scrapeRequest: GqlScrapeRequestInput;
   showErrors: boolean;
+  isThrottled: boolean;
+  protected embedWebsite: Embeddable;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -118,11 +121,13 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly profileService: SessionService,
     private readonly scrapeService: ScrapeService,
+    private readonly serverSettings: ServerSettingsService,
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   ngOnInit() {
+    this.isThrottled = !this.serverSettings.isSelfHosted();
     this.subscriptions.push(
       merge(
         this.form.controls.url.valueChanges,
@@ -229,6 +234,12 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
           data: scrapeResponse.debug.screenshot,
           url,
           viewport: scrapeResponse.debug.viewport,
+        };
+
+        this.embedWebsite = {
+          mimeType: 'text/html',
+          data: this.scrapeResponse.elements[0].selector.html.data,
+          url: this.form.value.url,
         };
         this.scrapeResponse = scrapeResponse;
       }

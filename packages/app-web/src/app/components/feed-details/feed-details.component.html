@@ -5,11 +5,10 @@
   <ion-chip
     (click)="editRepository()"
     *ngIf="repository.visibility === GqlVisibility.IsPrivate"
-  >Private
-  </ion-chip
-  >
+    >Private
+  </ion-chip>
 </ion-row>
-<ion-toolbar class="ion-margin-vertical" style="--background: transparent;">
+<ion-toolbar class="ion-margin-vertical" style="--background: transparent">
   <ion-buttons slot="start">
     <ion-button>
       <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>
@@ -62,8 +61,7 @@
               <ion-button (click)="editSource()">
                 <ion-icon name="add-outline" slot="start"></ion-icon>
                 Add Source
-              </ion-button
-              >
+              </ion-button>
             </ion-buttons>
           </ion-toolbar>
           <ion-list>
@@ -86,9 +84,8 @@
                     fill="clear"
                     [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
                     (click)="editTags(source)"
-                  >{{ stringifyTags(source) }}
-                  </ion-button
-                  >
+                    >{{ stringifyTags(source) }}
+                  </ion-button>
                 </p>
                 <ion-note color="danger" *ngIf="source.errornous">
                   {{ source.lastErrorMessage }}
@@ -190,13 +187,21 @@
   <ion-list style="border-radius: 8px" *ngIf="!loading">
     <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
       <ion-buttons slot="start">
-        <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
+        <ion-checkbox
+          [formControl]="selectAllFc"
+          aria-label="toggle all"
+        ></ion-checkbox>
         <div class="ion-padding-horizontal flex">
-          <ion-text class="ion-margin-end"
-                    *ngIf="selectedCount > 0"
-                    style="align-content: center;">({{ selectedCount }})</ion-text>
-          <ion-button (click)="deleteAllSelected()"
-                      [disabled]="selectedCount === 0">
+          <ion-text
+            class="ion-margin-end"
+            *ngIf="selectedCount > 0"
+            style="align-content: center"
+            >({{ selectedCount }})</ion-text
+          >
+          <ion-button
+            (click)="deleteAllSelected()"
+            [disabled]="selectedCount === 0"
+          >
             Bulk delete
           </ion-button>
         </div>
@@ -207,17 +212,19 @@
     </ion-item>
     <div *ngFor="let document of documents">
       <ion-item lines="full">
-        <ion-checkbox slot="start" *ngIf="isOwner"
-                      [formControl]="document.fc"
-                      aria-label="toggle document"></ion-checkbox>
+        <ion-checkbox
+          slot="start"
+          *ngIf="isOwner"
+          [formControl]="document.fc"
+          aria-label="toggle document"
+        ></ion-checkbox>
         <ion-label>
           <ion-toolbar style="--background: transparent">
             <ion-buttons>
               <ion-note
-              >{{ fromNow(document.publishedAt) }} on
+                >{{ fromNow(document.publishedAt) }} on
                 {{ hostname(document.url) }}
-              </ion-note
-              >
+              </ion-note>
               <ion-note *ngIf="document.tags.length > 0">
                 <em class="ion-padding-start">{{ getTags(document) }}</em>
               </ion-note>
@@ -236,15 +243,18 @@
 
           <p>{{ document.contentText }}</p>
 
-          <app-player [document]="document"
-                      (playback)="playAudio(document)"
-                      [isPlaying]="playDocument === document"></app-player>
+          <app-player
+            [document]="document"
+            (playback)="playAudio(document)"
+            [isPlaying]="playDocument === document"
+          ></app-player>
         </ion-label>
       </ion-item>
     </div>
   </ion-list>
 
-  <app-pagination [currentPage]="currentPage"
-                  (pageChange)="fetchPage($event)"></app-pagination>
-
+  <app-pagination
+    [currentPage]="currentPage"
+    (pageChange)="fetchPage($event)"
+  ></app-pagination>
 </div>

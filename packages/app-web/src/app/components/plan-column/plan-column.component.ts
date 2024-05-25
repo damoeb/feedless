@@ -1,18 +1,18 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 export type StringFeature = {
-  title: string
-  subtitle?: string
-  valueHtml?: string
+  title: string;
+  subtitle?: string;
+  valueHtml?: string;
   valueBool?: {
-    value: boolean
-  }
-}
+    value: boolean;
+  };
+};
 
 export type StringFeatureGroup = {
   groupLabel: string;
   features: StringFeature[];
-}
+};
 
 @Component({
   selector: 'app-plan-column',
@@ -21,10 +21,10 @@ export type StringFeatureGroup = {
 })
 export class PlanColumnComponent {
   @Input()
-  price: string
+  price: string;
 
   @Input()
-  featureGroups: StringFeatureGroup[]
+  featureGroups: StringFeatureGroup[];
 
   @Input()
   pricePerUnit: string = '/ Month';

@@ -1,0 +1,36 @@
+<ion-content>
+  <div style="display: flex; justify-content: center">
+    <div style="width: 700px; margin-top: 100px; margin-bottom: 100px">
+      <ion-list>
+        <ion-item>
+          <h2>Settings</h2>
+        </ion-item>
+        <ion-item>
+          <p>Adjust the server.</p>
+        </ion-item>
+
+        <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+
+        <ng-container *ngIf="!loading">
+          <ion-list>
+            <ion-item *ngFor="let feature of features; let i = index">
+              <ng-container *ngIf="feature.value.numVal">
+                <ion-label>{{feature.name}}</ion-label>
+                <ion-input
+                  type="number"
+                  aria-label=""
+                  [formControl]="feature.fc"
+                ></ion-input>
+              </ng-container>
+              <ng-container *ngIf="feature.value.boolVal">
+                <ion-checkbox labelPlacement="start" [formControl]="feature.fc">
+                  {{feature.name}}
+                </ion-checkbox>
+              </ng-container>
+            </ion-item>
+          </ion-list>
+        </ng-container>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>

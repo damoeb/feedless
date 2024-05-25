@@ -79,7 +79,7 @@ just by analyzing just the HTML structure. Usually the structuring to a feed wor
   https://raw.githubusercontent.com/damoeb/rss-proxy/develop/chrome.json
 touch your-license.key
 docker-compose up`,
-      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`,
     },
     {
       id: 'feedDump',
@@ -128,7 +128,7 @@ docker-compose up`,
   https://raw.githubusercontent.com/damoeb/visual-diff/master/chrome.json
 
 docker-compose up`,
-      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`,
     },
     {
       id: 'reader',
@@ -161,7 +161,7 @@ wget https://raw.githubusercontent.com/damoeb/reader/master/selfhosting.env \\
   https://raw.githubusercontent.com/damoeb/reader/master/chrome.json
 
 docker-compose up`,
-      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`
+      localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`,
     },
     {
       id: 'untold',

@@ -20,7 +20,7 @@ import { PlanColumnModule } from '../../components/plan-column/plan-column.modul
     NewsletterModule,
     ProductHeadlineModule,
     ReactiveFormsModule,
-    PlanColumnModule
+    PlanColumnModule,
   ],
   declarations: [BuyPage],
 })

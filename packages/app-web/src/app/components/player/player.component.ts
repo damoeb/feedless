@@ -3,7 +3,7 @@ import { GetElementType, WebDocument } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
 
-type Enclosure = GetElementType<WebDocument['enclosures']>
+type Enclosure = GetElementType<WebDocument['enclosures']>;
 
 @Component({
   selector: 'app-player',
@@ -11,20 +11,19 @@ type Enclosure = GetElementType<WebDocument['enclosures']>
   styleUrls: ['./player.component.scss'],
 })
 export class PlayerComponent {
-  @Input({required: true})
+  @Input({ required: true })
   document: WebDocument;
 
   @Input()
   isPlaying: boolean;
 
   @Output()
-  playback = new EventEmitter<void>()
+  playback = new EventEmitter<void>();
 
   constructor(private readonly domSanitizer: DomSanitizer) {}
 
-
   hasAudioStream(document: WebDocument): boolean {
-    return document.enclosures.some((e) => e.type.startsWith('audio/'));
+    return document.enclosures?.some((e) => e.type.startsWith('audio/'));
   }
 
   firstAudioStream(document: WebDocument): SafeResourceUrl {

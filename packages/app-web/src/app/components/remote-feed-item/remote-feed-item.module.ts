@@ -9,6 +9,6 @@ import { PlayerModule } from '../player/player.module';
 @NgModule({
   declarations: [RemoteFeedItemComponent],
   exports: [RemoteFeedItemComponent],
-  imports: [CommonModule, IonicModule, RouterLink, BubbleModule, PlayerModule]
+  imports: [CommonModule, IonicModule, RouterLink, BubbleModule, PlayerModule],
 })
 export class RemoteFeedItemModule {}

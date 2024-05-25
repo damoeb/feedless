@@ -25,7 +25,7 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
     SearchbarModule,
     TrialWarningModule,
     AgentsButtonModule,
-    RepositoriesButtonModule
+    RepositoriesButtonModule,
   ],
   declarations: [VisualDiffProductPage],
 })

@@ -27,7 +27,7 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
     TrialWarningModule,
     BubbleModule,
     AgentsButtonModule,
-    RepositoriesButtonModule
+    RepositoriesButtonModule,
   ],
   declarations: [RssBuilderProductPage],
 })

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
@@ -7,17 +13,14 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginationComponent {
-
-  @Input({required: true})
-  currentPage: number
+  @Input({ required: true })
+  currentPage: number;
 
   @Input()
-  isLastPage: boolean
+  isLastPage: boolean;
 
   @Output()
-  pageChange: EventEmitter<number> = new EventEmitter<number>()
+  pageChange: EventEmitter<number> = new EventEmitter<number>();
 
-  constructor(
-  ) {}
-
+  constructor() {}
 }

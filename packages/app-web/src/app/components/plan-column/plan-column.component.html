@@ -7,13 +7,15 @@
     <span class="plan__price--info">{{ pricePerUnit }}</span>
   </div>
   <ng-content></ng-content>
-<!--  <div class="plan__action ion-margin-vertical">-->
-<!--    <ng-content select="[planAction]"></ng-content>-->
-<!--  </div>-->
-  <div (scroll)="onScroll($event)"
-       [scrollTop]="scrollTop"
-       *ngIf="featureGroups"
-       class="features">
+  <!--  <div class="plan__action ion-margin-vertical">-->
+  <!--    <ng-content select="[planAction]"></ng-content>-->
+  <!--  </div>-->
+  <div
+    (scroll)="onScroll($event)"
+    [scrollTop]="scrollTop"
+    *ngIf="featureGroups"
+    class="features"
+  >
     <ng-container *ngFor="let featureGroup of featureGroups">
       <div class="feature__group">{{ featureGroup.groupLabel }}</div>
       <ion-row *ngFor="let feature of featureGroup.features" class="feature">
@@ -22,14 +24,22 @@
             {{ feature.title }}
           </span>
           <span *ngIf="feature.subtitle" class="feature__subtitle"
-          >({{ feature.subtitle }})</span
+            >({{ feature.subtitle }})</span
           >
         </ion-col>
         <ion-col class="feature__value" size="4">
           <div *ngIf="feature.valueHtml" [innerHTML]="feature.valueHtml"></div>
           <ng-container *ngIf="feature.valueBool">
-            <ion-icon color="success" name="checkmark-outline" *ngIf="feature.valueBool.value"></ion-icon>
-            <ion-icon color="danger" name="close-outline" *ngIf="!feature.valueBool.value"></ion-icon>
+            <ion-icon
+              color="success"
+              name="checkmark-outline"
+              *ngIf="feature.valueBool.value"
+            ></ion-icon>
+            <ion-icon
+              color="danger"
+              name="close-outline"
+              *ngIf="!feature.valueBool.value"
+            ></ion-icon>
           </ng-container>
         </ion-col>
       </ion-row>

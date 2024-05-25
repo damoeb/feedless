@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { BuyPage } from './buy.page';
-import { ProductsPageModule } from './buy.module';
+import { BuyPageModule } from './buy.module';
 import { AppTestModule, mockPlans } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ProductService } from '../../services/product.service';
@@ -13,7 +13,7 @@ describe('BuyPage', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        ProductsPageModule,
+        BuyPageModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockPlans(apolloMockController);
         }),

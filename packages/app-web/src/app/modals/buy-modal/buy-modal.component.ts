@@ -11,11 +11,9 @@ export interface ModalModalComponentProps {
   styleUrls: ['./buy-modal.component.scss'],
 })
 export class BuyModalComponent implements ModalModalComponentProps {
-
   constructor(private readonly modalCtrl: ModalController) {}
 
   closeModal() {
     return this.modalCtrl.dismiss();
   }
-
 }

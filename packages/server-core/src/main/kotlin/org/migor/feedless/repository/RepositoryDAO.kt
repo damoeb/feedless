@@ -2,6 +2,7 @@ package org.migor.feedless.repository
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -55,7 +56,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
 
   fun countByOwnerId(id: UUID): Int
   fun countByOwnerIdAndArchived(id: UUID, archived: Boolean): Int
-  fun countAllByOwnerId(it: UUID): Int
+  fun countAllByOwnerIdAndProduct(it: UUID, product: ProductName): Int
   fun countAllByVisibility(visibility: EntityVisibility): Int
   fun findAllByVisibility(visibility: EntityVisibility, pageable: PageRequest): List<RepositoryEntity>
 

@@ -1,12 +1,13 @@
 <ion-toolbar>
   <ion-buttons class="ion-justify-content-center">
-    <ion-button (click)="pageChange.emit(currentPage-1)"
-                *ngIf="currentPage !== 0">
+    <ion-button
+      (click)="pageChange.emit(currentPage - 1)"
+      *ngIf="currentPage !== 0"
+    >
       Previous
     </ion-button>
-    <ion-button>{{ currentPage+1 }}</ion-button>
-    <ion-button (click)="pageChange.emit(currentPage+1)"
-                *ngIf="!isLastPage">
+    <ion-button>{{ currentPage + 1 }}</ion-button>
+    <ion-button (click)="pageChange.emit(currentPage + 1)" *ngIf="!isLastPage">
       Next
     </ion-button>
   </ion-buttons>

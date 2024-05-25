@@ -19,7 +19,8 @@ ion-textarea {
 }
 
 .plans {
-  display: flex; --faint-color: #8d8d8d;;
+  display: flex;
+  --faint-color: #8d8d8d;
 
   app-plan-column {
     flex: 1;

@@ -6,20 +6,13 @@
     *ngIf="!isPlaying"
     (click)="playAudio()"
   >
-    <ion-icon
-      name="play-outline"
-      color="primary"
-      slot="start"
-    ></ion-icon>
+    <ion-icon name="play-outline" color="primary" slot="start"></ion-icon>
     Play
-    <ion-note class="ion-padding-start">{{ firstAudioLength(document) }}</ion-note>
+    <ion-note class="ion-padding-start">{{
+      firstAudioLength(document)
+    }}</ion-note>
   </ion-button>
-  <audio
-    controls
-    autoplay
-    style="width: 100%"
-    *ngIf="isPlaying"
-  >
+  <audio controls autoplay style="width: 100%" *ngIf="isPlaying">
     <source [src]="firstAudioStream(document)" />
   </audio>
 </div>

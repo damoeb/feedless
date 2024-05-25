@@ -3,6 +3,7 @@ import {
   CountRepositories,
   CreateRepositories,
   DeleteRepository,
+  GqlCountRepositoriesInput,
   GqlCountRepositoriesQuery,
   GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,
@@ -120,6 +121,7 @@ export class RepositoryService {
   }
 
   countRepositories(
+    data: GqlCountRepositoriesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Observable<number> {
     return this.authService.authorizationChange().pipe(
@@ -132,6 +134,9 @@ export class RepositoryService {
                 GqlCountRepositoriesQueryVariables
               >({
                 query: CountRepositories,
+                variables: {
+                  data,
+                },
                 fetchPolicy,
               })
               .map((response) => response.data.countRepositories),

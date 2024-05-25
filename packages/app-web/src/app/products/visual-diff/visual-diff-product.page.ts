@@ -10,6 +10,8 @@ import { ChildActivationEnd, Router } from '@angular/router';
 import { has } from 'lodash-es';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import { filter, map, Subscription } from 'rxjs';
+import { GqlProductName } from '../../../generated/graphql';
+import { ServerSettingsService } from '../../services/server-settings.service';
 
 @Component({
   selector: 'app-visual-diff-product-page',
@@ -25,6 +27,7 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
   constructor(
     readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
+    protected readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly productService: ProductService,
   ) {}
@@ -53,4 +56,6 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
+
+  protected readonly GqlProductName = GqlProductName;
 }

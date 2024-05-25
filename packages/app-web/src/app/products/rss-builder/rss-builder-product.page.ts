@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
@@ -6,7 +12,7 @@ import { ProductConfig, ProductService } from '../../services/product.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import { GqlLicenseQuery } from '../../../generated/graphql';
+import { GqlLicenseQuery, GqlProductName } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { RepositoryService } from '../../services/repository.service';
@@ -74,4 +80,5 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   //     console.warn(e);
   //   }
   // }
+  protected readonly GqlProductName = GqlProductName;
 }

@@ -1,0 +1,12 @@
+@import "../../../mixins";
+
+//ion-content {
+//  line-height: 1.4rem;
+//}
+
+ion-item {
+  ion-input {
+    flex: 1;
+    text-align: right;
+  }
+}

@@ -9,6 +9,7 @@ import org.migor.feedless.agent.AgentJob
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -85,9 +86,11 @@ class ScrapeQueryResolverTest {
       .thenReturn(httpResponse)
     val params = PluginExecutionParamsInput.newBuilder()
       .org_feedless_feed(
-        SelectorsInput.newBuilder()
-          .contextXPath("//div[1]/div[1]/div[1]/div")
-          .linkXPath("./h1[1]/a[1]")
+        FeedParamsInput.newBuilder()
+          .generic(SelectorsInput.newBuilder()
+            .contextXPath("//div[1]/div[1]/div[1]/div")
+            .linkXPath("./h1[1]/a[1]")
+            .build())
           .build()
       )
       .build()

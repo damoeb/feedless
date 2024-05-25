@@ -7,15 +7,12 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import {
-  ProductConfig,
-  ProductService,
-} from '../../services/product.service';
+import { ProductConfig, ProductService } from '../../services/product.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
 
-type TargetGroup = 'organization' | 'individual' | 'other'
-type ServiceFlavor = 'self' | 'cloud'
+type TargetGroup = 'organization' | 'individual' | 'other';
+type ServiceFlavor = 'self' | 'cloud';
 
 @Component({
   selector: 'app-buy-page',

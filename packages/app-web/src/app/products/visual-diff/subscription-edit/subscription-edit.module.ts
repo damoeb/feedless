@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EmbeddedImageModule } from '../../../components/embedded-image/embedded-image.module';
 import { SubscriptionEditRoutingModule } from './subscription-edit-routing.module';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
+import { EmbeddedWebsiteModule } from '../../../components/embedded-website/embedded-website.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     EmbeddedImageModule,
     SubscriptionEditRoutingModule,
     SearchbarModule,
+    EmbeddedWebsiteModule,
   ],
   declarations: [SubscriptionEditPage],
 })

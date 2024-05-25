@@ -8,6 +8,9 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { SessionService } from '../../services/session.service';
+import { ServerSettingsService } from '../../services/server-settings.service';
 
 @Component({
   selector: 'app-login-button',
@@ -28,6 +31,9 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly sessionService: SessionService,
+    protected readonly serverSettings: ServerSettingsService,
+    private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -44,5 +50,10 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  async logout() {
+    await this.sessionService.logout();
+    await this.router.navigateByUrl('/');
   }
 }

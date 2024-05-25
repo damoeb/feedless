@@ -41,9 +41,6 @@ interface FeatureValueDAO : JpaRepository<FeatureValueEntity, UUID> {
   fun findAllByProductName(@Param("product") product: String): List<FeatureValueEntity>
 
   @Query(
-//    value = """
-//      select * from t_feature_value
-//  """,
     value = """
       WITH RECURSIVE plan_tree(id, parent_plan_id, depth) AS (
         SELECT t.id, t.parent_plan_id, 0
@@ -54,15 +51,15 @@ interface FeatureValueDAO : JpaRepository<FeatureValueEntity, UUID> {
          FROM t_plan t,
               plan_tree st
          WHERE t.id = st.parent_plan_id)
-        SELECT distinct on (f.name) fv.id, fv.valueint, fv.valueboolean, fv.valuetype, fv.planid, fv.featureid
+        SELECT distinct on (f.name) fv.id, fv.value_int, fv.value_bool, fv.value_type, fv.plan_id, fv.feature_id, fv.created_at
         FROM plan_tree pl
-        inner join t_feature_value fv on pl.id = fv.planid
-        inner join t_feature f on f.id = fv.featureid
+        inner join t_feature_value fv on pl.id = fv.plan_id
+        inner join t_feature f on f.id = fv.feature_id
         where f.name = :feature
 order by f.name, depth
   """,
     nativeQuery = true,
   )
-  fun findByPlanIdAndName(@Param("planId") planId: String, @Param("feature") feature: String): List<FeatureValueEntity>
+  fun findByPlanIdAndName(@Param("planId") planId: UUID, @Param("feature") feature: String): List<FeatureValueEntity>
 
 }

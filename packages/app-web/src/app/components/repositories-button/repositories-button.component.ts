@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { AuthService } from '../../services/auth.service';
 import { RepositoryService } from '../../services/repository.service';
+import { GqlProductName } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-repositories-button',
@@ -11,11 +19,14 @@ import { RepositoryService } from '../../services/repository.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RepositoriesButtonComponent implements OnInit, OnDestroy {
-  @Input({required: true})
-  name: string
+  @Input({ required: true })
+  name: string;
 
-  @Input({required: true})
-  link: string
+  @Input({ required: true })
+  link: string;
+
+  @Input({ required: true })
+  product: GqlProductName;
 
   feedCount: number = 0;
   isLoggedIn: boolean;
@@ -34,10 +45,12 @@ export class RepositoriesButtonComponent implements OnInit, OnDestroy {
         this.isLoggedIn = authorization?.loggedIn;
         this.changeRef.detectChanges();
       }),
-      this.repositoryService.countRepositories().subscribe((repoCount) => {
-        this.feedCount = repoCount;
-        this.changeRef.detectChanges();
-      }),
+      this.repositoryService
+        .countRepositories({ product: this.product })
+        .subscribe((repoCount) => {
+          this.feedCount = repoCount;
+          this.changeRef.detectChanges();
+        }),
     );
   }
 

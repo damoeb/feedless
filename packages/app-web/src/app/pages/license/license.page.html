@@ -8,7 +8,8 @@
         <ion-item>
           <p>
             After the 2 month trial period, you need a license key to keep the
-            system running. Open Source is dead, unless you carry your end of the couch :)
+            system running. Open Source is dead, unless you carry your end of
+            the couch :)
           </p>
         </ion-item>
 
@@ -25,11 +26,22 @@
               style="--background: transparent"
             >
               <ion-icon name="time-outline" slot="start"></ion-icon>
-              <p>Trial period {{fromNow(license.trialUntil)}} (until {{license.trialUntil | date: dateFormat}})</p>
+              <p>
+                Trial period {{fromNow(license.trialUntil)}} (until
+                {{license.trialUntil | date: dateFormat}})
+              </p>
             </ion-item>
-            <ion-progress-bar [value]="getRelativeTrialDaysLeft()"
-                              color="danger"
-                              style="height: 100%; position: absolute; width: 100%; opacity: 0.5; top: 0"></ion-progress-bar>
+            <ion-progress-bar
+              [value]="getRelativeTrialDaysLeft()"
+              color="danger"
+              style="
+                height: 100%;
+                position: absolute;
+                width: 100%;
+                opacity: 0.5;
+                top: 0;
+              "
+            ></ion-progress-bar>
           </div>
 
           <ng-container *ngIf="!license.isLocated">
@@ -54,14 +66,16 @@
           </ion-item>
           <ion-item>
             <p>
-              If the asked price is too high, you are a student, you do Open Source yourself, etc. <strong>negotiate with me, I may give it away for cheap</strong> :)
+              If the asked price is too high, you are a student, you do Open
+              Source yourself, etc.
+              <strong>negotiate with me, I may give it away for cheap</strong>
+              :)
             </p>
           </ion-item>
           <div class="plans">
-
             <app-plan-column
               price="$39.99"
-              style="--color: var(--ion-color-primary);"
+              style="--color: var(--ion-color-primary)"
               pricePerUnit="/ Release"
               [featureGroups]="featureGroupsRP"
             >
@@ -96,19 +110,22 @@
               </div>
             </app-plan-column>
           </div>
-<!--          <ion-item class="ion-margin-top">-->
-<!--            <h3>Online Activation</h3>-->
-<!--          </ion-item>-->
-<!--          <ion-item color="primary" [disabled]="true">-->
-<!--            <ion-icon name="arrow-forward-outline" slot="start"></ion-icon>-->
-<!--            Buy license now!-->
-<!--          </ion-item>-->
+          <!--          <ion-item class="ion-margin-top">-->
+          <!--            <h3>Online Activation</h3>-->
+          <!--          </ion-item>-->
+          <!--          <ion-item color="primary" [disabled]="true">-->
+          <!--            <ion-icon name="arrow-forward-outline" slot="start"></ion-icon>-->
+          <!--            Buy license now!-->
+          <!--          </ion-item>-->
           <ng-container *ngIf="!license.isValid || license.isTrial">
             <ion-item class="ion-margin-top">
               <h3>Offline Activation</h3>
             </ion-item>
             <ion-item>
-              <p>Paste the license key in here and you will see an immediate response.</p>
+              <p>
+                Paste the license key in here and you will see an immediate
+                response.
+              </p>
             </ion-item>
             <ion-item>
               <ion-textarea

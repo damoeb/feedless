@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import { dateFormat } from '../../services/session.service';
@@ -15,7 +21,7 @@ function bold(v: string): string {
 
 function bool(value: boolean) {
   return {
-    value
+    value,
   };
 }
 
@@ -23,7 +29,7 @@ function bool(value: boolean) {
   selector: 'app-license-page',
   templateUrl: './license.page.html',
   styleUrls: ['./license.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;
@@ -36,34 +42,34 @@ export class LicensePage implements OnInit, OnDestroy {
       features: [
         {
           title: 'Team Member',
-          valueHtml: bold('1')
+          valueHtml: bold('1'),
         },
         {
           title: 'Feeds',
-          valueHtml: bold('Infinite')
+          valueHtml: bold('Infinite'),
         },
         {
           title: 'Minute Refresh Rate',
-          valueHtml: bold('15')
+          valueHtml: bold('15'),
         },
         {
           title: 'Posts in collection',
-          valueHtml: bold('Infinite')
+          valueHtml: bold('Infinite'),
         },
         {
           title: 'Filters',
-          valueBool: bool(true)
+          valueBool: bool(true),
         },
         {
           title: 'Bundle Feeds',
-          valueBool: bool(true)
+          valueBool: bool(true),
         },
         {
           title: 'Full Source Available',
-          valueBool: bool(true)
-        }
-      ]
-    }
+          valueBool: bool(true),
+        },
+      ],
+    },
   ];
   featureGroupsRA: StringFeatureGroup[] = [
     {
@@ -71,41 +77,40 @@ export class LicensePage implements OnInit, OnDestroy {
       features: [
         {
           title: 'Team Member',
-          valueHtml: bold('1')
+          valueHtml: bold('1'),
         },
         {
           title: 'Feeds',
-          valueHtml: bold('100')
+          valueHtml: bold('100'),
         },
         {
           title: 'Minute Refresh Rate',
-          valueHtml: bold('15')
+          valueHtml: bold('15'),
         },
         {
           title: 'Posts in collection',
-          valueHtml: bold('200')
+          valueHtml: bold('200'),
         },
         {
           title: 'Filters',
-          valueBool: bool(true)
+          valueBool: bool(true),
         },
         {
           title: 'Bundle Feeds',
-          valueBool: bool(true)
+          valueBool: bool(true),
         },
         {
           title: 'Full Source Available',
-          valueBool: bool(false)
-        }
-      ]
-    }
+          valueBool: bool(false),
+        },
+      ],
+    },
   ];
-
 
   constructor(
     private readonly licenseService: LicenseService,
     private readonly modalCtrl: ModalController,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {
     dayjs.extend(relativeTime);
   }
@@ -120,7 +125,7 @@ export class LicensePage implements OnInit, OnDestroy {
         this.license = license;
         this.loading = false;
         this.changeRef.detectChanges();
-      })
+      }),
     );
     this.changeRef.detectChanges();
   }
@@ -134,19 +139,22 @@ export class LicensePage implements OnInit, OnDestroy {
   applyLicense(licenseRaw: string) {
     if (licenseRaw.trim().length > 0) {
       return this.licenseService.updateLicense({
-        licenseRaw
+        licenseRaw,
       });
     }
   }
 
   async openBuyModal() {
     const modal = await this.modalCtrl.create({
-      component: BuyModalComponent
+      component: BuyModalComponent,
     });
     await modal.present();
   }
 
   getRelativeTrialDaysLeft(): number {
-    return dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') / (28 * 2.0);
+    return (
+      dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') /
+      (28 * 2.0)
+    );
   }
 }

@@ -131,10 +131,10 @@ export class ProductService {
     },
     {
       id: 'visual-diff',
-      sideMenu: {
-        width: 200,
-        breakpoint: 'lg',
-      },
+      // sideMenu: {
+      //   width: 200,
+      //   breakpoint: 'lg',
+      // },
       routes: [
         {
           path: '',

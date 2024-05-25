@@ -12,14 +12,46 @@
   *ngIf="authorization?.loggedIn"
   class="cy-profile-button"
   [expand]="expand"
+  id="open-settings-popover"
   [color]="color"
-  routerLink="/profile"
 >
   <ng-container *ngIf="label">
-    <ion-icon name="person-outline" slot="start"></ion-icon>
+    <ion-icon name="apps-outline" slot="start"></ion-icon>
     {{ label }}
   </ng-container>
   <ng-container *ngIf="!label">
-    <ion-icon name="person-outline"></ion-icon>
+    <ion-icon name="apps-outline"></ion-icon>
   </ng-container>
+  <ion-popover trigger="open-settings-popover" triggerAction="click">
+    <ng-template>
+      <ion-list>
+        <ion-item [button]="true" routerLink="/profile">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          Profile
+        </ion-item>
+        <ion-item [button]="true" routerLink="/secrets">
+          <ion-icon name="key-outline" slot="start"></ion-icon>
+          Secrets
+        </ion-item>
+        <ion-item
+          [button]="true"
+          routerLink="/settings"
+          *ngIf="serverSettings.isSelfHosted()"
+        >
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          Settings
+        </ion-item>
+        <ion-item [button]="true" routerLink="/license">
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          License
+        </ion-item>
+        <ion-item [button]="true" (click)="logout()">
+          <ion-icon name="exit-outline" slot="start"></ion-icon>
+          Logout
+        </ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-button>
+
+<!--  <ion-button id="open-date-picker" expand="block">Date Picker</ion-button>-->

@@ -14,14 +14,14 @@ export const DefaultRoutes: Routes = [
         (m) => m.ContactPageModule,
       ),
   },
-  {
-    path: 'join',
-    data: { title: 'Wait List' },
-    loadChildren: () =>
-      import('../pages/wait-list/wait-list-page.module').then(
-        (m) => m.WaitListPageModule,
-      ),
-  },
+  // {
+  //   path: 'join',
+  //   data: { title: 'Wait List' },
+  //   loadChildren: () =>
+  //     import('../pages/wait-list/wait-list-page.module').then(
+  //       (m) => m.WaitListPageModule,
+  //     ),
+  // },
   {
     path: 'profile',
     canActivate: [AuthGuardService],

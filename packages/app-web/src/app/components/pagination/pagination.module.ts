@@ -8,6 +8,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [PaginationComponent],
   exports: [PaginationComponent],
-  imports: [CommonModule, IonicModule, BubbleModule, RouterLink]
+  imports: [CommonModule, IonicModule, BubbleModule, RouterLink],
 })
 export class PaginationModule {}

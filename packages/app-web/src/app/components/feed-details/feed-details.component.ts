@@ -1,10 +1,28 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { GqlScrapeRequest, GqlVisibility } from '../../../generated/graphql';
-import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  FeedlessPlugin,
+  Repository,
+  SubscriptionSource,
+  WebDocument,
+} from '../../graphql/types';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
 import { ModalController, PopoverController } from '@ionic/angular';
-import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  FeedWithRequest,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -19,7 +37,7 @@ import { without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 
-type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean>}
+type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean> };
 
 @Component({
   selector: 'app-feed-details',
@@ -78,15 +96,17 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         this.userId = session.user?.id;
         this.assessIsOwner();
       }),
-      this.selectAllFc.valueChanges.subscribe(isChecked => {
-        this.documents.forEach(document => document.fc.setValue(isChecked, {emitEvent: false}));
+      this.selectAllFc.valueChanges.subscribe((isChecked) => {
+        this.documents.forEach((document) =>
+          document.fc.setValue(isChecked, { emitEvent: false }),
+        );
         if (isChecked) {
           this.selectedCount = this.documents.length;
         } else {
           this.selectedCount = 0;
         }
         this.changeRef.detectChanges();
-      })
+      }),
     );
     await this.fetchPage();
     this.changeRef.detectChanges();
@@ -141,7 +161,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   protected async fetchPage(page: number = 0) {
     this.currentPage = page;
-    this.selectAllFc.setValue(false)
+    this.selectAllFc.setValue(false);
     this.loading = true;
     this.changeRef.detectChanges();
     const documents = await this.documentService.findAllByStreamId({
@@ -157,23 +177,24 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
-    this.documents = documents.map(document => {
-
+    this.documents = documents.map((document) => {
       const fc = new FormControl<boolean>(false);
       this.subscriptions.push(
-        fc.valueChanges.subscribe(isChecked => {
+        fc.valueChanges.subscribe((isChecked) => {
           if (isChecked) {
-            this.selectedCount ++;
+            this.selectedCount++;
           } else {
-            this.selectedCount --;
+            this.selectedCount--;
           }
-          this.selectAllFc.setValue(this.selectedCount !== 0, {emitEvent: false})
-        })
-      )
+          this.selectAllFc.setValue(this.selectedCount !== 0, {
+            emitEvent: false,
+          });
+        }),
+      );
       return {
         ...document,
-        fc: fc
-      }
+        fc: fc,
+      };
     });
     this.loading = false;
     this.changeRef.detectChanges();
@@ -335,22 +356,21 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async deleteAllSelected() {
-    const selected = this.documents.filter(document => document.fc.value);
+    const selected = this.documents.filter((document) => document.fc.value);
     await this.documentService.removeById({
       where: {
         repository: {
           where: {
-            id: this.repository.id
-          }
+            id: this.repository.id,
+          },
         },
         id: {
-          in: selected.map(document => document.id)
-        }
-      }
+          in: selected.map((document) => document.id),
+        },
+      },
     });
     this.documents = without(this.documents, ...selected);
     this.selectAllFc.setValue(false);
     this.changeRef.detectChanges();
-
   }
 }

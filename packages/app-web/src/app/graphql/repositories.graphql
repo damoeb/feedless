@@ -20,8 +20,8 @@ query listRepositories($data: RepositoriesInput!) {
   }
 }
 
-query countRepositories {
-  countRepositories
+query countRepositories($data: CountRepositoriesInput!) {
+  countRepositories(data: $data)
 }
 
 query repositoryById($data: RepositoryWhereInput!) {

@@ -51,9 +51,7 @@ const routes: Routes = [
       {
         path: 'buy',
         loadChildren: () =>
-          import('../../pages/buy/buy.module').then(
-            (m) => m.BuyPageModule,
-          ),
+          import('../../pages/buy/buy.module').then((m) => m.BuyPageModule),
       },
       {
         path: '',

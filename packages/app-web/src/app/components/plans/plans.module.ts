@@ -8,6 +8,6 @@ import { PlanColumnModule } from '../plan-column/plan-column.module';
 @NgModule({
   declarations: [PlansComponent],
   exports: [PlansComponent],
-  imports: [CommonModule, IonicModule, RouterLink, PlanColumnModule]
+  imports: [CommonModule, IonicModule, RouterLink, PlanColumnModule],
 })
 export class PlansModule {}

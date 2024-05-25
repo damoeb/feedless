@@ -1,11 +1,12 @@
 <div class="plans ion-margin">
-  <app-plan-column *ngFor="let plan of finalPlans"
-                   [price]="'$' + formatPrice(plan.currentCosts)"
-                   [featureGroups]="plan.featureGroups"
-                   [ngStyle]="{ '--color': plan.color }">
+  <app-plan-column
+    *ngFor="let plan of finalPlans"
+    [price]="'$' + formatPrice(plan.currentCosts)"
+    [featureGroups]="plan.featureGroups"
+    [ngStyle]="{ '--color': plan.color }"
+  >
     <div planHeader>
-      <div *ngIf="planHeaders"
-           [innerHtml]="planHeaders[plan.name]"></div>
+      <div *ngIf="planHeaders" [innerHtml]="planHeaders[plan.name]"></div>
       <ng-container *ngIf="!planHeaders">
         {{ plan.name }}
       </ng-container>
@@ -19,7 +20,6 @@
     >
       {{ plan.action.label }}
     </ion-button>
-
   </app-plan-column>
 </div>
 

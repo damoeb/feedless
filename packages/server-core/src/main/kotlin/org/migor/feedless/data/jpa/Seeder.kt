@@ -145,7 +145,7 @@ class Seeder {
           FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
           FeatureName.repositoryRetentionMaxItemsLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryRetentionMaxItemsUpperLimitInt to asIntFeature(10),
+          FeatureName.repositoryRetentionMaxItemsUpperLimitInt to asIntFeature(1000),
           FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
           FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
           FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
@@ -299,7 +299,7 @@ class Seeder {
         featureValueDAO.findByPlanIdAndFeatureId(plan.id, feature.id)
           ?.let {
             val logValueMismatch =
-              { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.product}/${plan.name} expects ${expected}, actual $actual") }
+              { expected: Any, actual: Any -> log.warn("Feature Value Mismatch! Feature $featureName on ${plan.productId}/${plan.name} expects ${expected}, actual $actual") }
             if (it.valueBoolean != featureValue.valueBoolean) {
               logValueMismatch(featureValue.valueBoolean!!, it.valueBoolean!!)
             }
