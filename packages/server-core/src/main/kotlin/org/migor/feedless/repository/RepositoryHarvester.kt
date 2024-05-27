@@ -376,7 +376,7 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>?)
   val e = DocumentEntity()
   e.repositoryId = repositoryId
   pixel?.let {
-    e.contentTitle = CryptUtil.sha1(it.base64Data)
+    e.contentTitle = CryptUtil.sha1(it.base64Data).substring(0..8)
     e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
     e.contentRawMime = "image/webp"
   }

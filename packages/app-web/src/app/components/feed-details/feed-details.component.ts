@@ -60,6 +60,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   viewModeList: ViewMode = 'list';
   viewModeHistogram: ViewMode = 'histogram';
   viewModeDiff: ViewMode = 'diff';
+  protected compareByField: GqlWebDocumentField | undefined;
+  protected readonly GqlProductName = GqlProductName;
+  protected readonly compareByPixel: GqlWebDocumentField = GqlWebDocumentField.Pixel;
+
 
   constructor(
     private readonly modalService: ModalService,
@@ -80,6 +84,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    if (this.repository.product === GqlProductName.VisualDiff) {
+      this.viewModeFc.setValue('diff');
+    }
+    this.compareByField = this.repository.plugins.find(plugin => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward)?.params?.org_feedless_diff_email_forward?.compareBy?.field;
+
     this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
@@ -357,8 +366,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  protected readonly GqlProductName = GqlProductName;
-
   getDocumentPairs() {
     const pairs: Pair<WebDocument, WebDocument>[] = [];
     for(let i=0; i < this.documents.length -1; i++) {
@@ -368,10 +375,5 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       })
     }
     return pairs;
-  }
-
-  getCompareBy(): GqlWebDocumentField {
-    const diffPlugin = this.repository.plugins.find(plugin => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward);
-    return diffPlugin.params.org_feedless_diff_email_forward.compareBy.field;
   }
 }

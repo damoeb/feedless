@@ -3,7 +3,6 @@ import pixelmatch from 'pixelmatch';
 import { WebDocument } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { dateFormat, dateTimeFormat } from '../../services/session.service';
-import { GqlDiffEmailForwardParamsInput, GqlWebDocumentField } from '../../../generated/graphql';
 
 type ImageSize = {
   width: number;
@@ -11,20 +10,17 @@ type ImageSize = {
 };
 
 @Component({
-  selector: 'app-document-diff',
-  templateUrl: './document-diff.component.html',
-  styleUrls: ['./document-diff.component.scss'],
+  selector: 'app-image-diff',
+  templateUrl: './image-diff.component.html',
+  styleUrls: ['./image-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DocumentDiffComponent implements OnInit, OnDestroy {
+export class ImageDiffComponent implements OnInit, OnDestroy {
   @Input({required: true})
   before: WebDocument;
 
   @Input()
   after: WebDocument;
-
-  @Input()
-  compareBy: GqlWebDocumentField = GqlWebDocumentField.Pixel
 
   safeDiffImageUrl: SafeResourceUrl;
   private diffImageUrl: string;

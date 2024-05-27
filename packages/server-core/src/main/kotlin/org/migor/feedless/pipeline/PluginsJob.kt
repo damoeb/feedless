@@ -5,6 +5,7 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
@@ -38,6 +39,9 @@ class PluginsJob internal constructor() {
 
   @Autowired
   lateinit var pluginService: PluginService
+
+  @Autowired
+  lateinit var documentService: DocumentService
 
   @Autowired
   lateinit var mailService: MailService
@@ -94,6 +98,7 @@ class PluginsJob internal constructor() {
         forwardToMail(corrId, document, repository)
         document.status = ReleaseStatus.released
         documentDAO.save(document)
+        documentService.applyRetentionStrategy(corrId, repository)
       }
 
     } catch (throwable: Throwable) {

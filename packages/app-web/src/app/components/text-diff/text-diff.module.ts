@@ -2,15 +2,15 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { IonicModule } from '@ionic/angular';
-import { DocumentDiffComponent } from './document-diff.component';
+import { TextDiffComponent } from './text-diff.component';
 import 'img-comparison-slider';
 
 @NgModule({
   imports: [CommonModule, IonicModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [DocumentDiffComponent],
+  declarations: [TextDiffComponent],
   exports: [
-    DocumentDiffComponent
+    TextDiffComponent
   ]
 })
-export class DocumentDiffModule {}
+export class TextDiffModule {}

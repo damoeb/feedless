@@ -201,18 +201,27 @@
       <ion-item *ngIf="documents.length === 0">
         <ion-label> Page is empty.</ion-label>
       </ion-item>
-      <app-document-diff *ngIf="documents.length === 1"
-                         [compareBy]="getCompareBy()"
-                         [before]="documents[0]"></app-document-diff>
-
-      <ng-container *ngIf="documents.length > 1">
-        <div *ngFor="let pair of getDocumentPairs()">
-          <app-document-diff [before]="pair.a"
-                             [compareBy]="getCompareBy()"
-                             [after]="pair.b"></app-document-diff>
-        </div>
+      <ng-container *ngIf="compareByField === compareByPixel">
+        <app-image-diff *ngIf="documents.length === 1"
+                        [before]="documents[0]"></app-image-diff>
+        <ng-container *ngIf="documents.length > 1">
+          <div *ngFor="let pair of getDocumentPairs()">
+            <app-image-diff [before]="pair.a"
+                            [after]="pair.b"></app-image-diff>
+          </div>
+        </ng-container>
       </ng-container>
 
+      <ng-container *ngIf="compareByField !== compareByPixel">
+        <app-text-diff *ngIf="documents.length === 1"
+                       [before]="documents[0]"></app-text-diff>
+        <ng-container *ngIf="documents.length > 1">
+          <div *ngFor="let pair of getDocumentPairs()">
+            <app-text-diff [before]="pair.a"
+                            [after]="pair.b"></app-text-diff>
+          </div>
+        </ng-container>
+      </ng-container>
     </ng-container>
 
     <ng-container *ngIf="viewModeFc.value === viewModeList">

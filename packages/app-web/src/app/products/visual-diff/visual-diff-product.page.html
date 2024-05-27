@@ -16,7 +16,7 @@
       <ion-buttons class="ion-margin-horizontal">
         <app-repositories-button
           name="Trackers"
-          link="/feeds"
+          [link]="'/feeds?product'+GqlProductName.VisualDiff"
           [product]="GqlProductName.VisualDiff"
         ></app-repositories-button>
         <app-agents-button></app-agents-button>
