@@ -6,7 +6,7 @@
   (keydown.arrowUp)="$event.stopPropagation()"
   class="editor-wrapper"
 >
-  <ion-toolbar>
+  <ion-toolbar *ngIf="controls">
     <ion-buttons>
       <ion-button title="Bold">B</ion-button>
       <ion-button title="Italic">I</ion-button>

@@ -5,10 +5,7 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import {
-  ApolloQueryResult,
-  OperationVariables,
-} from '@apollo/client/core/types';
+import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
 import {
   AuthAnonymous,
   GqlAuthAnonymousMutation,
@@ -22,33 +19,30 @@ import {
   GqlPlansQuery,
   GqlPlansQueryVariables,
   GqlProductName,
+  GqlRepository,
+  GqlRepositoryByIdQuery,
+  GqlRepositoryByIdQueryVariables,
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
   GqlScrapeResponse,
   GqlServerSettings,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  GqlRepository,
-  GqlRepositoryByIdQuery,
-  GqlRepositoryByIdQueryVariables,
   GqlVisibility,
+  GqlWebDocumentByIdsQuery,
+  GqlWebDocumentByIdsQueryVariables,
   License,
   ListPlugins,
   ListRepositories,
   Plans,
+  RepositoryById,
   Scrape,
   ServerSettings,
-  RepositoryById,
-  WebDocumentByIds,
-  GqlWebDocumentByIdsQuery,
-  GqlWebDocumentByIdsQueryVariables,
+  WebDocumentByIds
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
-import {
-  FeedlessAppConfig,
-  ServerSettingsService,
-} from './services/server-settings.service';
+import { FeedlessAppConfig, ServerSettingsService } from './services/server-settings.service';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -271,6 +265,7 @@ export type Mocks = {
 export const mocks: Mocks = {
   repository: {
     id: '',
+    product: GqlProductName.RssProxy,
     description: '',
     title: '',
     tags: [],

@@ -1,1 +1,12 @@
-text diff
+<div class="text-diff">
+  <app-code-editor [readOnly]="true"
+                   [controls]="false"
+                   [lineWrapping]="false"
+                   [text]="textBefore"></app-code-editor>
+  <app-code-editor [readOnly]="true"
+                   #diffEditor
+                   [controls]="false"
+                   [highlightedLines]="highlightedLines"
+                   [lineWrapping]="false"
+                   [text]="textAfter"></app-code-editor>
+</div>

@@ -1,4 +1,15 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -35,6 +46,8 @@ import { lintKeymap } from '@codemirror/lint';
 import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
+import { addLineHighlight, lineHighlightField } from './line.decorator';
+import { debounce } from 'lodash-es';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -92,7 +105,7 @@ export type AutoSuggestionsProvider = (
   styleUrls: ['./code-editor.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class CodeEditorComponent implements AfterViewInit {
+export class CodeEditorComponent implements AfterViewInit, OnChanges {
   @ViewChild('editor')
   editor!: ElementRef<HTMLDivElement>;
 
@@ -103,10 +116,28 @@ export class CodeEditorComponent implements AfterViewInit {
   readOnly: boolean = false;
 
   @Input()
+  controls: boolean = true;
+
+  @Input()
+  autofocus: boolean = false;
+
+  @Input()
+  highlightedLines: number[];
+
+  @Input()
+  lineWrapping: boolean = true;
+
+  @Input()
   extensions: Extension[] = [];
+
+  // @Input()
+  // scrollLeft: number;
 
   @Output()
   textChange = new EventEmitter<string>();
+
+  // @Output()
+  // scrollChange = new EventEmitter<{ left: number, top: number }>();
 
   @Output()
   triggerQuery = new EventEmitter<string>();
@@ -116,12 +147,19 @@ export class CodeEditorComponent implements AfterViewInit {
 
   private editorView: EditorView;
   ctrlPressed: boolean;
-  private wordInFocus: string = '';
 
   constructor() {}
 
   ngAfterViewInit() {
     this.setText(this.text);
+    this.highlightLines(this.highlightedLines);
+  }
+
+  private highlightLines(lines: number[]) {
+    lines?.forEach(line => {
+      const docPosition = this.editorView.state.doc.line(line).from;
+      this.editorView.dispatch({effects: addLineHighlight.of(docPosition)});
+    })
   }
 
   private getExtensions() {
@@ -139,6 +177,7 @@ export class CodeEditorComponent implements AfterViewInit {
       EditorState.readOnly.of(this.readOnly),
       highlightSpecialChars(),
       foldGutter(),
+      lineHighlightField,
       drawSelection(),
       EditorState.allowMultipleSelections.of(false),
       indentOnInput(),
@@ -150,7 +189,6 @@ export class CodeEditorComponent implements AfterViewInit {
       hashtagMatcher,
       ...this.extensions,
       // noteReferenceMatcher,
-      EditorView.lineWrapping,
       keymap.of([
         ...closeBracketsKeymap,
         ...defaultKeymap,
@@ -189,6 +227,14 @@ export class CodeEditorComponent implements AfterViewInit {
         },
       }),
       EditorView.domEventObservers({
+        // scroll: debounce(() => {
+        //   const scrollDOM = this.editorView.scrollDOM;
+        //   // this.scrollChange.emit({
+        //   this.scrollChange.next({
+        //     left: scrollDOM.scrollLeft,
+        //     top: scrollDOM.scrollTop
+        //   })
+        // }, 100),
         keydown: (event, editorView) => {
           const keys = ['Enter'];
           // const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
@@ -261,21 +307,16 @@ export class CodeEditorComponent implements AfterViewInit {
         ],
       }),
       // EditorView.updateListener.of(debounce((update: ViewUpdate) => {
-      //   const ranges = update.state.selection.ranges;
-      //
-      //   if (ranges) {
-      //     const wordRange = update.state.wordAt(ranges[0].to);
-      //     if (wordRange) {
-      //       const word = update.state.sliceDoc(wordRange.from, wordRange.to)
-      //       if (this.wordInFocus != word && word.length > 2) {
-      //         startCompletion(update.view);
-      //         this.wordInFocus = word;
-      //       }
-      //     }
-      //   }
+      //   console.log('this.highlightedLines', this.highlightedLines)
+      //   this.highlightedLines = [1, 4, 10];
+      //   this.highlightedLines?.forEach(line => this.highlightLine(line))
       //
       // }, 300)),
     ];
+
+    if (this.lineWrapping) {
+      extensions.push(EditorView.lineWrapping);
+    }
     return extensions;
   }
 
@@ -296,7 +337,9 @@ export class CodeEditorComponent implements AfterViewInit {
       state,
       parent: this.editor.nativeElement,
     });
-    this.setFocus();
+    if (this.autofocus) {
+      this.setFocus();
+    }
   }
 
   getText() {
@@ -311,5 +354,13 @@ export class CodeEditorComponent implements AfterViewInit {
     if (event.ctrlKey) {
       this.ctrlPressed = true;
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const scrollLeft = changes.scrollLeft?.currentValue;
+    // if (scrollLeft && this.editorView?.scrollDOM) {
+    //   console.log('scrollLeft', scrollLeft)
+    //   this.editorView.scrollDOM.scrollLeft = scrollLeft;
+    // }
   }
 }

@@ -10,6 +10,11 @@
   }
 }
 
+.hl-line {
+  background: color-mix(in srgb, red 30%, var(--app-background));;
+  color: color-mix(in srgb, red 30%, var(--app-foreground));;
+}
+
 .editor-wrapper {
   --app-border-color: rgba(var(--ion-color-medium-rgb), 0.5);
   --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.5);
