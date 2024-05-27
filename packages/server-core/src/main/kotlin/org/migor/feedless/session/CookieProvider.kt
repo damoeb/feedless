@@ -27,7 +27,7 @@ class CookieProvider {
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain
     cookie.maxAge = tokenProvider.getUserTokenExpiration().seconds.toInt()
-    cookie.secure = true
+    cookie.secure = false
     cookie.path = "/"
     return cookie
   }
