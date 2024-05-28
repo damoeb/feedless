@@ -18,7 +18,6 @@ export class AuthGuardService implements CanActivate {
     if (this.serverSettings.isSelfHosted()) {
       return this.authService.authorizationChange().pipe(
         switchMap((authentication) => {
-          console.log('authenticated', authentication?.loggedIn);
           if (authentication?.loggedIn) {
             return of(true);
           } else {

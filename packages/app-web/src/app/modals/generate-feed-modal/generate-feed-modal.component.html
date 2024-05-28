@@ -9,7 +9,7 @@
     <ion-buttons slot="end">
       <ion-button
         (click)="createOrUpdateFeed()"
-        *ngIf="!loading"
+        [disabled]="loading"
         fill="solid"
         color="success"
       >
@@ -57,7 +57,7 @@
       </ion-item>
     </ion-list>
 
-    <ion-accordion-group [multiple]="true">
+    <ion-accordion-group [multiple]="true" [value]="openAccordions">
       <ion-accordion value="filter" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
@@ -296,7 +296,7 @@
         </ion-list>
       </ion-accordion>
 
-      <ion-accordion value="refresh" toggleIconSlot="start">
+      <ion-accordion [value]="accordionStorage" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
             Refresh and Storage
@@ -377,7 +377,7 @@
         </ion-list>
       </ion-accordion>
 
-      <ion-accordion value="privacy" toggleIconSlot="start">
+      <ion-accordion [value]="accordionPrivacy" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
             Privacy
@@ -403,7 +403,8 @@
               class="ion-text-left"
             >
               Public Listing
-              <ion-note> Others can find your feed </ion-note>
+              <ion-note> Others can find your feed.</ion-note>
+              <ion-note *ngIf="formFg.value.isPublic"> This enables analytics, but only ships limited content until you verify source authority.</ion-note>
             </ion-label>
           </ion-item>
         </ion-list>

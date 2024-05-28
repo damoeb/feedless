@@ -3,9 +3,14 @@
     {{ repository.title }}
   </h2>
   <ion-chip
-    (click)="editRepository()"
+    (click)="editRepository(['privacy'])"
     *ngIf="repository.visibility === GqlVisibility.IsPrivate"
   >Private
+  </ion-chip>
+  <ion-chip
+    (click)="editRepository(['privacy'])"
+    *ngIf="repository.visibility === GqlVisibility.IsPublic"
+  >Public
   </ion-chip>
 </ion-row>
 <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -29,14 +34,6 @@
   </ion-buttons>
 
   <ion-buttons slot="end" *ngIf="isOwner">
-    <ion-button id="open-sources-modal">
-      <ion-icon name="git-branch-outline" slot="start"></ion-icon>
-      <ion-label>
-        Sources
-        <app-bubble *ngIf="hasErrors()" color="red" slot="end"></app-bubble>
-      </ion-label>
-      <ion-chip *ngIf="!hasErrors()">{{ repository.sources.length }}</ion-chip>
-    </ion-button>
 
     <ion-modal trigger="open-sources-modal">
       <ng-template>
@@ -61,12 +58,15 @@
               <ion-button (click)="editSource()">
                 <ion-icon name="add-outline" slot="start"></ion-icon>
                 Add Source
+                <app-bubble *ngIf="repository.sources.length === 0"
+                            color="red"
+                            slot="end"></app-bubble>
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
           <ion-list>
             <ion-item *ngIf="repository.sources.length === 0">
-              <ion-label color="danger">No sources defined</ion-label>
+              <ion-label>No sources defined</ion-label>
             </ion-item>
             <ion-item *ngFor="let source of repository.sources">
               <app-bubble
@@ -92,7 +92,9 @@
                 </ion-note>
               </ion-label>
               <ion-buttons [collapse]="true">
-                <ion-button color="danger" (click)="deleteSource(source)">
+                <ion-button color="danger"
+                            fill="solid"
+                            (click)="deleteSource(source)">
                   Delete
                 </ion-button>
                 <ion-button (click)="editSource(source)"> Edit</ion-button>
@@ -102,6 +104,15 @@
         </ion-content>
       </ng-template>
     </ion-modal>
+
+    <ion-button id="open-sources-modal">
+      <ion-icon name="git-branch-outline" slot="start"></ion-icon>
+      <ion-label>
+        Sources
+        <app-bubble *ngIf="hasErrors()" color="red" slot="end"></app-bubble>
+      </ion-label>
+      <ion-chip *ngIf="!hasErrors()">{{ repository.sources.length }}</ion-chip>
+    </ion-button>
 
     <ion-button id="open-settings-modal">
       <ion-icon name="settings-outline"></ion-icon>
@@ -153,10 +164,32 @@
         <dd>{{ repository.createdAt | date: dateFormat }}</dd>
         <dt>Last Updated</dt>
         <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
-        <dt>Next Updated</dt>
-        <dd>{{ fromNow(repository.nextUpdateAt) }}</dd>
+        <dt>Next Update</dt>
+        <dd>
+          {{ fromNow(repository.nextUpdateAt) }}
+          <ion-button size="small"
+                      *ngIf="isOwner"
+                      [disabled]="repository.sources.length === 0"
+                      (click)="refreshSources()"
+                      shape="round"
+                      title="Trigger Sync"
+                      class="ion-margin-start">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Trigger Sync
+          </ion-button>
+        </dd>
         <dt>Retention Strategy</dt>
-        <dd>{{ getRetentionStrategy() }}</dd>
+        <dd>
+          {{ getRetentionStrategy() }}
+          <ion-button size="small"
+                      *ngIf="isOwner"
+                      (click)="editRepository(['storage'])"
+                      shape="round"
+                      class="ion-margin-start">
+            <ion-icon name="pencil-outline" slot="start"></ion-icon>
+            Edit
+          </ion-button>
+        </dd>
       </dl>
     </ion-col>
   </ion-row>
@@ -165,6 +198,7 @@
       (click)="
         showFullDescription = !showFullDescription; $event.stopPropagation()
       "
+
       fill="clear"
       color="dark"
       style="margin: auto"
@@ -174,21 +208,19 @@
     </ion-button>
   </ion-row>
 </div>
-<!--      <div style="position: relative">-->
-<!--        <app-histogram [data]="repository.activity"></app-histogram>-->
-<!--      </div>-->
 
 <div style="border-radius: 8px">
   <div style="margin-top: 50px; display: flex" class="ion-padding">
     <h3 style="flex: 1">
       <span *ngIf="viewModeFc.value === viewModeList">Available articles</span>
       <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
+      <span *ngIf="viewModeFc.value === viewModeHistogram">Activity</span>
     </h3>
 
     <div style="align-content: center;">
       <ion-segment mode="ios" style="max-width: 300px" [formControl]="viewModeFc">
         <ion-segment-button [value]="viewModeList">List</ion-segment-button>
-<!--        <ion-segment-button [value]="viewModeHistogram">Histogram</ion-segment-button>-->
+<!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
         <ion-segment-button [value]="viewModeDiff" *ngIf="repository.product === GqlProductName.VisualDiff">Diff</ion-segment-button>
       </ion-segment>
     </div>
@@ -197,6 +229,9 @@
   <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
 
   <ng-container *ngIf="!loading">
+    <div style="position: relative" *ngIf="viewModeFc.value === viewModeHistogram">
+      <app-histogram [data]="repository.activity"></app-histogram>
+    </div>
     <ng-container *ngIf="viewModeFc.value === viewModeDiff">
       <ion-item *ngIf="documents.length === 0">
         <ion-label> Page is empty.</ion-label>
@@ -242,9 +277,11 @@
               >
               <ion-button
                 (click)="deleteAllSelected()"
-                [disabled]="selectedCount === 0"
+                color="danger"
+                fill="solid"
+                *ngIf="selectedCount > 0"
               >
-                Bulk delete
+                Delete selected
               </ion-button>
             </div>
           </ion-buttons>

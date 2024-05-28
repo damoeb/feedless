@@ -28,14 +28,6 @@ const routes: Routes = [
             (m) => m.AgentsPageModule,
           ),
       },
-      {
-        path: 'repositories',
-        canActivate: [AuthGuardService],
-        loadChildren: () =>
-          import('../../pages/repositories/repositories.module').then(
-            (m) => m.RepositoriesPageModule,
-          ),
-      },
       // {
       //   path: 'plans',
       //   loadChildren: () =>

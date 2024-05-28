@@ -115,6 +115,7 @@ class PlanConstraintsServiceImplTest {
 
     assertThat(
       service.coerceMinScheduledNextAt(
+        Date(),
         toDate(now.minusDays(2)),
         userId
       )
@@ -129,6 +130,7 @@ class PlanConstraintsServiceImplTest {
 
     assertThat(
       service.coerceMinScheduledNextAt(
+        Date(),
         future,
         userId
       )

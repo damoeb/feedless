@@ -1,12 +1,18 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
-import { GqlFeedlessPlugins, GqlRetentionInput, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlNativeFeed,
+  GqlRetentionInput,
+  GqlScrapeRequestInput,
+  GqlTransientGenericFeed,
+  GqlVisibility
+} from '../../../generated/graphql';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
-import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ProductConfig, ProductService } from '../../services/product.service';
 import {
   FeedBuilderActionsModalComponent,
@@ -32,6 +38,11 @@ import { Agent } from '../../services/agent.service';
  *     create feed activate tracking
  *     create just the feed sink
  */
+
+export interface NativeOrGenericFeed {
+  genericFeed?: GqlTransientGenericFeed;
+  nativeFeed?: GqlNativeFeed;
+}
 
 export enum FeedBuilderModalComponentExitRole {
   dismiss = 'dismiss',

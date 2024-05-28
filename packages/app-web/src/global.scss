@@ -191,6 +191,25 @@ a {
 
 .fatal-alert {
   background: rgba(var(--ion-color-danger-rgb), 0.4);
+
+  .alert-wrapper {
+    border: 6px solid rgba(var(--ion-color-danger-rgb), 0.4);
+    border-radius: 8px;
+
+    .alert-button-group {
+      margin-bottom: 10px;
+      & > button {
+        text-transform: none;
+        color: var(--app-foreground);
+
+        &.confirm-button {
+          font-weight: bold;
+          background: var(--ion-color-danger);
+          border-radius: 10px;
+        }
+      }
+    }
+  }
 }
 .success-alert {
   background: rgba(var(--ion-color-primary-rgb), 0.4);
@@ -202,6 +221,10 @@ a {
 .tiny-modal {
   --width: 400px;
   --height: 400px;
+  & > * {
+    border: 6px solid rgba(var(--ion-color-primary-rgb), 0.8);
+    border-radius: 8px;
+  }
 }
 
 .product--untold-notes {

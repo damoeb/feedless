@@ -4,13 +4,7 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client/core';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -27,10 +21,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GqlProductName } from '../generated/graphql';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
-import { TransformWebsiteToFeedModalModule } from './modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
-import { CodeEditorModalModule } from './modals/code-editor-modal/code-editor-modal.module';
 import { BuyModalModule } from './modals/buy-modal/buy-modal.module';
 
 export interface AppEnvironment {
@@ -109,8 +101,6 @@ export const fixUrl = (value: string): string => {
     AppLoadModule,
     ProductTitleModule,
     // test
-    TransformWebsiteToFeedModalModule,
-    CodeEditorModalModule,
     BuyModalModule,
   ],
   providers: [

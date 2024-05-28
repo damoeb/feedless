@@ -220,3 +220,5 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
       .build()
   }
 }
+
+fun createDocumentUrl(propertyService: PropertyService, id: UUID): String = "${propertyService.apiGatewayUrl}/article/${id}"

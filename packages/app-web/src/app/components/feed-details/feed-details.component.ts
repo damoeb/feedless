@@ -1,9 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { GqlFeedlessPlugins, GqlProductName, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
 import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  GenerateFeedAccordion,
+  GenerateFeedModalComponentProps,
+  getScrapeRequest
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { ModalController, PopoverController } from '@ionic/angular';
+import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
 import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
@@ -67,9 +71,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly modalService: ModalService,
+    private readonly alertCtrl: AlertController,
     private readonly pluginService: PluginService,
     private readonly popoverCtrl: PopoverController,
     private readonly documentService: DocumentService,
+    private readonly toastCtrl: ToastController,
     private readonly router: Router,
     protected readonly serverSettings: ServerSettingsService,
     private readonly sessionService: SessionService,
@@ -118,6 +124,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
     return repository.plugins
       .map((plugin) => this.getPluginName(plugin.pluginId))
+      .filter(name => name?.length > 0)
       .join(', ');
   }
 
@@ -129,10 +136,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async editRepository() {
+  async editRepository(accordions: GenerateFeedAccordion[] = []) {
     const componentProps: GenerateFeedModalComponentProps = {
       repository: this.repository,
       modalTitle: `Customize ${this.repository.title}`,
+      openAccordions: accordions
     };
     await this.modalService.openFeedMetaEditor(componentProps);
     await this.popoverCtrl.dismiss();
@@ -225,11 +233,30 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   fromNow = relativeTimeOrElse
 
   async deleteRepository() {
-    await this.repositoryService.deleteRepository({
-      id: this.repository.id,
-    });
     await this.popoverCtrl.dismiss();
-    await this.router.navigateByUrl('/feeds');
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Feed?',
+      message: `You won't be able to recover it.`,
+      cssClass: 'fatal-alert',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Yes, Delete',
+          role: 'confirm',
+          cssClass: 'confirm-button',
+          handler: async () => {
+            await this.repositoryService.deleteRepository({
+              id: this.repository.id,
+            });
+            await this.router.navigateByUrl('/feeds');
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   getPluginsOfSource(source: ArrayElement<Repository['sources']>): string {
@@ -239,7 +266,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return source.emit
       .flatMap(
         (emit) =>
-          emit.selectorBased?.expose.transformers.flatMap((transformer) =>
+          emit.selectorBased?.expose?.transformers?.flatMap((transformer) =>
             this.getPluginName(transformer.pluginId),
           ),
       )
@@ -256,18 +283,37 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async deleteSource(source: SubscriptionSource) {
     console.log('deleteSource', source);
-    this.repository = await this.repositoryService.updateRepository({
-      where: {
-        id: this.repository.id,
-      },
-      data: {
-        sources: {
-          remove: [source.id],
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Source?',
+      message: `You won't be able to recover it.`,
+      cssClass: 'fatal-alert',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
         },
-      },
+        {
+          text: 'Yes, Delete',
+          role: 'confirm',
+          cssClass: 'confirm-button',
+          handler: async () => {
+            this.repository = await this.repositoryService.updateRepository({
+              where: {
+                id: this.repository.id,
+              },
+              data: {
+                sources: {
+                  remove: [source.id],
+                },
+              },
+            });
+            this.assessIsOwner();
+            this.changeRef.detectChanges();
+          },
+        },
+      ],
     });
-    this.assessIsOwner();
-    this.changeRef.detectChanges();
+    await alert.present();
   }
 
   async editTags(source: ArrayElement<Repository['sources']>) {
@@ -345,6 +391,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   private assessIsOwner() {
     this.isOwner = this.repository?.ownerId === this.userId;
+    this.changeRef.detectChanges();
   }
 
   async deleteAllSelected() {
@@ -375,5 +422,27 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       })
     }
     return pairs;
+  }
+
+  async refreshSources() {
+    this.repository = await this.repositoryService.updateRepository({
+      where: {
+        id: this.repository.id
+      },
+      data: {
+        nextUpdateAt: {
+          set: null
+        }
+      }
+    });
+    this.changeRef.detectChanges();
+
+    const toast = await this.toastCtrl.create({
+      message: 'Refresh scheduled',
+      duration: 3000,
+      color: 'success',
+    });
+
+    await toast.present();
   }
 }

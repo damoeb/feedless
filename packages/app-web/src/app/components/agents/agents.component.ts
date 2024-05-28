@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { compact } from 'lodash-es';
 
 @Component({
   selector: 'app-agents',
@@ -36,13 +37,13 @@ export class AgentsComponent implements OnInit, OnDestroy {
   fromNow = relativeTimeOrElse
 }
 
-export function relativeTimeOrElse(futureTimestamp: number): string {
+export function relativeTimeOrElse(futureTimestamp: number, suffix: string = null): string {
   dayjs.extend(relativeTime);
   const now = dayjs();
   const ts = dayjs(futureTimestamp);
   if (now.subtract(2, 'weeks').isAfter(ts)) {
     return ts.format('DD.MMMM YYYY');
   } else {
-    return ts.toNow(true) + ' ago';
+    return compact([ts.toNow(true), suffix]).join(' ');
   }
 }

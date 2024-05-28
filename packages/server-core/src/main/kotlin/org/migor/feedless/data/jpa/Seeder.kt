@@ -154,6 +154,7 @@ class Seeder {
           FeatureName.canLogin to asBoolFeature(true),
           FeatureName.canCreateUser to asBoolFeature(false),
           FeatureName.pluginsBool to asBoolFeature(true),
+          FeatureName.publicRepositoryBool to asBoolFeature(true),
           FeatureName.itemEmailForwardBool to asBoolFeature(true),
         )
       )

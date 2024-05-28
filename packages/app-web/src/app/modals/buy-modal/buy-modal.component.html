@@ -8,6 +8,13 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
-  <iframe src="https://feedless.org"></iframe>
+<ion-content>
+  <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+  <iframe src="https://feedlexxxss.org"
+          [hidden]="loading || !hasCheckoutLoaded"
+          (load)="handleIframeResponse($event, true)"
+          (error)="handleIframeResponse($event, false)"></iframe>
+  <div class="ion-padding" *ngIf="!loading && !hasCheckoutLoaded">
+    There is a problem loading the checkout screen, please send me a mail to feedlessapp@proton.me and I will provide a license.
+  </div>
 </ion-content>

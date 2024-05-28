@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -47,9 +48,12 @@ class PlanConstraintsService {
     } ?: maxItems
   }
 
-  fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {
+  fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID): Date {
     val minRefreshRateInMinutes = getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId)!!
-    val minNextDate = toDate(LocalDateTime.now().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES))
+    val minNextDate = toDate(
+      lastDate.toInstant().atZone(ZoneId.systemDefault())
+        .toLocalDateTime().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES)
+    )
 
     return if (nextDate < minNextDate) {
       minNextDate
@@ -69,7 +73,7 @@ class PlanConstraintsService {
     return cronString
   }
 
-  fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
+  fun coerceVisibility(corrId: String, visibility: EntityVisibility?): EntityVisibility {
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
       userIdFromRequest()
@@ -77,6 +81,9 @@ class PlanConstraintsService {
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate
     } else {
+      if (visibility !== EntityVisibility.isPublic) {
+        log.info("[$corrId] overwrite visibility to $visibility")
+      }
       EntityVisibility.isPrivate
     }
   }

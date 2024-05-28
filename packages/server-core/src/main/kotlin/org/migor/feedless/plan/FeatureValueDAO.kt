@@ -21,7 +21,7 @@ interface FeatureValueDAO : JpaRepository<FeatureValueEntity, UUID> {
     on fv.planId = p.id
     inner join FeatureEntity f
     on fv.featureId = f.id
-    where p.product=:product and f.name=:feature
+    where p.name=:product and f.name=:feature
   """
   )
   fun findByProductNameAndFeatureName(

@@ -6,24 +6,20 @@ dl {
   }
   dd {
     margin: 0;
-    opacity: 0.8;
+    color: rgba(var(--ion-color-dark), 0.7);
+    display: flex;
+    align-items: center;
   }
 }
 
-//.document {
-//  margin-bottom: 20px;
-
-  .content {
-    max-height: 120px;
-    line-height: 1.3rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    font-size: 1.02em;
-    opacity: 0.8;
-  }
-//  padding-bottom: 20px;
-//  border-bottom: 1px solid rgba(var(--app-foreground-rgb), 0.4);
-//}
+.content {
+  max-height: 120px;
+  line-height: 1.3rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 1.02em;
+  opacity: 0.8;
+}
 
 .description {
   border-radius: 8px;
@@ -36,6 +32,9 @@ dl {
     dd {
       display: inline;
       padding-right: 4px;
+      ion-button {
+        display: none;
+      }
     }
   }
 }

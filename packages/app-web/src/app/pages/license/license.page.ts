@@ -29,6 +29,8 @@ export class LicensePage implements OnInit, OnDestroy {
   loading = true;
   license: GqlLicenseQuery['license'];
   private subscriptions: Subscription[] = [];
+  protected readonly dateFormat = dateFormat;
+  price: number = 49.99;
 
   featureGroupsRP: StringFeatureGroup[] = [
     {
@@ -125,8 +127,6 @@ export class LicensePage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  protected readonly dateFormat = dateFormat;
-
   applyLicense(licenseRaw: string) {
     if (licenseRaw.trim().length > 0) {
       return this.licenseService.updateLicense({
@@ -147,5 +147,9 @@ export class LicensePage implements OnInit, OnDestroy {
       dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') /
       (28 * 2.0)
     );
+  }
+
+  discount(discount: number) {
+    return (this.price / 100 * (100-discount)).toFixed(2);
   }
 }

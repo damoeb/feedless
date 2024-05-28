@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { FeedBuilder, FeedBuilderModalComponentExitRole, FeedWithRequest } from '../components/feed-builder/feed-builder.component';
+import { FeedBuilderModalComponentExitRole, FeedWithRequest } from '../components/feed-builder/feed-builder.component';
 import { GenerateFeedModalComponent, GenerateFeedModalComponentProps } from '../modals/generate-feed-modal/generate-feed-modal.component';
 import {
   TrackerEditModalComponent,
@@ -23,23 +22,6 @@ export class ModalService {
     private readonly router: Router,
   ) {}
 
-  async openCodeEditorModal(code: string = null): Promise<FeedBuilder | null> {
-    const componentProps: CodeEditorModalComponentProps = {
-      code: code ?? '',
-    };
-    const modal = await this.modalCtrl.create({
-      component: CodeEditorModalComponent,
-      componentProps,
-    });
-
-    await modal.present();
-    const response = await modal.onDidDismiss<string | null>();
-    if (response.data) {
-      return JSON.parse(response.data);
-    } else {
-      return null;
-    }
-  }
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,

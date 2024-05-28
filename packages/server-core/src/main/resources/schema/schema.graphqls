@@ -129,7 +129,7 @@ type Mutation {
   updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocuments(data: DeleteWebDocumentsInput!): Boolean!
 
-  updateFeature(data: UpdateFeatureInput!): Feature!
+  updateFeature(data: UpdateFeatureInput!): Boolean!
 }
 
 input UpdateFeatureInput {
@@ -184,11 +184,17 @@ input UpdateLicenseInput {
 
 input RepositoryUpdateInput {
   where: RepositoryUniqueWhereInput!
-  data: UpdateSinkOptionsDataInput!
+  data: RepositoryUpdateDataInput!
 }
 
-input UpdateSinkOptionsDataInput {
-  sinkOptions: UpdateSinkOptionsInput
+input RepositoryUpdateDataInput {
+  description: NullableStringUpdateOperationsInput
+  refreshCron: NullableStringUpdateOperationsInput
+  title: StringUpdateOperationsInput
+  visibility: VisibilityUpdateOperationsInput
+  retention: RetentionUpdateInput
+  plugins: [PluginExecutionInput!]
+  nextUpdateAt: NullableLongUpdateOperationsInput
   sources: SourcesUpdateInput
 }
 
@@ -196,15 +202,6 @@ input SourcesUpdateInput {
   remove: [ID!]
   update: [ScrapeRequestUpdateInput!]
   add: [ScrapeRequestInput!]
-}
-
-input UpdateSinkOptionsInput {
-  description: NullableStringUpdateOperationsInput
-  refreshCron: NullableStringUpdateOperationsInput
-  title: StringUpdateOperationsInput
-  visibility: VisibilityUpdateOperationsInput
-  retention: RetentionUpdateInput
-  plugins: [PluginExecutionInput!]
 }
 
 input RetentionUpdateInput {

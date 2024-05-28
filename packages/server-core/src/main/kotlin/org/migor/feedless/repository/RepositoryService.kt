@@ -25,15 +25,16 @@ import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.createDocumentUrl
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
+import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeAction
 import org.migor.feedless.generated.types.ScrapeRequestInput
-import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
@@ -126,7 +127,7 @@ class RepositoryService {
 
     sub.title = subInput.sinkOptions.title
     sub.description = subInput.sinkOptions.description
-    sub.visibility = planConstraints.coerceVisibility(subInput.sinkOptions.visibility?.fromDto())
+    sub.visibility = planConstraints.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
 
     planConstraints.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId)
     sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
@@ -224,7 +225,7 @@ class RepositoryService {
     val id = UUID.fromString(repositoryId)
     val repository = repositoryDAO.findById(id).orElseThrow { NotFoundException("repository not found") }
     val pageResult = documentService.findAllByRepositoryId(id, page, 10, status = ReleaseStatus.released, tag)
-    val items = pageResult.get().map { it.toRichArticle(propertyService) }.toList()
+    val items = pageResult.get().map { it.toRichArticle(propertyService, repository.visibility) }.toList()
 
     val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
@@ -281,45 +282,52 @@ class RepositoryService {
 
   fun calculateScheduledNextAt(cron: String, ownerId: UUID, after: LocalDateTime): Date {
     return planConstraints.coerceMinScheduledNextAt(
-        nextCronDate(cron, after),
+      Date(),
+      nextCronDate(cron, after),
       ownerId
     )
   }
 
 
-  fun update(corrId: String, id: UUID, data: UpdateSinkOptionsDataInput): RepositoryEntity {
+  fun update(corrId: String, id: UUID, data: RepositoryUpdateDataInput): RepositoryEntity {
     val repository = repositoryDAO.findById(id).orElseThrow()
     if (repository.ownerId != sessionService.userId()) {
       throw PermissionDeniedException("not authorized")
     }
-    data.sinkOptions?.let {
-      it.title?.set?.let { repository.title = it }
-      it.description?.set?.let { repository.description = it }
-      it.refreshCron?.let {
-        it.set?.let {
-          repository.sourcesSyncExpression = planConstraints.auditCronExpression(it)
-          repository.triggerScheduledNextAt = calculateScheduledNextAt(it, repository.ownerId,
-              LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault())
-          )
-        }
+    data.title?.set?.let { repository.title = it }
+    data.description?.set?.let { repository.description = it }
+    data.refreshCron?.let {
+      it.set?.let {
+        repository.sourcesSyncExpression = planConstraints.auditCronExpression(it)
+        repository.triggerScheduledNextAt = calculateScheduledNextAt(it, repository.ownerId,
+          LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault())
+        )
       }
-      it.visibility?.set?.let { repository.visibility = planConstraints.coerceVisibility(it.fromDto()) }
-      it.plugins?.let { plugins ->
-        val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
-        if (newPlugins != repository.plugins) {
-          repository.plugins = newPlugins
-        }
+    }
+    data.visibility?.set?.let { repository.visibility = planConstraints.coerceVisibility(corrId, it.fromDto()) }
+    data.plugins?.let { plugins ->
+      val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
+      if (newPlugins != repository.plugins) {
+        repository.plugins = newPlugins
       }
-      it.retention?.let {
-        it.maxAgeDays?.set?.let {
-          repository.retentionMaxAgeDays = it
-        }
-        it.maxItems?.set?.let {
-          repository.retentionMaxItems = it
-        }
-        if (it.maxAgeDays!=null || it.maxItems!=null) {
-          documentService.applyRetentionStrategy(corrId, repository)
-        }
+    }
+    data.nextUpdateAt?.let {
+      val next = it.set?.let { Date(it) } ?: Date(0)
+      repository.triggerScheduledNextAt = planConstraints.coerceMinScheduledNextAt(
+        repository.lastUpdatedAt,
+        next,
+        repository.ownerId
+      )
+    }
+    data.retention?.let {
+      it.maxAgeDays?.set?.let {
+        repository.retentionMaxAgeDays = it
+      }
+      it.maxItems?.set?.let {
+        repository.retentionMaxItems = it
+      }
+      if (it.maxAgeDays!=null || it.maxItems!=null) {
+        documentService.applyRetentionStrategy(corrId, repository)
       }
     }
 
@@ -415,11 +423,10 @@ private fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params)
 }
 
-private fun DocumentEntity.toRichArticle(propertyService: PropertyService): RichArticle {
+private fun DocumentEntity.toRichArticle(propertyService: PropertyService, visibility: EntityVisibility): RichArticle {
   val article = RichArticle()
   article.id = id.toString()
   article.title = StringUtils.trimToEmpty(contentTitle)
-  article.url = url
   article.attachments = attachments.map {
     val a = JsonAttachment()
     a.url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id)
@@ -428,10 +435,16 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService): Rich
     a.duration = it.duration
     a
   }
-  article.contentText = StringUtils.trimToEmpty(contentText)
-  article.contentRawBase64 = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
-  article.contentRawMime = contentRawMime
-  article.contentHtml = contentHtml
+  if (visibility === EntityVisibility.isPublic) {
+    article.url = createDocumentUrl(propertyService, id)
+    article.contentText = StringUtils.trimToEmpty(contentText).substring(0..160) + "..."
+  } else {
+    article.url = url
+    article.contentText = StringUtils.trimToEmpty(contentText)
+    article.contentRawBase64 = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
+    article.contentRawMime = contentRawMime
+    article.contentHtml = contentHtml
+  }
   article.publishedAt = publishedAt
   article.modifiedAt = updatedAt
   article.tags = (tags?.asList() ?: emptyList()).plus(getAttachmentTags(article))

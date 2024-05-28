@@ -16,7 +16,6 @@ import {
   GqlStringFilterOperator,
   GqlVisibility
 } from '../../../generated/graphql';
-import { NativeOrGenericFeed } from '../transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
@@ -26,10 +25,12 @@ import { Repository } from '../../graphql/types';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
+import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
 
 export interface GenerateFeedModalComponentProps {
   repository: Repository;
   modalTitle?: string;
+  openAccordions?: GenerateFeedAccordion[]
 }
 
 type FilterOperator = GqlStringFilterOperator;
@@ -102,6 +103,8 @@ type ConditionalTagParams = ArrayElement<
   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
 >;
 
+export type GenerateFeedAccordion = 'privacy' | 'storage'
+
 @Component({
   selector: 'app-generate-feed-modal',
   templateUrl: './generate-feed-modal.component.html',
@@ -152,6 +155,10 @@ export class GenerateFeedModalComponent
   protected FilterFieldContent: FilterField = 'content';
   isThrottled: boolean;
   modalTitle = 'Finalize Feed';
+  @Input()
+  openAccordions: GenerateFeedAccordion[] = [];
+  accordionPrivacy: GenerateFeedAccordion = 'privacy';
+  accordionStorage: GenerateFeedAccordion = 'storage';
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -323,29 +330,27 @@ export class GenerateFeedModalComponent
             id: this.repository.id,
           },
           data: {
-            sinkOptions: {
-              plugins,
-              visibility: {
-                set: isPublic
-                  ? GqlVisibility.IsPublic
-                  : GqlVisibility.IsPrivate,
+            plugins,
+            visibility: {
+              set: isPublic
+                ? GqlVisibility.IsPublic
+                : GqlVisibility.IsPrivate,
+            },
+            title: {
+              set: title,
+            },
+            description: {
+              set: description,
+            },
+            refreshCron: {
+              set: fetchFrequency,
+            },
+            retention: {
+              maxItems: {
+                set: maxItems,
               },
-              title: {
-                set: title,
-              },
-              description: {
-                set: description,
-              },
-              refreshCron: {
-                set: fetchFrequency,
-              },
-              retention: {
-                maxItems: {
-                  set: maxItems,
-                },
-                maxAgeDays: {
-                  set: maxAgeDays,
-                },
+              maxAgeDays: {
+                set: maxAgeDays,
               },
             },
           },

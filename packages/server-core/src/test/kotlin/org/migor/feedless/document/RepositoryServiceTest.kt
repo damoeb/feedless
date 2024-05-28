@@ -13,7 +13,7 @@ import org.migor.feedless.generated.types.ProductName
 import org.migor.feedless.generated.types.SinkOptionsInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
-import org.migor.feedless.generated.types.UpdateSinkOptionsDataInput
+import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.SessionService
@@ -89,7 +89,7 @@ class RepositoryServiceTest {
 //            .refreshCron("")
 //            .build()
 //        )
-        .product(ProductName.feedless)
+        .product(ProductName.rssProxy)
         .sinkOptions(
           SinkOptionsInput.newBuilder()
             .title("")
@@ -110,7 +110,7 @@ class RepositoryServiceTest {
   @Test
   fun `given user is owner, updating repository works`() {
     val ssId = UUID.randomUUID()
-    val data = UpdateSinkOptionsDataInput.newBuilder()
+    val data = RepositoryUpdateDataInput.newBuilder()
       .build()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(userId)
@@ -132,7 +132,7 @@ class RepositoryServiceTest {
       .thenReturn(Optional.of(mockRepository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      repositoryService.update(corrId, ssId, mock(UpdateSinkOptionsDataInput::class.java))
+      repositoryService.update(corrId, ssId, mock(RepositoryUpdateDataInput::class.java))
     }
   }
 

@@ -2,6 +2,7 @@ package org.migor.feedless.attachment
 
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
@@ -26,6 +27,7 @@ class AttachmentController {
   @Autowired
   lateinit var httpService: HttpService
 
+  @Tracked
   @GetMapping(
     "/attachment/{attachmentId}",
   )

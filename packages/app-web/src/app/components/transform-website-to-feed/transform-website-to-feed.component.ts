@@ -21,10 +21,10 @@ import { Embeddable } from '../embedded-website/embedded-website.component';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
 import { FeedService } from '../../services/feed.service';
 import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;

@@ -11,6 +11,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { PlayerModule } from '../player/player.module';
 import { ImageDiffModule } from '../image-diff/image-diff.module';
 import { TextDiffModule } from '../text-diff/text-diff.module';
+import { HistogramModule } from '../histogram/histogram.module';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
@@ -26,7 +27,8 @@ import { TextDiffModule } from '../text-diff/text-diff.module';
     ReactiveFormsModule,
     PlayerModule,
     ImageDiffModule,
-    TextDiffModule
+    TextDiffModule,
+    HistogramModule
   ]
 })
 export class FeedDetailsModule {}

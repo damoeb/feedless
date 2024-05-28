@@ -1,7 +1,5 @@
 mutation updateFeature($data: UpdateFeatureInput!) {
-  updateFeature(data: $data) {
-    ...FeatureFragment
-  }
+  updateFeature(data: $data)
 }
 
 query features {
