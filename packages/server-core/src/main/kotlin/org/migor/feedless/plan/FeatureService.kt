@@ -1,9 +1,11 @@
 package org.migor.feedless.plan
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValueInput
+import org.migor.feedless.generated.types.FeatureGroup
+import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.FeatureIntValueInput
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
@@ -23,39 +26,61 @@ class FeatureService {
   private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var featureValueDAO: FeatureValueDAO
+  private lateinit var productDAO: ProductDAO
 
-  fun isDisabled(featureName: FeatureName, productName: ProductName): Boolean {
-    val feature = featureValueDAO.findByProductNameAndFeatureName(productName.name, featureName.name)
-    assert(feature.valueType == FeatureValueType.bool)
-    return !feature.valueBoolean!!
+  @Autowired
+  private lateinit var featureDAO: FeatureDAO
+
+  @Autowired
+  private lateinit var featureGroupDAO: FeatureGroupDAO
+
+  @Autowired
+  private lateinit var featureValueDAO: FeatureValueDAO
+
+  fun isDisabled(featureName: FeatureName, featureGroupIdOtional: UUID?): Boolean {
+    val featureGroupId = featureGroupIdOtional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
+
+    return featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
+      run {
+        assert(feature.valueType == FeatureValueType.bool)
+        !feature.valueBoolean!!
+      }
+    } ?: false
   }
 
   @Transactional(readOnly = true)
-  fun findAllByProduct(product: ProductName): List<Feature> {
-    val productFeatures = featureValueDAO.findAllByProductName(ProductName.system.name)
-    val systemFeatures = featureValueDAO.findAllByProductName(product.name)
-      .filter { feature -> productFeatures.none { otherFeature -> otherFeature.featureId == feature.featureId } }
-    return productFeatures.plus(systemFeatures).mapNotNull { feature ->
-      feature.feature!!.toDto()?.let {
+  fun findAllByProduct(product: ProductCategory): List<Feature> {
+    val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
+      ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!
+    val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(featureGroup.id)
+    return toDTO(productFeatures)
+  }
+
+  private fun toDTO(values: List<FeatureValueEntity>): List<Feature> {
+    return values.mapNotNull { value ->
+      value.feature!!.toDto()?.let {
         Feature.newBuilder()
-          .name(feature.feature!!.toDto())
-          .value(feature.toDto())
+          .id(value.feature!!.id.toString())
+          .name(value.feature!!.toDto())
+          .value(value.toDto())
           .build()
       }
     }
+
   }
 
-  fun updateFeature(
+  fun updateFeatureValue(
     corrId: String,
-    name: org.migor.feedless.generated.types.FeatureName,
+    id: UUID,
     intValue: FeatureIntValueInput?,
-    boolValue: FeatureBooleanValueInput?
+    boolValue: FeatureBooleanValueInput?,
+    productId: UUID? = null
   ) {
     if (!sessionService.user(corrId).root) {
       throw IllegalArgumentException("must be root")
     }
-    val feature = featureValueDAO.findByProductNameAndFeatureName(ProductName.system.name, name.fromDto()!!.name)
+    val feature = featureValueDAO.findById(id).orElseThrow()
+
     if (feature.valueType == FeatureValueType.bool) {
       feature.valueBoolean = boolValue!!.value
       featureValueDAO.save(feature)
@@ -68,23 +93,80 @@ class FeatureService {
       }
     }
   }
+
+  fun assignFeatureValues(
+    featureGroup: FeatureGroupEntity,
+    features: Map<FeatureName, FeatureValueEntity>
+  ) {
+    features.forEach { (featureName, nextFeatureValue) ->
+      run {
+        val feature = featureDAO.findByName(featureName.name) ?: createFeature(featureName)
+
+        featureValueDAO.findByFeatureGroupIdAndFeatureId(featureGroup.id, feature.id)
+          ?.let { currentFeatureValue ->
+            val logValueUpdate =
+              { current: Any?, next: Any? -> log.warn("Patching value feature $featureName for ${featureGroup.name} $current -> $next") }
+            if (currentFeatureValue.valueBoolean != nextFeatureValue.valueBoolean) {
+              logValueUpdate(currentFeatureValue.valueBoolean, nextFeatureValue.valueBoolean)
+              currentFeatureValue.valueBoolean = nextFeatureValue.valueBoolean
+            }
+            if (currentFeatureValue.valueInt != nextFeatureValue.valueInt) {
+              logValueUpdate(currentFeatureValue.valueInt, nextFeatureValue.valueInt)
+              currentFeatureValue.valueInt = nextFeatureValue.valueInt
+            }
+            featureValueDAO.save(currentFeatureValue)
+          }
+          ?: run {
+            val value = FeatureValueEntity()
+            value.featureGroupId = featureGroup.id
+            value.featureId = feature.id
+            value.valueType = nextFeatureValue.valueType
+            value.valueBoolean = nextFeatureValue.valueBoolean
+            value.valueInt = nextFeatureValue.valueInt
+            featureValueDAO.save(value)
+          }
+      }
+    }
+  }
+
+  private fun createFeature(featureName: FeatureName): FeatureEntity {
+    val feature = FeatureEntity()
+    feature.name = featureName.name
+    return featureDAO.save(feature)
+  }
+
+
+  fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
+    val groups = if (where.id == null) {
+      this.featureGroupDAO.findAll()
+    } else {
+      listOf(this.featureGroupDAO.findById(UUID.fromString(where.id!!.equals)).orElseThrow())
+    }
+    return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
+  }
+
+  private fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
+    return toDTO(
+      if (inherit) {
+        featureValueDAO.resolveAllByFeatureGroupId(featureGroupId)
+      } else {
+        featureValueDAO.findAllByFeatureGroupId(featureGroupId)
+      }
+    )
+  }
 }
 
 val mapFeatureName2Dto = mapOf(
-  FeatureName.canCreateUser to FeatureNameDto.canCreateUser,
-  FeatureName.hasWaitList to FeatureNameDto.hasWaitList,
-  FeatureName.canSignUp to FeatureNameDto.canSignUp,
-  FeatureName.canLogin to FeatureNameDto.canLogin,
-  FeatureName.canCreateAsAnonymous to FeatureNameDto.canCreateAsAnonymous,
+  FeatureName.canJoinPlanWaitList to FeatureNameDto.canJoinPlanWaitList,
+  FeatureName.canActivatePlan to FeatureNameDto.canActivatePlan,
 
-  FeatureName.rateLimitInt to FeatureNameDto.rateLimit,
+  FeatureName.requestPerMinuteUpperLimitInt to FeatureNameDto.requestPerMinuteUpperLimitInt,
   FeatureName.refreshRateInMinutesLowerLimitInt to FeatureNameDto.refreshRateInMinutesLowerLimit,
   FeatureName.publicRepositoryBool to FeatureNameDto.publicRepository,
 
-  FeatureName.scrapeRequestTimeoutInt to FeatureNameDto.scrapeRequestTimeout,
+  FeatureName.scrapeRequestTimeoutMsecInt to FeatureNameDto.scrapeRequestTimeoutMsec,
   FeatureName.repositoryRetentionMaxDaysLowerLimitInt to FeatureNameDto.repositoryRetentionMaxDaysLowerLimitInt,
-  FeatureName.repositoryRetentionMaxItemsLowerLimitInt to FeatureNameDto.repositoryRetentionMaxItemsLowerLimitInt,
-  FeatureName.repositoryRetentionMaxItemsUpperLimitInt to FeatureNameDto.repositoryRetentionMaxItemsUpperLimitInt,
+  FeatureName.repositoryCapacityUpperLimitInt to FeatureNameDto.repositoryCapacityUpperLimitInt,
 
   FeatureName.pluginsBool to FeatureNameDto.plugins,
   FeatureName.scrapeSourceMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
@@ -100,19 +182,5 @@ private fun FeatureEntity.toDto(): FeatureNameDto? {
     null
   }
 }
-
-private fun FeatureNameDto.fromDto(): FeatureName? {
-  return try {
-    val matches = mapFeatureName2Dto.keys.filter { mapFeatureName2Dto[it] == this }
-    if (matches.isEmpty()) {
-      null
-    } else {
-      matches[0]
-    }
-  } catch (e: Exception) {
-    null
-  }
-}
-
 
 

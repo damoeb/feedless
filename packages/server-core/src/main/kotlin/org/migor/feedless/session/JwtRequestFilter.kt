@@ -20,7 +20,7 @@ class JwtRequestFilter : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
   @Autowired
-  lateinit var authService: AuthService
+  private lateinit var authService: AuthService
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     if (request is HttpServletRequest && response is HttpServletResponse) {

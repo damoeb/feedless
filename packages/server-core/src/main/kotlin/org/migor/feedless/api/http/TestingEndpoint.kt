@@ -2,7 +2,6 @@ package org.migor.feedless.api.http
 
 import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO
@@ -25,16 +24,13 @@ class TestingEndpoint {
   private val log = LoggerFactory.getLogger(TestingEndpoint::class.simpleName)
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var userDAO: UserDAO
-
-  @Autowired
-  lateinit var cookieProvider: CookieProvider
+  private lateinit var cookieProvider: CookieProvider
 
 
   @GetMapping("testing/create-token")

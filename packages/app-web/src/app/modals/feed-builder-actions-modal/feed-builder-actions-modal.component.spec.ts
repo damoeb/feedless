@@ -1,8 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedBuilderActionsModalComponent } from './feed-builder-actions-modal.component';
-import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../app-test.module';
 import { FeedBuilderActionsModalModule } from './feed-builder-actions-modal.module';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('FeedBuilderActionsModalComponent', () => {
@@ -16,7 +20,7 @@ describe('FeedBuilderActionsModalComponent', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

@@ -8,7 +8,7 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.LicenseData
 import org.migor.feedless.generated.types.UpdateLicenseInput
@@ -17,26 +17,19 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.api}")
 class LinceseResolver {
 
   private val log = LoggerFactory.getLogger(LinceseResolver::class.simpleName)
-
-  @Autowired
-  lateinit var environment: Environment
-
-  @Autowired
-  lateinit var propertyService: PropertyService
 
   @Value("\${APP_VERSION}")
   lateinit var version: String
 
   @Autowired
-  lateinit var licenseService: LicenseService
+  private lateinit var licenseService: LicenseService
 
   @DgsQuery
   suspend fun license(): License = coroutineScope {
@@ -68,7 +61,7 @@ class LinceseResolver {
           .name(payload.name)
           .email(payload.email)
           .createdAt(payload.createdAt.time)
-          .scope(payload.scope)
+          .scope(payload.scope.toDto())
           .version(payload.version)
           .build()
       })

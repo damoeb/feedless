@@ -1,0 +1,18 @@
+<ion-content>
+  <div class="limited-width-pane">
+    <ion-row style="width: 100%">
+      <ion-col size="6">
+        <h3>Billings</h3>
+      </ion-col>
+    </ion-row>
+
+    <ion-list style="border-radius: 8px">
+      <ion-item *ngIf="billings?.length === 0">
+        <p>You have no billings yet</p>
+      </ion-item>
+      <ion-item *ngFor="let feed of billings" lines="inset">
+        <ion-label> Billing </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

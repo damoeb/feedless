@@ -5,7 +5,6 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -34,19 +33,16 @@ class AgentService {
   private val pendingJobs: MutableMap<String, FluxSink<ScrapeResponse>> = mutableMapOf()
 
   @Autowired
-  lateinit var userSecretService: UserSecretService
+  private lateinit var userSecretService: UserSecretService
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var agentDAO: AgentDAO
+  private lateinit var agentDAO: AgentDAO
 
   @Autowired
-  lateinit var propertyService: PropertyService
-
-  @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var meterRegistry: MeterRegistry
 
   fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->

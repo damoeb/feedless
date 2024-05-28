@@ -15,7 +15,7 @@ describe('ImageDiffComponent', () => {
 
     fixture = TestBed.createComponent(ImageDiffComponent);
     component = fixture.componentInstance;
-    component.before = {} as WebDocument
+    component.before = {} as WebDocument;
     fixture.detectChanges();
   }));
 

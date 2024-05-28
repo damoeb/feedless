@@ -2,7 +2,6 @@ package org.migor.feedless.feed.parser
 
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
-import com.rometools.modules.itunes.io.ITunesParser
 import com.rometools.modules.mediarss.MediaEntryModule
 import com.rometools.modules.mediarss.types.PlayerReference
 import com.rometools.modules.mediarss.types.UrlReference
@@ -17,8 +16,8 @@ import org.jsoup.parser.Parser
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichEnclosure
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.feed.parser.json.JsonAuthor
 import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.feed.parser.json.JsonAuthor
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory

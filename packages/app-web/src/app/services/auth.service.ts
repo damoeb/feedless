@@ -13,12 +13,21 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables
+  GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
-import { ApolloClient, FetchResult, Observable as ApolloObservable } from '@apollo/client/core';
-import { BehaviorSubject, firstValueFrom, map, Observable, Subject, take } from 'rxjs';
-import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
-import { ModalController } from '@ionic/angular';
+import {
+  ApolloClient,
+  FetchResult,
+  Observable as ApolloObservable,
+} from '@apollo/client/core';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  map,
+  Observable,
+  Subject,
+  take,
+} from 'rxjs';
 import jwt_decode from 'jwt-decode';
 import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
@@ -41,12 +50,8 @@ export interface Authentication {
 })
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
-  private modalIsOpen = false;
 
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController,
-  ) {
+  constructor(private readonly apollo: ApolloClient<any>) {
     this.authStatus = new BehaviorSubject(null);
   }
 
@@ -136,22 +141,6 @@ export class AuthService {
   changeAuthStatus(loggedIn: boolean) {
     console.log('changeAuthStatus', loggedIn);
     this.authStatus.next({ loggedIn });
-  }
-  async showTermsAndConditions() {
-    if (this.modalIsOpen) {
-      return;
-    }
-    try {
-      this.modalIsOpen = true;
-      const modal = await this.modalCtrl.create({
-        component: TermsModalComponent,
-        backdropDismiss: false,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-    } finally {
-      this.modalIsOpen = false;
-    }
   }
 
   private authorizeAnonymous(): Promise<ActualAuthentication> {

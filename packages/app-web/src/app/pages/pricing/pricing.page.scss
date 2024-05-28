@@ -1,0 +1,39 @@
+p,
+div,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+}
+
+app-product-headline,
+h1,
+h2,
+h3,
+h4 {
+  color: var(--app-foreground);
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+ion-segment-button {
+  font-size: 1.4rem;
+  &::part(native) {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+.offers {
+  display: flex;
+  app-plan-column {
+    flex: 1;
+    display: flex;
+    max-width: 400px;
+  }
+}

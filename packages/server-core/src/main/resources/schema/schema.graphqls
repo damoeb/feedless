@@ -43,7 +43,15 @@ type Enclosure {
   url: String!
 }
 
+type FeatureGroup {
+  id: ID!
+  name: String!
+  parentId: ID
+  features: [Feature!]!
+}
+
 type Feature {
+  id: String!
   name: FeatureName!
   value: FeatureValue!
 }
@@ -57,6 +65,7 @@ type FeatureIntValue {
 }
 
 type FeatureValue {
+  id: ID!
   boolVal: FeatureBooleanValue
   numVal: FeatureIntValue
 }
@@ -75,7 +84,7 @@ type Repository {
   description: String!
   title: String!
   ownerId: ID!
-  product: ProductName!
+  product: ProductCategory!
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
@@ -129,11 +138,92 @@ type Mutation {
   updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
   deleteWebDocuments(data: DeleteWebDocumentsInput!): Boolean!
 
-  updateFeature(data: UpdateFeatureInput!): Boolean!
+  deleteFeatureValue(data: DeleteFeatureValueInput!): Boolean!
+  updateFeatureValue(data: UpdateFeatureValueInput!): Boolean!
+
+  upsertBilling(
+    where: BillingWhereUniqueInput
+    create: BillingCreateInput
+    update: BillingUpdateInput
+  ): Billing!
 }
 
-input UpdateFeatureInput {
-  name: FeatureName!
+input BillingUpdateInput {
+  price: FloatUpdateOperationsInput
+  isOffer: BoolUpdateOperationsInput
+  isRejected: BoolUpdateOperationsInput
+}
+
+input BillingCreateInput {
+  overwritePrice: Float!
+  isOffer: Boolean!
+  productId: ID!
+  paymentMethod: PaymentMethod!
+  targetGroup: ProductTargetGroup!
+  invoiceRecipientName: String!
+  callbackUrl: String!
+  invoiceRecipientEmail: String!
+  user: UserCreateOrConnectInput!
+}
+
+enum ProductTargetGroup {
+  individual, eneterprise, other
+}
+
+type Billing {
+  id: ID!
+  createdAt: Long!
+  validTo: Long!
+  isOffer: Boolean!
+  isRejected: Boolean!
+  isPaid: Boolean!
+  paidAt: Long
+  productId: ID!
+  product: Product!
+  invoiceRecipientName: String!
+  invoiceRecipientEmail: String!
+  paymentMethod: PaymentMethod
+  userId: ID!
+  user: User!
+}
+
+enum PaymentMethod {
+  Bill
+  PayPal
+  CreditCard
+  Bitcoin
+  Ethereum
+}
+
+input ProductsUniqueWhereInput {
+  id: ID!
+}
+input BillingWhereUniqueInput {
+  id: ID!
+}
+
+input UserCreateOrConnectInput {
+  where: UserWhereUniqueInput
+  create: UserCreateInput
+}
+
+input UserCreateInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  country: String!
+  hasAcceptedTerms: Boolean!
+}
+
+input UserWhereUniqueInput {
+  id: String!
+}
+
+input DeleteFeatureValueInput {
+  id: ID!
+}
+input UpdateFeatureValueInput {
+  id: ID!
   value: FeatureValueInput!
 }
 
@@ -242,12 +332,12 @@ input WebDocumentUpdateInput {
 
 input CreateUserInput {
   email: String!
-  product: ProductName!
+  product: ProductCategory!
   plan: PlanName!
   newsletter: Boolean!
 }
 
-enum ProductName {
+enum ProductCategory {
   system
   rssProxy
   visualDiff
@@ -288,23 +378,6 @@ type Pagination {
   pageSize: Int!
 }
 
-type Plan {
-  id: ID!
-  name: PlanName!
-  availability: PlanAvailability!
-  currentCosts: Float!
-  beforeCosts: Float
-  parent: Plan
-  features: [Feature!]!
-}
-
-type PlanSubscription {
-  expiry: Long
-  plan: Plan!
-  planId: ID!
-  startedAt: Long!
-}
-
 type Plugin {
   id: ID!
   name: String!
@@ -338,7 +411,6 @@ type Query {
   countRepositories(data: CountRepositoriesInput!): Int!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
-  plans(product: ProductName!): [Plan!]!
   session: Session!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
@@ -350,11 +422,52 @@ type Query {
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
 
-  features: [Feature!]!
+  featureGroups(inherit: Boolean!, where: FeatureGroupWhereInput!): [FeatureGroup!]!
+
+  products(data: ProductsWhereInput!): [Product!]!
+  billings(data: BillingsInput!): [Billing!]!
+}
+
+input FeatureGroupWhereInput {
+  id: StringFilter
+}
+
+input BillingsInput {
+  cursor: Cursor!
+  where: BillingsWhereInput
+}
+
+input BillingsWhereInput {
+  id: StringFilter
+}
+
+input ProductsWhereInput {
+  id: StringFilter
+  category: ProductCategory
+}
+
+type Product {
+  id: ID!
+  name: String!
+  description: String!
+  isCloud: Boolean!
+  partOf: ProductCategory
+  featureGroupId: ID
+  prices: [PricedProduct!]!
+}
+
+type PricedProduct {
+  id: ID!
+  description: String
+  price: Float!
+  individual: Boolean!
+  enterprise: Boolean!
+  other: Boolean!
+  inStock: Int!
 }
 
 input CountRepositoriesInput {
-  product: ProductName!
+  product: ProductCategory!
 }
 
 input StoriesWhereInput {
@@ -390,7 +503,7 @@ input DateWhereInput {
 
 input ServerSettingsContextInput {
   host: String!
-  product: ProductName!
+  product: ProductCategory!
 }
 
 type RefineOptions {
@@ -660,7 +773,7 @@ type License {
 type LicenseData {
   name: String!
   email: String!
-  scope: String!
+  scope: ProductCategory!
   version: Int!
   createdAt: Long!
 }
@@ -674,7 +787,7 @@ type Subscription {
 input AuthViaMailInput {
   email: String!
   token: String!
-  product: ProductName!
+  product: ProductCategory!
   osInfo: String!
   allowCreate: Boolean!
 }
@@ -713,14 +826,24 @@ type NativeFeed {
 }
 
 type User {
+  id: ID!
   hasAcceptedTerms: Boolean!
   createdAt: Long!
   email: String!
-  id: ID!
+  firstName: String
+  lastName: String
+  country: String
   purgeScheduledFor: Long
   secrets: [UserSecret!]!
-  subscription: PlanSubscription
+  subscription: CloudSubscription
   subscriptionId: ID
+}
+
+type CloudSubscription {
+  productId: ID!
+  product: Product!
+  startedAt: Long
+  terminatedAt: Long
 }
 
 type UserSecret {
@@ -774,20 +897,17 @@ enum ProfileName {
   selfHosted
 }
 enum FeatureName {
-  canCreateUser
-  hasWaitList
-  canSignUp
-  canLogin
-  canCreateAsAnonymous
+  canActivatePlan
+  canJoinPlanWaitList
 
-  rateLimit
+  requestPerMinuteUpperLimitInt
   refreshRateInMinutesLowerLimit
   publicRepository
 
-  scrapeRequestTimeout
+  scrapeRequestTimeoutMsec
   repositoryRetentionMaxDaysLowerLimitInt
-  repositoryRetentionMaxItemsLowerLimitInt
-  repositoryRetentionMaxItemsUpperLimitInt
+  repositoryCapacityLowerLimitInt
+  repositoryCapacityUpperLimitInt
 #  itemEmailForward
 #  itemWebhookForward
   plugins
@@ -947,7 +1067,7 @@ input RepositoriesCreateInput {
 }
 
 input RepositoryCreateInput {
-  product: ProductName!
+  product: ProductCategory!
   sources: [ScrapeRequestInput!]!
   sourceOptions: SourceOptionsInput
   sinkOptions: SinkOptionsInput!
@@ -1007,6 +1127,10 @@ input NullableIntUpdateOperationsInput {
 
 input NullableLongUpdateOperationsInput {
   set: Long
+}
+
+input FloatUpdateOperationsInput {
+  set: Float!
 }
 
 input StringArrayUpdateOperationsInput {
@@ -1105,6 +1229,11 @@ input SubmitAgentDataInput {
 }
 
 input UpdateCurrentUserInput {
+  email: StringUpdateOperationsInput
+  firstName: StringUpdateOperationsInput
+  lastName: StringUpdateOperationsInput
+  country: StringUpdateOperationsInput
+#  subscription: StringUpdateOperationsInput
   acceptedTermsAndServices: BoolUpdateOperationsInput
   purgeScheduledFor: NullableUpdateOperationsInput
   dateFormat: StringUpdateOperationsInput

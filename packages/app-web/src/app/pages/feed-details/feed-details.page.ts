@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Repository, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Title } from '@angular/platform-browser';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
@@ -26,14 +32,13 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   feedUrl: string;
   private repositoryId: string;
 
-  protected readonly GqlVisibility = GqlVisibility;
   protected errorMessage: string;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
-    private readonly serverSettingsService: ServerSettingsService,
+    private readonly serverConfig: ServerConfigService,
     private readonly repositoryService: RepositoryService,
   ) {}
 
@@ -63,7 +68,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         this.repositoryId,
       );
       this.titleService.setTitle(this.repository.title);
-      this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/feed/${this.repository.id}/atom`;
     } catch (e) {
       this.errorMessage = e.message;
     }
@@ -72,5 +77,5 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  fromNow = relativeTimeOrElse
+  fromNow = relativeTimeOrElse;
 }

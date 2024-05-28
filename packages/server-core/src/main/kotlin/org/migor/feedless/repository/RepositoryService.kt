@@ -18,7 +18,7 @@ import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.SourceEntity
@@ -64,37 +64,37 @@ class RepositoryService {
   private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
 
   @Autowired
-  lateinit var sourceDAO: SourceDAO
+  private lateinit var sourceDAO: SourceDAO
 
   @Autowired
-  lateinit var mailForwardDAO: MailForwardDAO
+  private lateinit var mailForwardDAO: MailForwardDAO
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  private lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired(required = false)
   lateinit var mailService: MailService
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var userService: UserService
+  private lateinit var userService: UserService
 
   @Autowired
-  lateinit var planConstraints: PlanConstraintsService
+  private lateinit var planConstraints: PlanConstraintsService
 
   @Autowired
-  lateinit var documentService: DocumentService
+  private lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var pluginService: PluginService
+  private lateinit var pluginService: PluginService
 
   @Transactional
   fun create(corrId: String, data: RepositoriesCreateInput): List<Repository> {
@@ -143,7 +143,6 @@ class RepositoryService {
     } ?: ""
     sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
     sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays, ownerId)
-    sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
     sub.product = subInput.product.fromDto()
 
     val saved = repositoryDAO.save(sub)
@@ -163,7 +162,7 @@ class RepositoryService {
     email: String,
     sub: RepositoryEntity,
     owner: UserEntity,
-    product: ProductName
+    product: ProductCategory
   ): MailForwardEntity {
     val forward = MailForwardEntity()
     forward.email = email
@@ -229,10 +228,16 @@ class RepositoryService {
 
     val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
+    val title = if(repository.visibility === EntityVisibility.isPublic) {
+      repository.title
+    } else {
+      "${repository.title} (Personal use)"
+    }
+
     val richFeed = RichFeed()
     richFeed.id = "repository:${repositoryId}"
     richFeed.tags = tags
-    richFeed.title = repository.title
+    richFeed.title = title
     richFeed.description = repository.description
     richFeed.websiteUrl = "${propertyService.appHost}/feed/$repositoryId"
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
@@ -355,7 +360,7 @@ class RepositoryService {
     return repositoryDAO.save(repository)
   }
 
-  fun countAll(userId: UUID?, product: ProductName): Int {
+  fun countAll(userId: UUID?, product: ProductCategory): Int {
     return userId
       ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)

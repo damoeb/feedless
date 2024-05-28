@@ -16,10 +16,10 @@ class FeedExporter {
   private val log = LoggerFactory.getLogger(FeedExporter::class.simpleName)
 
   @Autowired
-  lateinit var jsonFeedExporter: JsonFeedExporter
+  private lateinit var jsonFeedExporter: JsonFeedExporter
 
   @Autowired
-  lateinit var atomFeedExporter: SyndAtomFeedExporter
+  private lateinit var atomFeedExporter: SyndAtomFeedExporter
 
   fun resolveResponseType(
     corrId: String,

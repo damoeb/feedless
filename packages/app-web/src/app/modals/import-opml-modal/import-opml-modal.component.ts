@@ -6,7 +6,7 @@ import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
-  GqlProductName,
+  GqlProductCategory,
   GqlVisibility,
 } from '../../../generated/graphql';
 
@@ -77,7 +77,7 @@ export class ImportOpmlModalComponent
       repositories: this.fcOutlines
         .filter((outline) => outline.fc.value)
         .map((fc) => ({
-          product: GqlProductName.RssProxy,
+          product: GqlProductCategory.RssProxy,
           sources: [
             {
               page: {

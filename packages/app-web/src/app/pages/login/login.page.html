@@ -1,14 +1,14 @@
-<ion-header *ngIf="!canSignUp && showNoSignupBanner">
-  <ion-toolbar color="danger">
-    <ion-text class="ion-margin-horizontal">
-      Sign Up <span *ngIf="!canLogin">and Log In</span> is currently
-      deactivated.
-      <span *ngIf="canLogin"
-        >If you have an account, Log In works as usual.</span
-      >
-    </ion-text>
-  </ion-toolbar>
-</ion-header>
+<!--<ion-header *ngIf="!loading && !canSignUp && showNoSignupBanner">-->
+<!--  <ion-toolbar color="danger">-->
+<!--    <ion-text class="ion-margin-horizontal">-->
+<!--      Sign Up <span *ngIf="!canLogin">and Log In</span> is currently-->
+<!--      deactivated.-->
+<!--      <span *ngIf="canLogin"-->
+<!--        >If you have an account, Log In works as usual.</span-->
+<!--      >-->
+<!--    </ion-text>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
 <ion-content>
   <div
     class="flex__column"
@@ -56,58 +56,36 @@
       </form>
 
       <div *ngIf="!showUserPasswordLogin">
-        <div
-          class="ion-margin-horizontal ion-margin-bottom"
-          *ngIf="hasWaitList && !canSignUp"
-        >
-          <app-newsletter
-            headerText="Private Beta"
-            bodyText="I haven't opened public signup yet, you can request to join the public beta tough."
-            buttonText="Request Access"
-          >
-            Join us on
-            <a
-              href="https://discord.gg/6ySGeryD"
-              target="_blank"
-              referrerpolicy="no-referrer"
-            >
-              <ion-icon name="logo-discord"></ion-icon>
-              discord</a
-            >.
-          </app-newsletter>
-        </div>
+<!--        <div-->
+<!--          class="ion-margin-horizontal ion-margin-bottom"-->
+<!--          *ngIf="hasWaitList && !canSignUp"-->
+<!--        >-->
+<!--          <app-newsletter-->
+<!--            headerText="Private Beta"-->
+<!--            bodyText="I haven't opened public signup yet, you can request to join the public beta tough."-->
+<!--            buttonText="Request Access"-->
+<!--          >-->
+<!--            Join us on-->
+<!--            <a-->
+<!--              href="https://discord.gg/6ySGeryD"-->
+<!--              target="_blank"-->
+<!--              referrerpolicy="no-referrer"-->
+<!--            >-->
+<!--              <ion-icon name="logo-discord"></ion-icon>-->
+<!--              discord</a-->
+<!--            >.-->
+<!--          </app-newsletter>-->
+<!--        </div>-->
 
-        <div
-          class="ion-margin-top"
-          *ngIf="!canLogin && !hasWaitList && !canSignUp"
-        >
-          <h3>
-            Signup is temporarily disabled. Join us on
-            <a
-              href="https://discord.gg/6ySGeryD"
-              target="_blank"
-              referrerpolicy="no-referrer"
-            >
-              <ion-icon name="logo-discord"></ion-icon>
-              discord</a
-            >.
-          </h3>
-        </div>
-
-        <div class="ion-margin-top" *ngIf="canLogin">
-          <div *ngIf="!showLogin" class="ion-margin-horizontal">
-            If you have an account
-            <a href="javascript:void(0)" (click)="showLogin = true"
-              >login here</a
-            >
-          </div>
-
-          <div *ngIf="showLogin">
+        <div class="ion-margin-top">
+          <div>
             <h1 class="ion-margin-start">Login</h1>
             <app-email-login *ngIf="showMailLogin"></app-email-login>
 
             <div *ngIf="showSSO">
-              <h3 class="ion-margin ion-text-center">or</h3>
+              <h3 class="ion-margin ion-text-center" *ngIf="showMailLogin">
+                or
+              </h3>
 
               <ion-card class="ion-margin-top">
                 <ion-card-content>
@@ -129,7 +107,7 @@
       <ion-item
         color="dark"
         class="ion-margin"
-        *ngIf="serverSettings.isSelfHosted()"
+        *ngIf="serverConfig.isSelfHosted()"
       >
         <ion-label>
           <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and

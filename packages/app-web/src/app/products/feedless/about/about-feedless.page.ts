@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import '@justinribeiro/lite-youtube';
-import { ProductConfig, ProductService } from '../../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../../services/app-config.service';
 import { IonPopover } from '@ionic/angular';
 
 @Component({
@@ -10,19 +19,18 @@ import { IonPopover } from '@ionic/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutFeedlessPage implements OnInit {
-
   @ViewChild('createOptions')
-  createOptionsPopover: IonPopover
+  createOptionsPopover: IonPopover;
 
   listedProducts: ProductConfig[];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   async ngOnInit() {
-    const allProducts = await this.productService.getProductConfigs();
+    const allProducts = await this.appConfigService.getProductConfigs();
     this.listedProducts = allProducts.filter((p) => p.listed);
     // this.unstableProducts = allProducts.filter((p) => !p.listed);
     this.changeRef.detectChanges();

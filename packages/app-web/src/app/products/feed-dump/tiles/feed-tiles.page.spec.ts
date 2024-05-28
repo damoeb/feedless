@@ -1,8 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedTilesPage } from './feed-tiles.page';
-import { ApolloMockController, AppTestModule, mockRepositories, mockServerSettings } from '../../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockRepositories,
+  mockServerSettings,
+} from '../../../app-test.module';
 import { FeedTilesModule } from './feed-tiles.module';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ServerConfigService } from '../../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('FeedListPage', () => {
@@ -21,7 +26,7 @@ describe('FeedListPage', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

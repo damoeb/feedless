@@ -12,7 +12,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
@@ -22,7 +21,6 @@ import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 
@@ -33,16 +31,10 @@ class MailAuthResolver {
   private val log = LoggerFactory.getLogger(MailAuthResolver::class.simpleName)
 
   @Autowired
-  lateinit var environment: Environment
+  private lateinit var mailAuthenticationService: MailAuthenticationService
 
   @Autowired
-  lateinit var mailAuthenticationService: MailAuthenticationService
-
-  @Autowired
-  lateinit var propertyService: PropertyService
-
-  @Autowired
-  lateinit var authService: AuthService
+  private lateinit var authService: AuthService
 
   @DgsSubscription
   fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {

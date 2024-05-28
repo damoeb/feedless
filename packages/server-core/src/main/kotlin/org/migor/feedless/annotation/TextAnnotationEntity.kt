@@ -1,7 +1,6 @@
 package org.migor.feedless.annotation
 
 import jakarta.persistence.Column
-import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
@@ -9,9 +8,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.repository.RepositoryEntity
 import java.util.*
 
 @Entity(name = "t_annotation_text")

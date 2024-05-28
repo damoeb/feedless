@@ -1,8 +1,8 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { ServerSettingsService } from './services/server-settings.service';
-import { ProductService } from './services/product.service';
+import { ServerConfigService } from './services/server-config.service';
+import { AppConfigService } from './services/app-config.service';
 
 @NgModule({
   declarations: [],
@@ -12,15 +12,15 @@ import { ProductService } from './services/product.service';
       provide: APP_INITIALIZER,
       useFactory:
         (
-          serverSettings: ServerSettingsService,
-          productService: ProductService,
+          serverConfig: ServerConfigService,
+          appConfigService: AppConfigService,
         ) =>
         async () => {
-          const product = await serverSettings.fetchConfig();
-          await productService.activateProduct(product);
-          await serverSettings.fetchServerSettings();
+          const product = await serverConfig.fetchConfig();
+          await appConfigService.activateUserInterface(product);
+          await serverConfig.fetchServerSettings();
         },
-      deps: [ServerSettingsService, ProductService],
+      deps: [ServerConfigService, AppConfigService],
       multi: true,
     },
   ],

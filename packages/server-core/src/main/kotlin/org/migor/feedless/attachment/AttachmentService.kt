@@ -14,7 +14,7 @@ class AttachmentService {
   private val log = LoggerFactory.getLogger(AttachmentService::class.simpleName)
 
   @Autowired
-  lateinit var attachmentDAO: AttachmentDAO
+  private lateinit var attachmentDAO: AttachmentDAO
 
   fun findById(attachmentId: String): Optional<AttachmentEntity> {
     return attachmentDAO.findById(UUID.fromString(attachmentId))

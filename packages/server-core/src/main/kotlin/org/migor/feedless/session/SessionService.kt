@@ -16,7 +16,7 @@ import java.util.*
 class SessionService {
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  private lateinit var userDAO: UserDAO
 
   fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
 

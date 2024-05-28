@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" *ngIf="!embedded">
   <app-trial-warning></app-trial-warning>
   <ion-toolbar>
     <ion-buttons slot="start">
@@ -22,7 +22,7 @@
 
     <ion-buttons slot="end">
       <ion-button
-        *ngIf="serverSettings.isSelfHosted()"
+        *ngIf="serverConfig.isSelfHosted()"
         href="https://discord.gg/6ySGeryD"
         target="_blank"
         class="ion-hide-md-down"
@@ -30,7 +30,7 @@
         Community
       </ion-button>
       <ion-button
-        *ngIf="serverSettings.isSelfHosted()"
+        *ngIf="serverConfig.isSelfHosted()"
         target="_blank"
         href="https://gihub.com/damoeb/rss-proxy"
       >
@@ -46,7 +46,7 @@
         Create Feed
       </ion-button>
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button *ngIf="!serverSettings.isSelfHosted()" routerLink="/plans">
+      <ion-button *ngIf="!serverConfig.isSelfHosted()" routerLink="/plans">
         Pricing
       </ion-button>
       <app-login-button></app-login-button>

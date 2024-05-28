@@ -73,6 +73,9 @@
   --highlight-color-focused: var(--foreground);
   --color: var(--foreground);
 
+  &.ng-invalid.ng-touched {
+    --border-color: var(--ion-color-danger) !important;
+  }
   &:hover {
     --border-color: var(--app-border-color-hover) !important;
   }

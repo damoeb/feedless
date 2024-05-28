@@ -24,7 +24,7 @@ class FeedPlugin : FragmentTransformerPlugin {
   private val log = LoggerFactory.getLogger(FeedPlugin::class.simpleName)
 
   @Autowired
-  lateinit var webToFeedTransformer: WebToFeedTransformer
+  private lateinit var webToFeedTransformer: WebToFeedTransformer
 
   override fun id(): String = FeedlessPlugins.org_feedless_feed.name
   override fun listed() = true

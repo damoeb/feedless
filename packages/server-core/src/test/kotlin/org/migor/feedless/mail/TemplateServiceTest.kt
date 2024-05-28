@@ -6,6 +6,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.migor.feedless.agent.AgentDAO
 import org.migor.feedless.community.ScoreService
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.plan.ProductService
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,7 +21,8 @@ import org.springframework.test.context.ActiveProfiles
     MockBean(AgentDAO::class),
     MockBean(ScoreService::class),
     MockBean(UserService::class),
-    MockBean(LicenseService::class)
+    MockBean(LicenseService::class),
+    MockBean(ProductService::class)
   ]
 )
 class TemplateServiceTest {

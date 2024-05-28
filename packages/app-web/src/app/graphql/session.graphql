@@ -4,16 +4,16 @@ query session {
     user {
       id
       hasAcceptedTerms
+      email
+      createdAt
       purgeScheduledFor
       secrets {
         ...SecretFragment
       }
       subscription {
-        expiry
+        productId
         startedAt
-        plan {
-          ...PlanFragment
-        }
+        terminatedAt
       }
     }
   }

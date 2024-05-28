@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
@@ -14,7 +21,7 @@ import {
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -22,7 +29,7 @@ import { dateFormat, SessionService } from '../../services/session.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { Repository } from '../../graphql/types';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
@@ -30,7 +37,7 @@ import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.
 export interface GenerateFeedModalComponentProps {
   repository: Repository;
   modalTitle?: string;
-  openAccordions?: GenerateFeedAccordion[]
+  openAccordions?: GenerateFeedAccordion[];
 }
 
 type FilterOperator = GqlStringFilterOperator;
@@ -103,7 +110,7 @@ type ConditionalTagParams = ArrayElement<
   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
 >;
 
-export type GenerateFeedAccordion = 'privacy' | 'storage'
+export type GenerateFeedAccordion = 'privacy' | 'storage';
 
 @Component({
   selector: 'app-generate-feed-modal',
@@ -164,7 +171,7 @@ export class GenerateFeedModalComponent
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly sessionService: SessionService,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly repositoryService: RepositoryService,
@@ -332,9 +339,7 @@ export class GenerateFeedModalComponent
           data: {
             plugins,
             visibility: {
-              set: isPublic
-                ? GqlVisibility.IsPublic
-                : GqlVisibility.IsPrivate,
+              set: isPublic ? GqlVisibility.IsPublic : GqlVisibility.IsPrivate,
             },
             title: {
               set: title,
@@ -398,7 +403,7 @@ export class GenerateFeedModalComponent
   async ngOnInit(): Promise<void> {
     this.isLoggedIn = this.sessionService.isAuthenticated();
 
-    const maxItemsLowerLimit = this.serverSettings.getFeatureValueInt(
+    const maxItemsLowerLimit = this.serverConfig.getFeatureValueInt(
       GqlFeatureName.RepositoryRetentionMaxItemsLowerLimitInt,
     );
     if (maxItemsLowerLimit) {
@@ -406,7 +411,7 @@ export class GenerateFeedModalComponent
         Validators.min(maxItemsLowerLimit),
       ]);
     }
-    const maxItemsUpperLimit = this.serverSettings.getFeatureValueInt(
+    const maxItemsUpperLimit = this.serverConfig.getFeatureValueInt(
       GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
     );
     if (maxItemsUpperLimit) {
@@ -415,7 +420,7 @@ export class GenerateFeedModalComponent
       ]);
     }
 
-    const maxDaysLowerLimit = this.serverSettings.getFeatureValueInt(
+    const maxDaysLowerLimit = this.serverConfig.getFeatureValueInt(
       GqlFeatureName.RepositoryRetentionMaxDaysLowerLimitInt,
     );
     if (maxDaysLowerLimit) {
@@ -424,9 +429,7 @@ export class GenerateFeedModalComponent
       ]);
     }
 
-    this.isThrottled = !this.serverSettings.hasProfile(
-      GqlProfileName.SelfHosted,
-    );
+    this.isThrottled = !this.serverConfig.hasProfile(GqlProfileName.SelfHosted);
 
     const retention = this.repository.retention;
     this.formFg.patchValue({

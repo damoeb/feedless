@@ -1,0 +1,106 @@
+<ion-content>
+  <div class="limited-width-pane" style="margin-top: 100px">
+    <div class="flex__column">
+      <h1>Pricing Options for {{ productCategory?.title }}</h1>
+
+      <p>
+        {{ productCategory?.title }} is a one-man show, that I work on in my
+        spare time. I only sell self-hosting licenses for the current major
+        version. This license includes all minor and patch releases.
+      </p>
+      <div>
+        <ion-segment
+          mode="ios"
+          [formControl]="serviceFlavor"
+          style="max-width: 400px; height: 50px"
+        >
+          <ion-segment-button [value]="serviceFlavorSelf">
+            <ion-label>Self-Hosting</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="serviceFlavorCloud">
+            <ion-label>Cloud</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <div class="ion-padding-top">
+        <div *ngIf="serviceFlavor.value === serviceFlavorSelf">
+          <ion-segment
+            mode="ios"
+            [formControl]="targetGroup"
+            style="max-width: 800px; height: 50px"
+          >
+            <ion-segment-button [value]="targetGroupOrganization">
+              <ion-label
+                ><span class="ion-hide-md-down">For</span>
+                Organizations</ion-label
+              >
+            </ion-segment-button>
+            <ion-segment-button [value]="targetGroupIndividual">
+              <ion-label
+                ><span class="ion-hide-md-down">For</span>
+                Individuals</ion-label
+              >
+            </ion-segment-button>
+            <ion-segment-button [value]="targetGroupOther">
+              <ion-label>Supported Categories</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <div class="ion-margin-top">
+          <ng-container *ngIf="targetGroup.value === targetGroupIndividual">
+            <p>
+              Hobbyists, professionals, or casual users who seek to enhance
+              their personal experience or skills.
+            </p>
+          </ng-container>
+          <ng-container *ngIf="targetGroup.value === targetGroupOrganization">
+            <p>
+              Commercial enterprises, Non-Profit Organizations, Educational
+              Institutions and Governmental Bodies who use the product as part
+              of their activities.
+            </p>
+          </ng-container>
+
+          <ng-container *ngIf="targetGroup.value === targetGroupOther">
+            <p>
+              Students or teachers who use the product as part of their studies
+              and Open Source contributors who integrate the product into their
+              project it's free.
+            </p>
+          </ng-container>
+
+          <div class="offers">
+            <app-plan-column
+              *ngFor="let product of filteredProducts()"
+              [featureGroups]="product.stringifiedFeatureGroups"
+            >
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.description }}</p>
+
+              <div style="flex: 1">
+                <ion-row *ngFor="let price of filteredPrices(product.prices)">
+                  <ion-col size="6" style="align-content: center">
+                    <ion-note>{{ price.description }}</ion-note>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-right">
+                    <h1>${{ price.price }}</h1>
+                  </ion-col>
+                </ion-row>
+              </div>
+
+              <ion-button
+                planAction
+                color="primary"
+                (click)="checkout(product)"
+              >
+                {{ getProductActionLabel(product) }}
+              </ion-button>
+            </app-plan-column>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

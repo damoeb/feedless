@@ -1,8 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { Repository, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
-import { GqlProductName, GqlVisibility } from '../../../generated/graphql';
+import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 
 @Component({
@@ -33,9 +38,9 @@ export class FeedsPage implements OnInit {
       },
       where: {
         product: {
-          in: [GqlProductName.RssProxy]
-        }
-      }
+          in: [GqlProductCategory.RssProxy],
+        },
+      },
     });
     this.repositories.push(...repositories);
     this.changeRef.detectChanges();
@@ -53,5 +58,5 @@ export class FeedsPage implements OnInit {
     return repository.visibility === GqlVisibility.IsPrivate;
   }
 
-  fromNow = relativeTimeOrElse
+  fromNow = relativeTimeOrElse;
 }

@@ -12,17 +12,17 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.cron}")
 class RepositoryHarvesterJob internal constructor() {
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var licenseService: LicenseService
+  private lateinit var licenseService: LicenseService
 
   @Autowired
-  lateinit var repositoryHarvester: RepositoryHarvester
+  private lateinit var repositoryHarvester: RepositoryHarvester
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   @Transactional(readOnly = true)

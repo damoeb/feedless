@@ -48,7 +48,7 @@ class PrivacyPlugin : MapEntityPlugin {
   private val blacklistedDomains = mutableSetOf<String>("doubleclick.net")
 
   @Autowired
-  lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var planConstraintsService: PlanConstraintsService
 
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
 

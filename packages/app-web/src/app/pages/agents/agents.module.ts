@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { AgentsPageRoutingModule } from './agents-routing.module';
 
 import { AgentsPage } from './agents.page';
-import { PlansModule } from '../../components/plans/plans.module';
 import { AgentsModule } from '../../components/agents/agents.module';
 
 @NgModule({
@@ -16,7 +15,6 @@ import { AgentsModule } from '../../components/agents/agents.module';
     FormsModule,
     IonicModule,
     AgentsPageRoutingModule,
-    PlansModule,
     AgentsModule,
   ],
   declarations: [AgentsPage],

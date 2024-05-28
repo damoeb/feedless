@@ -19,11 +19,6 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'plans',
-        loadChildren: () =>
-          import('./plans/plans.module').then((m) => m.PlansPageModule),
-      },
-      {
         path: 'tracker',
         canActivate: [AuthGuardService],
         loadChildren: () =>

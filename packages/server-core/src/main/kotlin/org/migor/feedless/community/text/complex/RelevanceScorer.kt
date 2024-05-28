@@ -18,7 +18,7 @@ class RelevanceScorer {
   private val log = LoggerFactory.getLogger(RelevanceScorer::class.simpleName)
 
   @Autowired
-  lateinit var keywordIntersectionScorer: KeywordIntersectionScorer
+  private lateinit var keywordIntersectionScorer: KeywordIntersectionScorer
 
   @Autowired
   lateinit var commentGraphService: CommentGraphService

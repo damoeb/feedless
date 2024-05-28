@@ -4,7 +4,13 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -15,20 +21,20 @@ import { AppRoutingModule } from './app-routing.module';
 import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
 import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
-import { ServerSettingsService } from './services/server-settings.service';
-import { TermsModalModule } from './modals/terms-modal/terms-modal.module';
+import { ServerConfigService } from './services/server-config.service';
+import { FinalizeProfileModalModule } from './modals/finalize-profile-modal/finalize-profile-modal.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { GqlProductName } from '../generated/graphql';
+import { GqlProductCategory } from '../generated/graphql';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
-import { BuyModalModule } from './modals/buy-modal/buy-modal.module';
 
 export interface AppEnvironment {
   production: boolean;
   offlineSupport: boolean;
-  product: GqlProductName;
+  product: GqlProductCategory;
+  officialFeedlessUrl: string;
 }
 
 export interface ModalCancel {
@@ -97,11 +103,9 @@ export const fixUrl = (value: string): string => {
     AppRoutingModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    TermsModalModule,
+    FinalizeProfileModalModule,
     AppLoadModule,
     ProductTitleModule,
-    // test
-    BuyModalModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -109,15 +113,15 @@ export const fixUrl = (value: string): string => {
       provide: ApolloClient,
       deps: [
         HttpErrorInterceptorService,
-        ServerSettingsService,
+        ServerConfigService,
         ApolloAbortControllerService,
       ],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
-        serverSettings: ServerSettingsService,
+        serverConfig: ServerConfigService,
         abortController: ApolloAbortControllerService,
       ): ApolloClient<any> => {
-        const wsUrl = `${serverSettings.apiUrl.replace(
+        const wsUrl = `${serverConfig.apiUrl.replace(
           'http',
           'ws',
         )}/subscriptions`;
@@ -170,7 +174,7 @@ export const fixUrl = (value: string): string => {
                 }
               }),
               new HttpLink({
-                uri: `${serverSettings.apiUrl}/graphql`,
+                uri: `${serverConfig.apiUrl}/graphql`,
                 credentials: 'include',
                 headers: {
                   'x-CORR-ID': corrId,

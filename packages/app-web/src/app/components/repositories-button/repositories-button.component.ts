@@ -7,10 +7,10 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { AuthService } from '../../services/auth.service';
 import { RepositoryService } from '../../services/repository.service';
-import { GqlProductName } from '../../../generated/graphql';
+import { GqlProductCategory } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-repositories-button',
@@ -26,7 +26,7 @@ export class RepositoriesButtonComponent implements OnInit, OnDestroy {
   link: string;
 
   @Input({ required: true })
-  product: GqlProductName;
+  product: GqlProductCategory;
 
   feedCount: number = 0;
   isLoggedIn: boolean;
@@ -35,7 +35,7 @@ export class RepositoriesButtonComponent implements OnInit, OnDestroy {
   constructor(
     private readonly repositoryService: RepositoryService,
     private readonly authService: AuthService,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 

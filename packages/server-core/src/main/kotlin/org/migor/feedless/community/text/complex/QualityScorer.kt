@@ -30,25 +30,25 @@ class QualityScorer {
   private val log = LoggerFactory.getLogger(QualityScorer::class.simpleName)
 
   @Autowired
-  lateinit var vocabularyScorer: VocabularyScorer
+  private lateinit var vocabularyScorer: VocabularyScorer
 
   @Autowired
-  lateinit var readingEaseScorer: ReadingEaseScorer
+  private lateinit var readingEaseScorer: ReadingEaseScorer
 
   @Autowired
-  lateinit var engagementScorer: EngagementScorer
+  private lateinit var engagementScorer: EngagementScorer
 
   @Autowired
-  lateinit var wordCountScorer: WordCountScorer
+  private lateinit var wordCountScorer: WordCountScorer
 
   @Autowired
-  lateinit var citationScorer: CitationScorer
+  private lateinit var citationScorer: CitationScorer
 
   @Autowired
-  lateinit var spellingScorer: SpellingScorer
+  private lateinit var spellingScorer: SpellingScorer
 
   @Autowired
-  lateinit var languageService: LanguageService
+  private lateinit var languageService: LanguageService
 
   fun quality(comment: CommentEntity, w: QualityWeights): Double {
     /*

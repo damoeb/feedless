@@ -8,15 +8,17 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
-import { ProductConfig, ProductService } from '../../services/product.service';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import { GqlLicenseQuery, GqlProductName } from '../../../generated/graphql';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import { RepositoryService } from '../../services/repository.service';
-import { AuthService } from '../../services/auth.service';
+import {
+  GqlLicenseQuery,
+  GqlProductCategory,
+} from '../../../generated/graphql';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -32,19 +34,19 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   license: GqlLicenseQuery['license'];
 
   protected readonly dateFormat = dateFormat;
+  protected embedded: boolean = false;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly licenseService: LicenseService,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -57,6 +59,11 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.url) {
           this.url = queryParams.url;
+          this.changeRef.detectChanges();
+        }
+        if (queryParams.embedded) {
+          this.embedded = true;
+          this.changeRef.detectChanges();
         }
       }),
     );
@@ -77,5 +84,5 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   //     console.warn(e);
   //   }
   // }
-  protected readonly GqlProductName = GqlProductName;
+  protected readonly GqlProductName = GqlProductCategory;
 }

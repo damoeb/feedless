@@ -1,9 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
-import { GqlProductName } from '../../../../generated/graphql';
+import { GqlProductCategory } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-feedless-menu',
@@ -37,17 +43,17 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
         this.changeRef.detectChanges();
       }),
       this.repositoryService
-        .countRepositories({ product: GqlProductName.RssProxy })
+        .countRepositories({ product: GqlProductCategory.RssProxy })
         .subscribe((repoCount) => {
           this.feedCount = repoCount;
           this.changeRef.detectChanges();
         }),
       this.repositoryService
-        .countRepositories({ product: GqlProductName.VisualDiff })
+        .countRepositories({ product: GqlProductCategory.VisualDiff })
         .subscribe((repoCount) => {
           this.trackerCount = repoCount;
           this.changeRef.detectChanges();
-        })
+        }),
     );
   }
 

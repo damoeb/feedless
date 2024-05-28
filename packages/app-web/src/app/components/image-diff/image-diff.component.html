@@ -1,15 +1,18 @@
 <div *ngIf="!after">
-  <p>Snapshot {{before.contentTitle}} from {{before.createdAt | date: dateTimeFormat}}</p>
-  <img
-    [src]="'data:image/png;base64, '+before.contentRawBase64"
-    alt=""
-  />
+  <p>
+    Snapshot {{ before.contentTitle }} from
+    {{ before.createdAt | date: dateTimeFormat }}
+  </p>
+  <img [src]="'data:image/png;base64, ' + before.contentRawBase64" alt="" />
 </div>
 <div *ngIf="after">
-  <div>Snapshots {{before.contentTitle}} <ion-icon name="arrow-forward-outline"></ion-icon> {{after.contentTitle}}</div>
+  <div>
+    Snapshots {{ before.contentTitle }}
+    <ion-icon name="arrow-forward-outline"></ion-icon> {{ after.contentTitle }}
+  </div>
   <img-comparison-slider style="width: auto; margin: auto">
     <img
-      [src]="'data:image/png;base64, '+before.contentRawBase64"
+      [src]="'data:image/png;base64, ' + before.contentRawBase64"
       alt=""
       slot="first"
     />
@@ -17,15 +20,8 @@
   </img-comparison-slider>
 
   <div>After</div>
-  <img
-    [src]="'data:image/png;base64, '+after.contentRawBase64"
-    alt=""
-  />
+  <img [src]="'data:image/png;base64, ' + after.contentRawBase64" alt="" />
 
   <div>Before</div>
-  <img
-    [src]="'data:image/png;base64, '+before.contentRawBase64"
-    alt=""
-  />
-
+  <img [src]="'data:image/png;base64, ' + before.contentRawBase64" alt="" />
 </div>

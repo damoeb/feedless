@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -6,8 +13,12 @@ import { ModalController } from '@ionic/angular';
 import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
-import { GqlCompositeFilterParamsInput, GqlNumberFilterOperator, GqlScrapeRequest } from '../../../../generated/graphql';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import {
+  GqlCompositeFilterParamsInput,
+  GqlNumberFilterOperator,
+  GqlScrapeRequest,
+} from '../../../../generated/graphql';
+import { ServerConfigService } from '../../../services/server-config.service';
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -41,12 +52,12 @@ export class TrackerEditModalComponent
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
-    private readonly serverSettings: ServerSettingsService,
+    private readonly serverConfig: ServerConfigService,
     private readonly modalCtrl: ModalController,
   ) {}
 
   async ngOnInit() {
-    this.isThrottled = !this.serverSettings.isSelfHosted();
+    this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
       this.formFg.controls.limit.valueChanges.subscribe(async () => {
         await this.updateFeed();

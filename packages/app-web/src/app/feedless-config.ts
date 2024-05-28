@@ -1,4 +1,4 @@
-import { GqlProductName } from '../generated/graphql';
+import { GqlProductCategory } from '../generated/graphql';
 
 export type ProductId =
   | 'pageChangeTracker'
@@ -13,9 +13,18 @@ export type ProductId =
 
 // export type AppStage = 'idea' | 'development' | 'alpha' | 'stable'
 
+export type CostItem = {
+  name: string;
+  unit: string;
+  value: {
+    price?: number;
+    discount?: number;
+  };
+};
+
 export type AppConfig = {
   id: ProductId;
-  product: GqlProductName;
+  product: GqlProductCategory;
   localSetupBeforeMarkup?: string;
   localSetupBash: string;
   localSetupAfterMarkup?: string;
@@ -30,8 +39,8 @@ export type AppConfig = {
   phase: 'planning' | 'design' | 'development' | 'alpha' | 'beta' | 'rc' | 'ga';
   descriptionMarkdown: string;
   descriptionHtml?: string;
-  videoUrl: string;
-  costs: number;
+  videoUrl?: string;
+  costs?: CostItem[];
   listed: boolean;
   features: string[];
 };
@@ -50,7 +59,7 @@ export const feedlessConfig: FeedlessConfig = {
   apps: [
     {
       id: 'rss-proxy',
-      product: GqlProductName.RssProxy,
+      product: GqlProductCategory.RssProxy,
       title: 'RSS-proxy',
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',
@@ -61,7 +70,29 @@ export const feedlessConfig: FeedlessConfig = {
       summary: 'Create feeds from Websites',
       descriptionMarkdown: `RSS-proxy allows you to do create an ATOM or JSON feed of any static website or feeds (web to feed),
 just by analyzing just the HTML structure. Usually the structuring to a feed works automatically.`,
-      costs: 29.99,
+      costs: [
+        {
+          name: 'First major release',
+          unit: 'Release',
+          value: {
+            price: 49.99,
+          },
+        },
+        {
+          name: 'Second consecutive releases',
+          unit: 'Release',
+          value: {
+            discount: 30,
+          },
+        },
+        {
+          name: 'Third consecutive releases onwards',
+          unit: 'Release',
+          value: {
+            discount: 50,
+          },
+        },
+      ],
       videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
       features: [
         'Web to Feed',
@@ -81,7 +112,7 @@ docker-compose up`,
     },
     {
       id: 'feedDump',
-      product: GqlProductName.FeedDump,
+      product: GqlProductCategory.FeedDump,
       title: 'FeedDump',
       titleHtml: '<strong>Feed</strong><em>Dump</em>',
       pageTitle: 'Feed Dump',
@@ -91,14 +122,13 @@ docker-compose up`,
       listed: false,
       summary: 'Create feeds from Websites',
       descriptionMarkdown: ``,
-      costs: 0,
       videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
       features: [],
       localSetupBash: ``,
     },
     {
       id: 'visual-diff',
-      product: GqlProductName.VisualDiff,
+      product: GqlProductCategory.VisualDiff,
       titleHtml: '<strong>Visual</strong><em>Diff</em>',
       pageTitle: 'VisualDiff',
       title: 'VisualDiff',
@@ -109,7 +139,7 @@ docker-compose up`,
       summary: 'Detect changes in a website and get a notified',
       descriptionMarkdown:
         'Detect changes in a website based on image, markup or text and get a notification via mail or feed.',
-      costs: 79.99,
+      // costs: 79.99,
       videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
       features: [
         'Page change tracking',
@@ -130,7 +160,7 @@ docker-compose up`,
     },
     {
       id: 'reader',
-      product: GqlProductName.Reader,
+      product: GqlProductCategory.Reader,
       titleHtml: '<strong>Reader</strong>',
       pageTitle: 'Reader',
       title: 'Reader',
@@ -143,7 +173,7 @@ docker-compose up`,
       descriptionMarkdown: `Unclutter a website and transform it into a version optimized for reading.
       Create an immersive reading experience without the dark patterns, advertisements and bad user interfaces.
       Inspiration for this comes from uncomissioned readability.com or instapaper`,
-      costs: 4.99,
+      // costs: 4.99,
       videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
       features: [
         'Font Family',
@@ -163,7 +193,7 @@ docker-compose up`,
     },
     {
       id: 'untold',
-      product: GqlProductName.UntoldNotes,
+      product: GqlProductCategory.UntoldNotes,
       titleHtml: '<strong>Un</strong><em>told</em>',
       pageTitle: 'Untold Notes',
       title: 'Untold Notes',
@@ -184,7 +214,7 @@ open web platform.
 [Nichlas Luhman](https://en.wikipedia.org/wiki/Niklas_Luhmann), the german sociologist, had a incredible productive scientific career, mainly attributed to
 his approach to structure information in a Zettelkasten. His approach will help you to drastically improve your
 way to think, learn and remember.`,
-      costs: -1,
+      // costs: -1,
       videoUrl: '',
       features: [
         'Text based notes',
@@ -197,7 +227,7 @@ way to think, learn and remember.`,
     },
     {
       id: 'digest',
-      product: GqlProductName.Digest,
+      product: GqlProductCategory.Digest,
       titleHtml: '<strong>Digest</strong><em>this</em>',
       pageTitle: 'Mail Digest',
       title: 'Mail Digest',
@@ -209,7 +239,6 @@ way to think, learn and remember.`,
       descriptionMarkdown: `'If you don't have the capacity to stay on top of all
       potentially interesting information streams, _Mail Digest_ might be for you.
       Define your sources, you care about and when you want to receive the brief summary.`,
-      costs: -1,
       videoUrl: '',
       features: [
         'Ranking',
@@ -220,7 +249,7 @@ way to think, learn and remember.`,
     },
     {
       id: 'feedless',
-      product: GqlProductName.Feedless,
+      product: GqlProductCategory.Feedless,
       title: 'Feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
@@ -232,14 +261,13 @@ way to think, learn and remember.`,
       descriptionMarkdown: `It's quite astoinding that the web is so hard to automate, the word _bot_ mainly has a negative connotation. I believe the opposite.
 There is a dual use and everyone should have their well-behaving bots roaming the web in their interest.
 Popular solutions like zapier of ITTT steer into that direction.`,
-      costs: -1,
       videoUrl: '',
       features: ['Workflow Builder', 'Self-Hosting or SaaS'],
       localSetupBash: ``,
     },
     {
       id: 'upcoming',
-      product: GqlProductName.Upcoming,
+      product: GqlProductCategory.Upcoming,
       title: 'Upcoming',
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',
@@ -249,7 +277,6 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       descriptionMarkdown: `There was a time when the social event calendar [yahoo upcoming](https://en.wikipedia.org/wiki/Upcoming) was
       popular, then social media coorps took over. Since a couple of years I am noticing that most local relevant events are non-commercial,
       therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
-      costs: -1,
       phase: 'development',
       videoUrl: '',
       features: [
@@ -261,7 +288,7 @@ Popular solutions like zapier of ITTT steer into that direction.`,
     },
     {
       id: 'pageChangeTracker',
-      product: GqlProductName.PageChangeTracker,
+      product: GqlProductCategory.PageChangeTracker,
       title: 'Page Change Tracker',
       listed: false,
       titleHtml: '<strong>Page</strong><em>Change</em>',
@@ -269,7 +296,6 @@ Popular solutions like zapier of ITTT steer into that direction.`,
       subtitle: 'Track any change of a website',
       summary: '',
       descriptionMarkdown: `revisions of website`,
-      costs: -1,
       phase: 'planning',
       videoUrl: '',
       features: ['Page Revisions', 'Self-Hosting or SaaS'],

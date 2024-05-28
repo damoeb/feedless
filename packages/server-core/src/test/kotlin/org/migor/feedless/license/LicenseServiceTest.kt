@@ -6,7 +6,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.document.any
 import org.migor.feedless.util.toDate
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.junit.jupiter.MockitoSettings
+import org.mockito.quality.Strictness
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import java.security.SecureRandom
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
@@ -14,11 +24,16 @@ import java.time.LocalDateTime
 import java.util.*
 
 
+@ExtendWith(MockitoExtension::class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LicenseServiceTest {
 
   private lateinit var licensePayload: LicensePayload
   private lateinit var thisKeyPair: RSAKey
   private lateinit var otherKeyPair: RSAKey
+
+  @Mock
+  lateinit var environment: Environment
 
   lateinit var service: LicenseService
 
@@ -27,22 +42,18 @@ class LicenseServiceTest {
 
   @BeforeEach
   fun setup() {
+    Mockito.`when`(environment.acceptsProfiles(any(Profiles::class.java))).thenReturn(false)
     service = LicenseService()
+    service.environment = environment
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))
-    licensePayload = LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = "all")
+    licensePayload = LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.all)
   }
 
   @Test
   fun `public key can be serialized`() {
     val pubKeyStr = thisKeyPair.toRSAPublicKey().encoodeAsString()
     assertThat(service.decodePublicKey(pubKeyStr).encoodeAsString()).isEqualTo(pubKeyStr)
-  }
-
-  @Test
-  fun `private key can be serialized`() {
-    val privKeyStr = thisKeyPair.toRSAPrivateKey().encoodeAsString()
-    assertThat(service.decodePrivateKey(privKeyStr).encoodeAsString()).isEqualTo(privKeyStr)
   }
 
   @Test
@@ -55,7 +66,7 @@ class LicenseServiceTest {
   }
 
   private fun createLicenseString(): String {
-    val licenseStr = service.createLicense(licensePayload, thisKeyPair)
+    val licenseStr = service.createLicense(corrId, licensePayload, thisKeyPair)
     assertThat(licenseStr.trim()).isNotBlank()
     assertThat(service.verifyTokenAgainstPubKey(licenseStr, thisKeyPair.toRSAPublicKey())).isTrue()
     return licenseStr

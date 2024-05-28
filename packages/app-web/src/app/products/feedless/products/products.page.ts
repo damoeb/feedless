@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ProductConfig, ProductService } from '../../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../../services/app-config.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
@@ -18,7 +28,7 @@ export class ProductsPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly domSanitizer: DomSanitizer,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
@@ -26,7 +36,7 @@ export class ProductsPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
-        this.product = (await this.productService.getProductConfigs()).find(
+        this.product = (await this.appConfigService.getProductConfigs()).find(
           (p) => p.id === params.productId,
         );
         if (this.product?.videoUrl) {

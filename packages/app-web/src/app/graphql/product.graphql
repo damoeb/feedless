@@ -1,0 +1,29 @@
+fragment ProductFragment on Product {
+  id
+  name
+  description
+  featureGroupId
+#  featureGroup {
+#    id
+#    name
+#    features {
+#      ...FeatureFragment
+#    }
+#  }
+  isCloud
+  partOf
+  prices {
+    id
+    description
+    enterprise
+    individual
+    other
+    inStock
+    price
+  }
+}
+query listProducts($data: ProductsWhereInput!) {
+  products(data: $data) {
+    ...ProductFragment
+  }
+}

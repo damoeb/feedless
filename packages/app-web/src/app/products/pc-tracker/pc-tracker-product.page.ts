@@ -1,10 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 import { fixUrl } from '../../app.module';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
@@ -26,18 +35,17 @@ export class PcTrackerProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly licenseService: LicenseService,
     private readonly modalService: ModalService,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

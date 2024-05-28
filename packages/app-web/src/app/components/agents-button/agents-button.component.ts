@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -18,7 +24,7 @@ export class AgentsButtonComponent implements OnInit, OnDestroy {
   constructor(
     private readonly agentService: AgentService,
     private readonly authService: AuthService,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 

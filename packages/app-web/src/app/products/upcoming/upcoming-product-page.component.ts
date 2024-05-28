@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import dayjs, { Dayjs } from 'dayjs';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { isUndefined } from 'lodash-es';
 
@@ -35,7 +44,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   private fillCalendar() {
@@ -91,7 +100,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

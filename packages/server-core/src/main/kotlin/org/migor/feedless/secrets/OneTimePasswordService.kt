@@ -19,10 +19,10 @@ class OneTimePasswordService {
   private val log = LoggerFactory.getLogger(OneTimePasswordService::class.simpleName)
 
   @Autowired
-  lateinit var mailService: MailService
+  private lateinit var mailService: MailService
 
   @Autowired
-  lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
 
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5

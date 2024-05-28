@@ -12,7 +12,18 @@
       placeholder="Type a Url of a website"
     ></app-searchbar>
 
-    <div *ngIf="serverSettings.isSelfHosted()">
+    <div *ngIf="!serverConfig.isSelfHosted()">
+      <div style="margin-top: 50px"></div>
+      <div class="ion-margin-vertical">
+        <h2>Migration Path</h2>
+        <p>
+          If you come from an older version of RSS-proxy, just paste those urls
+          into the form above, you can convert them.
+        </p>
+      </div>
+    </div>
+
+    <div *ngIf="serverConfig.isSelfHosted()">
       <div style="margin-top: 50px"></div>
       <div class="ion-margin-vertical">
         <h2>Hello, fellow Self-Hoster,</h2>
@@ -21,38 +32,28 @@
           <a href="https://discord.gg/6ySGeryD" target="_blank"
             >join us on discord</a
           >
-          to help us strengthening the feed community.</p>
+          to help us strengthening the feed community.
+        </p>
 
         <p>
-          Customize constraints of <ion-button routerLink="/settings" size="small">
-          <ion-icon name="settings-outline" slot="start"></ion-icon>
-          server settings
-        </ion-button>
+          Customize constraints of
+          <ion-button routerLink="/settings" size="small">
+            <ion-icon name="settings-outline" slot="start"></ion-icon>
+            server settings
+          </ion-button>
         </p>
-        <p>
-          Now, fastest way to get
-          started is by importing an OPML file.
-        </p>
-        <app-import-button color="primary"
-                           fill="solid"
-                           expand="block"></app-import-button>
+        <p>Now, fastest way to get started is by importing an OPML file.</p>
+        <app-import-button
+          color="primary"
+          fill="solid"
+          expand="block"
+        ></app-import-button>
       </div>
 
       <div style="margin-top: 50px">
         <h2>Video Introduction</h2>
         <p>[video]</p>
       </div>
-
-      <!--      <div style="margin-top: 50px">-->
-      <!--        <h2>Customization</h2>-->
-      <!--        <p>-->
-      <!--          RSS-proxy is a custom tailored user interface for feed building, based-->
-      <!--          on the-->
-      <!--          <a href="httos://github.com/damoeb/feedless">feedless</a> backend. You-->
-      <!--          may customize your instance with plugins, which are native citizen of-->
-      <!--          feedless.-->
-      <!--        </p>-->
-      <!--      </div>-->
 
       <div style="margin-top: 50px" *ngIf="license?.isLocated">
         <h2>License Prompt</h2>
@@ -80,7 +81,7 @@
       </div>
     </div>
 
-    <div *ngIf="!serverSettings.isSelfHosted()">
+    <div *ngIf="!serverConfig.isSelfHosted()">
       <div style="margin-top: 150px"></div>
       <div>
         <h2>Why choose RSS Proxy?</h2>
@@ -105,31 +106,13 @@
         </p>
       </div>
 
-      <div>
-        <h2>Let the Video speak for itself</h2>
-        <p>[video]</p>
+      <div class="ion-margin-vertical">
+        <h2>Demo Video</h2>
+        <p><lite-youtube videoid="7weraU_FpUs"></lite-youtube></p>
       </div>
 
       <div>
         <h2>Self Hosting Guide</h2>
-        <p>
-          Once you have
-          <a href="https://docs.docker.com/compose/install/" target="_blank"
-            >docker-compose</a
-          >
-          or
-          <a
-            href="https://docs.podman.io/en/latest/markdown/podman-compose.1.html"
-            target="_blank"
-            >podman-compose</a
-          >, this is the basic setup. It will start a database and feedless
-          serving the RSS Proxy user interface.
-        </p>
-        <pre>
-wget https://raw.githubusercontent.com/damoeb/rss-proxy/master/docker-compose.yml
-docker-compose up
-          </pre
-        >
       </div>
     </div>
   </app-product-header>

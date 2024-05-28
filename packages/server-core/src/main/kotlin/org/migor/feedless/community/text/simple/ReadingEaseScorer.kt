@@ -17,7 +17,7 @@ class ReadingEaseScorer {
   private val log = LoggerFactory.getLogger(ReadingEaseScorer::class.simpleName)
 
   @Autowired
-  lateinit var tokenizerService: TokenizerService
+  private lateinit var tokenizerService: TokenizerService
 
   private final val FALLBACK_READING_EASE_SCORE = 0.3
 

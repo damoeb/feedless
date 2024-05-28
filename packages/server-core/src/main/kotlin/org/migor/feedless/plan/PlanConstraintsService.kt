@@ -9,9 +9,10 @@ import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -23,23 +24,26 @@ class PlanConstraintsService {
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var environment: Environment
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var featureDAO: FeatureValueDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  private lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var planDAO: PlanDAO
+  private lateinit var featureValueDAO: FeatureValueDAO
+
+  @Autowired
+  private lateinit var featureGroupDAO: FeatureGroupDAO
 
   fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID): Int? {
-    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, userId)!!
-    val maxItems = getFeatureInt(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, userId)
+    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId) ?: 0).coerceAtLeast(2)
+    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId)
     return customMaxItems?.let {
       maxItems?.let {
         customMaxItems.coerceAtLeast(minItems)
@@ -49,7 +53,7 @@ class PlanConstraintsService {
   }
 
   fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID): Date {
-    val minRefreshRateInMinutes = getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId)!!
+    val minRefreshRateInMinutes = (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId) ?: 0).coerceAtLeast(1)
     val minNextDate = toDate(
       lastDate.toInstant().atZone(ZoneId.systemDefault())
         .toLocalDateTime().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES)
@@ -101,23 +105,11 @@ class PlanConstraintsService {
   fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
     timeout
       ?.let {
-        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutInt, userId)
+        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutMsecInt, userId)
         if (maxTimeout != null && maxTimeout < it) {
           throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
         }
       }
-  }
-
-  fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
-    val user = userDAO.findById(userId).orElseThrow()
-    return if (user.anonymous) {
-      val days = getFeatureInt(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, userId)!!
-      val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
-      log.info("[$corrId] assign expiry to $expiry")
-      toDate(expiry)
-    } else {
-      null
-    }
   }
 
   private fun userIdFromRequest() = sessionService.userId()!!
@@ -130,10 +122,13 @@ class PlanConstraintsService {
   private fun getFeature(featureName: FeatureName, userId: UUID): FeatureValueEntity? {
     val user = userDAO.findById(userId).orElseThrow()
     return try {
-      user.planId?.let {
-        featureDAO.findByPlanIdAndName(it, featureName.name).firstOrNull()
-      } ?: featureDAO.findByPlanIdAndName(planDAO.findFirstByName(PlanName.system.name)!!.id, featureName.name)
-        .firstOrNull()
+      if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
+        featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id, featureName.name)
+      } else {
+        user.subscriptionId?.let {
+          featureValueDAO.resolveByFeatureGroupIdAndName(it, featureName.name)
+        }
+      }
     } catch (e: Exception) {
       null
     }

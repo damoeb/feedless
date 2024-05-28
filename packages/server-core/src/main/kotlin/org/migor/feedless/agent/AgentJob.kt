@@ -11,14 +11,14 @@ import java.time.ZoneId
 import java.util.*
 
 @Service
-@Profile(AppProfiles.agent)
+@Profile("${AppProfiles.database} & ${AppProfiles.agent} & ${AppProfiles.cron}")
 class AgentJob {
 
   @Autowired
-  lateinit var agentService: AgentService
+  private lateinit var agentService: AgentService
 
   @Autowired
-  lateinit var agentDAO: AgentDAO
+  private lateinit var agentDAO: AgentDAO
 
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional

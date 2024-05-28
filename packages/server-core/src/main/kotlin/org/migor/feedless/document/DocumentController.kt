@@ -24,10 +24,10 @@ class DocumentController {
   private val log = LoggerFactory.getLogger(DocumentController::class.simpleName)
 
   @Autowired
-  lateinit var documentService: DocumentService
+  private lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var meterRegistry: MeterRegistry
 
   @Tracked
   @GetMapping(

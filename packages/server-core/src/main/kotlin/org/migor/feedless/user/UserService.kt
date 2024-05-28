@@ -7,13 +7,11 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
-import org.migor.feedless.plan.PlanDAO
 import org.migor.feedless.plan.PlanName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,35 +33,29 @@ class UserService {
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  private lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var planDAO: PlanDAO
+  private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var mailService: MailService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var environment: Environment
 
   @Autowired
-  lateinit var mailService: MailService
-
-  @Autowired
-  lateinit var environment: Environment
-
-  @Autowired
-  lateinit var featureService: FeatureService
+  private lateinit var featureService: FeatureService
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
-      corrId: String,
-      email: String?,
-      productName: ProductName,
-      planName: PlanName,
-      githubId: String? = null,
+    corrId: String,
+    email: String?,
+    productCategory: ProductCategory,
+    planName: PlanName,
+    githubId: String? = null,
   ): UserEntity {
-    if (featureService.isDisabled(FeatureName.canCreateUser, productName)) {
+    if (featureService.isDisabled(FeatureName.canCreateUser, null)) {
       throw BadRequestException("sign-up is deactivated")
     }
 //    val plan = planDAO.findByNameAndProductId(planName.name, productName)
@@ -86,17 +78,17 @@ class UserService {
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("[$corrId] create user $email")
     val user = UserEntity()
-    user.email = email
+    user.email = email ?: "${user.id}@feedless.org"
     user.githubId = githubId
     user.root = false
     user.anonymous = false
     user.hasAcceptedTerms = isSelfHosted()
-    user.product = productName
+    user.product = productCategory
 //    user.planId = planDAO.findByNameAndProductId(planName, productName)!!.id
 
     if (!user.anonymous && !user.root) {
       when (planName) {
-        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
+//        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
         PlanName.free -> mailService.sendWelcomeFreeMail(corrId, user)
         else -> mailService.sendWelcomePaidMail(corrId, user)
       }
@@ -116,6 +108,16 @@ class UserService {
   fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
     val user = userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
     var changed = false
+
+    data.email?.let {
+      log.info("[$corrId] changing email from ${user.email} to ${it.set}")
+      user.email = it.set
+      user.validatedEmailAt = null
+      user.hasValidatedEmail = false
+      // todo ask to validate email
+      changed = true
+    }
+
     data.acceptedTermsAndServices?.let {
       if (it.set) {
         user.hasAcceptedTerms = true

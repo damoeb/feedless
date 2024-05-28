@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';
 import dayjs from 'dayjs';
@@ -17,11 +17,10 @@ export class TrialWarningComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
     private readonly licenseService: LicenseService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
     dayjs.extend(relativeTime);

@@ -5,10 +5,8 @@ import { FeedlessProductPage } from './feedless-product.page';
 
 import { DefaultRoutes } from '../default-routes';
 import { FeedlessMenuComponent } from './feedless-menu/feedless-menu.component';
-import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
-  ...DefaultRoutes,
   {
     path: '',
     component: FeedlessProductPage,
@@ -21,18 +19,12 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'agents',
-        canActivate: [AuthGuardService],
+        path: 'workflow-builder',
         loadChildren: () =>
-          import('../../pages/agents/agents.module').then(
-            (m) => m.AgentsPageModule,
+          import('../../pages/workflow-builder/workflow-builder.module').then(
+            (m) => m.WorkflowBuilderPageModule,
           ),
       },
-      // {
-      //   path: 'plans',
-      //   loadChildren: () =>
-      //     import('./plans/plans.module').then((m) => m.PlansPageModule),
-      // },
       {
         path: 'products',
         loadChildren: () =>
@@ -41,17 +33,13 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'buy',
-        loadChildren: () =>
-          import('../../pages/buy/buy.module').then((m) => m.BuyPageModule),
-      },
-      {
         path: '',
         loadChildren: () =>
           import('./about/about-feedless.module').then(
             (m) => m.AboutFeedlessModule,
           ),
       },
+      ...DefaultRoutes,
       {
         path: '**',
         redirectTo: '',

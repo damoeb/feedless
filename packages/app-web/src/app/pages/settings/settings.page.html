@@ -13,6 +13,20 @@
 
         <ng-container *ngIf="!loading">
           <ion-list>
+            <ion-item>
+              <ion-select
+                label="Feature Group"
+                [formControl]="featureGroupsFc"
+                labelPlacement="start"
+              >
+                <ion-select-option
+                  *ngFor="let group of featureGroups"
+                  [value]="group"
+                >
+                  {{group.name}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
             <ion-item *ngFor="let feature of features; let i = index">
               <ng-container *ngIf="feature.value.numVal">
                 <ion-label>{{feature.name}}</ion-label>
@@ -27,6 +41,10 @@
                   {{feature.name}}
                 </ion-checkbox>
               </ng-container>
+
+              <!--              <ion-button slot="start" color="light" shape="round" *ngIf="featureGroupsFc.value.parentId">-->
+              <!--                <ion-icon name="close-outline"></ion-icon>-->
+              <!--              </ion-button>-->
             </ion-item>
           </ion-list>
         </ng-container>

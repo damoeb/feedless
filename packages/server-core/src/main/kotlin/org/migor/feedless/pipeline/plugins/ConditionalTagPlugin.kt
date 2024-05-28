@@ -18,7 +18,7 @@ class ConditionalTagPlugin : MapEntityPlugin {
   private val log = LoggerFactory.getLogger(ConditionalTagPlugin::class.simpleName)
 
   @Autowired
-  lateinit var filterPlugin: CompositeFilterPlugin
+  private lateinit var filterPlugin: CompositeFilterPlugin
 
 
   override fun id(): String = FeedlessPlugins.org_feedless_conditional_tag.name

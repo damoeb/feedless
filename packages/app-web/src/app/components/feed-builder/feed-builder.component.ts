@@ -1,27 +1,43 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
+  GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
-  GqlRetentionInput,
   GqlScrapeRequestInput,
   GqlTransientGenericFeed,
-  GqlVisibility
 } from '../../../generated/graphql';
-import { ModalController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute } from '@angular/router';
 import { ScrapeResponse } from '../../graphql/types';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../services/app-config.service';
 import {
   FeedBuilderActionsModalComponent,
-  FeedBuilderData
+  FeedBuilderData,
 } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
-import { Agent } from '../../services/agent.service';
+import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
 
 /**
  * IDEEN
@@ -49,80 +65,10 @@ export enum FeedBuilderModalComponentExitRole {
   login = 'login',
 }
 
-type SinkTargetType = 'email' | 'webhook';
-
-type ScheduledPolicy = {
-  cronString: string;
-};
-
-type PluginRef = {
-  id: string;
-  data: object;
-};
-
-type FetchPolicy = {
-  plugins?: PluginRef[];
-} & ScheduledPolicy;
-
-type FieldFilterType = 'include' | 'exclude';
-
-type FieldFilterOperator = 'matches' | 'contains' | 'endsWith' | 'startsWith';
-type FieldFilter = {
-  type: FieldFilterType;
-  field: string;
-  negate: boolean;
-  operator: FieldFilterOperator;
-  value: string;
-};
-
-export type SegmentedOutput = {
-  filter?: string;
-  orderBy?: string;
-  orderAsc?: boolean;
-  size?: number;
-  digest?: boolean;
-  scheduled?: ScheduledPolicy;
-};
-
-type SinkTargetWrapper = {
-  type: SinkTargetType;
-  oneOf: SinkTarget;
-};
-
-type EmailSink = {
-  address: string;
-};
-type WebhookSink = {
-  url: string;
-};
-type SinkTarget = {
-  email?: EmailSink;
-  webhook?: WebhookSink;
-};
-
-export type Sink = {
-  isSegmented: boolean;
-  segmented?: SegmentedOutput;
-  targets: SinkTargetWrapper[];
-  hasRetention: boolean;
-  retention: GqlRetentionInput;
-  visibility: GqlVisibility;
-  title: string;
-  description: string;
-};
-
 export type Source = {
   // output?: ScrapeField | ScrapeField[]
   request: GqlScrapeRequestInput;
   response?: ScrapeResponse;
-};
-
-export type FeedBuilder = {
-  sources: Source[];
-  agent?: Agent;
-  fetch: ScheduledPolicy;
-  filters: FieldFilter[];
-  sink: Sink;
 };
 
 export type FeedWithRequest = {
@@ -141,6 +87,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
   embedWebsite: Embeddable;
   loading = false;
+
+  @ViewChild('webToFeedTransformer')
+  webToFeedTransformerComponent: TransformWebsiteToFeedComponent;
 
   @Input()
   submitButtonText = 'Finalize Feed';
@@ -162,12 +111,13 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly apolloAbortController: ApolloAbortControllerService,
     private readonly scrapeService: ScrapeService,
     private readonly modalService: ModalService,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
+    private readonly alertCtrl: AlertController,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -178,7 +128,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       await this.scrapeUrl();
     }
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -199,6 +149,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
+
+    await this.detectLegacyRssProxy();
 
     try {
       console.log(`scrape ${this.url}`);
@@ -325,6 +277,73 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     } else {
       return '';
     }
+  }
+
+  private async detectLegacyRssProxy() {
+    const legacyPathFragemnts = [
+      '/api/tf',
+      '/api/w2f',
+      '/api/web-to-feed',
+      '/api/w2f/rule',
+      '/api/w2f/change',
+      '/api/legacy/tf',
+      '/api/legacy/w2f',
+    ];
+
+    if (
+      legacyPathFragemnts.some(
+        (pathFragemnt) => this.url.indexOf(pathFragemnt) > -1,
+      )
+    ) {
+      const alert = await this.alertCtrl.create({
+        header: 'Legacy URL detected',
+        backdropDismiss: false,
+        message:
+          'This URL looks like an old RSS-proxy url, do you want to convert it?',
+        cssClass: 'primary-alert',
+        buttons: [
+          {
+            role: 'cancel',
+            text: 'Skip',
+            handler: () => {},
+          },
+          {
+            role: 'ok',
+            cssClass: 'confirm-button',
+            text: 'Convert',
+            handler: () => this.convertLegacyRssProxyUrl(),
+          },
+        ],
+      });
+
+      await alert.present();
+    }
+  }
+
+  private async convertLegacyRssProxyUrl() {
+    await this.alertCtrl.dismiss();
+    const url = new URL(this.url);
+    const params = url.search
+      .substring(1)
+      .split('&')
+      .reduce(
+        (params, param) => {
+          const parts = param.split('=', 2);
+          params[parts[0]] = decodeURIComponent(parts[1]);
+          return params;
+        },
+        {} as { [s: string]: string },
+      );
+    console.log('legacy url params', params);
+
+    this.url = params['url'];
+    await this.scrapeUrl();
+    setTimeout(() => {
+      this.webToFeedTransformerComponent.pickGenericFeedBySelectors({
+        contextXPath: params['contextXPath'],
+        linkXPath: params['linkXPath'],
+      });
+    }, 200);
   }
 }
 

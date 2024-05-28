@@ -6,10 +6,7 @@
     </ion-buttons>
 
     <div style="display: flex">
-      <div
-        routerLink="/"
-        style="cursor: pointer; align-content: center"
-      >
+      <div routerLink="/" style="cursor: pointer; align-content: center">
         <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
 
@@ -25,7 +22,7 @@
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button routerLink="/plans" *ngIf="!serverSettings.isSelfHosted()"
+      <ion-button routerLink="/plans" *ngIf="!serverConfig.isSelfHosted()"
         >Pricing</ion-button
       >
       <app-login-button></app-login-button>

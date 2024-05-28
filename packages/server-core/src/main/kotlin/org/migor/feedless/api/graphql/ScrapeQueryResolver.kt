@@ -27,7 +27,7 @@ class ScrapeQueryResolver {
   private val log = LoggerFactory.getLogger(ScrapeQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var scrapeService: ScrapeService
+  private lateinit var scrapeService: ScrapeService
 
   @Throttled
   @DgsQuery

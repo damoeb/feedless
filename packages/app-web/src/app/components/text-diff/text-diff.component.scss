@@ -3,8 +3,8 @@
   column-gap: 10px;
   max-height: 400px;
   overflow-y: auto;
-   &>* {
-     flex: 1;
-     max-width: 48%;
-   }
+  & > * {
+    flex: 1;
+    max-width: 48%;
+  }
 }

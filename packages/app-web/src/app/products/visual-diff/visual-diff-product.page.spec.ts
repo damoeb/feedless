@@ -7,7 +7,7 @@ import {
   mockServerSettings,
 } from '../../app-test.module';
 import { VisualDiffProductModule } from './visual-diff-product.module';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('VisualDiffProductPage', () => {
@@ -26,7 +26,7 @@ describe('VisualDiffProductPage', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

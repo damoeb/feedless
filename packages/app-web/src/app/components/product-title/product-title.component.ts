@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -13,13 +22,13 @@ export class ProductTitleComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

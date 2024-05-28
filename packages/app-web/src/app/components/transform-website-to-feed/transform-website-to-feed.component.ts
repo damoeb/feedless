@@ -3,9 +3,9 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input,
+  Input, OnChanges,
   OnInit,
-  Output,
+  Output, SimpleChanges
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
@@ -43,7 +43,7 @@ export type ComponentStatus = 'valid' | 'invalid';
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TransformWebsiteToFeedComponent implements OnInit {
+export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
   @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
 
@@ -245,5 +245,31 @@ export class TransformWebsiteToFeedComponent implements OnInit {
           tags: [],
         }),
     });
+  }
+
+  async pickGenericFeedBySelectors(
+    selectors: Partial<GqlTransientGenericFeed['selectors']>,
+  ) {
+    console.log('pickGenericFeedBySelectors', selectors, this.genericFeeds);
+    const contextXPath = selectors.contextXPath;
+    const linkXPath = selectors.linkXPath;
+    if (contextXPath && linkXPath) {
+      const matchingGenericFeed = this.genericFeeds.find(
+        (genericFeed) =>
+          genericFeed.selectors.contextXPath === contextXPath &&
+          genericFeed.selectors.linkXPath === linkXPath,
+      );
+      if (matchingGenericFeed) {
+        await this.pickGenericFeed(matchingGenericFeed);
+      } else {
+        console.warn('no matching feed found');
+      }
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.scrapeResponse?.currentValue) {
+      console.log('changed scrapeResponse');
+    }
   }
 }

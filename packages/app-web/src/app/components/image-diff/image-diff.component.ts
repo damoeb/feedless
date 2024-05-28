@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import pixelmatch from 'pixelmatch';
 import { WebDocument } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -16,7 +23,7 @@ type ImageSize = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {
-  @Input({required: true})
+  @Input({ required: true })
   before: WebDocument;
 
   @Input()
@@ -29,7 +36,6 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly domSanitizer: DomSanitizer,
   ) {}
-
 
   ngOnDestroy(): void {
     URL.revokeObjectURL(this.diffImageUrl);

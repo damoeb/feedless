@@ -12,7 +12,7 @@ import {
   GqlAgentsQuery,
   GqlAgentsQueryVariables,
 } from '../../../generated/graphql';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('AgentsComponent', () => {
@@ -39,7 +39,7 @@ describe('AgentsComponent', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

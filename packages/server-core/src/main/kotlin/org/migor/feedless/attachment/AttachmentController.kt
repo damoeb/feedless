@@ -22,10 +22,10 @@ class AttachmentController {
   private val log = LoggerFactory.getLogger(AttachmentController::class.simpleName)
 
   @Autowired
-  lateinit var attachmentService: AttachmentService
+  private lateinit var attachmentService: AttachmentService
 
   @Autowired
-  lateinit var httpService: HttpService
+  private lateinit var httpService: HttpService
 
   @Tracked
   @GetMapping(

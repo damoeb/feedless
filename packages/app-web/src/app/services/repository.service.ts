@@ -23,11 +23,11 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository
+  UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository } from '../graphql/types';
-import { ServerSettingsService } from './server-settings.service';
+import { ServerConfigService } from './server-config.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 import { zenToRx } from './agent.service';
@@ -40,7 +40,7 @@ import { AuthService } from './auth.service';
 export class RepositoryService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly serverSetting: ServerSettingsService,
+    private readonly serverConfig: ServerConfigService,
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly sessionService: SessionService,
@@ -49,10 +49,7 @@ export class RepositoryService {
   async createRepositories(
     data: GqlRepositoriesCreateInput,
   ): Promise<Repository[]> {
-    if (
-      this.sessionService.isAuthenticated() ||
-      this.serverSetting.isEnabled(GqlFeatureName.CanCreateAsAnonymous)
-    ) {
+    if (this.sessionService.isAuthenticated()) {
       return this.apollo
         .mutate<
           GqlCreateRepositoriesMutation,
@@ -67,12 +64,12 @@ export class RepositoryService {
     } else {
       // todo mag handle
       // if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList) && !this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
-      if (this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
+      if (this.serverConfig.isEnabled(GqlFeatureName.CanSignUp)) {
         await this.router.navigateByUrl('/login');
       } else {
-        if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList)) {
-          await this.router.navigateByUrl('/join');
-        }
+        // if (this.serverConfig.isEnabled(GqlFeatureName.HasWaitList)) {
+        //   await this.router.navigateByUrl('/join');
+        // }
       }
     }
   }

@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import { Agents, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../generated/graphql';
+import {
+  Agents,
+  GqlAgentsQuery,
+  GqlAgentsQueryVariables,
+} from '../../generated/graphql';
 import { GetElementType } from '../graphql/types';
 import { Observable, of, switchMap } from 'rxjs';
 import Zen from 'zen-observable-ts';

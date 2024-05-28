@@ -31,10 +31,10 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
   @Autowired
-  lateinit var planService: PlanService
+  private lateinit var planService: PlanService
 
   @Autowired
-  lateinit var authService: AuthService
+  private lateinit var authService: AuthService
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
     val userId =

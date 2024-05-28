@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 
 @Component({
   selector: 'app-login-button',
@@ -25,7 +32,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   constructor(
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}

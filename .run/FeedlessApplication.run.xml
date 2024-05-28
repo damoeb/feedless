@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FeedlessApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" value="saas,dev" />
+    <envs>
+      <env name="APP_BUILD_TIMESTAMP" value="0" />
+    </envs>
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="org.migor.feedless.feedless.packages.server-core.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.migor.feedless.RichRssApplication" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/packages/server-core" />
+    <extension name="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.IdeaRunConfigurationExtension">
+      <option name="DIRENV_ENABLED" value="false" />
+      <option name="DIRENV_TRUSTED" value="false" />
+    </extension>
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.migor.feedless.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

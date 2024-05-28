@@ -1,0 +1,169 @@
+<ion-content>
+  <div class="limited-width-pane" style="margin-top: 100px">
+    <div class="flex__column">
+      <h1>Checkout</h1>
+
+      <ion-spinner name="dots" *ngIf="!currentStep"></ion-spinner>
+
+      <ion-list class="ion-padding">
+        <ng-container *ngIf="currentStep === 'email'">
+        <ion-item>
+          Please provide an email address where we should send your license
+        </ion-item>
+        <form (ngSubmit)="next()">
+          <ion-row class="ion-padding-horizontal">
+            <ion-col size="11">
+              <ion-input
+                aria-label=""
+                fill="outline"
+                [formControl]="formFg.controls.email"
+                placeholder="Email address"
+              ></ion-input>
+            </ion-col>
+            <ion-col size="1">
+              <ion-button color="primary" expand="block" (click)="next()"
+              >Next
+              </ion-button
+              >
+            </ion-col>
+          </ion-row>
+        </form>
+
+        <ion-item class="ion-margin-top">
+          Alternatively, you can
+          <a [href]="loginWithRedirect" style="margin-left: 5px">login here</a>
+        </ion-item>
+        </ng-container>
+
+        <ng-container *ngIf="currentStep === 'data'">
+          <ion-list-header>
+            <h3>Your Products</h3>
+          </ion-list-header>
+          <ion-row *ngFor="let product of products">
+            <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
+            <ion-col push="4" size="4" class="ion-text-center">${{ getPrice(product) }}</ion-col>
+          </ion-row>
+          <ion-row class="ion-margin-top">
+            <ion-col push="4" size="4">
+              <strong>Total incl. VAT</strong>
+            </ion-col>
+            <ion-col
+              push="4"
+              size="4"
+              class="ion-padding-vertical ion-text-center"
+              style="border-top: 1px solid var(--app-foreground)"
+            >
+              <strong>${{ getTotalPrice() }}
+              </strong>
+            </ion-col
+            >
+          </ion-row>
+
+          <ion-list-header>
+            <h3>Your Data</h3>
+          </ion-list-header>
+          <ion-row>
+            <ion-col size="4">
+              <ion-label class="ion-padding">First Name</ion-label>
+            </ion-col>
+            <ion-col size="8">
+              <ion-input
+                aria-label="First Name"
+                placeholder="Your first name"
+                [formControl]="formFg.controls.firstName"
+                fill="outline"
+              ></ion-input>
+<!--              <ion-note color="danger">Enter your name</ion-note>-->
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-label class="ion-padding">Last Name</ion-label>
+            </ion-col>
+            <ion-col size="8">
+              <ion-input
+                aria-label="Last Name"
+                placeholder="Your last name"
+                [formControl]="formFg.controls.lastName"
+                fill="outline"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-label class="ion-padding">Email</ion-label>
+            </ion-col>
+            <ion-col size="8">
+              <ion-input
+                aria-label="Email"
+                fill="outline"
+                [formControl]="formFg.controls.email"
+                placeholder="Email Adress"
+              ></ion-input>
+              <ion-note>Licenses will be send to this address</ion-note>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">
+              <ion-label class="ion-padding">Country</ion-label>
+            </ion-col>
+            <ion-col size="8">
+              <ion-select
+                [multiple]="false"
+                fill="outline"
+                [formControl]="formFg.controls.country"
+                label="Your country of residence"
+                labelPlacement="start"
+              >
+                <ion-select-option
+                  *ngFor="let country of countries"
+                  [value]="country.code"
+                >
+                  {{ country.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-col>
+          </ion-row>
+
+          <ion-list-header>
+            <h3>Payment Methods</h3>
+          </ion-list-header>
+          <ion-row>
+            <ion-col size="8" push="4">
+              <div class="payment-options" [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}">
+                <div *ngFor="let option of paymentOptions"
+                     [ngClass]="{active: formFg.value.paymentMethod === option.method }"
+                     (click)="formFg.controls.paymentMethod.setValue(option.method)">
+                  <h3>{{ option.title }}</h3>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+
+          <ion-row class="ion-margin-top">
+            <ion-col size="8" push="4">
+              <ion-checkbox
+                labelPlacement="end"
+                [formControl]="formFg.controls.acceptedTerms"
+              >
+                I have read and agree to the terms and conditions
+              </ion-checkbox>
+            </ion-col>
+          </ion-row>
+
+          <ion-row class="ion-margin-top">
+            <ion-col size="12">
+              <ion-button
+                expand="block"
+                [disabled]="loading"
+                (click)="createBilling()"
+              >
+                Buy
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ng-container>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>

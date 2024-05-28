@@ -34,7 +34,8 @@ import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../services/session.service';
 import { environment } from '../../../../environments/environment';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ServerConfigService } from '../../../services/server-config.service';
+import { createEmailFormControl } from '../../../form-controls';
 
 type Email = string;
 
@@ -84,7 +85,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         Validators.min(0),
         Validators.max(1),
       ]),
-      email: new FormControl<Email>('', [Validators.required]),
+      email: createEmailFormControl<Email>(''),
       screen: new FormControl<Screen>('page', [Validators.required]),
       fetchFrequency: new FormControl<string>('0 0 0 * * *', [
         Validators.required,
@@ -102,10 +103,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         { disabled: true, value: null },
         [Validators.required],
       ),
-      elementXpath: new FormControl<string>(
-        { disabled: true, value: null },
-        [Validators.required],
-      )
+      elementXpath: new FormControl<string>({ disabled: true, value: null }, [
+        Validators.required,
+      ]),
     },
     { updateOn: 'change' },
   );
@@ -131,13 +131,13 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly sessionService: SessionService,
     private readonly scrapeService: ScrapeService,
-    private readonly serverSettings: ServerSettingsService,
+    private readonly serverConfig: ServerConfigService,
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   ngOnInit() {
-    this.isThrottled = !this.serverSettings.isSelfHosted();
+    this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
       merge(
         this.form.controls.url.valueChanges,
@@ -191,7 +191,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   handlePickedXPath(xpath: string | null) {
-    console.log(xpath)
+    console.log(xpath);
     if (this.pickXPathDelegate) {
       this.pickXPathDelegate(xpath);
       this.highlightXpath = xpath;
@@ -244,7 +244,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         emit: [],
         debug: {
           screenshot: true,
-          html: true
+          html: true,
         },
       };
 
@@ -397,11 +397,10 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   pickXPath() {
     this.pickXPathDelegate = (xpath: string) => {
-      this.form.controls.elementXpath.setValue(xpath)
+      this.form.controls.elementXpath.setValue(xpath);
       this.changeRef.detectChanges();
     };
   }
-
 
   removeAction(index: number) {
     this.actions.removeAt(index);
@@ -448,7 +447,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       return {
         selectorBased: {
           xpath: {
-            value: this.form.controls.elementXpath.enabled ? this.form.value.elementXpath : '/',
+            value: this.form.controls.elementXpath.enabled
+              ? this.form.value.elementXpath
+              : '/',
           },
           expose: {
             pixel: true,
@@ -490,7 +491,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   getXPathLabel(formControl: FormControl<string | null>) {
     if (formControl.valid) {
-      return formControl.value
+      return formControl.value;
     } else {
       return 'Choose Element';
     }

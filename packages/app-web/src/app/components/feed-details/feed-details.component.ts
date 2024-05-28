@@ -1,14 +1,40 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { GqlFeedlessPlugins, GqlProductName, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
-import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlFeedlessPlugins,
+  GqlProductCategory,
+  GqlScrapeRequest,
+  GqlVisibility,
+  GqlWebDocumentField,
+} from '../../../generated/graphql';
+import {
+  FeedlessPlugin,
+  Repository,
+  SubscriptionSource,
+  WebDocument,
+} from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
-  getScrapeRequest
+  getScrapeRequest,
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
-import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  AlertController,
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular';
+import {
+  FeedWithRequest,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -16,20 +42,22 @@ import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 
-export type WebDocumentWithFornmControl = WebDocument & { fc: FormControl<boolean> };
+export type WebDocumentWithFornmControl = WebDocument & {
+  fc: FormControl<boolean>;
+};
 
-type ViewMode = 'list' | 'diff' | 'histogram'
+type ViewMode = 'list' | 'diff' | 'histogram';
 
 type Pair<A, B> = {
-  a: A
-  b: B
-}
+  a: A;
+  b: B;
+};
 
 @Component({
   selector: 'app-feed-details',
@@ -65,9 +93,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   viewModeHistogram: ViewMode = 'histogram';
   viewModeDiff: ViewMode = 'diff';
   protected compareByField: GqlWebDocumentField | undefined;
-  protected readonly GqlProductName = GqlProductName;
-  protected readonly compareByPixel: GqlWebDocumentField = GqlWebDocumentField.Pixel;
-
+  protected readonly GqlProductName = GqlProductCategory;
+  protected readonly compareByPixel: GqlWebDocumentField =
+    GqlWebDocumentField.Pixel;
 
   constructor(
     private readonly modalService: ModalService,
@@ -77,10 +105,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly documentService: DocumentService,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly sessionService: SessionService,
     private readonly repositoryService: RepositoryService,
-    private readonly serverSettingsService: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
   ) {}
@@ -90,12 +117,15 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    if (this.repository.product === GqlProductName.VisualDiff) {
+    if (this.repository.product === GqlProductCategory.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
-    this.compareByField = this.repository.plugins.find(plugin => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward)?.params?.org_feedless_diff_email_forward?.compareBy?.field;
+    this.compareByField = this.repository.plugins.find(
+      (plugin) =>
+        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
+    )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
-    this.feedUrl = `${this.serverSettingsService.gatewayUrl}/feed/${this.repository.id}/atom`;
+    this.feedUrl = `${this.serverConfig.gatewayUrl}/feed/${this.repository.id}/atom`;
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
@@ -124,7 +154,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
     return repository.plugins
       .map((plugin) => this.getPluginName(plugin.pluginId))
-      .filter(name => name?.length > 0)
+      .filter((name) => name?.length > 0)
       .join(', ');
   }
 
@@ -140,7 +170,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const componentProps: GenerateFeedModalComponentProps = {
       repository: this.repository,
       modalTitle: `Customize ${this.repository.title}`,
-      openAccordions: accordions
+      openAccordions: accordions,
     };
     await this.modalService.openFeedMetaEditor(componentProps);
     await this.popoverCtrl.dismiss();
@@ -230,7 +260,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  fromNow = relativeTimeOrElse
+  fromNow = relativeTimeOrElse;
 
   async deleteRepository() {
     await this.popoverCtrl.dismiss();
@@ -383,7 +413,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   getDocumentUrl(document: WebDocument): string {
     if (this.track) {
-      return `${this.serverSettingsService.gatewayUrl}/article/${document.id}`;
+      return `${this.serverConfig.gatewayUrl}/article/${document.id}`;
     } else {
       return document.url;
     }
@@ -415,11 +445,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   getDocumentPairs() {
     const pairs: Pair<WebDocument, WebDocument>[] = [];
-    for(let i=0; i < this.documents.length -1; i++) {
+    for (let i = 0; i < this.documents.length - 1; i++) {
       pairs.push({
-        a: this.documents[i+1],
+        a: this.documents[i + 1],
         b: this.documents[i],
-      })
+      });
     }
     return pairs;
   }
@@ -427,13 +457,13 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async refreshSources() {
     this.repository = await this.repositoryService.updateRepository({
       where: {
-        id: this.repository.id
+        id: this.repository.id,
       },
       data: {
         nextUpdateAt: {
-          set: null
-        }
-      }
+          set: null,
+        },
+      },
     });
     this.changeRef.detectChanges();
 

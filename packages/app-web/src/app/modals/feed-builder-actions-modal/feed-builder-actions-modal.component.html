@@ -26,8 +26,8 @@
       <ion-label class="ion-margin-horizontal"
         >{{ errorMessage }}.
 
-        <span *ngIf="!serverSettings.isSelfHosted()">Please try later.</span>
-        <span *ngIf="serverSettings.isSelfHosted()"></span>
+        <span *ngIf="!serverConfig.isSelfHosted()">Please try later.</span>
+        <span *ngIf="serverConfig.isSelfHosted()"></span>
       </ion-label>
     </ion-toolbar>
     <ion-row

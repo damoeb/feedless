@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 
 @Component({
   selector: 'app-untold-notes-product-page',
@@ -15,13 +24,13 @@ export class UntoldNotesProductPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

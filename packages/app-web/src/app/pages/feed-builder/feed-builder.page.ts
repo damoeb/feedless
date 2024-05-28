@@ -1,8 +1,23 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ProductConfig, ProductService } from '../../services/product.service';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import { FeedWithRequest, NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  FeedWithRequest,
+  NativeOrGenericFeed,
+} from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
 import { GqlScrapeRequest } from '../../../generated/graphql';
 
@@ -18,14 +33,14 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly modalService: ModalService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

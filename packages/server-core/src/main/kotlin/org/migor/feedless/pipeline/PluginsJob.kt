@@ -22,32 +22,32 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.cron}")
 @Transactional(propagation = Propagation.NEVER)
 class PluginsJob internal constructor() {
 
   private val log = LoggerFactory.getLogger(PluginsJob::class.simpleName)
 
   @Autowired
-  lateinit var pipelineJobDAO: PipelineJobDAO
+  private lateinit var pipelineJobDAO: PipelineJobDAO
 
   @Autowired
-  lateinit var documentDAO: DocumentDAO
+  private lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var pluginService: PluginService
+  private lateinit var pluginService: PluginService
 
   @Autowired
-  lateinit var documentService: DocumentService
+  private lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var mailService: MailService
+  private lateinit var mailService: MailService
 
   @Autowired
-  lateinit var mailForwardDAO: MailForwardDAO
+  private lateinit var mailForwardDAO: MailForwardDAO
 
   @Scheduled(fixedDelay = 3245, initialDelay = 20000)
   @Transactional

@@ -7,16 +7,9 @@ import { IonicModule } from '@ionic/angular';
 import { TermsPageRoutingModule } from './terms-routing.module';
 
 import { TermsPage } from './terms.page';
-import { TermsModule } from '../../components/terms/terms.module';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    TermsPageRoutingModule,
-    TermsModule,
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, TermsPageRoutingModule],
   declarations: [TermsPage],
 })
 export class TermsPageModule {}

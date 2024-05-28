@@ -12,12 +12,12 @@
     </div>
 
     <ion-buttons slot="end">
-      <ng-container *ngIf="serverSettings.isSelfHosted()">
+      <ng-container *ngIf="serverConfig.isSelfHosted()">
         <ion-button href="https://discord.gg/6ySGeryD" target="_blank">
           Community
         </ion-button>
         <ion-button
-          *ngIf="serverSettings.isSelfHosted()"
+          *ngIf="serverConfig.isSelfHosted()"
           target="_blank"
           href="https://gihub.com/damoeb/rss-proxy"
         >
@@ -33,7 +33,7 @@
         </ion-button>
       </ng-container>
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button *ngIf="!serverSettings.isSelfHosted()" routerLink="/plans">
+      <ion-button *ngIf="!serverConfig.isSelfHosted()" routerLink="/plans">
         Pricing
       </ion-button>
       <app-login-button></app-login-button>
@@ -47,8 +47,8 @@
 
 <ion-footer>
   <div class="ion-text-right">
-    <ion-chip>v.{{serverSettings.getVersion()}}</ion-chip>
-    <ng-container *ngIf="serverSettings.isSelfHosted() && license">
+    <ion-chip>v.{{serverConfig.getVersion()}}</ion-chip>
+    <ng-container *ngIf="serverConfig.isSelfHosted() && license">
       <ion-chip *ngIf="license.isValid && !license.isTrial"
         >Open Source Apache 2</ion-chip
       >

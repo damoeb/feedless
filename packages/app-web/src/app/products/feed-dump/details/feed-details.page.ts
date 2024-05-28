@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ServerConfigService } from '../../../services/server-config.service';
 import { Subscription } from 'rxjs';
 import { RepositoryService } from '../../../services/repository.service';
 import { Repository, WebDocument } from '../../../graphql/types';
@@ -25,7 +31,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
   ) {}
 
   ngOnInit() {

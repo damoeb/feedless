@@ -19,28 +19,23 @@ import org.migor.feedless.generated.types.FeatureValue
 import java.util.*
 
 enum class FeatureName {
-  // internal
-//  authSSO,
-//  authMail,
-
-  rateLimitInt,
+  requestPerMinuteUpperLimitInt,
   refreshRateInMinutesLowerLimitInt,
   publicRepositoryBool,
   pluginsBool,
 
-  scrapeRequestTimeoutInt,
-  repositoryRetentionMaxItemsUpperLimitInt,
-  repositoryRetentionMaxItemsLowerLimitInt,
+  repositoryCapacityUpperLimitInt,
+  repositoryCapacityLowerLimitInt,
   repositoryRetentionMaxDaysLowerLimitInt,
   itemEmailForwardBool,
   itemWebhookForwardBool,
-//  apiBool,
   canLogin,
+  canActivatePlan,
   canCreateUser,
-  canCreateAsAnonymous,
-  hasWaitList,
+  canJoinPlanWaitList,
   canSignUp,
-  repositoryWhenAnonymousExpiryInDaysInt,
+
+  scrapeRequestTimeoutMsecInt,
   scrapeSourceMaxCountActiveInt,
   scrapeRequestMaxCountPerSourceInt,
   scrapeRequestActionMaxCountInt,
@@ -52,7 +47,7 @@ enum class FeatureName {
   name = "t_feature_value", uniqueConstraints = [
     UniqueConstraint(
       name = "UniqueFeaturePerPlan",
-      columnNames = [StandardJpaFields.planId, StandardJpaFields.featureId]
+      columnNames = ["feature_group_id", StandardJpaFields.featureId]
     )]
 )
 open class FeatureValueEntity : EntityWithUUID() {
@@ -67,23 +62,23 @@ open class FeatureValueEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
-  @Column(name = StandardJpaFields.planId, nullable = false)
-  open lateinit var planId: UUID
+  @Column(name = "feature_group_id", nullable = false)
+  open lateinit var featureGroupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
-    name = StandardJpaFields.planId,
+    name = "feature_group_id",
     referencedColumnName = "id",
     insertable = false,
     updatable = false
   )
-  open var plan: PlanEntity? = null
+  open var featureGroup: FeatureGroupEntity? = null
 
   @Column(name = StandardJpaFields.featureId, nullable = false)
   open lateinit var featureId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
     name = StandardJpaFields.featureId,
@@ -96,10 +91,11 @@ open class FeatureValueEntity : EntityWithUUID() {
 
 fun FeatureValueEntity.toDto(): FeatureValue {
   val value = FeatureValue.newBuilder()
+  value.id(id.toString())
   if (valueType == FeatureValueType.number) {
     value.numVal(
       FeatureIntValue.newBuilder()
-        .value(valueInt!!)
+        .value(valueInt ?: -1)
         .build()
     )
   } else {
@@ -112,27 +108,3 @@ fun FeatureValueEntity.toDto(): FeatureValue {
 
   return value.build()
 }
-
-//fun FeatureName.toDto(): FeatureNameDto {
-//  return when (this) {
-//    FeatureName.pluginsBool -> FeatureNameDto.plugins
-//    FeatureName.rateLimitInt -> FeatureNameDto.rateLimit
-//    FeatureName.minRefreshRateInMinutesInt -> FeatureNameDto.minRefreshRateInMinutes
-//    FeatureName.publicScrapeSourceBool -> FeatureNameDto.publicScrapeSource
-//    FeatureName.scrapeRequestTimeoutInt -> FeatureNameDto.scrapeRequestTimeout
-//    FeatureName.repositoryRetentionMaxItemsUpperLimitInt -> FeatureNameDto.scrapeSourceRetentionMaxItems
-//    FeatureName.itemEmailForwardBool -> FeatureNameDto.itemEmailForward
-//    FeatureName.itemWebhookForwardBool -> FeatureNameDto.itemWebhookForward
-//    FeatureName.scrapeSourceExpiryInDaysInt -> FeatureNameDto.scrapeSourceExpiryInDays
-//    FeatureName.scrapeSourceMaxCountActiveInt -> FeatureNameDto.scrapeSourceMaxCountActive
-//    FeatureName.scrapeRequestMaxCountPerSourceInt -> FeatureNameDto.scrapeRequestMaxCountPerSource
-//    FeatureName.scrapeRequestActionMaxCountInt -> FeatureNameDto.scrapeRequestActionMaxCount
-//    FeatureName.scrapeSourceMaxCountTotalInt -> FeatureNameDto.scrapeSourceMaxCountTotal
-//    FeatureName.apiBool -> FeatureNameDto.api
-//    FeatureName.canLogin -> FeatureNameDto.canLogin
-//    FeatureName.canCreateUser -> FeatureNameDto.canCreateUser
-//    FeatureName.canSignUp -> FeatureNameDto.canSignUp
-//    FeatureName.hasWaitList -> FeatureNameDto.hasWaitList
-//    FeatureName.canCreateAsAnonymous -> FeatureNameDto.canCreateAsAnonymous
-//  }
-//}

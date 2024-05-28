@@ -16,7 +16,7 @@ class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)
 
   @Autowired
-  lateinit var cache: RequestThrottleService
+  private lateinit var cache: RequestThrottleService
 
   @Around("@annotation(org.migor.feedless.api.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {

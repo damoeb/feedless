@@ -8,6 +8,7 @@ object StandardJpaFields {
   const val sourceId = "source_id"
   const val documentId = "document_id"
   const val product_id = "product_id"
+  const val billing_id = "billing_id"
   const val featureId = "feature_id"
   const val publishedAt = "released_at"
   const val status = "status"

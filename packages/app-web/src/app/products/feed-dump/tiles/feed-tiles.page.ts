@@ -1,5 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
+import { ServerConfigService } from '../../../services/server-config.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { Repository } from '../../../graphql/types';
 
@@ -15,7 +20,7 @@ export class FeedTilesPage implements OnInit {
   constructor(
     private readonly repositoryService: RepositoryService,
     private readonly changeRef: ChangeDetectorRef,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
   ) {}
 
   async handleQuery(query: string) {

@@ -30,9 +30,9 @@ const routes: Routes = [
             (m) => m.LicensePageModule,
           ),
       },
+      ...DefaultRoutes,
     ],
   },
-  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

@@ -22,7 +22,7 @@ class PluginResolver {
   private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
 
   @Autowired
-  lateinit var pluginsService: PluginService
+  private lateinit var pluginsService: PluginService
 
   @Throttled
   @DgsQuery

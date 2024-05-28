@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -22,6 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 
 const val actuatorPassword = "password"
+const val feedId = "feed-id"
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(
@@ -32,10 +34,10 @@ const val actuatorPassword = "password"
   value = [
     MockBean(UserService::class),
     MockBean(LicenseService::class),
+    MockBean(MailProviderService::class),
   ]
 )
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.feed, "metrics"])
-//@TestPropertySource(locations= ["classpath:application-test.properties"])
 class SecurityConfigTest {
 
   lateinit var baseEndpoint: String
@@ -84,28 +86,30 @@ class SecurityConfigTest {
 
   @ParameterizedTest
   @CsvSource(value = [
-    "stream/feed/2",
-    "stream/feed/",
-//      "api/legacy/foo", // TODO fix cause not whitelisted
-    "stream/feed/foo",
-    "stream/bucket/foo",
-    "feed/foo",
-//    "article/foo",
-//    "a/foo",
-    "feed:foo",
+//    "bucket/$feedId",
+//    "bucket/$feedId/atom",
+//    "bucket:$feedId",
+//    "bucket:$feedId/atom",
+//    "stream/bucket/$feedId",
+//    "stream/bucket/$feedId/atom",
+    "stream/feed/$feedId",
+    "stream/feed/$feedId/atom",
+    "feed/$feedId",
+    "feed/$feedId/atom",
+    "feed:$feedId",
+//    "feed:$feedId/atom",
     ApiUrls.transformFeed,
     ApiUrls.webToFeed,
     ApiUrls.webToFeedVerbose,
     ApiUrls.webToFeedFromRule,
     ApiUrls.webToFeedFromChange,
-    "bucket/foo",
-    "bucket:foo",
+//    "api/legacy/foo", // TODO fix cause not whitelisted
+//    "article/foo",
+//    "a/foo",
   ])
   fun whenCallingUrl_ThenSuccess(path: String) {
     val restTemplate = TestRestTemplate()
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertEquals(HttpStatus.OK, response.statusCode)
-//    assertEquals("application", response.headers.contentType?.type)
-//    assertEquals("xml", response.headers.contentType?.subtype)
   }
 }

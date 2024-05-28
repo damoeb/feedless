@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import { GqlListPluginsQuery, GqlListPluginsQueryVariables, ListPlugins } from '../../generated/graphql';
+import {
+  GqlListPluginsQuery,
+  GqlListPluginsQueryVariables,
+  ListPlugins,
+} from '../../generated/graphql';
 import { FeedlessPlugin } from '../graphql/types';
 
 @Injectable({

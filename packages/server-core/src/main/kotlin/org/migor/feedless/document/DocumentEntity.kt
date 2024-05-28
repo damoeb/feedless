@@ -21,11 +21,11 @@ import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
+import org.migor.feedless.annotation.AnnotationEntity
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.annotation.AnnotationEntity
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus

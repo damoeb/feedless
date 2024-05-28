@@ -1,12 +1,13 @@
 package org.migor.feedless.config
 
 import io.micrometer.core.instrument.MeterRegistry
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.plan.PlanName
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
@@ -52,36 +53,46 @@ class SecurityConfig {
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
   private val metricRole = "METRIC_CONSUMER"
 
+  @Value("\${app.cors.allowedOrigins:}")
+  lateinit var allowedOrigins: String
+
   @Autowired
-  lateinit var userService: UserService
+  private lateinit var userService: UserService
 
   @Autowired(required = false)
   lateinit var jwtRequestFilter: JwtRequestFilter
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var cookieProvider: CookieProvider
+  private lateinit var cookieProvider: CookieProvider
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var environment: Environment
+  private lateinit var environment: Environment
 
   @Throws(Exception::class)
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
     return conditionalOauth(http)
-      .sessionManagement()
-      .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-      .and()
-      .cors().configurationSource(corsConfigurationSource())
-      .and()
+      .headers {
+        it.httpStrictTransportSecurity {
+          it.includeSubDomains(true)
+        }
+
+      }
+      .sessionManagement {
+        it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+      }
+      .cors {
+        it.configurationSource(corsConfigurationSource())
+      }
       .csrf().disable()
       .formLogin().disable()
       .httpBasic(Customizer.withDefaults())
@@ -106,13 +117,20 @@ class SecurityConfig {
       ApiUrls.mailForwardingAllow + "/**",
       "/api/legacy/**",
       "/stream/feed/**",
+      "/payment/**",
+//      "/stream/feed/*/*",
       "/stream/bucket/**",
+//      "/stream/bucket/*/*",
       "/feed/**",
+//      "/feed/*/*",
       "/feed:**",
+//      "/feed:*/*",
       "/article/**",
       "/a/**",
-      "/bucket/**",
-      "/bucket:**",
+      "/bucket/*",
+      "/bucket/*/*",
+      "/bucket:*",
+      "/bucket:*/*",
       "/attachment/**",
     )
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
@@ -168,13 +186,13 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
-    val githubId = attributes["id"] as String
+    val githubId = (attributes["id"] as Int).toString()
     return resolveUserByGithubId(githubId) ?: userService.createUser(
       newCorrId(),
       email = email,
       githubId = githubId,
       planName = PlanName.free,
-      productName = ProductName.feedless
+      productCategory = ProductCategory.feedless
     )
   }
 
@@ -185,7 +203,7 @@ class SecurityConfig {
       newCorrId(),
       email,
       planName = PlanName.free,
-      productName = ProductName.feedless
+      productCategory = ProductCategory.feedless
     )
   }
 
@@ -225,10 +243,10 @@ class SecurityConfig {
   fun corsConfigurationSource(): CorsConfigurationSource {
     val config = CorsConfiguration()
     config.allowedMethods = listOf("GET", "POST")
-    config.addAllowedHeader("")
     config.allowCredentials = true
-    config.addAllowedOriginPattern(CorsConfiguration.ALL)
-    config.addAllowedHeader(CorsConfiguration.ALL)
+    config.allowedHeaders = listOf(CorsConfiguration.ALL)
+    config.allowedOrigins = StringUtils.trimToNull(allowedOrigins)?.split(",")?.map { it.trim() }
+    log.info("cors allowedOrigins = [${config.allowedOrigins?.joinToString(",")}]")
     val source = UrlBasedCorsConfigurationSource()
     source.registerCorsConfiguration("/**", config)
     return source

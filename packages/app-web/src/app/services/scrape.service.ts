@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { GqlScrapeQuery, GqlScrapeQueryVariables, GqlScrapeRequestInput, Scrape } from '../../generated/graphql';
+import {
+  GqlScrapeQuery,
+  GqlScrapeQueryVariables,
+  GqlScrapeRequestInput,
+  Scrape,
+} from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { ScrapeResponse } from '../graphql/types';

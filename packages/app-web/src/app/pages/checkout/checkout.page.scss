@@ -1,0 +1,84 @@
+@import "../../../mixins";
+
+p,
+div,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+}
+
+.offers {
+  display: flex;
+  app-plan-column {
+    flex: 1;
+    display: flex;
+  }
+}
+
+ion-input,
+ion-textarea {
+  --app-border-radius: 8px;
+  --padding-start: 10px !important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+  @include control();
+}
+
+ion-input,
+ion-select {
+  --border-radius: 8px;
+  min-height: 45px !important;
+
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+
+  &:not(.has-focus):hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+}
+
+ion-checkbox {
+  &.ng-touched.ng-invalid {
+    --border-color: var(--ion-color-danger);
+  }
+}
+
+
+.payment-options {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+
+  &.ng-touched.ng-invalid {
+    border-left: 2px solid rgba(var(--ion-color-danger-rgb), 0.8);
+    padding-left: 10px;
+  }
+
+  &>div {
+    --border-color: rgba(var(--ion-color-dark-rgb), 0.5);
+    --hl-border-color: var(--ion-color-dark);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    width: 120px;
+    height: 120px;
+    padding: 0 10px;
+    cursor: pointer;
+
+    &.active {
+      --border-color: rgba(var(--ion-color-primary-rgb), 0.8);
+      --hl-border-color: var(--ion-color-primary);
+      background: rgba(var(--ion-color-primary-rgb), 0.2);
+    }
+
+    &:hover {
+      --border-color: var(--hl-border-color);
+    }
+  }
+}

@@ -19,7 +19,6 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.feed.synd.SyndFeedImpl
 import com.rometools.rome.feed.synd.SyndImage
 import com.rometools.rome.feed.synd.SyndImageImpl
-import com.rometools.rome.feed.synd.SyndLink
 import com.rometools.rome.feed.synd.SyndLinkImpl
 import com.rometools.rome.io.SyndFeedOutput
 import org.apache.commons.lang3.StringUtils

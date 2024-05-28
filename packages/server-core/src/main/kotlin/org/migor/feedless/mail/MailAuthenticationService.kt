@@ -4,13 +4,12 @@ import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.generated.types.ProductName
+import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.PlanName
@@ -40,28 +39,25 @@ class MailAuthenticationService {
   private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var cookieProvider: CookieProvider
 
   @Autowired
-  lateinit var cookieProvider: CookieProvider
+  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
 
   @Autowired
-  lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+  private lateinit var userService: UserService
 
   @Autowired
-  lateinit var userService: UserService
+  private lateinit var featureService: FeatureService
 
   @Autowired
-  lateinit var featureService: FeatureService
+  private lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var userDAO: UserDAO
-
-  @Autowired
-  lateinit var oneTimePasswordService: OneTimePasswordService
+  private lateinit var oneTimePasswordService: OneTimePasswordService
 
   fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email
@@ -69,7 +65,7 @@ class MailAuthenticationService {
     return Flux.create { emitter ->
       run {
         try {
-          if (featureService.isDisabled(FeatureName.canLogin, data.product.fromDto())) {
+          if (featureService.isDisabled(FeatureName.canLogin, null)) {
             throw UnavailableException("login is deactivated by feature flag")
           }
 
@@ -112,7 +108,7 @@ class MailAuthenticationService {
     }
   }
 
-  private fun createUser(corrId: String, email: String, product: ProductName): UserEntity {
+  private fun createUser(corrId: String, email: String, product: ProductCategory): UserEntity {
     return userService.createUser(corrId, email, product.fromDto(), PlanName.free)
   }
 

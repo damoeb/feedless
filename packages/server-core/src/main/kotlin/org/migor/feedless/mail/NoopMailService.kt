@@ -2,7 +2,7 @@ package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.user.UserEntity
@@ -25,7 +25,7 @@ class NoopMailService : MailService {
   override fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
   }
 
-  override fun getNoReplyAddress(product: ProductName): String {
+  override fun getNoReplyAddress(product: ProductCategory): String {
     return "no-reply@example"
   }
 

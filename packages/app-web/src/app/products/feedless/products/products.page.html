@@ -83,7 +83,7 @@
               shape="round"
               size="small"
               *ngIf="product.costs !== 0"
-              [routerLink]="'/buy/'+product.id"
+              [routerLink]="'/pricing/'+product.id"
               style="height: 40px"
             >
               Pricing
@@ -123,8 +123,7 @@
           <div style="margin-top: 50px">
             <h1 #setup>Local Setup</h1>
             <div [innerHtml]="product.localSetupBeforeMarkup"></div>
-            <pre>
-{{product.localSetupBash}}</pre>
+            <pre>{{product.localSetupBash}}</pre>
             <div [innerHtml]="product.localSetupAfterMarkup"></div>
           </div>
 

@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ProductConfig, ProductService } from '../../services/product.service';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 
@@ -20,13 +29,12 @@ export class FeedDumpProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly modalService: ModalService,
     private readonly authService: AuthService,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
@@ -36,7 +44,7 @@ export class FeedDumpProductPage implements OnInit, OnDestroy {
           this.authorization = authorization;
           this.changeRef.detectChanges();
         }),
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;

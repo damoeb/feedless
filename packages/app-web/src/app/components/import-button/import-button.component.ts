@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../../modals/import-opml-modal/import-opml-modal.component';
+import {
+  ImportOpmlModalComponent,
+  ImportOpmlModalComponentProps,
+} from '../../modals/import-opml-modal/import-opml-modal.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -13,7 +22,6 @@ import { firstValueFrom } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportButtonComponent {
-
   @Input()
   color: string;
 
@@ -55,7 +63,5 @@ export class ImportButtonComponent {
     }
   }
 
-  openUrlImporter() {
-
-  }
+  openUrlImporter() {}
 }

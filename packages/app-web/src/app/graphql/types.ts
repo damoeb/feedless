@@ -2,15 +2,16 @@ import {
   GqlAuthentication,
   GqlCreateRepositoriesMutation,
   GqlCreateUserSecretMutation,
+  GqlFeatureGroupsQuery,
   GqlListPluginsQuery,
-  GqlPlansQuery,
+  GqlListProductsQuery,
   GqlRemoteNativeFeedQuery,
   GqlRepositoryByIdQuery,
   GqlScrapedReadability,
   GqlScrapeQuery,
   GqlSelectors,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery
+  GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
@@ -23,6 +24,7 @@ export type SubscriptionSource = GetElementType<
 export type Repository = GetElementType<
   GqlCreateRepositoriesMutation['createRepositories']
 >;
+export type Product = GetElementType<GqlListProductsQuery['products']>;
 
 export type WebDocument = GqlWebDocumentByIdQuery['webDocument'];
 
@@ -53,8 +55,10 @@ export type ScrapedElement = GetElementType<ScrapeResponse['elements']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
 export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];
-export type Feature = GetElementType<Plan['features']>;
-export type Plan = GetElementType<GqlPlansQuery['plans']>;
+export type FeatureGroup = GetElementType<
+  GqlFeatureGroupsQuery['featureGroups']
+>;
+export type Feature = GetElementType<FeatureGroup['features']>;
 export type Session = GqlSessionQuery['session'];
 export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
 export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;

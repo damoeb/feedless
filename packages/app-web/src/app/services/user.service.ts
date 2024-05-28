@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { CreateUser, GqlCreateUserInput, GqlCreateUserMutation, GqlCreateUserMutationVariables } from '../../generated/graphql';
+import {
+  CreateUser,
+  GqlCreateUserInput,
+  GqlCreateUserMutation,
+  GqlCreateUserMutationVariables,
+} from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 
 @Injectable({

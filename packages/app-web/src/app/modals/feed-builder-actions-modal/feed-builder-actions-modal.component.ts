@@ -1,14 +1,26 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { XyPosition } from '../../components/embedded-image/embedded-image.component';
-import { GqlFeedlessPlugins, GqlScrapeActionInput, GqlScrapeRequestInput, GqlXyPosition } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapeActionInput,
+  GqlScrapeRequestInput,
+  GqlXyPosition,
+} from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 
 type BrowserActionType = 'click';
 
@@ -49,7 +61,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
     private readonly scrapeService: ScrapeService,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
   ) {}
 
   ngOnInit() {

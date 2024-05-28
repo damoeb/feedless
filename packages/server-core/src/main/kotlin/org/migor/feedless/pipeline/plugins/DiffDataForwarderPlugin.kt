@@ -56,16 +56,16 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   private val log = LoggerFactory.getLogger(DiffDataForwarderPlugin::class.simpleName)
 
   @Autowired
-  lateinit var documentDAO: DocumentDAO
+  private lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  lateinit var productService: ProductService
+  private lateinit var productService: ProductService
 
   @Autowired
-  lateinit var sourceDAO: SourceDAO
+  private lateinit var sourceDAO: SourceDAO
 
   @Autowired
-  lateinit var templateService: TemplateService
+  private lateinit var templateService: TemplateService
 
   override fun id() = FeedlessPlugins.org_feedless_diff_email_forward.name
   override fun name() = ""

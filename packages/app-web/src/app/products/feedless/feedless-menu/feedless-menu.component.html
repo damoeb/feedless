@@ -11,7 +11,10 @@
     Trackers
     <ion-chip slot="end" *ngIf="loggedIn">{{ trackerCount }}</ion-chip>
   </ion-item>
-  <div class="ion-margin-vertical" style="border-top: 1px solid rgba(var(--app-foreground-rgb), 0.2)"></div>
+  <div
+    class="ion-margin-vertical"
+    style="border-top: 1px solid rgba(var(--app-foreground-rgb), 0.2)"
+  ></div>
   <ion-item href="/agents" routerLinkActive="active">
     Agents
     <ng-container *ngIf="loggedIn">

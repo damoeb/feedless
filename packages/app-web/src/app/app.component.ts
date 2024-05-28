@@ -11,10 +11,10 @@ import { SessionService } from './services/session.service';
 import { Subscription } from 'rxjs';
 import {
   ProductConfig,
-  ProductService,
+  AppConfigService,
   SidemenuBreakpoint,
-} from './services/product.service';
-import { GqlProductName } from '../generated/graphql';
+} from './services/app-config.service';
+import { GqlProductCategory } from '../generated/graphql';
 import { kebabCase } from 'lodash';
 
 @Component({
@@ -25,23 +25,23 @@ import { kebabCase } from 'lodash';
 })
 export class AppComponent implements OnDestroy, OnInit {
   productConfig: ProductConfig;
-  protected readonly GqlProductName = GqlProductName;
+  protected readonly GqlProductName = GqlProductCategory;
   private subscriptions: Subscription[] = [];
   private isDarkMode: boolean;
-  private product: GqlProductName;
+  private product: GqlProductCategory;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly sessionService: SessionService,
     private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -60,15 +60,14 @@ export class AppComponent implements OnDestroy, OnInit {
           });
         } else {
           console.log('without token');
-          await new Promise((resolve) => setTimeout(resolve, 200));
-          await this.sessionService.fetchSession('network-only');
+          await this.sessionService.fetchSession();
         }
       }),
       this.sessionService.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
         this.propagateColorModeAndProduct();
       }),
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((product) => {
           this.product = product.product;

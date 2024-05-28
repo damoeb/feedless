@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
+import { SaasGuardService } from '../guards/saas-guard.service';
+import { BillingsPageModule } from '../pages/billings/billings.module';
 
 export const DefaultRoutes: Routes = [
   {
@@ -22,18 +24,85 @@ export const DefaultRoutes: Routes = [
       ),
   },
   {
-    path: 'feeds',
-    canActivate: [AuthGuardService],
-    loadChildren: () =>
-      import('../pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+    path: '',
+    // canActivate: [SaasGuardService], todo enable
+    children: [
+      {
+        path: 'pricing',
+        loadChildren: () =>
+          import('../pages/pricing/pricing.module').then(
+            (m) => m.PricingPageModule,
+          ),
+      },
+      {
+        path: 'billings',
+        // canActivate: [IsRootGuardService],
+        loadChildren: () =>
+          import('../pages/billings/billings.module').then(
+            (m) => m.BillingsPageModule,
+          ),
+      },
+      {
+        path: 'checkout',
+        loadChildren: () =>
+          import('../pages/checkout/checkout.module').then(
+            (m) => m.CheckoutPageModule,
+          ),
+      },
+      {
+        path: 'payment/summary',
+        loadChildren: () =>
+          import('../pages/payment-summary/payment-summary.module').then(
+            (m) => m.PaymentSummaryPageModule,
+          ),
+      },
+      {
+        path: 'payment',
+        loadChildren: () =>
+          import('../pages/payment/payment.module').then(
+            (m) => m.PaymentPageModule,
+          ),
+      }
+    ],
   },
   {
-    path: 'profile',
+    path: '',
     canActivate: [AuthGuardService],
-    loadChildren: () =>
-      import('../pages/profile/profile.module').then(
-        (m) => m.ProfilePageModule,
-      ),
+    children: [
+      {
+        path: 'agents',
+        loadChildren: () =>
+          import('../pages/agents/agents.module').then(
+            (m) => m.AgentsPageModule,
+          ),
+      },
+      {
+        path: 'secrets',
+        loadChildren: () =>
+          import('../pages/secrets/secrets.module').then(
+            (m) => m.SecretsPageModule,
+          ),
+      },
+      {
+        path: 'settings',
+        loadChildren: () =>
+          import('../pages/settings/settings.module').then(
+            (m) => m.SettingsPageModule,
+          ),
+      },
+      {
+        path: 'feeds',
+        loadChildren: () =>
+          import('../pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+      },
+      {
+        path: 'profile',
+        loadChildren: () =>
+          import('../pages/profile/profile.module').then(
+            (m) => m.ProfilePageModule,
+          ),
+      },
+    ],
   },
   {
     path: 'terms',
@@ -45,6 +114,14 @@ export const DefaultRoutes: Routes = [
     loadChildren: () =>
       import('../pages/privacy/privacy.module').then(
         (m) => m.PrivacyPageModule,
+      ),
+  },
+  {
+    path: 'license',
+    // canActivate: [SelfHostingGuardService],
+    loadChildren: () =>
+      import('../pages/license/license.module').then(
+        (m) => m.LicensePageModule,
       ),
   },
 ];

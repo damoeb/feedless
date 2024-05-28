@@ -21,9 +21,9 @@ const routes: Routes = [
             (m) => m.FeedDetailsModule,
           ),
       },
+      ...DefaultRoutes,
     ],
   },
-  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

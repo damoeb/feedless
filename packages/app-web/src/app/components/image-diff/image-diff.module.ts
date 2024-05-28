@@ -10,8 +10,6 @@ import { TextDiffModule } from '../text-diff/text-diff.module';
   imports: [CommonModule, IonicModule, TextDiffModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [ImageDiffComponent],
-  exports: [
-    ImageDiffComponent
-  ]
+  exports: [ImageDiffComponent],
 })
 export class ImageDiffModule {}

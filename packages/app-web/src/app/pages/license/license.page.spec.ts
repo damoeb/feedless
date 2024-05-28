@@ -2,9 +2,14 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LicensePage } from './license.page';
 import { LicensePageModule } from './license.module';
-import { ApolloMockController, AppTestModule, mockLicense, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockLicense,
+  mockServerSettings,
+} from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('LicencePage', () => {
@@ -25,7 +30,7 @@ describe('LicencePage', () => {
     fixture = TestBed.createComponent(LicensePage);
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
     component = fixture.componentInstance;

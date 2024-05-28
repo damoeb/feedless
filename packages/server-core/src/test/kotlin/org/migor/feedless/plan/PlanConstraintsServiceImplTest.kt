@@ -27,13 +27,16 @@ import java.util.*
 class PlanConstraintsServiceImplTest {
 
   @Mock
-  lateinit var featureDAO: FeatureValueDAO
+  lateinit var featureValueDAO: FeatureValueDAO
 
   @Mock
   lateinit var userDAO: UserDAO
 
   @Mock
   lateinit var sessionService: SessionService
+
+  @Mock
+  lateinit var featureGroupDAO: FeatureGroupDAO
 
   @InjectMocks
   lateinit var service: PlanConstraintsService
@@ -46,18 +49,22 @@ class PlanConstraintsServiceImplTest {
   fun beforeEach() {
     userId = UUID.randomUUID()
     user = mock(UserEntity::class.java)
-    val planId = UUID.randomUUID()
     `when`(user.id).thenReturn(userId)
-    `when`(user.planId).thenReturn(planId)
+    `when`(user.subscriptionId).thenReturn(UUID.randomUUID())
     `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(user))
     `when`(sessionService.userId()).thenReturn(UUID.randomUUID())
+
+    val system = mock(FeatureGroupEntity::class.java)
+    `when`(system.id).thenReturn(UUID.randomUUID())
+    `when`(system.name).thenReturn("")
+    `when`(featureGroupDAO.findByParentFeatureGroupIdIsNull()).thenReturn(system)
   }
 
   @Test
   fun `give maxItems is defined when coerceRetentionMaxItems works`() {
     val maxItems = 50
-    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = maxItems)
-    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, intValue = 2)
+    mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
+    mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
@@ -65,8 +72,8 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() {
-    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsUpperLimitInt, intValue = null)
-    mockFeatureValue(FeatureName.repositoryRetentionMaxItemsLowerLimitInt, intValue = 2)
+    mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = null)
+    mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
     assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(56)
     assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
@@ -88,11 +95,11 @@ class PlanConstraintsServiceImplTest {
   fun `given publicScrapeSourceBool is true, when coerceVisibility works`() {
     mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = true)
     // fallback
-    assertThat(service.coerceVisibility(null)).isEqualTo(EntityVisibility.isPrivate)
+    assertThat(service.coerceVisibility(corrId, null)).isEqualTo(EntityVisibility.isPrivate)
     // isPrivate
-    assertThat(service.coerceVisibility(EntityVisibility.isPrivate)).isEqualTo(EntityVisibility.isPrivate)
+    assertThat(service.coerceVisibility(corrId, EntityVisibility.isPrivate)).isEqualTo(EntityVisibility.isPrivate)
     // isPublic
-    assertThat(service.coerceVisibility(EntityVisibility.isPublic)).isEqualTo(EntityVisibility.isPublic)
+    assertThat(service.coerceVisibility(corrId, EntityVisibility.isPublic)).isEqualTo(EntityVisibility.isPublic)
   }
 
   @Test
@@ -100,11 +107,11 @@ class PlanConstraintsServiceImplTest {
     mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = false)
 
     // fallback
-    assertThat(service.coerceVisibility(null)).isEqualTo(EntityVisibility.isPrivate)
+    assertThat(service.coerceVisibility(corrId, null)).isEqualTo(EntityVisibility.isPrivate)
     // isPrivate
-    assertThat(service.coerceVisibility(EntityVisibility.isPrivate)).isEqualTo(EntityVisibility.isPrivate)
+    assertThat(service.coerceVisibility(corrId, EntityVisibility.isPrivate)).isEqualTo(EntityVisibility.isPrivate)
     // isPublic
-    assertThat(service.coerceVisibility(EntityVisibility.isPublic)).isEqualTo(EntityVisibility.isPrivate)
+    assertThat(service.coerceVisibility(corrId, EntityVisibility.isPublic)).isEqualTo(EntityVisibility.isPrivate)
   }
 
   @Test
@@ -175,7 +182,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestTimeoutInt is defined, violating actionsCounts will fail`() {
-    mockFeatureValue(FeatureName.scrapeRequestTimeoutInt, intValue = 4)
+    mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       service.auditScrapeRequestTimeout(12, userId)
     }
@@ -184,37 +191,9 @@ class PlanConstraintsServiceImplTest {
   @Test
 
   fun `given scrapeRequestTimeoutInt is defined, valid actionsCounts will pass`() {
-    mockFeatureValue(FeatureName.scrapeRequestTimeoutInt, intValue = 4)
+    mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
     service.auditScrapeRequestTimeout(4, userId)
     service.auditScrapeRequestTimeout(0, userId)
-  }
-
-  @Test
-  fun `given user is anonymous, scrapeSourceExpiry will be assigned`() {
-    mockFeatureValue(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, intValue = 4)
-    `when`(user.anonymous).thenReturn(true)
-
-    val future = toDate(LocalDateTime.now().plusDays(4))
-    assertThat(
-      service.coerceScrapeSourceExpiry(
-        corrId,
-        userId
-      )
-    ).isAfterOrEqualTo(future)
-
-  }
-
-  @Test
-  fun `given user is not anonymous, scrapeSourceExpiry won't be set`() {
-    mockFeatureValue(FeatureName.repositoryWhenAnonymousExpiryInDaysInt, intValue = 4)
-    `when`(user.anonymous).thenReturn(false)
-
-    assertThat(
-      service.coerceScrapeSourceExpiry(
-        corrId,
-        userId
-      )
-    ).isNull()
   }
 
   @Test
@@ -262,12 +241,12 @@ class PlanConstraintsServiceImplTest {
     `when`(feature.valueBoolean).thenReturn(boolValue)
     `when`(feature.valueInt).thenReturn(intValue)
     `when`(
-      featureDAO.findByPlanIdAndName(
+      featureValueDAO.resolveByFeatureGroupIdAndName(
         any(UUID::class.java),
         eq(featureName.name),
       )
     ).thenReturn(
-      listOf(feature)
+      feature
     )
   }
 

@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { environment } from '../../../environments/environment';
 import { GqlPlanName } from '../../../generated/graphql';
+import { createEmailFormControl } from '../../form-controls';
 
 @Component({
   selector: 'app-newsletter',
@@ -22,10 +28,7 @@ export class NewsletterComponent {
   submitted = false;
   errorMessage: string;
 
-  private emailFc = new FormControl<string>('', [
-    Validators.required,
-    Validators.email,
-  ]);
+  private emailFc = createEmailFormControl<string>('');
 
   constructor(
     private readonly userService: UserService,

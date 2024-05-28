@@ -28,7 +28,7 @@ import { HistogramModule } from '../histogram/histogram.module';
     PlayerModule,
     ImageDiffModule,
     TextDiffModule,
-    HistogramModule
-  ]
+    HistogramModule,
+  ],
 })
 export class FeedDetailsModule {}

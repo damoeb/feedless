@@ -12,14 +12,14 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.cron}")
 @Transactional(propagation = Propagation.NEVER)
 class CleanupJob internal constructor() {
 
   private val log = LoggerFactory.getLogger(CleanupJob::class.simpleName)
 
   @Autowired
-  lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
 
   @Scheduled(cron = "0 0 0 * * *")
   @Transactional

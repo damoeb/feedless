@@ -1,8 +1,0 @@
-query plans($product: ProductName!) {
-  plans(product: $product) {
-    ...PlanFragment
-    features {
-      ...FeatureFragment
-    }
-  }
-}

@@ -10,6 +10,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.plan.BillingService
+import org.migor.feedless.plan.ProductService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.service.ScrapeService
@@ -40,6 +42,8 @@ import org.testcontainers.junit.jupiter.Testcontainers
   value = [
     MockBean(PluginService::class),
     MockBean(LicenseService::class),
+    MockBean(ProductService::class),
+    MockBean(BillingService::class),
     MockBean(ScrapeService::class)
 ])
 @Testcontainers

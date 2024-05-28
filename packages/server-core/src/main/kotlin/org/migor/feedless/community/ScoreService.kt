@@ -28,16 +28,16 @@ class ScoreService {
   private val log = LoggerFactory.getLogger(ScoreService::class.simpleName)
 
   @Autowired
-  lateinit var civilityScorer: CivilityScorer
+  private lateinit var civilityScorer: CivilityScorer
 
   @Autowired
-  lateinit var qualityScorer: QualityScorer
+  private lateinit var qualityScorer: QualityScorer
 
   @Autowired
-  lateinit var relevanceScorer: RelevanceScorer
+  private lateinit var relevanceScorer: RelevanceScorer
 
   @Autowired
-  lateinit var originalityScorer: OriginalityScorer
+  private lateinit var originalityScorer: OriginalityScorer
 
   fun score(comment: CommentEntity, weights: ScoreWeights): Double {
     return arrayOf(

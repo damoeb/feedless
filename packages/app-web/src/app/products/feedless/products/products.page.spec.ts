@@ -4,7 +4,7 @@ import { ProductsPage } from './products.page';
 import { ProductsPageModule } from './products.module';
 import { AppTestModule, mockPlans } from '../../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ProductService } from '../../../services/product.service';
+import { AppConfigService } from '../../../services/app-config.service';
 
 describe('ProductsPage', () => {
   let component: ProductsPage;
@@ -21,8 +21,8 @@ describe('ProductsPage', () => {
       ],
     }).compileComponents();
 
-    const productService = TestBed.inject(ProductService);
-    productService.getProductConfigs = () => Promise.resolve([]);
+    const appConfigService = TestBed.inject(AppConfigService);
+    appConfigService.getProductConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(ProductsPage);
     component = fixture.componentInstance;

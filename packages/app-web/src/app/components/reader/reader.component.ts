@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { ReaderLinkTarget, ReaderTextTransform } from '../../products/reader/reader-product.page';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
+import {
+  ReaderLinkTarget,
+  ReaderTextTransform,
+} from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 
 @Component({
@@ -33,7 +44,7 @@ export class ReaderComponent implements OnChanges {
   private showLinksHostname: boolean;
 
   constructor(
-    private readonly serverSettings: ServerSettingsService,
+    private readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -74,7 +85,7 @@ export class ReaderComponent implements OnChanges {
         .forEach((img) => {
           img.setAttribute(
             'src',
-            this.serverSettings.apiUrl +
+            this.serverConfig.apiUrl +
               '/attachment/proxy?url=' +
               encodeURIComponent(img.getAttribute('src')),
           );

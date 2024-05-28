@@ -38,7 +38,7 @@ class DetectMediaPlugin : MapEntityPlugin {
   private val log = LoggerFactory.getLogger(DetectMediaPlugin::class.simpleName)
 
   @Autowired
-  lateinit var attachmentDAO: AttachmentDAO
+  private lateinit var attachmentDAO: AttachmentDAO
 
 
   override fun id(): String = FeedlessPlugins.org_feedless_detect_media.name

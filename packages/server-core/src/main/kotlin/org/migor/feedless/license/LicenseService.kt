@@ -19,12 +19,15 @@ import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.plan.BillingEntity
+import org.migor.feedless.plan.ProductEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.core.io.ClassPathResource
@@ -35,9 +38,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.security.KeyFactory
 import java.security.SecureRandom
-import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPublicKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.text.DateFormat
 import java.time.ZoneId
@@ -50,7 +51,8 @@ data class LicensePayload(
   @SerializedName("n") val name: String,
   @SerializedName("e") val email: String,
   @SerializedName("c") val createdAt: Date,
-  @SerializedName("s") val scope: String
+  @SerializedName("u") val validUntil: Date? = null,
+  @SerializedName("s") val scope: ProductCategory
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -90,6 +92,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   @Autowired
   lateinit var environment: Environment
 
+  @Autowired(required = false)
+  lateinit var licenseDAO: LicenseDAO
+
   private var license: LicensePayload? = null
 
   @Value("\${APP_LICENSE_KEY:}")
@@ -98,7 +103,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   @Value("\${APP_PEM_FILE:}")
   var pemFile: String? = null
 
-  var feedlessPrivateKey: RSAPrivateCrtKey? = null
+  var feedlessPrivateKey: RSAKey? = null
   var feedlessPublicKey: RSAPublicKey? = null
 
   @Value("\${APP_BUILD_TIMESTAMP:}")
@@ -146,14 +151,16 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
     val privateKeyFile = getPrivateKeyFile()
     log.info("[boot] loading private key from ${privateKeyFile.absolutePath}")
-    feedlessPrivateKey = decodePrivateKey(Files.readString(privateKeyFile.toPath()))
+//    feedlessPrivateKey = decodePrivateKey(Files.readString(privateKeyFile.toPath()))
+    feedlessPrivateKey = RSAKey.parse(Files.readString(privateKeyFile.toPath()))
 
     log.info("[boot] verifying key pair")
 
-    val privKey = feedlessPrivateKey!!
-    val pubKey = feedlessPublicKey!!
-    val keyPairMatches = privKey.modulus.equals(pubKey.modulus) &&
-      privKey.publicExponent.equals(pubKey.publicExponent)
+    val derivedPubKey = feedlessPrivateKey!!.toRSAPublicKey()
+    val actualPubKey = feedlessPublicKey!!
+    val keyPairMatches = derivedPubKey.modulus.equals(actualPubKey.modulus) &&
+      derivedPubKey.publicExponent.equals(actualPubKey.publicExponent) &&
+      derivedPubKey.algorithm.equals(actualPubKey.algorithm)
 
     if (keyPairMatches) {
       log.info("[boot] key pair is valid")
@@ -176,8 +183,10 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun writeLicenseKeyToFile(licenseKey: String) {
-    FileWriter(getLicenseFile()).use { writer ->
-      writer.write(licenseKey)
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
+      FileWriter(getLicenseFile()).use { writer ->
+        writer.write(licenseKey)
+      }
     }
   }
 
@@ -298,7 +307,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       .generate()
   }
 
-  fun createLicense(payload: LicensePayload, rsaJWK: RSAKey): String {
+  fun createLicense(corrId: String, payload: LicensePayload, rsaJWK: RSAKey): String {
     val signer: JWSSigner = RSASSASigner(rsaJWK)
     val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
     jwsObject.sign(signer)
@@ -330,16 +339,33 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return keyFactory.generatePublic(X509EncodedKeySpec(publicKeyByte)) as RSAPublicKey
   }
 
-  fun decodePrivateKey(privateKeyString: String): RSAPrivateCrtKey {
-    val privateKKeyByte: ByteArray = Base64.getDecoder().decode(privateKeyString.removeHeaders())
-
-    val keyFactory = KeyFactory.getInstance("RSA")
-    return keyFactory.generatePrivate(PKCS8EncodedKeySpec(privateKKeyByte)) as RSAPrivateCrtKey
+  fun isLicensedForProduct(product: ProductCategory): Boolean {
+    return this.license?.let {
+      (it.scope === product || it.scope == ProductCategory.all) &&
+        (it.validUntil == null || it.validUntil.time > Date().time) &&
+        (it.version == 1) // todo validate version
+    } ?: false
   }
 
-  fun isLicensedForProduct(product: ProductName): Boolean {
-    // todo
-    return true
+  fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: BillingEntity): LicenseEntity {
+    if (product.isCloudProduct) {
+      throw IllegalArgumentException("cloud product cannot be licenced")
+    }
+    val license = LicenseEntity()
+    val payload = LicensePayload(
+      name = billing.invoiceRecipientName,
+      createdAt = Date(),
+      version = 1,
+      scope = product.partOf ?: ProductCategory.all,
+      validUntil = null,
+      email = billing.invoiceRecipientEmail
+    )
+
+    val singedAndEncoded = createLicense(corrId, payload, feedlessPrivateKey!!)
+    license.payload = singedAndEncoded
+    license.billingId = billing.id
+
+    return licenseDAO.save(license)
   }
 }
 

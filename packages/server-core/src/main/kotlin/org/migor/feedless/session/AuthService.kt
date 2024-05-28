@@ -34,10 +34,10 @@ class AuthService : IAuthService {
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  private lateinit var userDAO: UserDAO
 
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String

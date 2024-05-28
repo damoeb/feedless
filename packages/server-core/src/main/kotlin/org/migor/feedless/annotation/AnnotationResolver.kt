@@ -26,10 +26,7 @@ class AnnotationResolver {
   private val log = LoggerFactory.getLogger(AnnotationResolver::class.simpleName)
 
   @Autowired
-  lateinit var sessionService: SessionService
-
-  @Autowired
-  lateinit var annotationService: AnnotationService
+  private lateinit var annotationService: AnnotationService
 
   @Throttled
   @DgsMutation

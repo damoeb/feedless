@@ -1,8 +1,6 @@
 package org.migor.feedless.feed.parser.json
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 

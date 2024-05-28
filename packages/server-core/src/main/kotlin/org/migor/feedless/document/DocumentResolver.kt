@@ -34,28 +34,25 @@ import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.api}")
 class DocumentResolver {
 
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
 
   @Autowired
-  lateinit var environment: Environment
+  private lateinit var repositoryService: RepositoryService
 
   @Autowired
-  lateinit var repositoryService: RepositoryService
+  private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var documentService: DocumentService
-
-  @Autowired
-  lateinit var documentDAO: DocumentDAO
+  private lateinit var documentDAO: DocumentDAO
 
   @Throttled
   @DgsQuery

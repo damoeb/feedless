@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { compact } from 'lodash-es';
@@ -18,7 +24,7 @@ export class AgentsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly agentService: AgentService,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -34,10 +40,13 @@ export class AgentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-  fromNow = relativeTimeOrElse
+  fromNow = relativeTimeOrElse;
 }
 
-export function relativeTimeOrElse(futureTimestamp: number, suffix: string = null): string {
+export function relativeTimeOrElse(
+  futureTimestamp: number,
+  suffix: string = null,
+): string {
   dayjs.extend(relativeTime);
   const now = dayjs();
   const ts = dayjs(futureTimestamp);

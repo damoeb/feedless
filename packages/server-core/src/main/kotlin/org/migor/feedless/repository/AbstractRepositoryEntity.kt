@@ -27,7 +27,7 @@ import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
@@ -49,7 +49,7 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ProductName as ProductNameDto
+import org.migor.feedless.generated.types.ProductCategory as ProductCategoryDto
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
@@ -115,7 +115,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   open var archived: Boolean = false
 
   @Column(nullable = false, name = "for_product")
-  open lateinit var product: ProductName
+  open lateinit var product: ProductCategory
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "trigger_scheduled_next_at")
@@ -188,10 +188,10 @@ fun RepositoryEntity.toDto(): Repository {
     .build()
 }
 
-private fun ProductName.toDto(): ProductNameDto {
+private fun ProductCategory.toDto(): ProductCategoryDto {
   return when(this) {
-    ProductName.rssProxy -> ProductNameDto.rssProxy
-    ProductName.visualDiff -> ProductNameDto.visualDiff
+    ProductCategory.rssProxy -> ProductCategoryDto.rssProxy
+    ProductCategory.visualDiff -> ProductCategoryDto.visualDiff
     else -> throw IllegalArgumentException("Unsupported product name: $this")
   }
 }

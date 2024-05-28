@@ -30,10 +30,10 @@ class AgentResolver {
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var agentService: AgentService
+  private lateinit var agentService: AgentService
 
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {

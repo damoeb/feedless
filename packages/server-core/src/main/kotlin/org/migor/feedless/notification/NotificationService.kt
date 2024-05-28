@@ -13,7 +13,7 @@ class NotificationService {
   private val log = LoggerFactory.getLogger(NotificationService::class.simpleName)
 
   @Autowired
-  lateinit var notificationDAO: NotificationDAO
+  private lateinit var notificationDAO: NotificationDAO
 
   fun createNotification(corrId: String, ownerId: UUID, message: String?) {
 //    val notification = NotificationEntity()

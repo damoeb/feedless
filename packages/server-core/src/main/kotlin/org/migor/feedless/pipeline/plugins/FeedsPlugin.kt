@@ -26,10 +26,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
   private val log = LoggerFactory.getLogger(FeedsPlugin::class.simpleName)
 
   @Autowired
-  lateinit var nativeFeedLocator: NativeFeedLocator
+  private lateinit var nativeFeedLocator: NativeFeedLocator
 
   @Autowired
-  lateinit var genericFeedLocator: GenericFeedLocator
+  private lateinit var genericFeedLocator: GenericFeedLocator
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun listed() = false

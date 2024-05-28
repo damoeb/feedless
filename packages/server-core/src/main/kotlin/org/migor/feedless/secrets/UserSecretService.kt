@@ -18,10 +18,10 @@ class UserSecretService {
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
 
   @Autowired
-  lateinit var userSecretDAO: UserSecretDAO
+  private lateinit var userSecretDAO: UserSecretDAO
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
 //  fun createSecretKey(secretKey: String, expiresIn: Duration, user: UserEntity): UserSecretEntity {
 //    val k = UserSecretEntity()

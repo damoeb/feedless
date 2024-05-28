@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 export type StringFeature = {
   title: string;
@@ -29,16 +29,6 @@ export class PlanColumnComponent {
   @Input()
   pricePerUnit: string = '/ Month';
 
-  @Input()
-  scrollTop: number = 0;
-
-  @Output()
-  scrollTopChange: EventEmitter<number> = new EventEmitter<number>();
-
   constructor() {}
 
-  onScroll(event: Event) {
-    this.scrollTop = (event.target as any).scrollTop;
-    this.scrollTopChange.emit(this.scrollTop);
-  }
 }

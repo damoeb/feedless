@@ -1,9 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { ServerConfigService } from '../../services/server-config.service';
 import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { debounce, interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login-page',
@@ -16,23 +22,20 @@ export class LoginPage implements OnInit, OnDestroy {
   showSSO: boolean;
   loginUrl: string;
   private subscriptions: Subscription[] = [];
-  canLogin: boolean;
   canSignUp: boolean;
-  hasWaitList: boolean;
-  showLogin: boolean;
   showNoSignupBanner: boolean;
   showUserPasswordLogin: boolean;
   errorMessage: string;
   loading: boolean = true;
 
   constructor(
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly authService: AuthService,
   ) {
-    this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
+    this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/';
   }
 
   ngOnDestroy(): void {
@@ -40,37 +43,40 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    if (this.serverSettings.hasProfile(GqlProfileName.SelfHosted)) {
+    if (this.serverConfig.hasProfile(GqlProfileName.SelfHosted)) {
       this.showNoSignupBanner = false;
       this.showUserPasswordLogin = true;
     } else {
       this.showNoSignupBanner = true;
-      this.canLogin = this.serverSettings.isEnabled(GqlFeatureName.CanLogin);
       this.canSignUp =
-        this.serverSettings.isEnabled(GqlFeatureName.CanSignUp) &&
-        this.serverSettings.isEnabled(GqlFeatureName.CanCreateUser);
-      this.hasWaitList = this.serverSettings.isEnabled(
-        GqlFeatureName.HasWaitList,
-      );
-      this.showLogin = this.canLogin && !this.hasWaitList;
+        this.serverConfig.isEnabled(GqlFeatureName.CanSignUp);
     }
 
+    // const redirectUrl = this.activatedRoute.snapshot.queryParams.redirectUrl;
+    // if (redirectUrl) {
+    //   this.authService.rememberRedirectUrl(redirectUrl)
+    // }
+
     this.subscriptions.push(
-      this.authService.isAuthenticated().subscribe(async (authenticated) => {
-        if (authenticated) {
-          const { queryParams } = this.activatedRoute.snapshot;
-          const { redirectUrl } = queryParams;
-          const url = this.router.createUrlTree([redirectUrl || '/'], {});
-          await this.router.navigateByUrl(url);
-        } else {
-          this.showSSO = this.serverSettings.hasProfile(GqlProfileName.AuthSso);
-          this.showMailLogin = this.serverSettings.hasProfile(
-            GqlProfileName.AuthMail,
-          );
-          this.loading = false;
-          this.changeRef.detectChanges();
-        }
-      }),
+      this.authService
+        .isAuthenticated()
+        .pipe(debounce(() => interval(500)))
+        .subscribe(async (authenticated) => {
+          console.log('authenticated', authenticated);
+          if (authenticated) {
+            const { queryParams } = this.activatedRoute.snapshot;
+            const { redirectUrl } = queryParams;
+            const url = this.router.createUrlTree([redirectUrl || '/'], {});
+            await this.router.navigateByUrl(url);
+          } else {
+            this.showSSO = this.serverConfig.hasProfile(GqlProfileName.AuthSso);
+            this.showMailLogin = this.serverConfig.hasProfile(
+              GqlProfileName.AuthMail,
+            );
+            this.loading = false;
+            this.changeRef.detectChanges();
+          }
+        }),
     );
   }
 

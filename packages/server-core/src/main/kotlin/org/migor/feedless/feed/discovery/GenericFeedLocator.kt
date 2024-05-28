@@ -11,7 +11,7 @@ import java.net.URI
 @Service
 class GenericFeedLocator {
   @Autowired
-  lateinit var webToFeedTransformer: WebToFeedTransformer
+  private lateinit var webToFeedTransformer: WebToFeedTransformer
 
   fun locateInDocument(
     corrId: String,

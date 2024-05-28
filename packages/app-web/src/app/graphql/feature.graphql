@@ -1,9 +1,18 @@
-mutation updateFeature($data: UpdateFeatureInput!) {
-  updateFeature(data: $data)
-}
-
-query features {
+fragment FeatureGroupFragment on FeatureGroup {
+  id
+  parentId
+  name
   features {
     ...FeatureFragment
+  }
+}
+
+mutation updateFeatureValue($data: UpdateFeatureValueInput!) {
+  updateFeatureValue(data: $data)
+}
+
+query featureGroups($inherit: Boolean!, $where: FeatureGroupWhereInput!) {
+  featureGroups(inherit: $inherit, where: $where) {
+    ...FeatureGroupFragment
   }
 }

@@ -10,8 +10,6 @@ import { CodeEditorModule } from '../../elements/code-editor/code-editor.module'
   imports: [CommonModule, IonicModule, CodeEditorModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [TextDiffComponent],
-  exports: [
-    TextDiffComponent
-  ]
+  exports: [TextDiffComponent],
 })
 export class TextDiffModule {}

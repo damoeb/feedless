@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<!-- saved from url=(0024)https://hyphenation.org/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./hyphenation.org - TeX Users Group_files/tugstyle.css">
+<!-- end header -->
+
+<!-- $Id: index.html,v 1.1 2023/07/03 20:51:01 karl Exp $ -->
+<title>hyphenation.org - TeX Users Group</title>
+</head><body>
+
+<h2>hyphenation.org - TeX hyphenation patterns</h2>
+
+<a name="start"></a> 
+<div class="section" id="introduction">
+<h3>Introduction</h3>
+    <p>This is the central place for hyphenation patterns in TeX. They are all bundled in a single package called hyph-utf8.</p>
+    <ul>
+      <li><a href="https://hyphenation.org/mailman/listinfo/tex-hyphen">tex-hyphen mailing list</a></li>
+      <li><a href="https://github.com/hyphenation/tex-hyphen">texhyphen source repository</a></li>
+      <li><a href="https://ctan.org/pkg/hyph-utf8">hyph-utf8 package page on CTAN</a></li>
+      <li><a href="https://ctan.org/tex-archive/language/">language directory on CTAN</a></li>
+    </ul>
+    <h4>For pattern authors</h4>
+    <p>If you are a pattern author and wish to update your patterns,
+    please contact the hyph-utf8
+    package maintainers through the <a href="https://hyphenation.org/mailman/listinfo/tex-hyphen">tex-hyphen mailing list</a>.</p>
+</div>
+
+<div class="section" id="documentation">
+<h3>Documentation</h3>
+    <h4>Algorithm</h4>
+    <ul>
+      <li><a href="https://hyphenation.org/docs/liang/">Frank Liang's thesis</a></li>
+      <li><a href="http://en.wikipedia.org/wiki/Hyphenation_algorithm">Hyphenation algorithm (article on Wikipedia)</a></li>
+    </ul>
+
+    <h4>Papers</h4>
+    <ul>
+      <li><a href="http://mirror.ctan.org/language/hyph-utf8/doc/generic/hyph-utf8/hyphenation.pdf">hyph-utf8 documentation</a> (needs improvement)</li>
+      <li><a href="http://mirror.ctan.org/language/hyph-utf8/doc/luatex/hyph-utf8/luatex-hyphen.pdf">documentation for Lua(La)TeX part of hyph-utf8</a></li>
+      <li><a href="https://hyphenation.org/pdf/tb93miklavec.pdf">Mojca Miklavec: TUG 2008 paper</a></li>
+      <li><a href="https://tug.org/TUGboat/tb31-3/tb99hyf.pdf">Barbara Beeton: Hyphenation Exception Log, TUGboat, Volume 31 (2010), No. 3</a></li><a href="https://tug.org/TUGboat/tb31-3/tb99hyf.pdf">
+      </a><li><a href="https://tug.org/TUGboat/tb31-3/tb99hyf.pdf"></a><a href="https://hyphenation.org/pdf/hyphenator.pdf">Mathias Nater: The TeX
+          hyphenation applied to HTML</a> - BachoTeX 2010 (slides only)</li>
+    </ul>
+
+    <h4>Related packages</h4>
+    <ul>
+      <li><a href="https://ctan.org/pkg/babel">Babel</a> - supports all
+          engines</li>
+      <li><a href="https://ctan.org/pkg/polyglossia">Polyglossia</a> -
+          for LuaTeX and XeTeX</li>
+    </ul>
+</div>
+
+<div class="section" id="links">
+<h3>Links</h3>
+      <h4>Collaboration</h4>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en/CSS/hyphens">Mozilla hyphens css</a></li>
+        <li><a href="http://offo.sourceforge.net/hyphenation/index.html">FOP XML Hyphenation Patterns</a> (Simon Pepping)</li>
+        <li><a href="https://metacpan.org/pod/TeX::Hyphen::Pattern">TeX-Hyphen-Pattern</a> (Perl implementation on <a href="http://search.cpan.org/~ipenburg/TeX-Hyphen-Pattern-0.03/lib/TeX/Hyphen/Pattern.pm">CPAN</a>) (Roland van Ipenburg)</li>
+        <li><a href="https://github.com/mnater/hyphenator">Hyphenator.js</a> (Client-side implementation of hyphenation in HTML documents) (Mathias Nater)</li>
+      </ul>
+
+      <h4>OpenOffice.org</h4>
+      <ul>
+        <li><a href="http://www.ushuaia.pl/hyphen/?ln=en">Test TeX/OpenOffice hyphenation algorithm online</a> (based on hunspell)</li>
+        <li><a href="http://wiki.services.openoffice.org/wiki/Documentation/SL/Using_TeX_hyphenation_patterns_in_OpenOffice.org">Using TeX hyphenation patterns in OpenOffice.org</a> (explains how to properly convert TeX patterns into OpenOffice-friendly form)</li>
+      </ul>
+
+      <h4>Other external links</h4>
+      <ul>
+      <li><a href="http://hunspell.sourceforge.net/">Hunspell</a> (library)</li>
+      <li><a href="http://extensions.services.openoffice.org/dictionary">Open Office language extensions</a></li>
+      <li><a href="https://rubygems.org/gems/text-hyphen/">text-hyphen</a> (rubyforge);
+          <a href="https://github.com/halostatue/text-hyphen">(source code repository)</a></li>
+      <li><a href="http://sourceforge.net/projects/texhyphj/">TeX Hyphenator in Java</a></li>
+      <li><a href="https://github.com/ekmett/hyphenation">Knuth-Liang Hyphenation for Haskell</a></li>
+      <li>Indic languages: 
+        <ul>
+            <li><a href="http://git.savannah.gnu.org/cgit/smc.git/tree/hyphenation">git repository</a></li>
+            <li>Santhosh Thottingal's blogs: 
+                <ul>
+                    <li><a href="http://thottingal.in/blog/2008/12/13/hyphenation-of-indian-languages-and-openoffice/">
+                    Hyphenation of Indian Languages and Openoffice</a></li>
+                    <li><a href="http://thottingal.in/blog/2008/12/16/hyphenation-of-indian-languages-in-webpages/">
+                    Hyphenation of Indian Languages in Webpages</a></li>
+                    <li><a href="http://thottingal.in/blog/2009/08/15/ooo_hyphenation_extensions/">
+                    New Hyphenation Pattern Extensions for OpenOffice.org</a></li>
+                    <li><a href="http://thottingal.in/blog/2009/10/03/inkscape-hyphenation-extension/">
+                    Inkscape hyphenation extension</a></li>
+                </ul>
+            </li>
+        </ul>
+    </li> <!-- end indic -->
+    <li>An article about <a href="http://www.cs.tut.fi/~jkorpela/shy.html">soft hyphen</a></li>
+    <li><a href="https://github.com/bramstein/typeset/">TeX line breaking algorithm in JavaScript</a></li>
+  </ul>
+</div>
+
+<div class="section" id="languages">
+<h3>Languages</h3>
+<p>The package contains patterns for the following languages:
+(if patterns for any other language exist and are missing below please
+let us know)</p>
+
+<table border="1">
+<tbody><tr>
+  <td>&nbsp;</td>
+  <th>name, synonyms</th>
+  <td align="center">code<br>(link to file)</td>
+  <td align="center">(left,right)-<br>hyphenmin</td>
+  <td align="center">8-bit<br>encoding</td>
+  <td align="center">licence</td>
+  <td align="center">authors</td>
+</tr>
+<tr>
+  <td><b>Afrikaans</b></td>
+  <td>afrikaans</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-af.tex">af</a></td>
+  <td>(1,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Tilla Fick<br>Chris Swanepoel</td>
+</tr>
+<tr>
+  <td><b>Ancientgreek</b></td>
+  <td>ancientgreek</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-grc.tex">grc</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>LPPL</td>
+  <td>Dimitrios Filippou</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>ibycus</td>
+  <td>grc-x-ibycus</td>
+  <td>(2,2)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Arabic</b></td>
+  <td>arabic</td>
+  <td>ar</td>
+  <td>(,)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Armenian</b></td>
+  <td>armenian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-hy.tex">hy</a></td>
+  <td>(1,2)</td>
+  <td></td>
+  <td>LGPL</td>
+  <td>Sahak Petrosyan</td>
+</tr>
+<tr>
+  <td><b>Assamese</b></td>
+  <td>assamese</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-as.tex">as</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>MIT</td>
+  <td>Santhosh Thottingal</td>
+</tr>
+<tr>
+  <td><b>Basque</b></td>
+  <td>basque</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-eu.tex">eu</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>other-free</td>
+  <td>Juan M. Aguirregabiria</td>
+</tr>
+<tr>
+  <td><b>Bengali</b></td>
+  <td>bengali</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-bn.tex">bn</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Bulgarian</b></td>
+  <td>bulgarian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-bg.tex">bg</a></td>
+  <td>(2,2)</td>
+  <td>T2A</td>
+  <td>LPPL</td>
+  <td>Georgi Boshnakov</td>
+</tr>
+<tr>
+  <td><b>Catalan</b></td>
+  <td>catalan</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ca.tex">ca</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Gonçal Badenes</td>
+</tr>
+<tr>
+  <td><b>Chinese</b></td>
+  <td>pinyin</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-zh-latn-pinyin.tex">zh-latn-pinyin</a></td>
+  <td>(1,1)</td>
+  <td>EC</td>
+  <td>GPL</td>
+  <td>Werner Lemberg</td>
+</tr>
+<tr>
+  <td><b>Coptic</b></td>
+  <td>coptic</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-cop.tex">cop</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Croatian</b></td>
+  <td>croatian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-hr.tex">hr</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Igor Marinović</td>
+</tr>
+<tr>
+  <td><b>Czech</b></td>
+  <td>czech</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-cs.tex">cs</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>GPL</td>
+  <td>Pavel Ševeček</td>
+</tr>
+<tr>
+  <td><b>Danish</b></td>
+  <td>danish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-da.tex">da</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Frank Jensen</td>
+</tr>
+<tr>
+  <td><b>Dutch</b></td>
+  <td>dutch</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-nl.tex">nl</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Piet Tutelaers</td>
+</tr>
+<tr>
+  <td><b>English</b></td>
+  <td>english, usenglish, USenglish, american</td>
+  <td>(default)</td>
+  <td>(2,3)</td>
+  <td>ASCII</td>
+  <td></td>
+  <td>Donald Knuth</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>ukenglish, british, UKenglish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-gb.tex">en-gb</a></td>
+  <td>(2,3)</td>
+  <td>ASCII</td>
+  <td>other-free</td>
+  <td>Dominik Wujastyk<br>Graham Toal</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>usenglishmax</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-us.tex">en-us</a></td>
+  <td>(2,3)</td>
+  <td>ASCII</td>
+  <td>other-free</td>
+  <td>Donald E. Knuth<br>Gerard D.C. Kuiken</td>
+</tr>
+<tr>
+  <td><b>Esperanto</b></td>
+  <td>esperanto</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-eo.tex">eo</a></td>
+  <td>(2,2)</td>
+  <td>IL3</td>
+  <td>LPPL</td>
+  <td>Sergei B. Pokrovsky</td>
+</tr>
+<tr>
+  <td><b>Estonian</b></td>
+  <td>estonian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-et.tex">et</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>LPPL|MIT</td>
+  <td>Enn Saar</td>
+</tr>
+<tr>
+  <td><b>Ethiopic</b></td>
+  <td>ethiopic, amharic, geez</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-mul-ethi.tex">mul-ethi</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>public-ask</td>
+  <td>Arthur Reutenauer<br>Mojca Miklavec</td>
+</tr>
+<tr>
+  <td><b>Farsi</b></td>
+  <td>farsi, persian</td>
+  <td>fa</td>
+  <td>(,)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Finnish</b></td>
+  <td>finnish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-fi.tex">fi</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>other-free</td>
+  <td>Kauko Saarinen<br>Fred Karlsson</td>
+</tr>
+<tr>
+  <td><b>French</b></td>
+  <td>french, patois, francais</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-fr.tex">fr</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>other-free</td>
+  <td>René Bastian<br>Daniel Flipo<br>Bernard Gaulle</td>
+</tr>
+<tr>
+  <td><b>Friulan</b></td>
+  <td>friulan</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-fur.tex">fur</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Galician</b></td>
+  <td>galician</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-gl.tex">gl</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Javier Múgica</td>
+</tr>
+<tr>
+  <td><b>Georgian</b></td>
+  <td>georgian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ka.tex">ka</a></td>
+  <td>(1,2)</td>
+  <td>T8M</td>
+  <td>LPPL</td>
+  <td>Levan Shoshiashvili</td>
+</tr>
+<tr>
+  <td><b>German</b></td>
+  <td>german</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-de-1901.tex">de-1901</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Werner Lemberg</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>ngerman</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-de-1996.tex">de-1996</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Werner Lemberg</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>swissgerman</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-de-ch-1901.tex">de-ch-1901</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Werner Lemberg</td>
+</tr>
+<tr>
+  <td><b>Greek</b></td>
+  <td>monogreek</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-el-monoton.tex">el-monoton</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>LPPL</td>
+  <td>Dimitrios Filippou</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>greek, polygreek</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-el-polyton.tex">el-polyton</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td>LPPL</td>
+  <td>Dimitrios Filippou</td>
+</tr>
+<tr>
+  <td><b>Gujarati</b></td>
+  <td>gujarati</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-gu.tex">gu</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Hindi</b></td>
+  <td>hindi</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-hi.tex">hi</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Hungarian</b></td>
+  <td>hungarian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-hu.tex">hu</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>MPL 1.1/GPL 2.0/LGPL 2.1</td>
+  <td>Bence Nagy</td>
+</tr>
+<tr>
+  <td><b>Icelandic</b></td>
+  <td>icelandic</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-is.tex">is</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Jorgen Pind<br>Marteinn Sverrisson<br>Kristinn Gylfason</td>
+</tr>
+<tr>
+  <td><b>Indonesian</b></td>
+  <td>indonesian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-id.tex">id</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>GPL</td>
+  <td>Jörg Knappen<br>Terry Mart</td>
+</tr>
+<tr>
+  <td><b>Interlingua</b></td>
+  <td>interlingua</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ia.tex">ia</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>LPPL</td>
+  <td>Peter Kleiweg</td>
+</tr>
+<tr>
+  <td><b>Irish</b></td>
+  <td>irish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ga.tex">ga</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>GPL</td>
+  <td>Kevin P. Scannell</td>
+</tr>
+<tr>
+  <td><b>Italian</b></td>
+  <td>italian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-it.tex">it</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Kannada</b></td>
+  <td>kannada</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-kn.tex">kn</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Kurmanji</b></td>
+  <td>kurmanji</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-kmr.tex">kmr</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Jörg Knappen<br>Medeni Shemdê</td>
+</tr>
+<tr>
+  <td><b>Latin</b></td>
+  <td>latin</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-la.tex">la</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>classiclatin</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-la-x-classic.tex">la-x-classic</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Latvian</b></td>
+  <td>latvian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-lv.tex">lv</a></td>
+  <td>(2,2)</td>
+  <td>L7X</td>
+  <td>LGPL</td>
+  <td>Janis Vilims</td>
+</tr>
+<tr>
+  <td><b>Lithuanian</b></td>
+  <td>lithuanian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-lt.tex">lt</a></td>
+  <td>(2,2)</td>
+  <td>L7X</td>
+  <td></td>
+  <td>Vytas Statulevičius<br>Yannis Haralambous<br>Sigitas Tolušis</td>
+</tr>
+<tr>
+  <td><b>Malayalam</b></td>
+  <td>malayalam</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ml.tex">ml</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Marathi</b></td>
+  <td>marathi</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-mr.tex">mr</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Mongolian</b></td>
+  <td>mongolian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-mn-cyrl.tex">mn-cyrl</a></td>
+  <td>(2,2)</td>
+  <td>T2A</td>
+  <td>LPPL</td>
+  <td>Dorjgotov Batmunkh</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>mongolianlmc</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-mn-cyrl-x-lmc.tex">mn-cyrl-x-lmc</a></td>
+  <td>(2,2)</td>
+  <td>LMC</td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Norwegian</b></td>
+  <td>bokmal, norwegian, norsk</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-nb.tex">nb</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>free</td>
+  <td>Rune Kleveland<br>Ole Michael Selberg</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>nynorsk</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-nn.tex">nn</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Oriya</b></td>
+  <td>oriya</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-or.tex">or</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Panjabi</b></td>
+  <td>panjabi</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-pa.tex">pa</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Piedmontese</b></td>
+  <td>piedmontese</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-pms.tex">pms</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Polish</b></td>
+  <td>polish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-pl.tex">pl</a></td>
+  <td>(2,2)</td>
+  <td>QX</td>
+  <td>public</td>
+  <td>Hanna Kołodziejska<br>Bogusław Jackowski<br>Marek Ryćko</td>
+</tr>
+<tr>
+  <td><b>Portuguese</b></td>
+  <td>portuguese, portuges</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-pt.tex">pt</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>BSD-3</td>
+  <td>Pedro J. de Rezende<br>J. Joao Dias Almeida</td>
+</tr>
+<tr>
+  <td><b>Romanian</b></td>
+  <td>romanian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ro.tex">ro</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td></td>
+  <td>Adrian Rezus</td>
+</tr>
+<tr>
+  <td><b>Romansh</b></td>
+  <td>romansh</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-rm.tex">rm</a></td>
+  <td>(2,2)</td>
+  <td>ASCII</td>
+  <td>LPPL</td>
+  <td>Claudio Beccari</td>
+</tr>
+<tr>
+  <td><b>Russian</b></td>
+  <td>russian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ru.tex">ru</a></td>
+  <td>(2,2)</td>
+  <td>T2A</td>
+  <td>LPPL</td>
+  <td>Alexander I. Lebedev<br>Werner Lemberg<br>Vladimir Volovich</td>
+</tr>
+<tr>
+  <td><b>Sanskrit</b></td>
+  <td>sanskrit</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sa.tex">sa</a></td>
+  <td>(1,3)</td>
+  <td></td>
+  <td>free</td>
+  <td>Yves Codet</td>
+</tr>
+<tr>
+  <td><b>Serbian</b></td>
+  <td>serbian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sr-latn.tex">sr-latn</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Dejan Muhamedagić</td>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td>serbianc</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sh-cyrl.tex">sh-cyrl</a></td>
+  <td>(2,2)</td>
+  <td>T2A</td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Slovak</b></td>
+  <td>slovak</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sk.tex">sk</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>GPL</td>
+  <td>Jana Chlebíková</td>
+</tr>
+<tr>
+  <td><b>Slovenian</b></td>
+  <td>slovenian, slovene</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sl.tex">sl</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Matjaž Vrečko</td>
+</tr>
+<tr>
+  <td><b>Spanish</b></td>
+  <td>spanish, espanol</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-es.tex">es</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>MIT/X11</td>
+  <td>Javier Bezos</td>
+</tr>
+<tr>
+  <td><b>Swedish</b></td>
+  <td>swedish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-sv.tex">sv</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Jan Michael Rynning</td>
+</tr>
+<tr>
+  <td><b>Tamil</b></td>
+  <td>tamil</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ta.tex">ta</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Telugu</b></td>
+  <td>telugu</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-te.tex">te</a></td>
+  <td>(1,1)</td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr>
+  <td><b>Thai</b></td>
+  <td>thai</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-th.tex">th</a></td>
+  <td>(2,3)</td>
+  <td>LTH</td>
+  <td>LPPL</td>
+  <td>Theppitak Karoonboonyanan</td>
+</tr>
+<tr>
+  <td><b>Turkish</b></td>
+  <td>turkish</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-tr.tex">tr</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>P. A. MacKay<br>H. Turgut Uyar<br>S. Ekin Kocabas<br>Mojca Miklavec</td>
+</tr>
+<tr>
+  <td><b>Turkmen</b></td>
+  <td>turkmen</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-tk.tex">tk</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>public</td>
+  <td>Nazar Annagurban</td>
+</tr>
+<tr>
+  <td><b>Ukrainian</b></td>
+  <td>ukrainian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-uk.tex">uk</a></td>
+  <td>(2,2)</td>
+  <td>T2A</td>
+  <td>LPPL</td>
+  <td>Maksym Polyakov<br>Werner Lemberg<br>Vladimir Volovich</td>
+</tr>
+<tr>
+  <td><b>Uppersorbian</b></td>
+  <td>uppersorbian</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-hsb.tex">hsb</a></td>
+  <td>(2,2)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Eduard Werner</td>
+</tr>
+<tr>
+  <td><b>Welsh</b></td>
+  <td>welsh</td>
+  <td><a href="http://mirror.ctan.org/language/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-cy.tex">cy</a></td>
+  <td>(2,3)</td>
+  <td>EC</td>
+  <td>LPPL</td>
+  <td>Yannis Haralambous</td>
+</tr>
+</tbody></table>
+</div>
+
+        
+<hr><small>$Date: 2023/07/03 20:51:01 $</small>;
+<!-- $Id: footer.html,v 1.27 2023/04/04 21:57:35 karl Exp $ (generic footer) -->
+<form method="get" action="https://duckduckgo.com/">
+<small>
+  <a href="https://hyphenation.org/index.html">TUG home page</a>;
+  <a href="mailto:webmaster@tug.org">webmaster</a>;
+  <a href="https://www.facebook.com/groups/TeXUsersGroup">facebook</a>;
+  <a href="https://twitter.com/texusersgroup">twitter</a>;
+  <a href="https://techhub.social/@TeXUsersGroup">mastodon</a>;
+  &nbsp;
+   <input type="hidden" name="sites" value="tug.org">
+   <input name="q" size="13" maxlength="99"><input type="submit" value="Search tug.org">
+   (via&nbsp;<a href="https://duckduckgo.com/">DuckDuckGo</a>)
+</small>
+</form>
+
+
+
+</body></html>

@@ -26,13 +26,13 @@ class OriginalityScorer {
   private val log = LoggerFactory.getLogger(OriginalityScorer::class.simpleName)
 
   @Autowired
-  lateinit var noveltyScorer: NoveltyScorer
+  private lateinit var noveltyScorer: NoveltyScorer
 
   @Autowired
-  lateinit var spamScorer: SpamScorer
+  private lateinit var spamScorer: SpamScorer
 
   @Autowired
-  lateinit var duplicateContentScorer: DuplicateContentScorer
+  private lateinit var duplicateContentScorer: DuplicateContentScorer
 
 
   fun originality(comment: CommentEntity, w: OriginalityWeights): Double {

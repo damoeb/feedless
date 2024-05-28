@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import jakarta.websocket.server.PathParam
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
@@ -13,11 +14,12 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.FeedUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -25,38 +27,59 @@ import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-//"http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fheise.de&linkXPath=.%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fdiv%5B5%5D%2Fdiv%5B1%5D%2Fdiv%2Fsection%5B1%5D%2Fsection%5B1%5D%2Farticle",
+// http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fheise.de&linkXPath=.%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fdiv%5B5%5D%2Fdiv%5B1%5D%2Fdiv%2Fsection%5B1%5D%2Fsection%5B1%5D%2Farticle
 
 /**
- * To support the rss-proxy ui
+ * To support old versions of rss-proxy
  */
 @Controller
 @Profile("${AppProfiles.feed} & ${AppProfiles.api}")
 class LegacyFeedController {
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var feedExporter: FeedExporter
+  private lateinit var feedExporter: FeedExporter
 
-  @Autowired
-  lateinit var environment: Environment
 
   @GetMapping(
-//    "/stream/feed/{feedId}/atom",
-//    "/stream/feed/{feedId}/atom.xml",
+    "/stream/bucket/{repositoryId}/{format}",
+    "/bucket/{repositoryId}/{format}",
+    "/bucket:{repositoryId}/{format}",
+  )
+  fun bucketFeedWithFormat(
+    @PathVariable("repositoryId") repositoryId: String,
+    @PathVariable("format") format: String
+  ): ResponseEntity<String> {
+    return feedRedirect(repositoryId, format)
+  }
+
+  private fun feedRedirect(
+    repositoryId: String,
+    format: String? = null
+  ): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/${format ?: "atom"}")
+    return ResponseEntity(headers, HttpStatus.FOUND)
+  }
+
+  @GetMapping(
+    "/stream/bucket/{repositoryId}",
+    "/bucket/{repositoryId}",
+    "/bucket:{repositoryId}",
+  )
+  fun bucketFeedWithoutFormat(@PathParam("repositoryId") repositoryId: String?): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/atom")
+    return ResponseEntity(headers, HttpStatus.FOUND)
+  }
+
+  @GetMapping(
     "/stream/feed/**",
-//    "/stream/bucket/{bucketId}/atom",
-    "/stream/bucket/**",
-//    "/feed:{feedId}/atom",
     "/feed/**",
     "/feed:**",
-//    "/bucket:{bucketId}/atom"
-    "/bucket/**",
-    "/bucket:**",
   )
-
   fun legacyEntities(
   ): ResponseEntity<String> {
     return eolMessage("atom", null)
@@ -107,8 +130,8 @@ class LegacyFeedController {
 
   fun createEolFeed(): RichFeed {
     val feed = RichFeed()
-    feed.id = ""
-    feed.title = ""
+    feed.id = "rss-proxy:2"
+    feed.title = "End Of Life"
     feed.feedUrl = ""
     feed.expired = true
     feed.publishedAt = Date()
@@ -124,20 +147,18 @@ class LegacyFeedController {
     }
 
     article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
-    article.title = "Important Notice: Termination of Legacy RSS-Proxy/feedless! Feedless 1 is coming!"
-    article.contentText = """Dear User,
+    article.title = "Important Notice: Termination of Stateless RSS-Proxy! Stateful RSS-Proxy is here!!"
+    article.contentHtml = """Dear User,
 
 I hope this message finds you well. I am writing to inform you of some changes regarding our services that may affect you.
 
-As of now, I regret to terminate of our free services, RSS-Proxy and feedless Alpha. I understand the convenience and value these services may have provided, and we sincerely apologize for any inconvenience this may cause.
+As of now, I regret to terminate of our RSS-Proxy and I sincerely apologize for any inconvenience this may cause.
 
-However, we're excited to share that we're transitioning towards a new and improved version: feedless 1 will offer a free version, providing you with similar functionalities to what you've been accustomed to with RSS-Proxy and feedless Alph including self-hostinga. We believe this upgrade will enhance your experience and better meet your needs.
+However, I am excited to share that we transitioned to a new and improved version. We believe this upgrade will enhance your experience and better meet your needs.
 
-You have the opportunity to register to the pre-launch waiting list (limited size) by following this link: $preregistrationLink. By preregistering, you'll be among the first to access the new service once they become available.
+You have the opportunity to register here $preregistrationLink and import your existing RSS-proxy urls.
 
-Should you have any questions, concerns, or require further assistance, please don't hesitate to reach out to me at feedlessapp@proton.me.
-
-Thank you for your understanding and continued support as we strive to improve our services and cater to your needs better.
+Should you have any questions, concerns, reach out to me at feedlessapp@proton.me.
 
 Best regards,
 

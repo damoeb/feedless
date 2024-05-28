@@ -158,6 +158,9 @@ dependencies {
 
 
 //  implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4")
+
+  // payments
+  implementation("com.stripe:stripe-java:25.0.0")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

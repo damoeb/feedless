@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { dateFormat } from '../../services/session.service';
 import { debounce, interval, Subscription } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
-import { Feature } from '../../graphql/types';
+import { Feature, FeatureGroup } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
 import { sortBy } from 'lodash-es';
@@ -15,72 +21,74 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
   styleUrls: ['./settings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsPage implements OnInit, OnDestroy {
+export class SettingsPage implements OnInit {
   loading = true;
-  private subscriptions: Subscription[] = [];
   protected readonly dateFormat = dateFormat;
-  protected features: FeatureWithFormControl[];
+  protected features: FeatureWithFormControl[] = [];
+  protected featureGroups: FeatureGroup[];
+  featureGroupsFc = new FormControl<FeatureGroup>(null);
 
   constructor(
     private readonly featureService: FeatureService,
     private readonly toastCtrl: ToastController,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
-    this.subscriptions.push(
-      this.featureService.findAll().subscribe((features) => {
-        this.features = sortBy(features.map((feature) => {
-          let fc: FormControl;
-          if (feature.value.boolVal) {
-            fc = new FormControl<boolean>(feature.value.boolVal.value);
-            fc.valueChanges
-              .pipe(debounce(() => interval(800)))
-              .subscribe(async (value) => {
-                await this.featureService.updateFeature({
-                  name: feature.name,
-                  value: {
-                    boolVal: {
-                      value,
-                    },
-                  },
-                });
-                this.showSavedToast();
-              });
-          } else {
-            if (feature.value.numVal) {
-              fc = new FormControl<number>(feature.value.numVal.value);
+    this.featureService.findAll({}, false).then((featureGroups) => {
+      this.featureGroups = featureGroups;
+      this.featureGroupsFc.valueChanges.subscribe((featureGroup) => {
+        this.features = sortBy(
+          featureGroup.features.map((feature) => {
+            let fc: FormControl;
+            if (feature.value.boolVal) {
+              fc = new FormControl<boolean>(feature.value.boolVal.value);
               fc.valueChanges
                 .pipe(debounce(() => interval(800)))
                 .subscribe(async (value) => {
-                  await this.featureService.updateFeature({
-                    name: feature.name,
+                  await this.featureService.updateFeatureValue({
+                    id: feature.value.id,
                     value: {
-                      numVal: {
+                      boolVal: {
                         value,
                       },
                     },
                   });
+                  this.showSavedToast();
                 });
-              this.showSavedToast();
             } else {
-              throw Error(`Unsupported feature ${feature}`);
+              if (feature.value.numVal) {
+                fc = new FormControl<number>(feature.value.numVal.value);
+                fc.valueChanges
+                  .pipe(debounce(() => interval(800)))
+                  .subscribe(async (value) => {
+                    await this.featureService.updateFeatureValue({
+                      id: feature.value.id,
+                      value: {
+                        numVal: {
+                          value,
+                        },
+                      },
+                    });
+                  });
+                this.showSavedToast();
+              } else {
+                throw Error(`Unsupported feature ${feature}`);
+              }
             }
-          }
 
-          return { ...feature, fc };
-        }), 'name');
-
-        this.loading = false;
+            return { ...feature, fc };
+          }),
+          'name',
+        );
         this.changeRef.detectChanges();
-      }),
-    );
-    this.changeRef.detectChanges();
-  }
+      });
+      this.featureGroupsFc.setValue(featureGroups[0]);
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
+      this.loading = false;
+      this.changeRef.detectChanges();
+    })
+    this.changeRef.detectChanges();
   }
 
   private async showSavedToast() {

@@ -12,6 +12,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.asRemoteNativeFeed
@@ -29,7 +30,6 @@ import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
 import org.migor.feedless.generated.types.TextData
-import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil
@@ -50,20 +50,20 @@ class ScrapeService {
   private val log = LoggerFactory.getLogger(ScrapeService::class.simpleName)
 
   @Autowired
-  lateinit var httpService: HttpService
+  private lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var agentService: AgentService
+  private lateinit var agentService: AgentService
 
   @Lazy
   @Autowired
-  lateinit var feedParserService: FeedParserService
+  private lateinit var feedParserService: FeedParserService
 
   @Autowired
-  lateinit var pluginService: PluginService
+  private lateinit var pluginService: PluginService
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var meterRegistry: MeterRegistry
 
   fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
     val prerender = scrapeRequest.page.prerender != null

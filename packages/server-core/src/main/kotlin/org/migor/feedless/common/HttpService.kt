@@ -17,14 +17,12 @@ import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.io.Serializable
 import java.net.URL
 import java.time.Duration
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -45,9 +43,6 @@ class HttpService {
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
   val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)
-
-  @Autowired
-  lateinit var propertyService: PropertyService
 
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)

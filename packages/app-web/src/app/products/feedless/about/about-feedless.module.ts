@@ -17,7 +17,7 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     ProductHeadlineModule,
     NewsletterModule,
     ProductHeaderModule,
-    SearchbarModule
+    SearchbarModule,
   ],
   declarations: [AboutFeedlessPage],
 })

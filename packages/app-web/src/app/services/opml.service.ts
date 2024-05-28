@@ -13,9 +13,7 @@ export interface Outline {
   providedIn: 'root',
 })
 export class OpmlService {
-  constructor(
-    private readonly toastCtrl: ToastController,
-  ) {}
+  constructor(private readonly toastCtrl: ToastController) {}
 
   async convertOpmlToJson(uploadEvent: Event): Promise<Outline[]> {
     return new Promise((resolve, reject) => {

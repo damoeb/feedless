@@ -11,7 +11,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.AttachmentEntity
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
@@ -34,7 +33,6 @@ import org.migor.feedless.pipeline.PipelineJobDAO
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.images
-import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -55,43 +53,37 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.scrape}")
 class RepositoryHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var scrapeService: ScrapeService
 
   @Autowired
-  lateinit var scrapeService: ScrapeService
+  private lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  lateinit var documentDAO: DocumentDAO
+  private lateinit var pipelineJobDAO: PipelineJobDAO
 
   @Autowired
-  lateinit var pipelineJobDAO: PipelineJobDAO
+  private lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var documentService: DocumentService
+  private lateinit var sourceDAO: SourceDAO
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var sourceDAO: SourceDAO
+  private lateinit var repositoryService: RepositoryService
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  lateinit var repositoryService: RepositoryService
-
-  @Autowired
-  lateinit var notificationService: NotificationService
+  private lateinit var notificationService: NotificationService
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun handleRepository(corrId: String, repository: RepositoryEntity) {

@@ -27,13 +27,13 @@ class AuthAnonymousResolver {
   private val log = LoggerFactory.getLogger(AuthAnonymousResolver::class.simpleName)
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var cookieProvider: CookieProvider
+  private lateinit var cookieProvider: CookieProvider
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Throttled
   @DgsMutation

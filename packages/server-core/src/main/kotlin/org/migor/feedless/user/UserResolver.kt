@@ -22,16 +22,16 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.api}")
 class UserResolver {
 
   private val log = LoggerFactory.getLogger(UserResolver::class.simpleName)
 
   @Autowired
-  lateinit var userService: UserService
+  private lateinit var userService: UserService
 
   @Autowired
-  lateinit var currentUser: SessionService
+  private lateinit var currentUser: SessionService
 
   @Throttled
   @DgsMutation
@@ -45,9 +45,9 @@ class UserResolver {
     userService.createUser(
       corrId,
       email = data.email,
-      productName = data.product.fromDto(),
+      productCategory = data.product.fromDto(),
       planName = data.plan.fromDto()
-    ).toDto()
+    ).toDTO()
   }
 
   @Throttled

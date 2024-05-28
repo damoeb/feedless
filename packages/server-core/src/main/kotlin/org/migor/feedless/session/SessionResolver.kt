@@ -24,7 +24,7 @@ import org.migor.feedless.generated.types.Session
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.user.UserService
-import org.migor.feedless.user.toDto
+import org.migor.feedless.user.toDTO
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,31 +44,31 @@ class SessionResolver {
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  lateinit var environment: Environment
+  private lateinit var environment: Environment
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var userService: UserService
+  private lateinit var userService: UserService
 
   @Autowired
-  lateinit var userSecretService: UserSecretService
+  private lateinit var userSecretService: UserSecretService
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var sessionService: SessionService
 
   @Autowired
-  lateinit var cookieProvider: CookieProvider
+  private lateinit var cookieProvider: CookieProvider
 
   @DgsData(parentType = DgsConstants.SESSION.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun user(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val session: Session = dfe.getSource()
-    session.userId?.let { sessionService.user("?").toDto() }
+    session.userId?.let { sessionService.user("?").toDTO() }
   }
 
   @DgsQuery

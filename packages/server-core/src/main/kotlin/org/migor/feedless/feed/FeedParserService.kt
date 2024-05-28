@@ -3,24 +3,24 @@ package org.migor.feedless.feed
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.common.HarvestResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.toDto
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
 import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
+import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.common.HarvestResponse
-import org.migor.feedless.document.toDto
-import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.repository.RepositoryEntity
@@ -43,19 +43,19 @@ class FeedParserService {
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var filterPlugin: CompositeFilterPlugin
+  private lateinit var filterPlugin: CompositeFilterPlugin
 
   @Autowired
-  lateinit var conditionalTagPlugin: ConditionalTagPlugin
+  private lateinit var conditionalTagPlugin: ConditionalTagPlugin
 
   @Autowired
-  lateinit var httpService: HttpService
+  private lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var scrapeService: ScrapeService
+  private lateinit var scrapeService: ScrapeService
 
   private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
     XmlFeedParser(),

@@ -9,7 +9,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.generated.types.ProductName
+import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.SinkOptionsInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -78,7 +78,7 @@ class RepositoryServiceTest {
   fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() {
     `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
       .thenReturn(false)
-    `when`(planConstraintsService.coerceVisibility(Mockito.any()))
+    `when`(planConstraintsService.coerceVisibility(Mockito.anyString(), Mockito.any()))
       .thenReturn(EntityVisibility.isPublic)
 
     val repositories = listOf<RepositoryCreateInput>(
@@ -89,7 +89,7 @@ class RepositoryServiceTest {
 //            .refreshCron("")
 //            .build()
 //        )
-        .product(ProductName.rssProxy)
+        .product(ProductCategory.rssProxy)
         .sinkOptions(
           SinkOptionsInput.newBuilder()
             .title("")

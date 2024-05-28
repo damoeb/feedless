@@ -16,10 +16,10 @@ class CookieProvider {
   private val log = LoggerFactory.getLogger(CookieProvider::class.simpleName)
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  private lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var tokenProvider: TokenProvider
+  private lateinit var tokenProvider: TokenProvider
 
   fun createTokenCookie(corrId: String, authToken: Jwt): Cookie {
     log.info("[$corrId] creating token cookie")

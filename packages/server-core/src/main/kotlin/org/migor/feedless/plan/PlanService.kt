@@ -3,7 +3,6 @@ package org.migor.feedless.plan
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.slf4j.LoggerFactory
@@ -20,7 +19,7 @@ class PlanService {
   private val log = LoggerFactory.getLogger(PlanService::class.simpleName)
 
   @Autowired
-  lateinit var planDAO: PlanDAO
+  private lateinit var featureGroupDAO: FeatureGroupDAO
 
   fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
     return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
@@ -35,17 +34,17 @@ class PlanService {
     return Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)))
   }
 
-  fun findAllVisible(product: ProductName): List<PlanEntity> {
-//    return planDAO.findAllByAvailabilityNotInAndProduct(
-//      listOf(
-//        PlanAvailability.unavailable,
-//        PlanAvailability.availableButHidden
-//      ), product
-//    )
-    return emptyList();
-  }
+//  fun findAllVisible(product: ProductName): List<FeatureGroupEntity> {
+////    return planDAO.findAllByAvailabilityNotInAndProduct(
+////      listOf(
+////        PlanAvailability.unavailable,
+////        PlanAvailability.availableButHidden
+////      ), product
+////    )
+//    return emptyList();
+//  }
 
-  fun findById(id: String): Optional<PlanEntity> {
-    return planDAO.findById(UUID.fromString(id))
+  fun findById(id: String): Optional<FeatureGroupEntity> {
+    return featureGroupDAO.findById(UUID.fromString(id))
   }
 }

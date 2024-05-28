@@ -16,7 +16,7 @@ import {
   GqlUpdateCurrentUserMutationVariables,
   Logout,
   Session as SessionQuery,
-  UpdateCurrentUser
+  UpdateCurrentUser,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
@@ -24,6 +24,8 @@ import { Router } from '@angular/router';
 import { Session, UserSecret } from '../graphql/types';
 import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
+import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
+import { ModalController } from '@ionic/angular';
 
 export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
@@ -36,10 +38,12 @@ export class SessionService {
   private session: Session = {} as any;
   private darkModePipe: ReplaySubject<boolean>;
   private sessionPipe: BehaviorSubject<Session>;
+  private modalIsOpen: boolean = false;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
+    private readonly modalCtrl: ModalController,
     private readonly router: Router,
   ) {
     this.sessionPipe = new BehaviorSubject(null);
@@ -68,21 +72,41 @@ export class SessionService {
       })
       .then((response) => response.data.session)
       .then(async (session) => {
-        this.authService.changeAuthStatus(session.isLoggedIn);
         this.session = session;
         this.sessionPipe.next(session);
 
         if (session.isLoggedIn) {
-          if (!session.user.hasAcceptedTerms) {
-            await this.authService.showTermsAndConditions();
-          }
+          this.authService.changeAuthStatus(session.isLoggedIn);
         }
       });
   }
 
-  async acceptTermsAndConditions(): Promise<void> {
+  async finalizeProfile() {
+    const isUnfinished =
+      !this.session.user.email || !this.session.user.hasAcceptedTerms;
+    if (this.modalIsOpen || !isUnfinished) {
+      return;
+    }
+    try {
+      this.modalIsOpen = true;
+      const modal = await this.modalCtrl.create({
+        component: FinalizeProfileModalComponent,
+        cssClass: 'fullscreen-modal',
+        backdropDismiss: false,
+      });
+      await modal.present();
+      await modal.onDidDismiss();
+    } finally {
+      this.modalIsOpen = false;
+    }
+  }
+
+  async finalizeSignUp(email: string): Promise<void> {
     const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
     await this.updateCurrentUser({
+      email: {
+        set: email,
+      },
       acceptedTermsAndServices: {
         set: true,
       },

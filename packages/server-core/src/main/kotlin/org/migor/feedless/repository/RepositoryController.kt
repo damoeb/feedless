@@ -30,17 +30,17 @@ class RepositoryController {
   private val log = LoggerFactory.getLogger(RepositoryController::class.simpleName)
 
   @Autowired
-  lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryService: RepositoryService
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var feedExporter: FeedExporter
+  private lateinit var feedExporter: FeedExporter
 
   @Tracked
   @GetMapping(
-    "/feed/{repositoryId}/atom",
+//    "/feed/{repositoryId}/atom",
     "/f/{repositoryId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
   )
   fun atomFeed(
@@ -67,8 +67,8 @@ class RepositoryController {
 
   @Tracked
   @GetMapping(
-    "/feed/{repositoryId}/json",
-    "/feed/{repositoryId}",
+//    "/feed/{repositoryId}/json",
+//    "/feed/{repositoryId}",
     "/f/{repositoryId}/json",
     "/f/{repositoryId}",
     produces = ["application/json;charset=UTF-8"]

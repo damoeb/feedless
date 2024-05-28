@@ -3,7 +3,7 @@ package org.migor.feedless.mail
 import jakarta.mail.internet.MimeMessage
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.pipeline.plugins.MailAttachment
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.plan.ProductService
@@ -85,7 +85,7 @@ class MailServiceImpl : MailService {
     send(corrId, from, to = arrayOf(user.email!!), mailData)
   }
 
-  override fun getNoReplyAddress(product: ProductName): String {
+  override fun getNoReplyAddress(product: ProductCategory): String {
     return "no-reply@${productService.getDomain(product)}"
   }
 

@@ -8,7 +8,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
@@ -21,10 +21,16 @@ import {
   keymap,
   lineNumbers,
   showTooltip,
-  Tooltip
+  Tooltip,
 } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { bracketMatching, foldGutter, foldKeymap, indentOnInput, syntaxTree } from '@codemirror/language';
+import {
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  syntaxTree,
+} from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
 import {
   autocompletion,
@@ -34,10 +40,14 @@ import {
   CompletionContext,
   completionKeymap,
   CompletionResult,
-  startCompletion
+  startCompletion,
 } from '@codemirror/autocomplete';
 
-import { markdownLanguageSupport, NODE_HASHTAG, NODE_LINK } from './markdown.lang';
+import {
+  markdownLanguageSupport,
+  NODE_HASHTAG,
+  NODE_LINK,
+} from './markdown.lang';
 import { theme } from './theme';
 import { markdownDecorator } from './markdown.decorator';
 import { hashtagMatcher } from './hashtag.widget';
@@ -156,10 +166,10 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
   }
 
   private highlightLines(lines: number[]) {
-    lines?.forEach(line => {
+    lines?.forEach((line) => {
       const docPosition = this.editorView.state.doc.line(line).from;
-      this.editorView.dispatch({effects: addLineHighlight.of(docPosition)});
-    })
+      this.editorView.dispatch({ effects: addLineHighlight.of(docPosition) });
+    });
   }
 
   private getExtensions() {

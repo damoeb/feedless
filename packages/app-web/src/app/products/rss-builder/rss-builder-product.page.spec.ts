@@ -9,7 +9,7 @@ import {
 } from '../../app-test.module';
 import { RssBuilderProductModule } from './rss-builder-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('RssBuilderProductPage', () => {
@@ -30,7 +30,7 @@ describe('RssBuilderProductPage', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

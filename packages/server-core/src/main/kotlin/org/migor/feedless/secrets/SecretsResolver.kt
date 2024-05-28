@@ -23,17 +23,17 @@ import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} & ${AppProfiles.api}")
 class SecretsResolver {
 
   @Autowired
-  lateinit var userSecretDAO: UserSecretDAO
+  private lateinit var userSecretDAO: UserSecretDAO
 
   @Autowired
-  lateinit var userSecretService: UserSecretService
+  private lateinit var userSecretService: UserSecretService
 
   @Autowired
-  lateinit var sessionService: SessionService
+  private lateinit var sessionService: SessionService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)

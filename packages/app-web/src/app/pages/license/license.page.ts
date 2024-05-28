@@ -3,21 +3,11 @@ import { LicenseService } from '../../services/license.service';
 import { GqlLicenseQuery } from '../../../generated/graphql';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
-import { StringFeatureGroup } from '../../components/plan-column/plan-column.component';
 import dayjs from 'dayjs';
-import { ModalController } from '@ionic/angular';
-import { BuyModalComponent } from '../../modals/buy-modal/buy-modal.component';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-
-function bold(v: string): string {
-  return `<strong>${v}</strong>`;
-}
-
-function bool(value: boolean) {
-  return {
-    value,
-  };
-}
+import { environment } from '../../../environments/environment';
+import { FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-license-page',
@@ -30,90 +20,25 @@ export class LicensePage implements OnInit, OnDestroy {
   license: GqlLicenseQuery['license'];
   private subscriptions: Subscription[] = [];
   protected readonly dateFormat = dateFormat;
-  price: number = 49.99;
-
-  featureGroupsRP: StringFeatureGroup[] = [
-    {
-      groupLabel: 'Features',
-      features: [
-        {
-          title: 'Team Member',
-          valueHtml: bold('1'),
-        },
-        {
-          title: 'Feeds',
-          valueHtml: bold('Infinite'),
-        },
-        {
-          title: 'Minute Refresh Rate',
-          valueHtml: bold('15'),
-        },
-        {
-          title: 'Posts in collection',
-          valueHtml: bold('Infinite'),
-        },
-        {
-          title: 'Filters',
-          valueBool: bool(true),
-        },
-        {
-          title: 'Bundle Feeds',
-          valueBool: bool(true),
-        },
-        {
-          title: 'Full Source Available',
-          valueBool: bool(true),
-        },
-      ],
-    },
-  ];
-  featureGroupsRA: StringFeatureGroup[] = [
-    {
-      groupLabel: 'Features',
-      features: [
-        {
-          title: 'Team Member',
-          valueHtml: bold('1'),
-        },
-        {
-          title: 'Feeds',
-          valueHtml: bold('100'),
-        },
-        {
-          title: 'Minute Refresh Rate',
-          valueHtml: bold('15'),
-        },
-        {
-          title: 'Posts in collection',
-          valueHtml: bold('200'),
-        },
-        {
-          title: 'Filters',
-          valueBool: bool(true),
-        },
-        {
-          title: 'Bundle Feeds',
-          valueBool: bool(true),
-        },
-        {
-          title: 'Full Source Available',
-          valueBool: bool(false),
-        },
-      ],
-    },
-  ];
 
   constructor(
     private readonly licenseService: LicenseService,
-    private readonly modalCtrl: ModalController,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
-  fromNow = relativeTimeOrElse
+  fromNow = relativeTimeOrElse;
+  buyRssProxyUrl: string = `${environment.officialFeedlessUrl}/pricing/rss-proxy?callbackUrl=${encodeURIComponent(location.href)}`;
+  licenseFc = new FormControl<string>('', [Validators.minLength(10)]);
 
   async ngOnInit() {
     this.subscriptions.push(
+      this.activatedRoute.queryParams.subscribe(queryParams => {
+        if (queryParams.licenseKey) {
+          this.licenseFc.setValue(queryParams.licenseKey);
+          this.changeRef.detectChanges();
+        }
+      }),
       this.licenseService.licenseChange.subscribe((license) => {
         this.license = license;
         this.loading = false;
@@ -127,19 +52,13 @@ export class LicensePage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  applyLicense(licenseRaw: string) {
-    if (licenseRaw.trim().length > 0) {
+  applyLicense() {
+    const licenseRaw = this.licenseFc.value;
+    if (this.licenseFc.valid) {
       return this.licenseService.updateLicense({
         licenseRaw,
       });
     }
-  }
-
-  async openBuyModal() {
-    const modal = await this.modalCtrl.create({
-      component: BuyModalComponent,
-    });
-    await modal.present();
   }
 
   getRelativeTrialDaysLeft(): number {
@@ -147,9 +66,5 @@ export class LicensePage implements OnInit, OnDestroy {
       dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') /
       (28 * 2.0)
     );
-  }
-
-  discount(discount: number) {
-    return (this.price / 100 * (100-discount)).toFixed(2);
   }
 }

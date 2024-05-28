@@ -1,0 +1,72 @@
+/* $Id: tugstyle.css,v 1.43 2023/10/04 16:43:55 karl Exp $
+   Copyright 2008-2023 TeX Users Group.
+   You may freely use, modify and/or distribute this file.  */
+
+BODY {
+  margin-top: 1rem;
+  margin-left: 1rem; /* auto results in two-digit <ol> lost off left */
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  /* The idea is to use the whole window, unless it is ridiculously wide. */
+  max-width: 60rem;
+}
+
+/* phones, tablets, whatever: render bigger. Requires viewport decl. */
+@media (max-width:768px) {
+  body  { font-size:130%; }
+  /* quirks mode (what we use) reverts to the browser default size
+     (16px) in tables; this makes it inherit the increased body size
+     that we just set: */
+  table { font-size: 100%; }
+}
+
+H1, H2, H3, H4 { color: navy; }
+
+a:link      { color: navy; }
+a:visited   { color: green; }
+a:active    { color: red; }
+
+.negskip    { margin-top: -.6rem; }
+.negskipp   { margin-top: -.9rem; }
+.tinyskip   { margin-top: 2pt; }
+.smallskip  { margin-top: 8pt; }
+.indent     { text-indent: 2rem; }
+
+/* for the home page */
+.navbar           { color: navy; background: "E5E5E5"; text-decoration: none}
+.navbar a:link    { color: navy; }
+.navbar a:visited { color: navy; }
+.navbar a:hover   { color: red; }
+
+/* In case the browser doesn't have these HTML5 elements. Although only the
+   home page needs <aside> (and uses <section>), may as well degrade here. */
+article, aside, figure, footer, header, hgroup,
+   menu, nav, section { display: block; }
+
+/* for the tugboat indexes.  http://alistapart.com/articles/taminglists/  */
+.tubidxentry  { padding-left: 3rem; text-indent: -2rem; /* hanging indentation */
+                list-style: none;    /* no bullets */
+                margin-top: 0;       /* no space above */
+                margin-bottom: 0;    /* no space above */
+              }
+
+.tubidxgroup  { margin-top: .5rem;       /* space above the group head */
+                margin-bottom: 0; }      /* space between head and entries */
+
+.tubidxTgroup { margin-top: .1rem;       /* space above the group head */
+                margin-bottom: .1rem; }  /* space between head and entries */
+
+/* http://www.w3schools.com/css/css_font.asp */
+.tubissuenav  { font-size: small; font-weight: normal; }
+
+/* landing page lists of references */
+ol.tugbbl  { margin-top: -.5rem; }    /* reduce vspace at start of list */
+li.tugbbl  { margin-bottom: .5rem; } /* increase vspace between entries */
+
+/* for interest.html */
+.back-to-top {
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+  background-color: white;
+}

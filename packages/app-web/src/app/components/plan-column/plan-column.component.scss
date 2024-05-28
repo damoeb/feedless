@@ -6,12 +6,14 @@
   border-radius: 0.5rem;
   line-height: 1.2rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 
-  .plan__title {
-    font-size: 1.1rem;
-    //font-weight: bold;
-    //text-transform: uppercase;
-  }
+  //.plan__title {
+  //  font-size: 1.1rem;
+  //  //font-weight: bold;
+  //  //text-transform: uppercase;
+  //}
 
   .plan__action {
     ion-button {
@@ -20,17 +22,17 @@
     }
   }
 
-  .plan__price {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 2.5rem;
-    font-weight: bold;
-
-    &--info {
-      color: var(--faint-color);
-      font-size: 1rem;
-    }
-  }
+  //.plan__price {
+  //  margin-top: 1.5rem;
+  //  margin-bottom: 1.5rem;
+  //  font-size: 2.5rem;
+  //  font-weight: bold;
+  //
+  //  &--info {
+  //    color: var(--faint-color);
+  //    font-size: 1rem;
+  //  }
+  //}
 }
 
 @media only screen and (min-width: 992px) {
@@ -46,6 +48,16 @@
 
 .feature {
   padding: 3px;
+  font-size: 0.9rem;
+
+  ion-col:first-child {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  ion-col:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -88,6 +100,6 @@ ion-icon {
   --ionicon-stroke-width: 64px;
 }
 
-sup {
-  font-weight: bold;
-}
+//sup {
+//  font-weight: bold;
+//}

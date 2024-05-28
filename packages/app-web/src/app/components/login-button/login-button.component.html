@@ -29,19 +29,29 @@
           <ion-icon name="person-outline" slot="start"></ion-icon>
           Profile
         </ion-item>
-        <ion-item [button]="true" routerLink="/secrets">
-          <ion-icon name="key-outline" slot="start"></ion-icon>
-          Secrets
+<!--        <ion-item [button]="true" routerLink="/secrets">-->
+<!--          <ion-icon name="key-outline" slot="start"></ion-icon>-->
+<!--          Secrets-->
+<!--        </ion-item>-->
+        <ion-item
+          [button]="true"
+          routerLink="/orders"
+          *ngIf="serverConfig.isSaas()"
+        >
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          Billings
         </ion-item>
         <ion-item
           [button]="true"
           routerLink="/settings"
-          *ngIf="serverSettings.isSelfHosted()"
+          *ngIf="serverConfig.isSelfHosted()"
         >
           <ion-icon name="settings-outline" slot="start"></ion-icon>
           Settings
         </ion-item>
-        <ion-item [button]="true" routerLink="/license">
+        <ion-item [button]="true"
+                  *ngIf="serverConfig.isSelfHosted()"
+                  routerLink="/license">
           <ion-icon name="card-outline" slot="start"></ion-icon>
           License
         </ion-item>
@@ -53,5 +63,3 @@
     </ng-template>
   </ion-popover>
 </ion-button>
-
-<!--  <ion-button id="open-date-picker" expand="block">Date Picker</ion-button>-->

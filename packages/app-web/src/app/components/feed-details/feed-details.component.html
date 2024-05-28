@@ -5,12 +5,12 @@
   <ion-chip
     (click)="editRepository(['privacy'])"
     *ngIf="repository.visibility === GqlVisibility.IsPrivate"
-  >Private
+    >Private
   </ion-chip>
   <ion-chip
     (click)="editRepository(['privacy'])"
     *ngIf="repository.visibility === GqlVisibility.IsPublic"
-  >Public
+    >Public
   </ion-chip>
 </ion-row>
 <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -19,7 +19,7 @@
       <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>
       Visit website
     </ion-button>
-    <ion-button title="Pulls per week" *ngIf="!serverSettings.isSelfHosted()">
+    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">
       <ion-icon
         name="arrow-down-outline"
         color="primary"
@@ -34,7 +34,6 @@
   </ion-buttons>
 
   <ion-buttons slot="end" *ngIf="isOwner">
-
     <ion-modal trigger="open-sources-modal">
       <ng-template>
         <ion-header>
@@ -58,9 +57,11 @@
               <ion-button (click)="editSource()">
                 <ion-icon name="add-outline" slot="start"></ion-icon>
                 Add Source
-                <app-bubble *ngIf="repository.sources.length === 0"
-                            color="red"
-                            slot="end"></app-bubble>
+                <app-bubble
+                  *ngIf="repository.sources.length === 0"
+                  color="red"
+                  slot="end"
+                ></app-bubble>
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
@@ -84,7 +85,7 @@
                     fill="clear"
                     [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
                     (click)="editTags(source)"
-                  >{{ stringifyTags(source) }}
+                    >{{ stringifyTags(source) }}
                   </ion-button>
                 </p>
                 <ion-note color="danger" *ngIf="source.errornous">
@@ -92,9 +93,11 @@
                 </ion-note>
               </ion-label>
               <ion-buttons [collapse]="true">
-                <ion-button color="danger"
-                            fill="solid"
-                            (click)="deleteSource(source)">
+                <ion-button
+                  color="danger"
+                  fill="solid"
+                  (click)="deleteSource(source)"
+                >
                   Delete
                 </ion-button>
                 <ion-button (click)="editSource(source)"> Edit</ion-button>
@@ -167,13 +170,15 @@
         <dt>Next Update</dt>
         <dd>
           {{ fromNow(repository.nextUpdateAt) }}
-          <ion-button size="small"
-                      *ngIf="isOwner"
-                      [disabled]="repository.sources.length === 0"
-                      (click)="refreshSources()"
-                      shape="round"
-                      title="Trigger Sync"
-                      class="ion-margin-start">
+          <ion-button
+            size="small"
+            *ngIf="isOwner"
+            [disabled]="repository.sources.length === 0"
+            (click)="refreshSources()"
+            shape="round"
+            title="Trigger Sync"
+            class="ion-margin-start"
+          >
             <ion-icon name="refresh-outline" slot="start"></ion-icon>
             Trigger Sync
           </ion-button>
@@ -181,11 +186,13 @@
         <dt>Retention Strategy</dt>
         <dd>
           {{ getRetentionStrategy() }}
-          <ion-button size="small"
-                      *ngIf="isOwner"
-                      (click)="editRepository(['storage'])"
-                      shape="round"
-                      class="ion-margin-start">
+          <ion-button
+            size="small"
+            *ngIf="isOwner"
+            (click)="editRepository(['storage'])"
+            shape="round"
+            class="ion-margin-start"
+          >
             <ion-icon name="pencil-outline" slot="start"></ion-icon>
             Edit
           </ion-button>
@@ -198,7 +205,6 @@
       (click)="
         showFullDescription = !showFullDescription; $event.stopPropagation()
       "
-
       fill="clear"
       color="dark"
       style="margin: auto"
@@ -217,11 +223,19 @@
       <span *ngIf="viewModeFc.value === viewModeHistogram">Activity</span>
     </h3>
 
-    <div style="align-content: center;">
-      <ion-segment mode="ios" style="max-width: 300px" [formControl]="viewModeFc">
+    <div style="align-content: center">
+      <ion-segment
+        mode="ios"
+        style="max-width: 300px"
+        [formControl]="viewModeFc"
+      >
         <ion-segment-button [value]="viewModeList">List</ion-segment-button>
-<!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
-        <ion-segment-button [value]="viewModeDiff" *ngIf="repository.product === GqlProductName.VisualDiff">Diff</ion-segment-button>
+        <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
+        <ion-segment-button
+          [value]="viewModeDiff"
+          *ngIf="repository.product === GqlProductName.VisualDiff"
+          >Diff</ion-segment-button
+        >
       </ion-segment>
     </div>
   </div>
@@ -229,7 +243,10 @@
   <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
 
   <ng-container *ngIf="!loading">
-    <div style="position: relative" *ngIf="viewModeFc.value === viewModeHistogram">
+    <div
+      style="position: relative"
+      *ngIf="viewModeFc.value === viewModeHistogram"
+    >
       <app-histogram [data]="repository.activity"></app-histogram>
     </div>
     <ng-container *ngIf="viewModeFc.value === viewModeDiff">
@@ -237,23 +254,25 @@
         <ion-label> Page is empty.</ion-label>
       </ion-item>
       <ng-container *ngIf="compareByField === compareByPixel">
-        <app-image-diff *ngIf="documents.length === 1"
-                        [before]="documents[0]"></app-image-diff>
+        <app-image-diff
+          *ngIf="documents.length === 1"
+          [before]="documents[0]"
+        ></app-image-diff>
         <ng-container *ngIf="documents.length > 1">
           <div *ngFor="let pair of getDocumentPairs()">
-            <app-image-diff [before]="pair.a"
-                            [after]="pair.b"></app-image-diff>
+            <app-image-diff [before]="pair.a" [after]="pair.b"></app-image-diff>
           </div>
         </ng-container>
       </ng-container>
 
       <ng-container *ngIf="compareByField !== compareByPixel">
-        <app-text-diff *ngIf="documents.length === 1"
-                       [before]="documents[0]"></app-text-diff>
+        <app-text-diff
+          *ngIf="documents.length === 1"
+          [before]="documents[0]"
+        ></app-text-diff>
         <ng-container *ngIf="documents.length > 1">
           <div *ngFor="let pair of getDocumentPairs()">
-            <app-text-diff [before]="pair.a"
-                            [after]="pair.b"></app-text-diff>
+            <app-text-diff [before]="pair.a" [after]="pair.b"></app-text-diff>
           </div>
         </ng-container>
       </ng-container>
@@ -272,9 +291,8 @@
                 class="ion-margin-end"
                 *ngIf="selectedCount > 0"
                 style="align-content: center"
-              >({{ selectedCount }})
-              </ion-text
-              >
+                >({{ selectedCount }})
+              </ion-text>
               <ion-button
                 (click)="deleteAllSelected()"
                 color="danger"
@@ -302,7 +320,7 @@
               <ion-toolbar style="--background: transparent">
                 <ion-buttons>
                   <ion-note
-                  >{{ fromNow(document.publishedAt) }} on
+                    >{{ fromNow(document.publishedAt) }} on
                     {{ hostname(document.url) }}
                   </ion-note>
                   <ion-note *ngIf="document.tags.length > 0">
@@ -338,6 +356,4 @@
       ></app-pagination>
     </ng-container>
   </ng-container>
-
-
 </div>

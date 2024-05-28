@@ -1,7 +1,9 @@
-<ion-button id="open-import-modal"
-            [fill]="fill"
-            [color]="color"
-            [expand]="expand">
+<ion-button
+  id="open-import-modal"
+  [fill]="fill"
+  [color]="color"
+  [expand]="expand"
+>
   <ion-label> Import </ion-label>
 </ion-button>
 
@@ -24,9 +26,9 @@
         <ion-item [button]="true" (click)="openOpmlPicker()">
           Import OPML
         </ion-item>
-<!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
-<!--          Import Urls-->
-<!--        </ion-item>-->
+        <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
+        <!--          Import Urls-->
+        <!--        </ion-item>-->
       </ion-list>
     </ion-content>
   </ng-template>

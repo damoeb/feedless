@@ -1,7 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 
 @Component({
@@ -18,7 +23,7 @@ export class AboutPcTrackerPage {
 
   constructor(
     private readonly router: Router,
-    readonly serverSettings: ServerSettingsService,
+    readonly serverConfig: ServerConfigService,
   ) {}
 
   async handleQuery(url: string) {
@@ -35,7 +40,7 @@ export class AboutPcTrackerPage {
 
   getLicenseExpiry() {
     return new Date(
-      this.serverSettings.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
+      this.serverConfig.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
     );
   }
 }

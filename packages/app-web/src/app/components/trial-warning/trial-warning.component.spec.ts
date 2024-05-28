@@ -2,8 +2,13 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TrialWarningComponent } from './trial-warning.component';
 import { TrialWarningModule } from './trial-warning.module';
-import { ApolloMockController, AppTestModule, mockLicense, mockServerSettings } from '../../app-test.module';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockLicense,
+  mockServerSettings,
+} from '../../app-test.module';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('TrialWarningComponent', () => {
@@ -22,7 +27,7 @@ describe('TrialWarningComponent', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerSettingsService),
+      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 

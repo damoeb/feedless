@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import { SessionService } from '../../services/session.service';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 import { fixUrl } from '../../app.module';
 import { Authentication, AuthService } from '../../services/auth.service';
 
@@ -22,7 +31,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
@@ -34,7 +43,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
       this.authService.authorizationChange().subscribe((authorization) => {
         this.authorization = authorization;
       }),
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -43,6 +52,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.url) {
           this.url = queryParams.url;
+          this.changeRef.detectChanges();
         }
       }),
     );

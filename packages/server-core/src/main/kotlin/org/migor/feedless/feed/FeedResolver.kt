@@ -28,13 +28,13 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 @DgsComponent
-@Profile(AppProfiles.scrape)
+@Profile("${AppProfiles.scrape} & ${AppProfiles.api}")
 class FeedQueryResolver {
 
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var feedParserService: FeedParserService
+  private lateinit var feedParserService: FeedParserService
 
   @Throttled
   @DgsQuery

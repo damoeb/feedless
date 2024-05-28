@@ -5,20 +5,21 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
 import {
-  AuthAnonymous,
+  ApolloQueryResult,
+  OperationVariables,
+} from '@apollo/client/core/types';
+import {
+  AuthAnonymous, Billings,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables,
+  GqlAuthAnonymousMutationVariables, GqlBillingsQuery, GqlBillingsQueryVariables,
   GqlLicenseQuery,
   GqlLicenseQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
-  GqlPlansQuery,
-  GqlPlansQueryVariables,
-  GqlProductName,
+  GqlProductCategory,
   GqlRepository,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
@@ -34,7 +35,6 @@ import {
   License,
   ListPlugins,
   ListRepositories,
-  Plans,
   RepositoryById,
   Scrape,
   ServerSettings,
@@ -42,11 +42,14 @@ import {
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
-import { FeedlessAppConfig, ServerSettingsService } from './services/server-settings.service';
+import {
+  FeedlessAppConfig,
+  ServerConfigService,
+} from './services/server-config.service';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ProductConfig, ProductService } from './services/product.service';
+import { ProductConfig, AppConfigService } from './services/app-config.service';
 
 export type MockedRequestResolver<R, V> = (
   args: V,
@@ -185,7 +188,7 @@ export class AppTestModule {
 
     const productConfig: ProductConfig = {
       id: 'feedless',
-      product: GqlProductName.Feedless,
+      product: GqlProductCategory.Feedless,
       localSetupBash: '',
       title: '',
       titleHtml: '',
@@ -196,7 +199,7 @@ export class AppTestModule {
       descriptionMarkdown: '',
       descriptionHtml: '',
       videoUrl: '',
-      costs: 0,
+      costs: [],
       version: [],
       listed: true,
       features: [],
@@ -212,7 +215,7 @@ export class AppTestModule {
     return {
       ngModule: AppTestModule,
       providers: [
-        { provide: ProductService, useValue: productServiceMock },
+        { provide: AppConfigService, useValue: productServiceMock },
         { provide: ApolloMockController, useValue: apolloMockController },
         { provide: ApolloClient, useValue: apolloMockController.client() },
       ],
@@ -221,15 +224,7 @@ export class AppTestModule {
 }
 
 export function mockPlans(apolloMockController: ApolloMockController) {
-  return apolloMockController
-    .mockQuery<GqlPlansQuery, GqlPlansQueryVariables>(Plans)
-    .and.resolveOnce(async () => {
-      return {
-        data: {
-          plans: [],
-        },
-      };
-    });
+  return apolloMockController;
 }
 
 export function mockPlugins(apolloMockController: ApolloMockController) {
@@ -265,7 +260,7 @@ export type Mocks = {
 export const mocks: Mocks = {
   repository: {
     id: '',
-    product: GqlProductName.RssProxy,
+    product: GqlProductCategory.RssProxy,
     description: '',
     title: '',
     tags: [],
@@ -338,6 +333,19 @@ export function mockRepositories(apolloMockController: ApolloMockController) {
       };
     });
 }
+export function mockBillings(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<GqlBillingsQuery, GqlBillingsQueryVariables>(
+      Billings,
+    )
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          billings: [],
+        },
+      };
+    });
+}
 
 export function mockScrape(apolloMockController: ApolloMockController) {
   return apolloMockController
@@ -367,7 +375,7 @@ export function mockLicense(
 
 export async function mockServerSettings(
   apolloMockController: ApolloMockController,
-  serverSettingsService: ServerSettingsService,
+  serverSettingsService: ServerConfigService,
   apolloClient: ApolloClient<any>,
 ) {
   apolloMockController

@@ -26,6 +26,7 @@ import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.document.any
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.plan.ProductService
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
@@ -46,6 +47,7 @@ import kotlin.math.pow
   value = [
     MockBean(UserSecretService::class),
     MockBean(LicenseService::class),
+    MockBean(ProductService::class),
   ]
 )
 class ScoreServiceTest {

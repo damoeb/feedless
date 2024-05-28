@@ -20,10 +20,10 @@ class MailController {
   private val log = LoggerFactory.getLogger(MailController::class.simpleName)
 
   @Autowired
-  lateinit var mailService: MailService
+  private lateinit var mailService: MailService
 
   @Autowired
-  lateinit var templateService: TemplateService
+  private lateinit var templateService: TemplateService
 
   @GetMapping(
     "${mailForwardingAllow}/{mailForwardId}",

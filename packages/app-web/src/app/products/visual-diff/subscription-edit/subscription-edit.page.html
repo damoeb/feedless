@@ -38,14 +38,14 @@
                     [ngClass]="{'website--mark': isPickPositionMode()}"
                     class="website"
                   >
-<!--                    <ion-toolbar style="position: absolute">-->
-<!--                      <ion-buttons slot="end">-->
-<!--                        <ion-button fill="solid" color="primary">-->
-<!--                          Pick Element-->
-<!--                          <ion-icon name="close-outline"></ion-icon>-->
-<!--                        </ion-button>-->
-<!--                      </ion-buttons>-->
-<!--                    </ion-toolbar>-->
+                    <!--                    <ion-toolbar style="position: absolute">-->
+                    <!--                      <ion-buttons slot="end">-->
+                    <!--                        <ion-button fill="solid" color="primary">-->
+                    <!--                          Pick Element-->
+                    <!--                          <ion-icon name="close-outline"></ion-icon>-->
+                    <!--                        </ion-button>-->
+                    <!--                      </ion-buttons>-->
+                    <!--                    </ion-toolbar>-->
 
                     <div *ngIf="errorMessage" style="margin: auto">
                       Error: {{errorMessage}}
@@ -108,12 +108,34 @@
                                   interface="popover"
                                   placeholder="Action"
                                 >
-                                  <ion-select-option value="click">Click</ion-select-option>
-                                  <ion-select-option value="header" [disabled]="true">Header</ion-select-option>
-                                  <ion-select-option value="purge" [disabled]="true">Purge</ion-select-option>
-                                  <ion-select-option value="select" [disabled]="true">Select</ion-select-option>
-                                  <ion-select-option value="type" [disabled]="true">Type</ion-select-option>
-                                  <ion-select-option value="wait" [disabled]="true">Wait</ion-select-option>
+                                  <ion-select-option value="click"
+                                    >Click</ion-select-option
+                                  >
+                                  <ion-select-option
+                                    value="header"
+                                    [disabled]="true"
+                                    >Header</ion-select-option
+                                  >
+                                  <ion-select-option
+                                    value="purge"
+                                    [disabled]="true"
+                                    >Purge</ion-select-option
+                                  >
+                                  <ion-select-option
+                                    value="select"
+                                    [disabled]="true"
+                                    >Select</ion-select-option
+                                  >
+                                  <ion-select-option
+                                    value="type"
+                                    [disabled]="true"
+                                    >Type</ion-select-option
+                                  >
+                                  <ion-select-option
+                                    value="wait"
+                                    [disabled]="true"
+                                    >Wait</ion-select-option
+                                  >
                                 </ion-select>
                               </div>
 
@@ -216,7 +238,11 @@
                   >
                 </ion-select>
               </ion-col>
-              <ion-col class="flex__row controls" size="7" style="align-items: end">
+              <ion-col
+                class="flex__row controls"
+                size="7"
+                style="align-items: end"
+              >
                 <ion-select
                   [formControl]="form.controls.screen"
                   fill="outline"
@@ -224,10 +250,18 @@
                   interface="popover"
                   placeholder="Screen"
                 >
-                  <ion-select-option [value]="screenArea">Area</ion-select-option>
-                  <ion-select-option [value]="screenPage">All page</ion-select-option>
-                  <ion-select-option [value]="screenMobile">Mobile</ion-select-option>
-                  <ion-select-option [value]="screenElement">Element</ion-select-option>
+                  <ion-select-option [value]="screenArea"
+                    >Area</ion-select-option
+                  >
+                  <ion-select-option [value]="screenPage"
+                    >All page</ion-select-option
+                  >
+                  <ion-select-option [value]="screenMobile"
+                    >Mobile</ion-select-option
+                  >
+                  <ion-select-option [value]="screenElement"
+                    >Element</ion-select-option
+                  >
                 </ion-select>
 
                 <ion-button

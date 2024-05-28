@@ -1,10 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
-import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
-import { GqlLicense, GqlLicenseData, Maybe } from '../../../../generated/graphql';
+import '@justinribeiro/lite-youtube';
+import {
+  GqlLicense,
+  GqlLicenseData,
+  Maybe,
+} from '../../../../generated/graphql';
+import { AppConfig } from '../../../feedless-config';
+import { AppConfigService } from '../../../services/app-config.service';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -25,12 +39,14 @@ export class AboutRssBuilderPage implements OnInit {
       Pick<GqlLicenseData, 'name' | 'email' | 'version' | 'createdAt' | 'scope'>
     >;
   };
+  protected product: AppConfig;
 
   constructor(
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly licenseService: LicenseService,
-    readonly serverSettings: ServerSettingsService,
+    private readonly appConfigService: AppConfigService,
+    readonly serverConfig: ServerConfigService,
   ) {}
 
   async handleQuery(url: string) {
@@ -47,11 +63,14 @@ export class AboutRssBuilderPage implements OnInit {
 
   getLicenseExpiry() {
     return new Date(
-      this.serverSettings.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
+      this.serverConfig.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    const products = await this.appConfigService.getProductConfigs();
+    this.product = products.find((app) => app.id === 'rss-proxy');
+    this.changeRef.detectChanges();
     this.licenseService.licenseChange.subscribe((license) => {
       this.license = license;
       this.changeRef.detectChanges();

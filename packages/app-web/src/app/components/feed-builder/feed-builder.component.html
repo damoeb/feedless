@@ -23,12 +23,14 @@
       </ng-container>
     </ion-toolbar>
   </div>
+
   <div class="flex">
     <div *ngIf="loading" class="ion-margin">
       <ion-spinner name="dots"></ion-spinner>
     </div>
 
     <app-transform-website-to-feed
+      #webToFeedTransformer
       (selectedFeedChange)="selectedFeed = $event"
       (statusChange)="hasFeed = $event === 'valid'"
       *ngIf="scrapeResponse"

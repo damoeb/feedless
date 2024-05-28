@@ -17,6 +17,7 @@ fragment CompositeFieldFilterParamsFragment on CompositeFieldFilterParams {
     ...StringFilterParamsFragment
   }
 }
+
 fragment SelectorsFragment on Selectors {
   contextXPath
   linkXPath
@@ -283,8 +284,10 @@ fragment ScrapeOptionsFragment on ScrapeRequest {
 }
 
 fragment FeatureFragment on Feature {
+  id
   name
   value {
+    id
     numVal {
       value
     }
@@ -292,14 +295,6 @@ fragment FeatureFragment on Feature {
       value
     }
   }
-}
-
-fragment PlanFragment on Plan {
-  id
-  name
-  availability
-  currentCosts
-  beforeCosts
 }
 
 fragment PaginationFragment on Pagination {

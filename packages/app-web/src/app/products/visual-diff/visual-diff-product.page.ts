@@ -8,10 +8,13 @@ import {
 import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router } from '@angular/router';
 import { has } from 'lodash-es';
-import { ProductConfig, ProductService } from '../../services/product.service';
+import {
+  ProductConfig,
+  AppConfigService,
+} from '../../services/app-config.service';
 import { filter, map, Subscription } from 'rxjs';
-import { GqlProductName } from '../../../generated/graphql';
-import { ServerSettingsService } from '../../services/server-settings.service';
+import { GqlProductCategory } from '../../../generated/graphql';
+import { ServerConfigService } from '../../services/server-config.service';
 
 @Component({
   selector: 'app-visual-diff-product-page',
@@ -27,14 +30,14 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
   constructor(
     readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
-    protected readonly serverSettings: ServerSettingsService,
+    protected readonly serverConfig: ServerConfigService,
     private readonly router: Router,
-    private readonly productService: ProductService,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   ngOnInit() {
     this.subscriptions.push(
-      this.productService
+      this.appConfigService
         .getActiveProductConfigChange()
         .subscribe((productConfig) => {
           this.productConfig = productConfig;
@@ -57,5 +60,5 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  protected readonly GqlProductName = GqlProductName;
+  protected readonly GqlProductName = GqlProductCategory;
 }

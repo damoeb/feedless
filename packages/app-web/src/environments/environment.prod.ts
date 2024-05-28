@@ -1,8 +1,9 @@
 import { AppEnvironment } from '../app/app.module';
-import { GqlProductName } from '../generated/graphql';
+import { GqlProductCategory } from '../generated/graphql';
 
 export const environment: AppEnvironment = {
   production: true,
   offlineSupport: false,
-  product: GqlProductName.Feedless,
+  product: GqlProductCategory.Feedless,
+  officialFeedlessUrl: 'https://feedless.org'
 };

@@ -7,7 +7,6 @@ import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,13 +32,13 @@ class DocumentService {
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
   @Autowired
-  lateinit var documentDAO: DocumentDAO
+  private lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
-  lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var planConstraintsService: PlanConstraintsService
 
   fun findById(id: UUID): DocumentEntity? {
     return documentDAO.findById(id).getOrNull()
