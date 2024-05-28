@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.analytics.Tracked
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -28,6 +29,7 @@ class DocumentController {
   @Autowired
   lateinit var meterRegistry: MeterRegistry
 
+  @Tracked
   @GetMapping(
     "/article/{documentId}",
     "/a/{documentId}",
@@ -43,7 +45,7 @@ class DocumentController {
           Tag.of("id", documentId),
         )
       ).increment()
-      log.info("GET document id=$documentId")
+      log.debug("GET document id=$documentId")
 
       val headers = HttpHeaders()
       headers.add(HttpHeaders.LOCATION, it.url)

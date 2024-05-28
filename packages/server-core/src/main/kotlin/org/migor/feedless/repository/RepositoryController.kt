@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.util.HttpUtil.createCorrId
@@ -37,6 +38,7 @@ class RepositoryController {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
+  @Tracked
   @GetMapping(
     "/feed/{repositoryId}/atom",
     "/f/{repositoryId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
@@ -54,7 +56,7 @@ class RepositoryController {
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.info("[$corrId] GET feed/atom id=$repositoryId page=$page")
+    log.debug("[$corrId] GET feed/atom id=$repositoryId page=$page")
     return feedExporter.to(
       corrId,
       HttpStatus.OK,
@@ -63,6 +65,7 @@ class RepositoryController {
     )
   }
 
+  @Tracked
   @GetMapping(
     "/feed/{repositoryId}/json",
     "/feed/{repositoryId}",
@@ -83,7 +86,7 @@ class RepositoryController {
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.info("[$corrId] GET feed/json id=$repositoryId page=$page tag=$tag")
+    log.debug("[$corrId] GET feed/json id=$repositoryId page=$page tag=$tag")
     return feedExporter.to(
       corrId,
       HttpStatus.OK,

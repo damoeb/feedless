@@ -3,6 +3,7 @@ package org.migor.feedless
 object AppProfiles {
   const val dev = "dev"
   const val serveStatic = "static"
+  const val analytics = "analytics"
   const val authSSO = "sso"
   const val selfHosted = "selfHosted"
   const val authMail = "mail"
