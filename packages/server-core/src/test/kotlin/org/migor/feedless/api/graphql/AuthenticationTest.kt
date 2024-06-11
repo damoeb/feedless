@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.plan.BillingService
+import org.migor.feedless.plan.OrderService
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
@@ -43,7 +43,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
     MockBean(PluginService::class),
     MockBean(LicenseService::class),
     MockBean(ProductService::class),
-    MockBean(BillingService::class),
+    MockBean(OrderService::class),
     MockBean(ScrapeService::class)
 ])
 @Testcontainers

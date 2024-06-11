@@ -1,12 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlFeatureName, GqlProfileName } from '../../../generated/graphql';
+import { GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
@@ -22,7 +16,6 @@ export class LoginPage implements OnInit, OnDestroy {
   showSSO: boolean;
   loginUrl: string;
   private subscriptions: Subscription[] = [];
-  canSignUp: boolean;
   showNoSignupBanner: boolean;
   showUserPasswordLogin: boolean;
   errorMessage: string;
@@ -48,8 +41,6 @@ export class LoginPage implements OnInit, OnDestroy {
       this.showUserPasswordLogin = true;
     } else {
       this.showNoSignupBanner = true;
-      this.canSignUp =
-        this.serverConfig.isEnabled(GqlFeatureName.CanSignUp);
     }
 
     // const redirectUrl = this.activatedRoute.snapshot.queryParams.redirectUrl;

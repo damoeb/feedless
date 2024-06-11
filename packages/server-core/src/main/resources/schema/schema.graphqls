@@ -141,20 +141,20 @@ type Mutation {
   deleteFeatureValue(data: DeleteFeatureValueInput!): Boolean!
   updateFeatureValue(data: UpdateFeatureValueInput!): Boolean!
 
-  upsertBilling(
-    where: BillingWhereUniqueInput
-    create: BillingCreateInput
-    update: BillingUpdateInput
-  ): Billing!
+  upsertOrder(
+    where: OrderWhereUniqueInput
+    create: OrderCreateInput
+    update: OrderUpdateInput
+  ): Order!
 }
 
-input BillingUpdateInput {
+input OrderUpdateInput {
   price: FloatUpdateOperationsInput
   isOffer: BoolUpdateOperationsInput
   isRejected: BoolUpdateOperationsInput
 }
 
-input BillingCreateInput {
+input OrderCreateInput {
   overwritePrice: Float!
   isOffer: Boolean!
   productId: ID!
@@ -170,7 +170,7 @@ enum ProductTargetGroup {
   individual, eneterprise, other
 }
 
-type Billing {
+type Order {
   id: ID!
   createdAt: Long!
   validTo: Long!
@@ -198,7 +198,7 @@ enum PaymentMethod {
 input ProductsUniqueWhereInput {
   id: ID!
 }
-input BillingWhereUniqueInput {
+input OrderWhereUniqueInput {
   id: ID!
 }
 
@@ -425,14 +425,14 @@ type Query {
   featureGroups(inherit: Boolean!, where: FeatureGroupWhereInput!): [FeatureGroup!]!
 
   products(data: ProductsWhereInput!): [Product!]!
-  billings(data: BillingsInput!): [Billing!]!
+  orders(data: OrdersInput!): [Order!]!
 }
 
 input FeatureGroupWhereInput {
   id: StringFilter
 }
 
-input BillingsInput {
+input OrdersInput {
   cursor: Cursor!
   where: BillingsWhereInput
 }

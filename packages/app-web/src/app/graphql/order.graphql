@@ -1,0 +1,44 @@
+fragment OrderFragment on Order {
+  id
+  product {
+    ...ProductFragment
+  }
+  createdAt
+  isOffer
+  isPaid
+  isRejected
+  paymentMethod
+  invoiceRecipientEmail
+  invoiceRecipientName
+}
+
+
+fragment LicenseFragment on License {
+  isValid
+  isLocated
+  trialUntil
+  isTrial
+  data {
+    name
+    email
+    version
+    createdAt
+    scope
+  }
+}
+
+query orders($data: OrdersInput!) {
+  orders(data: $data) {
+    ...OrderFragment
+  }
+}
+
+mutation upsertOrder(
+  $create: OrderCreateInput
+  $update: OrderUpdateInput
+  $where: OrderWhereUniqueInput
+) {
+  upsertOrder(create: $create, update: $update, where: $where) {
+    ...OrderFragment
+  }
+}

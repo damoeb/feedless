@@ -122,6 +122,7 @@ class SecurityConfig {
       "/stream/bucket/**",
 //      "/stream/bucket/*/*",
       "/feed/**",
+      "/f/**",
 //      "/feed/*/*",
       "/feed:**",
 //      "/feed:*/*",

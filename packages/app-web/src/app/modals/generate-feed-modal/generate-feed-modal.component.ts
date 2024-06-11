@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
@@ -21,7 +14,7 @@ import {
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
-  GqlVisibility,
+  GqlVisibility
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -404,7 +397,7 @@ export class GenerateFeedModalComponent
     this.isLoggedIn = this.sessionService.isAuthenticated();
 
     const maxItemsLowerLimit = this.serverConfig.getFeatureValueInt(
-      GqlFeatureName.RepositoryRetentionMaxItemsLowerLimitInt,
+      GqlFeatureName.RepositoryCapacityLowerLimitInt,
     );
     if (maxItemsLowerLimit) {
       this.formFg.controls.maxItems.addValidators([
@@ -412,7 +405,7 @@ export class GenerateFeedModalComponent
       ]);
     }
     const maxItemsUpperLimit = this.serverConfig.getFeatureValueInt(
-      GqlFeatureName.RepositoryRetentionMaxItemsUpperLimitInt,
+      GqlFeatureName.RepositoryCapacityUpperLimitInt,
     );
     if (maxItemsUpperLimit) {
       this.formFg.controls.maxItems.addValidators([

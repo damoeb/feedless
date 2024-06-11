@@ -8,7 +8,6 @@ import { LicensePageRoutingModule } from './license-routing.module';
 
 import { LicensePage } from './license.page';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
-import { DiscountTagModule } from '../../components/discount-tag/discount-tag.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { DiscountTagModule } from '../../components/discount-tag/discount-tag.mo
     IonicModule,
     LicensePageRoutingModule,
     PlanColumnModule,
-    DiscountTagModule,
     ReactiveFormsModule
   ],
   declarations: [LicensePage],

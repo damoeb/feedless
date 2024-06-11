@@ -7,10 +7,10 @@
     </ion-row>
 
     <ion-list style="border-radius: 8px">
-      <ion-item *ngIf="billings?.length === 0">
+      <ion-item *ngIf="orders?.length === 0">
         <p>You have no billings yet</p>
       </ion-item>
-      <ion-item *ngFor="let feed of billings" lines="inset">
+      <ion-item *ngFor="let feed of orders" lines="inset">
         <ion-label> Billing </ion-label>
       </ion-item>
     </ion-list>

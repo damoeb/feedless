@@ -1,3 +1,5 @@
+@import "../../../mixins";
+
 h1 {
   display: inline-block;
 }
@@ -9,4 +11,27 @@ ion-col {
 ion-item {
   text-transform: capitalize;
   font-size: 0.9rem;
+}
+
+ion-input,
+ion-textarea {
+  --app-border-radius: 8px;
+  --padding-start: 10px !important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+  @include control();
+}
+
+ion-input,
+ion-select {
+  --border-radius: 8px;
+  min-height: 45px !important;
+
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+
+  &:not(.has-focus):hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
 }

@@ -3,12 +3,7 @@ import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl, FormGroup } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
-import {
-  GqlFeedlessPlugins,
-  GqlPluginExecutionInput,
-  GqlProductCategory,
-  GqlVisibility,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlPluginExecutionInput, GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];

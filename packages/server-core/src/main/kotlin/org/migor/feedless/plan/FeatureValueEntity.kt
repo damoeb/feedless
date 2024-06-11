@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -71,7 +72,8 @@ open class FeatureValueEntity : EntityWithUUID() {
     name = "feature_group_id",
     referencedColumnName = "id",
     insertable = false,
-    updatable = false
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_feature_value__to__feature_group")
   )
   open var featureGroup: FeatureGroupEntity? = null
 
@@ -84,7 +86,8 @@ open class FeatureValueEntity : EntityWithUUID() {
     name = StandardJpaFields.featureId,
     referencedColumnName = "id",
     insertable = false,
-    updatable = false
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_feature_value__to__feature")
   )
   open var feature: FeatureEntity? = null
 }

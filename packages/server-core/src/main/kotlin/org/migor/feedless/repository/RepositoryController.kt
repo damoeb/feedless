@@ -40,7 +40,6 @@ class RepositoryController {
 
   @Tracked
   @GetMapping(
-//    "/feed/{repositoryId}/atom",
     "/f/{repositoryId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
   )
   fun atomFeed(

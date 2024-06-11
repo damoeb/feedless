@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
 import { UserSecret } from '../../graphql/types';
 import { AlertController } from '@ionic/angular';

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { BillingService } from '../../services/billing.service';
-import { Billing } from '../../types';
+import { OrderService } from '../../services/order.service';
+import { Order } from '../../types';
 
 @Component({
   selector: 'app-payment-summary-page',
@@ -13,11 +13,11 @@ import { Billing } from '../../types';
 export class PaymentSummaryPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private billingId: string;
-  protected billing: Billing;
+  protected order: Order;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly billingService: BillingService,
+    private readonly orderService: OrderService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -26,7 +26,7 @@ export class PaymentSummaryPage implements OnInit, OnDestroy {
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {
           this.billingId = params.billingId;
-          this.billing = await this.billingService.billings({
+          this.order = await this.orderService.orders({
             cursor: {
               page: 0,
               pageSize: 1

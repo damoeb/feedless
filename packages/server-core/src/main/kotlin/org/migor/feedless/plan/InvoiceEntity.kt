@@ -1,4 +1,4 @@
-package org.migor.feedless.license
+package org.migor.feedless.plan
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -7,21 +7,31 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.plan.OrderEntity
 import java.util.*
 
 @Entity
 @Table(
-  name = "t_license",
+  name = "t_invoice",
 )
-open class LicenseEntity : EntityWithUUID() {
+open class InvoiceEntity : EntityWithUUID() {
 
-  @Column(name = "payload", nullable = false, length = 1000)
-  open lateinit var payload: String
+  @Column(name = "price", nullable = false)
+  @Min(0)
+  open var price: Double = 0.0
+
+  @Column(name = "is_canceled", nullable = false)
+  open var isCanceled: Boolean = false
+
+  @Column(name = "due_to")
+  open var dueTo: Date? = null
+
+  @Column(name = "paid_at")
+  open var paidAt: Date? = null
 
   @Column(name = StandardJpaFields.order_id, nullable = false)
   open var orderId: UUID? = null
@@ -33,7 +43,7 @@ open class LicenseEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_license__to__order")
+    foreignKey = ForeignKey(name = "fk_invoice__to__order")
   )
   open var order: OrderEntity? = null
 }

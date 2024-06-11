@@ -20,14 +20,13 @@ import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.plan.BillingEntity
+import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.ProductEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.core.io.ClassPathResource
@@ -347,7 +346,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     } ?: false
   }
 
-  fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: BillingEntity): LicenseEntity {
+  fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
     if (product.isCloudProduct) {
       throw IllegalArgumentException("cloud product cannot be licenced")
     }
@@ -363,7 +362,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
     val singedAndEncoded = createLicense(corrId, payload, feedlessPrivateKey!!)
     license.payload = singedAndEncoded
-    license.billingId = billing.id
+    license.orderId = billing.id
 
     return licenseDAO.save(license)
   }

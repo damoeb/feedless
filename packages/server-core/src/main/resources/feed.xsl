@@ -44,11 +44,15 @@
                         text-decoration:none
                     }
                     img,
-                    svg,
                     figure {
                       border: 1px solid black;
                       max-width: 80dvw;
                       max-height: 20dvh;
+                      overflow: hidden;
+                    }
+                    svg {
+                      max-width: 30px;
+                      max-height: 30px;
                       overflow: hidden;
                     }
                     .entry h3 {
@@ -87,7 +91,7 @@
 <!--                    <xsl:apply-templates select="atom:feed" />-->
 <!--                </section>-->
                 <section>
-                  <h1><xsl:value-of select="atom:feed/atom:title"/>'s Feed</h1>
+                  <h1><xsl:value-of select="atom:feed/atom:title"/></h1>
                   <p>This RSS feed provides the latest posts from "<xsl:value-of select="atom:feed/atom:title"/>".
 
                     <a class="head_link" target="_blank" href="https://github.com/voidfiles/awesome-rss">

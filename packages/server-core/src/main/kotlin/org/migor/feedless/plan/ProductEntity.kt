@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -56,6 +57,7 @@ open class ProductEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_product__to__feature_group")
   )
   open var featureGroup: FeatureGroupEntity? = null
 

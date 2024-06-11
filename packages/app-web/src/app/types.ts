@@ -1,6 +1,6 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { isNull, isUndefined } from 'lodash-es';
-import { GqlUpsertBillingMutation } from '../generated/graphql';
+import { GqlUpsertOrderMutation } from '../generated/graphql';
 
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
@@ -28,4 +28,4 @@ export function isDefined(v: any | undefined): boolean {
   return !isNull(v) && !isUndefined(v);
 }
 
-export type Billing = GqlUpsertBillingMutation['upsertBilling'];
+export type Order = GqlUpsertOrderMutation['upsertOrder'];

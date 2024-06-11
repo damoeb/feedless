@@ -5,6 +5,7 @@ import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
@@ -42,7 +43,8 @@ open class BrowserActionEntity : EntityWithUUID() {
     name = StandardJpaFields.sourceId,
     referencedColumnName = StandardJpaFields.id,
     insertable = false,
-    updatable = false
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_source__to__browser_action")
   )
   open var source: SourceEntity? = null
 }

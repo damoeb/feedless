@@ -140,7 +140,6 @@ export class PricingPage implements OnInit, OnDestroy {
     if (product.isCloud) {
       const features = product.featureGroups.flatMap(fg => fg.features);
       const canActivate = features.filter(feature => feature.name === GqlFeatureName.CanActivatePlan).some(feature => feature.value.boolVal.value === true)
-      // const canWait = features.filter(feature => feature.name === GqlFeatureName.CanJoinPlanWaitList).some(feature => feature.value.boolVal.value === true)
       if (canActivate) {
         return 'Subscribe'
       } else {

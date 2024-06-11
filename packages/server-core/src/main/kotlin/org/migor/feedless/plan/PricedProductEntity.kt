@@ -3,6 +3,7 @@ package org.migor.feedless.plan
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -53,6 +54,7 @@ open class PricedProductEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_priced_product__to__product")
   )
   open var product: ProductEntity? = null
 }

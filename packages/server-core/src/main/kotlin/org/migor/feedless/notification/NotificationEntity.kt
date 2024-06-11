@@ -3,6 +3,7 @@ package org.migor.feedless.notification
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -30,6 +31,7 @@ open class NotificationEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_notification__to__user")
   )
   open var owner: UserEntity? = null
 }

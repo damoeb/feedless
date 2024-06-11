@@ -4,6 +4,7 @@ import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
@@ -61,6 +62,7 @@ open class PipelineJobEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_pipeline_job__to__document")
   )
   open var document: DocumentEntity? = null
 

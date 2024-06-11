@@ -1,17 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Repository, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlVisibility } from '../../../generated/graphql';
 import { Title } from '@angular/platform-browser';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 

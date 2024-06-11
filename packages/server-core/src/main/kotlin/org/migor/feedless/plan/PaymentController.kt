@@ -20,7 +20,7 @@ class PaymentController {
   private val log = LoggerFactory.getLogger(PaymentController::class.simpleName)
 
   @Autowired
-  lateinit var billingService: BillingService
+  lateinit var orderService: OrderService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -35,7 +35,7 @@ class PaymentController {
     log.info("[$corrId] paymentCallback $billingId")
     val headers = HttpHeaders()
     val queryParams = try {
-      billingService.handlePaymentCallback(corrId, billingId)
+      orderService.handlePaymentCallback(corrId, billingId)
       "success=true"
     } catch (ex: Exception) {
       log.error("Payment callback failed with ${ex.message}")

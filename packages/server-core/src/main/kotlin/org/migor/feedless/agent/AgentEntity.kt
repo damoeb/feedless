@@ -3,6 +3,7 @@ package org.migor.feedless.agent
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -43,6 +44,7 @@ open class AgentEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_agent__to__secret")
   )
   open var secretKey: UserSecretEntity? = null
 
@@ -56,6 +58,7 @@ open class AgentEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_agent__to__user")
   )
   open var owner: UserEntity? = null
 }

@@ -5,28 +5,8 @@
         <h1 class="ion-no-margin">Profile</h1>
       </ion-col>
     </ion-row>
-    <ion-list>
-<!--      <ion-list-header>-->
-<!--        <h3>Session</h3>-->
-<!--      </ion-list-header>-->
-<!--      <ion-row>-->
-<!--        <ion-col size="12">-->
-<!--          <ion-buttons class="ion-float-end">-->
-<!--            <ion-button-->
-<!--              (click)="logout()"-->
-<!--              class="cy-logout-button"-->
-<!--              color="danger"-->
-<!--              fill="solid"-->
-<!--            >-->
-<!--              Logout-->
-<!--            </ion-button>-->
-<!--          </ion-buttons>-->
-<!--        </ion-col>-->
-<!--      </ion-row>-->
-      <ion-list-header>
-        <h3>Your Data</h3>
-      </ion-list-header>
-      <ion-row>
+    <ion-list class="ion-padding">
+      <ion-row *ngIf="serverConfig.isSaas()">
         <ion-col size="4">
           <ion-label class="ion-padding">First Name</ion-label>
         </ion-col>
@@ -40,19 +20,21 @@
           <!--              <ion-note color="danger">Enter your name</ion-note>-->
         </ion-col>
       </ion-row>
-      <ion-row>
-        <ion-col size="4">
-          <ion-label class="ion-padding">Last Name</ion-label>
-        </ion-col>
-        <ion-col size="8">
-          <ion-input
-            aria-label="Last Name"
-            placeholder="Your last name"
-            [formControl]="formFg.controls.lastName"
-            fill="outline"
-          ></ion-input>
-        </ion-col>
-      </ion-row>
+      <ng-container *ngIf="serverConfig.isSaas()">
+        <ion-row>
+          <ion-col size="4">
+            <ion-label class="ion-padding">Last Name</ion-label>
+          </ion-col>
+          <ion-col size="8">
+            <ion-input
+              aria-label="Last Name"
+              placeholder="Your last name"
+              [formControl]="formFg.controls.lastName"
+              fill="outline"
+            ></ion-input>
+          </ion-col>
+        </ion-row>
+      </ng-container>
       <ion-row>
         <ion-col size="4">
           <ion-label class="ion-padding">Email</ion-label>
@@ -60,94 +42,101 @@
         <ion-col size="8">
           <ion-input
             aria-label="Email"
+            [readonly]="serverConfig.isSelfHosted()"
             fill="outline"
             [formControl]="formFg.controls.email"
             placeholder="Email Adress"
           ></ion-input>
         </ion-col>
       </ion-row>
-
-<!--      <ion-list-header class="ion-margin-top">-->
-<!--        <h3>Plan</h3>-->
-<!--      </ion-list-header>-->
-<!--      <ion-row>-->
-<!--        <ion-col size="12">-->
-<!--          Free-->
-<!--        </ion-col>-->
-<!--      </ion-row>-->
-
-      <!--      <ion-list-header> General</ion-list-header>-->
-      <!--      <ion-item>-->
-      <!--        <ion-select label="Feature State" value="stable">-->
-      <!--          <ion-select-option value="experimental"-->
-      <!--            >Experimental-->
-      <!--          </ion-select-option>-->
-      <!--          <ion-select-option value="beta">Beta</ion-select-option>-->
-      <!--          <ion-select-option value="stable">Stable</ion-select-option>-->
-      <!--        </ion-select>-->
-      <!--      </ion-item>-->
-      <!--      <ion-list-header>-->
-      <!--        <a-->
-      <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
-      <!--          referrerpolicy="no-referrer"-->
-      <!--          target="_blank"-->
-      <!--          >Plugins</a-->
-      <!--        ></ion-list-header-->
-      <!--      >-->
-      <!--      <ion-item>-->
-      <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-      <!--      </ion-item>-->
-      <!--      <ion-item *ngFor="let ref of plugins">-->
-      <!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
-      <!--          <span>{{ref.plugin.id}}</span>-->
-      <!--          <ion-note class="ion-padding-start"-->
-      <!--            >{{ref.plugin.description}}</ion-note-->
-      <!--          >-->
-      <!--        </ion-checkbox>-->
-      <!--      </ion-item>-->
-      <!--      <ion-item *ngFor="let plugin of plugins">-->
-      <!--        <ion-checkbox [checked]="true" -->
-      <!--                      [disabled]="true" -->
-      <!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-      <!--      </ion-item>-->
-
-      <!--      <ion-row>-->
-      <!--        <ion-col size="6">-->
-      <!--          <ion-item>-->
-      <!--            <ion-label>Plan</ion-label>-->
-      <!--          </ion-item>-->
-      <!--        </ion-col>-->
-      <!--        <ion-col size="6">-->
-      <!--          <ion-item color="primary">-->
-      <!--            <ion-label>Free Plan</ion-label>-->
-      <!--          </ion-item>-->
-      <!--        </ion-col>-->
-      <!--      </ion-row>-->
-
-      <!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
-      <!--      <ion-item (click)="importAny()" [button]="true">-->
-      <!--        <ion-label>Import</ion-label>-->
-      <!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
-      <!--      </ion-item>-->
-      <!--      <ion-item (click)="exportOPML()" [button]="true">-->
-      <!--        <ion-label> Export OPML </ion-label>-->
-      <!--      </ion-item>-->
     </ion-list>
-    <div style="color: var(--ion-color-danger)">
-      <ion-row style="margin-top: 100px">
+
+    <ng-container *ngIf="serverConfig.isSaas()">
+      <ion-row class="ion-margin-top">
         <ion-col size="8">
-          <h1 class="ion-no-margin">Danger Zone</h1>
+          <h1 class="ion-no-margin">Plan</h1>
         </ion-col>
       </ion-row>
-      <ion-list style="border: 1px solid var(--ion-color-danger)">
-        <ion-item
-          (click)="deleteAccount()"
-          [button]="true"
-          style="--color: var(--ion-color-danger)"
-        >
-          Delete Account
-        </ion-item>
+      <ion-list>
+        <ion-row>
+          <ion-col size="12">
+            Free
+          </ion-col>
+        </ion-row>
+
+        <!--      <ion-list-header> General</ion-list-header>-->
+        <!--      <ion-item>-->
+        <!--        <ion-select label="Feature State" value="stable">-->
+        <!--          <ion-select-option value="experimental"-->
+        <!--            >Experimental-->
+        <!--          </ion-select-option>-->
+        <!--          <ion-select-option value="beta">Beta</ion-select-option>-->
+        <!--          <ion-select-option value="stable">Stable</ion-select-option>-->
+        <!--        </ion-select>-->
+        <!--      </ion-item>-->
+        <!--      <ion-list-header>-->
+        <!--        <a-->
+        <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
+        <!--          referrerpolicy="no-referrer"-->
+        <!--          target="_blank"-->
+        <!--          >Plugins</a-->
+        <!--        ></ion-list-header-->
+        <!--      >-->
+        <!--      <ion-item>-->
+        <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item *ngFor="let ref of plugins">-->
+        <!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
+        <!--          <span>{{ref.plugin.id}}</span>-->
+        <!--          <ion-note class="ion-padding-start"-->
+        <!--            >{{ref.plugin.description}}</ion-note-->
+        <!--          >-->
+        <!--        </ion-checkbox>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item *ngFor="let plugin of plugins">-->
+        <!--        <ion-checkbox [checked]="true" -->
+        <!--                      [disabled]="true" -->
+        <!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+        <!--      </ion-item>-->
+
+        <!--      <ion-row>-->
+        <!--        <ion-col size="6">-->
+        <!--          <ion-item>-->
+        <!--            <ion-label>Plan</ion-label>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <!--        <ion-col size="6">-->
+        <!--          <ion-item color="primary">-->
+        <!--            <ion-label>Free Plan</ion-label>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <!--      </ion-row>-->
+
+        <!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
+        <!--      <ion-item (click)="importAny()" [button]="true">-->
+        <!--        <ion-label>Import</ion-label>-->
+        <!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item (click)="exportOPML()" [button]="true">-->
+        <!--        <ion-label> Export OPML </ion-label>-->
+        <!--      </ion-item>-->
       </ion-list>
-    </div>
+      <div style="color: var(--ion-color-danger)">
+        <ion-row style="margin-top: 100px">
+          <ion-col size="8">
+            <h1 class="ion-no-margin">Danger Zone</h1>
+          </ion-col>
+        </ion-row>
+        <ion-list style="border: 1px solid var(--ion-color-danger)">
+          <ion-item
+            (click)="deleteAccount()"
+            [button]="true"
+            style="--color: var(--ion-color-danger)"
+          >
+            Delete Account
+          </ion-item>
+        </ion-list>
+      </div>
+    </ng-container>
   </div>
 </ion-content>

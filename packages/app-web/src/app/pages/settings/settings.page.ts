@@ -1,12 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { dateFormat } from '../../services/session.service';
-import { debounce, interval, Subscription } from 'rxjs';
+import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
 import { Feature, FeatureGroup } from '../../graphql/types';
 import { FormControl } from '@angular/forms';

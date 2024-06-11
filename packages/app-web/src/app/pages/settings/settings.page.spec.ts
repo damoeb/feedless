@@ -2,12 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SettingsPage } from './settings.page';
 import { SettingsPageModule } from './settings.module';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockLicense,
-  mockServerSettings,
-} from '../../app-test.module';
+import { ApolloMockController, AppTestModule, mockLicense, mockServerSettings } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';

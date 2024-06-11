@@ -5,6 +5,7 @@ import { ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
+import { ServerConfigService } from '../../services/server-config.service';
 
 @Component({
   selector: 'app-profile-page',
@@ -26,6 +27,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly sessionService: SessionService,
+    protected readonly serverConfig: ServerConfigService,
   ) {}
 
   async logout() {

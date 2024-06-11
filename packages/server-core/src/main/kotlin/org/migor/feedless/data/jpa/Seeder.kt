@@ -156,8 +156,8 @@ class Seeder {
         FeatureName.canJoinPlanWaitList to asBoolFeature(false),
         FeatureName.canActivatePlan to asBoolFeature(false),
         FeatureName.canLogin to asBoolFeature(true),
-        FeatureName.canSignUp to asBoolFeature(false),
-        FeatureName.canCreateUser to asBoolFeature(false),
+        FeatureName.canSignUp to asBoolFeature(true),
+        FeatureName.canCreateUser to asBoolFeature(true),
 
         FeatureName.itemEmailForwardBool to asBoolFeature(false),
         FeatureName.itemWebhookForwardBool to asBoolFeature(false),

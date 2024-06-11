@@ -9,7 +9,6 @@ import { PricingPageRoutingModule } from './pricing-routing.module';
 import { PricingPage } from './pricing.page';
 import { ProductHeadlineModule } from '../../components/product-headline/product-headline.module';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
-import { DiscountTagModule } from '../../components/discount-tag/discount-tag.module';
 
 @NgModule({
   imports: [
@@ -20,7 +19,6 @@ import { DiscountTagModule } from '../../components/discount-tag/discount-tag.mo
     ProductHeadlineModule,
     ReactiveFormsModule,
     PlanColumnModule,
-    DiscountTagModule,
   ],
   declarations: [PricingPage],
 })

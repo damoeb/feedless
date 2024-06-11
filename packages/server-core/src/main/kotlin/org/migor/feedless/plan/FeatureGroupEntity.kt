@@ -3,10 +3,12 @@ package org.migor.feedless.plan
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -24,10 +26,13 @@ enum class PlanName {
 
 @Entity
 @Table(
-  name = "t_feature_group")
+  name = "t_feature_group",
+  uniqueConstraints = [
+    UniqueConstraint(name = "uniquename", columnNames = [StandardJpaFields.name])]
+)
 open class FeatureGroupEntity : EntityWithUUID() {
 
-  @Column(name = StandardJpaFields.name, nullable = true, unique = true)
+  @Column(name = StandardJpaFields.name, nullable = true)
   open lateinit var name: String
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id")
@@ -44,6 +49,7 @@ open class FeatureGroupEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_child__to__parent")
   )
   open var parentFeatureGroup: FeatureGroupEntity? = null
 

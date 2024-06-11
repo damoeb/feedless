@@ -3,6 +3,7 @@ package org.migor.feedless.secrets
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
@@ -34,6 +35,7 @@ open class OneTimePasswordEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_otp__to__user")
   )
   open var user: UserEntity? = null
 

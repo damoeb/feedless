@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -21,9 +22,9 @@ import java.util.*
 
 @Entity
 @Table(
-  name = "t_billing",
+  name = "t_order",
 )
-open class BillingEntity : EntityWithUUID() {
+open class OrderEntity : EntityWithUUID() {
 
   @Column(name = "due_to")
   open var dueTo: Date? = null
@@ -77,6 +78,7 @@ open class BillingEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_order__to__product")
   )
   open var product: ProductEntity? = null
 
@@ -90,10 +92,15 @@ open class BillingEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_order__to__user")
   )
   open var user: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "billingId")
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderId")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var licenses: MutableList<LicenseEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderId")
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
+  open var invoices: MutableList<InvoiceEntity> = mutableListOf()
 }

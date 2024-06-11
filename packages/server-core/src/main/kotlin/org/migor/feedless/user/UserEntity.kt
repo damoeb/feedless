@@ -3,6 +3,7 @@ package org.migor.feedless.user
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -17,7 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.plan.BillingEntity
+import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.subscription.CloudSubscriptionEntity
@@ -101,7 +102,7 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "time_format")
   open var timeFormat: String? = null
 
-  @Column(name = "subscription_id", nullable = false)
+  @Column(name = "subscription_id")
   open var subscriptionId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -110,7 +111,8 @@ open class UserEntity : EntityWithUUID() {
     name = "subscription_id",
     referencedColumnName = "id",
     insertable = false,
-    updatable = false
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_user__to__subscription")
   )
   open var subscription: CloudSubscriptionEntity? = null
 
@@ -132,7 +134,7 @@ open class UserEntity : EntityWithUUID() {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId", orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  open var billings: MutableList<BillingEntity> = mutableListOf()
+  open var orders: MutableList<OrderEntity> = mutableListOf()
 }
 
 

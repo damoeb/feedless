@@ -4,10 +4,10 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.Billing
-import org.migor.feedless.generated.types.BillingCreateInput
-import org.migor.feedless.generated.types.BillingUpdateInput
-import org.migor.feedless.generated.types.BillingWhereUniqueInput
-import org.migor.feedless.generated.types.BillingsInput
+import org.migor.feedless.generated.types.OrderCreateInput
+import org.migor.feedless.generated.types.OrderUpdateInput
+import org.migor.feedless.generated.types.OrderWhereUniqueInput
+import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
 import org.migor.feedless.license.LicenseService
@@ -27,12 +27,12 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.saas)
-class BillingService {
+class OrderService {
 
-  private val log = LoggerFactory.getLogger(BillingService::class.simpleName)
+  private val log = LoggerFactory.getLogger(OrderService::class.simpleName)
 
   @Autowired
-  private lateinit var billingDAO: BillingDAO
+  private lateinit var orderDAO: OrderDAO
 
   @Autowired
   private lateinit var sessionService: SessionService
@@ -46,28 +46,28 @@ class BillingService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
-  fun findAll(corrId: String, data: BillingsInput): List<BillingEntity> {
+  fun findAll(corrId: String, data: OrdersInput): List<OrderEntity> {
     val pageable = PageRequest.of(data.cursor?.page ?: 0, data.cursor?.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
     val currentUser = sessionService.user(corrId)
     return if (currentUser.root) {
 //      data.where?.id?.let {
 //        billingDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
-      billingDAO.findAll(pageable).toList()
+      orderDAO.findAll(pageable).toList()
     } else {
-      billingDAO.findAllByUserId(currentUser.id, pageable).toList()
+      orderDAO.findAllByUserId(currentUser.id, pageable).toList()
     }
   }
 
-  fun upsert(corrId: String, where: BillingWhereUniqueInput?, create: BillingCreateInput?, update: BillingUpdateInput?): BillingEntity {
+  fun upsert(corrId: String, where: OrderWhereUniqueInput?, create: OrderCreateInput?, update: OrderUpdateInput?): OrderEntity {
     return where?.let {
       update(corrId, where, update!!)
     } ?: create(corrId, create!!)
   }
 
-  private fun create(corrId: String, create: BillingCreateInput): BillingEntity {
+  private fun create(corrId: String, create: OrderCreateInput): OrderEntity {
     log.info("[$corrId] create $create]")
-    val billing = BillingEntity()
+    val billing = OrderEntity()
     billing.isOffer = BooleanUtils.isTrue(create.isOffer)
     val productId = UUID.fromString(create.productId)
     billing.productId = productId
@@ -90,7 +90,7 @@ class BillingService {
       billing.userId = createUser(corrId, create.user.create).id
     }
 
-    return billingDAO.save(billing)
+    return orderDAO.save(billing)
   }
 
   private fun createUser(corrId: String, create: UserCreateInput): UserEntity {
@@ -110,12 +110,12 @@ class BillingService {
     }
   }
 
-  private fun update(corrId: String, where: BillingWhereUniqueInput, update: BillingUpdateInput): BillingEntity {
+  private fun update(corrId: String, where: OrderWhereUniqueInput, update: OrderUpdateInput): OrderEntity {
     log.info("[$corrId] update $update $where")
     if (!sessionService.user(corrId).root) {
       throw PermissionDeniedException("must be root ($corrId)")
     }
-    val billing = billingDAO.findById(UUID.fromString(where.id)).orElseThrow()
+    val billing = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
     update.isRejected?.let {
       billing.isRejected = it.set
@@ -127,12 +127,12 @@ class BillingService {
       billing.isRejected = it.set
     }
 
-    return billingDAO.save(billing)
+    return orderDAO.save(billing)
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  fun handlePaymentCallback(corrId: String, billingId: String): BillingEntity {
-    val billing = billingDAO.findById(UUID.fromString(billingId)).orElseThrow()
+  fun handlePaymentCallback(corrId: String, billingId: String): OrderEntity {
+    val billing = orderDAO.findById(UUID.fromString(billingId)).orElseThrow()
 
     billing.isPaid = true
     billing.paidAt = Date()
@@ -143,7 +143,7 @@ class BillingService {
     } else {
       billing.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, billing))
     }
-    billingDAO.save(billing)
+    orderDAO.save(billing)
     // todo send email
 
     return billing
@@ -160,7 +160,7 @@ private fun PaymentMethodDto.fromDTO(): PaymentMethod {
   }
 }
 
-fun BillingEntity.toDTO(): Billing {
+fun OrderEntity.toDTO(): Billing {
   return Billing.newBuilder()
     .id(id.toString())
     .createdAt(createdAt.time)

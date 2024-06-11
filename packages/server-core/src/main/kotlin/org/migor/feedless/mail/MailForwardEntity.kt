@@ -3,6 +3,7 @@ package org.migor.feedless.mail
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -38,7 +39,8 @@ open class MailForwardEntity : EntityWithUUID() {
     name = StandardJpaFields.repositoryId,
     referencedColumnName = "id",
     insertable = false,
-    updatable = false
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_mail__to__repository")
   )
   open var repository: RepositoryEntity? = null
 }

@@ -62,15 +62,7 @@ export class RepositoryService {
         })
         .then((response) => response.data.createRepositories);
     } else {
-      // todo mag handle
-      // if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList) && !this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
-      if (this.serverConfig.isEnabled(GqlFeatureName.CanSignUp)) {
-        await this.router.navigateByUrl('/login');
-      } else {
-        // if (this.serverConfig.isEnabled(GqlFeatureName.HasWaitList)) {
-        //   await this.router.navigateByUrl('/join');
-        // }
-      }
+      await this.router.navigateByUrl('/login');
     }
   }
 

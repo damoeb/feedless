@@ -1,16 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
-import { Repository, WebDocument } from '../../graphql/types';
-import { RepositoryService } from '../../services/repository.service';
-import { BubbleColor } from '../../components/bubble/bubble.component';
-import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { BillingService } from '../../services/billing.service';
-import { Billing } from '../../types';
+import { OrderService } from '../../services/order.service';
+import { Order } from '../../types';
 
 @Component({
   selector: 'app-billings-page',
@@ -20,25 +11,25 @@ import { Billing } from '../../types';
 })
 export class BillingsPage implements OnInit {
   busy = false;
-  billings: Billing[] = [];
+  orders: Order[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly billingService: BillingService,
+    private readonly orderService: OrderService,
   ) {}
 
   async ngOnInit() {
-    await this.fetchBillings();
+    await this.fetchOrders();
   }
 
-  private async fetchBillings() {
+  private async fetchOrders() {
     const page = 0;
-    const billings = await this.billingService.billings({
+    const orders = await this.orderService.orders({
       cursor: {
         page,
       },
     });
-    this.billings.push(...billings);
+    this.orders.push(...orders);
     this.changeRef.detectChanges();
   }
 

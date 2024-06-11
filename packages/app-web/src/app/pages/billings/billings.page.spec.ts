@@ -20,7 +20,7 @@ describe('BillingsPage', () => {
 
     fixture = TestBed.createComponent(BillingsPage);
     component = fixture.componentInstance;
-    component.billings = [];
+    component.orders = [];
     fixture.detectChanges();
   }));
 

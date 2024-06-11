@@ -3,6 +3,7 @@ package org.migor.feedless.annotation
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.validation.constraints.Min
@@ -30,6 +31,7 @@ open class TextAnnotationEntity : AnnotationEntity() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_text_annotation__to__document")
   )
   open var comment: DocumentEntity? = null
 }

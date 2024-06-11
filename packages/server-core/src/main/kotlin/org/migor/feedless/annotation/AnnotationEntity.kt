@@ -5,6 +5,7 @@ import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
@@ -37,6 +38,7 @@ open class AnnotationEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_annotation__to__document")
   )
   open var document: DocumentEntity? = null
 
@@ -50,6 +52,7 @@ open class AnnotationEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_annotation__to__user")
   )
   open var owner: UserEntity? = null
 }

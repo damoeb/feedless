@@ -3,6 +3,7 @@ package org.migor.feedless.subscription
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -29,6 +30,7 @@ open class CloudSubscriptionEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_subscription__to__user")
   )
   open var user: UserEntity? = null
 
@@ -42,6 +44,7 @@ open class CloudSubscriptionEntity : EntityWithUUID() {
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
+    foreignKey = ForeignKey(name = "fk_subscription__to__product")
   )
   open var product: ProductEntity? = null
 

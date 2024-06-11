@@ -8,7 +8,7 @@ import { Product } from '../../graphql/types';
 import { sum } from 'lodash-es';
 import { createEmailFormControl } from '../../form-controls';
 import { AuthService } from '../../services/auth.service';
-import { BillingService } from '../../services/billing.service';
+import { OrderService } from '../../services/order.service';
 import { GqlPaymentMethod, GqlProductTargetGroup, GqlUserCreateOrConnectInput } from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
 
@@ -19,7 +19,7 @@ type Country = {
 
 const countries: Country[] = [
   { name: 'Afghanistan', code: 'AF' },
-  { name: 'land Islands', code: 'AX' },
+  { name: 'Aland Islands', code: 'AX' },
   { name: 'Albania', code: 'AL' },
   { name: 'Algeria', code: 'DZ' },
   { name: 'American Samoa', code: 'AS' },
@@ -309,7 +309,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
     private readonly router: Router,
-    private readonly billingService: BillingService,
+    private readonly billingService: OrderService,
     private readonly sessionService: SessionService,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
@@ -370,7 +370,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
     try {
       this.loading = true;
-      const billing = await this.billingService.upsertBilling({
+      const billing = await this.billingService.upsertOrder({
         isOffer: false,
         overwritePrice: 0,
         invoiceRecipientName: `${this.formFg.value.firstName} ${this.formFg.value.lastName}`,
