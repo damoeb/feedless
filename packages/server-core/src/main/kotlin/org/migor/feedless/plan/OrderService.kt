@@ -3,7 +3,7 @@ package org.migor.feedless.plan
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.generated.types.Billing
+import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.OrderCreateInput
 import org.migor.feedless.generated.types.OrderUpdateInput
 import org.migor.feedless.generated.types.OrderWhereUniqueInput
@@ -51,7 +51,7 @@ class OrderService {
     val currentUser = sessionService.user(corrId)
     return if (currentUser.root) {
 //      data.where?.id?.let {
-//        billingDAO.findById(UUID.fromString(data.where?.id))
+//        orderDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
       orderDAO.findAll(pageable).toList()
     } else {
@@ -67,30 +67,30 @@ class OrderService {
 
   private fun create(corrId: String, create: OrderCreateInput): OrderEntity {
     log.info("[$corrId] create $create]")
-    val billing = OrderEntity()
-    billing.isOffer = BooleanUtils.isTrue(create.isOffer)
+    val order = OrderEntity()
+    order.isOffer = BooleanUtils.isTrue(create.isOffer)
     val productId = UUID.fromString(create.productId)
-    billing.productId = productId
-    billing.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
-    billing.invoiceRecipientName = create.invoiceRecipientName.trim()
-    billing.paymentMethod = create.paymentMethod?.fromDTO()
-    billing.callbackUrl = create.callbackUrl
-    billing.targetGroupIndividual = create.targetGroup === ProductTargetGroup.individual
-    billing.targetGroupEnterprise = create.targetGroup === ProductTargetGroup.eneterprise
-    billing.targetGroupOther = create.targetGroup === ProductTargetGroup.other
+    order.productId = productId
+    order.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
+    order.invoiceRecipientName = create.invoiceRecipientName.trim()
+    order.paymentMethod = create.paymentMethod?.fromDTO()
+    order.callbackUrl = create.callbackUrl
+    order.targetGroupIndividual = create.targetGroup === ProductTargetGroup.individual
+    order.targetGroupEnterprise = create.targetGroup === ProductTargetGroup.eneterprise
+    order.targetGroupOther = create.targetGroup === ProductTargetGroup.other
 
-    billing.price = if(create.overwritePrice <= 0) {
+    order.price = if(create.overwritePrice <= 0) {
       productService.resolvePriceForProduct(productId, create.user.where?.id?.let { UUID.fromString(it) })
     } else {
       create.overwritePrice
     }
     create.user.where?.let {
-      billing.userId = UUID.fromString(it.id)
+      order.userId = UUID.fromString(it.id)
     } ?: run {
-      billing.userId = createUser(corrId, create.user.create).id
+      order.userId = createUser(corrId, create.user.create).id
     }
 
-    return orderDAO.save(billing)
+    return orderDAO.save(order)
   }
 
   private fun createUser(corrId: String, create: UserCreateInput): UserEntity {
@@ -115,38 +115,38 @@ class OrderService {
     if (!sessionService.user(corrId).root) {
       throw PermissionDeniedException("must be root ($corrId)")
     }
-    val billing = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
+    val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
     update.isRejected?.let {
-      billing.isRejected = it.set
+      order.isRejected = it.set
     }
     update.price?.let {
-      billing.price = it.set
+      order.price = it.set
     }
     update.isRejected?.let {
-      billing.isRejected = it.set
+      order.isRejected = it.set
     }
 
-    return orderDAO.save(billing)
+    return orderDAO.save(order)
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  fun handlePaymentCallback(corrId: String, billingId: String): OrderEntity {
-    val billing = orderDAO.findById(UUID.fromString(billingId)).orElseThrow()
+  fun handlePaymentCallback(corrId: String, orderId: String): OrderEntity {
+    val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
 
-    billing.isPaid = true
-    billing.paidAt = Date()
+    order.isPaid = true
+    order.paidAt = Date()
 
-    val product = billing.product!!
+    val product = order.product!!
     if (product.isCloudProduct) {
-      productService.enableCloudProduct(corrId, product, billing.user)
+      productService.enableCloudProduct(corrId, product, order.user)
     } else {
-      billing.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, billing))
+      order.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, order))
     }
-    orderDAO.save(billing)
+    orderDAO.save(order)
     // todo send email
 
-    return billing
+    return order
   }
 }
 
@@ -160,8 +160,8 @@ private fun PaymentMethodDto.fromDTO(): PaymentMethod {
   }
 }
 
-fun OrderEntity.toDTO(): Billing {
-  return Billing.newBuilder()
+fun OrderEntity.toDTO(): Order {
+  return Order.newBuilder()
     .id(id.toString())
     .createdAt(createdAt.time)
     .userId(userId.toString())

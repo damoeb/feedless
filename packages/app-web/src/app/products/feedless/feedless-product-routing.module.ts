@@ -5,6 +5,7 @@ import { FeedlessProductPage } from './feedless-product.page';
 
 import { DefaultRoutes } from '../default-routes';
 import { FeedlessMenuComponent } from './feedless-menu/feedless-menu.component';
+import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 const routes: Routes = [
   {
@@ -12,34 +13,45 @@ const routes: Routes = [
     component: FeedlessProductPage,
     children: [
       {
-        path: 'builder',
-        loadChildren: () =>
-          import('../../pages/feed-builder/feed-builder.module').then(
-            (m) => m.FeedBuilderPageModule,
-          ),
-      },
-      {
-        path: 'workflow-builder',
-        loadChildren: () =>
-          import('../../pages/workflow-builder/workflow-builder.module').then(
-            (m) => m.WorkflowBuilderPageModule,
-          ),
-      },
-      {
-        path: 'products',
-        loadChildren: () =>
-          import('./products/products.module').then(
-            (m) => m.ProductsPageModule,
-          ),
+        path: '',
+        canActivate: [ProfileGuardService],
+        children: [
+          {
+            path: 'builder',
+            loadChildren: () =>
+              import('../../pages/feed-builder/feed-builder.module').then(
+                (m) => m.FeedBuilderPageModule,
+              ),
+          },
+          {
+            path: 'workflow-builder',
+            loadChildren: () =>
+              import('../../pages/workflow-builder/workflow-builder.module').then(
+                (m) => m.WorkflowBuilderPageModule,
+              ),
+          },
+          {
+            path: 'products',
+            loadChildren: () =>
+              import('./products/products.module').then(
+                (m) => m.ProductsPageModule,
+              ),
+          },
+          {
+            path: '',
+            loadChildren: () =>
+              import('./about/about-feedless.module').then(
+                (m) => m.AboutFeedlessModule,
+              ),
+          }
+        ],
       },
       {
         path: '',
-        loadChildren: () =>
-          import('./about/about-feedless.module').then(
-            (m) => m.AboutFeedlessModule,
-          ),
+        children: [
+          ...DefaultRoutes,
+        ],
       },
-      ...DefaultRoutes,
       {
         path: '**',
         redirectTo: '',

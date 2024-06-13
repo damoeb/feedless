@@ -1,6 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { SessionService } from '../../services/session.service';
-import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
@@ -11,6 +10,7 @@ import { ServerConfigService } from '../../services/server-config.service';
   selector: 'app-profile-page',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfilePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
@@ -24,16 +24,10 @@ export class ProfilePage implements OnInit, OnDestroy {
 
 
   constructor(
-    private readonly router: Router,
     private readonly toastCtrl: ToastController,
-    private readonly sessionService: SessionService,
+    protected readonly sessionService: SessionService,
     protected readonly serverConfig: ServerConfigService,
   ) {}
-
-  async logout() {
-    await this.sessionService.logout();
-    await this.router.navigateByUrl('/');
-  }
 
   async deleteAccount() {
     await this.sessionService.updateCurrentUser({
@@ -56,8 +50,8 @@ export class ProfilePage implements OnInit, OnDestroy {
         if (session.isLoggedIn) {
           this.formFg.patchValue({
             email: session.user.email,
-            firstName: 'session.user.firstName',
-            lastName: 'session.user.lastName',
+            firstName: session.user.firstName,
+            lastName: session.user.lastName,
           })
         }
       })
@@ -67,7 +61,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
 
   // private async updatePluginValue(id: string, value: boolean) {
   //   await this.profileService.updateCurrentUser({

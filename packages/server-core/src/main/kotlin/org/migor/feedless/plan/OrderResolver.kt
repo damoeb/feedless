@@ -8,16 +8,16 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.Billing
+import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.OrderCreateInput
 import org.migor.feedless.generated.types.OrderUpdateInput
 import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.toDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,13 +45,13 @@ class OrderResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun orders(
-      @RequestHeader(ApiParams.corrId) corrId: String,
-      @InputArgument data: OrdersInput
-  ): List<Billing> =
-      coroutineScope {
-          log.info("[$corrId] orders $data")
-          orderService.findAll(corrId, data).map { it.toDTO() }
-      }
+    @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: OrdersInput
+  ): List<Order> =
+    coroutineScope {
+      log.info("[$corrId] orders $data")
+      orderService.findAll(corrId, data).map { it.toDTO() }
+    }
 
   @DgsMutation
   @Transactional(propagation = Propagation.REQUIRED)
@@ -60,24 +60,24 @@ class OrderResolver {
     @InputArgument where: OrderWhereUniqueInput,
     @InputArgument create: OrderCreateInput,
     @InputArgument update: OrderUpdateInput,
-  ): Billing =
-      coroutineScope {
-          log.info("[$corrId] upsertOrder $where $create $update")
-          orderService.upsert(corrId, where, create, update).toDTO()
-      }
+  ): Order =
+    coroutineScope {
+      log.info("[$corrId] upsertOrder $where $create $update")
+      orderService.upsert(corrId, where, create, update).toDTO()
+    }
 
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
-      val billing: Billing = dfe.getSource()
-      productDAO.findById(UUID.fromString(billing.productId)).orElseThrow().toDTO()
+    val order: Order = dfe.getSource()
+    productDAO.findById(UUID.fromString(order.productId)).orElseThrow().toDTO()
   }
 
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun user(dfe: DgsDataFetchingEnvironment): User = coroutineScope {
-      val billing: Billing = dfe.getSource()
-    userDAO.findById(UUID.fromString(billing.userId)).orElseThrow().toDTO()
+    val order: Order = dfe.getSource()
+    userDAO.findById(UUID.fromString(order.userId)).orElseThrow().toDTO()
   }
 
 }

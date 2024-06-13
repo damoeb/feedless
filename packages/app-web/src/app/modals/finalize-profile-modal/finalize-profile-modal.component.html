@@ -1,13 +1,13 @@
 <ion-content>
   <div class="limited-width-pane"
-       style="flex: 1; align-content: flex-end">
+       style="flex: 1; align-content: center">
     <h1>Just one last thing!</h1>
     <p style="line-height: 1.8rem">
       Before I can let you roam around please read the
       <a href="/terms" target="_blank">terms and conditions</a>.
     </p>
 
-    <ion-list>
+    <ion-list class="ion-padding">
       <ion-row>
         <ion-col size="3" style="align-content: center">
           <ion-label class="ion-padding">Email</ion-label>
@@ -38,27 +38,26 @@
         </ion-col>
       </ion-row>
     </ion-list>
+    <ion-toolbar style="--background: transparent">
+      <ion-buttons slot="end">
+        <ion-button
+          (click)="accept()"
+          [disabled]="loading"
+          color="primary"
+          fill="solid"
+        >
+          <ion-spinner
+            *ngIf="loading"
+            class="ion-margin-end"
+            color="dark"
+            name="dots"
+          ></ion-spinner>
+          Let's go!
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
   </div>
+
 </ion-content>
 
-<ion-footer>
-  <ion-toolbar style="--background: transparent">
-    <ion-buttons slot="end">
-      <ion-button (click)="skip()" *ngIf="canSkip"> Skip </ion-button>
-      <ion-button
-        (click)="accept()"
-        [disabled]="loading"
-        color="primary"
-        fill="solid"
-      >
-        <ion-spinner
-          *ngIf="loading"
-          class="ion-margin-end"
-          color="dark"
-          name="dots"
-        ></ion-spinner>
-        Let's go!
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>
+

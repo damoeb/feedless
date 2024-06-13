@@ -828,6 +828,7 @@ type NativeFeed {
 type User {
   id: ID!
   hasAcceptedTerms: Boolean!
+  hasCompletedSignup: Boolean!
   createdAt: Long!
   email: String!
   firstName: String

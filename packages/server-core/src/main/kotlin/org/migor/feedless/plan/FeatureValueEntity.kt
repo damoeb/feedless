@@ -24,6 +24,7 @@ enum class FeatureName {
   refreshRateInMinutesLowerLimitInt,
   publicRepositoryBool,
   pluginsBool,
+  legacyApiBool,
 
   repositoryCapacityUpperLimitInt,
   repositoryCapacityLowerLimitInt,

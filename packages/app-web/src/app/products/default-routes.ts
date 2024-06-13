@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { SaasGuardService } from '../guards/saas-guard.service';
 import { BillingsPageModule } from '../pages/billings/billings.module';
+import { ProfileGuardService } from '../guards/profile-guard.service';
 
 export const DefaultRoutes: Routes = [
   {

@@ -142,6 +142,7 @@ class Seeder {
         FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
         FeatureName.publicRepositoryBool to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(false),
+        FeatureName.legacyApiBool to asBoolFeature(true),
 
         FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(0),
         FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(0),

@@ -239,18 +239,18 @@ class RepositoryService {
     richFeed.tags = tags
     richFeed.title = title
     richFeed.description = repository.description
-    richFeed.websiteUrl = "${propertyService.appHost}/feed/$repositoryId"
+    richFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.expired = false
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom"
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
 
     if (!pageResult.isLast) {
-      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom?page=${page+1}"
+      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page+1}"
     }
     if (!pageResult.isFirst) {
-      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/feed/${repositoryId}/atom?page=${page-1}"
+      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page-1}"
     }
 
     return richFeed

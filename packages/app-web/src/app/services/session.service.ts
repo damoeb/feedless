@@ -16,16 +16,16 @@ import {
   GqlUpdateCurrentUserMutationVariables,
   Logout,
   Session as SessionQuery,
-  UpdateCurrentUser,
+  UpdateCurrentUser
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
-import { Router } from '@angular/router';
 import { Session, UserSecret } from '../graphql/types';
 import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
 import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
 import { ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
@@ -44,7 +44,6 @@ export class SessionService {
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
     private readonly modalCtrl: ModalController,
-    private readonly router: Router,
   ) {
     this.sessionPipe = new BehaviorSubject(null);
     this.detectColorScheme();
@@ -82,9 +81,9 @@ export class SessionService {
   }
 
   async finalizeProfile() {
-    const isUnfinished =
-      !this.session.user.email || !this.session.user.hasAcceptedTerms;
-    if (this.modalIsOpen || !isUnfinished) {
+    const hasCompletedSignup = this.session.user.hasCompletedSignup;
+    console.log('hasCompletedSignup', hasCompletedSignup)
+    if (this.modalIsOpen || hasCompletedSignup) {
       return;
     }
     try {
@@ -117,8 +116,7 @@ export class SessionService {
         set: dateFormat,
       },
     })
-      .then(() => this.fetchSession('network-only'))
-      .then(() => this.router.navigateByUrl('/'));
+      .then(() => this.fetchSession('network-only'));
   }
 
   async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {

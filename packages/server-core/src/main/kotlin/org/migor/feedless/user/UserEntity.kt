@@ -33,6 +33,10 @@ import java.util.*
 )
 open class UserEntity : EntityWithUUID() {
 
+  fun hasFinalizedProfile(): Boolean {
+    return StringUtils.isNotBlank(this.email) && hasAcceptedTerms
+  }
+
   @Email
   @Column(nullable = false, name = StandardJpaFields.email)
   open lateinit var email: String
@@ -144,6 +148,7 @@ fun UserEntity.toDTO(): User =
     .createdAt(createdAt.time)
     .purgeScheduledFor(purgeScheduledFor?.time)
     .hasAcceptedTerms(hasAcceptedTerms)
+    .hasCompletedSignup(hasFinalizedProfile())
     .email(StringUtils.trimToEmpty(email))
     .firstName(StringUtils.trimToEmpty(firstName))
     .lastName(StringUtils.trimToEmpty(lastName))

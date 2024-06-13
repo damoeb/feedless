@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { SessionService } from '../../services/session.service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
 
@@ -17,7 +17,7 @@ export class FinalizeProfileModalComponent implements OnInit {
 
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
-    terms: new FormControl<boolean>(false),
+    terms: new FormControl<boolean>(false, [Validators.requiredTrue, Validators.required]),
   });
   canSkip = true;
 
@@ -38,10 +38,6 @@ export class FinalizeProfileModalComponent implements OnInit {
     });
   }
 
-  async skip() {
-    await this.modalCtrl.dismiss();
-  }
-
   async accept() {
     if (this.formFg.valid) {
       this.loading = true;
@@ -51,5 +47,7 @@ export class FinalizeProfileModalComponent implements OnInit {
       await new Promise((resolve) => setTimeout(resolve, 500));
       await this.modalCtrl.dismiss();
     }
+    this.formFg.markAllAsTouched();
+    this.changeRef.detectChanges();
   }
 }

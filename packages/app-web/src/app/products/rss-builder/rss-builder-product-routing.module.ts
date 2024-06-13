@@ -5,7 +5,7 @@ import { RssBuilderProductPage } from './rss-builder-product.page';
 import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { DefaultRoutes } from '../default-routes';
-import { SaasGuardService } from '../../guards/saas-guard.service';
+import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 const routes: Routes = [
   {
@@ -19,28 +19,39 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        loadChildren: () =>
-          import('./about/about-rss-builder.module').then(
-            (m) => m.AboutRssBuilderModule,
-          ),
+        canActivate: [ProfileGuardService],
+        children: [
+          {
+            path: '',
+            loadChildren: () =>
+              import('./about/about-rss-builder.module').then(
+                (m) => m.AboutRssBuilderModule,
+              ),
+          },
+          {
+            path: 'builder',
+            canActivate: [AuthGuardService],
+            loadChildren: () =>
+              import('../../pages/feed-builder/feed-builder.module').then(
+                (m) => m.FeedBuilderPageModule,
+              ),
+          },
+          {
+            path: 'agents',
+            canActivate: [AuthGuardService],
+            loadChildren: () =>
+              import('../../pages/agents/agents.module').then(
+                (m) => m.AgentsPageModule,
+              ),
+          }
+        ],
       },
       {
-        path: 'builder',
-        canActivate: [AuthGuardService],
-        loadChildren: () =>
-          import('../../pages/feed-builder/feed-builder.module').then(
-            (m) => m.FeedBuilderPageModule,
-          ),
+        path: '',
+        children: [
+          ...DefaultRoutes
+        ],
       },
-      {
-        path: 'agents',
-        canActivate: [AuthGuardService],
-        loadChildren: () =>
-          import('../../pages/agents/agents.module').then(
-            (m) => m.AgentsPageModule,
-          ),
-      },
-      ...DefaultRoutes,
     ],
   },
   {

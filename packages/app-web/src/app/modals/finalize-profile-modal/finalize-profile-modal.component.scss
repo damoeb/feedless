@@ -27,3 +27,9 @@ ion-select {
     --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
   }
 }
+
+ion-checkbox {
+  &.ng-touched.ng-invalid {
+    --border-color: var(--ion-color-danger);
+  }
+}
