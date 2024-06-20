@@ -152,4 +152,5 @@ class RepositoryServiceTest {
 }
 
 fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
+fun <T> anyOrNull(type: Class<T>): T? = Mockito.any<T?>(type)
 fun <T> eq(type: T): T = Mockito.eq<T>(type)

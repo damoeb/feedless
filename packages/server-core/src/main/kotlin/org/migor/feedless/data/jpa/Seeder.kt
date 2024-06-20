@@ -4,7 +4,12 @@ import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.feed.LegacyFeedService
 import org.migor.feedless.plan.FeatureGroupDAO
 import org.migor.feedless.plan.FeatureGroupEntity
 import org.migor.feedless.plan.FeatureName
@@ -15,6 +20,8 @@ import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.PricedProductEntity
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductEntity
+import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretType
@@ -29,6 +36,7 @@ import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.io.FileWriter
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -49,6 +57,9 @@ class Seeder {
   private lateinit var featureSerrvice: FeatureService
 
   @Autowired
+  private lateinit var documentDAO: DocumentDAO
+
+  @Autowired
   private lateinit var environment: Environment
 
   @Autowired
@@ -62,6 +73,12 @@ class Seeder {
 
   @Autowired
   private lateinit var userSecretDAO: UserSecretDAO
+
+  @Autowired
+  private lateinit var repositoryDAO: RepositoryDAO
+
+  @Autowired
+  private lateinit var legacyFeedService: LegacyFeedService
 
   @Autowired
   private lateinit var userDAO: UserDAO
@@ -101,7 +118,46 @@ class Seeder {
       userSecretDAO.save(userSecret)
     }
 
+    pushLegacyNotifications(root)
+
     return root
+  }
+
+  private fun pushLegacyNotifications(root: UserEntity) {
+    val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
+
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
+      val title = "Please Migrate"
+      val repositoryId = legacyNotificationRepo.id
+
+      val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
+        val n = DocumentEntity()
+        n.repositoryId = repositoryId
+        n
+      }
+
+      notification.url = "https://github.com/damoeb/feedless"
+      notification.contentTitle = title
+      notification.status = ReleaseStatus.released
+      notification.contentText = "Hi, support for anonymous rss-proxy feeds is coming to an end, but I made migrating especially easy."
+      notification.updatedAt = Date()
+
+      documentDAO.save(notification)
+    }
+  }
+
+  private fun resolveLegacyNotificationsRepo(root: UserEntity): RepositoryEntity {
+    val repoTitleLegacyNotifications = legacyFeedService.getRepoTitleForLegacyFeedNotifications()
+
+    val repo = RepositoryEntity()
+    repo.title = repoTitleLegacyNotifications
+    repo.description = ""
+    repo.ownerId = root.id
+    repo.visibility = EntityVisibility.isPrivate
+    repo.product = ProductCategory.feedless
+    repo.sourcesSyncExpression = ""
+
+    return repositoryDAO.findByTitleAndOwnerId(repoTitleLegacyNotifications, root.id) ?: repositoryDAO.save(repo)
   }
 
   private fun createAnonymousUser() = createUser(
@@ -121,7 +177,7 @@ class Seeder {
     val user = UserEntity()
     user.email = email
     user.root = isRoot
-    user.product = ProductCategory.system
+    user.product = ProductCategory.feedless
     user.anonymous = isAnonymous
     user.hasAcceptedTerms = isRoot || isAnonymous
 //    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
@@ -143,6 +199,7 @@ class Seeder {
         FeatureName.publicRepositoryBool to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(false),
         FeatureName.legacyApiBool to asBoolFeature(true),
+        FeatureName.legacyAnonymousFeedSupportEolInt to asIntFeature(1718265907060),
 
         FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(0),
         FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(0),
@@ -172,6 +229,7 @@ class Seeder {
 //          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
           FeatureName.publicRepositoryBool to asBoolFeature(true),
           FeatureName.pluginsBool to asBoolFeature(true),
+          FeatureName.legacyAnonymousFeedSupportEolInt to asIntFeature(null),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
           FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
@@ -391,7 +449,7 @@ class Seeder {
 
   //
 
-  private fun asIntFeature(value: Int?): FeatureValueEntity {
+  private fun asIntFeature(value: Long?): FeatureValueEntity {
     val feature = FeatureValueEntity()
     feature.valueType = FeatureValueType.number
     feature.valueInt = value

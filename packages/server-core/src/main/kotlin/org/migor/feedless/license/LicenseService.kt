@@ -340,7 +340,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   fun isLicensedForProduct(product: ProductCategory): Boolean {
     return this.license?.let {
-      (it.scope === product || it.scope == ProductCategory.all) &&
+      (it.scope === product || it.scope == ProductCategory.feedless) &&
         (it.validUntil == null || it.validUntil.time > Date().time) &&
         (it.version == 1) // todo validate version
     } ?: false
@@ -355,7 +355,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       name = billing.invoiceRecipientName,
       createdAt = Date(),
       version = 1,
-      scope = product.partOf ?: ProductCategory.all,
+      scope = product.partOf ?: ProductCategory.feedless,
       validUntil = null,
       email = billing.invoiceRecipientEmail
     )

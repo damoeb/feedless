@@ -62,7 +62,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is defined when coerceRetentionMaxItems works`() {
-    val maxItems = 50
+    val maxItems = 50L
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxItems(null, userId)).isEqualTo(maxItems)
@@ -236,7 +236,7 @@ class PlanConstraintsServiceImplTest {
     service.auditScrapeRequestMaxCountPerSource(4, userId)
   }
 
-  private fun mockFeatureValue(featureName: FeatureName, boolValue: Boolean? = null, intValue: Int? = null) {
+  private fun mockFeatureValue(featureName: FeatureName, boolValue: Boolean? = null, intValue: Long? = null) {
     val feature = mock(FeatureValueEntity::class.java)
     `when`(feature.valueBoolean).thenReturn(boolValue)
     `when`(feature.valueInt).thenReturn(intValue)

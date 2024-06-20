@@ -25,6 +25,7 @@ enum class FeatureName {
   publicRepositoryBool,
   pluginsBool,
   legacyApiBool,
+  legacyAnonymousFeedSupportEolInt,
 
   repositoryCapacityUpperLimitInt,
   repositoryCapacityLowerLimitInt,
@@ -55,7 +56,7 @@ enum class FeatureName {
 open class FeatureValueEntity : EntityWithUUID() {
 
   @Column(name="value_int")
-  open var valueInt: Int? = null
+  open var valueInt: Long? = null
 
   @Column(name="value_bool")
   open var valueBoolean: Boolean? = null

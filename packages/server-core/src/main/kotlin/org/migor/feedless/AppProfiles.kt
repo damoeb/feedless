@@ -22,6 +22,4 @@ object AppProfiles {
   const val api = "api"
   const val feed = "feed"
   const val seed = "seed"
-  const val legacyV2 = "legacySupport"
-  const val autoSignIn = "autoSignIn"
 }

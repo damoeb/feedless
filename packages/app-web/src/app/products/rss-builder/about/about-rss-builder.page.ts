@@ -7,7 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { fixUrl } from '../../../app.module';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';

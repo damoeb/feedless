@@ -1,23 +1,30 @@
+fragment CloudSubscriptionFragment on CloudSubscription {
+  productId
+  startedAt
+  terminatedAt
+}
+
+fragment UserFragment on User {
+  id
+  hasAcceptedTerms
+  hasCompletedSignup
+  email
+  firstName
+  lastName
+  createdAt
+  purgeScheduledFor
+  secrets {
+    ...SecretFragment
+  }
+  subscription {
+    ...CloudSubscriptionFragment
+  }
+}
 query session {
   session {
     isLoggedIn
     user {
-      id
-      hasAcceptedTerms
-      hasCompletedSignup
-      email
-      firstName
-      lastName
-      createdAt
-      purgeScheduledFor
-      secrets {
-        ...SecretFragment
-      }
-      subscription {
-        productId
-        startedAt
-        terminatedAt
-      }
+      ...UserFragment
     }
   }
 }

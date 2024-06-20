@@ -77,7 +77,7 @@ class FeatureServiceTest {
     val feature = resolveFeature(featureName)
 
     assertThat(featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)).isNull()
-    val randomInt = (Math.random() * 100).toInt()
+    val randomInt = (Math.random() * 100).toLong()
 
     // when
     featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureName to createFeatureValue(randomInt)))
@@ -101,7 +101,7 @@ class FeatureServiceTest {
     val featureNameB = FeatureName.refreshRateInMinutesLowerLimitInt
     val featureB = resolveFeature(featureNameB)
 
-    val randomInt = (Math.random() * 1002).toInt()
+    val randomInt = (Math.random() * 1002).toLong()
     val otherRandomInt = randomInt + 2
 
     // when
@@ -116,7 +116,7 @@ class FeatureServiceTest {
     assertThat(childValue!!.valueInt).isEqualTo(otherRandomInt)
 
     val flatten = { list: List<FeatureValueEntity> ->
-      list.fold(mutableMapOf<String, Int>()) { acc, featureValueEntity ->
+      list.fold(mutableMapOf<String, Long>()) { acc, featureValueEntity ->
         run {
           acc[featureDAO.findById(featureValueEntity.featureId).orElseThrow().name] = featureValueEntity.valueInt!!
           acc
@@ -137,7 +137,7 @@ class FeatureServiceTest {
   }
 
   private fun createFeatureValue(
-    valueInt: Int
+    valueInt: Long
   ): FeatureValueEntity {
     val featureValue = FeatureValueEntity()
     featureValue.valueType = FeatureValueType.number

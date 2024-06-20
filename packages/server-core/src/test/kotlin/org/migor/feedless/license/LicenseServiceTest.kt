@@ -47,7 +47,7 @@ class LicenseServiceTest {
     service.environment = environment
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))
-    licensePayload = LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.all)
+    licensePayload = LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.feedless)
   }
 
   @Test

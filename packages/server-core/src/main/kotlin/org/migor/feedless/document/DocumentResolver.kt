@@ -26,7 +26,6 @@ import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -85,7 +84,7 @@ class DocumentResolver {
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
     val repository: Repository = dfe.getSource()
     documentDAO.countByRepositoryId(UUID.fromString(repository.id))

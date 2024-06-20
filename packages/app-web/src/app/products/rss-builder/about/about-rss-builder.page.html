@@ -14,11 +14,21 @@
 
     <div *ngIf="!serverConfig.isSelfHosted()">
       <div style="margin-top: 50px"></div>
+      <div class="ion-margin-vertical" style="border-left: 5px solid var(--ion-color-primary); padding-left: 15px; margin-left: -20px">
+        <h2>End-of-life announcements for legacy feeds!</h2>
+        <p>
+          Support for old feed Urls from RSS-Proxy will end in a couple of weeks, I will give you a notification inside of every feed, you will have plenty of time to migrate them.
+          I won't allow anonymous feed transformations anymore.
+        </p>
+        <p>
+          For self hoster nothing will change, support for legacy urls will continue.
+        </p>
+      </div>
       <div class="ion-margin-vertical">
-        <h2>Migration Path</h2>
+        <h2>Migration Path for legacy feeds</h2>
         <p>
           If you come from an older version of RSS-proxy, just paste those urls
-          into the form above, you can convert them.
+          into the form above, you can convert them fully, except the filters.
         </p>
       </div>
     </div>

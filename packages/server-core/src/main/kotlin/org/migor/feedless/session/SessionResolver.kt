@@ -65,14 +65,14 @@ class SessionResolver {
   private lateinit var cookieProvider: CookieProvider
 
   @DgsData(parentType = DgsConstants.SESSION.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun user(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val session: Session = dfe.getSource()
     session.userId?.let { sessionService.user("?").toDTO() }
   }
 
   @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun session(dfe: DataFetchingEnvironment): Session = coroutineScope {
     unsetSessionCookie(dfe)
     val defaultSession = Session.newBuilder()

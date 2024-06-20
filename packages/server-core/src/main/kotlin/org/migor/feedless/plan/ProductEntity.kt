@@ -17,6 +17,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.generated.types.Product
 import java.util.*
 
@@ -80,14 +81,7 @@ fun ProductEntity.toDTO(): Product {
     .name(name)
     .description(description)
     .isCloud(isCloudProduct)
-    .partOf(partOf?.toDTO())
+    .partOf(partOf?.toDto())
     .featureGroupId(featureGroupId?.toString())
     .build()
-}
-
-private fun ProductCategory?.toDTO(): org.migor.feedless.generated.types.ProductCategory {
-  return when(this) {
-    ProductCategory.rssProxy -> org.migor.feedless.generated.types.ProductCategory.rssProxy
-    else -> throw IllegalArgumentException("Unsupported product name $this")
-  }
 }

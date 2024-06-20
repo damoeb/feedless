@@ -61,7 +61,7 @@ type FeatureBooleanValue {
 }
 
 type FeatureIntValue {
-  value: Int!
+  value: Long!
 }
 
 type FeatureValue {
@@ -237,7 +237,7 @@ input FeatureBooleanValueInput {
 }
 
 input FeatureIntValueInput {
-  value: Int!
+  value: Long!
 }
 
 input DeleteAnnotationInput {
@@ -306,7 +306,7 @@ input CreateWebDocumentInput {
   contentText: String
   tags: [String!]
   contentTitle: String!
-  createdAt: Long!
+  publishedAt: Long!
   url: String!
   repositoryId: RepositoryUniqueWhereInput!
   parent: WebDocumentUniqueWhereInput

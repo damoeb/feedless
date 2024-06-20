@@ -36,7 +36,7 @@ class SecretsResolver {
   private lateinit var sessionService: SessionService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
     val user: User = dfe.getSource()
     userSecretDAO.findAllByOwnerId(UUID.fromString(user.id)).map { it.toDto() }

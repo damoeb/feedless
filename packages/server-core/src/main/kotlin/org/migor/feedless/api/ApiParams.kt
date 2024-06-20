@@ -21,28 +21,28 @@ object WebToFeedParamsV2 {
   const val eventFeed = "ef"
 }
 
-object WebToFeedParamsV1 {
-  const val url = "url"
-  const val link = "link"
-  const val linkAlias = "l"
-  const val extendContext = "x"
-  const val contextPath = "context"
-  const val datePath = "date"
-  const val prerender = "p"
-  const val prerenderWaitUntil = "aw"
-  const val filter = "q"
-  const val version = "v"
-  const val format = "out"
-  const val debug = "debug"
-}
+//object WebToFeedParamsV1 {
+//  const val url = "url"
+//  const val link = "link"
+//  const val linkAlias = "l"
+//  const val extendContext = "x"
+//  const val contextPath = "context"
+//  const val datePath = "date"
+//  const val prerender = "p"
+//  const val prerenderWaitUntil = "aw"
+//  const val filter = "q"
+//  const val version = "v"
+//  const val format = "out"
+//  const val debug = "debug"
+//}
 
 
-object WebToPageChangeParams {
-  const val url = "u"
-  const val prerender = "p"
-  const val prerenderWaitUntil = "aw"
-  const val version = "v"
-  const val type = "t"
-  const val format = "f"
-  const val xpath = "x"
-}
+//object WebToPageChangeParams {
+//  const val url = "u"
+//  const val prerender = "p"
+//  const val prerenderWaitUntil = "aw"
+//  const val version = "v"
+//  const val type = "t"
+//  const val format = "f"
+//  const val xpath = "x"
+//}

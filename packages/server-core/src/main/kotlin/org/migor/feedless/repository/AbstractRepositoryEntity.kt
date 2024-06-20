@@ -29,6 +29,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
@@ -50,7 +51,6 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ProductCategory as ProductCategoryDto
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.Selectors
@@ -191,13 +191,13 @@ fun RepositoryEntity.toDto(): Repository {
     .build()
 }
 
-private fun ProductCategory.toDto(): ProductCategoryDto {
-  return when(this) {
-    ProductCategory.rssProxy -> ProductCategoryDto.rssProxy
-    ProductCategory.visualDiff -> ProductCategoryDto.visualDiff
-    else -> throw IllegalArgumentException("Unsupported product name: $this")
-  }
-}
+//fun ProductCategory.toDto(): ProductCategoryDto {
+//  return when(this) {
+//    ProductCategory.rssProxy -> ProductCategoryDto.rssProxy
+//    ProductCategory.visualDiff -> ProductCategoryDto.visualDiff
+//    else -> throw IllegalArgumentException("Unsupported product name: $this")
+//  }
+//}
 
 private fun org.migor.feedless.repository.PluginExecution.toDto(): PluginExecution {
   return PluginExecution.newBuilder()

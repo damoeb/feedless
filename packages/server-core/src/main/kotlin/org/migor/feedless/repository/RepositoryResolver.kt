@@ -124,7 +124,7 @@ class RepositoryResolver {
 
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun sources(dfe: DgsDataFetchingEnvironment): List<ScrapeRequest> = coroutineScope {
     val source: Repository = dfe.getSource()
     sourceDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { scrapeSource ->
@@ -137,7 +137,7 @@ class RepositoryResolver {
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val source: Repository = dfe.getSource()
     sourceDAO.findAllByRepositoryId(UUID.fromString(source.id))

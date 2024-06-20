@@ -3,7 +3,6 @@ package org.migor.feedless.data.jpa.enums
 import org.migor.feedless.generated.types.ProductCategory as ProductCategoryDto
 
 enum class ProductCategory {
-  all,
   visualDiff,
   pageChangeTracker,
   rssProxy,
@@ -13,7 +12,6 @@ enum class ProductCategory {
   feedless,
   feedDump,
   untoldNotes,
-  system
 }
 
 fun ProductCategoryDto.fromDto(): ProductCategory {

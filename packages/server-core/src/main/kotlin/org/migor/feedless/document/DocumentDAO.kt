@@ -96,20 +96,21 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
 
 
   fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean
+  fun findByContentTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
 
-  @Modifying
-  @Query(
-    """
-    DELETE FROM DocumentEntity d
-    WHERE d.id = ?1 and d.id in (
-        select d1.id from DocumentEntity d1
-        inner join RepositoryEntity s
-        where d1.id = ?1
-        and s.ownerId = ?2
-    )
-    """
-  )
-  fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
+//  @Modifying
+//  @Query(
+//    """
+//    DELETE FROM DocumentEntity d
+//    WHERE d.id = ?1 and d.id in (
+//        select d1.id from DocumentEntity d1
+//        inner join RepositoryEntity s
+//        where d1.id = ?1
+//        and s.ownerId = ?2
+//    )
+//    """
+//  )
+//  fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
 
   fun countByRepositoryId(id: UUID): Long
 

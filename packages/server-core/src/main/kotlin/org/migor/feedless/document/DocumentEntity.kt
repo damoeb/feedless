@@ -37,6 +37,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
 import org.springframework.context.annotation.Lazy
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -88,10 +89,10 @@ open class DocumentEntity : EntityWithUUID() {
   open var imageUrl: String? = null
 
   @Column(nullable = false, name = "updated_at")
-  open lateinit var updatedAt: Date
+  open var updatedAt: Date = Date()
 
   @Column(nullable = false, name = StandardJpaFields.publishedAt)
-  open lateinit var publishedAt: Date
+  open var publishedAt: Date = Date()
 
   @Column(name = "starting_at")
   open var startingAt: Date? = null
@@ -132,7 +133,7 @@ open class DocumentEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var votes: MutableList<AnnotationEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "documentId", cascade = [CascadeType.ALL])
+  @OneToMany(fetch = FetchType.EAGER, mappedBy = "documentId", cascade = [CascadeType.ALL])
   open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
   @Column(nullable = false, name = StandardJpaFields.status, length = 50)

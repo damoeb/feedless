@@ -12,6 +12,8 @@ services:
       - ./docker/nginx/ssl:/etc/nginx/ssl
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
 
+  plausible:
+    image: plausible/analytics
 #  neo4j:
 #    image: neo4j
 #    ports:

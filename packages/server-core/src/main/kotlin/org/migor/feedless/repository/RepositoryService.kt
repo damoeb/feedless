@@ -53,6 +53,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -264,8 +266,8 @@ class RepositoryService {
       ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable))
   }
 
-  fun findById(corrId: String, id: UUID): RepositoryEntity {
-    val sub = repositoryDAO.findById(id).orElseThrow { NotFoundException("not found ($corrId)") }
+  fun findById(corrId: String, repositoryId: UUID): RepositoryEntity {
+    val sub = repositoryDAO.findById(repositoryId).orElseThrow { NotFoundException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
@@ -428,7 +430,7 @@ private fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params)
 }
 
-private fun DocumentEntity.toRichArticle(propertyService: PropertyService, visibility: EntityVisibility): RichArticle {
+fun DocumentEntity.toRichArticle(propertyService: PropertyService, visibility: EntityVisibility, requestURI: String? = null): RichArticle {
   val article = RichArticle()
   article.id = id.toString()
   article.title = StringUtils.trimToEmpty(contentTitle)
@@ -442,7 +444,7 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService, visib
   }
   if (visibility === EntityVisibility.isPublic) {
     article.url = createDocumentUrl(propertyService, id)
-    article.contentText = StringUtils.trimToEmpty(contentText).substring(0..160) + "..."
+    article.contentText = StringUtils.abbreviate(contentText, "...", 160)
   } else {
     article.url = url
     article.contentText = StringUtils.trimToEmpty(contentText)
@@ -450,6 +452,10 @@ private fun DocumentEntity.toRichArticle(propertyService: PropertyService, visib
     article.contentRawMime = contentRawMime
     article.contentHtml = contentHtml
   }
+  requestURI?.let {
+    article.url += "?source=${URLEncoder.encode(requestURI, StandardCharsets.UTF_8)}"
+  }
+
   article.publishedAt = publishedAt
   article.modifiedAt = updatedAt
   article.tags = (tags?.asList() ?: emptyList()).plus(getAttachmentTags(article))

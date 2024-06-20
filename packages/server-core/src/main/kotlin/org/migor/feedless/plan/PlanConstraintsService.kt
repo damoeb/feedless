@@ -42,8 +42,8 @@ class PlanConstraintsService {
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
   fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID): Int? {
-    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId) ?: 0).coerceAtLeast(2)
-    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId)
+    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId) ?: 0).coerceAtLeast(2).toInt()
+    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId)?.toInt()
     return customMaxItems?.let {
       maxItems?.let {
         customMaxItems.coerceAtLeast(minItems)
@@ -67,7 +67,7 @@ class PlanConstraintsService {
   }
 
   fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID): Int? {
-    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId)
+    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
 
@@ -114,7 +114,7 @@ class PlanConstraintsService {
 
   private fun userIdFromRequest() = sessionService.userId()!!
 
-  private fun getFeatureInt(featureName: FeatureName, userId: UUID): Int? = getFeature(featureName, userId)?.valueInt
+  private fun getFeatureInt(featureName: FeatureName, userId: UUID): Long? = getFeature(featureName, userId)?.valueInt
 
   private fun getFeatureBool(featureName: FeatureName, userId: UUID): Boolean? =
     getFeature(featureName, userId)?.valueBoolean

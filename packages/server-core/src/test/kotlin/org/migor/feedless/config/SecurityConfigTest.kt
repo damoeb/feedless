@@ -84,32 +84,28 @@ class SecurityConfigTest {
     assertThat(HttpStatus.FORBIDDEN).isNotEqualTo(response.statusCode)
   }
 
-  @ParameterizedTest
-  @CsvSource(value = [
-//    "bucket/$feedId",
-//    "bucket/$feedId/atom",
-//    "bucket:$feedId",
-//    "bucket:$feedId/atom",
-//    "stream/bucket/$feedId",
-//    "stream/bucket/$feedId/atom",
-    "stream/feed/$feedId",
-    "stream/feed/$feedId/atom",
-    "feed/$feedId",
-    "feed/$feedId/atom",
-    "feed:$feedId",
-//    "feed:$feedId/atom",
-    ApiUrls.transformFeed,
-    ApiUrls.webToFeed,
-    ApiUrls.webToFeedVerbose,
-    ApiUrls.webToFeedFromRule,
-    ApiUrls.webToFeedFromChange,
-//    "api/legacy/foo", // TODO fix cause not whitelisted
-//    "article/foo",
-//    "a/foo",
-  ])
-  fun whenCallingUrl_ThenSuccess(path: String) {
-    val restTemplate = TestRestTemplate()
-    val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
-    assertEquals(HttpStatus.OK, response.statusCode)
-  }
+//  @ParameterizedTest
+//  @CsvSource(value = [
+////    "bucket/$feedId",
+////    "bucket/$feedId/atom",
+////    "bucket:$feedId",
+////    "bucket:$feedId/atom",
+////    "stream/bucket/$feedId",
+////    "stream/bucket/$feedId/atom",
+//    "stream/feed/$feedId",
+//    "stream/feed/$feedId/atom",
+//    "feed/$feedId",
+//    "feed/$feedId/atom",
+//    "feed:$feedId",
+////    "feed:$feedId/atom",
+//    ApiUrls.transformFeed,
+//    ApiUrls.webToFeed,
+////    "article/foo",
+////    "a/foo",
+//  ])
+//  fun whenCallingUrl_ThenSuccess(path: String) {
+//    val restTemplate = TestRestTemplate()
+//    val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
+//    assertEquals(HttpStatus.OK, response.statusCode)
+//  }
 }

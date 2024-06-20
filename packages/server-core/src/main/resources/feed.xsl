@@ -197,11 +197,13 @@
             <p>
               Link: <xsl:value-of select="atom:link/@href"/>
             </p>
-            <p>
-              Tags: <xsl:for-each select="atom:category">
-                #<xsl:value-of select="@term"/>
-              </xsl:for-each>
-            </p>
+            <xsl:if test="atom:category">
+              <p>
+                Tags: <xsl:for-each select="atom:category">
+                  #<xsl:value-of select="@term"/>
+                </xsl:for-each>
+              </p>
+            </xsl:if>
             <p>
                 <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
             </p>
