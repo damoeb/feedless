@@ -160,6 +160,7 @@ class LegacyFeedControllerTest {
 
     Mockito.`when`(legacyFeedService.getFeed(
       any(String::class.java),
+      any(String::class.java),
     )).thenReturn(mockFeed)
 
     val headers = HttpHeaders()

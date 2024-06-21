@@ -127,7 +127,7 @@ class Seeder {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
 
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "Please Migrate"
+      val title = "Migrate This Legacy Feed"
       val repositoryId = legacyNotificationRepo.id
 
       val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
@@ -136,7 +136,7 @@ class Seeder {
         n
       }
 
-      notification.url = "https://github.com/damoeb/feedless"
+      notification.url = propertyService.appHost
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText = "Hi, support for anonymous rss-proxy feeds is coming to an end, but I made migrating especially easy."
@@ -230,6 +230,7 @@ class Seeder {
           FeatureName.publicRepositoryBool to asBoolFeature(true),
           FeatureName.pluginsBool to asBoolFeature(true),
           FeatureName.legacyAnonymousFeedSupportEolInt to asIntFeature(null),
+//          FeatureName.legacyApiBool to asBoolFeature(true),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
           FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),

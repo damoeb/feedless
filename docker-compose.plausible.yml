@@ -1,3 +1,5 @@
+version: '3.4'
+
 services:
   plausible_db:
     # Plausible v2.1.1 was tested against PostgreSQL versions 15 and 16
@@ -15,8 +17,8 @@ services:
     volumes:
       - event-data:/var/lib/clickhouse
       - event-logs:/var/log/clickhouse-server
-      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
-      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
+      - ./plausible/clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
+      - ./plausible/clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
     ulimits:
       nofile:
         soft: 262144
@@ -32,7 +34,7 @@ services:
     ports:
       - 127.0.0.1:8000:8000
     env_file:
-      - plausible-conf.env
+      - docker/plausible/plausible-conf.env
 
 volumes:
   db-data:

@@ -4,6 +4,8 @@ import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.throttle.Throttled
@@ -41,6 +43,7 @@ class LegacyFeedController {
   private lateinit var legacyFeedService: LegacyFeedService
 
 
+  @Tracked
   @GetMapping(
     "/stream/bucket/{repositoryId}",
     "/bucket/{repositoryId}",
@@ -52,15 +55,18 @@ class LegacyFeedController {
     return legacyFeedService.getRepository(repositoryId)
   }
 
+  @Tracked
   @GetMapping(
     "/stream/feed/{feedId}",
     "/feed/{feedId}",
     "/feed:{feedId}",
   )
   fun legacyEntities(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
-    return serializeFeed(legacyFeedService.getFeed(feedId), "atom")
+    val corrId = newCorrId()
+    return serializeFeed(legacyFeedService.getFeed(corrId, feedId), "atom")
   }
 
+  @Tracked
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
@@ -87,11 +93,12 @@ class LegacyFeedController {
         dateXPath,
         prerender,
         filter,
-        request.requestURI
+        toFullUrlString(request)
       ), responseFormat
     )
   }
 
+  @Tracked
   @Throttled
   @Timed
   @GetMapping(
@@ -105,7 +112,7 @@ class LegacyFeedController {
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(legacyFeedService.transformFeed(corrId, feedUrl, filter, request.requestURI), responseFormat)
+    return serializeFeed(legacyFeedService.transformFeed(corrId, feedUrl, filter, toFullUrlString(request)), responseFormat)
   }
 
   private fun serializeFeed(feed: RichFeed, responseType: String?): ResponseEntity<String> {
@@ -121,6 +128,5 @@ class LegacyFeedController {
   fun settings(): ResponseEntity<String> {
     return ResponseEntity.status(HttpStatus.GONE).build()
   }
-
 
 }

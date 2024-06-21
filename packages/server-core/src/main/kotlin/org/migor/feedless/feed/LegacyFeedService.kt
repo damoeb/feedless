@@ -11,6 +11,8 @@ import org.migor.feedless.generated.types.ScrapeDebugOptions
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.plan.FeatureName
+import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.toRichArticle
 import org.migor.feedless.service.ScrapeService
@@ -24,7 +26,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
@@ -61,14 +62,118 @@ class LegacyFeedService {
   private lateinit var userDAO: UserDAO
 
   @Autowired
-  private lateinit var documentDAO: DocumentDAO
+  private lateinit var featureService: FeatureService
 
   @Autowired
-  private lateinit var environment: Environment
+  private lateinit var documentDAO: DocumentDAO
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
-  private fun eolFeed(url: String?): RichFeed {
+  fun getFeed(corrId: String, feedId: String): RichFeed {
+    return if (legacySupport()) {
+      TODO()
+    } else {
+      eolFeed()
+    }
+  }
+
+  fun webToFeed(
+    corrId: String,
+    url: String,
+    linkXPath: String,
+    extendContext: String,
+    contextXPath: String,
+    dateXPath: String?,
+    prerender: Boolean,
+    filter: String?,
+    requestURI: String
+  ): RichFeed {
+    return if (legacySupport()) {
+      val scrapeRequest = ScrapeRequest.newBuilder()
+        .corrId(corrId)
+        .debug(
+          ScrapeDebugOptions.newBuilder()
+            .html(true)
+            .build()
+        )
+        .page(
+          ScrapePage.newBuilder()
+            .url(url)
+            .prerender(
+              if (prerender) {
+                ScrapePrerender.newBuilder().build()
+              } else {
+                null
+              }
+            )
+            .build()
+        )
+        .emit(emptyList())
+        .build()
+      val scrapeResponse = scrapeService.scrape(corrId, scrapeRequest).block()!!
+
+      val selectors = GenericFeedSelectors(
+        linkXPath = linkXPath,
+        extendContext = when (extendContext) {
+          "p" -> ExtendContext.PREVIOUS
+          "n" -> ExtendContext.NEXT
+          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+          else -> ExtendContext.NONE
+        },
+        contextXPath = contextXPath,
+        dateXPath = dateXPath,
+      )
+
+      appendNotifications(
+        corrId, webToFeedTransformer.getFeedBySelectors(
+          corrId,
+          selectors,
+          HtmlUtil.parseHtml(scrapeResponse.debug.html, url),
+          URL(url)
+        ), requestURI
+      )
+    } else {
+      eolFeed(url)
+    }
+  }
+
+  fun transformFeed(corrId: String, feedUrl: String, filter: String?, requestURI: String): RichFeed {
+    return if (legacySupport()) {
+      appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, feedUrl), requestURI)
+    } else {
+      eolFeed(feedUrl)
+    }
+  }
+
+  fun getRepository(repositoryId: String): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/atom")
+    return ResponseEntity(headers, HttpStatus.FOUND)
+  }
+
+  // --
+
+  private fun appendNotifications(corrId: String, feed: RichFeed, requestURI: String): RichFeed {
+    val root = userDAO.findFirstByRootIsTrue()
+    repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
+      val pageRequest = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
+      val documents = documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(
+        repo.id,
+        ReleaseStatus.released,
+        Date(),
+        pageRequest
+      )
+      feed.items =
+        documents.map { it.toRichArticle(propertyService, EntityVisibility.isPublic, requestURI) }.plus(feed.items)
+    } ?: log.warn("[$corrId] Repo for legacy notification not found")
+    return feed
+  }
+
+  private fun legacySupport(): Boolean {
+    return !featureService.isDisabled(FeatureName.legacyApiBool)
+  }
+
+  private fun eolFeed(url: String? = null): RichFeed {
     val feed = createEolFeed()
     feed.items = listOf(createEolArticle(url))
     return feed
@@ -115,93 +220,5 @@ Markus
     article.url = preregistrationLink
     article.publishedAt = Date()
     return article
-  }
-
-  fun getFeed(feedId: String): RichFeed {
-    TODO("Not yet implemented")
-  }
-
-  fun webToFeed(
-    corrId: String,
-    url: String,
-    linkXPath: String,
-    extendContext: String,
-    contextXPath: String,
-    dateXPath: String?,
-    prerender: Boolean,
-    filter: String?,
-    requestURI: String
-  ): RichFeed {
-    return if (legacySupport()) {
-      val scrapeRequest = ScrapeRequest.newBuilder()
-        .corrId(corrId)
-        .debug(ScrapeDebugOptions.newBuilder()
-          .html(true)
-          .build())
-        .page(
-          ScrapePage.newBuilder()
-            .url(url)
-            .prerender(
-              if (prerender) {
-                ScrapePrerender.newBuilder().build()
-              } else {
-                null
-              }
-            )
-            .build()
-        )
-        .emit(emptyList())
-        .build()
-      val scrapeResponse = scrapeService.scrape(corrId, scrapeRequest).block()!!
-
-      val selectors = GenericFeedSelectors(
-        linkXPath = linkXPath,
-        extendContext = when(extendContext) {
-          "p" -> ExtendContext.PREVIOUS
-          "n" -> ExtendContext.NEXT
-          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-          else -> ExtendContext.NONE
-        },
-        contextXPath = contextXPath,
-        dateXPath = dateXPath,
-      )
-
-      appendNotifications(corrId, webToFeedTransformer.getFeedBySelectors(
-        corrId,
-        selectors,
-        HtmlUtil.parseHtml(scrapeResponse.debug.html, url),
-        URL(url)
-      ), requestURI)
-    } else {
-      eolFeed(url)
-    }
-  }
-
-  fun transformFeed(corrId: String, feedUrl: String, filter: String?, requestURI: String): RichFeed {
-    return if (legacySupport()) {
-      appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, feedUrl), requestURI)
-    } else {
-      eolFeed(feedUrl)
-    }
-  }
-
-  private fun appendNotifications(corrId: String, feed: RichFeed, requestURI: String): RichFeed {
-    val root = userDAO.findFirstByRootIsTrue()
-    repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
-      val pageRequest = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
-      val documents = documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repo.id, ReleaseStatus.released, Date(), pageRequest)
-      feed.items = documents.map { it.toRichArticle(propertyService, EntityVisibility.isPublic, requestURI) }.plus(feed.items)
-    } ?: log.warn("[$corrId] Repo for legacy notification not found")
-    return feed
-  }
-
-  private fun legacySupport(): Boolean {
-    return environment.acceptsProfiles(Profiles.of(AppProfiles.legacyFeeds))
-  }
-
-  fun getRepository(repositoryId: String): ResponseEntity<String> {
-      val headers = HttpHeaders()
-      headers.add("Location", "/f/$repositoryId/atom")
-      return ResponseEntity(headers, HttpStatus.FOUND)
   }
 }

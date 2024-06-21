@@ -1,8 +1,8 @@
 package org.migor.feedless.analytics
 
 import jakarta.annotation.PostConstruct
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import jakarta.servlet.http.HttpServletRequest
+import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
@@ -12,6 +12,7 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.HttpResponseStatus
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -21,6 +22,10 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 data class PlausibleEvent(val name: String, val url: String, val domain: String)
+
+fun toFullUrlString(request: HttpServletRequest): String {
+  return request.requestURL.toString() + "?" + request.queryString
+}
 
 @Aspect
 @Service
@@ -59,21 +64,23 @@ class AnalyticsService {
   fun track(joinPoint: JoinPoint) {
     try {
       val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
-      request.getHeader(HttpHeaders.USER_AGENT)
-      request.getHeader(HttpHeaders.CONTENT_TYPE)
-      request.requestURI
 
       // https://plausible.io/docs/events-api
-      val event = PlausibleEvent(name = "pageview", url = request.requestURI, domain = plausibleSite)
+      val event = PlausibleEvent(name = "pageview", url = toFullUrlString(request), domain = plausibleSite)
       val expectedStatusCode = 202
+
+      val getHeader = {
+        header: String -> StringUtils.trimToEmpty(request.getHeader(header))
+      }
 
       // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
       val forwardedForHeader = "X-Forwarded-For"
       httpClient.preparePost("$plausibleUrl/api/event")
-        .addHeader(HttpHeaders.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
-        .addHeader(HttpHeaders.CONTENT_TYPE, request.getHeader(HttpHeaders.CONTENT_TYPE))
-        .addHeader(forwardedForHeader, request.getHeader(forwardedForHeader))
-        .setBody(Json.encodeToString(event))
+        .addHeader(HttpHeaders.USER_AGENT, getHeader(HttpHeaders.USER_AGENT))
+        .addHeader(HttpHeaders.CONTENT_TYPE, getHeader(HttpHeaders.CONTENT_TYPE))
+        .addHeader(HttpHeaders.REFERER, getHeader(HttpHeaders.REFERER))
+        .addHeader(forwardedForHeader, getHeader(forwardedForHeader))
+        .setBody(JsonUtil.gson.toJson(event))
         .execute(CompletionHandlerBase(expectedStatusCode))
 
     } catch (e: Exception) {

@@ -37,8 +37,8 @@ class FeatureService {
   @Autowired
   private lateinit var featureValueDAO: FeatureValueDAO
 
-  fun isDisabled(featureName: FeatureName, featureGroupIdOtional: UUID?): Boolean {
-    val featureGroupId = featureGroupIdOtional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
+  fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
+    val featureGroupId = featureGroupIdOptional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
 
     return featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
       run {

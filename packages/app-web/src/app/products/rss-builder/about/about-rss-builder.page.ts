@@ -43,6 +43,7 @@ export class AboutRssBuilderPage implements OnInit {
 
   constructor(
     private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
     private readonly licenseService: LicenseService,
     private readonly appConfigService: AppConfigService,
@@ -69,6 +70,10 @@ export class AboutRssBuilderPage implements OnInit {
 
   async ngOnInit() {
     const products = await this.appConfigService.getProductConfigs();
+    const source = this.activatedRoute.snapshot.queryParams['source'];
+    if (source) {
+      await this.handleQuery(source);
+    }
     this.product = products.find((app) => app.id === 'rss-proxy');
     this.changeRef.detectChanges();
     this.licenseService.licenseChange.subscribe((license) => {

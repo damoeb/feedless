@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Controller
@@ -47,8 +49,14 @@ class DocumentController {
       ).increment()
       log.debug("GET document id=$documentId")
 
+      val url = if (request.getParameterValues("source").isEmpty()) {
+        it.url
+      } else {
+        "${it.url}?source=${URLEncoder.encode(request.getParameter("source"), StandardCharsets.UTF_8)}"
+      }
+
       val headers = HttpHeaders()
-      headers.add(HttpHeaders.LOCATION, it.url)
+      headers.add(HttpHeaders.LOCATION, url)
       ResponseEntity<String>(headers, HttpStatus.FOUND)
     } ?: ResponseEntity.notFound().build()
   }
