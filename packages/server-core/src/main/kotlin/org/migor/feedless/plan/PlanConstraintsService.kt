@@ -2,8 +2,10 @@ package org.migor.feedless.plan
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.subscription.PlanDAO
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
@@ -17,10 +19,13 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
+
 @Service
 @Profile(AppProfiles.database)
 class PlanConstraintsService {
 
+  @Autowired
+  private lateinit var planDAO: PlanDAO
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
 
   @Autowired
@@ -41,9 +46,9 @@ class PlanConstraintsService {
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
-  fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID): Int? {
-    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId) ?: 0).coerceAtLeast(2).toInt()
-    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId)?.toInt()
+  fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
+    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
+    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
     return customMaxItems?.let {
       maxItems?.let {
         customMaxItems.coerceAtLeast(minItems)
@@ -52,11 +57,15 @@ class PlanConstraintsService {
     } ?: maxItems
   }
 
-  fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID): Date {
-    val minRefreshRateInMinutes = (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId) ?: 0).coerceAtLeast(1)
+  private fun resolveProduct(product: ProductCategory?): ProductCategory {
+    return product ?: sessionService.activeProductFromRequest()!!
+  }
+
+  fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID, product: ProductCategory): Date {
+    val minRefreshRateInMinutes = (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
     val minNextDate = toDate(
       lastDate.toInstant().atZone(ZoneId.systemDefault())
-        .toLocalDateTime().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES)
+        .toLocalDateTime().plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
     )
 
     return if (nextDate < minNextDate) {
@@ -66,8 +75,8 @@ class PlanConstraintsService {
     }
   }
 
-  fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID): Int? {
-    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId)?.toInt()
+  fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: ProductCategory): Int? {
+    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
 
@@ -114,22 +123,23 @@ class PlanConstraintsService {
 
   private fun userIdFromRequest() = sessionService.userId()!!
 
-  private fun getFeatureInt(featureName: FeatureName, userId: UUID): Long? = getFeature(featureName, userId)?.valueInt
+  private fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? = getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
-  private fun getFeatureBool(featureName: FeatureName, userId: UUID): Boolean? =
-    getFeature(featureName, userId)?.valueBoolean
+  private fun getFeatureBool(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Boolean? =
+    getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
 
-  private fun getFeature(featureName: FeatureName, userId: UUID): FeatureValueEntity? {
+  private fun getFeature(featureName: FeatureName, userId: UUID, product: ProductCategory): FeatureValueEntity? {
     val user = userDAO.findById(userId).orElseThrow()
     return try {
       if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
         featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id, featureName.name)
       } else {
-        user.subscriptionId?.let {
-          featureValueDAO.resolveByFeatureGroupIdAndName(it, featureName.name)
-        }
+        planDAO.findActiveByUserAndProduct(userId, product)?.let {
+          featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
+        } ?: throw IllegalArgumentException("user has no subscription")
       }
     } catch (e: Exception) {
+      log.error("[corrId] ${e.message}")
       null
     }
   }
@@ -146,8 +156,8 @@ class PlanConstraintsService {
     return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)!! <= activeCount
   }
 
-  fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID) {
-    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId)
+  fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID, product: ProductCategory) {
+    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }

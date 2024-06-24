@@ -133,6 +133,7 @@ class RepositoryHarvester internal constructor() {
     val scheduledNextAt = repositoryService.calculateScheduledNextAt(
       repository.sourcesSyncExpression,
       repository.ownerId,
+      repository.product,
       LocalDateTime.now()
     )
     log.info("[$corrId] Next harvest scheduled for $scheduledNextAt")

@@ -8,5 +8,8 @@ query serverSettings($data: ServerSettingsContextInput!) {
     features {
       ...FeatureFragment
     }
+    license {
+      ...LocalizedLicenseFragment
+    }
   }
 }

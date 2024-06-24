@@ -3,7 +3,7 @@
   <ng-content></ng-content>
 
   <div
-    *ngIf="featureGroups"
+    *ngIf="featureGroups && !imploded"
     class="features"
   >
     <ng-container *ngFor="let featureGroup of featureGroups">

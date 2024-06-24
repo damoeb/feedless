@@ -9,4 +9,5 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.saas)
 interface LicenseDAO : JpaRepository<LicenseEntity, UUID> {
+  fun findAllByOrderId(orderId: UUID): List<LicenseEntity>
 }

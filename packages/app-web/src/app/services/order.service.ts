@@ -44,9 +44,11 @@ export class OrderService {
       .mutate<GqlUpsertOrderMutation, GqlUpsertOrderMutationVariables>({
         mutation: UpsertOrder,
         variables: {
-          create,
-          update,
-          where,
+          data: {
+            create,
+            update,
+            where
+          },
         },
       })
       .then((response) => response.data.upsertOrder);

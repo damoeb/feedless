@@ -40,7 +40,7 @@ open class OrderEntity : EntityWithUUID() {
   open var isPaid: Boolean = false
 
   @Column(name = "is_rejected", nullable = false)
-  open var isRejected: Boolean = false
+  open var isOfferRejected: Boolean = false
 
   @Column(name = "target_group_individual", nullable = false)
   open var targetGroupIndividual: Boolean = false

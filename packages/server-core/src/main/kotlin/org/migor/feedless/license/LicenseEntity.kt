@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.generated.types.License
 import org.migor.feedless.plan.OrderEntity
 import java.util.*
 
@@ -36,4 +37,10 @@ open class LicenseEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_license__to__order")
   )
   open var order: OrderEntity? = null
+}
+
+fun LicenseEntity.toDTO(): License {
+  return License.newBuilder()
+
+    .build()
 }

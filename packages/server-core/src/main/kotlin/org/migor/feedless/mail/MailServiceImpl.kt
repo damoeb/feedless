@@ -48,41 +48,41 @@ class MailServiceImpl : MailService {
   }
 
   override fun sendWelcomeWaitListMail(corrId: String, user: UserEntity) {
-    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.product.name)))
+//    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
   override fun sendWelcomePaidMail(corrId: String, user: UserEntity) {
-    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.product.name)))
+//    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
   override fun sendWelcomeFreeMail(corrId: String, user: UserEntity) {
-    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.product.name)))
+//    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
   override fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
-    if (StringUtils.isBlank(user.email)) {
-      throw IllegalArgumentException("Email is not defined")
-    }
-    log.info("[$corrId] send auth mail ${user.email}")
-
-    val from = getNoReplyAddress(user.product)
-    val domain = productService.getDomain(user.product)
-    val subject = "$domain: Access Code"
-
-    val mailData = MailData()
-    mailData.subject = subject
-    val sdf = SimpleDateFormat("HH:mm")
-
-    val params = AuthCodeMailParams(
-      domain = domain,
-      codeValidUntil = sdf.format(otp.validUntil),
-      code = otp.password,
-      description = description,
-      corrId = corrId,
-    )
-    mailData.body = templateService.renderTemplate(corrId, AuthCodeMailTemplate(params))
-
-    send(corrId, from, to = arrayOf(user.email!!), mailData)
+//    if (StringUtils.isBlank(user.email)) {
+//      throw IllegalArgumentException("Email is not defined")
+//    }
+//    log.info("[$corrId] send auth mail ${user.email}")
+//
+//    val from = getNoReplyAddress(user.subscription!!.product!!.partOf!!)
+//    val domain = productService.getDomain(user.subscription!!.product!!.partOf!!)
+//    val subject = "$domain: Access Code"
+//
+//    val mailData = MailData()
+//    mailData.subject = subject
+//    val sdf = SimpleDateFormat("HH:mm")
+//
+//    val params = AuthCodeMailParams(
+//      domain = domain,
+//      codeValidUntil = sdf.format(otp.validUntil),
+//      code = otp.password,
+//      description = description,
+//      corrId = corrId,
+//    )
+//    mailData.body = templateService.renderTemplate(corrId, AuthCodeMailTemplate(params))
+//
+//    send(corrId, from, to = arrayOf(user.email), mailData)
   }
 
   override fun getNoReplyAddress(product: ProductCategory): String {
@@ -121,19 +121,17 @@ class MailServiceImpl : MailService {
     javaMailSender.send(mimeMessage)
   }
 
-  private fun <T> sendWelcomeAnyMail(corrId: String, user: UserEntity, template: FtlTemplate<T>) {
-    user.email?.let { email ->
-      log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")
-      val product = user.product
-
-      val mailData = MailData()
-      mailData.subject = "Welcome to ${productService.getDomain(product)}"
-      val params = WelcomeMailParams(
-        productName = product.name
-      )
-      mailData.body = templateService.renderTemplate(corrId, template)
-      send(corrId, getNoReplyAddress(product), arrayOf(email), mailData)
-    }
-  }
+//  private fun <T> sendWelcomeAnyMail(corrId: String, user: UserEntity, template: FtlTemplate<T>) {
+//    log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")
+//    val product = user.subscription!!.product!!.partOf!!
+//
+//    val mailData = MailData()
+//    mailData.subject = "Welcome to ${productService.getDomain(product)}"
+////      val params = WelcomeMailParams(
+////        productName = product.name
+////      )
+//    mailData.body = templateService.renderTemplate(corrId, template)
+//    send(corrId, getNoReplyAddress(product), arrayOf(user.email), mailData)
+//  }
 
 }

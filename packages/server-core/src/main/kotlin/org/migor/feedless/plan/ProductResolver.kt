@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.CloudSubscription
+import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.PricedProduct
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductsWhereInput
@@ -51,12 +51,12 @@ class ProductResolver {
       productService.findAll(data).map { it.toDTO() }
     }
 
-  @DgsData(parentType = DgsConstants.CLOUDSUBSCRIPTION.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
-    val cloudsubscription: CloudSubscription = dfe.getSource()
-    productDAO.findById(UUID.fromString(cloudsubscription.productId)).orElseThrow().toDTO()
-  }
+//  @DgsData(parentType = DgsConstants.CLOUDSUBSCRIPTION.TYPE_NAME)
+//  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+//  suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
+//    val cloudsubscription: Plan = dfe.getSource()
+//    productDAO.findById(UUID.fromString(cloudsubscription.productId)).orElseThrow().toDTO()
+//  }
 
   @DgsData(parentType = DgsConstants.PRODUCT.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)

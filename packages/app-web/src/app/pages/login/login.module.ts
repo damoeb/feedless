@@ -8,7 +8,6 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { EmailLoginModule } from '../../components/email-login/email-login.module';
-import { NewsletterModule } from '../../components/newsletter/newsletter.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { NewsletterModule } from '../../components/newsletter/newsletter.module'
     IonicModule,
     LoginPageRoutingModule,
     EmailLoginModule,
-    NewsletterModule,
   ],
   declarations: [LoginPage],
 })

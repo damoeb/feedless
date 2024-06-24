@@ -148,7 +148,8 @@ export class AppConfigService {
     },
   ];
 
-  private activeProductConfig = new ReplaySubject<ProductConfig>();
+  private activeProductConfigSubject = new ReplaySubject<ProductConfig>();
+  public activeProductConfig: ProductConfig;
 
   constructor(
     private readonly router: Router,
@@ -163,11 +164,12 @@ export class AppConfigService {
     environment.offlineSupport = config.offlineSupport === true;
     this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);
-    this.activeProductConfig.next(config);
+    this.activeProductConfig = config;
+    this.activeProductConfigSubject.next(config);
   }
 
   getActiveProductConfigChange() {
-    return this.activeProductConfig.asObservable();
+    return this.activeProductConfigSubject.asObservable();
   }
 
   getProductConfigs(): Promise<ProductConfig[]> {

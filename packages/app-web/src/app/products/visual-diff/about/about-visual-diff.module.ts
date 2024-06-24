@@ -7,7 +7,6 @@ import { AboutVisualDiffPage } from './about-visual-diff.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import { AboutVisualDiffPageRoutingModule } from './about-visual-diff-routing.module';
-import { NewsletterModule } from '../../../components/newsletter/newsletter.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 
 @NgModule({
@@ -18,7 +17,6 @@ import { ProductHeaderModule } from '../../../components/product-header/product-
     AboutVisualDiffPageRoutingModule,
     SearchbarModule,
     ProductHeadlineModule,
-    NewsletterModule,
     ProductHeaderModule,
   ],
   declarations: [AboutVisualDiffPage],

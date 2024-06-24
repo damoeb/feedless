@@ -87,7 +87,7 @@ class RepositoryService {
   private lateinit var userService: UserService
 
   @Autowired
-  private lateinit var planConstraints: PlanConstraintsService
+  private lateinit var planConstraintsService: PlanConstraintsService
 
   @Autowired
   private lateinit var documentService: DocumentService
@@ -104,8 +104,8 @@ class RepositoryService {
 
     val ownerId = getActualUserOrDefaultUser(corrId).id
     val totalCount = repositoryDAO.countByOwnerId(ownerId)
-    planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
-    if (planConstraints.violatesScrapeSourceMaxActiveCount(ownerId)) {
+    planConstraintsService.auditScrapeSourceMaxCount(totalCount, ownerId)
+    if (planConstraintsService.violatesScrapeSourceMaxActiveCount(ownerId)) {
       log.info("[$corrId] violates maxActiveCount")
       throw IllegalArgumentException("violates maxActiveCount")
 //      log.info("[$corrId] violates maxActiveCount, archiving oldest")
@@ -125,34 +125,39 @@ class RepositoryService {
       ownerId: UUID,
       subInput: RepositoryCreateInput
   ): RepositoryEntity {
-    val sub = RepositoryEntity()
+    val repo = RepositoryEntity()
 
-    sub.title = subInput.sinkOptions.title
-    sub.description = subInput.sinkOptions.description
-    sub.visibility = planConstraints.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
+    repo.title = subInput.sinkOptions.title
+    repo.description = subInput.sinkOptions.description
+    repo.visibility = planConstraintsService.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
+    val product = sessionService.activeProductFromRequest()!!
 
-    planConstraints.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId)
-    sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
-    sub.ownerId = ownerId
+    planConstraintsService.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId, product)
+    repo.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
+    repo.ownerId = ownerId
     subInput.sinkOptions.plugins?.let {
       if (it.size > 5) {
         throw BadRequestException("Too many plugins ${it.size}, limit 5")
       }
-      sub.plugins = it.map { plugin -> plugin.fromDto() }
+      repo.plugins = it.map { plugin -> plugin.fromDto() }
     }
-    sub.sourcesSyncExpression = subInput.sourceOptions?.let {
-      planConstraints.auditCronExpression(subInput.sourceOptions.refreshCron)
+    repo.sourcesSyncExpression = subInput.sourceOptions?.let {
+      planConstraintsService.auditCronExpression(subInput.sourceOptions.refreshCron)
     } ?: ""
-    sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId)
-    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention?.maxAgeDays, ownerId)
-    sub.product = subInput.product.fromDto()
+    repo.retentionMaxItems = planConstraintsService.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId, product)
+    repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
+      subInput.sinkOptions.retention?.maxAgeDays,
+      ownerId,
+      product
+    )
+    repo.product = subInput.product.fromDto()
 
-    val saved = repositoryDAO.save(sub)
+    val saved = repositoryDAO.save(repo)
 
     subInput.additionalSinks?.let { sink ->
       val owner = userDAO.findById(ownerId).orElseThrow()
-      sub.mailForwards = sink.mapNotNull { it.email }
-        .map { createMailForwarder(corrId, it, sub, owner, sub.product) }
+      repo.mailForwards = sink.mapNotNull { it.email }
+        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
         .toMutableList()
     }
 
@@ -187,8 +192,8 @@ class RepositoryService {
     val entity = SourceEntity()
     val scrapeRequest = req.fromDto()
     log.info("[$corrId] create source ${scrapeRequest.page.url}")
-    planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
-    planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
+    planConstraintsService.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
+    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
     entity.tags = scrapeRequest.tags?.toTypedArray()
@@ -287,11 +292,12 @@ class RepositoryService {
     repositoryDAO.delete(sub)
   }
 
-  fun calculateScheduledNextAt(cron: String, ownerId: UUID, after: LocalDateTime): Date {
-    return planConstraints.coerceMinScheduledNextAt(
+  fun calculateScheduledNextAt(cron: String, ownerId: UUID, product: ProductCategory, after: LocalDateTime): Date {
+    return planConstraintsService.coerceMinScheduledNextAt(
       Date(),
       nextCronDate(cron, after),
-      ownerId
+      ownerId,
+      product
     )
   }
 
@@ -303,15 +309,17 @@ class RepositoryService {
     }
     data.title?.set?.let { repository.title = it }
     data.description?.set?.let { repository.description = it }
+    val product = sessionService.activeProductFromRequest()!!
     data.refreshCron?.let {
       it.set?.let {
-        repository.sourcesSyncExpression = planConstraints.auditCronExpression(it)
+        repository.sourcesSyncExpression = planConstraintsService.auditCronExpression(it)
         repository.triggerScheduledNextAt = calculateScheduledNextAt(it, repository.ownerId,
+          product,
           LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault())
         )
       }
     }
-    data.visibility?.set?.let { repository.visibility = planConstraints.coerceVisibility(corrId, it.fromDto()) }
+    data.visibility?.set?.let { repository.visibility = planConstraintsService.coerceVisibility(corrId, it.fromDto()) }
     data.plugins?.let { plugins ->
       val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
       if (newPlugins != repository.plugins) {
@@ -320,10 +328,11 @@ class RepositoryService {
     }
     data.nextUpdateAt?.let {
       val next = it.set?.let { Date(it) } ?: Date(0)
-      repository.triggerScheduledNextAt = planConstraints.coerceMinScheduledNextAt(
+      repository.triggerScheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(
         repository.lastUpdatedAt,
         next,
-        repository.ownerId
+        repository.ownerId,
+        product
       )
     }
     data.retention?.let {

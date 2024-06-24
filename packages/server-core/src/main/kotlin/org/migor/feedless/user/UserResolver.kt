@@ -11,7 +11,6 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.plan.fromDto
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,8 +44,6 @@ class UserResolver {
     userService.createUser(
       corrId,
       email = data.email,
-      productCategory = data.product.fromDto(),
-      planName = data.plan.fromDto()
     ).toDTO()
   }
 

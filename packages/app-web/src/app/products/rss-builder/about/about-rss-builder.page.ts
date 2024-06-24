@@ -1,24 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
 import '@justinribeiro/lite-youtube';
-import {
-  GqlLicense,
-  GqlLicenseData,
-  Maybe,
-} from '../../../../generated/graphql';
 import { AppConfig } from '../../../feedless-config';
 import { AppConfigService } from '../../../services/app-config.service';
+import { LocalizedLicense } from '../../../graphql/types';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -31,14 +20,7 @@ export class AboutRssBuilderPage implements OnInit {
   opmlPickerElement!: ElementRef<HTMLInputElement>;
 
   protected readonly dateFormat = dateFormat;
-  protected license: Pick<
-    GqlLicense,
-    'isValid' | 'isLocated' | 'trialUntil' | 'isTrial'
-  > & {
-    data?: Maybe<
-      Pick<GqlLicenseData, 'name' | 'email' | 'version' | 'createdAt' | 'scope'>
-    >;
-  };
+  protected license: LocalizedLicense;
   protected product: AppConfig;
 
   constructor(

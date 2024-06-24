@@ -6,12 +6,19 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.ApiParams
+import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 
 
 @Component
@@ -28,14 +35,14 @@ class JwtRequestFilter : Filter {
         val token = authService.interceptToken(request)
         SecurityContextHolder.getContext().authentication = token
       }
-//      val attributes = ServletRequestAttributes(request)
-//      val corrId = if (StringUtils.isBlank(response.getHeader(ApiParams.corrId))) {
-//        newCorrId()
-//      } else {
-//        response.getHeader(ApiParams.corrId)
-//      }
-//      attributes.setAttribute("corrId", corrId, RequestAttributes.SCOPE_REQUEST)
-//      RequestContextHolder.setRequestAttributes(attributes)
+      val attributes = ServletRequestAttributes(request)
+      val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()
+      attributes.setAttribute("corrId", corrId, RequestAttributes.SCOPE_REQUEST)
+
+      val product = StringUtils.trimToNull(request.getHeader(ApiParams.product)) ?: ProductCategory.feedless.name
+      attributes.setAttribute("product", product, RequestAttributes.SCOPE_REQUEST)
+
+      RequestContextHolder.setRequestAttributes(attributes)
     }
     chain.doFilter(request, response)
   }

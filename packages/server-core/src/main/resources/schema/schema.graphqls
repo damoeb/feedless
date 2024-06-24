@@ -121,7 +121,6 @@ type Mutation {
   deleteAnnotation(data: DeleteAnnotationInput!): Boolean!
 
   authUser(data: AuthUserInput!): Authentication!
-  createUser(data: CreateUserInput!): User!
   createUserSecret: UserSecret!
   deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
 
@@ -132,7 +131,7 @@ type Mutation {
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
-  updateLicense(data: UpdateLicenseInput!): License!
+  updateLicense(data: UpdateLicenseInput!): LocalizedLicense!
 
   createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
   updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
@@ -141,11 +140,13 @@ type Mutation {
   deleteFeatureValue(data: DeleteFeatureValueInput!): Boolean!
   updateFeatureValue(data: UpdateFeatureValueInput!): Boolean!
 
-  upsertOrder(
-    where: OrderWhereUniqueInput
-    create: OrderCreateInput
-    update: OrderUpdateInput
-  ): Order!
+  upsertOrder(data: UpsertOrderInput!): Order!
+}
+
+input UpsertOrderInput {
+  where: OrderWhereUniqueInput
+  create: OrderCreateInput
+  update: OrderUpdateInput
 }
 
 input OrderUpdateInput {
@@ -173,18 +174,28 @@ enum ProductTargetGroup {
 type Order {
   id: ID!
   createdAt: Long!
-  validTo: Long!
-  isOffer: Boolean!
-  isRejected: Boolean!
-  isPaid: Boolean!
-  paidAt: Long
-  productId: ID!
-  product: Product!
-  invoiceRecipientName: String!
-  invoiceRecipientEmail: String!
-  paymentMethod: PaymentMethod
   userId: ID!
   user: User!
+  productId: ID!
+  product: Product!
+
+  # offer
+  isOffer: Boolean!
+  offerValidTo: Long
+  isOfferRejected: Boolean!
+
+  # payment
+  price: Float!
+  paymentDueTo: Long
+  paymentMethod: PaymentMethod
+  isPaymentFailed: Boolean!
+  isPaid: Boolean!
+  paidAt: Long
+  invoiceRecipientName: String!
+  invoiceRecipientEmail: String!
+
+  licenses: [License!]
+#  invoices: [Invoice!]
 }
 
 enum PaymentMethod {
@@ -332,8 +343,7 @@ input WebDocumentUpdateInput {
 
 input CreateUserInput {
   email: String!
-  product: ProductCategory!
-  plan: PlanName!
+#  product: ProductCategory!
   newsletter: Boolean!
 }
 
@@ -348,6 +358,7 @@ enum ProductCategory {
 #  automatedBrowser
 #  feedAnanlytics
 #  communityThreads
+#  localLink like ngrok, traffic forwarding needed for browser life feed
   teamDraft
 #  feedReader
 #  blog
@@ -417,7 +428,7 @@ type Query {
   previewFeed(data: PreviewFeedInput!): RemoteNativeFeed!
 
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
-  license: License!
+#  license: License!
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
@@ -760,17 +771,18 @@ type ServerSettings {
   version: String!
   features: [Feature!]!
   profiles: [ProfileName!]!
+  license: LocalizedLicense!
 }
 
-type License {
+type LocalizedLicense {
   isValid: Boolean!
   isLocated: Boolean!
   isTrial: Boolean!
   trialUntil: Long
-  data: LicenseData
+  data: License
 }
 
-type LicenseData {
+type License {
   name: String!
   email: String!
   scope: ProductCategory!
@@ -836,11 +848,10 @@ type User {
   country: String
   purgeScheduledFor: Long
   secrets: [UserSecret!]!
-  subscription: CloudSubscription
-  subscriptionId: ID
+  plan(product: ProductCategory!): Plan
 }
 
-type CloudSubscription {
+type Plan {
   productId: ID!
   product: Product!
   startedAt: Long
@@ -926,18 +937,6 @@ enum NativeFeedStatus {
   not_found
   ok
   service_unavailable
-}
-
-enum PlanAvailability {
-  available
-  by_request
-  unavailable
-}
-
-enum PlanName {
-  basic
-  free
-  waitlist
 }
 
 enum PuppeteerWaitUntil {
@@ -1223,6 +1222,10 @@ input StringUpdateOperationsInput {
   set: String!
 }
 
+#input ProductCategoryUpdateOperationsInput {
+#  set: String!
+#}
+
 input SubmitAgentDataInput {
   corrId: ID!
   jobId: ID!
@@ -1234,11 +1237,11 @@ input UpdateCurrentUserInput {
   firstName: StringUpdateOperationsInput
   lastName: StringUpdateOperationsInput
   country: StringUpdateOperationsInput
-#  subscription: StringUpdateOperationsInput
   acceptedTermsAndServices: BoolUpdateOperationsInput
   purgeScheduledFor: NullableUpdateOperationsInput
   dateFormat: StringUpdateOperationsInput
   timeFormat: StringUpdateOperationsInput
+  plan: StringUpdateOperationsInput
 }
 
 input UserSecretCreateInput {

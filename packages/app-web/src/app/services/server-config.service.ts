@@ -11,9 +11,10 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-import { Feature } from '../graphql/types';
+import { Feature, LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
+import { AppConfigService } from './app-config.service';
 
 type FeedlessProductConfig = {
   hostname: string;
@@ -29,6 +30,7 @@ export type FeedlessAppConfig = {
 type ToastOptions = {
   header: string;
   message: string;
+  subHeader?: string | undefined;
   cssClass?: string;
   buttons?: AlertButton[];
 };
@@ -44,9 +46,11 @@ export class ServerConfigService {
   private profiles: GqlProfileName[];
   private buildFrom: number;
   private version: string;
+  private license: LocalizedLicense;
 
   constructor(
     private readonly httpClient: HttpClient,
+    private readonly appConfig: AppConfigService,
     private readonly alertCtrl: AlertController,
   ) {}
 
@@ -75,14 +79,12 @@ export class ServerConfigService {
         await this.showToast({
           header: 'Invalid Config',
           message,
-          cssClass: 'fatal-alert',
         });
       }
     } else {
       await this.showToast({
         header: 'Invalid Config',
         message: `Cannot map hostname ${location.hostname} to product`,
-        cssClass: 'fatal-alert',
       });
     }
     return product;
@@ -105,23 +107,25 @@ export class ServerConfigService {
       this.profiles = response.profiles;
       this.version = response.version;
       this.buildFrom = response.buildFrom;
+      this.license = response.license;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;
     } catch (e) {
       if (!environment.offlineSupport) {
+        // setTimeout(() => location.reload(), 5000);
         await this.showToast({
           header: 'Server is not reachable',
-          message: 'Either you are offline or the server is down.',
-          cssClass: 'fatal-alert',
-          buttons: [
-            {
-              text: 'Ok',
-              role: 'confirm',
-              handler: () => {
-                location.reload();
-              },
-            },
-          ],
+          subHeader: `Received error '${e.message}'`,
+          message: `The client tries to connect to the server at ${this.apiUrl}, as specified in the config.json`,
+          // buttons: [
+          //   {
+          //     text: 'Ok',
+          //     role: 'confirm',
+          //     handler: () => {
+          //       location.reload();
+          //     },
+          //   },
+          // ],
         });
         throw e;
       }
@@ -138,14 +142,15 @@ export class ServerConfigService {
   private async showToast({
     header,
     message,
-    cssClass,
+    subHeader,
     buttons,
   }: ToastOptions) {
     const alert = await this.alertCtrl.create({
       header,
       backdropDismiss: false,
       message,
-      cssClass,
+      subHeader,
+      cssClass: 'fatal-alert medium-alert',
       buttons,
     });
 
@@ -190,5 +195,13 @@ export class ServerConfigService {
 
   private getFeature(featureName: GqlFeatureName): Feature {
     return this.features.find((ft) => ft.name === featureName);
+  }
+
+  getLicense(): LocalizedLicense {
+    return this.license;
+  }
+
+  setLicense(license: LocalizedLicense) {
+    this.license = license;
   }
 }

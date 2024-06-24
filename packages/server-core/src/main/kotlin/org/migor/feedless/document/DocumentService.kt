@@ -74,7 +74,7 @@ class DocumentService {
 
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
     val retentionSize =
-      planConstraintsService.coerceRetentionMaxItems(repository.retentionMaxItems, repository.ownerId)
+      planConstraintsService.coerceRetentionMaxItems(repository.retentionMaxItems, repository.ownerId, repository.product)
     if (retentionSize != null && retentionSize > 0) {
       log.info("[$corrId] applying retention with maxItems=$retentionSize")
       documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
@@ -82,8 +82,7 @@ class DocumentService {
       log.info("[$corrId] no retention with maxItems given")
     }
 
-
-    planConstraintsService.coerceRetentionMaxAgeDays(repository.retentionMaxAgeDays, repository.ownerId)
+    planConstraintsService.coerceRetentionMaxAgeDays(repository.retentionMaxAgeDays, repository.ownerId, repository.product)
       ?.let { maxAgeDays ->
         log.info("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
         val maxDate = Date.from(

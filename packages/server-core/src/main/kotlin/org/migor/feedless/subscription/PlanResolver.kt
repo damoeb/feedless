@@ -3,10 +3,13 @@ package org.migor.feedless.subscription
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
+import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.CloudSubscription
+import org.migor.feedless.generated.types.Plan
+import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.User
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,26 +20,24 @@ import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.api}")
-class CloudSubscriptionResolver {
+class PlanResolver {
 
-  private val log = LoggerFactory.getLogger(CloudSubscriptionResolver::class.simpleName)
+  private val log = LoggerFactory.getLogger(PlanResolver::class.simpleName)
 
   @Autowired
-  private lateinit var cloudSubscriptionDAO: CloudSubscriptionDAO
+  private lateinit var planDAO: PlanDAO
 
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun subscription(dfe: DgsDataFetchingEnvironment): CloudSubscription? = coroutineScope {
+  suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
     val user: User = dfe.getSource()
-    user.subscriptionId?.let {
-      cloudSubscriptionDAO.findById(UUID.fromString(user.subscriptionId)).orElseThrow().toDto()
-    }
+    planDAO.findActiveByUserAndProduct(UUID.fromString(user.id), product.fromDto())?.toDto()
   }
 }
 
-private fun CloudSubscriptionEntity.toDto(): CloudSubscription {
-  return CloudSubscription.newBuilder()
+private fun PlanEntity.toDto(): Plan {
+  return Plan.newBuilder()
     .productId(productId.toString())
     .startedAt(startedAt?.time)
     .terminatedAt(terminatedAt?.time)

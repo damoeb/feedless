@@ -20,16 +20,21 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
-import { Session, UserSecret } from '../graphql/types';
-import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
+import { Product, Session, User, UserSecret } from '../graphql/types';
+import { BehaviorSubject, filter, firstValueFrom, Observable, ReplaySubject } from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
 import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
 import { ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { ServerConfigService } from './server-config.service';
+import { AppConfigService } from './app-config.service';
 
 export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
 export const TimeFormat = 'HH:mm, dd.MM.YYYY';
+
+export function needsPlanSubscription(user: User, serverConfig: ServerConfigService) {
+  return serverConfig.isSaas() && !user.plan;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +48,8 @@ export class SessionService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
+    private readonly serverConfigService: ServerConfigService,
+    private readonly appConfigService: AppConfigService,
     private readonly modalCtrl: ModalController,
   ) {
     this.sessionPipe = new BehaviorSubject(null);
@@ -67,6 +74,9 @@ export class SessionService {
     await this.apollo
       .query<GqlSessionQuery, GqlSessionQueryVariables>({
         query: SessionQuery,
+        variables: {
+          product: (await firstValueFrom(this.appConfigService.getActiveProductConfigChange())).product
+        },
         fetchPolicy,
       })
       .then((response) => response.data.session)
@@ -82,8 +92,9 @@ export class SessionService {
 
   async finalizeProfile() {
     const hasCompletedSignup = this.session.user.hasCompletedSignup;
-    console.log('hasCompletedSignup', hasCompletedSignup)
-    if (this.modalIsOpen || hasCompletedSignup) {
+    const needsPlan = needsPlanSubscription(this.session.user, this.serverConfigService)
+    console.log('hasCompletedSignup', hasCompletedSignup, 'needsPlan', needsPlan);
+    if (this.modalIsOpen || (hasCompletedSignup && !needsPlan)) {
       return;
     }
     try {
@@ -100,9 +111,9 @@ export class SessionService {
     }
   }
 
-  async finalizeSignUp(email: string): Promise<void> {
+  async finalizeSignUp(email: string, product: Product = null): Promise<void> {
     const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
-    await this.updateCurrentUser({
+    const data: GqlUpdateCurrentUserMutationVariables['data'] = {
       email: {
         set: email,
       },
@@ -114,8 +125,15 @@ export class SessionService {
       },
       dateFormat: {
         set: dateFormat,
-      },
-    })
+      }
+    };
+    if (product) {
+      data['subscription'] = {
+        set: product.id
+      };
+    }
+
+    await this.updateCurrentUser(data)
       .then(() => this.fetchSession('network-only'));
   }
 

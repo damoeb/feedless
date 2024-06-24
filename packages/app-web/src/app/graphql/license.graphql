@@ -1,25 +1,22 @@
 fragment LicenseFragment on License {
+  name
+  email
+  version
+  createdAt
+  scope
+}
+fragment LocalizedLicenseFragment on LocalizedLicense {
   isValid
   isLocated
   trialUntil
   isTrial
   data {
-    name
-    email
-    version
-    createdAt
-    scope
-  }
-}
-
-query license {
-  license {
     ...LicenseFragment
   }
 }
 
 mutation updateLicense($data: UpdateLicenseInput!) {
   updateLicense(data: $data) {
-    ...LicenseFragment
+    ...LocalizedLicenseFragment
   }
 }

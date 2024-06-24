@@ -1,4 +1,4 @@
-fragment CloudSubscriptionFragment on CloudSubscription {
+fragment PlanFragment on Plan {
   productId
   startedAt
   terminatedAt
@@ -16,11 +16,11 @@ fragment UserFragment on User {
   secrets {
     ...SecretFragment
   }
-  subscription {
-    ...CloudSubscriptionFragment
+  plan(product: $product) {
+    ...PlanFragment
   }
 }
-query session {
+query session($product: ProductCategory!) {
   session {
     isLoggedIn
     user {
@@ -31,12 +31,6 @@ query session {
 
 mutation updateCurrentUser($data: UpdateCurrentUserInput!) {
   updateCurrentUser(data: $data)
-}
-
-mutation createUser($data: CreateUserInput!) {
-  createUser(data: $data) {
-    id
-  }
 }
 
 mutation logout {

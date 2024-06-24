@@ -177,7 +177,6 @@ class Seeder {
     val user = UserEntity()
     user.email = email
     user.root = isRoot
-    user.product = ProductCategory.feedless
     user.anonymous = isAnonymous
     user.hasAcceptedTerms = isRoot || isAnonymous
 //    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id

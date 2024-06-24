@@ -1,0 +1,93 @@
+<div *ngIf="!hideServiceFlavor">
+  <ion-segment
+    mode="ios"
+    [formControl]="serviceFlavorFc"
+    style="max-width: 400px; height: 50px"
+  >
+    <ion-segment-button [value]="serviceFlavorSelf">
+      <ion-label>Self-Hosting</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="serviceFlavorCloud">
+      <ion-label>Cloud</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</div>
+
+<div class="ion-padding-top">
+  <div *ngIf="serviceFlavorFc.value === serviceFlavorSelf">
+    <ion-segment
+      mode="ios"
+      [formControl]="targetGroupFc"
+      style="max-width: 800px; height: 50px"
+    >
+      <ion-segment-button [value]="targetGroupOrganization">
+        <ion-label
+        ><span class="ion-hide-md-down">For</span>
+          Organizations</ion-label
+        >
+      </ion-segment-button>
+      <ion-segment-button [value]="targetGroupIndividual">
+        <ion-label
+        ><span class="ion-hide-md-down">For</span>
+          Individuals</ion-label
+        >
+      </ion-segment-button>
+      <ion-segment-button [value]="targetGroupOther">
+        <ion-label>Supported Categories</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <div class="ion-margin-top">
+    <ng-container *ngIf="targetGroupFc.value === targetGroupIndividual">
+      <p>
+        Hobbyists, professionals, or casual users who seek to enhance
+        their personal experience or skills.
+      </p>
+    </ng-container>
+    <ng-container *ngIf="targetGroupFc.value === targetGroupOrganization">
+      <p>
+        Commercial enterprises, Non-Profit Organizations, Educational
+        Institutions and Governmental Bodies who use the product as part
+        of their activities.
+      </p>
+    </ng-container>
+
+    <ng-container *ngIf="targetGroupFc.value === targetGroupOther">
+      <p>
+        Students or teachers who use the product as part of their studies
+        and Open Source contributors who integrate the product into their
+        project it's free.
+      </p>
+    </ng-container>
+
+    <div class="offers">
+      <app-plan-column
+        *ngFor="let product of filteredProducts()"
+        [featureGroups]="product.stringifiedFeatureGroups"
+      >
+        <h3>{{ product.name }}</h3>
+        <p>{{ product.description }}</p>
+
+        <div style="flex: 1">
+          <ion-row *ngFor="let price of filteredPrices(product.prices)">
+            <ion-col size="6" style="align-content: center">
+              <ion-note>{{ price.description }}</ion-note>
+            </ion-col>
+            <ion-col size="6" class="ion-text-right">
+              <h1>${{ price.price }}</h1>
+            </ion-col>
+          </ion-row>
+        </div>
+
+        <ion-button
+          planAction
+          color="primary"
+          (click)="checkout(product)"
+        >
+          {{ getProductActionLabel(product) }}
+        </ion-button>
+      </app-plan-column>
+    </div>
+  </div>
+</div>

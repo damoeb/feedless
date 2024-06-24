@@ -189,11 +189,20 @@ a {
   @include limited-width-pane;
 }
 
+.medium-alert {
+  --width: 70%;
+}
+
 .fatal-alert {
-  background: rgba(var(--ion-color-danger-rgb), 0.4);
+  background: color-mix(
+      in srgb,
+      var(--ion-color-danger) 50%,
+      white
+  );
+  --background: #efefef;
 
   .alert-wrapper {
-    border: 6px solid rgba(var(--ion-color-danger-rgb), 0.4);
+    border: 6px solid rgba(var(--ion-color-danger-rgb), 0.6);
     border-radius: 8px;
 
     .alert-button-group {

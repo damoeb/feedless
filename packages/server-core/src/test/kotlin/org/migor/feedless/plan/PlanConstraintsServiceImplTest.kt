@@ -146,15 +146,15 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given maxAge is undefined, RetentionMaxAgeDays is undefined`() {
-    assertThat(service.coerceRetentionMaxAgeDays(null, userId)).isEqualTo(null)
+    assertThat(service.coerceRetentionMaxAgeDays(null, userId, repository.product)).isEqualTo(null)
   }
 
   @Test
   fun `given maxAge is defined, RetentionMaxAgeDays is at least 2`() {
     mockFeatureValue(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxAgeDays(-3, userId)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(0, userId)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(12, userId)).isEqualTo(12)
+    assertThat(service.coerceRetentionMaxAgeDays(-3, userId, repository.product)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(0, userId, repository.product)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(12, userId, repository.product)).isEqualTo(12)
   }
 
   @Test

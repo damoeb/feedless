@@ -6,26 +6,11 @@ fragment OrderFragment on Order {
   createdAt
   isOffer
   isPaid
-  isRejected
   paymentMethod
   invoiceRecipientEmail
   invoiceRecipientName
 }
 
-
-fragment LicenseFragment on License {
-  isValid
-  isLocated
-  trialUntil
-  isTrial
-  data {
-    name
-    email
-    version
-    createdAt
-    scope
-  }
-}
 
 query orders($data: OrdersInput!) {
   orders(data: $data) {
@@ -33,12 +18,8 @@ query orders($data: OrdersInput!) {
   }
 }
 
-mutation upsertOrder(
-  $create: OrderCreateInput
-  $update: OrderUpdateInput
-  $where: OrderWhereUniqueInput
-) {
-  upsertOrder(create: $create, update: $update, where: $where) {
+mutation upsertOrder($data: UpsertOrderInput!) {
+  upsertOrder(data: $data) {
     ...OrderFragment
   }
 }

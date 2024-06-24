@@ -118,13 +118,13 @@ class OrderService {
     val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
     update.isRejected?.let {
-      order.isRejected = it.set
+      order.isOfferRejected = it.set
     }
     update.price?.let {
       order.price = it.set
     }
     update.isRejected?.let {
-      order.isRejected = it.set
+      order.isOfferRejected = it.set
     }
 
     return orderDAO.save(order)
@@ -136,14 +136,16 @@ class OrderService {
 
     order.isPaid = true
     order.paidAt = Date()
+    orderDAO.save(order)
 
     val product = order.product!!
     if (product.isCloudProduct) {
-      productService.enableCloudProduct(corrId, product, order.user)
+      productService.enableCloudProduct(corrId, product, order.user!!, order)
     } else {
       order.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, order))
+      orderDAO.save(order)
     }
-    orderDAO.save(order)
+
     // todo send email
 
     return order
@@ -165,14 +167,16 @@ fun OrderEntity.toDTO(): Order {
     .id(id.toString())
     .createdAt(createdAt.time)
     .userId(userId.toString())
+    .productId(productId.toString())
+
     .isOffer(isOffer)
+    .paymentDueTo(dueTo?.time)
     .isPaid(isPaid)
+    .isOfferRejected(isOfferRejected)
+
     .paidAt(paidAt?.time)
     .paymentMethod(paymentMethod?.toDTO())
     .invoiceRecipientName(invoiceRecipientName)
     .invoiceRecipientEmail(invoiceRecipientEmail)
-    .isRejected(isRejected)
-    .productId(productId.toString())
-    .validTo(dueTo?.time)
     .build()
 }

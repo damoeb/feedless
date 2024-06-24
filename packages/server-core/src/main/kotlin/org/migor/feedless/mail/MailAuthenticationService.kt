@@ -102,17 +102,16 @@ class MailAuthenticationService {
 
   private fun resolveUserByMail(corrId: String, data: AuthViaMailInput): UserEntity? {
     return userDAO.findByEmail(data.email) ?: if (data.allowCreate) {
-      createUser(corrId, data.email, product = data.product)
+      createUser(corrId, data.email)
     } else {
       null
     }
   }
 
-  private fun createUser(corrId: String, email: String, product: ProductCategory): UserEntity {
-    return userService.createUser(corrId, email, product.fromDto(), PlanName.free)
+  private fun createUser(corrId: String, email: String): UserEntity {
+    return userService.createUser(corrId, email)
   }
 
-  //  @Transactional
   fun confirmAuthCode(corrId: String, codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
     val otpId = UUID.fromString(codeInput.otpId)
     val otp = oneTimePasswordDAO.findById(otpId)

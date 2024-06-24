@@ -5,7 +5,6 @@ import { IonicModule } from '@ionic/angular';
 import { AboutFeedlessPage } from './about-feedless.page';
 import { AboutFeedlessRoutingModule } from './about-feedless-routing.module';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
-import { NewsletterModule } from '../../../components/newsletter/newsletter.module';
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 
@@ -15,7 +14,6 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
     IonicModule,
     AboutFeedlessRoutingModule,
     ProductHeadlineModule,
-    NewsletterModule,
     ProductHeaderModule,
     SearchbarModule,
   ],

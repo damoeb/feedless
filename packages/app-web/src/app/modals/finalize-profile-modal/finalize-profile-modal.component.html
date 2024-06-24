@@ -26,6 +26,11 @@
           <ion-note> You hate reading mails, I hate writing them </ion-note>
         </ion-col>
       </ion-row>
+      <ion-row *ngIf="requiresPlan">
+        <ion-col size="9" push="3" class="ion-padding-vertical">
+          Subscription {{ product.name }}
+        </ion-col>
+      </ion-row>
       <ion-row>
         <ion-col size="9" push="3" class="ion-padding-vertical">
           <ion-checkbox

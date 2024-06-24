@@ -18,7 +18,7 @@ import java.util.*
 
 @Entity
 @Table(name = "t_cloud_subscription")
-open class CloudSubscriptionEntity : EntityWithUUID() {
+open class PlanEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.userId, nullable = false)
   open lateinit var userId: UUID

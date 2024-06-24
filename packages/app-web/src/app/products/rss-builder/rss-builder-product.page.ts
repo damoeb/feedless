@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ScrapeResponse } from '../../graphql/types';
+import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
   ProductConfig,
   AppConfigService,
@@ -16,7 +16,6 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
 import {
-  GqlLicenseQuery,
   GqlProductCategory,
 } from '../../../generated/graphql';
 
@@ -31,7 +30,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   productConfig: ProductConfig;
   url: string;
   private subscriptions: Subscription[] = [];
-  license: GqlLicenseQuery['license'];
+  license: LocalizedLicense;
 
   protected readonly dateFormat = dateFormat;
   protected embedded: boolean = false;

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.saas)
+//@Profile(AppProfiles.saas)
 interface OrderDAO : JpaRepository<OrderEntity, UUID> {
   fun findAllByUserId(userId: UUID, pageable: PageRequest): Page<OrderEntity>
 }

@@ -5,7 +5,10 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
+import org.migor.feedless.subscription.PlanDAO
+import org.migor.feedless.subscription.PlanEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -25,6 +28,12 @@ class ProductService {
 
   @Autowired
   private lateinit var productDAO: ProductDAO
+
+  @Autowired
+  private lateinit var planDAO: PlanDAO
+
+  @Autowired
+  private lateinit var userDAO: UserDAO
 
   @Autowired
   private lateinit var environment: Environment
@@ -79,7 +88,25 @@ class ProductService {
     }
   }
 
-  fun enableCloudProduct(corrId: String, product: ProductEntity, user: UserEntity?) {
-    TODO("Not yet implemented")
+  fun enableCloudProduct(corrId: String, product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
+    val isFree = { product.prices.any { it.price == 0.0 } }
+    val isBought = { order?.isPaid == true }
+
+    if (isFree() || isBought() ) {
+
+      // terminate existing plan
+      planDAO.findActiveByUserAndProduct(user.id, product.partOf!!)?.let {
+        log.info("[$corrId]")
+        it.terminatedAt = Date()
+        planDAO.save(it)
+      } ?: log.info("[$corrId]")
+
+      val plan = PlanEntity()
+      plan.productId = product.id
+      plan.userId = user.id
+      plan.startedAt = Date()
+
+      planDAO.save(plan)
+    }
   }
 }

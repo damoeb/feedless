@@ -68,7 +68,7 @@ export const DefaultRoutes: Routes = [
   },
   {
     path: '',
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, ProfileGuardService],
     children: [
       {
         path: 'agents',

@@ -182,30 +182,26 @@ class SecurityConfig {
       newCorrId(),
       email = email,
       githubId = githubId,
-      planName = PlanName.free,
-      productCategory = ProductCategory.feedless
     )
   }
 
-  private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
-    val attributes = (authentication.principal as DefaultOAuth2User).attributes
-    val email = attributes["email"] as String
-    return resolveUserByEmail(email) ?: userService.createUser(
-      newCorrId(),
-      email,
-      planName = PlanName.free,
-      productCategory = ProductCategory.feedless
-    )
-  }
+//  private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
+//    val attributes = (authentication.principal as DefaultOAuth2User).attributes
+//    val email = attributes["email"] as String
+//    return resolveUserByEmail(email) ?: userService.createUser(
+//      newCorrId(),
+//      email,
+//    )
+//  }
 
-  private fun resolveUserByEmail(email: String): UserEntity? {
-    return userService.findByEmail(email)
-      .also {
-        it?.let {
-          meterRegistry.counter(AppMetrics.userLogin).increment()
-        }
-      }
-  }
+//  private fun resolveUserByEmail(email: String): UserEntity? {
+//    return userService.findByEmail(email)
+//      .also {
+//        it?.let {
+//          meterRegistry.counter(AppMetrics.userLogin).increment()
+//        }
+//      }
+//  }
 
   private fun resolveUserByGithubId(githubId: String): UserEntity? {
     return userService.findByGithubId(githubId)

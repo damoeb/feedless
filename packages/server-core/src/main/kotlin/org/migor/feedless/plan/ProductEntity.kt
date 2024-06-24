@@ -83,5 +83,6 @@ fun ProductEntity.toDTO(): Product {
     .isCloud(isCloudProduct)
     .partOf(partOf?.toDto())
     .featureGroupId(featureGroupId?.toString())
+    .prices(emptyList())
     .build()
 }

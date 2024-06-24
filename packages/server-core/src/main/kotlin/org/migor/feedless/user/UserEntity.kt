@@ -3,9 +3,6 @@ package org.migor.feedless.user
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.ForeignKey
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -16,12 +13,11 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.agent.AgentEntity
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.UserSecretEntity
-import org.migor.feedless.subscription.CloudSubscriptionEntity
+import org.migor.feedless.subscription.PlanEntity
 import java.sql.Timestamp
 import java.util.*
 
@@ -58,8 +54,8 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "validated_email_at")
   open var validatedEmailAt: Timestamp? = null
 
-  @Column(nullable = false, name = StandardJpaFields.product)
-  open var product: ProductCategory = ProductCategory.feedless
+  @Column(nullable = false, name = "total_usage_mb")
+  open var usageTotalMb: Double = 0.0
 
   @Column(nullable = false, name = "is_root")
   open var root: Boolean = false
@@ -106,27 +102,13 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "time_format")
   open var timeFormat: String? = null
 
-  @Column(name = "subscription_id")
-  open var subscriptionId: UUID? = null
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.NO_ACTION)
-  @JoinColumn(
-    name = "subscription_id",
-    referencedColumnName = "id",
-    insertable = false,
-    updatable = false,
-    foreignKey = ForeignKey(name = "fk_user__to__subscription")
-  )
-  open var subscription: CloudSubscriptionEntity? = null
-
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  open var planSubscriptions: MutableList<CloudSubscriptionEntity> = mutableListOf()
+  open var subscriptions: MutableList<PlanEntity> = mutableListOf()
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
@@ -155,6 +137,4 @@ fun UserEntity.toDTO(): User =
     .country(StringUtils.trimToEmpty(country))
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
-//          .minimalFeatureState(FeatureState.experimental)
-
     .build()

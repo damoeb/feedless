@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { LicenseService } from '../../services/license.service';
-import { GqlLicenseQuery } from '../../../generated/graphql';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import dayjs from 'dayjs';
@@ -8,6 +7,7 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { environment } from '../../../environments/environment';
 import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { LocalizedLicense } from '../../graphql/types';
 
 @Component({
   selector: 'app-license-page',
@@ -17,7 +17,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;
-  license: GqlLicenseQuery['license'];
+  license: LocalizedLicense;
   private subscriptions: Subscription[] = [];
   protected readonly dateFormat = dateFormat;
 

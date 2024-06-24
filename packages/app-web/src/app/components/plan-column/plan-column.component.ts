@@ -24,6 +24,9 @@ export class PlanColumnComponent {
   price: string;
 
   @Input()
+  imploded: boolean;
+
+  @Input()
   featureGroups: StringFeatureGroup[];
 
   @Input()

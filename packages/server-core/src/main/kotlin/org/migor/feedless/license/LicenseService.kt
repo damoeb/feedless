@@ -347,6 +347,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
+    log.info("[$corrId] createLicenseForProduct ${product.name}")
     if (product.isCloudProduct) {
       throw IllegalArgumentException("cloud product cannot be licenced")
     }

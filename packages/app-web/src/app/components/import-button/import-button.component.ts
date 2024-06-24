@@ -62,6 +62,4 @@ export class ImportButtonComponent {
       await this.router.navigateByUrl('/login');
     }
   }
-
-  openUrlImporter() {}
 }

@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ScrapeResponse } from '../../graphql/types';
+import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
   ProductConfig,
   AppConfigService,
@@ -16,7 +16,6 @@ import { fixUrl } from '../../app.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import { GqlLicenseQuery } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-modal.component';
 
@@ -31,7 +30,7 @@ export class PcTrackerProductPage implements OnInit, OnDestroy {
   productConfig: ProductConfig;
   url: string;
   private subscriptions: Subscription[] = [];
-  license: GqlLicenseQuery['license'];
+  license: LocalizedLicense;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,

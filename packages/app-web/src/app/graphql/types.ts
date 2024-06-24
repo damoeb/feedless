@@ -9,9 +9,9 @@ import {
   GqlRepositoryByIdQuery,
   GqlScrapedReadability,
   GqlScrapeQuery,
-  GqlSelectors,
+  GqlSelectors, GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery,
+  GqlWebDocumentByIdQuery
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
@@ -50,7 +50,7 @@ export type ScrapedReadability = Pick<
   | 'imageUrl'
   | 'title'
 >;
-
+export type User = Session['user']
 export type ScrapedElement = GetElementType<ScrapeResponse['elements']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
@@ -62,3 +62,4 @@ export type Feature = GetElementType<FeatureGroup['features']>;
 export type Session = GqlSessionQuery['session'];
 export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
 export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;
+export type LocalizedLicense = GqlServerSettingsQuery['serverSettings']['license'];

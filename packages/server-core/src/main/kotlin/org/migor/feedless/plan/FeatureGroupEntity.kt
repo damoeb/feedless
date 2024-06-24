@@ -67,11 +67,11 @@ fun FeatureGroupEntity.toDto(features: List<Feature>): FeatureGroup {
     .build()
 }
 
-fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {
-  return when (this) {
-//    org.migor.feedless.generated.types.PlanName.waitlist -> PlanName.waitlist
-    org.migor.feedless.generated.types.PlanName.free -> PlanName.free
-    org.migor.feedless.generated.types.PlanName.basic -> PlanName.basic
-    else -> throw IllegalArgumentException()
-  }
-}
+//fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {
+//  return when (this) {
+////    org.migor.feedless.generated.types.PlanName.waitlist -> PlanName.waitlist
+//    org.migor.feedless.generated.types.PlanName.free -> PlanName.free
+//    org.migor.feedless.generated.types.PlanName.basic -> PlanName.basic
+//    else -> throw IllegalArgumentException()
+//  }
+//}

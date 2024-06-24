@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlLicenseQuery } from '../../../generated/graphql';
+import { GqlServerSettingsQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./trial-warning.component.scss'],
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {
-  license: GqlLicenseQuery['license'];
+  license: GqlServerSettingsQuery['serverSettings']['license'];
   trialEndIn: string;
   private subscriptions: Subscription[] = [];
 

@@ -2,6 +2,7 @@ package org.migor.feedless.api
 
 object ApiParams {
   const val corrId = "x-corr-id"
+  const val product = "x-product"
   const val tag = "tag"
   const val page = "page"
 }

@@ -13,6 +13,8 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.PlanName
+import org.migor.feedless.plan.ProductDAO
+import org.migor.feedless.plan.ProductService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -36,6 +38,9 @@ class UserService {
   private lateinit var userDAO: UserDAO
 
   @Autowired
+  private lateinit var productDAO: ProductDAO
+
+  @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
@@ -47,12 +52,13 @@ class UserService {
   @Autowired
   private lateinit var featureService: FeatureService
 
+  @Autowired
+  private lateinit var productService: ProductService
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
     corrId: String,
     email: String?,
-    productCategory: ProductCategory,
-    planName: PlanName,
     githubId: String? = null,
   ): UserEntity {
     if (featureService.isDisabled(FeatureName.canCreateUser, null)) {
@@ -83,16 +89,14 @@ class UserService {
     user.root = false
     user.anonymous = false
     user.hasAcceptedTerms = isSelfHosted()
-    user.product = productCategory
-//    user.planId = planDAO.findByNameAndProductId(planName, productName)!!.id
 
-    if (!user.anonymous && !user.root) {
-      when (planName) {
-//        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
-        PlanName.free -> mailService.sendWelcomeFreeMail(corrId, user)
-        else -> mailService.sendWelcomePaidMail(corrId, user)
-      }
-    }
+//    if (!user.anonymous && !user.root) {
+//      when (planName) {
+////        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
+//        PlanName.free -> mailService.sendWelcomeFreeMail(corrId, user)
+//        else -> mailService.sendWelcomePaidMail(corrId, user)
+//      }
+//    }
 
     return userDAO.saveAndFlush(user)
   }
@@ -116,6 +120,10 @@ class UserService {
       user.hasValidatedEmail = false
       // todo ask to validate email
       changed = true
+    }
+
+    data.plan?.let {
+      productService.enableCloudProduct(corrId, productDAO.findById(UUID.fromString(it.set)).orElseThrow(), user)
     }
 
     data.acceptedTermsAndServices?.let {

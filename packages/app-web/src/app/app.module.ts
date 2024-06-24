@@ -23,6 +23,8 @@ import { ProductTitleModule } from './components/product-title/product-title.mod
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
+import { AppConfigService } from './services/app-config.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface AppEnvironment {
   production: boolean;
@@ -108,11 +110,13 @@ export const fixUrl = (value: string): string => {
       deps: [
         HttpErrorInterceptorService,
         ServerConfigService,
+        AppConfigService,
         ApolloAbortControllerService,
       ],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
         serverConfig: ServerConfigService,
+        appConfig: AppConfigService,
         abortController: ApolloAbortControllerService,
       ): ApolloClient<any> => {
         const wsUrl = `${serverConfig.apiUrl.replace(
@@ -171,7 +175,8 @@ export const fixUrl = (value: string): string => {
                 uri: `${serverConfig.apiUrl}/graphql`,
                 credentials: 'include',
                 headers: {
-                  'x-CORR-ID': corrId,
+                  'x-corr-id': corrId,
+                  'x-product': appConfig.activeProductConfig.product,
                 },
               }),
             ]),
