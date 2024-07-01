@@ -8,8 +8,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Authentication, AuthService } from '../../services/auth.service';

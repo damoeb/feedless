@@ -9,8 +9,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { fixUrl } from '../../app.module';
 import { ServerConfigService } from '../../services/server-config.service';

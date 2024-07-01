@@ -16,7 +16,7 @@ import { PlanColumnModule } from '../../components/plan-column/plan-column.modul
     IonicModule,
     LicensePageRoutingModule,
     PlanColumnModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   declarations: [LicensePage],
 })

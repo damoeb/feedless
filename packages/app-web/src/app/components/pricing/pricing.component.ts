@@ -1,27 +1,44 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { filter } from 'lodash-es';
 import { ProductConfig } from '../../services/app-config.service';
 import { FormControl } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { FeatureGroup, Product } from '../../graphql/types';
-import { GqlFeatureName, GqlPricedProduct } from '../../../generated/graphql';
-import { StringFeature, StringFeatureGroup } from '../plan-column/plan-column.component';
+import {
+  GqlFeatureName,
+  GqlPricedProduct,
+  GqlProductCategory,
+} from '../../../generated/graphql';
+import {
+  StringFeature,
+  StringFeatureGroup,
+} from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'self' | 'cloud';
 
-type ProductWithFeatureGroups = Product & { stringifiedFeatureGroups: StringFeatureGroup[]; featureGroups: FeatureGroup[] };
+type ProductWithFeatureGroups = Product & {
+  stringifiedFeatureGroups: StringFeatureGroup[];
+  featureGroups: FeatureGroup[];
+};
 
 @Component({
   selector: 'app-pricing',
   templateUrl: './pricing.component.html',
   styleUrls: ['./pricing.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PricingComponent implements OnInit {
-
   targetGroupFc = new FormControl<TargetGroup>('individual');
   serviceFlavorFc = new FormControl<ServiceFlavor>('self');
   serviceFlavorSelf: ServiceFlavor = 'self';
@@ -31,8 +48,8 @@ export class PricingComponent implements OnInit {
   targetGroupOther: TargetGroup = 'other';
   private products: ProductWithFeatureGroups[];
 
-  @Input({required: true})
-  productCategory: ProductConfig;
+  @Input({ required: true })
+  productCategory: GqlProductCategory;
 
   @Input()
   serviceFlavor: ServiceFlavor;
@@ -46,27 +63,35 @@ export class PricingComponent implements OnInit {
   constructor(
     private readonly featureService: FeatureService,
     private readonly productService: ProductService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-  }
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
     if (this.serviceFlavor) {
-      this.serviceFlavorFc.setValue(this.serviceFlavor)
+      this.serviceFlavorFc.setValue(this.serviceFlavor);
     }
-    const products = (await this.productService.listProducts({
-      category: this.productCategory.product
-    }));
+    const products = await this.productService.listProducts({
+      category: this.productCategory,
+    });
 
-    this.products = await Promise.all(products.map<Promise<ProductWithFeatureGroups>>(async p => {
-        const featureGroups = p.featureGroupId ? await this.featureService.findAll({ id: { equals: p.featureGroupId } }, true) : [];
+    this.products = await Promise.all(
+      products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
+        const featureGroups = p.featureGroupId
+          ? await this.featureService.findAll(
+              { id: { equals: p.featureGroupId } },
+              true,
+            )
+          : [];
         return {
           ...p,
-          stringifiedFeatureGroups: featureGroups.length > 0 ? [await this.stringifyFeatureGroup(featureGroups)] : [],
+          stringifiedFeatureGroups:
+            featureGroups.length > 0
+              ? [await this.stringifyFeatureGroup(featureGroups)]
+              : [],
           featureGroups: featureGroups.length > 0 ? featureGroups : [],
         };
-      }
-    ));
+      }),
+    );
     this.changeRef.detectChanges();
   }
 
@@ -75,11 +100,11 @@ export class PricingComponent implements OnInit {
       return [];
     }
     return filter(this.products, {
-      isCloud: this.serviceFlavorFc.value === 'cloud'
+      isCloud: this.serviceFlavorFc.value === 'cloud',
     }).filter(
       (product) =>
         filter<GqlPricedProduct>(product.prices, this.filterParams()).length >
-        0
+        0,
     );
   }
 
@@ -89,28 +114,30 @@ export class PricingComponent implements OnInit {
     }
     if (this.targetGroupFc.value === 'individual') {
       return {
-        individual: true
+        individual: true,
       };
     }
     if (this.targetGroupFc.value === 'organization') {
       return {
-        enterprise: true
+        enterprise: true,
       };
     }
     if (this.targetGroupFc.value === 'other') {
       return {
-        other: true
+        other: true,
       };
     }
   }
 
   filteredPrices(prices: GqlPricedProduct[]): GqlPricedProduct[] {
     return filter<GqlPricedProduct>(prices, this.filterParams()).filter(
-      (price) => price.price >= 0
+      (price) => price.price >= 0,
     );
   }
 
-  private async stringifyFeatureGroup(featureGroups: FeatureGroup[]): Promise<StringFeatureGroup> {
+  private async stringifyFeatureGroup(
+    featureGroups: FeatureGroup[],
+  ): Promise<StringFeatureGroup> {
     return {
       groupLabel: 'Features',
       features:
@@ -119,10 +146,12 @@ export class PricingComponent implements OnInit {
           valueBool: feature.value.boolVal,
           valueHtml:
             feature.value.numVal != null
-              ? (feature.value.numVal.value == -1 ? 'Infinite' : `${feature.value.numVal.value}`)
+              ? feature.value.numVal.value == -1
+                ? 'Infinite'
+                : `${feature.value.numVal.value}`
               : null,
-          subtitle: ''
-        })) || []
+          subtitle: '',
+        })) || [],
     };
   }
 
@@ -132,12 +161,14 @@ export class PricingComponent implements OnInit {
 
   getProductActionLabel(product: ProductWithFeatureGroups) {
     if (product.isCloud) {
-      const features = product.featureGroups.flatMap(fg => fg.features);
-      const canActivate = features.filter(feature => feature.name === GqlFeatureName.CanActivatePlan).some(feature => feature.value.boolVal.value === true)
+      const features = product.featureGroups.flatMap((fg) => fg.features);
+      const canActivate = features
+        .filter((feature) => feature.name === GqlFeatureName.CanActivatePlan)
+        .some((feature) => feature.value.boolVal.value === true);
       if (canActivate) {
-        return 'Subscribe'
+        return 'Subscribe';
       } else {
-        return 'Notify me'
+        return 'Notify me';
       }
     } else {
       return 'Buy';

@@ -1,14 +1,40 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { GqlFeedlessPlugins, GqlProductCategory, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
-import { FeedlessPlugin, Repository, SubscriptionSource, WebDocument } from '../../graphql/types';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlFeedlessPlugins,
+  GqlProductCategory,
+  GqlScrapeRequest,
+  GqlVisibility,
+  GqlWebDocumentField,
+} from '../../../generated/graphql';
+import {
+  FeedlessPlugin,
+  Repository,
+  SubscriptionSource,
+  WebDocument,
+} from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
-  getScrapeRequest
+  getScrapeRequest,
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
-import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  AlertController,
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular';
+import {
+  FeedWithRequest,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';

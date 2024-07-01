@@ -63,7 +63,7 @@ export const DefaultRoutes: Routes = [
           import('../pages/payment/payment.module').then(
             (m) => m.PaymentPageModule,
           ),
-      }
+      },
     ],
   },
   {

@@ -3,7 +3,6 @@ import { RssBuilderProductPage } from './rss-builder-product.page';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
@@ -22,7 +21,6 @@ describe('RssBuilderProductPage', () => {
         RssBuilderProductModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
-          mockLicense(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],

@@ -57,7 +57,6 @@ import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
-import { debounce } from 'lodash-es';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];

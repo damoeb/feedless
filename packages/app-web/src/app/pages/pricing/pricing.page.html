@@ -1,17 +1,19 @@
 <ion-content>
   <div class="limited-width-pane" style="margin-top: 100px">
     <div class="flex__column">
-      <h1>Pricing Options for {{ productCategory?.title }}</h1>
+      <h1>Pricing Options for {{ productConfig?.title }}</h1>
 
       <p>
-        {{ productCategory?.title }} is a one-man show, that I work on in my
-        spare time. I only sell self-hosting licenses for the current major
-        version. This license includes all minor and patch releases.
+        {{ productConfig?.title }} is a one-man show, that I work on in my spare
+        time. I only sell self-hosting licenses for the current major version.
+        This license includes all minor and patch releases.
       </p>
 
-      <app-pricing *ngIf="productCategory"
-                   (selectionChange)="checkout($event)"
-                   [productCategory]="productCategory"></app-pricing>
+      <app-pricing
+        *ngIf="productConfig"
+        (selectionChange)="checkout($event)"
+        [productCategory]="productConfig.product"
+      ></app-pricing>
     </div>
   </div>
 </ion-content>

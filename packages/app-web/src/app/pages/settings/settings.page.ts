@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { dateFormat } from '../../services/session.service';
 import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
@@ -81,7 +86,7 @@ export class SettingsPage implements OnInit {
 
       this.loading = false;
       this.changeRef.detectChanges();
-    })
+    });
     this.changeRef.detectChanges();
   }
 

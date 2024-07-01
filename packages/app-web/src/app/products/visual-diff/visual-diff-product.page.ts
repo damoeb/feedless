@@ -9,8 +9,8 @@ import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router } from '@angular/router';
 import { has } from 'lodash-es';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { filter, map, Subscription } from 'rxjs';
 import { GqlProductCategory } from '../../../generated/graphql';

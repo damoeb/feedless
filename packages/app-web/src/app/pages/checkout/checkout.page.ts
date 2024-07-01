@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ProductConfig } from '../../services/app-config.service';
@@ -9,7 +15,11 @@ import { sum } from 'lodash-es';
 import { createEmailFormControl } from '../../form-controls';
 import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
-import { GqlPaymentMethod, GqlProductTargetGroup, GqlUserCreateOrConnectInput } from '../../../generated/graphql';
+import {
+  GqlPaymentMethod,
+  GqlProductTargetGroup,
+  GqlUserCreateOrConnectInput,
+} from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
 
 type Country = {
@@ -269,9 +279,9 @@ type CheckoutStep = 'email' | 'data';
 type PaymentMethod = GqlPaymentMethod;
 
 type PaymentOption = {
-  title: string
-  method: PaymentMethod
-}
+  title: string;
+  method: PaymentMethod;
+};
 
 @Component({
   selector: 'app-checkout-page',
@@ -286,10 +296,19 @@ export class CheckoutPage implements OnInit, OnDestroy {
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     country: new FormControl<string>('', Validators.required),
-    firstName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
-    lastName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
+    firstName: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(2),
+    ]),
+    lastName: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(2),
+    ]),
     acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
-    paymentMethod: new FormControl<PaymentMethod>(GqlPaymentMethod.Bill, Validators.required),
+    paymentMethod: new FormControl<PaymentMethod>(
+      GqlPaymentMethod.Bill,
+      Validators.required,
+    ),
   });
   protected products: Product[];
   protected loginWithRedirect: string;
@@ -298,12 +317,12 @@ export class CheckoutPage implements OnInit, OnDestroy {
   private productId: string;
   protected loading: boolean;
   protected paymentOptions: PaymentOption[] = [
-    {title: 'Bill', method: GqlPaymentMethod.Bill},
-    {title: 'PayPal', method: GqlPaymentMethod.PayPal},
-    {title: 'Credit Card', method: GqlPaymentMethod.CreditCard},
-    {title: 'Bitcoin', method: GqlPaymentMethod.Bitcoin},
-    {title: 'Ethereum', method: GqlPaymentMethod.Ethereum},
-  ]
+    { title: 'Bill', method: GqlPaymentMethod.Bill },
+    { title: 'PayPal', method: GqlPaymentMethod.PayPal },
+    { title: 'Credit Card', method: GqlPaymentMethod.CreditCard },
+    { title: 'Bitcoin', method: GqlPaymentMethod.Bitcoin },
+    { title: 'Ethereum', method: GqlPaymentMethod.Ethereum },
+  ];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -322,7 +341,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
         if (session?.user) {
           this.formFg.patchValue(session?.user);
           const hasAcceptedTerms = session?.user.hasAcceptedTerms;
-          this.formFg.controls.acceptedTerms.patchValue(hasAcceptedTerms)
+          this.formFg.controls.acceptedTerms.patchValue(hasAcceptedTerms);
           this.changeRef.detectChanges();
         }
       }),
@@ -365,7 +384,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
 
   async createBilling() {
     if (this.formFg.invalid) {
-      Object.values(this.formFg.controls).forEach(fc => fc.markAsTouched());
+      Object.values(this.formFg.controls).forEach((fc) => fc.markAsTouched());
       return;
     }
     try {
@@ -382,8 +401,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
         user: this.getUserInput(),
       });
 
-      await this.router.navigateByUrl(`/payment/${billing.id}`)
-
+      await this.router.navigateByUrl(`/payment/${billing.id}`);
     } catch (e) {
       this.loading = false;
       this.changeRef.detectChanges();

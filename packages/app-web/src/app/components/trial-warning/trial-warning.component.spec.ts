@@ -5,7 +5,6 @@ import { TrialWarningModule } from './trial-warning.module';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockServerSettings,
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -17,12 +16,7 @@ describe('TrialWarningComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        TrialWarningModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockLicense(apolloMockController);
-        }),
-      ],
+      imports: [TrialWarningModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

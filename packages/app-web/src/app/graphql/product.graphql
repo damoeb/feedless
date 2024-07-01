@@ -3,13 +3,13 @@ fragment ProductFragment on Product {
   name
   description
   featureGroupId
-#  featureGroup {
-#    id
-#    name
-#    features {
-#      ...FeatureFragment
-#    }
-#  }
+  #  featureGroup {
+  #    id
+  #    name
+  #    features {
+  #      ...FeatureFragment
+  #    }
+  #  }
   isCloud
   partOf
   prices {

@@ -7,8 +7,8 @@ import {
 } from '@angular/core';
 import '@justinribeiro/lite-youtube';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../../services/app-config.service';
 import { IonPopover } from '@ionic/angular';
 

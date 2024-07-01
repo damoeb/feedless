@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.document.any
 import org.migor.feedless.document.eq
@@ -44,13 +45,13 @@ class PlanConstraintsServiceImplTest {
   private lateinit var userId: UUID
   private lateinit var user: UserEntity
   private var corrId = "test"
+  private val product = ProductCategory.feedless
 
   @BeforeEach
   fun beforeEach() {
     userId = UUID.randomUUID()
     user = mock(UserEntity::class.java)
     `when`(user.id).thenReturn(userId)
-    `when`(user.subscriptionId).thenReturn(UUID.randomUUID())
     `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(user))
     `when`(sessionService.userId()).thenReturn(UUID.randomUUID())
 
@@ -65,18 +66,18 @@ class PlanConstraintsServiceImplTest {
     val maxItems = 50L
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxItems(null, userId)).isEqualTo(maxItems)
-    assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(maxItems)
-    assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxItems(null, userId, product)).isEqualTo(maxItems)
+    assertThat(service.coerceRetentionMaxItems(56, userId, product)).isEqualTo(maxItems)
+    assertThat(service.coerceRetentionMaxItems(1, userId, product)).isEqualTo(2)
   }
 
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() {
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = null)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxItems(null, userId)).isNull()
-    assertThat(service.coerceRetentionMaxItems(56, userId)).isEqualTo(56)
-    assertThat(service.coerceRetentionMaxItems(1, userId)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxItems(null, userId, product)).isNull()
+    assertThat(service.coerceRetentionMaxItems(56, userId, product)).isEqualTo(56)
+    assertThat(service.coerceRetentionMaxItems(1, userId, product)).isEqualTo(2)
   }
 
   @Test
@@ -124,7 +125,8 @@ class PlanConstraintsServiceImplTest {
       service.coerceMinScheduledNextAt(
         Date(),
         toDate(now.minusDays(2)),
-        userId
+        userId,
+        product
       )
     ).isAfterOrEqualTo(minNext)
   }
@@ -139,22 +141,23 @@ class PlanConstraintsServiceImplTest {
       service.coerceMinScheduledNextAt(
         Date(),
         future,
-        userId
+        userId,
+        product
       )
     ).isAfterOrEqualTo(future)
   }
 
   @Test
   fun `given maxAge is undefined, RetentionMaxAgeDays is undefined`() {
-    assertThat(service.coerceRetentionMaxAgeDays(null, userId, repository.product)).isEqualTo(null)
+    assertThat(service.coerceRetentionMaxAgeDays(null, userId, product)).isEqualTo(null)
   }
 
   @Test
   fun `given maxAge is defined, RetentionMaxAgeDays is at least 2`() {
     mockFeatureValue(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxAgeDays(-3, userId, repository.product)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(0, userId, repository.product)).isEqualTo(2)
-    assertThat(service.coerceRetentionMaxAgeDays(12, userId, repository.product)).isEqualTo(12)
+    assertThat(service.coerceRetentionMaxAgeDays(-3, userId, product)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(0, userId, product)).isEqualTo(2)
+    assertThat(service.coerceRetentionMaxAgeDays(12, userId, product)).isEqualTo(12)
   }
 
   @Test
@@ -222,18 +225,18 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is undefined, all counts will pass`() {
     mockFeatureValue(FeatureName.scrapeRequestMaxCountPerSourceInt, intValue = null)
-    service.auditScrapeRequestMaxCountPerSource(0, userId)
-    service.auditScrapeRequestMaxCountPerSource(10000, userId)
+    service.auditScrapeRequestMaxCountPerSource(0, userId, product)
+    service.auditScrapeRequestMaxCountPerSource(10000, userId, product)
   }
 
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is defined, violating counts will fail`() {
     mockFeatureValue(FeatureName.scrapeRequestMaxCountPerSourceInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      service.auditScrapeRequestMaxCountPerSource(12, userId)
+      service.auditScrapeRequestMaxCountPerSource(12, userId, product)
     }
-    service.auditScrapeRequestMaxCountPerSource(2, userId)
-    service.auditScrapeRequestMaxCountPerSource(4, userId)
+    service.auditScrapeRequestMaxCountPerSource(2, userId, product)
+    service.auditScrapeRequestMaxCountPerSource(4, userId, product)
   }
 
   private fun mockFeatureValue(featureName: FeatureName, boolValue: Boolean? = null, intValue: Long? = null) {

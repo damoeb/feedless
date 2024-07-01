@@ -3,7 +3,7 @@ import {
   GqlUpdateLicenseInput,
   GqlUpdateLicenseMutation,
   GqlUpdateLicenseMutationVariables,
-  UpdateLicense
+  UpdateLicense,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { ReplaySubject } from 'rxjs';
@@ -16,8 +16,10 @@ import { LocalizedLicense } from '../graphql/types';
 export class LicenseService {
   public licenseChange = new ReplaySubject<LocalizedLicense>();
 
-  constructor(private readonly apollo: ApolloClient<any>,
-              private readonly serverConfig: ServerConfigService) {
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly serverConfig: ServerConfigService,
+  ) {
     if (this.serverConfig.isSelfHosted()) {
       this.initialize();
     }
@@ -36,7 +38,7 @@ export class LicenseService {
         },
       })
       .then((response) => {
-        this.serverConfig.setLicense(response.data.updateLicense)
+        this.serverConfig.setLicense(response.data.updateLicense);
         this.licenseChange.next(response.data.updateLicense);
       });
   }

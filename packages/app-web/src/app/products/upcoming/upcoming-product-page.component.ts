@@ -7,8 +7,8 @@ import {
 } from '@angular/core';
 import dayjs, { Dayjs } from 'dayjs';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { isUndefined } from 'lodash-es';

@@ -1,30 +1,22 @@
 <div class="plan">
-
   <ng-content></ng-content>
 
-  <div
-    *ngIf="featureGroups && !imploded"
-    class="features"
-  >
+  <div *ngIf="featureGroups && !imploded" class="features">
     <ng-container *ngFor="let featureGroup of featureGroups">
       <ng-container *ngIf="featureGroup.features.length > 0">
         <div class="feature__group">
           {{ featureGroup.groupLabel }}
         </div>
-        <ion-row *ngFor="let feature of featureGroup.features"
-                 class="feature">
-          <ion-col class="feature__name"
-                   size="10">
+        <ion-row *ngFor="let feature of featureGroup.features" class="feature">
+          <ion-col class="feature__name" size="10">
             <span class="feature__title">
               {{ feature.title }}
             </span>
-            <span *ngIf="feature.subtitle"
-                  class="feature__subtitle"
+            <span *ngIf="feature.subtitle" class="feature__subtitle"
               >({{ feature.subtitle }})</span
             >
           </ion-col>
-          <ion-col class="feature__value"
-                   size="2">
+          <ion-col class="feature__value" size="2">
             <div
               *ngIf="feature.valueHtml"
               [innerHTML]="feature.valueHtml"

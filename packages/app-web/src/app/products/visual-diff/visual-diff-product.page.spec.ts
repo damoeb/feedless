@@ -3,7 +3,6 @@ import { VisualDiffProductPage } from './visual-diff-product.page';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockServerSettings,
 } from '../../app-test.module';
 import { VisualDiffProductModule } from './visual-diff-product.module';
@@ -16,12 +15,7 @@ describe('VisualDiffProductPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        VisualDiffProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockLicense(apolloMockController);
-        }),
-      ],
+      imports: [VisualDiffProductModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

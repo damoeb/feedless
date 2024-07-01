@@ -1,13 +1,4 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  PluginValue,
-  ViewPlugin,
-  ViewUpdate,
-} from '@codemirror/view';
-import { syntaxTree } from '@codemirror/language';
-import { kebabCase } from 'lodash';
+import { Decoration, EditorView } from '@codemirror/view';
 import { StateEffect, StateField } from '@codemirror/state';
 
 const lineHighlightMark = Decoration.line({

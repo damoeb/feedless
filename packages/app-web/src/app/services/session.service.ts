@@ -16,12 +16,18 @@ import {
   GqlUpdateCurrentUserMutationVariables,
   Logout,
   Session as SessionQuery,
-  UpdateCurrentUser
+  UpdateCurrentUser,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { Product, Session, User, UserSecret } from '../graphql/types';
-import { BehaviorSubject, filter, firstValueFrom, Observable, ReplaySubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  filter,
+  firstValueFrom,
+  Observable,
+  ReplaySubject,
+} from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
 import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
 import { ModalController } from '@ionic/angular';
@@ -32,7 +38,10 @@ export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
 export const TimeFormat = 'HH:mm, dd.MM.YYYY';
 
-export function needsPlanSubscription(user: User, serverConfig: ServerConfigService) {
+export function needsPlanSubscription(
+  user: User,
+  serverConfig: ServerConfigService,
+) {
   return serverConfig.isSaas() && !user.plan;
 }
 
@@ -75,7 +84,11 @@ export class SessionService {
       .query<GqlSessionQuery, GqlSessionQueryVariables>({
         query: SessionQuery,
         variables: {
-          product: (await firstValueFrom(this.appConfigService.getActiveProductConfigChange())).product
+          product: (
+            await firstValueFrom(
+              this.appConfigService.getActiveProductConfigChange(),
+            )
+          ).product,
         },
         fetchPolicy,
       })
@@ -92,8 +105,16 @@ export class SessionService {
 
   async finalizeProfile() {
     const hasCompletedSignup = this.session.user.hasCompletedSignup;
-    const needsPlan = needsPlanSubscription(this.session.user, this.serverConfigService)
-    console.log('hasCompletedSignup', hasCompletedSignup, 'needsPlan', needsPlan);
+    const needsPlan = needsPlanSubscription(
+      this.session.user,
+      this.serverConfigService,
+    );
+    console.log(
+      'hasCompletedSignup',
+      hasCompletedSignup,
+      'needsPlan',
+      needsPlan,
+    );
     if (this.modalIsOpen || (hasCompletedSignup && !needsPlan)) {
       return;
     }
@@ -125,16 +146,17 @@ export class SessionService {
       },
       dateFormat: {
         set: dateFormat,
-      }
+      },
     };
     if (product) {
       data['subscription'] = {
-        set: product.id
+        set: product.id,
       };
     }
 
-    await this.updateCurrentUser(data)
-      .then(() => this.fetchSession('network-only'));
+    await this.updateCurrentUser(data).then(() =>
+      this.fetchSession('network-only'),
+    );
   }
 
   async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {

@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BillingsPage } from './billings.page';
-import { AppTestModule, mockBillings, mockRepositories } from '../../app-test.module';
+import {
+  AppTestModule,
+  mockBillings,
+  mockRepositories,
+} from '../../app-test.module';
 import { BillingsPageModule } from './billings.module';
 
 describe('BillingsPage', () => {

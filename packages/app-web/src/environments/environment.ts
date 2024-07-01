@@ -9,7 +9,7 @@ export const environment: AppEnvironment = {
   production: false,
   offlineSupport: false,
   product: GqlProductCategory.Feedless,
-  officialFeedlessUrl: 'http://localhost:4200'
+  officialFeedlessUrl: 'http://localhost:4200',
 };
 
 /*

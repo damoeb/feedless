@@ -9,7 +9,7 @@ import {
   GqlUpsertOrderMutation,
   GqlUpsertOrderMutationVariables,
   Orders,
-  UpsertOrder
+  UpsertOrder,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Order } from '../types';
@@ -47,7 +47,7 @@ export class OrderService {
           data: {
             create,
             update,
-            where
+            where,
           },
         },
       })

@@ -194,11 +194,7 @@ a {
 }
 
 .fatal-alert {
-  background: color-mix(
-      in srgb,
-      var(--ion-color-danger) 50%,
-      white
-  );
+  background: color-mix(in srgb, var(--ion-color-danger) 50%, white);
   --background: #efefef;
 
   .alert-wrapper {

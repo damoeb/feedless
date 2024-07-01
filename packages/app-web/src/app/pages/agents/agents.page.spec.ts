@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsPage } from './agents.page';
 import { AgentsPageModule } from './agents.module';
-import { ApolloMockController, AppTestModule, mockPlans, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
@@ -15,9 +19,7 @@ describe('AgentsPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         AgentsPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockPlans(apolloMockController);
-        }),
+        AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
     }).compileComponents();

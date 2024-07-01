@@ -7,32 +7,33 @@
 
       <ion-list class="ion-padding">
         <ng-container *ngIf="currentStep === 'email'">
-        <ion-item>
-          Please provide an email address where we should send your license
-        </ion-item>
-        <form (ngSubmit)="next()">
-          <ion-row class="ion-padding-horizontal">
-            <ion-col size="11">
-              <ion-input
-                aria-label=""
-                fill="outline"
-                [formControl]="formFg.controls.email"
-                placeholder="Email address"
-              ></ion-input>
-            </ion-col>
-            <ion-col size="1">
-              <ion-button color="primary" expand="block" (click)="next()"
-              >Next
-              </ion-button
-              >
-            </ion-col>
-          </ion-row>
-        </form>
+          <ion-item>
+            Please provide an email address where we should send your license
+          </ion-item>
+          <form (ngSubmit)="next()">
+            <ion-row class="ion-padding-horizontal">
+              <ion-col size="11">
+                <ion-input
+                  aria-label=""
+                  fill="outline"
+                  [formControl]="formFg.controls.email"
+                  placeholder="Email address"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="1">
+                <ion-button color="primary" expand="block" (click)="next()"
+                  >Next
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </form>
 
-        <ion-item class="ion-margin-top">
-          Alternatively, you can
-          <a [href]="loginWithRedirect" style="margin-left: 5px">login here</a>
-        </ion-item>
+          <ion-item class="ion-margin-top">
+            Alternatively, you can
+            <a [href]="loginWithRedirect" style="margin-left: 5px"
+              >login here</a
+            >
+          </ion-item>
         </ng-container>
 
         <ng-container *ngIf="currentStep === 'data'">
@@ -41,7 +42,9 @@
           </ion-list-header>
           <ion-row *ngFor="let product of products">
             <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
-            <ion-col push="4" size="4" class="ion-text-center">${{ getPrice(product) }}</ion-col>
+            <ion-col push="4" size="4" class="ion-text-center"
+              >${{ getPrice(product) }}</ion-col
+            >
           </ion-row>
           <ion-row class="ion-margin-top">
             <ion-col push="4" size="4">
@@ -53,10 +56,8 @@
               class="ion-padding-vertical ion-text-center"
               style="border-top: 1px solid var(--app-foreground)"
             >
-              <strong>${{ getTotalPrice() }}
-              </strong>
-            </ion-col
-            >
+              <strong>${{ getTotalPrice() }} </strong>
+            </ion-col>
           </ion-row>
 
           <ion-list-header>
@@ -73,7 +74,7 @@
                 [formControl]="formFg.controls.firstName"
                 fill="outline"
               ></ion-input>
-<!--              <ion-note color="danger">Enter your name</ion-note>-->
+              <!--              <ion-note color="danger">Enter your name</ion-note>-->
             </ion-col>
           </ion-row>
           <ion-row>
@@ -130,10 +131,15 @@
           </ion-list-header>
           <ion-row>
             <ion-col size="8" push="4">
-              <div class="payment-options" [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}">
-                <div *ngFor="let option of paymentOptions"
-                     [ngClass]="{active: formFg.value.paymentMethod === option.method }"
-                     (click)="formFg.controls.paymentMethod.setValue(option.method)">
+              <div
+                class="payment-options"
+                [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}"
+              >
+                <div
+                  *ngFor="let option of paymentOptions"
+                  [ngClass]="{active: formFg.value.paymentMethod === option.method }"
+                  (click)="formFg.controls.paymentMethod.setValue(option.method)"
+                >
                   <h3>{{ option.title }}</h3>
                 </div>
               </div>

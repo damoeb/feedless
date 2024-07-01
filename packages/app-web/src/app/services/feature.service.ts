@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import {
   FeatureGroups,
   GqlFeatureGroupsQuery,
-  GqlFeatureGroupsQueryVariables, GqlFeatureGroupWhereInput,
+  GqlFeatureGroupsQueryVariables,
+  GqlFeatureGroupWhereInput,
   GqlUpdateFeatureValueInput,
   GqlUpdateFeatureValueMutation,
   GqlUpdateFeatureValueMutationVariables,
-  UpdateFeatureValue
+  UpdateFeatureValue,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { FeatureGroup } from '../graphql/types';
@@ -29,7 +30,7 @@ export class FeatureService {
         query: FeatureGroups,
         variables: {
           where,
-          inherit
+          inherit,
         },
         fetchPolicy,
       })

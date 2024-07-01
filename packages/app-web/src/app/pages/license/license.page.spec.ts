@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LicensePage } from './license.page';
 import { LicensePageModule } from './license.module';
-import { ApolloMockController, AppTestModule, mockLicense, mockServerSettings } from '../../app-test.module';
+import {
+  ApolloMockController,
+  AppTestModule,
+  mockServerSettings,
+} from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
@@ -15,9 +19,7 @@ describe('LicencePage', () => {
     await TestBed.configureTestingModule({
       imports: [
         LicensePageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockLicense(apolloMockController);
-        }),
+        AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
     }).compileComponents();

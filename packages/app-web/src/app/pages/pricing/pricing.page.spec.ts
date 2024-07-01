@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PricingPage } from './pricing.page';
 import { PricingPageModule } from './pricing.module';
-import { AppTestModule, mockPlans } from '../../app-test.module';
+import { AppTestModule } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
 
@@ -14,9 +14,7 @@ describe('PricingPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         PricingPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockPlans(apolloMockController);
-        }),
+        AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
     }).compileComponents();

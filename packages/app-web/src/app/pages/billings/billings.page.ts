@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';

@@ -3,7 +3,6 @@ import { PcTrackerProductPage } from './pc-tracker-product.page';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
@@ -22,7 +21,6 @@ describe('PcTrackerProductPage', () => {
         PcTrackerProductModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
-          mockLicense(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],

@@ -9,8 +9,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../../services/app-config.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 

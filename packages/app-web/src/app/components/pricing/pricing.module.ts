@@ -15,11 +15,9 @@ import { PlanColumnModule } from '../../components/plan-column/plan-column.modul
     IonicModule,
     ProductHeadlineModule,
     ReactiveFormsModule,
-    PlanColumnModule
+    PlanColumnModule,
   ],
   declarations: [PricingComponent],
-  exports: [
-    PricingComponent
-  ]
+  exports: [PricingComponent],
 })
 export class PricingModule {}

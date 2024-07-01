@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -10,7 +15,7 @@ import { ServerConfigService } from '../../services/server-config.service';
   selector: 'app-profile-page',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
@@ -18,10 +23,15 @@ export class ProfilePage implements OnInit, OnDestroy {
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     country: new FormControl<string>('', Validators.required),
-    firstName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
-    lastName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
+    firstName: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(2),
+    ]),
+    lastName: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(2),
+    ]),
   });
-
 
   constructor(
     private readonly toastCtrl: ToastController,
@@ -46,16 +56,16 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.sessionService.getSession().subscribe(session => {
+      this.sessionService.getSession().subscribe((session) => {
         if (session.isLoggedIn) {
           this.formFg.patchValue({
             email: session.user.email,
             firstName: session.user.firstName,
             lastName: session.user.lastName,
-          })
+          });
         }
-      })
-    )
+      }),
+    );
   }
 
   ngOnDestroy(): void {

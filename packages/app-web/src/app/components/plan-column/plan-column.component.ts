@@ -33,5 +33,4 @@ export class PlanColumnComponent {
   pricePerUnit: string = '/ Month';
 
   constructor() {}
-
 }

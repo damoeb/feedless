@@ -2,9 +2,10 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PricingComponent } from './pricing.component';
 import { PricingModule } from './pricing.module';
-import { AppTestModule, mockPlans } from '../../app-test.module';
+import { AppTestModule, mockProducts } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
+import { GqlProductCategory } from '../../../generated/graphql';
 
 describe('PricingComponent', () => {
   let component: PricingComponent;
@@ -15,7 +16,7 @@ describe('PricingComponent', () => {
       imports: [
         PricingModule,
         AppTestModule.withDefaults((apolloMockController) => {
-          mockPlans(apolloMockController);
+          mockProducts(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],
@@ -26,6 +27,7 @@ describe('PricingComponent', () => {
 
     fixture = TestBed.createComponent(PricingComponent);
     component = fixture.componentInstance;
+    component.productCategory = GqlProductCategory.RssProxy;
     fixture.detectChanges();
   }));
 

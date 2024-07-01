@@ -10,8 +10,8 @@ import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import { SessionService } from '../../services/session.service';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { fixUrl } from '../../app.module';
 import { Authentication, AuthService } from '../../services/auth.service';

@@ -10,11 +10,12 @@ import {
   OperationVariables,
 } from '@apollo/client/core/types';
 import {
-  AuthAnonymous, Billings,
+  AuthAnonymous,
+  Orders,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables, GqlBillingsQuery, GqlBillingsQueryVariables,
-  GqlLicenseQuery,
-  GqlLicenseQueryVariables,
+  GqlAuthAnonymousMutationVariables,
+  GqlOrdersQuery,
+  GqlOrdersQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
   GqlListRepositoriesQuery,
@@ -32,13 +33,15 @@ import {
   GqlVisibility,
   GqlWebDocumentByIdsQuery,
   GqlWebDocumentByIdsQueryVariables,
-  License,
   ListPlugins,
   ListRepositories,
   RepositoryById,
   Scrape,
   ServerSettings,
-  WebDocumentByIds
+  WebDocumentByIds,
+  GqlListProductsQuery,
+  GqlListProductsQueryVariables,
+  ListProducts,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -223,8 +226,18 @@ export class AppTestModule {
   }
 }
 
-export function mockPlans(apolloMockController: ApolloMockController) {
-  return apolloMockController;
+export function mockProducts(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<GqlListProductsQuery, GqlListProductsQueryVariables>(
+      ListProducts,
+    )
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          products: [],
+        },
+      };
+    });
 }
 
 export function mockPlugins(apolloMockController: ApolloMockController) {
@@ -255,7 +268,6 @@ export function mockDocuments(apolloMockController: ApolloMockController) {
 export type Mocks = {
   repository: GqlRepository;
   scrapeResponse: GqlScrapeResponse;
-  license: GqlLicenseQuery['license'];
 };
 export const mocks: Mocks = {
   repository: {
@@ -299,11 +311,6 @@ export const mocks: Mocks = {
     },
     elements: [],
   },
-  license: {
-    isLocated: false,
-    isTrial: true,
-    isValid: false,
-  },
 };
 
 export function mockRepository(apolloMockController: ApolloMockController) {
@@ -335,13 +342,11 @@ export function mockRepositories(apolloMockController: ApolloMockController) {
 }
 export function mockBillings(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<GqlBillingsQuery, GqlBillingsQueryVariables>(
-      Billings,
-    )
+    .mockQuery<GqlOrdersQuery, GqlOrdersQueryVariables>(Orders)
     .and.resolveOnce(async () => {
       return {
         data: {
-          billings: [],
+          orders: [],
         },
       };
     });
@@ -354,20 +359,6 @@ export function mockScrape(apolloMockController: ApolloMockController) {
       return {
         data: {
           scrape: mocks.scrapeResponse,
-        },
-      };
-    });
-}
-
-export function mockLicense(
-  apolloMockController: ApolloMockController,
-): ApolloMockController {
-  return apolloMockController
-    .mockQuery<GqlLicenseQuery, GqlLicenseQueryVariables>(License)
-    .and.resolveOnce(async () => {
-      return {
-        data: {
-          license: mocks.license,
         },
       };
     });
@@ -391,6 +382,11 @@ export async function mockServerSettings(
         profiles: [],
         version: '',
         features: [],
+        license: {
+          isLocated: false,
+          isTrial: true,
+          isValid: true,
+        },
       };
       return {
         data: {

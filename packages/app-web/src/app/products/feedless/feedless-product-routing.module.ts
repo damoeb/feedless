@@ -26,9 +26,9 @@ const routes: Routes = [
           {
             path: 'workflow-builder',
             loadChildren: () =>
-              import('../../pages/workflow-builder/workflow-builder.module').then(
-                (m) => m.WorkflowBuilderPageModule,
-              ),
+              import(
+                '../../pages/workflow-builder/workflow-builder.module'
+              ).then((m) => m.WorkflowBuilderPageModule),
           },
           {
             path: 'products',
@@ -43,14 +43,12 @@ const routes: Routes = [
               import('./about/about-feedless.module').then(
                 (m) => m.AboutFeedlessModule,
               ),
-          }
+          },
         ],
       },
       {
         path: '',
-        children: [
-          ...DefaultRoutes,
-        ],
+        children: [...DefaultRoutes],
       },
       {
         path: '**',

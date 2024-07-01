@@ -9,15 +9,13 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import {
-  GqlProductCategory,
-} from '../../../generated/graphql';
+import { GqlProductCategory } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-rss-builder-product-page',

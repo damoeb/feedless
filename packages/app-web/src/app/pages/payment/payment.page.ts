@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -23,8 +29,8 @@ export class PaymentPage implements OnInit, OnDestroy {
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {
           setTimeout(() => {
-            location.href = `${this.serverConfig.apiUrl}/payment/${params.billingId}/callback`
-          }, 3000)
+            location.href = `${this.serverConfig.apiUrl}/payment/${params.billingId}/callback`;
+          }, 3000);
         }
       }),
     );
@@ -34,5 +40,4 @@ export class PaymentPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
 }

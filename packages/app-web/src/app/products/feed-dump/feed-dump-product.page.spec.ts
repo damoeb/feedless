@@ -3,7 +3,6 @@ import { FeedDumpProductPage } from './feed-dump-product.page';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
@@ -22,7 +21,6 @@ describe('PcTrackerProductPage', () => {
         FeedDumpProductModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
-          mockLicense(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],

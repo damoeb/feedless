@@ -3,9 +3,11 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input, OnChanges,
+  Input,
+  OnChanges,
   OnInit,
-  Output, SimpleChanges
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import {
   GqlExtendContentOptions,

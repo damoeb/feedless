@@ -48,7 +48,6 @@ ion-checkbox {
   }
 }
 
-
 .payment-options {
   display: flex;
   flex-direction: row;
@@ -61,7 +60,7 @@ ion-checkbox {
     padding-left: 10px;
   }
 
-  &>div {
+  & > div {
     --border-color: rgba(var(--ion-color-dark-rgb), 0.5);
     --hl-border-color: var(--ion-color-dark);
     border: 2px solid var(--border-color);

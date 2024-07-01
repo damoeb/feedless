@@ -20,7 +20,7 @@ import { PricingModule } from '../../components/pricing/pricing.module';
     ProductHeadlineModule,
     ReactiveFormsModule,
     PlanColumnModule,
-    PricingModule
+    PricingModule,
   ],
   declarations: [PricingPage],
 })

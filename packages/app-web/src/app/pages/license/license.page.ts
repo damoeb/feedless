@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { LicenseService } from '../../services/license.service';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
@@ -28,12 +34,14 @@ export class LicensePage implements OnInit, OnDestroy {
   ) {}
 
   fromNow = relativeTimeOrElse;
-  buyRssProxyUrl: string = `${environment.officialFeedlessUrl}/pricing/rss-proxy?callbackUrl=${encodeURIComponent(location.href)}`;
+  buyRssProxyUrl: string = `${
+    environment.officialFeedlessUrl
+  }/pricing/rss-proxy?callbackUrl=${encodeURIComponent(location.href)}`;
   licenseFc = new FormControl<string>('', [Validators.minLength(10)]);
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.activatedRoute.queryParams.subscribe(queryParams => {
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.licenseKey) {
           this.licenseFc.setValue(queryParams.licenseKey);
           this.changeRef.detectChanges();

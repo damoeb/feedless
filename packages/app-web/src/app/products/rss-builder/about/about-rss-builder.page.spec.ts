@@ -3,7 +3,6 @@ import { AboutRssBuilderPage } from './about-rss-builder.page';
 import {
   ApolloMockController,
   AppTestModule,
-  mockLicense,
   mockServerSettings,
 } from '../../../app-test.module';
 import { AboutRssBuilderModule } from './about-rss-builder.module';
@@ -17,12 +16,7 @@ describe('AboutRssBuilderPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AboutRssBuilderModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockLicense(apolloMockController);
-        }),
-      ],
+      imports: [AboutRssBuilderModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
@@ -31,12 +25,13 @@ describe('AboutRssBuilderPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    const appConfigService = TestBed.inject(AppConfigService)
-    appConfigService.getProductConfigs = () => Promise.resolve([
-      {
-        id: 'rss-proxy'
-      } as any
-    ])
+    const appConfigService = TestBed.inject(AppConfigService);
+    appConfigService.getProductConfigs = () =>
+      Promise.resolve([
+        {
+          id: 'rss-proxy',
+        } as any,
+      ]);
 
     fixture = TestBed.createComponent(AboutRssBuilderPage);
     component = fixture.componentInstance;

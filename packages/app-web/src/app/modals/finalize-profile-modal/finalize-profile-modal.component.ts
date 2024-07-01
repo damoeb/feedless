@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { needsPlanSubscription, SessionService } from '../../services/session.service';
+import {
+  needsPlanSubscription,
+  SessionService,
+} from '../../services/session.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
@@ -26,7 +34,10 @@ export class FinalizeProfileModalComponent implements OnInit {
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     plan: new FormControl<string>(undefined),
-    terms: new FormControl<boolean>(false, [Validators.requiredTrue, Validators.required]),
+    terms: new FormControl<boolean>(false, [
+      Validators.requiredTrue,
+      Validators.required,
+    ]),
   });
   protected canSkip = true;
   protected requiresPlan: boolean;
@@ -48,19 +59,28 @@ export class FinalizeProfileModalComponent implements OnInit {
         'days',
       );
       this.canSkip = ageInDays < 7;
-      this.requiresPlan = needsPlanSubscription(session.user, this.serverConfigService);
+      this.requiresPlan = needsPlanSubscription(
+        session.user,
+        this.serverConfigService,
+      );
       if (this.requiresPlan) {
         this.formFg.controls.plan.addValidators(Validators.required);
-        const productCategory = await firstValueFrom(this.appConfigService.getActiveProductConfigChange())
-        const cloudProducts = (await this.productService.listProducts({
-          category: productCategory.product,
-        })).filter(product => product.isCloud);
-        this.product = cloudProducts.find(product => product.prices.some(price => price.price === 0))
+        const productCategory = await firstValueFrom(
+          this.appConfigService.getActiveProductConfigChange(),
+        );
+        const cloudProducts = (
+          await this.productService.listProducts({
+            category: productCategory.product,
+          })
+        ).filter((product) => product.isCloud);
+        this.product = cloudProducts.find((product) =>
+          product.prices.some((price) => price.price === 0),
+        );
       }
       this.formFg.patchValue({
         email: session.user.email,
-        terms: session.user.hasAcceptedTerms
-      })
+        terms: session.user.hasAcceptedTerms,
+      });
       this.changeRef.detectChanges();
     });
   }
@@ -70,12 +90,14 @@ export class FinalizeProfileModalComponent implements OnInit {
       this.loading = true;
       this.changeRef.detectChanges();
 
-      await this.sessionService.finalizeSignUp(this.formFg.value.email, this.product);
+      await this.sessionService.finalizeSignUp(
+        this.formFg.value.email,
+        this.product,
+      );
       await new Promise((resolve) => setTimeout(resolve, 500));
       await this.modalCtrl.dismiss();
     }
     this.formFg.markAllAsTouched();
     this.changeRef.detectChanges();
   }
-
 }

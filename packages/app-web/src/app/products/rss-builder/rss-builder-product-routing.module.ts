@@ -43,14 +43,12 @@ const routes: Routes = [
               import('../../pages/agents/agents.module').then(
                 (m) => m.AgentsPageModule,
               ),
-          }
+          },
         ],
       },
       {
         path: '',
-        children: [
-          ...DefaultRoutes
-        ],
+        children: [...DefaultRoutes],
       },
     ],
   },

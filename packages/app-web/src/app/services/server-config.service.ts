@@ -158,7 +158,7 @@ export class ServerConfigService {
   }
 
   hasProfile(profile: GqlProfileName) {
-    return this.profiles.indexOf(profile) > -1;
+    return this.profiles?.indexOf(profile) > -1;
   }
 
   isSelfHosted() {
