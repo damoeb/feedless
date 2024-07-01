@@ -1,19 +1,23 @@
 package org.migor.feedless.document
 
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.StringFilter
+import org.migor.feedless.generated.types.WebDocumentOrderByInput
+import org.migor.feedless.generated.types.WebDocumentsWhereInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -32,6 +36,9 @@ class DocumentService {
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
   @Autowired
+  private lateinit var sessionService: SessionService
+
+  @Autowired
   private lateinit var documentDAO: DocumentDAO
 
   @Autowired
@@ -46,30 +53,46 @@ class DocumentService {
 
   fun findAllByRepositoryId(
     repositoryId: UUID,
-    page: Int?,
-    pageSize: Int? = null,
+    where: WebDocumentsWhereInput? = null,
+    orderBy: WebDocumentOrderByInput? = null,
     status: ReleaseStatus = ReleaseStatus.released,
-    tag: String? = null
-  ): Page<DocumentEntity> {
-    val fixedPage = (page ?: 0).coerceAtLeast(0)
-    val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(50)
-    val pageable = PageRequest.of(fixedPage, fixedPageSize, Sort.by(Sort.Direction.DESC, "publishedAt"))
+    tag: String? = null,
+    pageable: Pageable
+  ): Page<DocumentEntity?> {
+    val repo = repositoryDAO.findById(repositoryId).orElseThrow()
+    if (repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId()) {
+      throw IllegalArgumentException("repo is not public")
+    }
 
-//    return tag
-//      ?.let {
-//        val count = documentDAO.countByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
-//          repositoryId, status, Date(), tag,
-//          limit = fixedPageSize, offset = fixedPage * fixedPageSize
-//        )
-//        val documents = documentDAO.findAllIdsByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
-//          repositoryId, status, Date(), tag,
-//          limit = fixedPageSize, offset = fixedPage * fixedPageSize
-//        )
-//        PageImpl(documents, pageable, count)
-//        }
-//      ?: documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repositoryId, status, Date(), pageable)
+    return documentDAO.findPage(pageable) {
+      val whereStatements = mutableListOf<Predicatable>()
 
-    return documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(repositoryId, status, Date(), pageable)
+      where?.let {
+        it.startedAt?.let {
+          it.before?.let {
+            whereStatements.add(path(DocumentEntity::startingAt).le(Date(it)))
+          }
+          it.after?.let {
+            whereStatements.add(path(DocumentEntity::startingAt).ge(Date(it)))
+          }
+        }
+      }
+
+      select(
+        entity(DocumentEntity::class),
+      ).from(
+        entity(DocumentEntity::class)
+      ).whereAnd(
+        path(DocumentEntity::repositoryId).eq(repositoryId),
+        path(DocumentEntity::status).`in`(status),
+        path(DocumentEntity::publishedAt).lt(Date()),
+        *whereStatements.toTypedArray()
+      ).orderBy(
+        orderBy?.let {
+          path(DocumentEntity::startingAt).asc().nullsLast()
+        } ?: path(DocumentEntity::publishedAt).desc()
+      )
+    }
   }
 
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
@@ -97,6 +120,7 @@ class DocumentService {
   }
 
   fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+    log.info("[$corrId] deleteDocuments $documentIds")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
     if (repository.ownerId != user.id) {
       throw PermissionDeniedException("current user ist not owner ($corrId)")

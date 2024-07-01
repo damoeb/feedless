@@ -20,7 +20,7 @@ const routes: Routes = [
       },
       {
         path: 'tracker',
-        canActivate: [AuthGuardService],
+        // canActivate: [AuthGuardService],
         loadChildren: () =>
           import('./subscription-edit/subscription-edit.module').then(
             (m) => m.SubscriptionEditPageModule,

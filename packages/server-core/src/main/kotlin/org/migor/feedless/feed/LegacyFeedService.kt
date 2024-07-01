@@ -6,7 +6,7 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.ScrapeDebugOptions
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
@@ -25,7 +25,6 @@ import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
@@ -65,7 +64,7 @@ class LegacyFeedService {
   private lateinit var featureService: FeatureService
 
   @Autowired
-  private lateinit var documentDAO: DocumentDAO
+  private lateinit var documentService: DocumentService
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
@@ -156,15 +155,14 @@ class LegacyFeedService {
   private fun appendNotifications(corrId: String, feed: RichFeed, requestURI: String): RichFeed {
     val root = userDAO.findFirstByRootIsTrue()
     repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
-      val pageRequest = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
-      val documents = documentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(
+      val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
+      val documents = documentService.findAllByRepositoryId(
         repo.id,
-        ReleaseStatus.released,
-        Date(),
-        pageRequest
+        status = ReleaseStatus.released,
+        pageable = pageable
       )
       feed.items =
-        documents.map { it.toRichArticle(propertyService, EntityVisibility.isPublic, requestURI) }.plus(feed.items)
+        documents.mapNotNull { it?.toRichArticle(propertyService, EntityVisibility.isPublic, requestURI) }.plus(feed.items)
     } ?: log.warn("[$corrId] Repo for legacy notification not found")
     return feed
   }

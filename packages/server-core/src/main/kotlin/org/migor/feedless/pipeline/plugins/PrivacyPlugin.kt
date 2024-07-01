@@ -14,7 +14,6 @@ import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
-import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory

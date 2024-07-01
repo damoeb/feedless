@@ -10,22 +10,10 @@
 </ion-header>
 
 <ion-content>
-  <form (submit)="searchAddress()">
-    <ion-toolbar>
-      <ion-searchbar
-        [(ngModel)]="query"
-        [debounce]="1000"
-        name="url"
-        placeholder="Enter Address"
-      ></ion-searchbar>
-      <ion-buttons slot="end">
-        <ion-button (click)="searchAddress()" color="dark">
-          <ion-icon name="search-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </form>
-
+  <app-searchbar
+    placeholder="Enter address or location"
+    (querySubmit)="searchAddress($event)"
+  ></app-searchbar>
   <ion-list>
     <ion-item
       (click)="pick(match)"

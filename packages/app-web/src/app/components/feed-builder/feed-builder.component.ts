@@ -38,6 +38,7 @@ import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
+import { OsmMatch } from '../../modals/search-address-modal/search-address-modal.component';
 
 /**
  * IDEEN
@@ -108,6 +109,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   @Output()
   selectedFeedChanged = new EventEmitter<FeedWithRequest>();
   protected tags: string[] = [];
+  protected location: OsmMatch;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -210,6 +212,12 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
 
     this.scrapeRequest.tags = this.tags;
+    if (this.location) {
+      this.scrapeRequest.localized = {
+        lat: parseFloat(this.location.lat),
+        lon: parseFloat(this.location.lon),
+      };
+    }
     this.selectedFeedChanged.emit({
       scrapeRequest: this.scrapeRequest,
       feed: this.selectedFeed,
@@ -224,6 +232,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         url: this.url,
       },
     });
+
+    this.errorMessage = null;
 
     await modal.present();
     const result = await modal.onDidDismiss<FeedBuilderData>();
@@ -268,6 +278,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.tags = await this.modalService.openTagModal({
       tags: this.tags || [],
     });
+    this.changeRef.detectChanges();
+  }
+
+  async showLocationPickerModal() {
+    this.location = await this.modalService.openSearchAddressModal();
     this.changeRef.detectChanges();
   }
 

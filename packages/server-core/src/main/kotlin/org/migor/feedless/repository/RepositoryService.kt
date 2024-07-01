@@ -2,6 +2,8 @@ package org.migor.feedless.repository
 
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
@@ -50,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -58,6 +61,13 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+
+fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
+  val fixedPage = (page ?: 0).coerceAtLeast(0)
+  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(50)
+  return PageRequest.of(fixedPage, fixedPageSize)
+}
+
 
 @Service
 @Profile(AppProfiles.database)
@@ -121,9 +131,9 @@ class RepositoryService {
   }
 
   private fun createSubscription(
-      corrId: String,
-      ownerId: UUID,
-      subInput: RepositoryCreateInput
+    corrId: String,
+    ownerId: UUID,
+    subInput: RepositoryCreateInput
   ): RepositoryEntity {
     val repo = RepositoryEntity()
 
@@ -132,7 +142,7 @@ class RepositoryService {
     repo.visibility = planConstraintsService.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
     val product = sessionService.activeProductFromRequest()!!
 
-    planConstraintsService.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId, product)
+    planConstraintsService.auditSourcesMaxCountPerRepository(subInput.sources.size, ownerId, product)
     repo.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
     repo.ownerId = ownerId
     subInput.sinkOptions.plugins?.let {
@@ -144,7 +154,8 @@ class RepositoryService {
     repo.sourcesSyncExpression = subInput.sourceOptions?.let {
       planConstraintsService.auditCronExpression(subInput.sourceOptions.refreshCron)
     } ?: ""
-    repo.retentionMaxItems = planConstraintsService.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId, product)
+    repo.retentionMaxItems =
+      planConstraintsService.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId, product)
     repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
       subInput.sinkOptions.retention?.maxAgeDays,
       ownerId,
@@ -184,10 +195,10 @@ class RepositoryService {
   }
 
   private fun createScrapeSource(
-      corrId: String,
-      ownerId: UUID,
-      req: ScrapeRequestInput,
-      sub: RepositoryEntity
+    corrId: String,
+    ownerId: UUID,
+    req: ScrapeRequestInput,
+    sub: RepositoryEntity
   ): SourceEntity {
     val entity = SourceEntity()
     val scrapeRequest = req.fromDto()
@@ -197,6 +208,13 @@ class RepositoryService {
     entity.emit = scrapeRequest.emit
     entity.url = scrapeRequest.page.url
     entity.tags = scrapeRequest.tags?.toTypedArray()
+    scrapeRequest.localized?.let {
+      val gf = GeometryFactory()
+      entity.latLon = gf.createPoint(Coordinate(it.lat, it.lon))
+    } ?: run {
+      entity.latLon = null
+    }
+
     entity.timeout = scrapeRequest.page.timeout
 
     scrapeRequest.page.prerender?.let {
@@ -230,12 +248,13 @@ class RepositoryService {
   fun getFeedByRepositoryId(repositoryId: String, page: Int, tag: String? = null): RichFeed {
     val id = UUID.fromString(repositoryId)
     val repository = repositoryDAO.findById(id).orElseThrow { NotFoundException("repository not found") }
-    val pageResult = documentService.findAllByRepositoryId(id, page, 10, status = ReleaseStatus.released, tag)
-    val items = pageResult.get().map { it.toRichArticle(propertyService, repository.visibility) }.toList()
+    val pageable = toPageRequest(page, 10)
+    val pageResult = documentService.findAllByRepositoryId(id, status = ReleaseStatus.released, tag = tag, pageable = pageable)
+    val items = pageResult.mapNotNull { it?.toRichArticle(propertyService, repository.visibility) }.toList()
 
     val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
-    val title = if(repository.visibility === EntityVisibility.isPublic) {
+    val title = if (repository.visibility === EntityVisibility.isPublic) {
       repository.title
     } else {
       "${repository.title} (Personal use)"
@@ -254,10 +273,10 @@ class RepositoryService {
     richFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
 
     if (!pageResult.isLast) {
-      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page+1}"
+      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page + 1}"
     }
     if (!pageResult.isFirst) {
-      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page-1}"
+      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page - 1}"
     }
 
     return richFeed
@@ -265,7 +284,7 @@ class RepositoryService {
 
   fun findAll(offset: Int, pageSize: Int, where: RepositoriesWhereInput?, userId: UUID?): List<RepositoryEntity> {
     val pageable =
-        PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
+      PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     return (userId
       ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
       ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable))
@@ -313,7 +332,8 @@ class RepositoryService {
     data.refreshCron?.let {
       it.set?.let {
         repository.sourcesSyncExpression = planConstraintsService.auditCronExpression(it)
-        repository.triggerScheduledNextAt = calculateScheduledNextAt(it, repository.ownerId,
+        repository.triggerScheduledNextAt = calculateScheduledNextAt(
+          it, repository.ownerId,
           product,
           LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault())
         )
@@ -324,6 +344,7 @@ class RepositoryService {
       val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
       if (newPlugins != repository.plugins) {
         repository.plugins = newPlugins
+        log.info("[$corrId] plugins ${newPlugins}")
       }
     }
     data.nextUpdateAt?.let {
@@ -334,15 +355,18 @@ class RepositoryService {
         repository.ownerId,
         product
       )
+      log.info("[$corrId] nextUpdateAt ${repository.triggerScheduledNextAt}")
     }
     data.retention?.let {
-      it.maxAgeDays?.set?.let {
-        repository.retentionMaxAgeDays = it
+      it.maxAgeDays?.let {
+        repository.retentionMaxAgeDays = it.set
+        log.info("[$corrId] retentionMaxAgeDays ${it.set}")
       }
-      it.maxItems?.set?.let {
-        repository.retentionMaxItems = it
+      it.maxItems?.let {
+        repository.retentionMaxItems = it.set
+        log.info("[$corrId] retentionMaxItems ${it.set}")
       }
-      if (it.maxAgeDays!=null || it.maxItems!=null) {
+      if (it.maxAgeDays != null || it.maxItems != null) {
         documentService.applyRetentionStrategy(corrId, repository)
       }
     }
@@ -352,9 +376,18 @@ class RepositoryService {
         repository.sources.addAll(it.map { createScrapeSource(corrId, repository.ownerId, it, repository) })
       }
       it.update?.let {
-        val sources: List<SourceEntity> = it.mapNotNull{ scrapeRequestUpdate -> run {
+        val sources: List<SourceEntity> = it.mapNotNull { scrapeRequestUpdate ->
+          run {
             val source = repository.sources.firstOrNull { it.id.toString() == scrapeRequestUpdate.where.id }
-            source?.tags = scrapeRequestUpdate.data.tags.set.toTypedArray()
+            scrapeRequestUpdate.data.tags?.let {
+              source?.tags = scrapeRequestUpdate.data.tags.set.toTypedArray()
+            }
+            scrapeRequestUpdate.data.localized?.let { point ->
+              point.set?.let {
+                val gf = GeometryFactory()
+                source?.latLon = gf.createPoint(Coordinate(it.lat, it.lon))
+              } ?: run { source?.latLon = null }
+            }
             source
           }
         }
@@ -439,7 +472,11 @@ private fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params)
 }
 
-fun DocumentEntity.toRichArticle(propertyService: PropertyService, visibility: EntityVisibility, requestURI: String? = null): RichArticle {
+fun DocumentEntity.toRichArticle(
+  propertyService: PropertyService,
+  visibility: EntityVisibility,
+  requestURI: String? = null
+): RichArticle {
   val article = RichArticle()
   article.id = id.toString()
   article.title = StringUtils.trimToEmpty(contentTitle)
@@ -490,9 +527,10 @@ fun addListenableTag(tags: List<String>): List<String> {
 }
 
 fun classifyDuration(duration: Long): String {
-  return when(duration.div(60.0)) {
+  return when (duration.div(60.0)) {
     in 0.0..1.0 -> "brief"
-    in 1.0 .. 5.0 -> "short"
-    in 5.0 .. 30.0 -> "medium"
+    in 1.0..5.0 -> "short"
+    in 5.0..30.0 -> "medium"
     else -> "long"
-  }}
+  }
+}

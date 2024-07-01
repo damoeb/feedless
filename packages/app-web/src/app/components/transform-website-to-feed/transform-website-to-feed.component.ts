@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -27,6 +28,7 @@ import { ModalService } from '../../services/modal.service';
 import { FeedService } from '../../services/feed.service';
 import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
+import { Subscription } from 'rxjs';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -45,7 +47,9 @@ export type ComponentStatus = 'valid' | 'invalid';
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
+export class TransformWebsiteToFeedComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
 
@@ -95,6 +99,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
   showSelectors = false;
   private selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -104,6 +109,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
 
   async ngOnInit() {
     try {
+      this.subscriptions.push(
+        this.formGroup.valueChanges.subscribe(() => {
+          this.emitSelectedFeed();
+        }),
+      );
       const elementWithFeeds = this.scrapeResponse.elements.find((element) =>
         element.selector.fields.some(
           (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
@@ -230,7 +240,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
 
   private emitSelectedFeed() {
     this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
-    this.selectedFeedChange.emit(this.selectedFeed);
+    this.selectedFeedChange.emit(this.getSelectedFeed());
   }
 
   async previewGenericFeed() {
@@ -239,7 +249,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
         this.feedService.previewFeed({
           requests: [
             getScrapeRequest(
-              this.selectedFeed,
+              this.getSelectedFeed(),
               this.scrapeRequest as GqlScrapeRequest,
             ),
           ],
@@ -273,5 +283,32 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnChanges {
     if (changes.scrapeResponse?.currentValue) {
       console.log('changed scrapeResponse');
     }
+  }
+
+  private getSelectedFeed(): NativeOrGenericFeed {
+    if (this.selectedFeed.nativeFeed) {
+      return this.selectedFeed;
+    } else {
+      return {
+        genericFeed: {
+          selectors: {
+            linkXPath: this.formGroup.value.linkXPath,
+            contextXPath: this.formGroup.value.contextXPath,
+            dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
+            extendContext: this.formGroup.value.extendContext,
+            dateXPath: this.formGroup.value.dateXPath,
+          },
+          samples: [],
+          feedUrl: '',
+          hash: '',
+          score: 0,
+          count: 0,
+        },
+      };
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

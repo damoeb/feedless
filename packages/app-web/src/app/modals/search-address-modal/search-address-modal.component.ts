@@ -5,20 +5,11 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 // https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
-interface OsmMatch {
+export interface OsmMatch {
   lat: string;
   lon: string;
-  display_name: 'Innsbruck, Tyrol, Austria';
+  display_name: string;
   importance: number;
-}
-
-export interface SearchAddressPayload {
-  lat: string;
-  lon: string;
-}
-
-export interface SearchAddressModalSuccess extends ModalSuccess {
-  data: SearchAddressPayload;
 }
 
 @Component({
@@ -27,7 +18,6 @@ export interface SearchAddressModalSuccess extends ModalSuccess {
   styleUrls: ['./search-address-modal.component.scss'],
 })
 export class SearchAddressModalComponent {
-  query = '';
   matches: OsmMatch[];
   loading = false;
 
@@ -44,18 +34,16 @@ export class SearchAddressModalComponent {
     await this.modalCtrl.dismiss(response);
   }
 
-  async searchAddress() {
+  async searchAddress(query: string) {
     this.loading = true;
-    const url = `https://nominatim.openstreetmap.org/search?q=${this.query}&format=json&polygon=1&addressdetails=1`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      query,
+    )}&format=json&polygon=1&addressdetails=1`;
     this.matches = await firstValueFrom(this.httpClient.get<OsmMatch[]>(url));
     this.loading = false;
   }
 
   async pick(match: OsmMatch) {
-    const response: SearchAddressModalSuccess = {
-      cancel: false,
-      data: { lat: match.lat, lon: match.lon },
-    };
-    await this.modalCtrl.dismiss(response);
+    await this.modalCtrl.dismiss(match);
   }
 }

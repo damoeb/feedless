@@ -54,7 +54,7 @@ class PlanConstraintsService {
         customMaxItems.coerceAtLeast(minItems)
           .coerceAtMost(maxItems)
       } ?: customMaxItems.coerceAtLeast(minItems)
-    } ?: maxItems
+    }
   }
 
   private fun resolveProduct(product: ProductCategory?): ProductCategory {
@@ -153,11 +153,11 @@ class PlanConstraintsService {
 
   fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
     val activeCount = repositoryDAO.countByOwnerIdAndArchived(userId, false)
-    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)!! <= activeCount
+    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
-  fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID, product: ProductCategory) {
-    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId, product)
+  fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
+    val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }

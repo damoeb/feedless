@@ -98,11 +98,18 @@ type Repository {
   disabledFrom: Long
   archived: Boolean!
   activity: Activity!
+#  location: LatLonLocation!
   plugins: [PluginExecution!]!
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]!
 }
+
+#type LatLonLocation {
+#  lat: Long!
+#  lon: Long!
+#  description: String
+#}
 
 type SunSetPolicy {
   afterTimestamp: Long
@@ -294,6 +301,7 @@ input RepositoryUpdateDataInput {
   title: StringUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
   retention: RetentionUpdateInput
+#  location: LatLonLocationInput
   plugins: [PluginExecutionInput!]
   nextUpdateAt: NullableLongUpdateOperationsInput
   sources: SourcesUpdateInput
@@ -495,17 +503,26 @@ input PreviewFeedInput {
 input WebDocumentsInput {
   cursor: Cursor!
   where: WebDocumentsWhereInput
+  orderBy: WebDocumentOrderByInput
 }
 
 input WebDocumentsWhereInput {
   id: StringFilter
   repository: RepositoryWhereInput!
-  updatedAt: DatesWhereInput
+#  updatedAt: DatesWhereInput
+  startedAt: DatesWhereInput
+  localized: GeoPointWhereInput
   tags: StringFilter
 }
 
+input GeoPointWhereInput {
+  near: GeoPointInput!
+  distance: Float!
+}
+
 input DatesWhereInput {
-  after: DateWhereInput!
+  before: Long
+  after: Long
 }
 
 input DateWhereInput {
@@ -880,6 +897,7 @@ type WebDocument {
   imageUrl: String
   publishedAt: Long!
   startingAt: Long
+  localized: GeoPoint
   updatedAt: Long
   url: String!
 }
@@ -1013,7 +1031,7 @@ input WebhookUniqueWhereInput {
 
 input RepositoriesInput {
   cursor: Cursor!
-  orderBy: OrderByInput
+  orderBy: WebDocumentOrderByInput
   where: RepositoriesWhereInput
 }
 
@@ -1081,9 +1099,16 @@ input SinkOptionsInput {
   retention: RetentionInput
   refreshCron: String
   sunset: SunSetPolicyInput
+#  location: LatLonLocationInput
   visibility: Visibility
   plugins: [PluginExecutionInput!]
 }
+
+#input LatLonLocationInput {
+#  lat: Long!
+#  lon: Long!
+#  description: String
+#}
 
 input SunSetPolicyInput {
   afterTimestamp: Long
@@ -1145,9 +1170,8 @@ input NullableUpdateOperationsInput {
   assignNull: Boolean!
 }
 
-input OrderByInput {
-  createdAt: SortOrder
-  title: SortOrder
+input WebDocumentOrderByInput {
+  startedAt: SortOrder
 }
 
 input RegisterAgentInput {
@@ -1331,7 +1355,12 @@ input ScrapeRequestUpdateInput {
 }
 
 input ScrapeRequestUpdateDataInput {
-  tags: StringArrayUpdateOperationsInput!
+  tags: StringArrayUpdateOperationsInput
+  localized: NullableUpdateGeoPointInput
+}
+
+input NullableUpdateGeoPointInput {
+  set: GeoPointInput
 }
 
 input ScrapeSourceUniqueWhereInput {
@@ -1343,16 +1372,16 @@ input ScrapeRequestInput {
   id: ID
   page: ScrapePageInput!
   errornous: Boolean
-  localized: LocalizedSourceInput
+  localized: GeoPointInput
   tags: [String!]
   lastErrorMessage: String
   debug: ScrapeDebugOptionsInput
   emit: [ScrapeEmitInput!]!
 }
 
-input LocalizedSourceInput {
-  lat: Long!
-  lon: Long!
+input GeoPointInput {
+  lat: Float!
+  lon: Float!
 }
 
 input ScrapeEmitInput {
@@ -1483,16 +1512,16 @@ type ScrapeRequest {
   id: ID!
   page: ScrapePage!
   errornous: Boolean
-  localized: LocalizedSource
+  localized: GeoPoint
   tags: [String!]
   lastErrorMessage: String
   debug: ScrapeDebugOptions
   emit: [ScrapeEmit!]!
 }
 
-type LocalizedSource {
-  lat: Long!
-  lon: Long!
+type GeoPoint {
+  lat: Float!
+  lon: Float!
 }
 
 type ScrapeEmit {

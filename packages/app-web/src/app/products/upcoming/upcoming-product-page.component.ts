@@ -5,18 +5,22 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs, ManipulateType } from 'dayjs';
 import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { isUndefined } from 'lodash-es';
+import { DocumentService } from '../../services/document.service';
+import { WebDocument } from '../../graphql/types';
+import { BubbleColor } from '../../components/bubble/bubble.component';
 
 type Day = {
   day: Dayjs | null;
   today?: boolean;
   past?: boolean;
+  isFirstWeek?: boolean;
 };
 type Months = {
   [month: number]: Day[];
@@ -41,16 +45,22 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private refDate: Dayjs;
   private now: Dayjs;
+  private events: WebDocument[] = [];
+  private timeWindowTo: number;
+  private timeWindowFrom: number;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
+    private readonly documentService: DocumentService,
     private readonly appConfigService: AppConfigService,
   ) {}
 
   private fillCalendar() {
     this.years = {};
     const dayOfWeek = parseInt(this.refDate.format('d'));
-    const ref = this.refDate.subtract(1, 'week').subtract(dayOfWeek, 'day');
+    const ref = this.refDate.subtract(dayOfWeek, 'day');
+
+    this.timeWindowFrom = ref.valueOf();
 
     const isToday = (day: Dayjs): boolean => {
       return (
@@ -61,7 +71,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     };
 
     let previousDay: Dayjs = null;
-    const push = (day: Dayjs) => {
+    const push = (day: Dayjs, isFirstWeek: boolean) => {
       const month = day.month();
       const year = day.year();
       if (isUndefined(this.years[year])) {
@@ -83,7 +93,8 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       this.years[year][month].push({
         day,
         today: isToday(day),
-        past: this.now.isAfter(day),
+        past: this.now.isAfter(day, 'day'),
+        isFirstWeek,
       });
 
       previousDay = day;
@@ -91,14 +102,17 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
     for (let w = 0; w < 4; w++) {
       for (let d = 0; d < 7; d++) {
-        push(ref.add(w, 'week').add(d + 1, 'day'));
+        const day = ref.add(w, 'week').add(d + 1, 'day');
+        push(day, w === 0);
+        this.timeWindowTo = day.valueOf();
       }
     }
 
     this.changeRef.detectChanges();
+    this.fetchEvents();
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()
@@ -125,8 +139,8 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       .format('MMMM');
   }
 
-  next() {
-    this.refDate = this.refDate.add(1, 'week');
+  next(value: number, unit: ManipulateType) {
+    this.refDate = this.refDate.add(value, unit);
     this.fillCalendar();
   }
 
@@ -139,5 +153,39 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   private handleLocation(position: GeolocationPosition) {
     console.log(position);
+  }
+
+  getEvents(day: Dayjs, maxItems: number = null): WebDocument[] {
+    return this.events
+      .filter((event) => dayjs(event.startingAt).isSame(day, 'day'))
+      .filter((_, index) => !maxItems || index < maxItems - 1);
+  }
+
+  getDots(day: Dayjs): BubbleColor[] {
+    const colors: BubbleColor[] = ['blue', 'red', 'gray', 'green'];
+    return this.getEvents(day)
+      .map(() => colors[parseInt(`${Math.random() * colors.length}`)])
+      .sort();
+  }
+
+  private async fetchEvents() {
+    this.events = await this.documentService.findAllByRepositoryId({
+      cursor: {
+        page: 0,
+        pageSize: 100,
+      },
+      where: {
+        repository: {
+          where: {
+            id: 'abe894d1-2098-4a1f-b7fe-2fc8e6d74105',
+          },
+        },
+        startedAt: {
+          after: this.timeWindowFrom,
+          before: this.timeWindowTo,
+        },
+      },
+    });
+    this.changeRef.detectChanges();
   }
 }

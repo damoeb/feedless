@@ -7,8 +7,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.plan.PlanName
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.TokenProvider

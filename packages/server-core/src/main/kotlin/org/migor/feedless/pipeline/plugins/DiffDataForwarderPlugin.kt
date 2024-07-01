@@ -7,8 +7,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.repositories.SourceDAO
-import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.WebDocumentField
@@ -39,13 +39,12 @@ import javax.imageio.ImageIO
 import kotlin.math.abs
 
 
-fun getLastDocumentByRepositoryId(webDocumentDAO: DocumentDAO, repositoryId: UUID): DocumentEntity? {
+fun getLastDocumentByRepositoryId(documentService: DocumentService, repositoryId: UUID): DocumentEntity? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
-  return webDocumentDAO.findAllByRepositoryIdAndStatusAndPublishedAtBefore(
+  return documentService.findAllByRepositoryId(
     repositoryId,
-    ReleaseStatus.released,
-    Date(),
-    pageable
+    status = ReleaseStatus.released,
+    pageable = pageable
   ).firstOrNull()
 }
 
@@ -56,7 +55,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
   private val log = LoggerFactory.getLogger(DiffDataForwarderPlugin::class.simpleName)
 
   @Autowired
-  private lateinit var documentDAO: DocumentDAO
+  private lateinit var documentService: DocumentService
 
   @Autowired
   private lateinit var productService: ProductService
@@ -82,7 +81,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
     val increment = params.org_feedless_diff_email_forward.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
-    val previous = getLastDocumentByRepositoryId(documentDAO, document.repositoryId)
+    val previous = getLastDocumentByRepositoryId(documentService, document.repositoryId)
 
     return previous?.let {
       val compareBy = params.org_feedless_diff_email_forward.compareBy!!
@@ -166,7 +165,7 @@ class DiffDataForwarderPlugin : FilterEntityPlugin, MailProviderPlugin {
       )
     )
 
-    val lastWebDocument = getLastDocumentByRepositoryId(this.documentDAO, repository.id)
+    val lastWebDocument = getLastDocumentByRepositoryId(this.documentService, repository.id)
     lastWebDocument?.let {
       if (document.id.toString() == lastWebDocument.id.toString()) {
         throw IllegalArgumentException("comparing same document")

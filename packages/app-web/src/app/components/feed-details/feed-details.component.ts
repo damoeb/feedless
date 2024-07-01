@@ -10,6 +10,7 @@ import {
   GqlFeedlessPlugins,
   GqlProductCategory,
   GqlScrapeRequest,
+  GqlSortOrder,
   GqlVisibility,
   GqlWebDocumentField,
 } from '../../../generated/graphql';
@@ -202,7 +203,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.selectAllFc.setValue(false);
     this.loading = true;
     this.changeRef.detectChanges();
-    const documents = await this.documentService.findAllByStreamId({
+    const documents = await this.documentService.findAllByRepositoryId({
       cursor: {
         page,
         pageSize: 10,
@@ -311,6 +312,13 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return tagsToString(source.tags) || 'Add tags';
   }
 
+  stringifyLocalization(source: ArrayElement<Repository['sources']>) {
+    const { localized } = source;
+    return localized
+      ? `(${localized.lat},${localized.lon})`
+      : 'Localize Source';
+  }
+
   async deleteSource(source: SubscriptionSource) {
     console.log('deleteSource', source);
     const alert = await this.alertCtrl.create({
@@ -344,6 +352,37 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       ],
     });
     await alert.present();
+  }
+
+  async editLocalization(source: ArrayElement<Repository['sources']>) {
+    const geoTag = await this.modalService.openSearchAddressModal();
+    this.repository = await this.repositoryService.updateRepository({
+      where: {
+        id: this.repository.id,
+      },
+      data: {
+        sources: {
+          update: [
+            {
+              where: {
+                id: source.id,
+              },
+              data: {
+                localized: geoTag
+                  ? {
+                      set: {
+                        lat: parseFloat(`${geoTag.lat}`),
+                        lon: parseFloat(`${geoTag.lon}`),
+                      },
+                    }
+                  : null,
+              },
+            },
+          ],
+        },
+      },
+    });
+    this.changeRef.detectChanges();
   }
 
   async editTags(source: ArrayElement<Repository['sources']>) {

@@ -7,8 +7,8 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.subscription.PlanDAO
 import org.migor.feedless.subscription.PlanEntity
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserDAO
+import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

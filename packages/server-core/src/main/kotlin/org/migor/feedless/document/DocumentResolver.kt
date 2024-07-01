@@ -22,6 +22,7 @@ import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
 import org.migor.feedless.generated.types.WebDocumentsInput
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -77,7 +78,8 @@ class DocumentResolver {
     val repositoryId = UUID.fromString(data.where.repository.where.id)
 
     val repository = repositoryService.findById(corrId, repositoryId)
-    documentService.findAllByRepositoryId(repository.id, data.cursor?.page, data.cursor?.pageSize).get().map { it.toDto(
+    val pageable = toPageRequest(data.cursor?.page, data.cursor?.pageSize ?: 10)
+    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).mapNotNull { it?.toDto(
       propertyService
     )
     }.toList()

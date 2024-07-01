@@ -4,15 +4,12 @@ import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
-import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
-import org.migor.feedless.plan.PlanName
 import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.OneTimePasswordService

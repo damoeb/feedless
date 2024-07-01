@@ -11,7 +11,6 @@ import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
 @Service
 @Profile(AppProfiles.saas)

@@ -23,35 +23,35 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
 
   // credits https://stackoverflow.com/a/3390252
   private val dateFormatToRegexp = listOf(
-    Triple(toRegex("^\\d{8}$"), "yyyyMMdd", false),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "dd MM yyyy", false),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "MM dd yyyy", false),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), "dd MMM yyyy", false),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), "dd MMMM yyyy", false),
-    Triple(toRegex("^[a-z]{3,}\\s\\d{1}\\s\\d{4}$"), "MMMM d yyyy", false), // December 8, 2020
-    Triple(toRegex("^[a-z]{3,}\\s\\d{2}\\s\\d{4}$"), "MMMM dd yyyy", false), // December 15, 2020
-    Triple(toRegex("^\\d{12}$"), "yyyyMMddHHmm", true),
-    Triple(toRegex("^\\d{8}\\s\\d{4}$"), "yyyyMMdd HHmm", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MM yyyy HH:mm", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM dd yyyy HH:mm", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm", true),
+    Triple(toRegex("\\d{8}"), "yyyyMMdd", false),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}"), "dd MM yyyy", false),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}"), "yyyy MM dd", false),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}"), "MM dd yyyy", false),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}"), "yyyy MM dd", false),
+    Triple(toRegex("\\d{1,2}\\s[a-z]{3}\\s\\d{4}"), "dd MMM yyyy", false),
+    Triple(toRegex("\\d{1,2}\\s[a-z]{4,}\\s\\d{4}"), "dd MMMM yyyy", false),
+    Triple(toRegex("[a-z]{3,}\\s\\d{1}\\s\\d{4}"), "MMMM d yyyy", false), // December 8, 2020
+    Triple(toRegex("[a-z]{3,}\\s\\d{2}\\s\\d{4}"), "MMMM dd yyyy", false), // December 15, 2020
+    Triple(toRegex("\\d{12}"), "yyyyMMddHHmm", true),
+    Triple(toRegex("\\d{8}\\s\\d{4}"), "yyyyMMdd HHmm", true),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}"), "dd MM yyyy HH:mm", true),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}"), "yyyy MM dd HH:mm", true),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}"), "MM dd yyyy HH:mm", true),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}"), "yyyy MM dd HH:mm", true),
+    Triple(toRegex("\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}"), "dd MMM yyyy HH:mm", true),
     Triple(
-      toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"),
+      toRegex("\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}"),
       "dd MMMM yyyy HH:mm",
       true
     ), // 06. Januar 2022, 08:00 Uhr
-    Triple(toRegex("^\\d{14}$"), "yyyyMMddHHmmss", true),
-    Triple(toRegex("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MM yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "MM dd yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss", true),
+    Triple(toRegex("\\d{14}"), "yyyyMMddHHmmss", true),
+    Triple(toRegex("\\d{8}\\s\\d{6}"), "yyyyMMdd HHmmss", true),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "dd MM yyyy HH:mm:ss", true),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}"), "yyyy MM dd HH:mm:ss", true),
+    Triple(toRegex("\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "MM dd yyyy HH:mm:ss", true),
+    Triple(toRegex("\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}"), "yyyy MM dd HH:mm:ss", true),
+    Triple(toRegex("\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "dd MMM yyyy HH:mm:ss", true),
+    Triple(toRegex("\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "dd MMMM yyyy HH:mm:ss", true),
 
     // Sonntag, 27. November
   )
@@ -69,8 +69,8 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
       .map {
         run {
           val fromDateStr = it[0]
-          val (format, hasTime) = guessDateFormat(fromDateStr)!!
-          val fromDate = applyDateFormat(fromDateStr, locale, format, hasTime)
+          val (format, dateString, hasTime) = guessDateFormat(fromDateStr)!!
+          val fromDate = applyDateFormat(dateString, locale, format, hasTime)
 //            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
 //            fromDate.rangeTo(toDate) // todo enable date range
           fromDate
@@ -111,8 +111,8 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
         .trim().replace(".", " ")
         .replace("[^a-z0-9: ]".toRegex(RegexOption.IGNORE_CASE), "")
         .replace("\\s+".toRegex(), " ")
-      val (format, hasTime) = guessDateFormat(simpleDateTimeStr)!!
-      val date = applyDateFormat(simpleDateTimeStr, locale, format, hasTime)
+      val (format, dateString, hasTime) = guessDateFormat(simpleDateTimeStr)!!
+      val date = applyDateFormat(dateString, locale, format, hasTime)
       log.debug("[${corrId}] -> $date")
       date
     }.onFailure {
@@ -143,18 +143,21 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
    * @return The matching SimpleDateFormat pattern, or null if format is unknown.
    * @see SimpleDateFormat
    */
-  private fun guessDateFormat(dateString: String): Pair<String, Boolean>? {
+  private fun guessDateFormat(dateString: String): Triple<String, String, Boolean>? {
     return dateFormatToRegexp
-      .filterTo(ArrayList()) { (regex, dateFormat, _): Triple<Regex, String, Boolean> ->
+      .mapNotNullTo(ArrayList()) { (regex, dateFormat, hasTime) ->
         run {
-          val matches = regex.matches(dateString)
-          if (matches) {
+          val matches = regex.find(dateString)
+          val doesMatch = matches?.groups?.isEmpty() == false
+          if (doesMatch) {
             log.debug("$dateString looks like $dateFormat")
+            Triple(dateFormat, matches?.groups?.get(0)?.value!!, hasTime)
+
+          } else {
+            null
           }
-          matches
         }
       }
-      .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
       .firstOrNull()
   }
 

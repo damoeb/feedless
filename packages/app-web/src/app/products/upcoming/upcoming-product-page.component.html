@@ -1,28 +1,37 @@
 <ion-header>
   <ion-toolbar style="--background: transparent">
-    <div class="flex__row ion-align-items-center ion-margin-horizontal">
-      <div>
-        <ion-select placeholder="Filters" [multiple]="true">
-          <ion-select-option>Kultur</ion-select-option>
-          <ion-select-option>Sport</ion-select-option>
-        </ion-select>
-      </div>
-      <span class="ion-padding-horizontal"> near </span>
-      <div>
-        <ion-input></ion-input>
-      </div>
-      <!--    <ion-searchbar-->
-      <!--      placeholder="placeholder"-->
-      <!--      search-icon="earth-outline"-->
-      <!--      show-clear-button="never"-->
-      <!--      slot="secondary"-->
-      <!--    ></ion-searchbar>-->
+    <ion-title slot="start">
+      <span [innerHtml]="productConfig?.titleHtml"></span>
+    </ion-title>
+
+    <div style="display: flex">
+      <ion-segment
+        mode="ios"
+        value="calendar"
+        style="max-width: 400px; margin-right: 50px"
+      >
+        <ion-segment-button value="List view">
+          <ion-label>List</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="calendar">
+          <ion-label>Calendar</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <ion-segment mode="ios" value="month" style="max-width: 300px">
+        <ion-segment-button value="day">
+          <ion-label>Day</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="week">
+          <ion-label>Week</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="month">
+          <ion-label>Month</ion-label>
+        </ion-segment-button>
+      </ion-segment>
     </div>
 
     <ion-buttons slot="end">
-      <ion-title>
-        <span [innerHtml]="productConfig?.titleHtml"></span>
-      </ion-title>
       <app-dark-mode-button></app-dark-mode-button>
     </ion-buttons>
   </ion-toolbar>
@@ -37,45 +46,99 @@
   <!--    </ng-template>-->
   <!--  </ion-popover>-->
 
-  <div *ngFor="let year of years | keyvalue" class="flex__column">
-    <h1>{{ year.key }}</h1>
-    <div *ngFor="let month of year.value | keyvalue" class="flex__column">
-      <h2>{{ getMonth(month.key) }}</h2>
+  <div style="flex: 1; display: flex; flex-direction: row">
+    <aside style="width: 300px; display: flex; flex-direction: column">
+      <div style="flex: 1; margin-right: 20px">
+        <h4>Locations</h4>
+        <ion-button expand="block">
+          <ion-icon name="location-outline" slot="start"></ion-icon>
+          Zürich
+        </ion-button>
+        <div>
+          <ion-checkbox labelPlacement="end">Affoltern am Albis</ion-checkbox>
+        </div>
 
-      <div class="flex__row ion-padding-horizontal" style="flex-wrap: wrap">
-        <div
-          *ngFor="let day of month.value"
-          class="day"
-          [ngClass]="{
-            'day--real': day.day,
-            'day--today': day.today,
-            'day--past': day.past
-          }"
-        >
-          <ng-container *ngIf="day.day">
-            <h2>
-              {{ day.day.format("D") }}
+        <h4>Filters</h4>
+        <div class="tags">
+          <div>
+            <ion-checkbox
+              labelPlacement="end"
+              style="--color: var(--ion-color-primary-rgb)"
+              >Kultur</ion-checkbox
+            >
+          </div>
+          <div>
+            <ion-checkbox
+              labelPlacement="end"
+              style="--color: var(--ion-color-danger-rgb)"
+              >Kinder</ion-checkbox
+            >
+          </div>
+          <div>
+            <ion-checkbox
+              labelPlacement="end"
+              style="--color: var(--ion-color-success-rgb)"
+              >Offizielles</ion-checkbox
+            >
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="flex__column calendar">
+      <div *ngFor="let year of years | keyvalue" class="flex__column">
+        <div *ngFor="let month of year.value | keyvalue" class="flex__column">
+          <div style="display: flex" class="ion-margin-bottom">
+            <h2 style="align-content: center; margin-right: 20px">
+              {{ getMonth(month.key) }} {{ year.key }}
             </h2>
-            <div class="ion-margin-top">
-              <app-bubble color="blue"></app-bubble>
-              <app-bubble color="blue"></app-bubble>
-              <app-bubble color="blue"></app-bubble>
-              <app-bubble color="blue"></app-bubble>
+
+            <ion-button color="light">Today</ion-button>
+            <ion-button color="light" (click)="next(-1, 'month')"
+              ><ion-icon name="chevron-back-outline"></ion-icon
+            ></ion-button>
+            <ion-button color="light" (click)="next(1, 'month')"
+              ><ion-icon name="chevron-forward-outline"></ion-icon
+            ></ion-button>
+          </div>
+
+          <div class="flex__row ion-padding-horizontal" style="flex-wrap: wrap">
+            <div
+              *ngFor="let day of month.value"
+              class="day"
+              [ngClass]="{
+                'day--real': day.day,
+                'day--today': day.today,
+                'day--past': day.past
+              }"
+            >
+              <ng-container *ngIf="day.day">
+                <h2>
+                  {{ day.day.format("D") }}
+                  <ng-container *ngIf="day.isFirstWeek">
+                    {{ day.day.format("ddd") }}
+                  </ng-container>
+                </h2>
+                <div class="ion-margin-top">
+                  <app-bubble
+                    *ngFor="let dot of getDots(day.day)"
+                    [color]="dot"
+                  ></app-bubble>
+                </div>
+                <ul class="events">
+                  <li *ngFor="let event of getEvents(day.day, 5)">
+                    {{ event.contentTitle }}
+                  </li>
+                </ul>
+              </ng-container>
             </div>
-            <ul style="list-style: none" class="ion-no-padding">
-              <li>1</li>
-              <li>2</li>
-              <li>3</li>
-              <li>4</li>
-              <li>5</li>
-            </ul>
-          </ng-container>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="ion-justify-content-center" style="display: flex">
-    <ion-button color="light" size="small" (click)="next()">After</ion-button>
-  </div>
+  <!--  <div class="ion-justify-content-center" style="display: flex">-->
+  <!--    <ion-button color="light" size="small" (click)="next()">After</ion-button>-->
+  <!--  </div>-->
 </ion-content>

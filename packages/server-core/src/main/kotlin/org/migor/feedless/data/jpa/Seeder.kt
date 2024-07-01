@@ -36,7 +36,6 @@ import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.io.FileWriter
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -208,7 +207,7 @@ class Seeder {
         FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(0),
         FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(0),
         FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(0),
-        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(0),
+        FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(0),
 
         FeatureName.canJoinPlanWaitList to asBoolFeature(false),
         FeatureName.canActivatePlan to asBoolFeature(false),
@@ -239,7 +238,7 @@ class Seeder {
           FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
           FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
-          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(2),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canLogin to asBoolFeature(true),
@@ -322,7 +321,7 @@ class Seeder {
           FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
           FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(5),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(5),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),
@@ -353,14 +352,14 @@ class Seeder {
           FeatureName.pluginsBool to asBoolFeature(true),
 
 //          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(1000),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(60000),
           FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(null),
           FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(null),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
-          FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(10),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
 
           FeatureName.canJoinPlanWaitList to asBoolFeature(true),
           FeatureName.canActivatePlan to asBoolFeature(false),

@@ -84,22 +84,22 @@
             placeholder="relative xpath from context"
           ></ion-input>
         </ion-item>
-        <ion-item>
-          <ion-select
-            [formControl]="formGroup.controls.extendContext"
-            [required]="true"
-            label="Extend Context"
-            labelPlacement="stacked"
-            name="extendContext"
-          >
-            <ion-select-option
-              *ngFor="let extendContextOption of getExtendContextOptions()"
-              [value]="extendContextOption.value"
-            >
-              + {{ extendContextOption.label }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <!--        <ion-item>-->
+        <!--          <ion-select-->
+        <!--            [formControl]="formGroup.controls.extendContext"-->
+        <!--            [required]="true"-->
+        <!--            label="Extend Context"-->
+        <!--            labelPlacement="stacked"-->
+        <!--            name="extendContext"-->
+        <!--          >-->
+        <!--            <ion-select-option-->
+        <!--              *ngFor="let extendContextOption of getExtendContextOptions()"-->
+        <!--              [value]="extendContextOption.value"-->
+        <!--            >-->
+        <!--              + {{ extendContextOption.label }}-->
+        <!--            </ion-select-option>-->
+        <!--          </ion-select>-->
+        <!--        </ion-item>-->
         <ion-item>
           <ion-input
             [formControl]="formGroup.controls.dateXPath"
@@ -110,15 +110,15 @@
             placeholder="relative xpath from context"
           ></ion-input>
         </ion-item>
-        <!--        <ion-item *ngIf="formGroup.value.dateXPath">-->
-        <!--          <ion-checkbox-->
-        <!--            [formControl]="formGroup.controls.dateIsStartOfEvent"-->
-        <!--            labelPlacement="end"-->
-        <!--            name="dateIsStartOfEvent"-->
-        <!--            slot="start"-->
-        <!--            >Date is Beginning of Event-->
-        <!--          </ion-checkbox>-->
-        <!--        </ion-item>-->
+        <ion-item *ngIf="formGroup.value.dateXPath">
+          <ion-checkbox
+            [formControl]="formGroup.controls.dateIsStartOfEvent"
+            labelPlacement="end"
+            name="dateIsStartOfEvent"
+            slot="start"
+            >Items are Events
+          </ion-checkbox>
+        </ion-item>
       </ng-container>
     </ion-list>
 

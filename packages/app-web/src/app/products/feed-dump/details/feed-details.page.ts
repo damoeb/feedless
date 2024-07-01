@@ -12,6 +12,7 @@ import { RepositoryService } from '../../../services/repository.service';
 import { Repository, WebDocument } from '../../../graphql/types';
 import { DocumentService } from '../../../services/document.service';
 import { Title } from '@angular/platform-browser';
+import { GqlSortOrder } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -44,7 +45,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
           this.titleService.setTitle(this.repository.title);
           this.changeRef.detectChanges();
 
-          this.items = await this.documentService.findAllByStreamId({
+          this.items = await this.documentService.findAllByRepositoryId({
             cursor: {
               page: 0,
               pageSize: 20,

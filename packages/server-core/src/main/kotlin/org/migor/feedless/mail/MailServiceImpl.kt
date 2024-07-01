@@ -1,7 +1,6 @@
 package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.pipeline.plugins.MailAttachment
@@ -16,7 +15,6 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
-import java.text.SimpleDateFormat
 import java.util.*
 
 @Service

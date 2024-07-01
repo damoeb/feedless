@@ -20,7 +20,6 @@ class RichArticle() : JsonItem() {
     publishedAt = item.publishedAt
     startingAt = item.startingAt
     modifiedAt = item.modifiedAt
-    startingAt = item.startingAt
     commentsFeedUrl = item.commentsFeedUrl
   }
 }

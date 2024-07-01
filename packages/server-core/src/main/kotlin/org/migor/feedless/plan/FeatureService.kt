@@ -171,7 +171,7 @@ val mapFeatureName2Dto = mapOf(
   FeatureName.pluginsBool to FeatureNameDto.plugins,
   FeatureName.scrapeSourceMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
   FeatureName.scrapeSourceMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
-  FeatureName.scrapeRequestMaxCountPerSourceInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
+  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
 )
 
 private fun FeatureEntity.toDto(): FeatureNameDto? {

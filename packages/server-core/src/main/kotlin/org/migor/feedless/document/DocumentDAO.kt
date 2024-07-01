@@ -1,10 +1,9 @@
 package org.migor.feedless.document
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -16,51 +15,7 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
-
-  fun findAllByRepositoryIdAndStatusAndPublishedAtBefore(
-    repositoryId: UUID,
-    status: ReleaseStatus,
-    now: Date,
-    pageable: PageRequest
-  ): Page<DocumentEntity>
-
-//  @Query("""
-//    SELECT d.* FROM t_document d
-//    where repository_id = ?1
-//    and status = ?2
-//    and released_at < ?3
-//    and ?4 = ANY(tags)
-//    order by released_at DESC
-//    limit ?5
-//    offset ?6
-//  """, nativeQuery = true)
-//  fun findAllIdsByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
-//    repositoryId: UUID,
-//    status: ReleaseStatus,
-//    now: Date,
-//    tag: String,
-//    limit: Int,
-//    offset: Int,
-//  ): List<DocumentEntity>
-
-//  @Query("""
-//    SELECT count(*) FROM t_document d
-//    where repository_id = ?1
-//    and status = ?2
-//    and released_at < ?3
-//    and ?4 = ANY(tags)
-//    order by released_at DESC
-//  """, nativeQuery = true)
-//  fun countByRepositoryIdAndStatusAndPublishedAtBeforeAndTagsContains(
-//    repositoryId: UUID,
-//    status: ReleaseStatus,
-//    now: Date,
-//    tag: String,
-//    limit: Int,
-//    offset: Int,
-//  ): Long
-
+interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecutor {
 
   @Modifying
   @Query(
@@ -97,20 +52,6 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID> {
 
   fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean
   fun findByContentTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
-
-//  @Modifying
-//  @Query(
-//    """
-//    DELETE FROM DocumentEntity d
-//    WHERE d.id = ?1 and d.id in (
-//        select d1.id from DocumentEntity d1
-//        inner join RepositoryEntity s
-//        where d1.id = ?1
-//        and s.ownerId = ?2
-//    )
-//    """
-//  )
-//  fun deleteByIdAndOwnerId(id: UUID, ownerId: UUID)
 
   fun countByRepositoryId(id: UUID): Long
 

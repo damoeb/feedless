@@ -257,7 +257,7 @@ class RepositoryHarvester internal constructor() {
     feed.items.distinctBy { it.url }.forEach {
       try {
         val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
-        val updated = it.asEntity(repository.id, ReleaseStatus.released, source.tags)
+        val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
         updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
         createOrUpdate(corrId, updated, existing, repository)
       } catch (e: Exception) {
@@ -298,7 +298,10 @@ class RepositoryHarvester internal constructor() {
     try {
       existing
         ?.let {
-          log.debug("[$corrId] skip item ${document.url}")
+          existing.latLon = document.latLon
+          existing.tags = document.tags
+          documentDAO.save(document)
+          log.debug("[$corrId] updated item ${document.url}")
         }
         ?: run {
           meterRegistry.counter(AppMetrics.createDocument).increment()
@@ -387,7 +390,7 @@ private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>?)
   return e
 }
 
-private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags: Array<String>?): DocumentEntity {
+private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
   val d = DocumentEntity()
   d.contentTitle = contentTitle
   d.repositoryId = repositoryId
@@ -402,7 +405,8 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags
     }
     d.contentRawMime = mime
   }
-  d.tags = tags
+  d.tags = source.tags
+  d.latLon = source.latLon
   d.contentHtml = contentHtml
   d.imageUrl = ""
   d.contentText = StringUtils.trimToEmpty(contentText)
@@ -411,6 +415,9 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, tags
     d.attachments = it.map { it.toAttachment(d) } .toMutableList()
   }
   d.publishedAt = Date(publishedAt)
+  startingAt?.let {
+    d.startingAt = Date(startingAt)
+  }
   d.updatedAt = updatedAt?.let { Date(updatedAt) } ?: d.publishedAt
   d.url = url
   return d

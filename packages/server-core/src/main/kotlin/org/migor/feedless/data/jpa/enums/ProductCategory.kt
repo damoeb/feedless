@@ -25,6 +25,7 @@ fun ProductCategoryDto.fromDto(): ProductCategory {
     ProductCategoryDto.feedless -> ProductCategory.feedless
     ProductCategoryDto.feedDump -> ProductCategory.feedDump
     ProductCategoryDto.untoldNotes -> ProductCategory.untoldNotes
+    ProductCategoryDto.upcoming -> ProductCategory.upcoming
     else -> throw IllegalArgumentException("$this is not a valid product name")
   }
 }
@@ -40,6 +41,7 @@ fun ProductCategory.toDto(): ProductCategoryDto {
     ProductCategory.feedless -> ProductCategoryDto.feedless
     ProductCategory.feedDump -> ProductCategoryDto.feedDump
     ProductCategory.untoldNotes -> ProductCategoryDto.untoldNotes
+    ProductCategory.upcoming -> ProductCategoryDto.upcoming
     else -> throw IllegalArgumentException("$this is not a valid product name")
   }
 }

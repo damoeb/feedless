@@ -87,6 +87,13 @@
                     (click)="editTags(source)"
                     >{{ stringifyTags(source) }}
                   </ion-button>
+
+                  <ion-button
+                    fill="clear"
+                    [color]="source.localized ? 'medium' : 'primary'"
+                    (click)="editLocalization(source)"
+                    >{{ stringifyLocalization(source) }}
+                  </ion-button>
                 </p>
                 <ion-note color="danger" *ngIf="source.errornous">
                   {{ source.lastErrorMessage }}
@@ -322,6 +329,11 @@
                   <ion-note
                     >{{ fromNow(document.publishedAt) }} on
                     {{ hostname(document.url) }}
+
+                    <ion-icon
+                      name="location-outline"
+                      *ngIf="document.localized"
+                    ></ion-icon>
                   </ion-note>
                   <ion-note *ngIf="document.tags.length > 0">
                     <em class="ion-padding-start">{{ getTags(document) }}</em>

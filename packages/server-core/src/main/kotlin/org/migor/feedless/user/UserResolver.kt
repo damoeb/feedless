@@ -7,7 +7,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.CreateUserInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User

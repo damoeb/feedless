@@ -25,6 +25,10 @@ import {
   RemoteFeedModalComponent,
   RemoteFeedModalComponentProps,
 } from '../modals/remote-feed-modal/remote-feed-modal.component';
+import {
+  OsmMatch,
+  SearchAddressModalComponent,
+} from '../modals/search-address-modal/search-address-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -79,7 +83,7 @@ export class ModalService {
       backdropDismiss: false,
     });
     await modal.present();
-    const { data, role } = await modal.onDidDismiss<string[]>();
+    const { data } = await modal.onDidDismiss<string[]>();
     return data;
   }
 
@@ -94,6 +98,19 @@ export class ModalService {
       backdropDismiss: true,
     });
     await modal.present();
+  }
+
+  async openSearchAddressModal(): Promise<OsmMatch> {
+    const modal = await this.modalCtrl.create({
+      component: SearchAddressModalComponent,
+      // cssClass: 'fullscreen-modal',
+      showBackdrop: true,
+      backdropDismiss: true,
+    });
+    await modal.present();
+
+    const response = await modal.onDidDismiss<OsmMatch>();
+    return response.data;
   }
 
   async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {

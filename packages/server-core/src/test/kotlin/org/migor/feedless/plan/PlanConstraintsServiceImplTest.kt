@@ -224,19 +224,19 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is undefined, all counts will pass`() {
-    mockFeatureValue(FeatureName.scrapeRequestMaxCountPerSourceInt, intValue = null)
-    service.auditScrapeRequestMaxCountPerSource(0, userId, product)
-    service.auditScrapeRequestMaxCountPerSource(10000, userId, product)
+    mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = null)
+    service.auditSourcesMaxCountPerRepository(0, userId, product)
+    service.auditSourcesMaxCountPerRepository(10000, userId, product)
   }
 
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is defined, violating counts will fail`() {
-    mockFeatureValue(FeatureName.scrapeRequestMaxCountPerSourceInt, intValue = 4)
+    mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      service.auditScrapeRequestMaxCountPerSource(12, userId, product)
+      service.auditSourcesMaxCountPerRepository(12, userId, product)
     }
-    service.auditScrapeRequestMaxCountPerSource(2, userId, product)
-    service.auditScrapeRequestMaxCountPerSource(4, userId, product)
+    service.auditSourcesMaxCountPerRepository(2, userId, product)
+    service.auditSourcesMaxCountPerRepository(4, userId, product)
   }
 
   private fun mockFeatureValue(featureName: FeatureName, boolValue: Boolean? = null, intValue: Long? = null) {

@@ -104,6 +104,10 @@ fragment RepositoryFragment on Repository {
     id
     errornous
     tags
+    localized {
+      lat
+      lon
+    }
     lastErrorMessage
     debug {
       network
@@ -318,6 +322,10 @@ fragment WebDocumentFragment on WebDocument {
   publishedAt
   startingAt
   tags
+  localized {
+    lat
+    lon
+  }
   enclosures {
     ...EnclosureFragment
   }

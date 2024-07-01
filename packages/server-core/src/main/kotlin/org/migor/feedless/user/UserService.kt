@@ -7,12 +7,10 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
-import org.migor.feedless.plan.PlanName
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.slf4j.LoggerFactory

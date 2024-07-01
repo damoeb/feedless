@@ -22,6 +22,7 @@ import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
+import org.locationtech.jts.geom.Point
 import org.migor.feedless.annotation.AnnotationEntity
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.attachment.AttachmentEntity
@@ -31,13 +32,13 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
 import org.springframework.context.annotation.Lazy
-import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -70,6 +71,9 @@ open class DocumentEntity : EntityWithUUID() {
 
   @Column(length = 50, name = "content_raw_mime")
   open var contentRawMime: String? = null
+
+  @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
+  open var latLon: Point? = null
 
   @Type(StringArrayType::class)
   @Column(name = "tags", columnDefinition = "text[]")
@@ -196,6 +200,13 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     .contentText(contentText)
     .updatedAt(updatedAt.time)
     .createdAt(createdAt.time)
+    .localized(latLon?.let {
+      GeoPoint.newBuilder()
+        .lat(it.x)
+        .lon(it.y)
+        .build()
+    }
+    )
     .tags((tags?.asList() ?: emptyList()).plus(
       addListenableTag(attachments.filter { it.contentType.startsWith("audio/") && it.duration != null }
         .map { classifyDuration(it.duration!!) }.distinct()

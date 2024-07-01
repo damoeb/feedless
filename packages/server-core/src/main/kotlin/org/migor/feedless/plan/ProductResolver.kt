@@ -10,7 +10,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.PricedProduct
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductsWhereInput

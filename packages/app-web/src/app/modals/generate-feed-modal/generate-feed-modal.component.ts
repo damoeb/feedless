@@ -222,46 +222,46 @@ export class GenerateFeedModalComponent
     });
   }
 
-  addConditionalTag(data: ConditionalTagParams = null) {
-    if (this.conditionalTags.some((filter) => filter.invalid)) {
-      return;
-    }
-
-    const filter = new FormGroup({
-      tag: new FormControl<string>('', [Validators.required]),
-      field: new FormControl<FilterField>('title', [Validators.required]),
-      operator: new FormControl<FilterOperator>(
-        GqlStringFilterOperator.Contains,
-        [Validators.required],
-      ),
-      value: new FormControl<string>('', [
-        Validators.required,
-        Validators.minLength(1),
-      ]),
-    });
-
-    // if (data) {
-    //   const type = Object.keys(data).find(
-    //     (field) => field != '__typename' && !!data[field],
-    //   );
-    //   const field = Object.keys(data[type]).find(
-    //     (field) => field != '__typename' && !!data[type][field],
-    //   );
-    //   filter.patchValue({
-    //     tag: type as any,
-    //     field: field as any,
-    //     value: data[type][field].value,
-    //     operator: data[type][field].operator,
-    //   });
-    // }
-
-    this.conditionalTags.push(filter);
-    filter.statusChanges.subscribe((status) => {
-      if (status === 'VALID') {
-        this.filterChanges.next();
-      }
-    });
-  }
+  // addConditionalTag(data: ConditionalTagParams = null) {
+  //   if (this.conditionalTags.some((filter) => filter.invalid)) {
+  //     return;
+  //   }
+  //
+  //   const filter = new FormGroup({
+  //     tag: new FormControl<string>('', [Validators.required]),
+  //     field: new FormControl<FilterField>('title', [Validators.required]),
+  //     operator: new FormControl<FilterOperator>(
+  //       GqlStringFilterOperator.Contains,
+  //       [Validators.required],
+  //     ),
+  //     value: new FormControl<string>('', [
+  //       Validators.required,
+  //       Validators.minLength(1),
+  //     ]),
+  //   });
+  //
+  //   // if (data) {
+  //   //   const type = Object.keys(data).find(
+  //   //     (field) => field != '__typename' && !!data[field],
+  //   //   );
+  //   //   const field = Object.keys(data[type]).find(
+  //   //     (field) => field != '__typename' && !!data[type][field],
+  //   //   );
+  //   //   filter.patchValue({
+  //   //     tag: type as any,
+  //   //     field: field as any,
+  //   //     value: data[type][field].value,
+  //   //     operator: data[type][field].operator,
+  //   //   });
+  //   // }
+  //
+  //   this.conditionalTags.push(filter);
+  //   filter.statusChanges.subscribe((status) => {
+  //     if (status === 'VALID') {
+  //       this.filterChanges.next();
+  //     }
+  //   });
+  // }
 
   removeFilter(index: number) {
     this.filters = without(this.filters, this.filters[index]);
@@ -352,10 +352,10 @@ export class GenerateFeedModalComponent
             },
             retention: {
               maxItems: {
-                set: maxItems,
+                set: maxItems || null,
               },
               maxAgeDays: {
-                set: maxAgeDays,
+                set: maxAgeDays || null,
               },
             },
           },
@@ -443,8 +443,8 @@ export class GenerateFeedModalComponent
       applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),
-      maxAgeDays: retention?.maxAgeDays,
-      maxItems: retention?.maxItems,
+      maxAgeDays: retention?.maxAgeDays || null,
+      maxItems: retention?.maxItems || null,
     });
     const filterPlugin = this.repository.plugins.find(
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,

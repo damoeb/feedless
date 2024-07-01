@@ -40,7 +40,7 @@ enum class FeatureName {
 
   scrapeRequestTimeoutMsecInt,
   scrapeSourceMaxCountActiveInt,
-  scrapeRequestMaxCountPerSourceInt,
+  sourceMaxCountPerRepositoryInt,
   scrapeRequestActionMaxCountInt,
   scrapeSourceMaxCountTotalInt,
 }

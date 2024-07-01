@@ -308,6 +308,7 @@ private fun RichArticle.toDto(): WebDocument {
     .url(url)
     .contentText(contentText)
     .publishedAt(publishedAt.time)
+    .startingAt(startingAt?.time)
     .updatedAt(publishedAt.time)
     .createdAt(Date().time)
 

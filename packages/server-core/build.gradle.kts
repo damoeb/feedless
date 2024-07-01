@@ -121,6 +121,11 @@ dependencies {
   // database
   implementation("org.postgresql:postgresql:42.7.3")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.3")
+  implementation("org.hibernate.orm:hibernate-spatial:6.1.7.Final")
+  // https://kotlin-jdsl.gitbook.io/docs/jpql-with-kotlin-jdsl/expressions
+  implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.1")
+  implementation("com.linecorp.kotlin-jdsl:jpql-render:3.5.1")
+  implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.1")
 
   // text
   // https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common

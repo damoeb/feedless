@@ -174,6 +174,9 @@ private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
   e.contentText = StringUtils.trimToEmpty(contentText)
   e.status = ReleaseStatus.released
   e.publishedAt = Date(publishedAt)
+  startingAt?.let {
+    e.startingAt = Date(startingAt)
+  }
   e.updatedAt = Date(publishedAt)
   e.url = url
   return e

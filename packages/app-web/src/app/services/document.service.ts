@@ -18,7 +18,7 @@ import { WebDocument } from '../graphql/types';
 export class DocumentService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  findAllByStreamId(
+  findAllByRepositoryId(
     data: GqlWebDocumentsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<WebDocument[]> {
@@ -35,18 +35,6 @@ export class DocumentService {
       });
   }
 
-  // findById(id: string): Promise<WebDocument> {
-  //   return this.apollo
-  //     .query<GqlWebDocumentByIdQuery, GqlWebDocumentByIdQueryVariables>({
-  //       query: WebDocumentById,
-  //       variables: {
-  //         data: {
-  //           where: { id },
-  //         },
-  //       },
-  //     })
-  //     .then((response) => response.data.webDocument);
-  // }
   removeById(data: GqlDeleteWebDocumentsInput) {
     return this.apollo
       .mutate<

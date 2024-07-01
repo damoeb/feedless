@@ -16,10 +16,12 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
+import org.locationtech.jts.geom.Point
 import org.migor.feedless.actions.BrowserActionEntity
 import org.migor.feedless.actions.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PuppeteerWaitUntil
 import org.migor.feedless.generated.types.ScrapeDebugOptions
 import org.migor.feedless.generated.types.ScrapeEmit
@@ -50,6 +52,9 @@ open class SourceEntity : EntityWithUUID() {
   @Column(name = "language")
   open var language: String? = null
 
+  @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
+  open var latLon: Point? = null
+
   @Column(nullable = false, name = "prerender")
   open var prerender: Boolean = false
 
@@ -66,12 +71,6 @@ open class SourceEntity : EntityWithUUID() {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "sourceId", cascade = [CascadeType.ALL])
   open var actions: MutableList<BrowserActionEntity> = mutableListOf()
-
-//  @Column(name = "lat")
-//  open var lat: Long = 0
-//
-//  @Column(name = "lon")
-//  open var lon: Long = 0
 
   @Column(nullable = false, name = "debug_screenshot")
   open var debugScreenshot: Boolean = false
@@ -122,7 +121,14 @@ fun SourceEntity.toDto(): ScrapeRequest {
     .id(id.toString())
     .errornous(erroneous)
     .lastErrorMessage(lastErrorMessage)
-    .tags(tags?.asList() ?: emptyList() )
+    .tags(tags?.asList() ?: emptyList())
+    .localized(latLon?.let {
+      GeoPoint.newBuilder()
+        .lat(it.x)
+        .lon(it.y)
+        .build()
+    }
+    )
     .debug(
       ScrapeDebugOptions.newBuilder()
         .screenshot(debugScreenshot)
