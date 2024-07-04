@@ -97,7 +97,7 @@ class DocumentService {
 
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
     val retentionSize =
-      planConstraintsService.coerceRetentionMaxItems(repository.retentionMaxItems, repository.ownerId, repository.product)
+      planConstraintsService.coerceRetentionMaxCapacity(repository.retentionMaxCapacity, repository.ownerId, repository.product)
     if (retentionSize != null && retentionSize > 0) {
       log.info("[$corrId] applying retention with maxItems=$retentionSize")
       documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)

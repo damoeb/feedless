@@ -46,7 +46,7 @@ class PlanConstraintsService {
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
-  fun coerceRetentionMaxItems(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
+  fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
     val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
     val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
     return customMaxItems?.let {

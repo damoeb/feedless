@@ -343,7 +343,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
             title: this.form.value.subject,
             description: 'Visual Diff',
             retention: {
-              maxItems: 2,
+              maxCapacity: 2,
             },
             plugins: [
               {

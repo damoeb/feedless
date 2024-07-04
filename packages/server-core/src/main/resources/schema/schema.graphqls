@@ -314,10 +314,9 @@ input SourcesUpdateInput {
 }
 
 input RetentionUpdateInput {
-  maxItems: NullableIntUpdateOperationsInput
+  maxCapacity: NullableIntUpdateOperationsInput
   maxAgeDays: NullableIntUpdateOperationsInput
 }
-
 
 input CreateWebDocumentInput {
   contentRawBase64: String
@@ -1002,13 +1001,20 @@ input BoolUpdateOperationsInput {
 }
 
 input RetentionInput {
-  maxItems: Int
+  maxCapacity: Int
   maxAgeDays: Int
+  ageReferenceField: WebDocumentDateField
+}
+enum WebDocumentDateField {
+  createdAt,
+  startingAt,
+  publishedAt
 }
 
 type Retention {
-  maxItems: Int
+  maxCapacity: Int
   maxAgeDays: Int
+  ageReferenceField: WebDocumentDateField
 }
 
 input WebhookCreateOrConnectInput {

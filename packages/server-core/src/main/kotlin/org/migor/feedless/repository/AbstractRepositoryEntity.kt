@@ -88,7 +88,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   open lateinit var sourcesSyncExpression: String
 
   @Column(name = "retention_max_items")
-  open var retentionMaxItems: Int? = null
+  open var retentionMaxCapacity: Int? = null
 
   @Column(name = "retention_max_age_days")
   open var retentionMaxAgeDays: Int? = null
@@ -176,7 +176,7 @@ fun RepositoryEntity.toDto(): Repository {
     .archived(archived)
     .retention(
       Retention.newBuilder()
-        .maxItems(retentionMaxItems)
+        .maxCapacity(retentionMaxCapacity)
         .maxAgeDays(retentionMaxAgeDays)
         .build()
     )

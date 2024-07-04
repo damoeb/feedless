@@ -126,7 +126,7 @@ export class GenerateFeedModalComponent
       validators: [Validators.required, Validators.minLength(3)],
     }),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
-    maxItems: new FormControl<number>(null),
+    maxCapacity: new FormControl<number>(null),
     maxAgeDays: new FormControl<number>(null),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
       nonNullable: true,
@@ -330,7 +330,7 @@ export class GenerateFeedModalComponent
           description,
           fetchFrequency,
           maxAgeDays,
-          maxItems,
+          maxCapacity,
         } = this.formFg.value;
         await this.repositoryService.updateRepository({
           where: {
@@ -351,8 +351,8 @@ export class GenerateFeedModalComponent
               set: fetchFrequency,
             },
             retention: {
-              maxItems: {
-                set: maxItems || null,
+              maxCapacity: {
+                set: maxCapacity || null,
               },
               maxAgeDays: {
                 set: maxAgeDays || null,
@@ -407,7 +407,7 @@ export class GenerateFeedModalComponent
       GqlFeatureName.RepositoryCapacityLowerLimitInt,
     );
     if (maxItemsLowerLimit) {
-      this.formFg.controls.maxItems.addValidators([
+      this.formFg.controls.maxCapacity.addValidators([
         Validators.min(maxItemsLowerLimit),
       ]);
     }
@@ -415,7 +415,7 @@ export class GenerateFeedModalComponent
       GqlFeatureName.RepositoryCapacityUpperLimitInt,
     );
     if (maxItemsUpperLimit) {
-      this.formFg.controls.maxItems.addValidators([
+      this.formFg.controls.maxCapacity.addValidators([
         Validators.min(maxItemsUpperLimit),
       ]);
     }
@@ -444,7 +444,7 @@ export class GenerateFeedModalComponent
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),
       maxAgeDays: retention?.maxAgeDays || null,
-      maxItems: retention?.maxItems || null,
+      maxCapacity: retention?.maxCapacity || null,
     });
     const filterPlugin = this.repository.plugins.find(
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,

@@ -298,9 +298,11 @@ class RepositoryHarvester internal constructor() {
     try {
       existing
         ?.let {
+          existing.contentTitle = document.contentTitle
           existing.latLon = document.latLon
           existing.tags = document.tags
-          documentDAO.save(document)
+          existing.startingAt = document.startingAt
+          documentDAO.save(existing)
           log.debug("[$corrId] updated item ${document.url}")
         }
         ?: run {

@@ -78,7 +78,6 @@ export class TransformWebsiteToFeedComponent
       dateXPath: new FormControl('', []),
       linkXPath: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(1)],
       }),
       dateIsStartOfEvent: new FormControl(false, {
         nonNullable: true,

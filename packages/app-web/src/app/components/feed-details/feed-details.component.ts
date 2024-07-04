@@ -242,18 +242,18 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   getRetentionStrategy(): string {
     if (
       this.repository.retention.maxAgeDays ||
-      this.repository.retention.maxItems
+      this.repository.retention.maxCapacity
     ) {
       if (
         this.repository.retention.maxAgeDays &&
-        this.repository.retention.maxItems
+        this.repository.retention.maxCapacity
       ) {
-        return `${this.repository.retention.maxAgeDays} days, ${this.repository.retention.maxItems} items`;
+        return `${this.repository.retention.maxAgeDays} days, ${this.repository.retention.maxCapacity} items`;
       } else {
         if (this.repository.retention.maxAgeDays) {
           return `${this.repository.retention.maxAgeDays} days`;
         } else {
-          return `${this.repository.retention.maxItems} items`;
+          return `${this.repository.retention.maxCapacity} items`;
         }
       }
     } else {

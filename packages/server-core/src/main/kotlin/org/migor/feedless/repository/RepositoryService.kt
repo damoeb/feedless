@@ -154,8 +154,8 @@ class RepositoryService {
     repo.sourcesSyncExpression = subInput.sourceOptions?.let {
       planConstraintsService.auditCronExpression(subInput.sourceOptions.refreshCron)
     } ?: ""
-    repo.retentionMaxItems =
-      planConstraintsService.coerceRetentionMaxItems(subInput.sinkOptions.retention?.maxItems, ownerId, product)
+    repo.retentionMaxCapacity =
+      planConstraintsService.coerceRetentionMaxCapacity(subInput.sinkOptions.retention?.maxCapacity, ownerId, product)
     repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
       subInput.sinkOptions.retention?.maxAgeDays,
       ownerId,
@@ -362,11 +362,11 @@ class RepositoryService {
         repository.retentionMaxAgeDays = it.set
         log.info("[$corrId] retentionMaxAgeDays ${it.set}")
       }
-      it.maxItems?.let {
-        repository.retentionMaxItems = it.set
+      it.maxCapacity?.let {
+        repository.retentionMaxCapacity = it.set
         log.info("[$corrId] retentionMaxItems ${it.set}")
       }
-      if (it.maxAgeDays != null || it.maxItems != null) {
+      if (it.maxAgeDays != null || it.maxCapacity != null) {
         documentService.applyRetentionStrategy(corrId, repository)
       }
     }

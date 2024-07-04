@@ -360,13 +360,9 @@ class WebToFeedTransformer(
         link?.let {
           val date =
             Optional.ofNullable(StringUtils.trimToNull(selectors.dateXPath))
-              .map { dateXPath ->
-                run {
-                  val pubDate = Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale))
-                  evaluateXPath(dateXPath, element).first().remove()
-                  pubDate.orElse(now)
-                }
-              }
+              .map { dateXPath -> Optional.ofNullable(extractDate(corrId, dateXPath, element, locale))
+                .orElse(now)
+                .also { evaluateXPath(dateXPath, element).first().remove() } }
               .orElse(now)
 
           val (pubDate, startingDate) = if (BooleanUtils.isTrue(selectors.dateIsStartOfEvent)) {
@@ -381,15 +377,21 @@ class WebToFeedTransformer(
           val linkText = it.first
           val articleUrl = it.second
 
+          val toTitle = { text: String -> StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100) }
+
           val article = RichArticle()
           article.id = FeedUtil.toURI("article", articleUrl)
-          article.title = StringUtils.substring(linkText.replace(reLinebreaks, " "), 0, 100)
+          article.title = toTitle(linkText)
           article.url = articleUrl
           article.contentText = webToTextTransformer.extractText(content)
           article.contentRawBase64 = withAbsUrls(content, url).selectFirst("body")!!.html()
           article.contentRawMime = "text/html"
           article.publishedAt = pubDate
           article.startingAt = startingDate
+
+          if (StringUtils.isBlank(article.title)) {
+            article.title = toTitle(article.contentText ?: "")
+          }
 
           if (qualifiesAsArticle(element, selectors)) {
             article
@@ -451,13 +453,21 @@ class WebToFeedTransformer(
       .orElse(fallback)
   }
 
-  private fun extractPubDate(corrId: String, dateXPath: String, element: Element, locale: Locale): Date? {
+  private fun extractDate(corrId: String, dateXPath: String, element: Element, locale: Locale): Date? {
     return runCatching {
       val timeElement = evaluateXPath(dateXPath, element).first()
       if (timeElement.hasAttr("datetime")) {
         dateClaimer.claimDatesFromString(corrId, timeElement.attr("datetime"), locale)
       } else {
-        dateClaimer.claimDatesFromString(corrId, timeElement.text(), locale)
+        val text = timeElement.text()
+        val date = dateClaimer.claimDatesFromString(corrId, text, locale)
+        date?.let {
+          if(it.time < System.currentTimeMillis()) {
+            log.warn("[$corrId] failed to parse date from '$text'")
+          }
+        }
+
+        date
       }
     }.getOrNull()
   }
@@ -799,10 +809,10 @@ class WebToFeedTransformer(
 
     // first two
     val headWalkUp = findCommonParent(linkElements.subList(0, 2.coerceAtLeast(linkElements.size)))
-    log.debug("${groupId} headWalkUp=${headWalkUp}")
+    log.debug("$groupId headWalkUp=${headWalkUp}")
     // last two
     val tailWalkUp = findCommonParent(linkElements.subList(0.coerceAtLeast(linkElements.size - 2), linkElements.size))
-    log.debug("${groupId} tailWalkUp=${tailWalkUp}")
+    log.debug("$groupId tailWalkUp=${tailWalkUp}")
     return linkElements.map { linkElement -> nthParent(headWalkUp.coerceAtMost(tailWalkUp), linkElement) }
   }
 
