@@ -38,7 +38,7 @@ import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
-import { OsmMatch } from '../../modals/search-address-modal/search-address-modal.component';
+import { OsmMatch } from '../../services/open-street-map.service';
 
 /**
  * IDEEN

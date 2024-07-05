@@ -1,35 +1,8 @@
-<ion-header>
+<ion-header style="box-shadow: none">
   <ion-toolbar style="--background: transparent">
     <ion-title slot="start">
       <span [innerHtml]="productConfig?.titleHtml"></span>
     </ion-title>
-
-    <div style="display: flex">
-      <ion-segment
-        mode="ios"
-        value="calendar"
-        style="max-width: 400px; margin-right: 50px"
-      >
-        <ion-segment-button value="List view">
-          <ion-label>List</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="calendar">
-          <ion-label>Calendar</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-
-      <ion-segment mode="ios" value="month" style="max-width: 300px">
-        <ion-segment-button value="day">
-          <ion-label>Day</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="week">
-          <ion-label>Week</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="month">
-          <ion-label>Month</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-    </div>
 
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
@@ -37,108 +10,122 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <!--  <ion-button id="open-date-picker" expand="block">Date Picker</ion-button>-->
+<ion-content>
+  <div style="width: 700px; margin-left: auto; margin-right: auto; display: flex; flex-direction: column">
+    <div style="display: flex">
+      <h3 class="ion-margin-end">
+        <ion-text color="danger">Ort</ion-text>
+      </h3>
+      <ion-input color="danger" fill="outline" [formControl]="locationFc"></ion-input>
+    </div>
+    <ion-list *ngIf="locationSuggestions?.length > 0">
+      <ion-item *ngFor="let location of locationSuggestions"
+                (click)="setLocation(location)"
+                [button]="true">
+        {{location.display_name}}
+      </ion-item>
+    </ion-list>
+<!--    <div style="display: flex">-->
+<!--      <h3 class="ion-margin-end">-->
+<!--        <ion-text color="danger">Distanz</ion-text>-->
+<!--      </h3>-->
+<!--      <ion-select>-->
+<!--        <ion-select-option>10 Km</ion-select-option>-->
+<!--        <ion-select-option>20 Km</ion-select-option>-->
+<!--      </ion-select>-->
+<!--    </div>-->
 
-  <!--  <ion-popover trigger="open-date-picker" triggerAction="click">-->
-  <!--    <ng-template>-->
-  <!--      <ion-datetime (ionChange)="popoverCtrl.dismiss()"></ion-datetime>-->
-  <!--    </ng-template>-->
-  <!--  </ion-popover>-->
+    <div class="calendar ion-margin-top">
+      <ion-toolbar style="--background: transparent">
+        <ion-buttons slot="start">
+          <ion-button (click)="goToDateRelative(-1, 'month')">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
 
-  <div style="flex: 1; display: flex; flex-direction: row">
-    <aside style="width: 300px; display: flex; flex-direction: column">
-      <div style="flex: 1; margin-right: 20px">
-        <h4>Locations</h4>
-        <ion-button expand="block">
-          <ion-icon name="location-outline" slot="start"></ion-icon>
-          Zürich
-        </ion-button>
-        <div>
-          <ion-checkbox labelPlacement="end">Affoltern am Albis</ion-checkbox>
-        </div>
+        <ion-title class="ion-text-center">
+          {{ currentDateRef.format('MMMM') }} {{ currentDateRef.format('YYYY') }}
+        </ion-title>
 
-        <h4>Filters</h4>
-        <div class="tags">
-          <div>
-            <ion-checkbox
-              labelPlacement="end"
-              style="--color: var(--ion-color-primary-rgb)"
-              >Kultur</ion-checkbox
-            >
+        <ion-buttons slot="end">
+          <ion-button (click)="goToDateRelative(1, 'month')">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+
+      <div class="calendar__body" *ngFor="let year of years | keyvalue">
+        <ng-container *ngFor="let month of year.value | keyvalue">
+          <div
+            class="day no-background ion-text-center ion-text-uppercase"
+            *ngFor="let day of filterFirstWeek(month.value)"
+          >
+            {{ day.day.format("ddd") }}
           </div>
-          <div>
-            <ion-checkbox
-              labelPlacement="end"
-              style="--color: var(--ion-color-danger-rgb)"
-              >Kinder</ion-checkbox
-            >
-          </div>
-          <div>
-            <ion-checkbox
-              labelPlacement="end"
-              style="--color: var(--ion-color-success-rgb)"
-              >Offizielles</ion-checkbox
-            >
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <div class="flex__column calendar">
-      <div *ngFor="let year of years | keyvalue" class="flex__column">
-        <div *ngFor="let month of year.value | keyvalue" class="flex__column">
-          <div style="display: flex" class="ion-margin-bottom">
-            <h2 style="align-content: center; margin-right: 20px">
-              {{ getMonth(month.key) }} {{ year.key }}
-            </h2>
-
-            <ion-button color="light">Today</ion-button>
-            <ion-button color="light" (click)="next(-1, 'month')"
-              ><ion-icon name="chevron-back-outline"></ion-icon
-            ></ion-button>
-            <ion-button color="light" (click)="next(1, 'month')"
-              ><ion-icon name="chevron-forward-outline"></ion-icon
-            ></ion-button>
-          </div>
-
-          <div class="flex__row ion-padding-horizontal" style="flex-wrap: wrap">
-            <div
-              *ngFor="let day of month.value"
-              class="day"
-              [ngClass]="{
-                'day--real': day.day,
-                'day--today': day.today,
-                'day--past': day.past
-              }"
-            >
-              <ng-container *ngIf="day.day">
-                <h2>
+          <div
+            *ngFor="let day of month.value"
+            class="day"
+            [ngClass]="{
+            'day--today': day.today,
+            'day--other': day.otherMonth,
+            'no-background': day.otherMonth,
+            'day--active': day === currentDay,
+            'day--past': day.past
+          }"
+          >
+            <a href="javascript:void(0)" (click)="currentDay = day">
+              <div>
+                <h4 class="ion-text-center">
+                <span *ngIf="day.printMonth">
+                  {{ day.day.format("MMM") }}
+                </span>
+                  <span class="date">
                   {{ day.day.format("D") }}
-                  <ng-container *ngIf="day.isFirstWeek">
-                    {{ day.day.format("ddd") }}
-                  </ng-container>
-                </h2>
-                <div class="ion-margin-top">
-                  <app-bubble
-                    *ngFor="let dot of getDots(day.day)"
-                    [color]="dot"
-                  ></app-bubble>
+                </span>
+                </h4>
+                <div class="ion-text-center" style="color: var(--ion-color-danger)">
+                  <span></span>
+                  <span *ngFor="let dot of getDots(day.day)">
+                    &#9679;
+                  </span>
                 </div>
-                <ul class="events">
-                  <li *ngFor="let event of getEvents(day.day, 5)">
-                    {{ event.contentTitle }}
-                  </li>
-                </ul>
-              </ng-container>
-            </div>
+              </div>
+            </a>
           </div>
-        </div>
+        </ng-container>
       </div>
     </div>
+    <div class="ion-margin-top">
+      <ng-container *ngIf="currentDay">
+        <ion-toolbar style="--background: transparent">
+          <ion-title>
+            Veranstaltungen am
+            {{ currentDay.day.format("D") }}.
+            {{ currentDay.day.format("MMMM") }}
+            {{ currentDay.day.format("YY") }}
+            nahe {{ locationFc.value }}
+          </ion-title>
+        </ion-toolbar>
+        <div class="ion-padding-horizontal">
+          <p *ngIf="getEvents(currentDay.day).length === 0">
+            Keine Einträge gefunden
+          </p>
+          <ul *ngFor="let group of getEventGroups(currentDay.day)">
+            <h3 class="ion-padding-top">{{group.distance}} Km</h3>
+            <li *ngFor="let event of group.events">
+              <h4>
+                <a [href]="event.url">{{ event.contentTitle }}</a></h4>
+              <p>
+                {{ event.contentText }}
+              </p>
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+    </div>
   </div>
-
-  <!--  <div class="ion-justify-content-center" style="display: flex">-->
-  <!--    <ion-button color="light" size="small" (click)="next()">After</ion-button>-->
-  <!--  </div>-->
 </ion-content>
+
+<ion-footer class="ion-text-center">
+  <div>made in Aargau by Markus Ruepp</div>
+</ion-footer>

@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  GqlListProductsQuery,
-  GqlListProductsQueryVariables,
-  GqlProductCategory,
-  GqlProductsWhereInput,
-  ListProducts,
-} from '../../generated/graphql';
-import { ApolloClient, FetchPolicy } from '@apollo/client/core';
+import { GqlListProductsQuery, GqlListProductsQueryVariables, GqlProductsWhereInput, ListProducts } from '../../generated/graphql';
+import { ApolloClient } from '@apollo/client/core';
 import { Product } from '../graphql/types';
 
 @Injectable({

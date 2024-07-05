@@ -145,17 +145,16 @@ class HttpService {
       if (response.statusCode == 404) {
         throw SiteNotFoundException(url)
       }
-      if (response.statusCode == 405) {
-        throw MethodNotAllowedException(corrId)
-      }
-      if (response.statusCode != statusCode) {
-        throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
-      }
-      if (response.contentType == null) {
-        throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
-      }
-      if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
-        throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
+      if (response.statusCode != 405) {
+        if (response.statusCode != statusCode) {
+          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
+        }
+        if (response.contentType == null) {
+          throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
+        }
+        if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
+          throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
+        }
       }
     }
   }

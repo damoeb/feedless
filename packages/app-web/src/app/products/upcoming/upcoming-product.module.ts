@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
@@ -10,6 +10,7 @@ import { UpcomingProductPage } from './upcoming-product-page.component';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
+import { MapModule } from '../../components/map/map.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,8 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     DarkModeButtonModule,
     SearchbarModule,
     BubbleModule,
+    MapModule,
+    ReactiveFormsModule
   ],
   declarations: [UpcomingProductPage],
 })

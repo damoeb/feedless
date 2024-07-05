@@ -1,16 +1,8 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { ModalCancel, ModalSuccess } from '../../app.module';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { ModalCancel } from '../../app.module';
+import { OpenStreetMapService, OsmMatch } from '../../services/open-street-map.service';
 
-// https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
-export interface OsmMatch {
-  lat: string;
-  lon: string;
-  display_name: string;
-  importance: number;
-}
 
 @Component({
   selector: 'app-search-address-modal',
@@ -23,7 +15,7 @@ export class SearchAddressModalComponent {
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly httpClient: HttpClient,
+    private readonly openStreetMapService: OpenStreetMapService,
   ) {}
 
   async closeModal() {
@@ -36,10 +28,7 @@ export class SearchAddressModalComponent {
 
   async searchAddress(query: string) {
     this.loading = true;
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      query,
-    )}&format=json&polygon=1&addressdetails=1`;
-    this.matches = await firstValueFrom(this.httpClient.get<OsmMatch[]>(url));
+    this.matches = await this.openStreetMapService.searchAddress(query);
     this.loading = false;
   }
 

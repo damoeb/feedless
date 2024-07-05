@@ -1,87 +1,64 @@
-ion-content::part(scroll) {
-  display: flex;
-  flex-direction: column;
-  background: var(--app-background);
-}
+.calendar {
+  //--app-border-color: rgba(var(--app-foreground-rgb), 0.15);
 
-ion-header {
-  background: var(--app-background);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 0 10px 15px 10px;
+  background: rgba(var(--app-foreground-rgb), 0.05);
+
+  .calendar__body {
+    flex-wrap: wrap;
+    display: flex;
+    flex: 1;
+    column-gap: 2px;
+    row-gap: 2px;
+  }
 }
 
 .day {
-  flex-grow: 0;
+  flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 14%;
-  min-height: 150px;
-  border: 1px solid rgba(var(--app-foreground-rgb), 0.15);
+  display: flex;
+  flex-direction: column;
   padding: 5px;
-  border-right-width: 0;
-  border-bottom-width: 0;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+  border-radius: 10px;
 
-  &:last-child {
-    border-right-width: 1px;
+  &:not(.no-background) {
+    background: rgba(var(--app-foreground-rgb), 0.05);
   }
 
-  &--real:hover {
-    cursor: pointer;
-    border-color: rgba(var(--ion-color-primary-rgb), 0.6);
-    border-width: 1px;
+  &--other {
+    opacity: 0.5;
+  }
+  border: 2px solid transparent;
+
+  &--active {
+    --app-border-color: rgba(var(--ion-color-primary-rgb), 0.8);
+    --app-day-bg: rgba(var(--ion-color-primary-rgb), 0.4);
   }
 
   &--today {
-    border-color: rgba(var(--ion-color-dark-rgb), 0.6);
-    border-width: 1px;
-  }
-  &--past {
-    color: rgba(var(--ion-color-dark-rgb), 0.5);
-    app-bubble {
-      opacity: 0.5;
-    }
-  }
-}
-
-ion-datetime-button::part(time-target) {
-  display: none;
-}
-
-app-bubble {
-  margin-right: 15px;
-}
-
-ion-header {
-  box-shadow: none;
-}
-
-aside {
-  ion-checkbox {
-    background: rgba(var(--color), 0.7);
-    padding: 4px 8px;
-    margin: 3px 0px;
-    border-radius: 5px;
-  }
-  .tags {
-    margin-top: 20px;
-  }
-}
-
-.calendar {
-  h2 {
-    margin: 0;
+    --app-border-color: rgba(var(--ion-color-medium-rgb), 1);;
   }
 
-  .events {
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 120px;
-    text-overflow: ellipsis;
-    padding: 0;
-    list-style: none;
+  &--active,
+  &--today {
+    border-color: var(--app-border-color);
+  }
+  &--active {
+    background: var(--app-day-bg)!important;
+  }
 
-    li {
-      background: rgba(var(--app-foreground-rgb), 0.2);
-      padding: 1px 3px;
-      margin: 3px 0px;
-      border-radius: 5px;
+  a {
+    flex: 1;
+    display: flex;
+    text-decoration: none;
+
+    & > * {
+      flex: 1;
     }
   }
 }

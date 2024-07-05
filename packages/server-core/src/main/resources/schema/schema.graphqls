@@ -366,14 +366,14 @@ enum ProductCategory {
 #  feedAnanlytics
 #  communityThreads
 #  localLink like ngrok, traffic forwarding needed for browser life feed
-  teamDraft
+#  teamDraft
 #  feedReader
 #  blog
   upcoming
   untoldNotes
-  pageChangeTracker
-  digest
-  featureFlags
+#  pageChangeTracker
+#  digest
+#  featureFlags
   feedDump
 #  openRoadmap
 #  commentOn

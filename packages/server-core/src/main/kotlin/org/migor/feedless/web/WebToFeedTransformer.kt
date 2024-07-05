@@ -389,10 +389,6 @@ class WebToFeedTransformer(
           article.publishedAt = pubDate
           article.startingAt = startingDate
 
-          if (StringUtils.isBlank(article.title)) {
-            article.title = toTitle(article.contentText ?: "")
-          }
-
           if (qualifiesAsArticle(element, selectors)) {
             article
           } else {
