@@ -8,7 +8,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.mail.MailService
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.ProductDAO
@@ -40,9 +39,6 @@ class UserService {
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
-
-  @Autowired
-  private lateinit var mailService: MailService
 
   @Autowired
   private lateinit var environment: Environment

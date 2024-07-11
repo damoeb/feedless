@@ -19,7 +19,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 
   @Modifying
   @Query(
-      """
+    """
     DELETE FROM DocumentEntity d
     WHERE d.id in (
         select d1.id from DocumentEntity d1
@@ -39,7 +39,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   override fun deleteById(id: UUID)
 
   @Query(
-      """
+    """
     SELECT D FROM DocumentEntity D
     WHERE D.url = :url and D.repositoryId = :repositoryId
     """

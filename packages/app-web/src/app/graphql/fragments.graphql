@@ -23,7 +23,57 @@ fragment SelectorsFragment on Selectors {
   linkXPath
   extendContext
   dateXPath
+  paginationXPath
   dateIsStartOfEvent
+}
+
+fragment CompositeFilterParamsFragment on CompositeFilterParams {
+  exclude {
+    ...CompositeFieldFilterParamsFragment
+  }
+  include {
+    ...CompositeFieldFilterParamsFragment
+  }
+}
+
+fragment ConditionalTagFragment on ConditionalTag {
+  tag
+  filter {
+    ...CompositeFieldFilterParamsFragment
+  }
+}
+
+fragment DiffEmailForwardParamsFragment on DiffEmailForwardParams {
+  inlineDiffImage
+  inlineLatestImage
+  inlinePreviousImage
+  compareBy {
+    field
+    fragmentNameRef
+  }
+  nextItemMinIncrement
+}
+
+fragment PluginExecutionParamsFragment on PluginExecutionParams {
+  org_feedless_feed {
+    generic {
+      ...SelectorsFragment
+    }
+  }
+  org_feedless_diff_email_forward {
+    ...DiffEmailForwardParamsFragment
+  }
+  org_feedless_filter {
+    ...CompositeFilterParamsFragment
+  }
+  org_feedless_fulltext {
+    readability
+    inheritParams
+  }
+  org_feedless_conditional_tag {
+    ...ConditionalTagFragment
+  }
+  jsonData
 }
 
 fragment RepositoryFragment on Repository {
@@ -46,44 +96,7 @@ fragment RepositoryFragment on Repository {
   plugins {
     pluginId
     params {
-      org_feedless_feed {
-        generic {
-          extendContext
-          linkXPath
-          contextXPath
-          dateIsStartOfEvent
-          dateXPath
-        }
-      }
-      org_feedless_diff_email_forward {
-        inlineDiffImage
-        inlineLatestImage
-        inlinePreviousImage
-        compareBy {
-          field
-          fragmentNameRef
-        }
-        nextItemMinIncrement
-      }
-      org_feedless_filter {
-        exclude {
-          ...CompositeFieldFilterParamsFragment
-        }
-        include {
-          ...CompositeFieldFilterParamsFragment
-        }
-      }
-      org_feedless_fulltext {
-        readability
-        inheritParams
-      }
-      org_feedless_conditional_tag {
-        tag
-        filter {
-          ...CompositeFieldFilterParamsFragment
-        }
-      }
-      jsonData
+      ...PluginExecutionParamsFragment
     }
   }
   segmented {
@@ -93,6 +106,7 @@ fragment RepositoryFragment on Repository {
     sortBy
   }
   refreshCron
+  shareKey
   disabledFrom
   archived
   documentCount
@@ -109,66 +123,8 @@ fragment RepositoryFragment on Repository {
       lon
     }
     lastErrorMessage
-    debug {
-      network
-      html
-      console
-      cookies
-      screenshot
-    }
-    emit {
-      fragmentName
-      selectorBased {
-        min
-        max
-        xpath {
-          value
-        }
-        expose {
-          pixel
-          fields {
-            min
-            max
-            name
-            value {
-              set
-              html {
-                xpath {
-                  value
-                }
-              }
-              text {
-                regex
-              }
-            }
-          }
-          transformers {
-            pluginId
-            params {
-              org_feedless_feed {
-                generic {
-                  contextXPath
-                  dateXPath
-                  dateIsStartOfEvent
-                  extendContext
-                  linkXPath
-                }
-              }
-            }
-          }
-        }
-      }
-      imageBased {
-        boundingBox {
-          x
-          y
-          w
-          h
-        }
-      }
-    }
-    page {
-      ...ScrapePageFragment
+    flow {
+      ...ScrapeFlowFragment
     }
   }
 }
@@ -191,40 +147,44 @@ fragment ReadabilityFragment on ScrapedReadability {
   title
 }
 
-fragment NestedScrapedFieldFragment on ScrapedField {
-  ...ScrapedFieldFragment
-}
-fragment ScrapedFieldFragment on ScrapedField {
-  xpath {
-    value
-  }
-  name
-  value {
-    one {
-      mimeType
-      data
-    }
-    many {
-      mimeType
-      data
-    }
-    nested {
-      name
-      xpath {
-        value
-      }
-    }
-  }
-}
-
 fragment RefineOptionsFragment on RefineOptions {
   filter
 }
 
 fragment ActionFragment on ScrapeAction {
+  execute {
+    pluginId
+    params {
+      ...PluginExecutionParamsFragment
+    }
+  }
+  extract {
+    fragmentName
+    selectorBased {
+      fragmentName
+      emit
+      xpath {
+        value
+      }
+      max
+    }
+    imageBased {
+      boundingBox {
+        x
+        y
+        h
+        w
+      }
+    }
+  }
   type {
     element {
       value
+    }
+  }
+  fetch {
+    get {
+      ...ScrapePrerenderFragment
     }
   }
   click {
@@ -263,6 +223,11 @@ fragment ActionFragment on ScrapeAction {
   }
 }
 fragment ScrapePrerenderFragment on ScrapePrerender {
+  url {
+    literal
+    variable
+  }
+  timeout
   viewport {
     ...ViewportFragment
   }
@@ -271,19 +236,15 @@ fragment ScrapePrerenderFragment on ScrapePrerender {
   waitUntil
 }
 
-fragment ScrapePageFragment on ScrapePage {
-  prerender {
-    ...ScrapePrerenderFragment
-  }
-  actions {
+fragment ScrapeFlowFragment on ScrapeFlow {
+  sequence {
     ...ActionFragment
   }
-  url
-  timeout
 }
+
 fragment ScrapeOptionsFragment on ScrapeRequest {
-  page {
-    ...ScrapePageFragment
+  flow {
+    ...ScrapeFlowFragment
   }
 }
 

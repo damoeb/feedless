@@ -7,9 +7,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -111,10 +111,13 @@ class LegacyFeedController {
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(legacyFeedService.transformFeed(corrId, feedUrl, filter, toFullUrlString(request)), responseFormat)
+    return serializeFeed(
+      legacyFeedService.transformFeed(corrId, feedUrl, filter, toFullUrlString(request)),
+      responseFormat
+    )
   }
 
-  private fun serializeFeed(feed: RichFeed, responseType: String?): ResponseEntity<String> {
+  private fun serializeFeed(feed: JsonFeed, responseType: String?): ResponseEntity<String> {
     val (_, convert) = feedExporter.resolveResponseType(newCorrId(), StringUtils.trimToNull(responseType) ?: "atom")
     return convert(
       feed,

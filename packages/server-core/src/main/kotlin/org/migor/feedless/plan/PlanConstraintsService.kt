@@ -47,7 +47,8 @@ class PlanConstraintsService {
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
   fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
-    val minItems = (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
+    val minItems =
+      (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
     val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
     return customMaxItems?.let {
       maxItems?.let {
@@ -62,7 +63,8 @@ class PlanConstraintsService {
   }
 
   fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID, product: ProductCategory): Date {
-    val minRefreshRateInMinutes = (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
+    val minRefreshRateInMinutes =
+      (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
     val minNextDate = toDate(
       lastDate.toInstant().atZone(ZoneId.systemDefault())
         .toLocalDateTime().plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
@@ -123,7 +125,8 @@ class PlanConstraintsService {
 
   private fun userIdFromRequest() = sessionService.userId()!!
 
-  private fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? = getFeature(featureName, userId, resolveProduct(product))?.valueInt
+  private fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? =
+    getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
   private fun getFeatureBool(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Boolean? =
     getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
@@ -132,7 +135,10 @@ class PlanConstraintsService {
     val user = userDAO.findById(userId).orElseThrow()
     return try {
       if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
-        featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id, featureName.name)
+        featureValueDAO.resolveByFeatureGroupIdAndName(
+          featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id,
+          featureName.name
+        )
       } else {
         planDAO.findActiveByUserAndProduct(userId, product)?.let {
           featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)

@@ -22,10 +22,10 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun name(): String = "Filter"
 
   override fun filterEntity(
-      corrId: String,
-      document: DocumentEntity,
-      params: PluginExecutionParamsInput,
-      index: Int
+    corrId: String,
+    document: DocumentEntity,
+    params: PluginExecutionParamsInput,
+    index: Int
   ): Boolean {
     val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
@@ -44,9 +44,9 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   }
 
   fun matches(
-      document: DocumentEntity,
-      filterParams: CompositeFieldFilterParamsInput,
-      index: Int
+    document: DocumentEntity,
+    filterParams: CompositeFieldFilterParamsInput,
+    index: Int
   ): Boolean {
     return arrayOf(
       filterParams.content?.let { applyStringOperation(document.contentText.trim(), it) },
@@ -58,7 +58,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   }
 
   private fun applyNumberOperation(index: Int, filterParams: NumericalFilterParamsInput): Boolean {
-    return when (filterParams.operator!!) {
+    return when (filterParams.operator) {
       NumberFilterOperator.eq -> index == filterParams.value
       NumberFilterOperator.gt -> index > filterParams.value
       NumberFilterOperator.lt -> index < filterParams.value
@@ -67,7 +67,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   private fun applyStringOperation(fieldValue: String, filterParams: StringFilterParamsInput): Boolean {
     val value = filterParams.value
-    return when (filterParams.operator!!) {
+    return when (filterParams.operator) {
       StringFilterOperator.startsWidth -> fieldValue.startsWith(value, true)
       StringFilterOperator.contains -> fieldValue.contains(value, true)
       StringFilterOperator.matches -> fieldValue.matches(Regex(value))

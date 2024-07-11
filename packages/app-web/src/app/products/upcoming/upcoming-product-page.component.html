@@ -1,39 +1,91 @@
 <ion-header style="box-shadow: none">
   <ion-toolbar style="--background: transparent">
-    <ion-title slot="start">
-      <span [innerHtml]="productConfig?.titleHtml"></span>
-    </ion-title>
+    <ion-input
+      color="danger"
+      fill="outline"
+      placeholder="Postleitzahl oder Ortschaft"
+      [formControl]="locationFc"
+      (ionFocus)="isLocationFocussed = true"
+      (ionBlur)="isLocationFocussed = false"
+      style="
+        width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 5px;
+        --border-color: var(--ion-color-danger);
+      "
+    >
+      <ion-icon
+        slot="start"
+        name="location-outline"
+        aria-hidden="true"
+      ></ion-icon>
+    </ion-input>
 
-    <ion-buttons slot="end">
-      <app-dark-mode-button></app-dark-mode-button>
-    </ion-buttons>
+    <div style="display: flex; position: absolute; right: 0; top: 10px">
+      <ion-title>
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </ion-title>
+      <ion-buttons>
+        <app-dark-mode-button></app-dark-mode-button>
+      </ion-buttons>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div style="width: 700px; margin-left: auto; margin-right: auto; display: flex; flex-direction: column">
-    <div style="display: flex">
-      <h3 class="ion-margin-end">
-        <ion-text color="danger">Ort</ion-text>
-      </h3>
-      <ion-input color="danger" fill="outline" [formControl]="locationFc"></ion-input>
-    </div>
-    <ion-list *ngIf="locationSuggestions?.length > 0">
-      <ion-item *ngFor="let location of locationSuggestions"
-                (click)="setLocation(location)"
-                [button]="true">
-        {{location.display_name}}
+  <div
+    style="
+      width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+    "
+  >
+    <ion-list *ngIf="isLocationFocussed">
+      <ion-item
+        [button]="true"
+        *ngIf="!locationNotAvailable"
+        (click)="getCurrentLocation()"
+      >
+        Your Location
+      </ion-item>
+      <ion-item *ngIf="locationSuggestions.length === 0">
+        Tippe deine PLZ oder Ortschaft
+      </ion-item>
+      <ion-item
+        *ngFor="let location of locationSuggestions"
+        (click)="setLocation(location)"
+        [button]="true"
+      >
+        {{ getDisplayName(location) }}
       </ion-item>
     </ion-list>
-<!--    <div style="display: flex">-->
-<!--      <h3 class="ion-margin-end">-->
-<!--        <ion-text color="danger">Distanz</ion-text>-->
-<!--      </h3>-->
-<!--      <ion-select>-->
-<!--        <ion-select-option>10 Km</ion-select-option>-->
-<!--        <ion-select-option>20 Km</ion-select-option>-->
-<!--      </ion-select>-->
-<!--    </div>-->
+
+    <ion-range
+      labelPlacement="start"
+      label="Maximale Distanz"
+      min="10"
+      max="100"
+      [pin]="true"
+    ></ion-range>
+
+    <!--    <div style="display: flex">-->
+    <!--      <h3 class="ion-margin-end">-->
+    <!--        <ion-text color="danger">am</ion-text>-->
+    <!--      </h3>-->
+    <!--      <ion-input color="danger" fill="outline" [formControl]="locationFc"></ion-input>-->
+    <!--    </div>-->
+    <!--    <div style="display: flex">-->
+    <!--      <h3 class="ion-margin-end">-->
+    <!--        <ion-text color="danger">Distanz</ion-text>-->
+    <!--      </h3>-->
+    <!--      <ion-select>-->
+    <!--        <ion-select-option>10 Km</ion-select-option>-->
+    <!--        <ion-select-option>20 Km</ion-select-option>-->
+    <!--      </ion-select>-->
+    <!--    </div>-->
 
     <div class="calendar ion-margin-top">
       <ion-toolbar style="--background: transparent">
@@ -44,7 +96,8 @@
         </ion-buttons>
 
         <ion-title class="ion-text-center">
-          {{ currentDateRef.format('MMMM') }} {{ currentDateRef.format('YYYY') }}
+          {{ currentDateRef.format("MMMM") }}
+          {{ currentDateRef.format("YYYY") }}
         </ion-title>
 
         <ion-buttons slot="end">
@@ -66,28 +119,29 @@
             *ngFor="let day of month.value"
             class="day"
             [ngClass]="{
-            'day--today': day.today,
-            'day--other': day.otherMonth,
-            'no-background': day.otherMonth,
-            'day--active': day === currentDay,
-            'day--past': day.past
-          }"
+              'day--today': day.today,
+              'day--other': day.otherMonth,
+              'no-background': day.otherMonth,
+              'day--active': day.day === currentDateRef,
+              'day--past': day.past
+            }"
           >
-            <a href="javascript:void(0)" (click)="currentDay = day">
+            <a href="javascript:void(0)" (click)="currentDateRef = day.day">
               <div>
                 <h4 class="ion-text-center">
-                <span *ngIf="day.printMonth">
-                  {{ day.day.format("MMM") }}
-                </span>
-                  <span class="date">
-                  {{ day.day.format("D") }}
-                </span>
-                </h4>
-                <div class="ion-text-center" style="color: var(--ion-color-danger)">
-                  <span></span>
-                  <span *ngFor="let dot of getDots(day.day)">
-                    &#9679;
+                  <span *ngIf="day.printMonth">
+                    {{ day.day.format("MMM") }}
                   </span>
+                  <span class="date">
+                    {{ day.day.format("D") }}
+                  </span>
+                </h4>
+                <div
+                  class="ion-text-center"
+                  style="color: var(--ion-color-danger)"
+                >
+                  <span></span>
+                  <span *ngFor="let dot of getDots(day.day)"> &#9679; </span>
                 </div>
               </div>
             </a>
@@ -96,25 +150,22 @@
       </div>
     </div>
     <div class="ion-margin-top">
-      <ng-container *ngIf="currentDay">
+      <ng-container *ngIf="currentDateRef">
         <ion-toolbar style="--background: transparent">
           <ion-title>
-            Veranstaltungen am
-            {{ currentDay.day.format("D") }}.
-            {{ currentDay.day.format("MMMM") }}
-            {{ currentDay.day.format("YY") }}
-            nahe {{ locationFc.value }}
+            Veranstaltungen im Umkreis von {{ locationFc.value }}
           </ion-title>
         </ion-toolbar>
         <div class="ion-padding-horizontal">
-          <p *ngIf="getEvents(currentDay.day).length === 0">
+          <p *ngIf="getEvents(currentDateRef).length === 0">
             Keine Einträge gefunden
           </p>
-          <ul *ngFor="let group of getEventGroups(currentDay.day)">
-            <h3 class="ion-padding-top">{{group.distance}} Km</h3>
+          <ul *ngFor="let group of getEventGroups(currentDateRef)">
+            <h3 class="ion-padding-top">{{ group.distance }} Km</h3>
             <li *ngFor="let event of group.events">
               <h4>
-                <a [href]="event.url">{{ event.contentTitle }}</a></h4>
+                <a [href]="event.url">{{ event.contentTitle }}</a>
+              </h4>
               <p>
                 {{ event.contentText }}
               </p>

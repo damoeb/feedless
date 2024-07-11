@@ -129,35 +129,37 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     this.scrapeResponse = await this.scrapeService.scrape({
-      page: {
-        url: this.url,
-      },
-      emit: [
-        {
-          selectorBased: {
-            xpath: {
-              value: '/',
-            },
-            expose: {
-              transformers: [
-                {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
-                  params: {},
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: this.url,
                 },
-                {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                  params: {},
-                },
-              ],
+                forcePrerender: false,
+              },
             },
           },
-        },
-      ],
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+              params: {},
+            },
+          },
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+              params: {},
+            },
+          },
+        ],
+      },
     });
 
     this.embedWebsite = {
       mimeType: 'text/html',
-      data: this.scrapeResponse.elements[0].selector.html.data,
+      data: this.scrapeResponse.outputs[0].fetch.data,
       url: this.url,
     };
 
@@ -180,19 +182,16 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
-      const data = this.scrapeResponse.elements[0].selector;
-      const feeds = JSON.parse(
-        data.fields.find(
-          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-        ).value.one.data,
-      ) as GqlScrapedFeeds;
+      const feeds = this.scrapeResponse.outputs.find(
+        (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
+      ).execute.data.org_feedless_feeds;
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
         'contextXPath',
       );
 
-      const raw = data.html.data;
+      const raw = this.scrapeResponse.outputs.find((o) => o.fetch).fetch.data;
 
       const document = new DOMParser().parseFromString(raw, 'text/html');
 
@@ -308,11 +307,10 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   }
 
   getReadability(): Maybe<ScrapedReadability> {
-    return JSON.parse(
-      this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
-      ).value.one.data,
-    ) as ScrapedReadability;
+    return this.scrapeResponse.outputs.find(
+      (output) =>
+        output.execute.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
+    ).execute.data.org_feedless_fulltext;
   }
 
   private async assignUrlQueryParam(url: string) {

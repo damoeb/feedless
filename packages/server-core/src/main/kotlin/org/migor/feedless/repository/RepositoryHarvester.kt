@@ -8,7 +8,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.BadRequestException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -19,13 +18,9 @@ import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.Enclosure
-import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.ScrapedByBoundingBox
-import org.migor.feedless.generated.types.ScrapedBySelector
-import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.notification.NotificationService
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -33,10 +28,9 @@ import org.migor.feedless.pipeline.PipelineJobDAO
 import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.images
+import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
-import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -45,6 +39,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.util.retry.Retry
 import java.time.Duration
 import java.time.LocalDateTime
@@ -153,6 +148,7 @@ class RepositoryHarvester internal constructor() {
             .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
             .also { recoverErrorState(source) }
         } catch (e: Exception) {
+          e.printStackTrace()
           log.warn("[$subCorrId] ${e.message}")
           if (e !is ResumableHarvestException) {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
@@ -193,78 +189,87 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  private fun scrapeSource(corrId: String, source: SourceEntity): Flux<Unit> {
-    return scrapeService.scrape(corrId, source.toScrapeRequest())
-      .flatMapMany { scrapeResponse -> Flux.fromIterable(scrapeResponse.elements) }
-      .flatMap { Flux.just(importElement(corrId, it, source.repository!!.id, source)) }
+  private fun scrapeSource(corrId: String, source: SourceEntity): Mono<Unit> {
+    return scrapeService.scrape(corrId, source)
+      .map { importElement(corrId, it, source.repository!!.id, source) }
   }
 
-  private fun importElement(corrId: String, element: ScrapedElement, repositoryId: UUID, source: SourceEntity) {
+  private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity) {
     log.debug("[$corrId] importElement")
-    element.image?.let {
-      importImageElement(corrId, it, repositoryId, source)
+    val lastAction = output.outputs.last()
+    lastAction.execute?.let {
+      it.data.org_feedless_feed?.let { importFeed(corrId, repositoryId, it, source) }
+    } ?: lastAction.extract?.let {
+      TODO()
+    } ?: lastAction.fetch?.let {
+      TODO()
     }
-    element.selector?.let {
-      importSelectorElement(corrId, it, repositoryId, source)
-    }
+//    lastAction.extract.image?.let {
+//      importImageElement(corrId, it, repositoryId, source)
+//    }
+//    output.selector?.let {
+//      importSelectorElement(corrId, it, repositoryId, source)
+//    }
   }
 
-  private fun importSelectorElement(
-    corrId: String,
-    scrapedData: ScrapedBySelector,
-    repositoryId: UUID,
-    source: SourceEntity
-  ) {
-    log.debug("[$corrId] importSelectorElement")
-    scrapedData.fields?.let { fields ->
-      fields.forEach {
-        when (it.name) {
-          FeedlessPlugins.org_feedless_feed.name -> importFeed(
-            corrId,
-            repositoryId,
-            JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java),
-            source
-          )
+//  private fun importSelectorElement(
+//    corrId: String,
+//    scrapedData: ScrapedBySelector,
+//    repositoryId: UUID,
+//    source: SourceEntity
+//  ) {
+//    log.debug("[$corrId] importSelectorElement")
+//    scrapedData.fields?.let { fields ->
+//      fields.forEach {
+//        when (it.name) {
+//          FeedlessPlugins.org_feedless_feed.name -> importFeed(
+//            corrId,
+//            repositoryId,
+//            JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java),
+//            source
+//          )
+//
+//          else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
+//        }
+//      }
+//    } ?: importScrapedData(corrId, scrapedData, repositoryId, source)
+//  }
 
-          else -> throw BadRequestException("Cannot handle field '${it.name}' ($corrId)")
-        }
-      }
-    } ?: importScrapedData(corrId, scrapedData, repositoryId, source)
-  }
-
-  private fun importScrapedData(
-    corrId: String,
-    scrapedData: ScrapedBySelector,
-    repositoryId: UUID,
-    source: SourceEntity
-  ) {
-    log.info("[$corrId] importScrapedData")
-    val document = scrapedData.asEntity(repositoryId, source.tags)
-
-    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-
-    createOrUpdate(
-      corrId,
-      document,
-      documentDAO.findByUrlAndRepositoryId(document.url, repositoryId),
-      repository
-    )
-  }
+//  private fun importScrapedData(
+//    corrId: String,
+//    scrapedData: ScrapedBySelector,
+//    repositoryId: UUID,
+//    source: SourceEntity
+//  ) {
+//    log.info("[$corrId] importScrapedData")
+//    val document = scrapedData.asEntity(repositoryId, source.tags)
+//
+//    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+//
+//    createOrUpdate(
+//      corrId,
+//      document,
+//      documentDAO.findByUrlAndRepositoryId(document.url, repositoryId),
+//      repository
+//    )
+//  }
 
   private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed, source: SourceEntity) {
     log.info("[$corrId] importFeed")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-    feed.items.distinctBy { it.url }.forEach {
-      try {
-        val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
-        val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
-        updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
-        createOrUpdate(corrId, updated, existing, repository)
-      } catch (e: Exception) {
-        log.error("[$corrId] ${e.message}")
-        notificationService.createNotification(corrId, repositoryId, e.message)
+    feed.items
+      ?.distinctBy { it.url }
+      ?.forEach {
+        try {
+          val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
+          val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
+          updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
+          createOrUpdate(corrId, updated, existing, repository)
+        } catch (e: Exception) {
+          log.error("[$corrId] ${e.message}")
+          notificationService.createNotification(corrId, repositoryId, e.message)
+        }
       }
-    }
   }
 
   fun detectMainImageUrl(corrId: String, contentHtml: String?): String? {
@@ -339,24 +344,24 @@ class RepositoryHarvester internal constructor() {
     return pipelineJobDAO.save(job)
   }
 
-  private fun importImageElement(
-    corrId: String,
-    scrapedData: ScrapedByBoundingBox,
-    repositoryId: UUID,
-    source: SourceEntity
-  ) {
-    log.info("[${corrId}] importImageElement")
-    val id = CryptUtil.sha1(scrapedData.data.base64Data)
-    if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
-      log.info("[$corrId] create item $id")
-      TODO("not implemented")
-//      webDocumentDAO.save(entity)
-    }
-  }
+//  private fun importImageElement(
+//    corrId: String,
+//    scrapedData: ScrapedByBoundingBox,
+//    repositoryId: UUID,
+//    source: SourceEntity
+//  ) {
+//    log.info("[${corrId}] importImageElement")
+//    val id = CryptUtil.sha1(scrapedData.data.base64Data)
+//    if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
+//      log.info("[$corrId] create item $id")
+//      TODO("not implemented")
+////      webDocumentDAO.save(entity)
+//    }
+//  }
 }
 
-fun SourceEntity.toScrapeRequest(): ScrapeRequest {
-  return toDto()
+fun SourceEntity.toScrapeRequest(corrId: String): ScrapeRequest {
+  return toDto(corrId)
 }
 
 inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {
@@ -370,35 +375,13 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
     }
 }
 
-private fun ScrapedBySelector.asEntity(repositoryId: UUID, tags: Array<String>?): DocumentEntity {
-  val e = DocumentEntity()
-  e.repositoryId = repositoryId
-  pixel?.let {
-    e.contentTitle = CryptUtil.sha1(it.base64Data).substring(0..8)
-    e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
-    e.contentRawMime = "image/webp"
-  }
-  html?.let {
-    e.contentTitle = CryptUtil.sha1(it.data)
-    e.contentHtml = it.data
-  }
-
-  e.contentText = text.data
-  e.tags = tags
-  e.status = ReleaseStatus.released
-  e.publishedAt = Date()
-  e.updatedAt = Date()
-  e.url = "https://feedless.org/d/${e.id}"
-  return e
-}
-
 private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
   val d = DocumentEntity()
   d.contentTitle = contentTitle
   d.repositoryId = repositoryId
   if (StringUtils.isNotBlank(contentRawBase64)) {
     val tika = Tika()
-    val contentRawBytes = contentRawBase64.toByteArray()
+    val contentRawBytes = contentRawBase64!!.toByteArray()
     val mime = tika.detect(contentRawBytes)
     d.contentRaw = if (mime.startsWith("text/")) {
       contentRawBytes
@@ -414,7 +397,7 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, sour
   d.contentText = StringUtils.trimToEmpty(contentText)
   d.status = status
   enclosures?.let {
-    d.attachments = it.map { it.toAttachment(d) } .toMutableList()
+    d.attachments = it.map { it.toAttachment(d) }.toMutableList()
   }
   d.publishedAt = Date(publishedAt)
   startingAt?.let {

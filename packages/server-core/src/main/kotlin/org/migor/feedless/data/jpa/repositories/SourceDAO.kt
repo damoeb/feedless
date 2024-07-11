@@ -13,7 +13,7 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface SourceDAO : JpaRepository<SourceEntity, UUID> {
-  fun findAllByRepositoryId(id: UUID): List<SourceEntity>
+  fun findAllByRepositoryIdOrderByCreatedAtDesc(id: UUID): List<SourceEntity>
 
   @Modifying
   @Query(

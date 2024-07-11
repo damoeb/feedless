@@ -35,7 +35,10 @@ order by f.name, depth
   """,
     nativeQuery = true,
   )
-  fun resolveByFeatureGroupIdAndName(@Param("featureGroupId") featureGroupId: UUID, @Param("feature") feature: String): FeatureValueEntity?
+  fun resolveByFeatureGroupIdAndName(
+    @Param("featureGroupId") featureGroupId: UUID,
+    @Param("feature") feature: String
+  ): FeatureValueEntity?
 
 
   @Query(

@@ -40,11 +40,13 @@ class OriginalityScorer {
     Duplicate Content Detection: Let D be a similarity score indicating the degree of similarity to existing content.
     Novelty Analysis: Let N be a uniqueness score indicating the uniqueness of the content.
      */
-    return (w.novelty * noveltyScorer.score(comment) - w.links * scoreHyperLinksSpamming(comment) - w.spam * spamScorer.score(comment) - w.duplicate * duplicateContentScorer.score(comment)).coerceIn(0.0, 1.0)
+    return (w.novelty * noveltyScorer.score(comment) - w.links * scoreHyperLinksSpamming(comment) - w.spam * spamScorer.score(
+      comment
+    ) - w.duplicate * duplicateContentScorer.score(comment)).coerceIn(0.0, 1.0)
   }
 
   fun scoreHyperLinksSpamming(comment: CommentEntity): Double {
-    return if(getHyperLinks(comment.contentText).size > 2) {
+    return if (getHyperLinks(comment.contentText).size > 2) {
       1.0
     } else {
       0.0

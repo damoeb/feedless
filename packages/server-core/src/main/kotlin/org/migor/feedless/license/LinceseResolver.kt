@@ -57,20 +57,20 @@ class LinceseResolver {
 
   private fun getLicense(): LocalizedLicense {
     val payload = licenseService.getLicensePayload()
-    return LocalizedLicense.newBuilder()
-      .isValid(licenseService.hasValidLicenseOrLicenseNotNeeded())
-      .isTrial(licenseService.isTrial())
-      .isLocated(payload != null)
-      .trialUntil(licenseService.getTrialUntil())
-      .data(payload?.let {
-        License.newBuilder()
-          .name(payload.name)
-          .email(payload.email)
-          .createdAt(payload.createdAt.time)
-          .scope(payload.scope.toDto())
-          .version(payload.version)
-          .build()
-      })
-      .build()
+    return LocalizedLicense(
+      isValid = licenseService.hasValidLicenseOrLicenseNotNeeded(),
+      isTrial = licenseService.isTrial(),
+      isLocated = payload != null,
+      trialUntil = licenseService.getTrialUntil(),
+      data = payload?.let {
+        License(
+          name = payload.name,
+          email = payload.email,
+          createdAt = payload.createdAt.time,
+          scope = payload.scope.toDto(),
+          version = payload.version,
+        )
+      }
+    )
   }
 }

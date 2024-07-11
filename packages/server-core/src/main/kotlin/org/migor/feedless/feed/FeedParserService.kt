@@ -2,24 +2,23 @@ package org.migor.feedless.feed
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.toDto
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
 import org.migor.feedless.feed.parser.XmlFeedParser
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
-import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
@@ -27,7 +26,6 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -72,10 +70,10 @@ class FeedParserService {
     )
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
+  fun parseFeed(corrId: String, response: HttpResponse): JsonFeed {
     log.debug("[$corrId] Parsing feed")
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
-      corrId, response.response
+      corrId, response
     )
     log.debug("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
@@ -88,14 +86,14 @@ class FeedParserService {
     }.getOrThrow()
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
+  fun parseFeedFromUrl(corrId: String, url: String): JsonFeed {
     log.info("[$corrId] parseFeedFromUrl $url")
-    httpService.guardedHttpResource(
-      corrId,
-      url,
-      200,
-      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
-    )
+//    httpService.guardedHttpResource(
+//      corrId,
+//      url,
+//      200,
+//      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+//    )
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
@@ -103,32 +101,28 @@ class FeedParserService {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     log.info("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
-    return parseFeed(corrId, HarvestResponse(url, response))
+    return parseFeed(corrId, response)
   }
 
 
   fun parseFeedFromRequest(
     corrId: String,
-    scrapeRequests: List<ScrapeRequest>,
+    scrapeRequests: List<SourceEntity>,
     filters: List<CompositeFilterParamsInput>,
     tags: List<ConditionalTagInput>
   ): RemoteNativeFeed {
     val params = filters.toPluginExecutionParamsInput()
 
     val dummyRepository = RepositoryEntity()
-    val conditionalTagsParams = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_conditional_tag(tags)
-      .build()
+    val conditionalTagsParams = PluginExecutionParamsInput(
+      org_feedless_conditional_tag = tags
+    )
+
     val items = Flux.fromIterable(scrapeRequests)
       .flatMap { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
-      .map { response -> response.elements.firstOrNull()!!.selector.fields.find { it.name == FeedlessPlugins.org_feedless_feed.name }!! }
-      .flatMap { field: ScrapedField ->
-        Flux.fromIterable(
-          JsonUtil.gson.fromJson(
-            field.value.one.data,
-            RemoteNativeFeed::class.java
-          ).items
-        )
+      .map { response -> response.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed!! }
+      .flatMap { feed ->
+        Flux.fromIterable(feed.items)
       }
       .collectList()
       .block(Duration.ofSeconds(30))!!
@@ -145,12 +139,13 @@ class FeedParserService {
           .toDto(propertyService)
       }
 
-    val feed = RemoteNativeFeed()
-    feed.items = items
-    feed.expired = false
-    feed.feedUrl = ""
-    feed.publishedAt = Date().time
-    feed.title = "Preview Feed"
+    val feed = RemoteNativeFeed(
+      items = items,
+      expired = false,
+      feedUrl = "",
+      publishedAt = Date().time,
+      title = "Preview Feed"
+    )
 
     return feed
   }
@@ -158,9 +153,9 @@ class FeedParserService {
 }
 
 private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInput(): PluginExecutionParamsInput {
-  return PluginExecutionParamsInput.newBuilder()
-    .org_feedless_filter(this)
-    .build()
+  return PluginExecutionParamsInput(
+    org_feedless_filter = this
+  )
 }
 
 private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {

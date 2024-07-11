@@ -1,20 +1,18 @@
 package org.migor.feedless.feed
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.generated.types.ScrapeDebugOptions
-import org.migor.feedless.generated.types.ScrapePage
-import org.migor.feedless.generated.types.ScrapePrerender
-import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.toRichArticle
+import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
@@ -68,7 +66,7 @@ class LegacyFeedService {
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
-  fun getFeed(corrId: String, feedId: String): RichFeed {
+  fun getFeed(corrId: String, feedId: String): JsonFeed {
     return if (legacySupport()) {
       TODO()
     } else {
@@ -86,30 +84,16 @@ class LegacyFeedService {
     prerender: Boolean,
     filter: String?,
     requestURI: String
-  ): RichFeed {
+  ): JsonFeed {
     return if (legacySupport()) {
-      val scrapeRequest = ScrapeRequest.newBuilder()
-        .corrId(corrId)
-        .debug(
-          ScrapeDebugOptions.newBuilder()
-            .html(true)
-            .build()
-        )
-        .page(
-          ScrapePage.newBuilder()
-            .url(url)
-            .prerender(
-              if (prerender) {
-                ScrapePrerender.newBuilder().build()
-              } else {
-                null
-              }
-            )
-            .build()
-        )
-        .emit(emptyList())
-        .build()
-      val scrapeResponse = scrapeService.scrape(corrId, scrapeRequest).block()!!
+      val source = SourceEntity()
+      val fetch = FetchActionEntity()
+      fetch.forcePrerender = prerender
+      fetch.url = url
+      fetch.isVariable = false
+      source.actions.add(fetch)
+
+      val scrapeResponse = scrapeService.scrape(corrId, source).block()!!
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -127,7 +111,11 @@ class LegacyFeedService {
         corrId, webToFeedTransformer.getFeedBySelectors(
           corrId,
           selectors,
-          HtmlUtil.parseHtml(scrapeResponse.debug.html, url),
+          HtmlUtil.parseHtml(
+            scrapeResponse.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+              StandardCharsets.UTF_8
+            ), url
+          ),
           URL(url)
         ), requestURI
       )
@@ -136,7 +124,7 @@ class LegacyFeedService {
     }
   }
 
-  fun transformFeed(corrId: String, feedUrl: String, filter: String?, requestURI: String): RichFeed {
+  fun transformFeed(corrId: String, feedUrl: String, filter: String?, requestURI: String): JsonFeed {
     return if (legacySupport()) {
       appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, feedUrl), requestURI)
     } else {
@@ -152,7 +140,7 @@ class LegacyFeedService {
 
   // --
 
-  private fun appendNotifications(corrId: String, feed: RichFeed, requestURI: String): RichFeed {
+  private fun appendNotifications(corrId: String, feed: JsonFeed, requestURI: String): JsonFeed {
     val root = userDAO.findFirstByRootIsTrue()
     repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
@@ -162,7 +150,8 @@ class LegacyFeedService {
         pageable = pageable
       )
       feed.items =
-        documents.mapNotNull { it?.toRichArticle(propertyService, EntityVisibility.isPublic, requestURI) }.plus(feed.items)
+        documents.mapNotNull { it?.toJsonItem(propertyService, EntityVisibility.isPublic, requestURI) }
+          .plus(feed.items)
     } ?: log.warn("[$corrId] Repo for legacy notification not found")
     return feed
   }
@@ -171,14 +160,14 @@ class LegacyFeedService {
     return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 
-  private fun eolFeed(url: String? = null): RichFeed {
+  private fun eolFeed(url: String? = null): JsonFeed {
     val feed = createEolFeed()
     feed.items = listOf(createEolArticle(url))
     return feed
   }
 
-  private fun createEolFeed(): RichFeed {
-    val feed = RichFeed()
+  private fun createEolFeed(): JsonFeed {
+    val feed = JsonFeed()
     feed.id = "rss-proxy:2"
     feed.title = "End Of Life"
     feed.feedUrl = ""
@@ -187,8 +176,8 @@ class LegacyFeedService {
     return feed
   }
 
-  private fun createEolArticle(url: String?): RichArticle {
-    val article = RichArticle()
+  private fun createEolArticle(url: String?): JsonItem {
+    val article = JsonItem()
     val preregistrationLink = if (url == null) {
       propertyService.appHost
     } else {

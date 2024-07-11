@@ -69,8 +69,8 @@ class AnalyticsService {
       val event = PlausibleEvent(name = "pageview", url = toFullUrlString(request), domain = plausibleSite)
       val expectedStatusCode = 202
 
-      val getHeader = {
-        header: String -> StringUtils.trimToEmpty(request.getHeader(header))
+      val getHeader = { header: String ->
+        StringUtils.trimToEmpty(request.getHeader(header))
       }
 
       // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For

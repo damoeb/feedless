@@ -2,13 +2,14 @@ package org.migor.feedless.pipeline.plugins
 
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.api.toDto
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecution
-import org.migor.feedless.generated.types.ScrapedElement
+import org.migor.feedless.generated.types.PluginExecutionData
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.util.HtmlUtil
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.nio.charset.StandardCharsets
 
 @Service
 @Profile(AppProfiles.scrape)
@@ -36,19 +38,19 @@ class FeedsPlugin : FragmentTransformerPlugin {
 
   override fun transformFragment(
     corrId: String,
-    element: ScrapedElement,
-    plugin: PluginExecution,
-    url: String
-  ): ScrapedFeeds {
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+  ): PluginExecutionData {
     log.debug("[$corrId] transformFragment")
 
-    val document = HtmlUtil.parseHtml(element.selector.html.data, url)
+    val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
     log.debug("[$corrId] extracting feeds")
-    val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)
-    return ScrapedFeeds.newBuilder()
-      .genericFeeds(genericFeeds.map { it.toDto() })
-      .nativeFeeds(nativeFeeds.map { it.toDto() })
-      .build()
+    val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, data.url, false)
+    return PluginExecutionData(org_feedless_feeds = ScrapedFeeds(
+      genericFeeds = genericFeeds.map { it.toDto() },
+      nativeFeeds = nativeFeeds.map { it.toDto() }
+    )
+    )
   }
 
   override fun name(): String = "Feeds"

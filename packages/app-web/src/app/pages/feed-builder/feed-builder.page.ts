@@ -19,7 +19,10 @@ import {
   NativeOrGenericFeed,
 } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
-import { GqlScrapeRequest } from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapeRequest, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { getFirstFetchUrlLiteral } from '../../utils';
+import { Repository } from '../../graphql/types';
+import { ServerConfigService } from '../../services/server-config.service';
 
 @Component({
   selector: 'app-feed-builder-page',
@@ -35,6 +38,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly modalService: ModalService,
+    private readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -53,19 +57,55 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
+  async handleRepository(repository: Repository) {
+    const url = `${this.serverConfig.gatewayUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
+    console.log('url', url);
+    await this.handleSource(
+      `Remix ${repository.title}`,
+      '',
+      {
+        flow: {
+          sequence: [
+            {
+              fetch: {
+                get: {
+                  url: {
+                    literal: url
+                  }
+                }
+              }
+            },
+            {
+              execute: {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                params: {}
+              }
+            }
+          ]
+        }
+      }
+    );
+  }
+
   async handleFeed(feed: FeedWithRequest) {
     const { title, description } = this.getFeedData(
       feed.feed,
-      feed.scrapeRequest.page.url,
+      getFirstFetchUrlLiteral(feed.scrapeRequest.flow.sequence),
     );
+    await this.handleSource(
+      title,
+      description,
+      getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest)
+    );
+  }
+
+  private async handleSource(title: string, description: string, source: GqlScrapeRequestInput) {
     const componentProps: GenerateFeedModalComponentProps = {
       repository: {
         title,
         description,
         plugins: [],
-        sources: [
-          getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest),
-        ],
+        sources: [source],
       } as any,
     };
     await this.modalService.openFeedMetaEditor(componentProps);

@@ -13,10 +13,12 @@ import java.util.*
 @Profile(AppProfiles.database)
 interface PlanDAO : JpaRepository<PlanEntity, UUID> {
 
-  @Query("""
+  @Query(
+    """
     select PL from PlanEntity PL
     inner join ProductEntity P on P.id = PL.productId
     where PL.userId = :userId and P.partOf = :product AND (PL.terminatedAt IS NULL OR PL.terminatedAt <= NOW())
-  """)
+  """
+  )
   fun findActiveByUserAndProduct(@Param("userId") userId: UUID, @Param("product") product: ProductCategory): PlanEntity?
 }

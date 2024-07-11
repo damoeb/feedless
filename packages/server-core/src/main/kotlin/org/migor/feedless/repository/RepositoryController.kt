@@ -14,11 +14,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
@@ -46,6 +49,7 @@ class RepositoryController {
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
+    @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
@@ -60,7 +64,7 @@ class RepositoryController {
       corrId,
       HttpStatus.OK,
       "atom",
-      repositoryService.getFeedByRepositoryId(repositoryId, page, tag)
+      repositoryService.getFeedByRepositoryId(corrId, repositoryId, page, tag, shareKey)
     )
   }
 
@@ -75,6 +79,7 @@ class RepositoryController {
   fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
+    @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
     @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> {
@@ -90,7 +95,7 @@ class RepositoryController {
       corrId,
       HttpStatus.OK,
       "json",
-      repositoryService.getFeedByRepositoryId(repositoryId, page, tag)
+      repositoryService.getFeedByRepositoryId(corrId, repositoryId, page, tag, shareKey)
     )
   }
 
@@ -105,7 +110,7 @@ class RepositoryController {
   fun postConstruct() {
     val scanner = Scanner(ClassPathResource("/feed.xsl", this.javaClass.classLoader).inputStream)
     val data = StringBuilder()
-    while(scanner.hasNextLine()) {
+    while (scanner.hasNextLine()) {
       data.appendLine(scanner.nextLine())
     }
     feedXsl = data.toString()

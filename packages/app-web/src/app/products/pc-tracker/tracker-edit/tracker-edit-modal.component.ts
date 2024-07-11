@@ -17,6 +17,7 @@ import {
   GqlCompositeFilterParamsInput,
   GqlNumberFilterOperator,
   GqlScrapeRequest,
+  GqlScrapeRequestInput,
 } from '../../../../generated/graphql';
 import { ServerConfigService } from '../../../services/server-config.service';
 
@@ -47,7 +48,7 @@ export class TrackerEditModalComponent
     sensitivity: new FormControl<number>(0),
     limit: new FormControl<number>(null),
   });
-  private scrapeRequest: GqlScrapeRequest;
+  private scrapeRequest: GqlScrapeRequestInput;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,

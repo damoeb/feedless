@@ -14,6 +14,7 @@ import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
+  GqlRemoteNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
@@ -29,6 +30,7 @@ import { FeedService } from '../../services/feed.service';
 import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 import { Subscription } from 'rxjs';
+import { getFirstFetchUrlLiteral } from '../../utils';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -76,6 +78,7 @@ export class TransformWebsiteToFeedComponent
         validators: [Validators.required, Validators.minLength(1)],
       }),
       dateXPath: new FormControl('', []),
+      paginationXPath: new FormControl('', []),
       linkXPath: new FormControl('', {
         nonNullable: true,
       }),
@@ -89,8 +92,8 @@ export class TransformWebsiteToFeedComponent
   );
 
   genericFeeds: GqlTransientGenericFeed[] = [];
-  nativeFeeds: GqlNativeFeed[] = [];
-  currentNativeFeed: GqlNativeFeed;
+  nativeFeeds: GqlRemoteNativeFeed[] = [];
+  currentNativeFeed: GqlRemoteNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
   embedWebsiteData: Embeddable;
   isNonSelected = true;
@@ -113,17 +116,12 @@ export class TransformWebsiteToFeedComponent
           this.emitSelectedFeed();
         }),
       );
-      const elementWithFeeds = this.scrapeResponse.elements.find((element) =>
-        element.selector.fields.some(
-          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-        ),
+      const elementWithFeeds = this.scrapeResponse.outputs.find(
+        (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
       );
       if (elementWithFeeds) {
-        const feeds = JSON.parse(
-          elementWithFeeds.selector.fields.find(
-            (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-          ).value.one.data,
-        ) as GqlScrapedFeeds;
+        const feeds = elementWithFeeds.execute.data
+          .org_feedless_feeds as GqlScrapedFeeds;
         this.genericFeeds = feeds.genericFeeds;
         this.nativeFeeds = feeds.nativeFeeds;
         const scores = feeds.genericFeeds.map((gf) => gf.score);
@@ -133,24 +131,23 @@ export class TransformWebsiteToFeedComponent
           .domain([minScore, maxScore])
           .range([0, 100]);
 
+        const fetchAction = this.scrapeResponse.outputs.find(
+          (o) => o.fetch,
+        ).fetch;
+
         this.embedWebsiteData = {
-          data: this.scrapeResponse.debug.html,
-          mimeType: this.scrapeResponse.debug.contentType,
-          url: this.scrapeRequest.page.url,
-          viewport: this.scrapeRequest.page.prerender?.viewport,
+          data: fetchAction.data,
+          mimeType: fetchAction.debug.contentType,
+          url: getFirstFetchUrlLiteral(this.scrapeRequest.flow.sequence),
+          // viewport: null,
         };
       } else {
-        const elementWithFeed = this.scrapeResponse.elements.find((element) =>
-          element.selector.fields.some(
-            (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeed,
-          ),
+        const elementWithFeed = this.scrapeResponse.outputs.find(
+          (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
         );
         if (elementWithFeed) {
-          const feed = JSON.parse(
-            elementWithFeed.selector.fields.find(
-              (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeed,
-            ).value.one.data,
-          ) as GqlNativeFeed;
+          const feed = elementWithFeed.execute.data
+            .org_feedless_feed as GqlRemoteNativeFeed;
           this.nativeFeeds = [feed];
           await this.pickNativeFeed(feed);
         } else {
@@ -172,7 +169,7 @@ export class TransformWebsiteToFeedComponent
     }
   }
 
-  async pickNativeFeed(feed: GqlNativeFeed) {
+  async pickNativeFeed(feed: GqlRemoteNativeFeed) {
     await this.resetSelection();
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
@@ -202,6 +199,7 @@ export class TransformWebsiteToFeedComponent
       contextXPath: selectors.contextXPath,
       dateIsStartOfEvent: selectors.dateIsStartOfEvent,
       dateXPath: selectors.dateXPath,
+      paginationXPath: selectors.paginationXPath || '',
       linkXPath: selectors.linkXPath,
       extendContext: selectors.extendContext,
     });
@@ -214,12 +212,12 @@ export class TransformWebsiteToFeedComponent
     return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 
-  getExtendContextOptions(): LabelledSelectOption[] {
-    return Object.values(GqlExtendContentOptions).map((option) => ({
-      label: option,
-      value: option,
-    }));
-  }
+  // getExtendContextOptions(): LabelledSelectOption[] {
+  //   return Object.values(GqlExtendContentOptions).map((option) => ({
+  //     label: option,
+  //     value: option,
+  //   }));
+  // }
 
   private async resetSelection() {
     this.showSelectors = false;
@@ -243,15 +241,14 @@ export class TransformWebsiteToFeedComponent
   }
 
   async previewGenericFeed() {
+    const request = getScrapeRequest(
+      this.getSelectedFeed(),
+      this.scrapeRequest as GqlScrapeRequest,
+    );
     await this.modalService.openRemoteFeedModal({
       feedProvider: () =>
         this.feedService.previewFeed({
-          requests: [
-            getScrapeRequest(
-              this.getSelectedFeed(),
-              this.scrapeRequest as GqlScrapeRequest,
-            ),
-          ],
+          requests: [request],
           filters: [],
           tags: [],
         }),
@@ -296,9 +293,9 @@ export class TransformWebsiteToFeedComponent
             dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
             extendContext: this.formGroup.value.extendContext,
             dateXPath: this.formGroup.value.dateXPath,
+            paginationXPath: this.formGroup.value.paginationXPath,
           },
           samples: [],
-          feedUrl: '',
           hash: '',
           score: 0,
           count: 0,

@@ -36,6 +36,7 @@ export type Selectors = Pick<
   | 'linkXPath'
   | 'extendContext'
   | 'dateXPath'
+  | 'paginationXPath'
   | 'contextXPath'
   | 'dateIsStartOfEvent'
 >;
@@ -52,7 +53,7 @@ export type ScrapedReadability = Pick<
   | 'title'
 >;
 export type User = Session['user'];
-export type ScrapedElement = GetElementType<ScrapeResponse['elements']>;
+export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
 export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];

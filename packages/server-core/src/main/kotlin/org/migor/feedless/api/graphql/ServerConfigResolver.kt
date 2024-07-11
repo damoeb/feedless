@@ -51,15 +51,18 @@ class ServerConfigResolver {
     log.info("serverSettings $data")
     val product = data.product.fromDto()
 
-    if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(product)) {
+    if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(
+        product
+      )
+    ) {
       throw IllegalArgumentException("license does not support product ${product.name}")
     }
 
-    ServerSettings.newBuilder()
-      .appUrl(productService.getAppUrl(product))
-      .version(version)
-      .buildFrom(licenseService.buildFrom())
-      .profiles(environment.activeProfiles.map {
+    ServerSettings(
+      appUrl = productService.getAppUrl(product),
+      version = version,
+      buildFrom = licenseService.buildFrom(),
+      profiles = environment.activeProfiles.map {
         when (it) {
           AppProfiles.authMail -> ProfileName.authMail
           AppProfiles.authSSO -> ProfileName.authSSO
@@ -67,9 +70,9 @@ class ServerConfigResolver {
           AppProfiles.dev -> ProfileName.dev
           else -> null
         }
-      }.filterNotNull())
-      .gatewayUrl(productService.getGatewayUrl(product))
-      .features(featureService.findAllByProduct(product))
-      .build()
+      }.filterNotNull(),
+      gatewayUrl = productService.getGatewayUrl(product),
+      features = featureService.findAllByProduct(product),
+    )
   }
 }

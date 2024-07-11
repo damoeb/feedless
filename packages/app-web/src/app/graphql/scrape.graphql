@@ -1,52 +1,78 @@
+fragment ScrapeExtractFragmentFragment on ScrapeExtractFragment {
+  data {
+    mimeType
+    data
+  }
+  text {
+    data
+  }
+  html {
+    data
+  }
+}
+fragment ScrapeExtractResponseFragment on ScrapeExtractResponse {
+  fragmentName
+  fragments {
+    ...ScrapeExtractFragmentFragment
+    extracts {
+      fragmentName
+      fragments {
+        ...ScrapeExtractFragmentFragment
+      }
+    }
+  }
+}
+
 query scrape($data: ScrapeRequestInput!) {
   scrape(data: $data) {
-    url
-    debug {
-      console
-      cookies
-      contentType
-      statusCode
-      screenshot
-      html
-      metrics {
-        queue
-        render
+    outputs {
+      extract {
+        ...ScrapeExtractResponseFragment
       }
-      viewport {
-        ...ViewportFragment
+      fetch {
+        data
+        debug {
+          console
+          contentType
+          cookies
+          corrId
+          screenshot
+          statusCode
+          viewport {
+            ...ViewportFragment
+          }
+        }
+      }
+      execute {
+        pluginId
+        data {
+          org_feedless_feed {
+            ...RemoteNativeFeedFragment
+          }
+          org_feedless_feeds {
+            genericFeeds {
+              selectors {
+                ...SelectorsFragment
+              }
+              score
+              hash
+              count
+              samples {
+                ...WebDocumentFragment
+              }
+            }
+            nativeFeeds {
+              ...RemoteNativeFeedFragment
+            }
+          }
+          org_feedless_fulltext {
+            ...ReadabilityFragment
+          }
+          jsonData
+        }
       }
     }
     failed
     errorMessage
-    elements {
-      image {
-        boundingBox {
-          y
-          x
-          w
-          h
-        }
-        data {
-          base64Data
-        }
-      }
-      selector {
-        xpath {
-          value
-        }
-        html {
-          data
-        }
-        pixel {
-          base64Data
-        }
-        text {
-          data
-        }
-        fields {
-          ...NestedScrapedFieldFragment
-        }
-      }
-    }
   }
 }

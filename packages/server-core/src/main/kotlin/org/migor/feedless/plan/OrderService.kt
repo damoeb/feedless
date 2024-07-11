@@ -47,7 +47,7 @@ class OrderService {
   private lateinit var userDAO: UserDAO
 
   fun findAll(corrId: String, data: OrdersInput): List<OrderEntity> {
-    val pageable = PageRequest.of(data.cursor?.page ?: 0, data.cursor?.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
+    val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
     val currentUser = sessionService.user(corrId)
     return if (currentUser.root) {
 //      data.where?.id?.let {
@@ -59,7 +59,12 @@ class OrderService {
     }
   }
 
-  fun upsert(corrId: String, where: OrderWhereUniqueInput?, create: OrderCreateInput?, update: OrderUpdateInput?): OrderEntity {
+  fun upsert(
+    corrId: String,
+    where: OrderWhereUniqueInput?,
+    create: OrderCreateInput?,
+    update: OrderUpdateInput?
+  ): OrderEntity {
     return where?.let {
       update(corrId, where, update!!)
     } ?: create(corrId, create!!)
@@ -73,28 +78,27 @@ class OrderService {
     order.productId = productId
     order.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
     order.invoiceRecipientName = create.invoiceRecipientName.trim()
-    order.paymentMethod = create.paymentMethod?.fromDTO()
+    order.paymentMethod = create.paymentMethod.fromDTO()
     order.callbackUrl = create.callbackUrl
     order.targetGroupIndividual = create.targetGroup === ProductTargetGroup.individual
     order.targetGroupEnterprise = create.targetGroup === ProductTargetGroup.eneterprise
     order.targetGroupOther = create.targetGroup === ProductTargetGroup.other
 
-    order.price = if(create.overwritePrice <= 0) {
-      productService.resolvePriceForProduct(productId, create.user.where?.id?.let { UUID.fromString(it) })
+    order.price = if (create.overwritePrice <= 0) {
+      productService.resolvePriceForProduct(productId, create.user.connect?.id?.let { UUID.fromString(it) })
     } else {
       create.overwritePrice
     }
-    create.user.where?.let {
+    create.user.connect?.let {
       order.userId = UUID.fromString(it.id)
-    } ?: run {
+    } ?: create.user.create?.let {
       order.userId = createUser(corrId, create.user.create).id
-    }
-
+    } ?: throw IllegalArgumentException("Neither connect or create is present")
     return orderDAO.save(order)
   }
 
   private fun createUser(corrId: String, create: UserCreateInput): UserEntity {
-    return userDAO.findByEmail(create.email.trim())?: run {
+    return userDAO.findByEmail(create.email.trim()) ?: run {
       log.info("[$corrId] createUser $create]")
       if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
         throw IllegalArgumentException("You have to accept the terms")
@@ -153,7 +157,7 @@ class OrderService {
 }
 
 private fun PaymentMethodDto.fromDTO(): PaymentMethod {
-  return when(this) {
+  return when (this) {
     PaymentMethodDto.Bill -> PaymentMethod.Bill
     PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
     PaymentMethodDto.Bitcoin -> PaymentMethod.Bitcoin
@@ -163,20 +167,23 @@ private fun PaymentMethodDto.fromDTO(): PaymentMethod {
 }
 
 fun OrderEntity.toDTO(): Order {
-  return Order.newBuilder()
-    .id(id.toString())
-    .createdAt(createdAt.time)
-    .userId(userId.toString())
-    .productId(productId.toString())
+  return Order(
+    id = id.toString(),
+    createdAt = createdAt.time,
+    userId = userId.toString(),
+    productId = productId.toString(),
 
-    .isOffer(isOffer)
-    .paymentDueTo(dueTo?.time)
-    .isPaid(isPaid)
-    .isOfferRejected(isOfferRejected)
+    isOffer = isOffer,
+    paymentDueTo = dueTo?.time,
+    isPaid = isPaid,
+    isOfferRejected = isOfferRejected,
 
-    .paidAt(paidAt?.time)
-    .paymentMethod(paymentMethod?.toDTO())
-    .invoiceRecipientName(invoiceRecipientName)
-    .invoiceRecipientEmail(invoiceRecipientEmail)
-    .build()
+    paidAt = paidAt?.time,
+    paymentMethod = paymentMethod?.toDTO(),
+    invoiceRecipientName = invoiceRecipientName,
+    invoiceRecipientEmail = invoiceRecipientEmail,
+    price = price,
+    product = product!!.toDTO(),
+
+    )
 }

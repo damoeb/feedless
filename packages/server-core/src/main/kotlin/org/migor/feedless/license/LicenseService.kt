@@ -173,7 +173,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     getPublicKeyFile().use { publicKeyFile ->
       val scanner = Scanner(publicKeyFile)
       val data = StringBuilder()
-      while(scanner.hasNextLine()) {
+      while (scanner.hasNextLine()) {
         data.appendLine(scanner.nextLine())
       }
 
@@ -242,7 +242,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun getLicenseFile() = File("./license.key")
-  private fun getPublicKeyFile(): InputStream = ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).inputStream
+  private fun getPublicKeyFile(): InputStream =
+    ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).inputStream
+
   private fun getPrivateKeyFile(): File = File(pemFile!!)
 
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
@@ -270,6 +272,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       true
     }
   }
+
   fun hasValidLicense(): Boolean {
     return license != null
   }

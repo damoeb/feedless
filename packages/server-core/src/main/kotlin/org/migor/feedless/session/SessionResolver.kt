@@ -75,19 +75,19 @@ class SessionResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun session(dfe: DataFetchingEnvironment): Session = coroutineScope {
     unsetSessionCookie(dfe)
-    val defaultSession = Session.newBuilder()
-      .isLoggedIn(false)
-      .isAnonymous(true)
-      .build()
+    val defaultSession = Session(
+      isLoggedIn = false,
+      isAnonymous = true
+    )
 
     if (sessionService.isUser()) {
       runCatching {
         val user = sessionService.user(CryptUtil.newCorrId())
-        Session.newBuilder()
-          .isLoggedIn(true)
-          .isAnonymous(false)
-          .userId(user.id.toString())
-          .build()
+        Session(
+          isLoggedIn = true,
+          isAnonymous = false,
+          userId = user.id.toString()
+        )
       }.getOrDefault(defaultSession)
     } else {
       defaultSession
@@ -120,10 +120,10 @@ class SessionResolver {
         ?: throw IllegalArgumentException("secretKey does not match ($corrId)")
       val jwt = tokenProvider.createJwtForUser(root)
       addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
-      Authentication.newBuilder()
-        .token(jwt.tokenValue)
-        .corrId(CryptUtil.newCorrId())
-        .build()
+      Authentication(
+        token = jwt.tokenValue,
+        corrId = CryptUtil.newCorrId()
+      )
     } else {
       throw PermissionDeniedException("authRoot profile is not active ($corrId)")
     }

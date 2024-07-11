@@ -7,11 +7,11 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
-import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -59,55 +59,62 @@ class FeedQueryResolver {
     log.info("[$corrId] previewFeed $data")
     feedParserService.parseFeedFromRequest(corrId, data.requests
       .filterIndexed { index, _ -> index < 5 }
-      .map { it.fromDto() }, data.filters, data.tags)
+      .map { it.fromDto() }, data.filters, data.tags
+    )
   }
 }
 
-fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
-  return RemoteNativeFeed.newBuilder()
-    .description(description)
-    .title(title)
-    .feedUrl(feedUrl)
-    .websiteUrl(websiteUrl)
-    .language(language)
-    .publishedAt(publishedAt.time)
-    .tags(tags)
-    .expired(BooleanUtils.isTrue(expired))
-    .items(items.map {
-      val builder = WebDocument.newBuilder()
-        .id(it.url)
-        .tags(it.tags)
-        .contentTitle(it.title)
-        .contentText(it.contentText)
-        .publishedAt(it.publishedAt.time)
-        .startingAt(it.startingAt?.time)
-        .createdAt(Date().time)
-        .url(it.url)
-        .enclosures(it.attachments.map { it.toEnclosure() })
-        .imageUrl(it.imageUrl)
+fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
 
+  return RemoteNativeFeed(
+    description = description,
+    title = title,
+    feedUrl = feedUrl,
+    websiteUrl = websiteUrl,
+    language = language,
+    publishedAt = publishedAt.time,
+    tags = tags,
+    expired = BooleanUtils.isTrue(expired),
+    items = items.map {
+      var contentHtml: String? = null
+      var contentRawBase64: String? = null
+      var contentRawMime: String? = null
       if (isHtml(it.contentRawMime)) {
         try {
-          builder
-            .contentHtml(Base64.getDecoder().decode(it.contentRawBase64).toString(StandardCharsets.UTF_8))
+          contentHtml = Base64.getDecoder().decode(it.contentRawBase64).toString(StandardCharsets.UTF_8)
         } catch (e: Exception) {
-          builder
-            .contentHtml(it.contentRawBase64)
-        }.build()
+          contentHtml = it.contentRawBase64
+        }
       } else {
-        builder
-          .contentRawBase64(it.contentRawBase64)
-          .contentRawMime(it.contentRawMime)
-          .build()
+        contentRawBase64 = it.contentRawBase64
+        contentRawMime = it.contentRawMime
       }
-    })
-    .build()
+
+      WebDocument(
+        id = it.url,
+        tags = it.tags,
+        contentTitle = it.title,
+        contentText = it.contentText,
+        publishedAt = it.publishedAt.time,
+        startingAt = it.startingAt?.time,
+        localized = it.latLng,
+        createdAt = Date().time,
+        url = it.url,
+        enclosures = it.attachments.map { it.toEnclosure() },
+        imageUrl = it.imageUrl,
+        contentHtml = contentHtml,
+        contentRawMime = contentRawMime,
+        contentRawBase64 = contentRawBase64
+
+      )
+    }
+  )
 
 }
 
-private fun JsonAttachment.toEnclosure(): Enclosure = Enclosure.newBuilder()
-  .url(url)
-  .type(type)
-  .size(size)
-  .duration(duration)
-  .build()
+private fun JsonAttachment.toEnclosure(): Enclosure = Enclosure(
+  url = url,
+  type = type,
+  size = length,
+  duration = duration,
+)

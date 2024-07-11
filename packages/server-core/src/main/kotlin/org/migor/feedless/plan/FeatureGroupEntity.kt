@@ -59,19 +59,10 @@ open class FeatureGroupEntity : EntityWithUUID() {
 }
 
 fun FeatureGroupEntity.toDto(features: List<Feature>): FeatureGroup {
-  return FeatureGroup.newBuilder()
-    .id(id.toString())
-    .name(name)
-    .features(features)
-    .parentId(parentFeatureGroupId?.toString())
-    .build()
+  return FeatureGroup(
+    id = id.toString(),
+    name = name,
+    features = features,
+    parentId = parentFeatureGroupId?.toString(),
+  )
 }
-
-//fun org.migor.feedless.generated.types.PlanName.fromDto(): PlanName {
-//  return when (this) {
-////    org.migor.feedless.generated.types.PlanName.waitlist -> PlanName.waitlist
-//    org.migor.feedless.generated.types.PlanName.free -> PlanName.free
-//    org.migor.feedless.generated.types.PlanName.basic -> PlanName.basic
-//    else -> throw IllegalArgumentException()
-//  }
-//}

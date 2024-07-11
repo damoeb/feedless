@@ -37,16 +37,16 @@ class PluginResolver {
 
 
 private fun FeedlessPlugin.toDto(): Plugin {
-  return Plugin.newBuilder()
-    .id(id())
-    .name(name())
-    .listed(listed())
-    .type(
-      if (this is FragmentTransformerPlugin) {
-        PluginType.fragment
-      } else {
-        PluginType.entity
-      }
-    )
-    .build()
+  return Plugin(
+    id = id(),
+    name = name(),
+    listed = listed(),
+    type =
+    if (this is FragmentTransformerPlugin) {
+      PluginType.fragment
+    } else {
+      PluginType.entity
+    }
+
+  )
 }

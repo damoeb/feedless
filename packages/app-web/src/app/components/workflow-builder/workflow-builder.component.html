@@ -112,7 +112,14 @@
                     >
                   </ion-item>
                   <ion-list slot="content">
-                    <ion-item> Add Action </ion-item>
+                    <ion-item [button]="true">
+                      <ion-icon name="add-outline" slot="start"></ion-icon>
+                      Add Action
+                    </ion-item>
+                    <ion-item [button]="true">
+                      <ion-icon name="ellipse" slot="start"></ion-icon>
+                      Record Actions
+                    </ion-item>
                   </ion-list>
                 </ion-accordion>
                 <ion-accordion value="emit">
@@ -130,10 +137,9 @@
                 </ion-accordion>
               </ion-accordion-group>
             </ion-accordion>
-            <ion-item>
-              <ion-button shape="round" color="primary" size="small" slot="end">
-                Add Source
-              </ion-button>
+            <ion-item [button]="true">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Add Source
             </ion-item>
           </ion-accordion-group>
         </ion-accordion>

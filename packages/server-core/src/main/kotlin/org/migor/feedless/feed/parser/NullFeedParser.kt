@@ -1,7 +1,7 @@
 package org.migor.feedless.feed.parser
 
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.feed.parser.json.JsonFeed
 
 class NullFeedParser : FeedBodyParser {
 
@@ -13,7 +13,7 @@ class NullFeedParser : FeedBodyParser {
     return true
   }
 
-  override fun process(corrId: String, response: HarvestResponse): RichFeed {
-    throw IllegalArgumentException("No parser found for ${response.response.contentType} ($corrId)")
+  override fun process(corrId: String, response: HttpResponse): JsonFeed {
+    throw IllegalArgumentException("No parser found for ${response.contentType} ($corrId)")
   }
 }

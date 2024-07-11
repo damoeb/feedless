@@ -138,7 +138,8 @@ class Seeder {
       notification.url = propertyService.appHost
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
-      notification.contentText = "Hi, support for anonymous rss-proxy feeds is coming to an end, but I made migrating especially easy."
+      notification.contentText =
+        "Hi, support for anonymous rss-proxy feeds is coming to an end, but I made migrating especially easy."
       notification.updatedAt = Date()
 
       documentDAO.save(notification)
@@ -151,6 +152,7 @@ class Seeder {
     val repo = RepositoryEntity()
     repo.title = repoTitleLegacyNotifications
     repo.description = ""
+    repo.shareKey = ""
     repo.ownerId = root.id
     repo.visibility = EntityVisibility.isPrivate
     repo.product = ProductCategory.feedless
@@ -188,7 +190,8 @@ class Seeder {
       featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
         val group = FeatureGroupEntity()
         group.name = "server"
-        featureGroupDAO.save(group) }
+        featureGroupDAO.save(group)
+      }
 
     featureSerrvice.assignFeatureValues(
       baseFeatureGroup, features = mapOf(
@@ -304,7 +307,8 @@ class Seeder {
             enterprise = true,
             other = true,
             unit = "Per Month",
-            price = 0.0),
+            price = 0.0
+          ),
         ),
         parentFeatureGroup = baseFeatureGroup,
         features = mapOf(
@@ -343,7 +347,8 @@ class Seeder {
             enterprise = true,
             other = true,
             unit = "Per Month",
-            price = -1.0),
+            price = -1.0
+          ),
         ),
         features = mapOf(
 //          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
@@ -368,6 +373,47 @@ class Seeder {
           FeatureName.itemWebhookForwardBool to asBoolFeature(true),
         )
       )
+
+      val feedlessFree = createProduct(
+        "feedless Free",
+        "Getting started",
+        group = ProductCategory.feedless,
+        isBaseProduct = true,
+        isCloud = true,
+        prices = listOf(
+          createPricedProduct(
+            individual = true,
+            enterprise = true,
+            other = true,
+            unit = "Per Month",
+            price = 0.0
+          ),
+        ),
+        parentFeatureGroup = baseFeatureGroup,
+        features = mapOf(
+//          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
+//          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+//          FeatureName.publicRepositoryBool to asBoolFeature(false),
+          FeatureName.pluginsBool to asBoolFeature(true),
+
+          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10),
+          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
+
+          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
+          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
+          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10),
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(5),
+
+//          FeatureName.hasWaitList to asBoolFeature(false),
+          FeatureName.canActivatePlan to asBoolFeature(true),
+
+//          FeatureName.itemEmailForwardBool to asBoolFeature(false),
+//          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
+        )
+      )
+
     }
   }
 

@@ -59,11 +59,11 @@ class FeatureService {
   private fun toDTO(values: List<FeatureValueEntity>): List<Feature> {
     return values.mapNotNull { value ->
       value.feature!!.toDto()?.let {
-        Feature.newBuilder()
-          .id(value.feature!!.id.toString())
-          .name(value.feature!!.toDto())
-          .value(value.toDto())
-          .build()
+        Feature(
+          id = value.feature!!.id.toString(),
+          name = value.feature!!.toDto()!!,
+          value = value.toDto(),
+        )
       }
     }
 
@@ -140,7 +140,7 @@ class FeatureService {
     val groups = if (where.id == null) {
       this.featureGroupDAO.findAll()
     } else {
-      listOf(this.featureGroupDAO.findById(UUID.fromString(where.id!!.equals)).orElseThrow())
+      listOf(this.featureGroupDAO.findById(UUID.fromString(where.id.equals)).orElseThrow())
     }
     return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
   }

@@ -411,7 +411,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
   private getUserInput(): GqlUserCreateOrConnectInput {
     if (this.loggedIn) {
       return {
-        where: {
+        connect: {
           id: this.sessionService.getUserId(),
         },
       };

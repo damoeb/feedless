@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { PuppeteerService } from '../puppeteer/puppeteer.service';
+import { getHttpGet, PuppeteerService } from '../puppeteer/puppeteer.service';
 import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { GraphqlClient } from '../../graphql-client';
@@ -43,8 +43,8 @@ export class AgentService implements OnModuleInit {
               event.scrape as any,
             );
             await graphqlClient.submitJobResponse({
-              jobId: event.scrape.id,
-              corrId: event.scrape.corrId,
+              callbackId: event.callbackId,
+              corrId: event.corrId,
               scrapeResponse,
             });
           } catch (e) {
@@ -53,24 +53,25 @@ export class AgentService implements OnModuleInit {
             const errorResponse: ScrapeResponseInput = {
               failed: true,
               errorMessage: e?.message,
-              url: event.scrape?.page?.url || 'unknown',
-              elements: [],
-              debug: {
-                corrId: event.scrape.corrId,
-                console: [],
-                cookies: [],
-                statusCode: 0,
-                metrics: {
-                  render: Date.now() - startTime,
-                  queue: 0,
-                },
-                network: [],
-                prerendered: true,
-              },
+              // url: getHttpGet(event.scrape).url || 'unknown',
+              outputs: [],
+              logs: [],
+              // debug: {
+              //   corrId: event.scrape.corrId,
+              //   console: [],
+              //   cookies: [],
+              //   statusCode: 0,
+              //   metrics: {
+              //     render: Date.now() - startTime,
+              //     queue: 0,
+              //   },
+              //   network: [],
+              //   prerendered: true,
+              // },
             };
             await graphqlClient.submitJobResponse({
-              jobId: event.scrape.id,
-              corrId: event.scrape.corrId,
+              callbackId: event.callbackId,
+              corrId: event.corrId,
               scrapeResponse: errorResponse,
             });
           }

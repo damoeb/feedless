@@ -76,14 +76,12 @@ class MailAuthenticationService {
 
           Mono.delay(Duration.ofSeconds(2)).subscribe {
             emitter.next(
-              AuthenticationEvent.newBuilder()
-                .confirmCode(
-                  ConfirmCode.newBuilder()
-                    .length(otp.password.length)
-                    .otpId(otp.id.toString())
-                    .build()
+              AuthenticationEvent(
+                confirmCode = ConfirmCode(
+                  length = otp.password.length,
+                  otpId = otp.id.toString()
                 )
-                .build()
+              )
             )
             emitter.complete()
           }

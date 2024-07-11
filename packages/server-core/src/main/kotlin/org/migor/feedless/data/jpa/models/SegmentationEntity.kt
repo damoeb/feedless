@@ -35,10 +35,10 @@ open class SegmentationEntity : EntityWithUUID() {
 }
 
 fun SegmentationEntity.toDto(): Segment {
-  return Segment.newBuilder()
-    .digest(digest)
-    .size(size)
-    .sortAsc(sortAsc)
-    .sortBy(sortBy)
-    .build()
+  return Segment(
+    digest = digest,
+    size = size,
+    sortAsc = sortAsc,
+    sortBy = sortBy,
+  )
 }

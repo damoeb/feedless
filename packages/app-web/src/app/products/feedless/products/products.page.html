@@ -82,7 +82,7 @@
               fill="outline"
               shape="round"
               size="small"
-              *ngIf="product.costs !== 0"
+              *ngIf="product.costs.length > 0"
               [routerLink]="'/pricing/'+product.id"
               style="height: 40px"
             >

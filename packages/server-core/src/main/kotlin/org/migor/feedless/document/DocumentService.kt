@@ -1,6 +1,9 @@
 package org.migor.feedless.document
 
+import com.linecorp.kotlinjdsl.querymodel.jpql.expression.Expression
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -57,10 +60,12 @@ class DocumentService {
     orderBy: WebDocumentOrderByInput? = null,
     status: ReleaseStatus = ReleaseStatus.released,
     tag: String? = null,
-    pageable: Pageable
+    pageable: Pageable,
+    shareKey: String? = null
   ): Page<DocumentEntity?> {
     val repo = repositoryDAO.findById(repositoryId).orElseThrow()
-    if (repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId()) {
+
+    if (repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
       throw IllegalArgumentException("repo is not public")
     }
 
@@ -75,6 +80,38 @@ class DocumentService {
           it.after?.let {
             whereStatements.add(path(DocumentEntity::startingAt).ge(Date(it)))
           }
+        }
+        it.localized?.let {
+          // https://postgis.net/docs/ST_Distance.html
+//          val point = function(Point::class,"ST_Point", it.near.lat, it.near.lon)
+//          whereStatements.add(function(Double::class, "ST_Distance", path(DocumentEntity::latLon), point).ge(0.0))
+
+          val st_point = { lat: Double, lon: Double -> function(Point::class, "st_point", lat, lon) }
+          val st_setsrid =
+            { geom: Expression<Geometry>, srid: Int -> function(Geometry::class, "ST_SetSRID", geom, srid) }
+          val st_transform =
+            { geom: Expression<Geometry>, to_srid: Int -> function(Geometry::class, "st_transform", geom, to_srid) }
+          val st_distance = { geom1: Expression<Geometry>, geom2: Expression<Geometry> ->
+            function(
+              Double::class,
+              "st_distance",
+              geom1,
+              geom2
+            )
+          }
+
+//          whereStatements.add(
+//            st_distance(
+//              st_transform(
+//                st_setsrid(path(DocumentEntity::latLon), 4326),
+//                3857),
+//              st_transform(
+//                st_setsrid(st_point(it.near.lat, it.near.lat), 4326),
+//                3857)).ge(0.0)
+//          )
+          whereStatements.add(
+            st_setsrid(st_point(it.near.lat, it.near.lat), 4326).isNotNull()
+          )
         }
       }
 
@@ -97,7 +134,11 @@ class DocumentService {
 
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
     val retentionSize =
-      planConstraintsService.coerceRetentionMaxCapacity(repository.retentionMaxCapacity, repository.ownerId, repository.product)
+      planConstraintsService.coerceRetentionMaxCapacity(
+        repository.retentionMaxCapacity,
+        repository.ownerId,
+        repository.product
+      )
     if (retentionSize != null && retentionSize > 0) {
       log.info("[$corrId] applying retention with maxItems=$retentionSize")
       documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
@@ -105,7 +146,11 @@ class DocumentService {
       log.info("[$corrId] no retention with maxItems given")
     }
 
-    planConstraintsService.coerceRetentionMaxAgeDays(repository.retentionMaxAgeDays, repository.ownerId, repository.product)
+    planConstraintsService.coerceRetentionMaxAgeDays(
+      repository.retentionMaxAgeDays,
+      repository.ownerId,
+      repository.product
+    )
       ?.let { maxAgeDays ->
         log.info("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
         val maxDate = Date.from(
@@ -129,16 +174,15 @@ class DocumentService {
     if (documentIds.`in` != null) {
       documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
     } else {
-      if (documentIds.notIn != null) {
-        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+//      if (documentIds.notIn != null) {
+//        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.notIn`.map { UUID.fromString(it) })
+//      } else {
+      if (documentIds.equals != null) {
+        documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
       } else {
-        if (documentIds.equals != null) {
-          documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
-        } else {
-          throw IllegalArgumentException("operation not supported")
-        }
-
+        throw IllegalArgumentException("operation not supported")
       }
+//      }
 
     }
   }

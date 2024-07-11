@@ -15,7 +15,7 @@ import {
   SidemenuBreakpoint,
 } from './services/app-config.service';
 import { GqlProductCategory } from '../generated/graphql';
-import { kebabCase } from 'lodash';
+import { kebabCase } from 'lodash-es';
 
 @Component({
   selector: 'app-root',

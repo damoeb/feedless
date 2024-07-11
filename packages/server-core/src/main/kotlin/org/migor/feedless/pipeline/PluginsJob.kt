@@ -70,8 +70,7 @@ class PluginsJob internal constructor() {
             throw IllegalArgumentException("max attempts reached")
           }
 
-          val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)
-          when (plugin) {
+          when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
             is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, document, job.executorParams, 0)) {
               omitted = true
               break

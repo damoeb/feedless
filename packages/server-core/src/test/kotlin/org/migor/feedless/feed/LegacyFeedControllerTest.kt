@@ -8,18 +8,15 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentResolver
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.api.dto.JsonFeed
 import org.migor.feedless.document.any
 import org.migor.feedless.document.anyOrNull
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.client.exchange
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -69,13 +65,13 @@ class LegacyFeedControllerTest {
   @Autowired
   lateinit var legacyFeedService: LegacyFeedService
 
-  lateinit var mockFeed: RichFeed
+  lateinit var mockFeed: JsonFeed
 
   @BeforeEach
   fun setUp() {
     baseEndpoint = "http://localhost:$port"
 
-    mockFeed = RichFeed()
+    mockFeed = JsonFeed()
     mockFeed.id = "foo"
     mockFeed.title = "foo"
     mockFeed.feedUrl = "foo"

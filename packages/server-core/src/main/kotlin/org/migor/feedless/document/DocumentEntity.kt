@@ -44,9 +44,7 @@ import java.util.*
 
 @Entity
 @Table(
-  name = "t_document", indexes = [
-//  Index(name = "idx_document_url", columnList = "url, repository_id")
-  ]
+  name = "t_document"
 )
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
@@ -192,48 +190,52 @@ open class DocumentEntity : EntityWithUUID() {
 }
 
 fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
-  val builder = WebDocument.newBuilder()
-    .id(id.toString())
-    .imageUrl(imageUrl)
-    .url(url)
-    .contentTitle(contentTitle)
-    .contentText(contentText)
-    .updatedAt(updatedAt.time)
-    .createdAt(createdAt.time)
-    .localized(latLon?.let {
-      GeoPoint.newBuilder()
-        .lat(it.x)
-        .lon(it.y)
-        .build()
-    }
-    )
-    .tags((tags?.asList() ?: emptyList()).plus(
+  var contentHtmlParam: String? = null
+  var contentRawBase64Param: String? = null
+  var contentRawMimeParam: String? = null
+  if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
+    contentHtmlParam = contentRaw?.toString(StandardCharsets.UTF_8)
+  } else {
+    contentHtmlParam = contentHtml
+    contentRawBase64Param = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
+    contentRawMimeParam = contentRawMime
+  }
+
+  return WebDocument(
+    id = id.toString(),
+    imageUrl = imageUrl,
+    url = url,
+    contentHtml = contentHtmlParam,
+    contentRawBase64 = contentRawBase64Param,
+    contentRawMime = contentRawMimeParam,
+    contentTitle = contentTitle,
+    contentText = contentText,
+    updatedAt = updatedAt.time,
+    createdAt = createdAt.time,
+    localized = latLon?.let {
+      GeoPoint(
+        lat = it.x,
+        lon = it.y,
+      )
+    },
+    tags = (tags?.asList() ?: emptyList()).plus(
       addListenableTag(attachments.filter { it.contentType.startsWith("audio/") && it.duration != null }
         .map { classifyDuration(it.duration!!) }.distinct()
       )
-    )
-    )
-    .enclosures(attachments.map {
-      Enclosure.newBuilder()
-        .url(it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id))
-        .type(it.contentType)
-        .duration(it.duration)
-        .size(it.size)
-        .build()
-    })
-    .publishedAt(publishedAt.time)
-    .startingAt(startingAt?.time)
+    ),
 
-  return if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
-    builder.contentHtml(contentRaw?.toString(StandardCharsets.UTF_8))
-      .build()
-  } else {
-    builder
-      .contentHtml(contentHtml)
-      .contentRawBase64(contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) })
-      .contentRawMime(contentRawMime)
-      .build()
-  }
+    enclosures = (attachments.map {
+      Enclosure(
+        url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
+        type = it.contentType,
+        duration = it.duration,
+        size = it.size,
+      )
+    }),
+    publishedAt = publishedAt.time,
+    startingAt = startingAt?.time,
+  )
 }
 
-fun createDocumentUrl(propertyService: PropertyService, id: UUID): String = "${propertyService.apiGatewayUrl}/article/${id}"
+fun createDocumentUrl(propertyService: PropertyService, id: UUID): String =
+  "${propertyService.apiGatewayUrl}/article/${id}"

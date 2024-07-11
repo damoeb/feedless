@@ -126,7 +126,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
-    this.feedUrl = `${this.serverConfig.gatewayUrl}/feed/${this.repository.id}/atom`;
+    this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
@@ -291,17 +291,17 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getPluginsOfSource(source: ArrayElement<Repository['sources']>): string {
-    if (!this.plugins) {
-      return '';
-    }
-    return source.emit
-      .flatMap(
-        (emit) =>
-          emit.selectorBased?.expose?.transformers?.flatMap((transformer) =>
-            this.getPluginName(transformer.pluginId),
-          ),
-      )
-      .join(', ');
+    // if (!this.plugins) {
+    return '';
+    // }
+    // return source.page.actions
+    //   .flatMap(
+    //     (emit) =>
+    //       emit.selectorBased?.expose?.transformers?.flatMap((transformer) =>
+    //         this.getPluginName(transformer.pluginId),
+    //       ),
+    //   )
+    //   .join(', ');
   }
 
   private getPluginName(pluginId: string) {
@@ -513,5 +513,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     });
 
     await toast.present();
+  }
+
+  getUrl(source: ArrayElement<Repository['sources']>): string {
+    return source.flow.sequence.find(action => action.fetch).fetch.get.url.literal;
   }
 }

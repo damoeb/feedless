@@ -7,7 +7,7 @@ import {
   ViewUpdate,
 } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
-import { kebabCase } from 'lodash';
+import { kebabCase } from 'lodash-es';
 
 function formatName(name: string) {
   return kebabCase(name);

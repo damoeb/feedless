@@ -55,10 +55,10 @@ enum class FeatureName {
 )
 open class FeatureValueEntity : EntityWithUUID() {
 
-  @Column(name="value_int")
+  @Column(name = "value_int")
   open var valueInt: Long? = null
 
-  @Column(name="value_bool")
+  @Column(name = "value_bool")
   open var valueBoolean: Boolean? = null
 
   @Column(nullable = false, length = 50, name = "value_type")
@@ -95,21 +95,20 @@ open class FeatureValueEntity : EntityWithUUID() {
 }
 
 fun FeatureValueEntity.toDto(): FeatureValue {
-  val value = FeatureValue.newBuilder()
-  value.id(id.toString())
-  if (valueType == FeatureValueType.number) {
-    value.numVal(
-      FeatureIntValue.newBuilder()
-        .value(valueInt ?: -1)
-        .build()
+  return if (valueType == FeatureValueType.number) {
+    FeatureValue(
+      id = id.toString(),
+      numVal = FeatureIntValue(
+        value = valueInt ?: -1,
+      )
     )
+
   } else {
-    value.boolVal(
-      FeatureBooleanValue.newBuilder()
-        .value(valueBoolean!!)
-        .build()
+    FeatureValue(
+      id = id.toString(),
+      boolVal = FeatureBooleanValue(
+        value = valueBoolean!!,
+      )
     )
   }
-
-  return value.build()
 }

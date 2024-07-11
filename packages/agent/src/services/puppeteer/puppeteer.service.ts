@@ -1,11 +1,4 @@
-import {
-  Browser,
-  Frame,
-  HTTPResponse,
-  Page,
-  ScreenshotClip,
-  ScreenshotOptions,
-} from 'puppeteer';
+import { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
@@ -15,15 +8,20 @@ import {
   DomElement,
   DomElementByNameOrXPath,
   DomElementByXPath,
+  FetchActionDebugResponseInput,
   FieldWrapper,
+  HttpFetch,
   NetworkRequest,
   PuppeteerWaitUntil,
   ScrapeAction,
-  ScrapeDebugResponseInput,
-  ScrapedElementInput,
+  ScrapeActionResponseInput,
+  ScrapeEmit,
+  ScrapeExtract,
+  ScrapeExtractResponse,
+  ScrapeExtractResponseInput,
+  ScrapePrerender,
   ScrapeRequest,
-  ScrapeResponseInput,
-  ScrapeSelectorExpose,
+  ScrapeResponseInput
 } from '../../generated/graphql';
 
 interface Viewport {
@@ -93,13 +91,14 @@ export class PuppeteerService {
 
   private async newBrowser(scrapeRequest: ScrapeRequest): Promise<Browser> {
     const viewport: Viewport = this.resolveViewport(scrapeRequest);
+    console.log('viewport', viewport);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
       // devtools: false,
       // defaultViewport: scrapeRequest.page.viewport || {
       defaultViewport: pick(viewport, ['height', 'width']),
       executablePath: '/usr/bin/chromium-browser',
-      timeout: scrapeRequest.page.timeout || 30000,
+      timeout: getHttpGet(scrapeRequest).timeout || 30000,
       dumpio: this.isDebug,
       args: [
         `--window-size=${viewport.width},${viewport.height}`,
@@ -143,110 +142,71 @@ export class PuppeteerService {
     const corrId = request.corrId;
     const startTime = Date.now();
     const page = await this.newPage(browser, request);
-    const networkDataHandle = this.interceptNetwork(page, request);
     const logs: string[] = [];
+    let outputs: ScrapeActionResponseInput[];
     const appendLog: LogAppender = (msg: string) => {
       logs.push(msg);
-      this.log.log(msg);
+      this.log.debug(msg);
     };
     this.interceptConsole(page, appendLog);
 
-    let response: HTTPResponse = null;
     try {
-      const prerender = request.page.prerender;
-      const timeout = request.page.timeout || this.prerenderTimeout;
+      const httpGet = getHttpGet(request);
+      const timeout = httpGet.timeout || this.prerenderTimeout;
       appendLog(`timeout=${timeout}`);
 
       const headers = {};
-      request.page.actions
+      request.flow.sequence
         ?.filter((action) => !!action.header)
-        .forEach(
-          (action) => (headers[action.header.name] = action.header.value),
-        );
+        .forEach((action) => {
+          appendLog(`set header ${action.header.name}]`);
+          headers[action.header.name] = action.header.value;
+        });
 
       await page.setExtraHTTPHeaders(headers);
 
-      response = await page.goto(request.page.url, {
-        waitUntil: prerender?.waitUntil || PuppeteerWaitUntil.Load,
-        timeout,
-      });
+      appendLog(`executing ${request.flow.sequence.length} actions`);
 
-      page.on('console', (consoleObj) =>
-        this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
+      outputs = await request.flow.sequence.reduce(
+        (waitFor, action) =>
+          waitFor.then(async (outputs) => {
+            const output = await this.executeAction(
+              corrId,
+              action,
+              page,
+              appendLog,
+            );
+            if (output) {
+              outputs.push(output);
+            }
+            return outputs;
+          }),
+        Promise.resolve([] as ScrapeActionResponseInput[]),
       );
-      await this.waitForNetworkIdle(page, 1000);
-
-      if (request.page.actions?.length > 0) {
-        this.log.log(
-          `[${corrId}] executing ${request.page.actions?.length} actions`,
-        );
-        await request.page.actions?.reduce(
-          (waitFor, action) =>
-            waitFor.then(() => this.executeAction(action, page, appendLog)),
-          Promise.resolve(),
-        );
-        this.log.log(`[${corrId}] all actions executed`);
-      }
+      appendLog(`all actions executed with ${outputs.length} outputs`);
 
       await this.waitForNetworkIdle(page, 1000);
 
-      const { additionalWaitSec } = request.page.prerender;
+      const { additionalWaitSec } = httpGet;
       if (additionalWaitSec > 0) {
-        this.log.log(`[${corrId}] wait ${additionalWaitSec} sec`);
+        appendLog(`wait ${additionalWaitSec} sec`);
         await new Promise((resolve) =>
           setTimeout(resolve, additionalWaitSec * 1000),
         );
       }
 
       return {
-        elements: await Promise.all(
-          request.emit.map((scrapeEmit) => {
-            if (scrapeEmit.selectorBased) {
-              return this.grabElement(
-                page,
-                scrapeEmit.selectorBased.xpath.value,
-                scrapeEmit.selectorBased.expose,
-              );
-            } else {
-              if (scrapeEmit.imageBased.boundingBox) {
-                return this.grabBoundingBox(
-                  page,
-                  scrapeEmit.imageBased.boundingBox,
-                );
-              } else {
-                throw new Error(`[${corrId}] Undespecified fragment.`);
-              }
-            }
-          }),
-        ),
-        url: response.url(),
+        outputs,
+        logs,
         failed: false,
-        debug: await this.getDebug(
-          request.corrId,
-          logs,
-          networkDataHandle,
-          request,
-          response,
-          page,
-          Date.now() - startTime,
-        ),
       };
     } catch (e) {
       this.log.error(`[${corrId}] ${e.message}`);
       return {
         failed: true,
+        logs,
         errorMessage: e.message,
-        url: response?.url() || page.url(),
-        elements: [],
-        debug: await this.getDebug(
-          request.corrId,
-          logs,
-          networkDataHandle,
-          request,
-          response,
-          page,
-          Date.now() - startTime,
-        ),
+        outputs: outputs || [],
       };
     }
   }
@@ -263,13 +223,12 @@ export class PuppeteerService {
 
   private async getDebug(
     corrId: string,
+    url: string,
     logs: string[],
     networkDataHandle: () => Promise<NetworkRequest[]>,
-    request: ScrapeRequest,
     response: HTTPResponse,
     page: Page,
-    totalTimeUsed: number,
-  ): Promise<ScrapeDebugResponseInput> {
+  ): Promise<FetchActionDebugResponseInput> {
     // const given = async (condition: boolean, label: string): Promise<void> => {
     //   if (condition) {
     //     this.log.log(`[${corrId}] appending ${label}`);
@@ -279,37 +238,39 @@ export class PuppeteerService {
     //   }
     // };
 
+    const viewport = page.viewport();
     return {
       corrId,
+      url,
       console: logs,
       network: await networkDataHandle(),
       statusCode: response?.status(),
-      metrics: {
-        render: totalTimeUsed,
-        queue: 0,
+      viewport: {
+        width: viewport?.width || -1,
+        height: viewport?.height || -1,
+        isLandscape: viewport?.isLandscape || false,
+        isMobile: viewport?.isMobile || false,
       },
+      // metrics: {
+      //   render: totalTimeUsed,
+      //   queue: 0,
+      // },
       contentType: response?.headers()['content-type'],
-      viewport: this.resolveViewport(request),
-      html: request.debug?.html
-        ? await page.evaluate(() => document.documentElement.outerHTML)
-        : undefined,
-      cookies: request.debug?.cookies
-        ? await page
-            .cookies()
-            .then((cookies) => cookies.map((cookie) => JSON.stringify(cookie)))
-        : [],
+      // html: await page.evaluate(() => document.documentElement.outerHTML),
+      cookies: await page
+        .cookies()
+        .then((cookies) => cookies.map((cookie) => JSON.stringify(cookie))),
       prerendered: true,
-      screenshot: request.debug?.screenshot
-        ? await this.extractScreenshot(page, undefined)
-        : undefined,
+      screenshot: await this.extractScreenshot(page, undefined),
     };
   }
 
   private async grabElement(
     page: Page,
+    fragmentName: string,
     xpath: string,
-    expose: FieldWrapper<ScrapeSelectorExpose>,
-  ): Promise<ScrapedElementInput> {
+    exposePixel: boolean,
+  ): Promise<ScrapeExtractResponse> {
     const evaluateResponse: EvaluateResponse = await page.evaluate(
       (baseXpath) => {
         let element: HTMLElement = document
@@ -355,30 +316,30 @@ export class PuppeteerService {
     };
 
     return {
-      selector: {
-        xpath: {
-          value: xpath,
-        },
-        fields: [],
-        html: {
-          data: evaluateResponse.markup,
-        },
-        text: {
-          data: evaluateResponse.text,
-        },
-        pixel: expose.pixel
-          ? {
+      fragmentName,
+      fragments: [
+        {
+          html: {
+            data: evaluateResponse.markup,
+          },
+          text: {
+            data: evaluateResponse.text,
+          },
+          data: exposePixel
+            ? {
+              mimeType: 'image/png',
               base64Data: await getScreenshot(),
             }
-          : null,
-      },
-      // data: scrapeData,
+            : null,
+        }
+      ],
     };
   }
   private async grabBoundingBox(
     page: Page,
+    fragmentName: string,
     boundingBox: { x: number; y: number; w: number; h: number },
-  ): Promise<ScrapedElementInput> {
+  ): Promise<ScrapeExtractResponseInput> {
     const screenshot = await page.screenshot({
       clip: {
         x: boundingBox.x,
@@ -394,17 +355,15 @@ export class PuppeteerService {
     });
 
     return {
-      image: {
-        boundingBox: {
-          x: boundingBox.x,
-          y: boundingBox.y,
-          w: boundingBox.w,
-          h: boundingBox.h,
-        },
-        data: {
-          base64Data: screenshot,
-        },
-      },
+      fragmentName,
+      fragments: [
+        {
+          data:{
+            mimeType: 'image/png',
+            base64Data: screenshot,
+          }
+        }
+      ]
     };
   }
 
@@ -435,8 +394,9 @@ export class PuppeteerService {
     this.currentActiveWorkers++;
     while (this.queue.length > 0) {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
+      const httpGet = getHttpGet(job);
       this.log.debug(
-        `worker #${workerId} consumes [${job.corrId}] ${job.page.url}`,
+        `worker #${workerId} consumes [${job.corrId}] ${httpGet.url}`,
       );
 
       const browser = await this.newBrowser(job);
@@ -446,7 +406,7 @@ export class PuppeteerService {
           new Promise<ScrapeResponseInput>((_, reject) =>
             setTimeout(
               () => reject(`timeout exceeded`),
-              job.page.timeout || this.prerenderTimeout,
+              httpGet.timeout || this.prerenderTimeout,
             ),
           ),
         ]);
@@ -455,8 +415,8 @@ export class PuppeteerService {
         }
         const totalTime = Date.now() - queuedAt;
         this.log.log(`[${job.corrId}] prerendered within ${totalTime / 1000}s`);
-        const { metrics } = response.debug;
-        response.debug.metrics.queue = totalTime - metrics.render;
+        // const { metrics } = response.debug;
+        // response.debug.metrics.queue = totalTime - metrics.render;
 
         resolve(response);
       } catch (e) {
@@ -475,10 +435,7 @@ export class PuppeteerService {
     this.log.debug(`endWorker #${workerId}`);
   }
 
-  private interceptNetwork(
-    page: Page,
-    request: ScrapeRequest,
-  ): () => Promise<NetworkRequest[]> {
+  private interceptNetwork(page: Page): () => Promise<NetworkRequest[]> {
     // page.on('request', request => {
     //   request_client({
     //     uri: request.url(),
@@ -552,22 +509,32 @@ export class PuppeteerService {
   }
 
   private async executeAction(
+    corrId: string,
     action: FieldWrapper<ScrapeAction>,
     page: Page,
     appendLog: LogAppender,
-  ) {
+  ): Promise<ScrapeActionResponseInput | void> {
     const appender = (msg: string) => appendLog(`action ${msg}`);
+    // if (action.header) {
+    //   return this.executeHeaderAction(action.header, page, appender);
+    // }
     if (action.click) {
-      await this.executeClickAction(action.click, page, appender);
+      return this.executeClickAction(action.click, page, appender);
+    }
+    if (action.fetch) {
+      return this.executeFetchAction(corrId, action.fetch, page, appender);
     }
     if (action.wait) {
-      await this.executeWaitAction(action.wait, page, appender);
+      return this.executeWaitAction(action.wait, page, appender);
     }
     if (action.type) {
-      await this.executeTypeAction(action.type, page, appender);
+      return this.executeTypeAction(action.type, page, appender);
     }
     if (action.purge) {
-      await this.executePurgeAction(action.purge, page, appender);
+      return this.executePurgeAction(action.purge, page, appender);
+    }
+    if (action.extract) {
+      return this.extractAction(corrId, action.extract, page, appender);
     }
   }
 
@@ -578,6 +545,40 @@ export class PuppeteerService {
   ) {
     appendLog(`wait for ${JSON.stringify(element.element)}`);
     await page.waitForSelector(this.resolveSelector(element.element));
+  }
+
+  private async extractAction(
+    corrId: String,
+    extract: ScrapeExtract,
+    page: Page,
+    appendLog: (msg: string) => void,
+  ): Promise<ScrapeActionResponseInput> {
+    const fragmentName = extract.fragmentName;
+    if (extract.selectorBased) {
+      const xpath = extract.selectorBased.xpath.value;
+      const exposePixel = extract.selectorBased.emit.includes(ScrapeEmit.Pixel);
+      appendLog(
+        `extract fragment '${fragmentName}' xpath ${xpath} pixel=${exposePixel}`,
+      );
+      return {
+        extract: await this.grabElement(page, fragmentName, xpath, exposePixel),
+      };
+    } else {
+      if (extract.imageBased.boundingBox) {
+        appendLog(
+          `extract fragment '${fragmentName}' bbox ${extract.imageBased.boundingBox}`,
+        );
+        return {
+          extract: await this.grabBoundingBox(
+            page,
+            fragmentName,
+            extract.imageBased.boundingBox,
+          ),
+        };
+      } else {
+        throw new Error(`[${corrId}] Underspecified fragment`);
+      }
+    }
   }
 
   private async executeTypeAction(
@@ -649,8 +650,8 @@ export class PuppeteerService {
   }
 
   private resolveViewport(request: ScrapeRequest) {
-    if (request.page.prerender?.viewport) {
-      return pick(request.page.prerender?.viewport, [
+    if (getHttpGet(request).viewport) {
+      return pick(getHttpGet(request).viewport, [
         'height',
         'isLandscape',
         'isMobile',
@@ -660,4 +661,44 @@ export class PuppeteerService {
       return this.defaultViewport;
     }
   }
+
+  private async executeFetchAction(
+    corrId: string,
+    httpGet: HttpFetch,
+    page: Page,
+    appendLog: (msg: string) => void,
+  ): Promise<ScrapeActionResponseInput> {
+    const networkDataHandle = this.interceptNetwork(page);
+    const url = httpGet.get.url.literal;
+    appendLog(`fetch url ${url}`);
+    const response = await page.goto(url, {
+      waitUntil: httpGet.get.waitUntil || PuppeteerWaitUntil.Load,
+      timeout: httpGet.get.timeout,
+    });
+
+    const logs: string[] = [];
+    page.on('console', (consoleObj) => {
+      const message = `[browser] ${consoleObj?.text()}`;
+      logs.push(message);
+      appendLog(message);
+    });
+    await this.waitForNetworkIdle(page, 1000);
+    return {
+      fetch: {
+        data: await page.evaluate(() => document.documentElement.outerHTML),
+        debug: await this.getDebug(
+          corrId,
+          url,
+          logs,
+          networkDataHandle,
+          response,
+          page,
+        ),
+      },
+    };
+  }
+}
+
+export function getHttpGet(scrapeRequest: ScrapeRequest): ScrapePrerender {
+  return scrapeRequest.flow.sequence.find((a) => a.fetch).fetch.get;
 }

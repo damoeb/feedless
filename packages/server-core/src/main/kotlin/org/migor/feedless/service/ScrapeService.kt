@@ -2,45 +2,37 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
-import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.actions.ClickPositionActionEntity
+import org.migor.feedless.actions.ClickXpathActionEntity
+import org.migor.feedless.actions.DomActionEntity
+import org.migor.feedless.actions.DomEventType
+import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.actions.ExtractXpathActionEntity
+import org.migor.feedless.actions.FetchActionEntity
+import org.migor.feedless.actions.HeaderActionEntity
+import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.agent.AgentService
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.feed.FeedParserService
-import org.migor.feedless.feed.asRemoteNativeFeed
-import org.migor.feedless.feed.parser.FeedType
-import org.migor.feedless.generated.types.DOMElementByXPath
-import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecution
-import org.migor.feedless.generated.types.ScrapeDebugResponse
-import org.migor.feedless.generated.types.ScrapeDebugTimes
-import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.ScrapeResponse
-import org.migor.feedless.generated.types.ScrapedBySelector
-import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.ScrapedField
-import org.migor.feedless.generated.types.ScrapedFieldValue
-import org.migor.feedless.generated.types.ScrapedSingleFieldValue
-import org.migor.feedless.generated.types.TextData
+import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.generated.types.FetchActionDebugResponse
+import org.migor.feedless.generated.types.HttpFetchResponse
+import org.migor.feedless.generated.types.PluginExecutionResponse
+import org.migor.feedless.generated.types.ScrapeActionResponse
+import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 
 @Service
@@ -55,24 +47,19 @@ class ScrapeService {
   @Autowired
   private lateinit var agentService: AgentService
 
-  @Lazy
-  @Autowired
-  private lateinit var feedParserService: FeedParserService
-
   @Autowired
   private lateinit var pluginService: PluginService
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
-    val prerender = scrapeRequest.page.prerender != null
+  fun scrape(corrId: String, source: SourceEntity): Mono<ScrapeOutput> {
+    assert(source.actions.isNotEmpty()) { "no actions present" }
+    val prerender = needsPrerendering(source, 0)
 
-    log.info("[$corrId] scrape ${scrapeRequest.page.url}")
+    val fetch = source.findFirstFetchOrNull()!!
 
-    if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.imageBased !== null }) {
-      throw IllegalArgumentException("[${corrId}] emitting pixel requires prerendering ($corrId)")
-    }
+    log.info("[$corrId] scrape ${fetch.resolveUrl()}")
 
     meterRegistry.counter(
       AppMetrics.scrape, listOf(
@@ -81,227 +68,169 @@ class ScrapeService {
       )
     ).increment()
 
-    return if (prerender) {
+    val startTime = System.nanoTime()
+
+    val context = source.actions
+      .sortedBy { it.pos }
+      .foldIndexed(ScrapeContext()) { index, context, action ->
+        run {
+          when (action) {
+            is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
+            is HeaderActionEntity -> handleHeader(corrId, action, context)
+            is DomActionEntity -> handleDomAction(corrId, index, action, context)
+            is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
+            is ExtractXpathActionEntity -> handleExtract(corrId, action, context)
+            is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
+            else -> noopAction(corrId, action)
+          }
+          context
+        }
+      }
+
+    log.info("[$corrId] scraping finished")
+
+    return Mono.just(
+      ScrapeOutput(
+        context.outputs,
+        logs = context.logs,
+        time = System.nanoTime().minus(startTime).div(1000000).toInt()
+      )
+    )
+  }
+
+  private fun noopAction(corrId: String, action: ScrapeActionEntity) {
+    log.info("[$corrId] noop action $action")
+  }
+
+  private fun handleClickXpathAction(corrId: String, action: ClickXpathActionEntity, context: ScrapeContext) {
+    log.info("[$corrId] handleClickXpathAction $action")
+
+  }
+
+  private fun handlePluginExecution(corrId: String, index: Int, action: ExecuteActionEntity, context: ScrapeContext) {
+    log.info("[$corrId] handlePluginExecution $action")
+
+    val firstFitchAction = context.outputs.find { it.fetch != null }!!
+    val plugin = pluginService.resolveFragmentTransformerById(action.pluginId)
+    val data = plugin
+      ?.transformFragment(corrId, action, firstFitchAction.fetch!!.response)
+      ?: throw BadRequestException("plugin '${action.pluginId}' does not exist ($corrId)")
+
+    val output = PluginExecutionResponse(pluginId = plugin.id(), data = data)
+    val result = ScrapeActionOutput(execute = output)
+
+    context.outputs.add(result)
+  }
+
+  private fun handleDomAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
+    log.info("[$corrId] handleDomAction $action")
+    when (action.event) {
+      DomEventType.purge -> handlePurgeAction(corrId, index, action, context)
+      else -> log.warn("[$corrId] cannot handle dom-action ${action.event}")
+    }
+  }
+
+  private fun handlePurgeAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
+    val lastAction = context.outputs.last()
+    val document = HtmlUtil.parseHtml(lastAction.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8), "")
+    val elements = Xsoup.compile(action.xpath).evaluate(document).elements
+    log.info("[$corrId] purge element ${action.xpath} -> ${elements.size}")
+    elements.remove()
+
+  }
+
+  private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
+    log.info("[$corrId] handleHeader $action")
+    context.headers[action.name] = action.value
+  }
+
+  private fun handleExtract(corrId: String, action: ExtractXpathActionEntity, context: ScrapeContext) {
+//    if (action.emit) {
+//      this.noopAction(corrId, action)
+//    } else {
+      log.info("[$corrId] handleExtract $action")
+      TODO("Not yet implemented")
+//    }
+  }
+
+  private fun handleFetch(
+    corrId: String,
+    source: SourceEntity,
+    index: Int,
+    action: FetchActionEntity,
+    context: ScrapeContext
+  ) {
+    log.info("[$corrId] handleFetch $action")
+    val prerender = needsPrerendering(source, index)
+    if (prerender) {
       log.info("[$corrId] prerender")
-      agentService.prerender(corrId, scrapeRequest)
-        .map { injectScrapeData(corrId, scrapeRequest, it) }
+      val response = agentService.prerender(corrId, source).block()!!
+      log.info("[$corrId] -> ${response.outputs.size} outputs")
+      context.outputs.addAll(response.outputs.map { it.fromDto() })
+      context.logs.addAll(response.logs)
     } else {
       log.info("[$corrId] static")
       val startTime = System.nanoTime()
-      val url = scrapeRequest.page.url
-      httpService.guardedHttpResource(
-        corrId,
-        url,
-        200,
-        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+      val url = action.resolveUrl()
+//      httpService.guardedHttpResource(
+//        corrId,
+//        url,
+//        200,
+//        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+//      )
+
+      val staticResponse = httpService.httpGetCaching(corrId, url, 200, context.headers)
+      val debug = FetchActionDebugResponse(
+        corrId = corrId,
+        statusCode = staticResponse.statusCode,
+        contentType = staticResponse.contentType,
+        prerendered = false,
+        console = emptyList(),
+        network = emptyList(),
+        url = url,
+        viewport = ViewPort(width = -1, height = -1, isMobile = false, isLandscape = false),
+//        html = staticResponse.responseBody.toString(StandardCharsets.UTF_8)
       )
-
-      val headers = HashMap<String, String>()
-      scrapeRequest.page.actions
-        ?.mapNotNull { it.header }
-        ?.forEach {
-          log.info("[$corrId] add header ${it.value}")
-          headers[it.name] = it.value
-        }
-
-      val staticResponse = httpService.httpGetCaching(corrId, url, 200, headers)
-
-      val document = Jsoup.parse(staticResponse.responseBody.toString(Charset.defaultCharset()))
-      scrapeRequest.page.actions
-        ?.mapNotNull { it.purge }
-        ?.forEach {
-          val elements = Xsoup.compile(it.value).evaluate(document).elements
-          log.info("[$corrId] purge element ${it.value} -> ${elements.size}")
-          elements.remove()
-        }
-
-      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(corrId, staticResponse)
-
-      val builder = ScrapeResponse.newBuilder()
-        .failed(false)
-        .url(scrapeRequest.page.url)
-        .debug(
-          ScrapeDebugResponse.newBuilder()
-            .corrId(corrId)
-            .console(emptyList())
-            .html(document.html())
-            .contentType(mimeType)
-            .statusCode(staticResponse.statusCode)
-            .cookies(emptyList())
-            .network(emptyList())
-            .metrics(
-              ScrapeDebugTimes.newBuilder()
-                .render(System.nanoTime().minus(startTime).div(1000000).toInt())
-                .queue(0)
-                .build()
-            )
-            .build()
-        )
-
-      if (feedType !== FeedType.NONE) {
-        val feed = feedParserService.parseFeed(corrId, HarvestResponse(url, staticResponse))
-        log.debug("[$corrId] is native-feed")
-
-        builder
-          .elements(
-            listOf(
-              ScrapedElement.newBuilder()
-                .selector(
-                  ScrapedBySelector.newBuilder()
-                    .xpath(
-                      DOMElementByXPath.newBuilder()
-                        .value("/")
-                        .build()
-                    )
-                    .fields(toFields(feed))
-                    .build()
-                )
-                .build()
-            )
-          )
-          .build()
-      } else {
-        val elements = scrapeRequest.emit
-          .map { scrapeEmit ->
-            run {
-
-              scrapeEmit.imageBased?.boundingBox?.let {
-                throw IllegalArgumentException("fragment spec of type boundingBox requires prepredering ($corrId)")
-              }
-
-              val xpath = scrapeEmit.selectorBased.xpath.value
-
-              val fragment = StringUtils.trimToNull(xpath)?.let {
-                Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
-                  ?: throw IllegalArgumentException("xpath $xpath cannot be resolved ($corrId)")
-              } ?: document
-
-              val texts = mutableListOf<String>()
-              fragment.traverse(textElements(texts))
-
-              ScrapedElement.newBuilder()
-                .selector(
-                  ScrapedBySelector.newBuilder()
-                    .xpath(
-                      DOMElementByXPath.newBuilder()
-                        .value("/")
-                        .build()
-                    )
-                    .html(TextData.newBuilder().data(fragment.html()).build())
-                    .text(TextData.newBuilder().data(texts.joinToString("\n")).build())
-                    .build()
-
-                )
-                .build()
-
-            }
-          }
-        builder.elements(elements)
-      }
-
-      Mono.just(builder.build()).map { injectScrapeData(corrId, scrapeRequest, it) }
+      val fetchOutput = HttpFetchOutput(staticResponse, debug = debug)
+      context.outputs.add(ScrapeActionOutput(fetch = fetchOutput))
     }
   }
+}
 
-  private fun toFields(feed: RichFeed): List<ScrapedField> {
-    return listOf(createJsonField(FeedlessPlugins.org_feedless_feed.name, feed.asRemoteNativeFeed()))
-  }
+private fun ScrapeActionResponse.fromDto(): ScrapeActionOutput {
+  return ScrapeActionOutput(
+    execute = execute,
+    fetch = fetch?.fromDto(),
+    extract = extract
+  )
+}
 
-  private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {
-    val elements = if (res.debug.contentType.startsWith("text/") && !res.debug.contentType.contains("/xml")) {
-      res.elements.mapIndexed { index, scrapedElement ->
-        req.emit.get(index).selectorBased?.let {
-          it.expose.transformers?.let {
-            applyMarkupTransformers(
-              corrId,
-              it,
-              res,
-              scrapedElement
-            )
-          }
-        } ?: scrapedElement
-      }
-    } else {
-      res.elements
-    }
-    return ScrapeResponse.newBuilder()
-      .failed(res.failed)
-      .url(res.url)
-      .errorMessage(res.errorMessage)
-      .debug(res.debug)
-      .elements(elements)
-      .build()
-  }
+private fun HttpFetchResponse.fromDto(): HttpFetchOutput {
+  return HttpFetchOutput(
+    response = HttpResponse(
+      contentType = debug.contentType ?: "",
+      url = debug.url,
+      statusCode = debug.statusCode ?: 0,
+      responseBody = data.toByteArray(StandardCharsets.UTF_8)
+    ),
+    debug = debug
+  )
+}
 
-  private fun applyMarkupTransformers(
-    corrId: String,
-    transformers: List<PluginExecution>,
-    res: ScrapeResponse,
-    element: ScrapedElement
-  ): ScrapedElement {
-    val selector = element.selector
-    return if (element.image !== null) {
-      log.info("$corrId omit markup transformers")
-      element
-    } else {
-      return ScrapedElement.newBuilder()
-        .selector(
-          ScrapedBySelector.newBuilder()
-            .xpath(selector.xpath)
-            .html(selector.html)
-            .text(selector.text)
-            .pixel(selector.pixel)
-            .fields(transformers.map { applyTransformer(corrId, it, element, res.url) }
-              .plus(selector.fields ?: emptyList()))
-            .build()
-        )
-        .build()
-    }
-  }
-
-  private fun createJsonField(name: String, data: Any): ScrapedField {
-    return ScrapedField.newBuilder()
-      .name(name)
-      .value(
-        ScrapedFieldValue.newBuilder()
-          .one(
-            ScrapedSingleFieldValue.newBuilder()
-              .mimeType("application/json")
-              .data(JsonUtil.gson.toJson(data))
-              .build()
-          )
-          .build()
-      )
-      .build()
-  }
+fun needsPrerendering(source: SourceEntity, currentActionIndex: Int): Boolean {
+  val actions = source.actions.filterIndexed { index, _ -> index >= currentActionIndex }
+  val hasClickPosition = actions.filterIsInstance<ClickPositionActionEntity>().isNotEmpty()
+  val hasExtractBbox = actions.filterIsInstance<ExtractBoundingBoxActionEntity>().isNotEmpty()
+  val hasForcedPrerendering = actions.filterIsInstance<FetchActionEntity>().any { it.forcePrerender }
+  return hasClickPosition || hasExtractBbox || hasForcedPrerendering
+}
 
 
-  private fun applyTransformer(
-    corrId: String,
-    it: PluginExecution,
-    element: ScrapedElement,
-    url: String
-  ): ScrapedField {
+private fun FetchActionEntity.resolveUrl(): String {
+  assert(!isVariable) { "variable ref not supported" }
+  return url
+}
 
-    log.info("[$corrId] applying plugin '${it.pluginId}'")
-
-    val data = pluginService.resolveFragmentTransformerById(it.pluginId)
-      ?.transformFragment(corrId, element, it, url)
-      ?: throw BadRequestException("plugin '${it.pluginId}' does not exist ($corrId)")
-
-    return createJsonField(it.pluginId, data)
-  }
-
-  private fun textElements(texts: MutableList<String>): NodeVisitor {
-    return object : NodeVisitor {
-      override fun head(node: Node, depth: Int) {
-        if (node is TextNode) {
-          texts.add(node.text())
-        }
-      }
-
-      override fun tail(node: Node, depth: Int) {
-      }
-    }
-  }
+private fun SourceEntity.findFirstFetchOrNull(): FetchActionEntity? {
+  return actions.filterIsInstance<FetchActionEntity>().firstOrNull()
 }

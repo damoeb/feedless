@@ -10,6 +10,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.mapToPluginInstance
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -25,6 +26,7 @@ class PluginService {
   @Autowired
   private lateinit var transformerPlugins: List<FragmentTransformerPlugin>
 
+  @Lazy
   @Autowired
   lateinit var plugins: List<FeedlessPlugin>
 
@@ -59,6 +61,6 @@ class PluginService {
 
   fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
     return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
-      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput.newBuilder().build())
+      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput())
   }
 }

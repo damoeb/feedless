@@ -14,10 +14,11 @@ import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
+import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.UpsertOrderInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.license.LicenseDAO
-import org.migor.feedless.license.toDTO
+import org.migor.feedless.license.LicenseEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.toDTO
 import org.slf4j.LoggerFactory
@@ -86,7 +87,12 @@ class OrderResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
     val order: Order = dfe.getSource()
-    licenseDAO.findAllByOrderId(UUID.fromString(order.id)).map{ it.toDTO()}
+    licenseDAO.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
   }
 
+}
+
+private fun LicenseEntity.toDTO(): License {
+  // todo decode license and fill
+  return License(name = "", email = "", scope = ProductCategory.feedless, createdAt = Date().time, version = 0)
 }

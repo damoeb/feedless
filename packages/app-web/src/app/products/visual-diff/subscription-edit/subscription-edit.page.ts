@@ -1,34 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../../../components/embedded-image/embedded-image.component';
+import { BoundingBox, XyPosition } from '../../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
-  GqlScrapeDebugResponse,
-  GqlScrapeDebugTimes,
-  GqlScrapeEmitInput,
+  GqlScrapeEmit,
   GqlScrapeRequestInput,
-  GqlScrapeResponse,
-  GqlViewPort,
   GqlWebDocumentField,
-  GqlXyPosition,
-  Maybe,
+  GqlXyPosition
 } from '../../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
-import { ScrapedElement } from '../../../graphql/types';
 import { RepositoryService } from '../../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,20 +23,6 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { createEmailFormControl } from '../../../form-controls';
 
 type Email = string;
-
-type VisualDiffScrapeResponse = Pick<
-  GqlScrapeResponse,
-  'url' | 'failed' | 'errorMessage'
-> & {
-  debug: Pick<
-    GqlScrapeDebugResponse,
-    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
-  > & {
-    metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
-  };
-  elements: Array<ScrapedElement>;
-};
 
 type Screen = 'area' | 'page' | 'mobile' | 'element';
 type BrowserActionType = keyof GqlScrapeActionInput;
@@ -113,7 +84,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   busy = false;
   protected readonly GqlWebDocumentField = GqlWebDocumentField;
   private subscriptions: Subscription[] = [];
-  private scrapeResponse: VisualDiffScrapeResponse;
   errorMessage: null;
   private scrapeRequest: GqlScrapeRequestInput;
   showErrors: boolean;
@@ -233,18 +203,21 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     });
 
     try {
-      const newScrapeRequest = {
-        page: {
-          url,
-          prerender: {
-            additionalWaitSec: this.additionalWait.value,
-          },
-          actions: this.getActionsRequestFragment(),
-        },
-        emit: [],
-        debug: {
-          screenshot: true,
-          html: true,
+      const newScrapeRequest: GqlScrapeRequestInput = {
+        flow: {
+          sequence: [
+            {
+              fetch: {
+                get: {
+                  url: {
+                    literal: url,
+                  },
+                  forcePrerender: true,
+                },
+              },
+            },
+            ...this.getActionsRequestFragment(),
+          ],
         },
       };
 
@@ -260,19 +233,20 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         this.embedScreenshot = null;
         this.changeRef.detectChanges();
 
+        const fetchData = scrapeResponse.outputs.find((o) => o.fetch).fetch;
+
         this.embedScreenshot = {
           mimeType: 'image/png',
-          data: scrapeResponse.debug.screenshot,
+          data: fetchData.debug.screenshot,
           url,
-          viewport: scrapeResponse.debug.viewport,
+          viewport: fetchData.debug.viewport,
         };
 
         this.embedWebsite = {
           mimeType: 'text/html',
-          data: scrapeResponse.debug.html,
+          data: fetchData.data,
           url: this.form.value.url,
         };
-        this.scrapeResponse = scrapeResponse;
       }
     } catch (e) {
       this.errorMessage = e.message;
@@ -320,20 +294,25 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
           sources: [
             {
               tags: [],
-              page: {
-                url: this.form.value.url,
-                prerender: {
-                  additionalWaitSec: this.additionalWait.value,
-                },
-                actions: this.getActionsRequestFragment(),
+              flow: {
+                sequence: [
+                  {
+                    fetch: {
+                      get: {
+                        url: {
+                          literal: this.form.value.url,
+                        },
+                        additionalWaitSec: this.additionalWait.value,
+                      },
+                    },
+                  },
+                  ...this.getActionsRequestFragment(),
+                  this.getEmit(),
+                ],
               },
-              emit: [this.getEmit()],
             },
           ],
           product: environment.product,
-          sourceOptions: {
-            refreshCron: this.form.value.fetchFrequency,
-          },
           additionalSinks: [
             {
               email: this.form.value.email,
@@ -342,6 +321,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
           sinkOptions: {
             title: this.form.value.subject,
             description: 'Visual Diff',
+            withShareKey: false,
+            refreshCron: this.form.value.fetchFrequency,
             retention: {
               maxCapacity: 2,
             },
@@ -436,23 +417,28 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     return !isNull(v) && !isUndefined(v);
   }
 
-  private getEmit(): GqlScrapeEmitInput {
+  private getEmit(): GqlScrapeActionInput {
     if (this.form.value.screen === 'area') {
       return {
-        imageBased: {
-          boundingBox: this.form.value.areaBoundingBox,
+        extract: {
+          fragmentName: 'element',
+          imageBased: {
+            boundingBox: this.form.value.areaBoundingBox,
+          },
         },
       };
     } else {
       return {
-        selectorBased: {
-          xpath: {
-            value: this.form.controls.elementXpath.enabled
-              ? this.form.value.elementXpath
-              : '/',
-          },
-          expose: {
-            pixel: true,
+        extract: {
+          fragmentName: 'element',
+          selectorBased: {
+            fragmentName: '',
+            xpath: {
+              value: this.form.controls.elementXpath.enabled
+                ? this.form.value.elementXpath
+                : '/',
+            },
+            emit: [GqlScrapeEmit.Pixel],
           },
         },
       };

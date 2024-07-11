@@ -60,13 +60,13 @@ open class PricedProductEntity : EntityWithUUID() {
 }
 
 fun PricedProductEntity.toDto(): PricedProduct {
-  return PricedProduct.newBuilder()
-    .id(id.toString())
-    .other(other)
-    .enterprise(enterprise)
-    .individual(individual)
-    .description(this.unit)
-    .price(price)
-    .inStock(inStock ?: -1)
-    .build()
+  return PricedProduct(
+    id = id.toString(),
+    other = other,
+    enterprise = enterprise,
+    individual = individual,
+    description = this.unit,
+    price = price,
+    inStock = inStock ?: -1,
+  )
 }

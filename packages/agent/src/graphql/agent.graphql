@@ -9,79 +9,69 @@ fragment FragmentDOMElementByNameOrXPathInput on DOMElementByNameOrXPath {
 
 subscription registerAgent($data: RegisterAgentInput!) {
   registerAgent(data: $data) {
+    corrId
+    callbackId
     scrape {
       id
       corrId
-      debug {
-        screenshot
-        cookies
-        console
-        network
-        html
-      }
-      page {
-        url
-        prerender {
-          waitUntil
-          language
-          additionalWaitSec
-          viewport {
-            isLandscape
-            width
-            isMobile
-            height
-          }
-        }
-        timeout
-        actions {
-          type {
-            element {
-              value
-            }
-            typeValue
-          }
-          wait {
-            element {
-              ...FragmentDOMElementByNameOrXPathInput
-            }
-          }
-          select {
-            element {
-              value
-            }
-            selectValue
-          }
-          header {
-            value
-            name
-          }
+      flow {
+        sequence {
           click {
             position {
               x
               y
             }
             element {
-              ...FragmentDOMElementByNameOrXPathInput
+              xpath {
+                value
+              }
             }
           }
-        }
-      }
-      emit {
-        fragmentName
-        imageBased {
-          boundingBox {
-            y
-            x
-            w
-            h
+          extract {
+            fragmentName
+            imageBased {
+              boundingBox {
+                x
+                y
+                w
+                h
+              }
+            }
+            selectorBased {
+              fragmentName
+              min
+              max
+              emit
+              xpath {
+                value
+              }
+              extract {
+                fragmentName
+                min
+                max
+                emit
+                xpath {
+                  value
+                }
+              }
+            }
           }
-        }
-        selectorBased {
-          xpath {
-            value
-          }
-          expose {
-            pixel
+          fetch {
+            get {
+              url {
+                literal
+              }
+              waitUntil
+              language
+              additionalWaitSec
+              timeout
+              viewport {
+                isLandscape
+                width
+                isMobile
+                height
+              }
+            }
           }
         }
       }

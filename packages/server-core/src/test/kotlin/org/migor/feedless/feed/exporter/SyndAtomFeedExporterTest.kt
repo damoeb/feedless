@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.XmlFeedParser
-import org.migor.feedless.common.HarvestResponse
 
 val rawFeed = """
       <?xml version="1.0" encoding="utf-8"?>
@@ -74,7 +73,7 @@ class SyndAtomFeedExporterTest {
       statusCode = 200,
       responseBody = rawFeed.toByteArray(),
     )
-    val feed = XmlFeedParser().process(corrId, HarvestResponse(url, response))
+    val feed = XmlFeedParser().process(corrId, response)
     val exporter = SyndAtomFeedExporter()
     val atom = exporter.toAtom(corrId, feed)
 //    assertThat(atom).contains("Johanna Fricke")

@@ -1,8 +1,7 @@
 package org.migor.feedless.feed.parser
 
 import com.google.gson.GsonBuilder
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
 
@@ -19,15 +18,15 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override fun process(corrId: String, response: HarvestResponse): RichFeed {
+  override fun process(corrId: String, response: HttpResponse): JsonFeed {
     val gson = GsonBuilder()
       .setDateFormat(FORMAT_RFC3339)
       .create()
-    return RichFeed(gson.fromJson(patchResponse(response), JsonFeed::class.java))
+    return gson.fromJson(patchResponse(response), JsonFeed::class.java)
   }
 
-  private fun patchResponse(harvestResponse: HarvestResponse): String {
-    val responseBody = String(harvestResponse.response.responseBody).trim()
+  private fun patchResponse(response: HttpResponse): String {
+    val responseBody = String(response.responseBody).trim()
     return if (responseBody.startsWith("[")) {
       "{\"items\": $responseBody}"
     } else {

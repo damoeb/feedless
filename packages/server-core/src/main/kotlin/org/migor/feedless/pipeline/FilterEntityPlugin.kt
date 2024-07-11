@@ -6,10 +6,10 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 interface FilterEntityPlugin : FeedlessPlugin {
 
   fun filterEntity(
-      corrId: String,
-      document: DocumentEntity,
-      params: PluginExecutionParamsInput,
-      index: Int
+    corrId: String,
+    document: DocumentEntity,
+    params: PluginExecutionParamsInput,
+    index: Int
   ): Boolean
 
 }

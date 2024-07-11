@@ -149,7 +149,7 @@ export class SessionService {
       },
     };
     if (product) {
-      data['subscription'] = {
+      data['plan'] = {
         set: product.id,
       };
     }

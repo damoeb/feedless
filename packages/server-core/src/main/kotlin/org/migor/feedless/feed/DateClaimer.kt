@@ -20,7 +20,8 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
   private val dateRangeSplitter = listOf(" - ")
 
   private val days = listOf(Pair("\\d{1}", "d"), Pair("\\d{2}", "dd"))
-  private val months = listOf(Pair("\\d{1}", "M"), Pair("\\d{2}", "MM"), Pair("[a-z]{3}", "LLL"), Pair("[a-z]{4,}", "MMMM"))
+  private val months =
+    listOf(Pair("\\d{1}", "M"), Pair("\\d{2}", "MM"), Pair("[a-z]{3}", "LLL"), Pair("[a-z]{4,}", "MMMM"))
   private val years = listOf(Pair("\\d{2}", "yy"), Pair("\\d{4}", "yyyy"))
 
   // credits https://stackoverflow.com/a/3390252
@@ -57,6 +58,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     Triple(toRegex("\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "dd MMM yyyy HH:mm:ss", true),
     Triple(toRegex("\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}"), "dd MMMM yyyy HH:mm:ss", true),
   )
+
   init {
     dateFormatToRegexp.addAll(permuate(days, months, years))
     dateFormatToRegexp.addAll(permuate(years, days, months))
@@ -68,7 +70,17 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     partB: List<Pair<String, String>>,
     partC: List<Pair<String, String>>
   ): List<Triple<Regex, String, Boolean>> {
-    return partA.flatMap { a -> partB.flatMap { b -> partC.map { c -> Triple(toRegex("${a.first}\\s${b.first}\\s${c.first}"), "${a.second} ${b.second} ${c.second}", false) } } }
+    return partA.flatMap { a ->
+      partB.flatMap { b ->
+        partC.map { c ->
+          Triple(
+            toRegex("${a.first}\\s${b.first}\\s${c.first}"),
+            "${a.second} ${b.second} ${c.second}",
+            false
+          )
+        }
+      }
+    }
   }
 
   private fun toRegex(regex: String): Regex {
@@ -84,7 +96,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
       .map {
         run {
           val fromDateStr = it[0]
-          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()!!
+          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()
           val fromDate = applyDateFormat(dateString, locale, format, hasTime)
 //            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
 //            fromDate.rangeTo(toDate) // todo enable date range
@@ -129,7 +141,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
         .replace("T", " ")
         .replace("\\s+".toRegex(), " ")
       val date = guessDateFormats(corrId, simpleDateTimeStr)
-        .firstNotNullOfOrNull { (format, dateString, hasTime) ->  applyDateFormat(dateString, locale, format, hasTime) }
+        .firstNotNullOfOrNull { (format, dateString, hasTime) -> applyDateFormat(dateString, locale, format, hasTime) }
       log.info("[${corrId}] -> $date")
       date
     }.onFailure {

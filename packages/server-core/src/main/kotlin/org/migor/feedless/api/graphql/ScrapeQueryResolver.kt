@@ -8,8 +8,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.generated.types.HttpFetchResponse
+import org.migor.feedless.generated.types.PluginExecutionResponse
+import org.migor.feedless.generated.types.ScrapeActionResponse
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
@@ -19,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
+import java.nio.charset.StandardCharsets
 
 @DgsComponent
 @Profile("${AppProfiles.scrape} & ${AppProfiles.api}")
@@ -38,8 +43,30 @@ class ScrapeQueryResolver {
     @RequestHeader(ApiParams.corrId, required = false) cid: String,
   ): ScrapeResponse = coroutineScope {
     val corrId = handleCorrId(cid)
-    log.debug("[$corrId] scrape $data")
+    log.info("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
-    scrapeService.scrape(corrId, scrapeRequest).block()!!
+    val output = scrapeService.scrape(corrId, scrapeRequest).block()!!
+    ScrapeResponse(
+      failed = false,
+      logs = output.logs,
+      outputs = output.outputs.map { it.toDto() }
+    )
   }
+}
+
+private fun ScrapeActionOutput.toDto(): ScrapeActionResponse {
+  return ScrapeActionResponse(
+    fetch = fetch?.let {
+      HttpFetchResponse(
+        data = it.response.responseBody.toString(StandardCharsets.UTF_8),
+        debug = it.debug
+      )
+    },
+    extract = extract,
+    execute = execute?.let {
+      PluginExecutionResponse(
+        pluginId = it.pluginId,
+        data = it.data
+      )
+    })
 }

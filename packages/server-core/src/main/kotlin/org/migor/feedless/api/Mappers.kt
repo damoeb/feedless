@@ -2,120 +2,253 @@ package org.migor.feedless.api
 
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.actions.ClickPositionActionEntity
+import org.migor.feedless.actions.ClickXpathActionEntity
+import org.migor.feedless.actions.DomActionEntity
+import org.migor.feedless.actions.DomEventType
+import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.actions.ExtractXpathActionEntity
+import org.migor.feedless.actions.FetchActionEntity
+import org.migor.feedless.actions.HeaderActionEntity
+import org.migor.feedless.actions.ScrapeActionEntity
+import org.migor.feedless.actions.WaitActionEntity
+import org.migor.feedless.actions.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.GenericFeedSelectors
+import org.slf4j.LoggerFactory
 import java.util.*
+
+private val log = LoggerFactory.getLogger("Mapper")
 
 fun EntityVisibility.toDto(): Visibility = when (this) {
   EntityVisibility.isPrivate -> Visibility.isPrivate
   EntityVisibility.isPublic -> Visibility.isPublic
 }
 
-fun ScrapeResponseInput.fromDto(): ScrapeResponse = ScrapeResponse.newBuilder()
-  .url(url)
-  .debug(fromDto(debug))
-  .errorMessage(errorMessage)
-  .failed(failed)
-  .elements(elements?.map { it.fromDto() })
-  .build()
+fun ScrapeResponseInput.fromDto(): ScrapeResponse = ScrapeResponse(
+  errorMessage = errorMessage,
+  failed = failed,
+  logs = logs,
+  outputs = outputs.map { it.fromDto() }
+)
 
-
-fun RemoteNativeFeedRef.toDto(): NativeFeed = NativeFeed.newBuilder()
-  .feedUrl(url)
-  .title(title)
-  .description(description)
-  .build()
-
-fun GenericFeedRule.toDto(): TransientGenericFeed {
-  val selectors: Selectors = Selectors.newBuilder()
-    .contextXPath(contextXPath)
-    .dateXPath(StringUtils.trimToEmpty(dateXPath))
-    .extendContext(extendContext.toDto())
-    .linkXPath(linkXPath)
-    .dateIsStartOfEvent(dateIsStartOfEvent)
-    .build()
-
-  return TransientGenericFeed.newBuilder()
-    .feedUrl(feedUrl)
-    .count(count)
-    .hash(CryptUtil.sha1(feedUrl))
-    .selectors(selectors)
-    .score(score)
-    .samples(samples.map { it.toDto() }
-    ).build()
+private fun ScrapeActionResponseInput.fromDto(): ScrapeActionResponse {
+  return ScrapeActionResponse(
+    extract = extract?.fromDto(),
+    fetch = fetch?.fromDto()
+  )
 }
 
-private fun ScrapedElementInput.fromDto(): ScrapedElement = ScrapedElement.newBuilder()
-  .selector(selector?.fromDto())
-  .image(image?.fromDto())
-  .build()
+private fun HttpFetchResponseInput.fromDto(): HttpFetchResponse {
+  return HttpFetchResponse(
+    data = data,
+    debug = debug.fromDto()
+  )
+}
 
-private fun ScrapedByBoundingBoxInput.fromDto(): ScrapedByBoundingBox = ScrapedByBoundingBox.newBuilder()
-  .data(data.fromDto())
-  .boundingBox(boundingBox.fromDto())
-  .build()
+private fun FetchActionDebugResponseInput.fromDto(): FetchActionDebugResponse {
+  return FetchActionDebugResponse(
+    corrId = corrId,
+    url = url,
+    screenshot = screenshot,
+    prerendered = prerendered,
+    console = console,
+    network = network.map { it.fromDto() },
+    cookies = cookies,
+    statusCode = statusCode,
+    contentType = contentType,
+    viewport = viewport.fromDto()
+  )
+}
 
-private fun Base64DataInput.fromDto(): Base64Data = Base64Data.newBuilder()
-  .base64Data(base64Data)
-  .build()
+private fun NetworkRequestInput.fromDto(): NetworkRequest {
+  return NetworkRequest(
+    url = url,
+    requestHeaders = requestHeaders,
+    requestPostData = requestPostData,
+    responseHeaders = responseHeaders,
+    responseSize = responseSize,
+    responseBody = responseBody
+  )
+}
 
-private fun ScrapedBySelectorInput.fromDto(): ScrapedBySelector = ScrapedBySelector.newBuilder()
-  .html(html?.fromDto())
-  .text(text?.fromDto())
-  .pixel(pixel?.fromDto())
-  .xpath(xpath?.fromDto())
-  .build()
+private fun ScrapeExtractResponseInput.fromDto(): ScrapeExtractResponse {
+  return ScrapeExtractResponse(
+    fragmentName = fragmentName,
+    fragments = fragments.map { it.fromDto() },
+  )
+}
 
-private fun TextDataInput.fromDto(): TextData = TextData.newBuilder()
-  .data(data)
-  .build()
+private fun ScrapeExtractFragmentInput.fromDto(): ScrapeExtractFragment {
+  return ScrapeExtractFragment(
+    data = data?.fromDto(),
+    html = html?.fromDto(),
+    text = text?.fromDto(),
+    extracts = extracts?.map { it.fromDto() },
+  )
+}
 
-private fun fromDto(it: ScrapeDebugResponseInput): ScrapeDebugResponse = ScrapeDebugResponse.newBuilder()
-  .corrId(it.corrId)
-  .console(it.console)
-  .network(it.network.map { it.fromDto() })
-  .html(it.html)
-  .contentType(it.contentType)
-  .statusCode(it.statusCode)
-  .screenshot(it.screenshot)
-  .prerendered(it.prerendered)
-  .viewport(it.viewport?.fromDto())
-  .metrics(it.metrics?.fromDto())
-  .build()
+fun MimeDataInput.fromDto(): MimeData {
+  return MimeData(
+    mimeType = mimeType,
+    data = data
+  )
+}
 
-private fun ScrapeDebugTimesInput.fromDto(): ScrapeDebugTimes = ScrapeDebugTimes.newBuilder()
-  .queue(queue)
-  .render(render)
-  .build()
+fun TextDataInput.fromDto(): TextData {
+  return TextData(data = data)
+}
 
-private fun NetworkRequestInput.fromDto(): NetworkRequest = NetworkRequest.newBuilder()
-  .responseBody(responseBody)
-  .responseHeaders(responseHeaders)
-  .responseSize(responseSize)
-  .requestHeaders(requestHeaders)
-  .requestPostData(requestPostData)
-  .build()
+fun RemoteNativeFeedRef.toDto(): RemoteNativeFeed = RemoteNativeFeed(
+  feedUrl = url,
+  title = title,
+  description = description,
+  expired = false,
+  publishedAt = Date().time,
+)
+
+fun GenericFeedRule.toDto(): TransientGenericFeed {
+  val selectors = Selectors(
+    contextXPath = contextXPath,
+    dateXPath = StringUtils.trimToEmpty(dateXPath),
+    extendContext = extendContext.toDto(),
+    linkXPath = linkXPath,
+    dateIsStartOfEvent = dateIsStartOfEvent,
+    paginationXPath = paginationXPath ?: "",
+  )
+
+  return TransientGenericFeed(
+    count = count,
+    hash = CryptUtil.sha1(JsonUtil.gson.toJson(selectors)),
+    selectors = selectors,
+    score = score,
+    samples = samples.map { it.toDto() }
+  )
+}
 
 fun Selectors.fromDto(): GenericFeedSelectors = GenericFeedSelectors(
   linkXPath = linkXPath,
   extendContext = fromDto(extendContext),
   contextXPath = contextXPath,
   dateXPath = dateXPath,
-  dateIsStartOfEvent = BooleanUtils.isTrue(dateIsStartOfEvent)
+  dateIsStartOfEvent = BooleanUtils.isTrue(dateIsStartOfEvent),
+  paginationXPath = paginationXPath
 )
 
-fun ScrapeRequestInput.fromDto(): ScrapeRequest = ScrapeRequest.newBuilder()
-  .emit(emit?.map { it.fromDto() })
-  .page(page.fromDto())
-  .debug(debug?.fromDto())
-  .tags(tags)
-  .build()
+fun ScrapeRequestInput.fromDto(): SourceEntity {
+  val source = SourceEntity()
+  source.actions = flow.sequence.mapNotNull {
+    it.fetch?.let { toFetchAction(it) } ?: it.wait?.let { toWaitAction(it) } ?: it.header?.let { toHeaderAction(it) }
+    ?: it.purge?.let { toDomAction(DomEventType.purge, it.value) } ?: it.type?.let {
+      toDomAction(
+        DomEventType.type,
+        it.element.value,
+        it.typeValue
+      )
+    } ?: it.select?.let { toDomAction(DomEventType.select, it.element.value, it.selectValue) }
+    ?: it.execute?.let { toExecuteAction(it) } ?: it.extract?.let { toExtractAction(it) }
+    ?: it.click?.let { toClickAction(it) } ?: run {
+      log.error("No mapper defined for $it")
+      null
+    }
+  }.toMutableList()
+  return source
+}
+
+fun toClickAction(it: DOMElementInput): ScrapeActionEntity? {
+  return it.element?.let {
+    val e = ClickXpathActionEntity()
+    e.xpath = it.xpath!!.value
+    e
+  } ?: it.position?.let {
+    val e = ClickPositionActionEntity()
+    e.x = it.x
+    e.y = it.y
+    e
+  }
+}
+
+fun toExtractAction(extract: ScrapeExtractInput): ScrapeActionEntity? {
+  return extract.selectorBased?.let {
+    val e = ExtractXpathActionEntity()
+    e.fragmentName = extract.fragmentName
+    e.xpath = it.xpath.value
+    e.emit = it.emit.map { it.fromDto() }.toTypedArray()
+    e
+  } ?: extract.imageBased?.let {
+    val e = ExtractBoundingBoxActionEntity()
+    e.fragmentName = extract.fragmentName
+    e.x = it.boundingBox.x
+    e.y = it.boundingBox.y
+    e.w = it.boundingBox.w
+    e.h = it.boundingBox.h
+    e
+  }
+}
+
+fun toExecuteAction(it: PluginExecutionInput): ExecuteActionEntity {
+  val e = ExecuteActionEntity()
+
+  e.pluginId = it.pluginId
+  e.executorParams = it.params
+
+  return e
+}
+
+fun toHeaderAction(it: RequestHeaderInput): HeaderActionEntity {
+  val e = HeaderActionEntity()
+  e.name = it.name!!
+  e.value = it.value!!
+  return e
+}
+
+fun toWaitAction(it: WaitActionInput): WaitActionEntity {
+  val e = WaitActionEntity()
+  e.xpath = it.element.xpath!!.value
+  return e
+}
+
+fun toFetchAction(it: HttpFetchInput): FetchActionEntity {
+  val e = FetchActionEntity()
+  it.get.url.literal?.let {
+    e.url = it
+    e.isVariable = false
+  } ?: it.get.url.variable?.let {
+    e.url = it
+    e.isVariable = false
+  }
+  e.timeout = it.get.timeout
+  e.additionalWaitSec = it.get.additionalWaitSec
+//  e.waitUntil = it.method.get.waitUntil
+  e.language = it.get.language
+  e.forcePrerender = BooleanUtils.isTrue(it.get.forcePrerender)
+  it.get.viewport?.let {
+    e.isMobile = BooleanUtils.isTrue(it.isMobile)
+    e.isLandscape = BooleanUtils.isTrue(it.isLandscape)
+    e.viewportHeight = it.height
+    e.viewportWidth = it.width
+  }
+
+  return e
+}
+
+fun toDomAction(domEvent: DomEventType, xpath: String, data: String? = null): DomActionEntity {
+  val e = DomActionEntity()
+  e.xpath = xpath
+  e.event = domEvent
+  e.data = data
+
+  return e
+}
 
 private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext = when (extendContext) {
   ExtendContentOptions.NEXT -> ExtendContext.NEXT
@@ -123,175 +256,144 @@ private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext = when 
   else -> ExtendContext.NONE
 }
 
-private fun ScrapeEmitInput.fromDto(): ScrapeEmit = ScrapeEmit.newBuilder()
-  .imageBased(imageBased?.fromDto())
-  .selectorBased(selectorBased?.fromDto())
-  .build()
+private fun PluginExecutionInput.fromDto(): PluginExecution = PluginExecution(
+  pluginId = pluginId,
+  params = params.fromDto(),
+)
 
-private fun ScrapeSelectorInput.fromDto(): ScrapeSelector = ScrapeSelector.newBuilder()
-  .xpath(xpath.fromDto())
-  .expose(expose?.fromDto())
-  .max(max)
-  .min(min)
-  .build()
-
-private fun ScrapeSelectorExposeInput.fromDto(): ScrapeSelectorExpose = ScrapeSelectorExpose.newBuilder()
-  .pixel(pixel)
-  .transformers(transformers?.map { it.fromDto() })
-  .fields(fields?.map { it.fromDto() })
-  .build()
-
-private fun PluginExecutionInput.fromDto(): PluginExecution = PluginExecution.newBuilder()
-  .pluginId(pluginId)
-  .params(params?.fromDto())
-  .build()
-
-private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams = PluginExecutionParams.newBuilder()
-  .org_feedless_feed(org_feedless_feed?.fromDto())
-  .jsonData(jsonData)
-  .org_feedless_diff_email_forward(org_feedless_diff_email_forward?.fromDto())
-  .org_feedless_fulltext(org_feedless_fulltext?.fromDto())
-  .build()
+private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams = PluginExecutionParams(
+  org_feedless_feed = org_feedless_feed?.fromDto(),
+  jsonData = jsonData,
+  org_feedless_diff_email_forward = org_feedless_diff_email_forward?.fromDto(),
+  org_feedless_fulltext = org_feedless_fulltext?.fromDto(),
+)
 
 private fun FeedParamsInput.fromDto(): FeedParams {
-  return FeedParams.newBuilder()
-    .generic(generic?.fromDto())
-    .build()
+  return FeedParams(
+    generic = generic?.fromDto(),
+  )
 }
 
-private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams = FulltextPluginParams.newBuilder()
-  .readability(readability)
-  .build()
+private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams = FulltextPluginParams(
+  readability = readability,
+  inheritParams = inheritParams
+)
 
-private fun SelectorsInput.fromDto(): Selectors = Selectors.newBuilder()
-  .contextXPath(contextXPath)
-  .linkXPath(linkXPath)
-  .dateXPath(dateXPath)
-  .extendContext(extendContext)
-  .dateIsStartOfEvent(BooleanUtils.isTrue(dateIsStartOfEvent))
-  .build()
+fun SelectorsInput.fromDto(): Selectors = Selectors(
+  contextXPath = contextXPath,
+  linkXPath = linkXPath,
+  dateXPath = dateXPath,
+  extendContext = extendContext,
+  dateIsStartOfEvent = BooleanUtils.isTrue(dateIsStartOfEvent),
+  paginationXPath = paginationXPath,
+)
 
-private fun ScrapeSelectorExposeFieldInput.fromDto(): ScrapeSelectorExposeField = ScrapeSelectorExposeField.newBuilder()
-  .max(max)
-  .min(min)
-  .name(name)
-  .value(value?.fromDto())
-  .nested(nested?.fromDto())
-  .build()
+private fun ScrapeBoundingBoxInput.fromDto(): ScrapeBoundingBox = ScrapeBoundingBox(
+  boundingBox = boundingBox.fromDto(),
+)
 
-private fun ScrapeSelectorExposeNestedFieldValueInput.fromDto(): ScrapeSelectorExposeNestedFieldValue {
-  return ScrapeSelectorExposeNestedFieldValue.newBuilder()
-    .fields(fields?.map { it.fromDto() })
-    .build()
-}
+private fun BoundingBoxInput.fromDto(): BoundingBox = BoundingBox(
+  x = x,
+  y = y,
+  w = w,
+  h = h,
+)
 
-private fun ScrapeSelectorExposeFieldValueInput.fromDto(): ScrapeSelectorExposeFieldValue? {
-  return ScrapeSelectorExposeFieldValue.newBuilder()
-    .html(html?.fromDto())
-    .text(text?.fromDto())
-    .set(set)
-    .build()
-}
+private fun ScrapeFlowInput.fromDto(): ScrapeFlow = ScrapeFlow(
+  sequence = sequence.map { it.fromDto() },
+)
 
-private fun ScrapeSelectorExposeFieldTextValueInput.fromDto(): ScrapeSelectorExposeFieldTextValue =
-  ScrapeSelectorExposeFieldTextValue.newBuilder()
-    .regex(regex)
-    .build()
+private fun ScrapeActionInput.fromDto(): ScrapeAction = ScrapeAction(
+  fetch = fetch?.fromDto(),
+  execute = execute?.fromDto(),
+  extract = extract?.fromDto(),
+  type = type?.fromDto(),
+  purge = purge?.fromDto(),
+  select = select?.fromDto(),
+  click = click?.fromDto(),
+  header = header?.fromDto(),
+  wait = wait?.fromDto(),
+)
 
-private fun ScrapeSelectorExposeFieldHtmlValueInput.fromDto(): ScrapeSelectorExposeFieldHtmlValue =
-  ScrapeSelectorExposeFieldHtmlValue.newBuilder()
-    .xpath(xpath.fromDto())
-    .build()
+private fun ScrapeExtractInput.fromDto(): ScrapeExtract = ScrapeExtract(
+  fragmentName = fragmentName,
+  imageBased = imageBased?.fromDto(),
+  selectorBased = selectorBased?.fromDto(),
+)
 
-private fun ScrapeBoundingBoxInput.fromDto(): ScrapeBoundingBox = ScrapeBoundingBox.newBuilder()
-  .boundingBox(boundingBox.fromDto())
-  .build()
+private fun DOMExtractInput.fromDto(): DOMExtract = DOMExtract(
+  max = max,
+  fragmentName = fragmentName,
+  xpath = xpath.fromDto(),
+  emit = emit,
+  extract = extract?.map { it.fromDto() },
+)
 
-private fun BoundingBoxInput.fromDto(): BoundingBox = BoundingBox.newBuilder()
-  .x(x)
-  .y(y)
-  .w(w)
-  .h(h)
-  .build()
+private fun HttpFetchInput.fromDto(): HttpFetch = HttpFetch(
+  get = get.fromDto()
+)
 
-private fun ScrapeDebugOptionsInput.fromDto(): ScrapeDebugOptions = ScrapeDebugOptions.newBuilder()
-  .console(console)
-  .html(html)
-  .network(network)
-  .screenshot(screenshot)
-  .build()
+private fun StringLiteralOrVariableInput.fromDto(): StringLiteralOrVariable = StringLiteralOrVariable(
+  literal = literal,
+  variable = variable,
+)
 
-private fun ScrapePageInput.fromDto(): ScrapePage = ScrapePage.newBuilder()
-  .url(url)
-  .prerender(prerender?.fromDto())
-  .timeout(timeout)
-  .actions(actions?.map { it.fromDto() })
-  .build()
+private fun WaitActionInput.fromDto(): WaitAction = WaitAction(
+  element = element.fromDto(),
+)
 
-private fun ScrapeActionInput.fromDto(): ScrapeAction = ScrapeAction.newBuilder()
-  .type(type?.fromDto())
-  .purge(purge?.fromDto())
-  .select(select?.fromDto())
-  .click(click?.fromDto())
-  .header(header?.fromDto())
-  .wait(wait?.fromDto())
-  .build()
+private fun DOMElementInput.fromDto(): DOMElement = DOMElement(
+  element = element?.fromDto(),
+  position = position?.fromDto(),
+)
 
-private fun WaitActionInput.fromDto(): WaitAction = WaitAction.newBuilder()
-  .element(element.fromDto())
-  .build()
+private fun XYPositionInput.fromDto(): XYPosition = XYPosition(
+  x = x,
+  y = y,
+)
 
-private fun DOMElementInput.fromDto(): DOMElement = DOMElement.newBuilder()
-  .element(element?.fromDto())
-  .position(position?.fromDto())
-  .build()
+private fun RequestHeaderInput.fromDto(): RequestHeader = RequestHeader(
+  name = name,
+  value = value,
+)
 
-private fun XYPositionInput.fromDto(): XYPosition = XYPosition.newBuilder()
-  .x(x)
-  .y(y)
-  .build()
+private fun DOMElementByNameOrXPathInput.fromDto(): DOMElementByNameOrXPath = DOMElementByNameOrXPath(
+  name = name?.fromDto(),
+  xpath = xpath?.fromDto(),
+)
 
-private fun RequestHeaderInput.fromDto(): RequestHeader = RequestHeader.newBuilder()
-  .name(name)
-  .value(value)
-  .build()
+private fun DOMElementByNameInput.fromDto(): DOMElementByName = DOMElementByName(
+  value = value,
+)
 
-private fun DOMElementByNameOrXPathInput.fromDto(): DOMElementByNameOrXPath = DOMElementByNameOrXPath.newBuilder()
-  .name(name?.fromDto())
-  .xpath(xpath?.fromDto())
-  .build()
+private fun DOMActionSelectInput.fromDto(): DOMActionSelect = DOMActionSelect(
+  element = element.fromDto(),
+  selectValue = selectValue,
+)
 
-private fun DOMElementByNameInput.fromDto(): DOMElementByName = DOMElementByName.newBuilder()
-  .value(value)
-  .build()
+private fun DOMActionTypeInput.fromDto(): DOMActionType = DOMActionType(
+  element = element.fromDto(),
+  typeValue = typeValue,
+)
 
-private fun DOMActionSelectInput.fromDto(): DOMActionSelect = DOMActionSelect.newBuilder()
-  .element(element.fromDto())
-  .selectValue(selectValue)
-  .build()
+private fun DOMElementByXPathInput.fromDto(): DOMElementByXPath = DOMElementByXPath(
+  value = value,
+)
 
-private fun DOMActionTypeInput.fromDto(): DOMActionType = DOMActionType.newBuilder()
-  .element(element.fromDto())
-  .typeValue(typeValue)
-  .build()
+private fun ScrapePrerenderInput.fromDto(): ScrapePrerender = ScrapePrerender(
+  waitUntil = waitUntil,
+  language = language,
+  viewport = viewport?.fromDto(),
+  additionalWaitSec = additionalWaitSec,
+  url = url.fromDto()
+)
 
-private fun DOMElementByXPathInput.fromDto(): DOMElementByXPath = DOMElementByXPath.newBuilder()
-  .value(value)
-  .build()
-
-private fun ScrapePrerenderInput.fromDto(): ScrapePrerender = ScrapePrerender.newBuilder()
-  .waitUntil(waitUntil)
-  .language(language)
-  .viewport(viewport?.fromDto())
-  .additionalWaitSec(additionalWaitSec)
-  .build()
-
-private fun ViewPortInput.fromDto(): ViewPort = ViewPort.newBuilder()
-  .height(height)
-  .width(width)
-  .isMobile(isMobile)
-  .isLandscape(isLandscape)
-  .build()
+private fun ViewPortInput.fromDto(): ViewPort = ViewPort(
+  height = height,
+  width = width,
+  isMobile = isMobile,
+  isLandscape = isLandscape,
+)
 
 private fun ExtendContext.toDto(): ExtendContentOptions {
   return when (this) {
@@ -302,44 +404,50 @@ private fun ExtendContext.toDto(): ExtendContentOptions {
   }
 }
 
-private fun RichArticle.toDto(): WebDocument {
-  val builder = WebDocument.newBuilder()
-    .id(UUID.randomUUID().toString())
-    .url(url)
-    .contentText(contentText)
-    .publishedAt(publishedAt.time)
-    .startingAt(startingAt?.time)
-    .updatedAt(publishedAt.time)
-    .createdAt(Date().time)
-
-  return if (isHtml(contentRawMime)) {
+private fun JsonItem.toDto(): WebDocument {
+  var contentHtmlParam: String? = null
+  var contentRawBase64Param: String? = null
+  var contentRawMimeParam: String? = null
+  if (isHtml(contentRawMime)) {
     try {
-      builder.contentHtml(String(Base64.getDecoder().decode(contentRawBase64)))
+      contentHtmlParam = String(Base64.getDecoder().decode(contentRawBase64))
     } catch (e: Exception) {
-      builder.contentHtml(contentRawBase64)
-    }.build()
+      contentHtmlParam = contentRawBase64
+    }
   } else {
-    builder
-      .contentRawBase64(contentRawBase64)
-       .contentRawMime(contentRawMime)
-      .build()
+    contentRawBase64Param = contentRawBase64
+    contentRawMimeParam = contentRawMime
   }
+
+  return WebDocument(
+    id = UUID.randomUUID().toString(),
+    url = url,
+    contentHtml = contentHtmlParam,
+    contentRawBase64 = contentRawBase64Param,
+    contentRawMime = contentRawMimeParam,
+    contentText = contentText,
+    publishedAt = publishedAt.time,
+    startingAt = startingAt?.time,
+    localized = latLng,
+    updatedAt = publishedAt.time,
+    createdAt = Date().time,
+  )
 }
 
 
 fun isHtml(contentRawMime: String?): Boolean = contentRawMime?.lowercase()?.startsWith("text/html") == true
 
-private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams = DiffEmailForwardParams.newBuilder()
-  .inlineLatestImage(inlineLatestImage)
-  .inlineDiffImage(inlineDiffImage)
-  .inlinePreviousImage(inlinePreviousImage)
-  .nextItemMinIncrement(nextItemMinIncrement)
-  .compareBy(compareBy.fromDto())
-  .build()
+private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams = DiffEmailForwardParams(
+  inlineLatestImage = inlineLatestImage,
+  inlineDiffImage = inlineDiffImage,
+  inlinePreviousImage = inlinePreviousImage,
+  nextItemMinIncrement = nextItemMinIncrement,
+  compareBy = compareBy.fromDto(),
+)
 
 private fun CompareByInput.fromDto(): CompareBy {
-  return CompareBy.newBuilder()
-    .field(field)
-    .fragmentNameRef(fragmentNameRef)
-    .build()
+  return CompareBy(
+    field = field,
+    fragmentNameRef = fragmentNameRef,
+  )
 }

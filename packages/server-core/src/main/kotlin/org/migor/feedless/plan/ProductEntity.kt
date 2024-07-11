@@ -76,13 +76,13 @@ open class ProductEntity : EntityWithUUID() {
 
 
 fun ProductEntity.toDTO(): Product {
-  return Product.newBuilder()
-    .id(id.toString())
-    .name(name)
-    .description(description)
-    .isCloud(isCloudProduct)
-    .partOf(partOf?.toDto())
-    .featureGroupId(featureGroupId?.toString())
-    .prices(emptyList())
-    .build()
+  return Product(
+    id = id.toString(),
+    name = name,
+    description = description,
+    isCloud = isCloudProduct,
+    partOf = partOf?.toDto(),
+    featureGroupId = featureGroupId?.toString(),
+    prices = emptyList(),
+  )
 }

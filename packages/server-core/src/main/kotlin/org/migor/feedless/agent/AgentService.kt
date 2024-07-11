@@ -5,11 +5,12 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
 import org.migor.feedless.generated.types.RegisterAgentInput
-import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.secrets.UserSecretService
@@ -54,18 +55,28 @@ class AgentService {
           } else {
             userSecretService.updateLastUsed(securityKey.id, Date())
             val agentRef =
-              AgentRef(securityKey.id, securityKey.ownerId, data.name, data.version, data.connectionId, data.os, Date(), emitter)
+              AgentRef(
+                securityKey.id,
+                securityKey.ownerId,
+                data.name,
+                data.version,
+                data.connectionId,
+                data.os,
+                Date(),
+                emitter
+              )
 
             emitter.onDispose {
               removeAgent(corrId, agentRef)
             }
             emitter.next(
-              AgentEvent.newBuilder()
-                .authentication(
-                  AgentAuthentication.newBuilder()
-                    .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
-                    .build()
-                ).build()
+              AgentEvent(
+                corrId = corrId,
+                callbackId = "none",
+                authentication = AgentAuthentication(
+                  token = tokenProvider.createJwtForAgent(securityKey).tokenValue
+                )
+              )
             )
             addAgent(corrId, agentRef)
           }
@@ -106,38 +117,38 @@ class AgentService {
 
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
-  fun prerender(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
+  fun prerender(corrId: String, scrapeRequest: SourceEntity): Mono<ScrapeResponse> {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, scrapeRequest, agentRef)
     } else {
+      log.warn("[$corrId] no agents present")
       throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
     }
   }
 
   private fun prerenderWithAgent(
     corrId: String,
-    scrapeRequest: ScrapeRequest,
+    scrapeSource: SourceEntity,
     agentRef: AgentRef
   ): Mono<ScrapeResponse> {
+    log.info("[$corrId] preparing")
     return Flux.create { emitter ->
-      run {
+      try {
+        val scrapeRequest = scrapeSource.toDto(corrId)
         val harvestJobId = UUID.randomUUID().toString()
-        scrapeRequest.id = harvestJobId
-        scrapeRequest.corrId = corrId
-
-        try {
-          agentRef.emitter.next(
-            AgentEvent.newBuilder()
-              .scrape(scrapeRequest)
-              .build()
+        agentRef.emitter.next(
+          AgentEvent(
+            callbackId = harvestJobId,
+            corrId = corrId,
+            scrape = scrapeRequest
           )
-          log.info("$corrId] submitted agent job $harvestJobId")
-          pendingJobs[harvestJobId] = emitter
-        } catch (e: Exception) {
-          log.error("$corrId] ${e.message}")
-          emitter.error(e)
-        }
+        )
+        log.info("$corrId] submitted agent job $harvestJobId")
+        pendingJobs[harvestJobId] = emitter
+      } catch (e: Exception) {
+        log.error("$corrId] ${e.message}")
+        emitter.error(e)
       }
     }
       .timeout(Duration.ofSeconds(60))

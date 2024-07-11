@@ -33,7 +33,7 @@ class ReadingEaseScorer {
           // flesh reading ease https://readable.com/readability/flesch-reading-ease-flesch-kincaid-grade-level/
           206.835 - 1.015 * (totalWords / totalSentences) - 84.6 * (totalSyllables / totalWords)
         }
-      }?: FALLBACK_READING_EASE_SCORE
+      } ?: FALLBACK_READING_EASE_SCORE
 
     } catch (e: IllegalArgumentException) {
       log.warn(e.message)

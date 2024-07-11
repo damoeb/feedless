@@ -13,11 +13,12 @@ import com.rometools.rome.io.SyndFeedInput
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
-import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.api.dto.RichEnclosure
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.feed.exporter.FeedlessModule
+import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonAuthor
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -36,18 +37,18 @@ class XmlFeedParser : FeedBodyParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
-  override fun process(corrId: String, response: HarvestResponse): RichFeed {
+  override fun process(corrId: String, response: HttpResponse): JsonFeed {
     // parse rss/atom/rdf/opml
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response.response)
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
       else -> throw IllegalArgumentException("Not implemented ($corrId)")
     }
   }
 
-  private fun parseXml(harvestResponse: HarvestResponse): SyndFeed {
-    return runCatching { parseXml(harvestResponse.response.responseBody) }
-      .onFailure { log.warn("Cannot parse feed ${harvestResponse.url} ${it.message}, trying BrokenXmlParser") }
+  private fun parseXml(response: HttpResponse): SyndFeed {
+    return runCatching { parseXml(response.responseBody) }
+      .onFailure { log.warn("Cannot parse feed ${response.url} ${it.message}, trying BrokenXmlParser") }
       .getOrThrow()
   }
 
@@ -88,28 +89,28 @@ class XmlFeedParser : FeedBodyParser {
     }
   }
 
-  private fun fromSyndFeed(feed: SyndFeed, feedUrl: String): RichFeed {
-
+  private fun fromSyndFeed(feed: SyndFeed, feedUrl: String): JsonFeed {
+    // todo mag add/parse geo-spatial information to feed
     val feedInformation = feed.modules.find { it is FeedInformationImpl } as FeedInformationImpl?
     val imageUrl = feedInformation?.imageUri ?: feed.image?.url
-    val richFeed = RichFeed()
-    richFeed.id = feed.uri ?: FeedUtil.toURI("native", feed.link)
-    richFeed.title = feed.title
+    val jsonFeed = JsonFeed()
+    jsonFeed.id = feed.uri ?: FeedUtil.toURI("native", feed.link)
+    jsonFeed.title = feed.title
 //    richFeed.link = feed.link
-    richFeed.description = feed.description
+    jsonFeed.description = feed.description
 //      icon_url = "",
 //    richFeed.author = feed.author
-    richFeed.imageUrl = imageUrl
-    richFeed.websiteUrl = feed.link
-    richFeed.language = feed.language
-    richFeed.expired = false
-    richFeed.publishedAt = feed.publishedDate ?: Date()
-    richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
-    richFeed.feedUrl = feedUrl
+    jsonFeed.imageUrl = imageUrl
+    jsonFeed.websiteUrl = feed.link
+    jsonFeed.language = feed.language
+    jsonFeed.expired = false
+    jsonFeed.publishedAt = feed.publishedDate ?: Date()
+    jsonFeed.items = feed.entries.map { this.fromSyndEntry(it) }
+    jsonFeed.feedUrl = feedUrl
     val tags = mutableListOf<String>()
     feedInformation?.let {
       if (StringUtils.isNotBlank(it.author)) {
-        richFeed.authors = listOf(JsonAuthor(name = it.author))
+        jsonFeed.authors = listOf(JsonAuthor(name = it.author))
       }
       it.keywords?.toList()?.let {
         tags.plus(it)
@@ -118,22 +119,28 @@ class XmlFeedParser : FeedBodyParser {
     feed.categories?.let {
       tags.plus(it.map { it.name })
     }
-    richFeed.tags = tags
+    jsonFeed.tags = tags
 
-    return richFeed
+    return jsonFeed
   }
 
-  private fun fromSyndEntry(entry: SyndEntry): RichArticle {
+  private fun fromSyndEntry(entry: SyndEntry): JsonItem {
     val contentHtml = entry.contents.firstOrNull { it.type.lowercase().contains("html") }
     val contentText = Optional.ofNullable(entry.description?.value)
       .orElse("").trimMargin()
 
     val entryInformationModule = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
     val mediaEntryModule = entry.modules.find { it is MediaEntryModule } as MediaEntryModule?
+    val feedlessModule = entry.modules.find { it is FeedlessModule } as FeedlessModule?
 //    val dcModule = entry.modules.find { it is DCModule } as DCModule?
-    val richArticle = RichArticle()
-    richArticle.id = entry.uri
-    richArticle.title = entry.title
+    val article = JsonItem()
+    article.id = entry.uri
+    article.title = entry.title
+
+    feedlessModule?.let {
+      article.latLng = feedlessModule.getLatLng()
+      article.startingAt = feedlessModule.getStartingAt()
+    }
 
     val tags = mutableListOf<String>()
     tags.addAll(entry.categories.map { it.name })
@@ -142,25 +149,25 @@ class XmlFeedParser : FeedBodyParser {
       tags.addAll(it.metadata.categories.map { it.label })
     }
 
-    richArticle.tags = tags
+    article.tags = tags
 
     // content
     val hasText = StringUtils.isNotBlank(contentText)
     val hasHtml = contentHtml != null
     if (hasText || hasHtml) {
       if (hasText && hasHtml) {
-        richArticle.contentText = contentText
-        richArticle.contentRawMime = "text/html"
-        richArticle.contentRawBase64 = contentHtml!!.value
+        article.contentText = contentText
+        article.contentRawMime = "text/html"
+        article.contentRawBase64 = contentHtml!!.value
       } else {
         if (hasText) {
-          richArticle.contentText = contentText
+          article.contentText = contentText
         } else {
-          richArticle.contentRawMime = "text/html"
-          richArticle.contentRawBase64 = contentHtml!!.value
+          article.contentRawMime = "text/html"
+          article.contentRawBase64 = contentHtml!!.value
           try {
             val body = HtmlUtil.parseHtml(contentText, "").body()
-            richArticle.contentText = body.text()
+            article.contentText = body.text()
           } catch (e: Exception) {
             // ignore
           }
@@ -169,16 +176,16 @@ class XmlFeedParser : FeedBodyParser {
       }
     }
 
-    richArticle.url = entry.link ?: entry.uri
+    article.url = entry.link ?: entry.uri
 
     val authors = mutableListOf<JsonAuthor>()
     (entryInformationModule?.author ?: entry.author)?.let {
       authors.add(JsonAuthor(name = it))
     }
     authors.addAll(entry.authors.map { it.toJsonAuthor() })
-    richArticle.authors = authors
+    article.authors = authors
 
-    val attachments = arrayListOf<RichEnclosure>()
+    val attachments = arrayListOf<JsonAttachment>()
     if (entry.enclosures.size == 1) {
       attachments.add(fromSyndEnclosure(entry.enclosures.first(), entryInformationModule))
     } else {
@@ -194,7 +201,7 @@ class XmlFeedParser : FeedBodyParser {
               else -> throw IllegalArgumentException("no supported")
             }
             attachments.add(
-              RichEnclosure(
+              JsonAttachment(
                 length = 0,
                 type = mediaContent.type ?: mediaContent.medium ?: "unknown",
                 url = url.toString(),
@@ -204,28 +211,28 @@ class XmlFeedParser : FeedBodyParser {
           }
         }
     }
-    richArticle.attachments = attachments
+    article.attachments = attachments
 
-    val imageUrl = entryInformationModule?.imageUri ?: attachments.filterTo(ArrayList()) { it: RichEnclosure ->
+    val imageUrl = entryInformationModule?.imageUri ?: attachments.filterTo(ArrayList()) { it: JsonAttachment ->
       StringUtils.isNotBlank(
         it.type
       )
     }
       .firstOrNull { it.type.lowercase().startsWith("image") }?.url
-    richArticle.imageUrl = imageUrl
+    article.imageUrl = imageUrl
 
-    richArticle.publishedAt = entry.publishedDate ?: Date()
+    article.publishedAt = entry.publishedDate ?: Date()
 
 //    entryInformation?.let {
 //      it.duration
 //      it.episodeType
 //    }
 
-    return richArticle
+    return article
   }
 
   private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure, entryInformation: EntryInformationImpl? = null) =
-    RichEnclosure(
+    JsonAttachment(
       length = syndEnclosure.length,
       type = syndEnclosure.type,
       url = syndEnclosure.url,

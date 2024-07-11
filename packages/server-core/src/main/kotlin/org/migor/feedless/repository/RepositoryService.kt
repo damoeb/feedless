@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -8,13 +7,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.actions.BrowserActionEntity
-import org.migor.feedless.actions.ClickPositionActionEntity
-import org.migor.feedless.actions.DomActionEntity
-import org.migor.feedless.actions.DomEventType
-import org.migor.feedless.actions.HeaderActionEntity
-import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
@@ -29,24 +22,26 @@ import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.createDocumentUrl
 import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.ScrapeAction
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
-import org.migor.feedless.mail.MailService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -87,9 +82,6 @@ class RepositoryService {
   @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
 
-  @Autowired(required = false)
-  lateinit var mailService: MailService
-
   @Autowired
   private lateinit var sessionService: SessionService
 
@@ -104,6 +96,9 @@ class RepositoryService {
 
   @Autowired
   private lateinit var propertyService: PropertyService
+
+  @Autowired
+  private lateinit var scrapeActionDAO: ScrapeActionDAO
 
   @Autowired
   private lateinit var pluginService: PluginService
@@ -137,13 +132,13 @@ class RepositoryService {
   ): RepositoryEntity {
     val repo = RepositoryEntity()
 
+    repo.shareKey = newCorrId(10)
     repo.title = subInput.sinkOptions.title
     repo.description = subInput.sinkOptions.description
     repo.visibility = planConstraintsService.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
     val product = sessionService.activeProductFromRequest()!!
 
     planConstraintsService.auditSourcesMaxCountPerRepository(subInput.sources.size, ownerId, product)
-    repo.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
     repo.ownerId = ownerId
     subInput.sinkOptions.plugins?.let {
       if (it.size > 5) {
@@ -151,8 +146,13 @@ class RepositoryService {
       }
       repo.plugins = it.map { plugin -> plugin.fromDto() }
     }
-    repo.sourcesSyncExpression = subInput.sourceOptions?.let {
-      planConstraintsService.auditCronExpression(subInput.sourceOptions.refreshCron)
+    repo.shareKey = if (subInput.sinkOptions.withShareKey) {
+      newCorrId(10)
+    } else {
+      ""
+    }
+    repo.sourcesSyncExpression = subInput.sinkOptions.refreshCron?.let {
+      planConstraintsService.auditCronExpression(subInput.sinkOptions.refreshCron)
     } ?: ""
     repo.retentionMaxCapacity =
       planConstraintsService.coerceRetentionMaxCapacity(subInput.sinkOptions.retention?.maxCapacity, ownerId, product)
@@ -164,6 +164,8 @@ class RepositoryService {
     repo.product = subInput.product.fromDto()
 
     val saved = repositoryDAO.save(repo)
+
+    repo.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
 
     subInput.additionalSinks?.let { sink ->
       val owner = userDAO.findById(ownerId).orElseThrow()
@@ -187,10 +189,6 @@ class RepositoryService {
     forward.authorized = email == owner.email
     forward.repositoryId = sub.id
 
-    val (mailFormatter) = pluginService.resolveMailFormatter(sub)
-    val from = mailService.getNoReplyAddress(product)
-    mailService.send(corrId, from = from, to = arrayOf(email), mailFormatter.provideWelcomeMail(corrId, sub, forward))
-
     return mailForwardDAO.save(forward)
   }
 
@@ -198,59 +196,45 @@ class RepositoryService {
     corrId: String,
     ownerId: UUID,
     req: ScrapeRequestInput,
-    sub: RepositoryEntity
+    repository: RepositoryEntity
   ): SourceEntity {
     val entity = SourceEntity()
-    val scrapeRequest = req.fromDto()
-    log.info("[$corrId] create source ${scrapeRequest.page.url}")
-    planConstraintsService.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
-    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
-    entity.emit = scrapeRequest.emit
-    entity.url = scrapeRequest.page.url
-    entity.tags = scrapeRequest.tags?.toTypedArray()
-    scrapeRequest.localized?.let {
+    log.info("[$corrId] create source")
+    val source = req.fromDto()
+    planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
+//    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
+    entity.tags = source.tags
+    entity.repositoryId = repository.id
+    req.localized?.let {
       val gf = GeometryFactory()
       entity.latLon = gf.createPoint(Coordinate(it.lat, it.lon))
     } ?: run {
       entity.latLon = null
     }
 
-    entity.timeout = scrapeRequest.page.timeout
+    val saved = sourceDAO.save(entity)
 
-    scrapeRequest.page.prerender?.let {
-      entity.waitUntil = it.waitUntil
-      entity.prerender = true
-      entity.additionalWaitSec = it.additionalWaitSec
-      entity.viewport = it.viewport
-      entity.language = it.language
+    source.actions.forEachIndexed { index, scrapeAction ->
+      run {
+        scrapeAction.sourceId = entity.id
+        scrapeAction.pos = index
+      }
     }
+    scrapeActionDAO.saveAll(source.actions)
 
-    entity.debugCookies = BooleanUtils.isTrue(scrapeRequest.debug?.cookies)
-    entity.debugHtml = BooleanUtils.isTrue(scrapeRequest.debug?.html)
-    entity.debugConsole = BooleanUtils.isTrue(scrapeRequest.debug?.console)
-    entity.debugScreenshot = BooleanUtils.isTrue(scrapeRequest.debug?.screenshot)
-    entity.debugNetwork = BooleanUtils.isTrue(scrapeRequest.debug?.network)
-    entity.repositoryId = sub.id
-    if (scrapeRequest.page.actions != null) {
-      entity.actions = scrapeRequest.page.actions
-        .map {
-          val a = it.fromDto()
-          a.sourceId = entity.id
-          a
-        }.toMutableList()
-    }
-
-    return entity
+    return saved
   }
 
   @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"repo/\" + #repositoryId + #tag")
   @Transactional(readOnly = true)
-  fun getFeedByRepositoryId(repositoryId: String, page: Int, tag: String? = null): RichFeed {
+  fun getFeedByRepositoryId(corrId: String, repositoryId: String, page: Int, tag: String? = null, shareKey: String? = null): JsonFeed {
     val id = UUID.fromString(repositoryId)
-    val repository = repositoryDAO.findById(id).orElseThrow { NotFoundException("repository not found") }
+    val repository = findById(corrId, id, shareKey)
+
     val pageable = toPageRequest(page, 10)
-    val pageResult = documentService.findAllByRepositoryId(id, status = ReleaseStatus.released, tag = tag, pageable = pageable)
-    val items = pageResult.mapNotNull { it?.toRichArticle(propertyService, repository.visibility) }.toList()
+    val pageResult =
+      documentService.findAllByRepositoryId(id, status = ReleaseStatus.released, tag = tag, pageable = pageable, shareKey = shareKey)
+    val items = pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
 
     val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
@@ -260,26 +244,26 @@ class RepositoryService {
       "${repository.title} (Personal use)"
     }
 
-    val richFeed = RichFeed()
-    richFeed.id = "repository:${repositoryId}"
-    richFeed.tags = tags
-    richFeed.title = title
-    richFeed.description = repository.description
-    richFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
-    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
-    richFeed.items = items
-    richFeed.imageUrl = null
-    richFeed.expired = false
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
+    val jsonFeed = JsonFeed()
+    jsonFeed.id = "repository:${repositoryId}"
+    jsonFeed.tags = tags
+    jsonFeed.title = title
+    jsonFeed.description = repository.description
+    jsonFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
+    jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
+    jsonFeed.items = items
+    jsonFeed.imageUrl = null
+    jsonFeed.expired = false
+    jsonFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
 
     if (!pageResult.isLast) {
-      richFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page + 1}"
+      jsonFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page + 1}"
     }
     if (!pageResult.isFirst) {
-      richFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page - 1}"
+      jsonFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page - 1}"
     }
 
-    return richFeed
+    return jsonFeed
   }
 
   fun findAll(offset: Int, pageSize: Int, where: RepositoriesWhereInput?, userId: UUID?): List<RepositoryEntity> {
@@ -290,7 +274,7 @@ class RepositoryService {
       ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable))
   }
 
-  fun findById(corrId: String, repositoryId: UUID): RepositoryEntity {
+  fun findById(corrId: String, repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
     val sub = repositoryDAO.findById(repositoryId).orElseThrow { NotFoundException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
@@ -298,7 +282,11 @@ class RepositoryService {
       if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
         sub
       } else {
-        throw PermissionDeniedException("unauthorized ($corrId)")
+        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
+          sub
+        } else {
+          throw PermissionDeniedException("unauthorized ($corrId)")
+        }
       }
     }
   }
@@ -411,56 +399,6 @@ class RepositoryService {
   }
 }
 
-private fun ScrapeAction.fromDto(): BrowserActionEntity {
-  return if (this.click?.position !== null) {
-    val click = ClickPositionActionEntity()
-    click.x = this.click.position.x
-    click.y = this.click.position.y
-    click
-  } else {
-    if (this.header !== null) {
-      val header = HeaderActionEntity()
-
-      header
-    } else {
-      this.toDomAction()
-    }
-  }
-}
-
-private fun ScrapeAction.toDomAction(): DomActionEntity {
-  val a = DomActionEntity()
-  if (this.click != null) {
-    a.event = DomEventType.click
-    a.xpath = this.click.element.xpath.value
-  } else {
-    if (this.select != null) {
-      a.event = DomEventType.select
-      a.xpath = this.select.element.value
-      a.data = this.select.selectValue
-    } else {
-      if (this.purge != null) {
-        a.event = DomEventType.purge
-        a.xpath = this.purge.value
-      } else {
-        if (this.type != null) {
-          a.event = DomEventType.type
-          a.xpath = this.select.element.value
-        } else {
-          if (this.wait != null) {
-            a.event = DomEventType.wait
-            a.xpath = this.select.element.value
-          } else {
-            throw IllegalArgumentException()
-          }
-        }
-      }
-    }
-  }
-
-  return a
-}
-
 private fun Visibility.fromDto(): EntityVisibility {
   return when (this) {
     Visibility.isPublic -> EntityVisibility.isPublic
@@ -472,21 +410,24 @@ private fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params)
 }
 
-fun DocumentEntity.toRichArticle(
+fun DocumentEntity.toJsonItem(
   propertyService: PropertyService,
   visibility: EntityVisibility,
   requestURI: String? = null
-): RichArticle {
-  val article = RichArticle()
+): JsonItem {
+  val article = JsonItem()
   article.id = id.toString()
+  latLon?.let {
+    article.latLng = GeoPoint(lat = it.x, lon = it.y)
+  }
   article.title = StringUtils.trimToEmpty(contentTitle)
   article.attachments = attachments.map {
-    val a = JsonAttachment()
-    a.url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id)
-    a.type = it.contentType
-    a.size = it.size
-    a.duration = it.duration
-    a
+    JsonAttachment(
+      url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
+        type = it.contentType,
+        length = it.size,
+        duration = it.duration
+    )
   }
   if (visibility === EntityVisibility.isPublic) {
     article.url = createDocumentUrl(propertyService, id)
@@ -511,7 +452,7 @@ fun DocumentEntity.toRichArticle(
 
 }
 
-private fun getAttachmentTags(article: RichArticle): List<String> {
+private fun getAttachmentTags(article: JsonItem): List<String> {
   return addListenableTag(article.attachments.filter { it.type.startsWith("audio/") && it.duration != null }
     .map { classifyDuration(it.duration!!) }
     .distinct()

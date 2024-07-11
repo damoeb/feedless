@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.Agent
@@ -38,9 +37,8 @@ class AgentResolver {
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     val corrId = CryptUtil.newCorrId()
-    log.info("[$corrId] registerAgent ${data.secretKey?.email}")
-    return data.secretKey?.let { agentService.registerPrerenderAgent(corrId, data) }
-      ?: throw PermissionDeniedException("expected secretKey, found none ($corrId)")
+    log.info("[$corrId] registerAgent ${data.secretKey.email}")
+    return data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
   }
 
   @Throttled
@@ -48,7 +46,7 @@ class AgentResolver {
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
     log.info("[${data.corrId}] submitAgentData")
-    agentService.handleScrapeResponse(data.corrId, data.jobId, data.scrapeResponse)
+    agentService.handleScrapeResponse(data.corrId, data.callbackId, data.scrapeResponse)
     true
   }
 
@@ -63,12 +61,12 @@ class AgentResolver {
 }
 
 private fun AgentEntity.toDto(): Agent {
-  return Agent.newBuilder()
-    .ownerId(ownerId.toString())
-    .name(name)
-    .addedAt(createdAt.time)
-    .version(version)
-    .openInstance(openInstance)
-    .secretKeyId(secretKeyId.toString())
-    .build()
+  return Agent(
+    ownerId = ownerId.toString(),
+    name = name,
+    addedAt = createdAt.time,
+    version = version,
+    openInstance = openInstance,
+    secretKeyId = secretKeyId.toString(),
+  )
 }

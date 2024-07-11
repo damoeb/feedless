@@ -66,14 +66,14 @@ open class UserSecretEntity : EntityWithUUID() {
 }
 
 fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
-  return UserSecret.newBuilder()
-    .id(id.toString())
-    .type(type.toDto())
-    .value(if (mask) value.substring(0..4) + "****" else value)
-    .valueMasked(mask)
-    .validUntil(validUntil.time)
-    .lastUsed(lastUsedAt?.time)
-    .build()
+  return UserSecret(
+    id = id.toString(),
+    type = type.toDto(),
+    value = if (mask) value.substring(0..4) + "****" else value,
+    valueMasked = mask,
+    validUntil = validUntil.time,
+    lastUsed = lastUsedAt?.time,
+  )
 }
 
 private fun UserSecretType.toDto(): org.migor.feedless.generated.types.UserSecretType = when (this) {

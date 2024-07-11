@@ -179,7 +179,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
   )
   packageName = "org.migor.feedless.generated"
   generateInterfaces = false
-  language = "java"
+  language = "kotlin"
 }
 
 val codegen = tasks.register("codegen") {

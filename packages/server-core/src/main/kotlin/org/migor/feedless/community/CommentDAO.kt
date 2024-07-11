@@ -8,6 +8,4 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.community)
-interface CommentDAO : JpaRepository<CommentEntity, UUID> {
-
-}
+interface CommentDAO : JpaRepository<CommentEntity, UUID>

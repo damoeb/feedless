@@ -41,7 +41,7 @@
   }
 
   &--today {
-    --app-border-color: rgba(var(--ion-color-medium-rgb), 1);;
+    --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
   }
 
   &--active,
@@ -49,7 +49,7 @@
     border-color: var(--app-border-color);
   }
   &--active {
-    background: var(--app-day-bg)!important;
+    background: var(--app-day-bg) !important;
   }
 
   a {

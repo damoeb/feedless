@@ -125,16 +125,17 @@ open class UserEntity : EntityWithUUID() {
 
 
 fun UserEntity.toDTO(): User =
-  User.newBuilder()
-    .id(id.toString())
-    .createdAt(createdAt.time)
-    .purgeScheduledFor(purgeScheduledFor?.time)
-    .hasAcceptedTerms(hasAcceptedTerms)
-    .hasCompletedSignup(hasFinalizedProfile())
-    .email(StringUtils.trimToEmpty(email))
-    .firstName(StringUtils.trimToEmpty(firstName))
-    .lastName(StringUtils.trimToEmpty(lastName))
-    .country(StringUtils.trimToEmpty(country))
+  User(
+    id = id.toString(),
+    createdAt = createdAt.time,
+    purgeScheduledFor = purgeScheduledFor?.time,
+    hasAcceptedTerms = hasAcceptedTerms,
+    hasCompletedSignup = hasFinalizedProfile(),
+    email = StringUtils.trimToEmpty(email),
+    firstName = StringUtils.trimToEmpty(firstName),
+    lastName = StringUtils.trimToEmpty(lastName),
+    country = StringUtils.trimToEmpty(country),
+    secrets = emptyList()
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
-    .build()
+  )

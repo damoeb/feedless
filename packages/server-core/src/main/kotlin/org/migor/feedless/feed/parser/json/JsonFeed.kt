@@ -1,12 +1,10 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 import java.util.*
 
-open class JsonFeed : GenericFeed<JsonItem>()
-
-open class GenericFeed<ITEM> : Serializable {
+open class JsonFeed: java.io.Serializable {
   @SerializedName(value = "id")
   lateinit var id: String
 
@@ -44,7 +42,7 @@ open class GenericFeed<ITEM> : Serializable {
   lateinit var publishedAt: Date
 
   @SerializedName(value = "items")
-  lateinit var items: List<ITEM>
+  lateinit var items: List<JsonItem>
 
   @SerializedName(value = "feed_url")
   lateinit var feedUrl: String

@@ -21,7 +21,7 @@ class CitationScorer {
   private val quotePattern = Pattern.compile("\"([^\"]+)\"", Pattern.MULTILINE)
 
   fun score(comment: CommentEntity): Double {
-    val blockCitations = comment.contentText.split("\n").filter {it.startsWith(">")}
+    val blockCitations = comment.contentText.split("\n").filter { it.startsWith(">") }
       .map { it.replace(Regex("^[> ]+"), "") }
     val inlineCitations = getInlineCitations(comment)
 

@@ -33,9 +33,6 @@ class ProductService {
   private lateinit var planDAO: PlanDAO
 
   @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
   private lateinit var environment: Environment
 
   fun getDomain(product: ProductCategory): String {
@@ -60,7 +57,7 @@ class ProductService {
   }
 
   fun getGatewayUrl(product: ProductCategory): String {
-    return if (isSelfHosted()) {
+    return if (isSelfHosted() || isDev()) {
       propertyService.apiGatewayUrl
     } else {
       "https://api.${getDomain(product)}"
@@ -68,6 +65,7 @@ class ProductService {
   }
 
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+  private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.dev))
 
   fun findAll(data: ProductsWhereInput): List<ProductEntity> {
     return data.id?.equals?.let {
@@ -92,7 +90,7 @@ class ProductService {
     val isFree = { product.prices.any { it.price == 0.0 } }
     val isBought = { order?.isPaid == true }
 
-    if (isFree() || isBought() ) {
+    if (isFree() || isBought()) {
 
       // terminate existing plan
       planDAO.findActiveByUserAndProduct(user.id, product.partOf!!)?.let {

@@ -12,9 +12,9 @@ import { Embeddable } from '../../components/embedded-website/embedded-website.c
 import { XyPosition } from '../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
-  GqlScrapeActionInput,
+  GqlScrapeActionInput, GqlScrapeEmit,
   GqlScrapeRequestInput,
-  GqlXyPosition,
+  GqlXyPosition
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
@@ -108,17 +108,22 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       this.embedScreenshot = null;
       this.changeRef.detectChanges();
 
+      const fetchAction = scrapeResponse.outputs.find((o) => o.fetch).fetch;
+      const extractAction = scrapeResponse.outputs.find(
+        (o) => o.extract,
+      ).extract;
+
       this.embedScreenshot = {
-        mimeType: 'image/png',
-        data: scrapeResponse.debug.screenshot,
+        mimeType: extractAction[0].data.mimeType,
+        data: extractAction[0].data.base64Data,
         url,
-        viewport: scrapeResponse.debug.viewport,
+        viewport: fetchAction.debug.viewport,
       };
       this.embedMarkup = {
-        mimeType: scrapeResponse.debug.contentType,
-        data: scrapeResponse.debug.html,
+        mimeType: fetchAction.debug.contentType,
+        data: extractAction[0].html.data,
         url,
-        viewport: scrapeResponse.debug.viewport,
+        viewport: fetchAction.debug.viewport,
       };
       this.scrapeResponse = scrapeResponse;
     } catch (e) {
@@ -177,7 +182,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
 
   applyChanges() {
     const data: FeedBuilderData = {
-      request: this.getScrapeRequest(),
+      request: this.getScrapeRequest(false, false),
       response: this.scrapeResponse,
     };
     return this.modalCtrl.dismiss(data);
@@ -210,35 +215,48 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getScrapeRequest(debug = false): GqlScrapeRequestInput {
+  private getScrapeRequest(
+    debug = false,
+    addExtract: boolean = false,
+  ): GqlScrapeRequestInput {
     return {
-      page: {
-        url: this.url,
-        prerender: {
-          additionalWaitSec: this.additionalWait.value,
-        },
-        actions: this.getActionsRequestFragment(),
-      },
-      emit: [
-        {
-          selectorBased: {
-            xpath: {
-              value: '/',
-            },
-            expose: {
-              transformers: [
-                {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                  params: {},
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: this.url,
                 },
-              ],
+                forcePrerender: true,
+                additionalWaitSec: this.additionalWait.value,
+              },
             },
           },
-        },
-      ],
-      debug: {
-        screenshot: debug,
-        html: debug,
+          ...this.getActionsRequestFragment(),
+          ...(addExtract
+            ? [
+                {
+                  extract: {
+                    fragmentName: 'full-page',
+                    selectorBased: {
+                      fragmentName: '',
+                      xpath: {
+                        value: '/',
+                      },
+                      emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text],
+                    },
+                  },
+                },
+              ]
+            : []),
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+              params: {},
+            },
+          },
+        ],
       },
     };
   }

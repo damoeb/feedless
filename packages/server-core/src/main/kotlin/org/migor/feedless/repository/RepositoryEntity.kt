@@ -8,6 +8,4 @@ import jakarta.persistence.InheritanceType
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorValue("repository")
-open class RepositoryEntity : AbstractRepositoryEntity() {
-
-}
+open class RepositoryEntity : AbstractRepositoryEntity()

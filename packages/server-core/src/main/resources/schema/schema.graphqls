@@ -17,6 +17,8 @@ type AgentAuthentication {
 }
 
 type AgentEvent {
+  callbackId: ID!
+  corrId: ID!
   authentication: AgentAuthentication
   scrape: ScrapeRequest
 }
@@ -83,6 +85,7 @@ type Repository {
   id: ID!
   description: String!
   title: String!
+  shareKey: String!
   ownerId: ID!
   product: ProductCategory!
   visibility: Visibility!
@@ -94,15 +97,15 @@ type Repository {
   lastUpdatedAt: Long!
   nextUpdateAt: Long
   documentCount: Long!
-  documentCountSinceCreation: Long!
+#  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
-  activity: Activity!
+  activity: Activity
 #  location: LatLonLocation!
-  plugins: [PluginExecution!]!
+  plugins: [PluginExecution!]
   segmented: Segment
   retention: Retention!
-  sources: [ScrapeRequest!]!
+  sources: [ScrapeRequest!]
 }
 
 #type LatLonLocation {
@@ -182,7 +185,7 @@ type Order {
   id: ID!
   createdAt: Long!
   userId: ID!
-  user: User!
+  user: User
   productId: ID!
   product: Product!
 
@@ -195,7 +198,7 @@ type Order {
   price: Float!
   paymentDueTo: Long
   paymentMethod: PaymentMethod
-  isPaymentFailed: Boolean!
+#  isPaymentFailed: Boolean!
   isPaid: Boolean!
   paidAt: Long
   invoiceRecipientName: String!
@@ -221,7 +224,7 @@ input OrderWhereUniqueInput {
 }
 
 input UserCreateOrConnectInput {
-  where: UserWhereUniqueInput
+  connect: UserWhereUniqueInput
   create: UserCreateInput
 }
 
@@ -501,7 +504,7 @@ input PreviewFeedInput {
 
 input WebDocumentsInput {
   cursor: Cursor!
-  where: WebDocumentsWhereInput
+  where: WebDocumentsWhereInput!
   orderBy: WebDocumentOrderByInput
 }
 
@@ -538,7 +541,7 @@ type RefineOptions {
 }
 
 type RemoteNativeFeed {
-  expired: Boolean!
+  expired: Boolean
   feedUrl: String!
   publishedAt: Long!
   tags: [String!]
@@ -560,14 +563,15 @@ input RequestHeaderInput {
   value: String
 }
 
-type ScrapePage {
-  timeout: Int
-  url: String!
-  prerender: ScrapePrerender
-  actions: [ScrapeAction!]
+type ScrapeFlow {
+  sequence: [ScrapeAction!]!
+#  then: [ScrapeFlow!]
 }
 
 type ScrapeAction {
+  fetch: HttpFetch
+  extract: ScrapeExtract
+  execute: PluginExecution
   click: DOMElement
   type: DOMActionType
   wait: WaitAction
@@ -576,13 +580,70 @@ type ScrapeAction {
   purge: DOMElementByXPath
 }
 
+# @oneOf
 input ScrapeActionInput {
+  fetch: HttpFetchInput
   click: DOMElementInput
+  extract: ScrapeExtractInput
+  execute: PluginExecutionInput
   purge: DOMElementByXPathInput
   type: DOMActionTypeInput
   wait: WaitActionInput
   select: DOMActionSelectInput
   header: RequestHeaderInput
+}
+
+input ScrapeExtractInput {
+  fragmentName: String!
+  imageBased: ScrapeBoundingBoxInput
+  selectorBased: DOMExtractInput
+}
+
+type ScrapeExtract {
+  fragmentName: String!
+  imageBased: ScrapeBoundingBox
+  selectorBased: DOMExtract
+}
+
+enum ScrapeEmit {
+  text
+  html
+  pixel
+  date
+}
+
+input DOMExtractInput {
+  fragmentName: String!
+  xpath: DOMElementByXPathInput!
+  max: Int
+  emit: [ScrapeEmit!]!
+  extract: [DOMExtractInput!]
+}
+
+type DOMExtract {
+  fragmentName: String!
+  xpath: DOMElementByXPath!
+  max: Int
+  emit: [ScrapeEmit!]!
+  extract: [DOMExtract!]
+}
+
+type HttpFetch {
+  get: ScrapePrerender!
+}
+
+type StringLiteralOrVariable {
+  literal: String
+  variable: String
+}
+
+input StringLiteralOrVariableInput {
+  literal: String
+  variable: String
+}
+
+input HttpFetchInput {
+  get: ScrapePrerenderInput!
 }
 
 type DOMElement {
@@ -653,22 +714,26 @@ input DOMElementByNameInput {
   value: String!
 }
 
-input ScrapePageInput {
-  timeout: Int
-  url: String!
-  prerender: ScrapePrerenderInput
-  actions: [ScrapeActionInput!]
+input ScrapeFlowInput {
+  sequence: [ScrapeActionInput!]!
+#  then: [ScrapeFlowInput!]
 }
 
 type ScrapePrerender {
+  url: StringLiteralOrVariable!
+  timeout: Int
   viewport: ViewPort
+  forcePrerender: Boolean
   language: String
   waitUntil: PuppeteerWaitUntil
-  additionalWaitSec: Int!
+  additionalWaitSec: Int
 }
 
 input ScrapePrerenderInput {
+  timeout: Int
+  url: StringLiteralOrVariableInput!
   viewport: ViewPortInput
+  forcePrerender: Boolean
   language: String
   additionalWaitSec: Int
   waitUntil: PuppeteerWaitUntil
@@ -683,44 +748,19 @@ type ViewPort {
   width: Int!
   height: Int!
   isMobile: Boolean!
-  isLandscape: Boolean
+  isLandscape: Boolean!
 }
 
 input ViewPortInput {
   width: Int!
   height: Int!
   isMobile: Boolean!
-  isLandscape: Boolean
+  isLandscape: Boolean!
 }
 
-type ScrapeDebugOptions {
-  screenshot: Boolean
-  console: Boolean
-  network: Boolean
-  cookies: Boolean
-  html: Boolean
-}
-
-input ScrapeDebugOptionsInput {
-  screenshot: Boolean
-  console: Boolean
-  network: Boolean
-  cookies: Boolean
-  html: Boolean
-}
-
-type ScrapeDebugTimes {
-  render: Int!
-  queue: Int!
-}
-
-input ScrapeDebugTimesInput {
-  render: Int!
-  queue: Int!
-}
-
-type ScrapeDebugResponse {
+type FetchActionDebugResponse {
   corrId: String!
+  url: String!
   screenshot: String
   prerendered: Boolean!
   console: [String!]!
@@ -729,13 +769,13 @@ type ScrapeDebugResponse {
   html: String
   statusCode: Int
   contentType: String
-  viewport: ViewPort
-  metrics: ScrapeDebugTimes!
+  viewport: ViewPort!
+#  metrics: ScrapeDebugTimes!
 }
-
-input ScrapeDebugResponseInput {
+input FetchActionDebugResponseInput {
   corrId: String!
   screenshot: String
+  url: String!
   prerendered: Boolean!
   console: [String!]!
   network: [NetworkRequestInput!]!
@@ -743,8 +783,8 @@ input ScrapeDebugResponseInput {
   html: String
   statusCode: Int
   contentType: String
-  viewport: ViewPortInput
-  metrics: ScrapeDebugTimesInput!
+  viewport: ViewPortInput!
+#  metrics: ScrapeDebugTimesInput!
 }
 
 type NetworkRequest {
@@ -777,6 +817,7 @@ type Selectors {
   dateIsStartOfEvent: Boolean!
   dateXPath: String!
   extendContext: ExtendContentOptions!
+  paginationXPath: String!
   linkXPath: String!
 }
 
@@ -787,7 +828,7 @@ type ServerSettings {
   version: String!
   features: [Feature!]!
   profiles: [ProfileName!]!
-  license: LocalizedLicense!
+  license: LocalizedLicense
 }
 
 type LocalizedLicense {
@@ -821,8 +862,8 @@ input AuthViaMailInput {
 }
 
 type TransientGenericFeed {
-  count: Int
-  feedUrl: String!
+  count: Int!
+#  feedUrl: String!
   hash: String!
   samples: [WebDocument!]!
   score: Float!
@@ -1093,7 +1134,6 @@ input RepositoriesCreateInput {
 input RepositoryCreateInput {
   product: ProductCategory!
   sources: [ScrapeRequestInput!]!
-  sourceOptions: SourceOptionsInput
   sinkOptions: SinkOptionsInput!
   additionalSinks: [WebhookOrEmailInput!]
 }
@@ -1104,6 +1144,8 @@ input SinkOptionsInput {
   description: String!
   retention: RetentionInput
   refreshCron: String
+  withShareKey: Boolean!
+  agents: [AgentByGroup!]
   sunset: SunSetPolicyInput
 #  location: LatLonLocationInput
   visibility: Visibility
@@ -1132,11 +1174,6 @@ enum NumberFilterOperator {
   gt,
   eq,
   lt
-}
-
-input SourceOptionsInput {
-  refreshCron: String!
-  agents: [AgentByGroup!]
 }
 
 input AgentByGroup {
@@ -1203,7 +1240,7 @@ input ScheduledRefreshRate {
 
 type ScrapedFeeds {
   genericFeeds: [TransientGenericFeed!]!
-  nativeFeeds: [NativeFeed!]
+  nativeFeeds: [RemoteNativeFeed!]
 }
 
 type ScrapedReadability {
@@ -1231,9 +1268,10 @@ input SegmentInput {
 
 input SelectorsInput {
   contextXPath: String!
-  dateIsStartOfEvent: Boolean
-  dateXPath: String
-  extendContext: ExtendContentOptions
+  dateIsStartOfEvent: Boolean!
+  dateXPath: String!
+  paginationXPath: String!
+  extendContext: ExtendContentOptions!
   linkXPath: String!
 }
 
@@ -1245,20 +1283,16 @@ input StringArrayFilter {
 input StringFilter {
   equals: String
   in: [String!]
-  notIn: [String!]
+#  notIn: [String!]
 }
 
 input StringUpdateOperationsInput {
   set: String!
 }
 
-#input ProductCategoryUpdateOperationsInput {
-#  set: String!
-#}
-
 input SubmitAgentDataInput {
   corrId: ID!
-  jobId: ID!
+  callbackId: ID!
   scrapeResponse: ScrapeResponseInput!
 }
 
@@ -1301,44 +1335,81 @@ input WebDocumentWhereInput {
 type ScrapeResponse {
   failed: Boolean!
   errorMessage: String
-  url: String!
-  debug: ScrapeDebugResponse!
-  elements: [ScrapedElement!]!
+  logs: [String!]!
+  outputs: [ScrapeActionResponse!]!
 }
 
-type ScrapedElement {
-  image: ScrapedByBoundingBox
-  selector: ScrapedBySelector
+type ScrapeActionResponse {
+  fetch: HttpFetchResponse
+  extract: ScrapeExtractResponse
+  execute: PluginExecutionResponse
+#  click: DOMElement
+#  type: DOMActionType
+#  wait: WaitAction
+#  select: DOMActionSelect
+#  header: RequestHeader
+#  purge: DOMElementByXPath
 }
 
-type ScrapedBySelector {
-  xpath: DOMElementByXPath!
+input ScrapeActionResponseInput {
+  fetch: HttpFetchResponseInput
+  extract: ScrapeExtractResponseInput
+#  execute: PluginExecutionResponseInput
+#  click: DOMElement
+#  type: DOMActionType
+#  wait: WaitAction
+#  select: DOMActionSelect
+#  header: RequestHeader
+#  purge: DOMElementByXPath
+}
+
+type HttpFetchResponse {
+  data: String!
+  debug: FetchActionDebugResponse!
+}
+
+input HttpFetchResponseInput {
+  data: String!
+  debug: FetchActionDebugResponseInput!
+}
+
+type ScrapeExtractResponse {
+  fragmentName: String!
+  fragments: [ScrapeExtractFragment!]!
+}
+
+input ScrapeExtractResponseInput {
+  fragmentName: String!
+  fragments: [ScrapeExtractFragmentInput!]!
+}
+
+type ScrapeExtractFragment {
   html: TextData
   text: TextData
-  pixel: Base64Data
-  fields: [ScrapedField!]
+  data: MimeData
+  extracts: [ScrapeExtractResponse!]
 }
 
-type ScrapedField {
-  name: String!
-  xpath: DOMElementByXPath
-  value: ScrapedFieldValue
+input ScrapeExtractFragmentInput {
+  html: TextDataInput
+  text: TextDataInput
+  data: MimeDataInput
+  extracts: [ScrapeExtractResponseInput!]
 }
 
-type ScrapedFieldValue {
-  one: ScrapedSingleFieldValue
-  many: [ScrapedSingleFieldValue!]
-  nested: [ScrapedField!]
+type PluginExecutionResponse {
+  pluginId: ID!
+  data: PluginExecutionData!
 }
 
-type ScrapedSingleFieldValue {
-  mimeType: String!
-  data: String!
-}
-
-type ScrapedByBoundingBox {
-  boundingBox: BoundingBox!
-  data: Base64Data!
+type PluginExecutionData {
+  org_feedless_feed: RemoteNativeFeed
+  org_feedless_feeds: ScrapedFeeds
+#  org_feedless_diff_email_forward: DiffEmailForwardParams
+#  org_feedless_filter: [CompositeFilterParams!]
+  jsonData: String
+  org_feedless_fulltext: ScrapedReadability
+#  org_feedless_conditional_tag: [ConditionalTag!]
 }
 
 type JsonData {
@@ -1346,12 +1417,12 @@ type JsonData {
   jsonData: String!
 }
 
-type Base64Data {
-  base64Data: String!
+type MimeData {
+  mimeType: String!
+  data: String!
 }
 
 type TextData {
-  mimeType: String!
   data: String!
 }
 
@@ -1376,13 +1447,11 @@ input ScrapeSourceUniqueWhereInput {
 input ScrapeRequestInput {
   corrId: ID
   id: ID
-  page: ScrapePageInput!
+  flow: ScrapeFlowInput!
   errornous: Boolean
   localized: GeoPointInput
   tags: [String!]
   lastErrorMessage: String
-  debug: ScrapeDebugOptionsInput
-  emit: [ScrapeEmitInput!]!
 }
 
 input GeoPointInput {
@@ -1390,27 +1459,8 @@ input GeoPointInput {
   lon: Float!
 }
 
-input ScrapeEmitInput {
-  fragmentName: String
-  imageBased: ScrapeBoundingBoxInput
-  selectorBased: ScrapeSelectorInput
-}
-
 input ScrapeBoundingBoxInput {
   boundingBox: BoundingBoxInput!
-}
-
-input ScrapeSelectorInput {
-  xpath: DOMElementByXPathInput!
-  min: Int
-  max: Int
-  expose: ScrapeSelectorExposeInput!
-}
-
-input ScrapeSelectorExposeInput {
-  pixel: Boolean
-  transformers: [PluginExecutionInput!]
-  fields: [ScrapeSelectorExposeFieldInput!]
 }
 
 input PluginExecutionParamsInput {
@@ -1487,42 +1537,14 @@ enum WebDocumentField {
   markup
 }
 
-input ScrapeSelectorExposeFieldInput {
-  name: String!
-  value: ScrapeSelectorExposeFieldValueInput
-  nested: ScrapeSelectorExposeNestedFieldValueInput
-  min: Int
-  max: Int
-}
-
-input ScrapeSelectorExposeNestedFieldValueInput {
-  fields: [ScrapeSelectorExposeFieldInput!]!
-}
-
-input ScrapeSelectorExposeFieldValueInput {
-  html: ScrapeSelectorExposeFieldHtmlValueInput
-  text: ScrapeSelectorExposeFieldTextValueInput
-  set: String
-}
-
-input ScrapeSelectorExposeFieldTextValueInput {
-  regex: String!
-}
-
-input ScrapeSelectorExposeFieldHtmlValueInput {
-  xpath: DOMElementByXPathInput!
-}
-
 type ScrapeRequest {
-  corrId: ID
+  corrId: ID!
   id: ID!
-  page: ScrapePage!
+  flow: ScrapeFlow!
   errornous: Boolean
   localized: GeoPoint
   tags: [String!]
   lastErrorMessage: String
-  debug: ScrapeDebugOptions
-  emit: [ScrapeEmit!]!
 }
 
 type GeoPoint {
@@ -1530,27 +1552,8 @@ type GeoPoint {
   lon: Float!
 }
 
-type ScrapeEmit {
-  fragmentName: String
-  imageBased: ScrapeBoundingBox
-  selectorBased: ScrapeSelector
-}
-
 type ScrapeBoundingBox {
   boundingBox: BoundingBox!
-}
-
-type ScrapeSelector {
-  xpath: DOMElementByXPath!
-  min: Int
-  max: Int
-  expose: ScrapeSelectorExpose!
-}
-
-type ScrapeSelectorExpose {
-  pixel: Boolean
-  transformers: [PluginExecution!]
-  fields: [ScrapeSelectorExposeField!]
 }
 
 type PluginExecution {
@@ -1618,73 +1621,11 @@ type FulltextPluginParams {
   inheritParams: Boolean!
 }
 
-type ScrapeSelectorExposeField {
-  name: String!
-  value: ScrapeSelectorExposeFieldValue
-  nested: ScrapeSelectorExposeNestedFieldValue
-  min: Int
-  max: Int
-}
-
-type ScrapeSelectorExposeNestedFieldValue {
-  fields: [ScrapeSelectorExposeField!]!
-}
-
-type ScrapeSelectorExposeFieldValue {
-  html: ScrapeSelectorExposeFieldHtmlValue
-  text: ScrapeSelectorExposeFieldTextValue
-  set: String
-}
-
-type ScrapeSelectorExposeFieldTextValue {
-  regex: String!
-}
-
-type ScrapeSelectorExposeFieldHtmlValue {
-  xpath: DOMElementByXPath!
-}
-
 input ScrapeResponseInput {
   failed: Boolean!
   errorMessage: String
-  url: String!
-  debug: ScrapeDebugResponseInput!
-  elements: [ScrapedElementInput!]!
-}
-
-input ScrapedElementInput {
-  image: ScrapedByBoundingBoxInput
-  selector: ScrapedBySelectorInput
-}
-
-input ScrapedBySelectorInput {
-  xpath: DOMElementByXPathInput!
-  html: TextDataInput
-  text: TextDataInput
-  pixel: Base64DataInput
-  fields: [ScrapedFieldInput!]
-}
-
-input ScrapedFieldInput {
-  name: String!
-  xpath: TextDataInput
-  value: ScrapedFieldValueInput
-}
-
-input ScrapedFieldValueInput {
-  one: ScrapedSingleFieldValueInput
-  many: [ScrapedSingleFieldValueInput!]
-  nested: [ScrapedFieldInput!]
-}
-
-input ScrapedSingleFieldValueInput {
-  mimeType: String!
-  data: String!
-}
-
-input ScrapedByBoundingBoxInput {
-  boundingBox: BoundingBoxInput!
-  data: Base64DataInput!
+  logs: [String!]!
+  outputs: [ScrapeActionResponseInput!]!
 }
 
 input JsonDataInput {
@@ -1692,8 +1633,9 @@ input JsonDataInput {
   jsonData: String!
 }
 
-input Base64DataInput {
-  base64Data: String!
+input MimeDataInput {
+  mimeType: String!
+  data: String!
 }
 
 input TextDataInput {

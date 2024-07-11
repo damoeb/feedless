@@ -1,10 +1,10 @@
 package org.migor.feedless.feed.parser
 
-import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.common.HarvestResponse
+import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.feed.parser.json.JsonFeed
 
 interface FeedBodyParser {
   fun priority(): Int
   fun canProcess(feedType: FeedType): Boolean
-  fun process(corrId: String, response: HarvestResponse): RichFeed
+  fun process(corrId: String, response: HttpResponse): JsonFeed
 }

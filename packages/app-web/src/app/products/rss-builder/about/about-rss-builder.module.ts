@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { IonicModule } from '@ionic/angular';
@@ -21,6 +21,7 @@ import { ImportButtonModule } from '../../../components/import-button/import-but
     ProductHeaderModule,
     ImportButtonModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [AboutRssBuilderPage],
 })
 export class AboutRssBuilderModule {}

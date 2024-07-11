@@ -1,6 +1,6 @@
 package org.migor.feedless.feed.exporter
 
-import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -24,7 +24,7 @@ class FeedExporter {
   fun resolveResponseType(
     corrId: String,
     responseType: String?
-  ): Pair<String, (RichFeed, HttpStatus, Duration?) -> ResponseEntity<String>> {
+  ): Pair<String, (JsonFeed, HttpStatus, Duration?) -> ResponseEntity<String>> {
     return when (responseType?.lowercase()) {
       "atom" -> "atom" to { feed, status, maxAge ->
         ok(
@@ -50,7 +50,7 @@ class FeedExporter {
     corrId: String,
     status: HttpStatus,
     responseType: String?,
-    feed: RichFeed,
+    feed: JsonFeed,
     maxAge: Duration? = null
   ): ResponseEntity<String> {
     return resolveResponseType(corrId, responseType).second(feed, status, maxAge)

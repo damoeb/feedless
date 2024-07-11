@@ -1,16 +1,24 @@
 package org.migor.feedless.actions
 
 import jakarta.persistence.Column
-import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrimaryKeyJoinColumn
+import jakarta.persistence.Table
 
 @Entity
-@DiscriminatorValue("header")
-open class HeaderActionEntity : BrowserActionEntity() {
+@Table(name = "t_action_header")
+@PrimaryKeyJoinColumn(
+  foreignKey = ForeignKey(
+    name = "fk_base_entity",
+    foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES t_scrape_action(id) ON DELETE CASCADE"
+  )
+)
+open class HeaderActionEntity : ScrapeActionEntity() {
 
-  @Column(name = "header")
-  open lateinit var xpath: String
+  @Column(name = "name", nullable = false)
+  open lateinit var name: String
 
-  @Column(name = "data")
-  open var data: String? = null
+  @Column(name = "value", nullable = false)
+  open lateinit var value: String
 }

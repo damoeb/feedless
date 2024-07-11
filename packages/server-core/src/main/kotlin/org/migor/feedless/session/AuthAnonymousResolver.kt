@@ -45,10 +45,10 @@ class AuthAnonymousResolver {
     log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
     addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
-    AuthenticationDto.newBuilder()
-      .token(jwt.tokenValue)
-      .corrId(CryptUtil.newCorrId())
-      .build()
+    AuthenticationDto(
+      token = jwt.tokenValue,
+      corrId = CryptUtil.newCorrId()
+    )
   }
 
   private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {

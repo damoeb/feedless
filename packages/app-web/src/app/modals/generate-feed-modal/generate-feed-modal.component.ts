@@ -17,7 +17,8 @@ import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
   GqlProfileName,
-  GqlScrapePage,
+  GqlScrapeFlow,
+  GqlScrapeFlowInput,
   GqlScrapeRequest,
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
@@ -61,44 +62,55 @@ interface TagConditionData {
 export function getScrapeRequest(
   feed: NativeOrGenericFeed,
   scrapeRequest: GqlScrapeRequest,
-): GqlScrapeRequest {
-  const pageUrl = (): GqlScrapePage => {
+): GqlScrapeRequestInput {
+  const createFlow = (): GqlScrapeFlow => {
     if (feed.nativeFeed) {
       return {
-        url: feed.nativeFeed.feedUrl,
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: feed.nativeFeed.feedUrl,
+                },
+              },
+            },
+          },
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+              params: {
+                org_feedless_feed: {},
+              },
+            },
+          },
+        ],
       };
     } else {
-      return scrapeRequest.page;
+      return {
+        sequence: [
+          ...scrapeRequest.flow.sequence.filter(
+            (a) => a.execute?.pluginId != GqlFeedlessPlugins.OrgFeedlessFeeds,
+          ),
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+              params: {
+                org_feedless_feed: {
+                  generic: feed.genericFeed?.selectors,
+                },
+              },
+            },
+          },
+        ],
+      };
     }
   };
 
-  const page = pageUrl();
-
   return {
     id: null,
-    page,
+    flow: createFlow() as GqlScrapeFlowInput,
     tags: scrapeRequest.tags,
-    emit: [
-      {
-        selectorBased: {
-          xpath: {
-            value: '/',
-          },
-          expose: {
-            transformers: [
-              {
-                pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-                params: {
-                  org_feedless_feed: {
-                    generic: feed.genericFeed?.selectors,
-                  },
-                },
-              },
-            ],
-          },
-        },
-      },
-    ],
   };
 }
 
@@ -373,11 +385,10 @@ export class GenerateFeedModalComponent
             {
               product: environment.product,
               sources: this.repository.sources as GqlScrapeRequestInput[],
-              sourceOptions: {
-                refreshCron: this.formFg.value.fetchFrequency,
-              },
               sinkOptions: {
                 title: this.formFg.value.title,
+                refreshCron: this.formFg.value.fetchFrequency,
+                withShareKey: true,
                 description: this.formFg.value.description,
                 visibility: this.formFg.value.isPublic
                   ? GqlVisibility.IsPublic
@@ -466,7 +477,7 @@ export class GenerateFeedModalComponent
 
   private async loadFeedPreview() {
     await this.remoteFeedPreview.loadFeedPreview(
-      this.repository.sources as GqlScrapeRequest[],
+      this.repository.sources as GqlScrapeRequestInput[],
       this.getGeneralFilterParams(),
       this.getConditionalTagsParams(),
     );

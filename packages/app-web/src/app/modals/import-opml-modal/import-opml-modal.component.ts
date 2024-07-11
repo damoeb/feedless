@@ -7,6 +7,7 @@ import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
   GqlProductCategory,
+  GqlScrapeActionInput,
   GqlVisibility,
 } from '../../../generated/graphql';
 
@@ -76,42 +77,43 @@ export class ImportOpmlModalComponent
     await this.repositoryService.createRepositories({
       repositories: this.fcOutlines
         .filter((outline) => outline.fc.value)
-        .map((fc) => ({
-          product: GqlProductCategory.RssProxy,
-          sources: [
+        .map((fc) => {
+          const actions: GqlScrapeActionInput[] = [
             {
-              page: {
-                url: fc.xmlUrl,
-              },
-              emit: [
-                {
-                  selectorBased: {
-                    xpath: {
-                      value: '/',
-                    },
-                    expose: {
-                      transformers: [
-                        {
-                          pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-                          params: {},
-                        },
-                      ],
-                    },
+              fetch: {
+                get: {
+                  url: {
+                    literal: fc.xmlUrl,
                   },
                 },
-              ],
+              },
             },
-          ],
-          sourceOptions: {
-            refreshCron: '0 0 0 * * *',
-          },
-          sinkOptions: {
-            title: fc.title,
-            description: `${fc.text} ${fc.htmlUrl}`.trim(),
-            visibility: GqlVisibility.IsPrivate,
-            plugins,
-          },
-        })),
+            {
+              execute: {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                params: {},
+              },
+            },
+          ];
+          return {
+            product: GqlProductCategory.RssProxy,
+            sources: [
+              {
+                flow: {
+                  sequence: actions,
+                },
+              },
+            ],
+            sinkOptions: {
+              title: fc.title,
+              withShareKey: true,
+              refreshCron: '0 0 0 * * *',
+              description: `${fc.text} ${fc.htmlUrl}`.trim(),
+              visibility: GqlVisibility.IsPrivate,
+              plugins,
+            },
+          };
+        }),
     });
   }
 

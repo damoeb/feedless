@@ -3,16 +3,13 @@ package org.migor.feedless.feed.parser.json
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-open class JsonAttachment : Serializable {
+open class JsonAttachment(
   @SerializedName("size_in_bytes")
-  var size: Long? = null
-
-  @SerializedName("duration_in_seconds")
-  var duration: Long? = null
-
+  var length: Long?,
   @SerializedName("mime_type")
-  lateinit var type: String
-
+  var type: String,
   @SerializedName("url")
-  lateinit var url: String
-}
+  var url: String,
+  @SerializedName("duration_in_seconds")
+  var duration: Long?
+) : Serializable

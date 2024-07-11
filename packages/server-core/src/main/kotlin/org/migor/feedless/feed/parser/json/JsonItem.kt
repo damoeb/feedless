@@ -1,19 +1,28 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
+import org.migor.feedless.generated.types.GeoPoint
 import java.io.Serializable
 import java.util.*
 
-open class JsonItem : GenericFeedItem()
+open class JsonItem : Serializable {
 
-open class GenericFeedItem : Serializable {
-  @SerializedName("id")
+  companion object {
+    const val ID = "id"
+    const val TITLE = "title"
+    const val URL = "url"
+    const val STARTING_AT = "date_starting"
+    const val LAT_LNG = "latlng"
+    const val PUBLISHED_AT = "date_published"
+  }
+
+  @SerializedName(ID)
   lateinit var id: String
 
-  @SerializedName("title")
+  @SerializedName(TITLE)
   lateinit var title: String
 
-  @SerializedName("url")
+  @SerializedName(URL)
   lateinit var url: String
 
   @SerializedName("tags")
@@ -49,13 +58,15 @@ open class GenericFeedItem : Serializable {
   @SerializedName("attachments")
   var attachments: List<JsonAttachment> = emptyList()
 
-  @SerializedName("date_published")
+  @SerializedName(PUBLISHED_AT)
   lateinit var publishedAt: Date
 
   @SerializedName("date_modified")
   var modifiedAt: Date? = null
 
-  @SerializedName("date_starting")
+  @SerializedName(STARTING_AT)
   var startingAt: Date? = null
-  var commentsFeedUrl: String? = null
+
+  @SerializedName(LAT_LNG)
+  var latLng: GeoPoint? = null
 }

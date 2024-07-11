@@ -8,6 +8,7 @@ import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
 import { Repository } from '../../../graphql/types';
 import { filter } from 'rxjs';
+import { getFirstFetchUrlLiteral } from '../../../utils';
 
 @Component({
   selector: 'app-rss-builder-menu',
@@ -37,7 +38,7 @@ export class RssBuilderMenuComponent implements OnInit {
 
   getPageUrl(repository: Repository): string {
     if (repository.sources.length > 0) {
-      const url = repository.sources[0].page.url;
+      const url = getFirstFetchUrlLiteral(repository.sources[0].flow.sequence);
       return new URL(url).hostname;
     }
   }

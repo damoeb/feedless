@@ -29,6 +29,17 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
 
+    <div *ngIf="!scrapeResponse && repositories.length > 0" class="ion-padding" style="width: 100%">
+      <p>Remix existing feeds</p>
+      <ion-list>
+        <ion-item *ngFor="let r of repositories"
+                  [button]="true"
+                  (click)="remix(r)">
+          {{r.title}}
+        </ion-item>
+      </ion-list>
+    </div>
+
     <app-transform-website-to-feed
       #webToFeedTransformer
       (selectedFeedChange)="selectedFeed = $event"

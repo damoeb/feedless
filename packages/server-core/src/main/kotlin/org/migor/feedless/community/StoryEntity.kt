@@ -6,6 +6,4 @@ import org.migor.feedless.repository.RepositoryEntity
 
 @Entity
 @DiscriminatorValue("story")
-open class StoryEntity : RepositoryEntity() {
-
-}
+open class StoryEntity : RepositoryEntity()

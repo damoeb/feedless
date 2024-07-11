@@ -68,7 +68,7 @@
           <ion-input
             [formControl]="formGroup.controls.contextXPath"
             color="primary"
-            label="Context"
+            label="Item"
             labelPlacement="stacked"
             name="contextXPath"
             placeholder="xpath from root"
@@ -78,7 +78,7 @@
           <ion-input
             [formControl]="formGroup.controls.linkXPath"
             color="primary"
-            label="Link"
+            label="Item Link"
             labelPlacement="stacked"
             name="linkXPath"
             placeholder="relative xpath from context"
@@ -104,7 +104,7 @@
           <ion-input
             [formControl]="formGroup.controls.dateXPath"
             color="primary"
-            label="Date"
+            label="Item Date"
             labelPlacement="stacked"
             name="dateXPath"
             placeholder="relative xpath from context"
@@ -116,8 +116,18 @@
             labelPlacement="end"
             name="dateIsStartOfEvent"
             slot="start"
-            >Items are Events
+            >Item Date is Start Date (Event)
           </ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            [formControl]="formGroup.controls.paginationXPath"
+            color="primary"
+            label="Pagination"
+            labelPlacement="stacked"
+            name="paginationXPath"
+            placeholder="xpath from root"
+          ></ion-input>
         </ion-item>
       </ng-container>
     </ion-list>

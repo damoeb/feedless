@@ -27,7 +27,8 @@
       </ion-row>
       <ion-row *ngIf="requiresPlan">
         <ion-col size="9" push="3" class="ion-padding-vertical">
-          Subscription {{ product.name }}
+          <span *ngIf="product">Plan {{ product.name }}</span>
+          <span *ngIf="!product">No plan available</span>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -46,7 +47,7 @@
       <ion-buttons slot="end">
         <ion-button
           (click)="accept()"
-          [disabled]="loading"
+          [disabled]="loading || !product"
           color="primary"
           fill="solid"
         >

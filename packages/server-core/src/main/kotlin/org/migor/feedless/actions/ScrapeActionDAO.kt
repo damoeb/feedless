@@ -8,4 +8,4 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface BrowserActionDAO : JpaRepository<BrowserActionEntity, UUID>
+interface ScrapeActionDAO : JpaRepository<ScrapeActionEntity, UUID>

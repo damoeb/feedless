@@ -1,7 +1,7 @@
 package org.migor.feedless.feed.exporter
 
 import com.google.gson.GsonBuilder
-import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -25,7 +25,7 @@ class JsonFeedExporter {
 //      ?: feed.feedUrl
 //  }
 
-  fun toJson(corrId: String, feed: RichFeed): String {
+  fun toJson(corrId: String, feed: JsonFeed): String {
     log.debug("[${corrId}] to json")
 
 //    feed.selfPage?.let {

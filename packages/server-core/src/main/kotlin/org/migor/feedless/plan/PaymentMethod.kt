@@ -11,7 +11,7 @@ enum class PaymentMethod {
 }
 
 fun PaymentMethod.toDTO(): PaymentMethodDto {
-  return when(this) {
+  return when (this) {
     PaymentMethod.Bill -> PaymentMethodDto.Bill
     PaymentMethod.PayPal -> PaymentMethodDto.PayPal
     PaymentMethod.Bitcoin -> PaymentMethodDto.Bitcoin

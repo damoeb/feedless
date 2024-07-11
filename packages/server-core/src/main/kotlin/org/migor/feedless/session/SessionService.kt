@@ -29,9 +29,10 @@ class SessionService {
   }
 
   fun activeProductFromRequest(): ProductCategory? {
-    return RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)?.let {
-      ProductCategory.valueOf(it as String)
-    }
+    return RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
+      ?.let {
+        ProductCategory.valueOf(it as String)
+      }
   }
 
   fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }

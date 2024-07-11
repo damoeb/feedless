@@ -5,14 +5,10 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.WebToFeedParamsV2
-import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
-import org.migor.feedless.generated.types.ScrapePage
-import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
@@ -21,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
 import java.net.URL
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.math.ln
@@ -79,6 +73,7 @@ abstract class Selectors {
   abstract val extendContext: ExtendContext
   abstract val contextXPath: String
   abstract val dateXPath: String?
+  abstract val paginationXPath: String?
   abstract val dateIsStartOfEvent: Boolean
 }
 
@@ -87,11 +82,11 @@ data class GenericFeedRule(
   override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String?,
+  override val paginationXPath: String?,
   override val dateIsStartOfEvent: Boolean = false,
-  val feedUrl: String,
-  val count: Int?,
+  val count: Int = 0,
   val score: Double,
-  val samples: List<RichArticle> = emptyList()
+  val samples: List<JsonItem> = emptyList()
 ) : Selectors()
 
 @JsonIgnoreProperties
@@ -124,6 +119,7 @@ data class GenericFeedSelectors(
   override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String? = null,
+  override val paginationXPath: String? = null,
   override val dateIsStartOfEvent: Boolean = false
 ) : Selectors()
 
@@ -181,15 +177,26 @@ class WebToFeedTransformer(
 
     log.debug("Found ${linkGroups.size} link groups")
 
-    val scrapeRequest = ScrapeRequest.newBuilder()
-      .page(
-        ScrapePage.newBuilder()
-          .url(url.toString())
-          .build()
-      )
-      .build()
+//    val scrapeRequest = ScrapeRequest(
+//      id = "",
+//      flow = ScrapeFlow(
+//        sequence = listOf(
+//          ScrapeAction(
+//            fetch = HttpFetch(
+//                get = ScrapePrerender(
+//                  url = StringLiteralOrVariable(
+//                    literal = url.toString()
+//                  )
+//                )
+//            )
+//          )
+//        )
+//      )
+//    )
 
-    val refineOptions = GenericFeedRefineOptions()
+//    val refineOptions = GenericFeedRefineOptions()
+
+    val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
 
     return linkGroups
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
@@ -207,52 +214,53 @@ class WebToFeedTransformer(
       .sortedByDescending { it.score }
       .map { selectors ->
         GenericFeedRule(
-          feedUrl = createFeedUrl(url, selectors, parserOptions, scrapeRequest, refineOptions),
-          count = selectors.count,
+          count = selectors.count ?: 0,
           score = selectors.score!!,
           linkXPath = selectors.linkXPath,
           extendContext = selectors.extendContext,
           contextXPath = selectors.contextXPath,
           dateXPath = selectors.dateXPath,
+          paginationXPath = paginationXPath,
           samples = getArticlesBySelectors(corrId, selectors, document, url, sampleSize)
         )
       }
       .toList()
   }
 
-//  private fun findPaginationXPath(
-//    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
-//    url: String,
-//    document: Document
-//  ): String? {
-//    return Optional.ofNullable(findPaginationElement(groupedLinks, url))
-//      .map { "/" + this.getRelativeXPath(it, document.body()) }
-//      .orElse(null)
-//  }
+  private fun findPaginationXPath(
+    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
+    url: String,
+    document: Document
+  ): String? {
+    return Optional.ofNullable(findPaginationElement(groupedLinks, url))
+      .map { "/" + this.getRelativeXPath(it, document.body()) }
+      .orElse(null)
+  }
 
-//  private fun findPaginationElement(
-//    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
-//    url: String
-//  ): Element? {
-//    val ed = org.apache.commons.text.similarity.LevenshteinDistance()
-//    return groupedLinks
-//      .values
-//      .filter { it.size > 2 }
-//      .map {
-//        Pair(it, it.map {
-//          ed.apply(absUrl(url, it.element.attr("href")), url)
-//        }.average())
-//      }
-//      .sortedBy { listAndEditDistance -> listAndEditDistance.second }
-//      .filter { it.second < 4 }
-//      .map { it.first }
-//      .map { linkPointers ->
-//        this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
-//      }
-//      .filter { it.size == 1 }
-//      .map { it.first() }
-//      .firstOrNull()
-//  }
+  private fun findPaginationElement(
+    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
+    url: String
+  ): Element? {
+    val ed = org.apache.commons.text.similarity.LevenshteinDistance()
+    return groupedLinks
+      .values
+      .asSequence()
+      .filter { it.size > 2 }
+      .map {
+        Pair(it, it.map {
+          ed.apply(toAbsoluteUrl(URL(url), it.element.attr("href")), url)
+        }.average())
+      }
+      .sortedBy { listAndEditDistance -> listAndEditDistance.second }
+      .filter { it.second < 4 }
+      .map { it.first }
+      .map { linkPointers ->
+        this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
+      }
+      .filter { it.size == 1 }
+      .map { it.first() }
+      .firstOrNull()
+  }
 
   private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
     val hasTimeField = contexts.all { context ->
@@ -301,29 +309,29 @@ class WebToFeedTransformer(
       }
     }
 
-  fun createFeedUrl(
-    url: URL,
-    selectors: Selectors,
-    parserOptions: GenericFeedParserOptions,
-    scrapeRequest: ScrapeRequest,
-    refineOptions: GenericFeedRefineOptions
-  ): String {
-    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    val params: List<Pair<String, String>> = mapOf(
-      WebToFeedParamsV2.version to propertyService.webToFeedVersion,
-      WebToFeedParamsV2.url to url.toString(),
-      WebToFeedParamsV2.linkPath to selectors.linkXPath,
-      WebToFeedParamsV2.contextPath to selectors.contextXPath,
-      WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
-      WebToFeedParamsV2.extendContext to selectors.extendContext.value,
-      WebToFeedParamsV2.prerender to "${scrapeRequest.page.prerender != null}",
-      WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
-      WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
-    ).map { entry -> entry.key to encode("${entry.value}") }
-
-    val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
-    return "${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}?$searchParams"
-  }
+//  fun createFeedUrl(
+//    url: URL,
+//    selectors: Selectors,
+//    parserOptions: GenericFeedParserOptions,
+//    scrapeRequest: ScrapeRequest,
+//    refineOptions: GenericFeedRefineOptions
+//  ): String {
+//    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
+//    val params: List<Pair<String, String>> = mapOf(
+//      WebToFeedParamsV2.version to propertyService.webToFeedVersion,
+//      WebToFeedParamsV2.url to url.toString(),
+//      WebToFeedParamsV2.linkPath to selectors.linkXPath,
+//      WebToFeedParamsV2.contextPath to selectors.contextXPath,
+//      WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
+//      WebToFeedParamsV2.extendContext to selectors.extendContext.value,
+////      WebToFeedParamsV2.prerender to "${scrapeRequest.page.prerender != null}",
+//      WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
+//      WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
+//    ).map { entry -> entry.key to encode("${entry.value}") }
+//
+//    val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
+//    return "${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}?$searchParams"
+//  }
 
   fun getFeedBySelectors(
     corrId: String,
@@ -331,15 +339,15 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     sampleSize: Int = 0
-  ): RichFeed {
-    val richFeed = RichFeed()
-    richFeed.id = url.toString()
-    richFeed.title = document.title()
-    richFeed.websiteUrl = url.toString()
-    richFeed.publishedAt = Date()
-    richFeed.items = getArticlesBySelectors(corrId, selectors, document, url)
-    richFeed.feedUrl = ""
-    return richFeed
+  ): JsonFeed {
+    val jsonFeed = JsonFeed()
+    jsonFeed.id = url.toString()
+    jsonFeed.title = document.title()
+    jsonFeed.websiteUrl = url.toString()
+    jsonFeed.publishedAt = Date()
+    jsonFeed.items = getArticlesBySelectors(corrId, selectors, document, url)
+    jsonFeed.feedUrl = ""
+    return jsonFeed
   }
 
   fun getArticlesBySelectors(
@@ -348,7 +356,7 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     sampleSize: Int = 0
-  ): List<RichArticle> {
+  ): List<JsonItem> {
 
     val now = Date()
     val locale = extractLocale(document, propertyService.locale)
@@ -360,9 +368,11 @@ class WebToFeedTransformer(
         link?.let {
           val date =
             Optional.ofNullable(StringUtils.trimToNull(selectors.dateXPath))
-              .map { dateXPath -> Optional.ofNullable(extractDate(corrId, dateXPath, element, locale))
-                .orElse(now)
-                .also { evaluateXPath(dateXPath, element).first().remove() } }
+              .map { dateXPath ->
+                Optional.ofNullable(extractDate(corrId, dateXPath, element, locale))
+                  .orElse(now)
+                  .also { evaluateXPath(dateXPath, element).first().remove() }
+              }
               .orElse(now)
 
           val (pubDate, startingDate) = if (BooleanUtils.isTrue(selectors.dateIsStartOfEvent)) {
@@ -379,7 +389,7 @@ class WebToFeedTransformer(
 
           val toTitle = { text: String -> StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100) }
 
-          val article = RichArticle()
+          val article = JsonItem()
           article.id = FeedUtil.toURI("article", articleUrl)
           article.title = toTitle(linkText)
           article.url = articleUrl
@@ -404,19 +414,8 @@ class WebToFeedTransformer(
 
     log.debug("[${corrId}] -> ${articles.size} articles")
 
-    return articles.filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
-  }
-
-  private fun normalizeTags(element: Element): Element {
-    element.select("table").tagName("div").attr("role", "table")
-    element.select("thead").tagName("div").attr("role", "thead")
-    element.select("tbody").tagName("div").attr("role", "tbody")
-    element.select("tfoot").tagName("div").attr("role", "tfoot")
-    element.select("tr").tagName("div").attr("role", "row")
-    element.select("td").tagName("div").attr("role", "cell")
-    element.select("font").tagName("div").attr("role", "font")
-    element.select("form").tagName("div").attr("role", "form")
-    return element
+    return articles.distinctBy { it.url }
+      .filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
   }
 
   private fun resolveLink(
@@ -458,7 +457,7 @@ class WebToFeedTransformer(
         val text = timeElement.text()
         val date = dateClaimer.claimDatesFromString(corrId, text, locale)
         date?.let {
-          if(it.time < System.currentTimeMillis()) {
+          if (it.time < System.currentTimeMillis()) {
             log.warn("[$corrId] failed to parse date from '$text'")
           }
         }
@@ -517,10 +516,6 @@ class WebToFeedTransformer(
 
   private fun toWords(text: String): List<String> {
     return text.trim().split(" ").filterTo(ArrayList()) { word: String -> word.isNotEmpty() }
-  }
-
-  private fun toAbsoluteUrl(url: URL, link: String): String {
-    return URL(url, link).toString()
   }
 
   private fun qualifiesAsArticle(elem: Element, selectors: Selectors): Boolean {
@@ -786,6 +781,7 @@ class WebToFeedTransformer(
 
   private fun findLinks(document: Document, options: GenericFeedParserOptions): List<LinkPointer> {
     val body = document.body()
+//    return document.select("A[href],AREA[href]").stream()
     return document.select("A[href]").stream()
       .filter { element -> toWords(element.text()).size >= options.minWordCountOfLink }
       .filter { element -> !element.attr("href").startsWith("javascript") }
@@ -886,20 +882,38 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun withAbsUrls(element: Element, url: URL): Element {
-    element.select("a[href]")
-      .filter { link -> !link.attr("href").startsWith("javascript") }
-      .forEach { link ->
-        link.attr("href", toAbsoluteUrl(url, link.attr("href")))
-      }
-    element.select("img[src]")
-      .filter { img -> !img.attr("src").startsWith("data:") }
-      .forEach { link ->
-        link.attr("src", toAbsoluteUrl(url, link.attr("src")))
-      }
-    return element
-  }
+  companion object {
+    fun toAbsoluteUrl(url: URL, link: String): String {
+      return URL(url, link).toString()
+    }
 
+    fun withAbsUrls(element: Element, url: URL): Element {
+      element.select("a[href]")
+        .filter { link -> !link.attr("href").startsWith("javascript") }
+        .forEach { link ->
+          link.attr("href", toAbsoluteUrl(url, link.attr("href")))
+        }
+      element.select("img[src]")
+        .filter { img -> !img.attr("src").startsWith("data:") }
+        .forEach { link ->
+          link.attr("src", toAbsoluteUrl(url, link.attr("src")))
+        }
+      return element
+    }
+
+
+    fun normalizeTags(element: Element): Element {
+      element.select("table").tagName("div").attr("role", "table")
+      element.select("thead").tagName("div").attr("role", "thead")
+      element.select("tbody").tagName("div").attr("role", "tbody")
+      element.select("tfoot").tagName("div").attr("role", "tfoot")
+      element.select("tr").tagName("div").attr("role", "row")
+      element.select("td").tagName("div").attr("role", "cell")
+      element.select("font").tagName("div").attr("role", "font")
+      element.select("form").tagName("div").attr("role", "form")
+      return element
+    }
+  }
 }
 
 fun toDto(it: PuppeteerWaitUntil): org.migor.feedless.generated.types.PuppeteerWaitUntil {

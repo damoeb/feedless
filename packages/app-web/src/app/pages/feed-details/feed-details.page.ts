@@ -67,7 +67,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         this.repositoryId,
       );
       this.titleService.setTitle(this.repository.title);
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/feed/${this.repository.id}/atom`;
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
     } catch (e) {
       this.errorMessage = e.message;
     }

@@ -25,9 +25,7 @@ import {
   RemoteFeedModalComponent,
   RemoteFeedModalComponentProps,
 } from '../modals/remote-feed-modal/remote-feed-modal.component';
-import {
-  SearchAddressModalComponent,
-} from '../modals/search-address-modal/search-address-modal.component';
+import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
 import { OsmMatch } from './open-street-map.service';
 
 @Injectable({

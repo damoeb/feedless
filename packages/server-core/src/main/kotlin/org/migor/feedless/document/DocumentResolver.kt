@@ -62,7 +62,8 @@ class DocumentResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
     log.info("[$corrId] webDocument $data")
-    val document = documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
+    val document =
+      documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
     repositoryService.findById(corrId, document.repositoryId)
     document.toDto(propertyService)
   }
@@ -78,10 +79,11 @@ class DocumentResolver {
     val repositoryId = UUID.fromString(data.where.repository.where.id)
 
     val repository = repositoryService.findById(corrId, repositoryId)
-    val pageable = toPageRequest(data.cursor?.page, data.cursor?.pageSize ?: 10)
-    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).mapNotNull { it?.toDto(
-      propertyService
-    )
+    val pageable = toPageRequest(data.cursor.page, data.cursor.pageSize ?: 10)
+    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).mapNotNull {
+      it?.toDto(
+        propertyService
+      )
     }.toList()
   }
 
@@ -99,7 +101,12 @@ class DocumentResolver {
     @InputArgument data: DeleteWebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    documentService.deleteDocuments(corrId, sessionService.user(corrId), UUID.fromString(data.where.repository.where.id), data.where.id)
+    documentService.deleteDocuments(
+      corrId,
+      sessionService.user(corrId),
+      UUID.fromString(data.where.repository.where.id),
+      data.where.id!!
+    )
     true
   }
 
@@ -109,9 +116,7 @@ class DocumentResolver {
   ): Activity = coroutineScope {
     val repository: Repository = dfe.getSource()
 
-    Activity.newBuilder()
-      .items(documentService.getDocumentFrequency(UUID.fromString(repository.id)).map { it.toDto() })
-      .build()
+    Activity(items = documentService.getDocumentFrequency(UUID.fromString(repository.id)).map { it.toDto() })
   }
 
 }
@@ -121,8 +126,8 @@ private fun FrequencyItem.toDto(): ActivityItem {
     return StringUtils.leftPad("$num", 2, "0")
   }
 
-  return ActivityItem.newBuilder()
-    .index("${year}${leftPad(month)}${leftPad(day)}")
-    .count(count)
-    .build()
+  return ActivityItem(
+    index = "${year}${leftPad(month)}${leftPad(day)}",
+    count = count,
+  )
 }

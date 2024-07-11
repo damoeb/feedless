@@ -9,7 +9,6 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
 import org.migor.feedless.HarvestException
 import org.migor.feedless.HostOverloadingException
-import org.migor.feedless.MethodNotAllowedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.ServiceUnavailableException
 import org.migor.feedless.SiteNotFoundException

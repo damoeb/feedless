@@ -11,6 +11,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.plan.toDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -37,10 +38,11 @@ class PlanResolver {
 }
 
 private fun PlanEntity.toDto(): Plan {
-  return Plan.newBuilder()
-    .productId(productId.toString())
-    .startedAt(startedAt?.time)
-    .terminatedAt(terminatedAt?.time)
-    .build()
+  return Plan(
+    productId = productId.toString(),
+    startedAt = startedAt?.time,
+    terminatedAt = terminatedAt?.time,
+    product = product!!.toDTO()
+  )
 }
 

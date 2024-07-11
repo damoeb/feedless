@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ModalCancel } from '../../app.module';
-import { OpenStreetMapService, OsmMatch } from '../../services/open-street-map.service';
-
+import {
+  OpenStreetMapService,
+  OsmMatch,
+} from '../../services/open-street-map.service';
 
 @Component({
   selector: 'app-search-address-modal',

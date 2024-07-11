@@ -7,7 +7,7 @@ import {
 import {
   GqlCompositeFilterParamsInput,
   GqlConditionalTagInput,
-  GqlScrapeRequest,
+  GqlScrapeRequestInput,
 } from '../../../generated/graphql';
 import { FeedService } from '../../services/feed.service';
 import { RemoteFeed } from '../../graphql/types';
@@ -31,7 +31,7 @@ export class RemoteFeedPreviewComponent {
   ) {}
 
   async loadFeedPreview(
-    requests: GqlScrapeRequest[],
+    requests: GqlScrapeRequestInput[],
     filters: GqlCompositeFilterParamsInput[],
     tags: GqlConditionalTagInput[],
   ) {

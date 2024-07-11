@@ -78,4 +78,5 @@ open class AttachmentEntity : EntityWithUUID() {
 
 }
 
-fun createAttachmentUrl(propertyService: PropertyService, id: UUID): String = "${propertyService.apiGatewayUrl}/attachment/${id}"
+fun createAttachmentUrl(propertyService: PropertyService, id: UUID): String =
+  "${propertyService.apiGatewayUrl}/attachment/${id}"

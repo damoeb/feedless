@@ -24,6 +24,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
@@ -53,8 +54,6 @@ import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
-import org.migor.feedless.generated.types.Selectors
-import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.mail.MailForwardEntity
@@ -101,6 +100,9 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "disabled_from")
   open var disabledFrom: Date? = null
+
+  @Column(name = "share_key", nullable = false, length = 10)
+  open var shareKey: String = ""
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "sunset_after")
@@ -167,121 +169,106 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
 }
 
 fun RepositoryEntity.toDto(): Repository {
-  return Repository.newBuilder()
-    .id(id.toString())
-    .ownerId(ownerId.toString())
-    .product(product.toDto())
-    .disabledFrom(disabledFrom?.time)
-    .plugins(plugins.map { it.toDto() })
-    .archived(archived)
-    .retention(
-      Retention.newBuilder()
-        .maxCapacity(retentionMaxCapacity)
-        .maxAgeDays(retentionMaxAgeDays)
-        .build()
-    )
-    .visibility(visibility.toDto())
-    .createdAt(createdAt.time)
-    .lastUpdatedAt(lastUpdatedAt.time)
-    .nextUpdateAt(triggerScheduledNextAt?.time)
-    .description(description)
-    .title(title)
-    .segmented(segmentation?.toDto())
-    .refreshCron(sourcesSyncExpression)
-    .build()
+  return Repository(
+    id = id.toString(),
+    ownerId = ownerId.toString(),
+    product = product.toDto(),
+    disabledFrom = disabledFrom?.time,
+    plugins = plugins.map { it.toDto() },
+    archived = archived,
+    retention =
+    Retention(
+      maxCapacity = retentionMaxCapacity,
+      maxAgeDays = retentionMaxAgeDays
+    ),
+    shareKey = shareKey,
+    visibility = visibility.toDto(),
+    createdAt = createdAt.time,
+    lastUpdatedAt = lastUpdatedAt.time,
+    nextUpdateAt = triggerScheduledNextAt?.time,
+    description = description,
+    title = title,
+    segmented = segmentation?.toDto(),
+    refreshCron = sourcesSyncExpression,
+    documentCount = 0,
+    tags = emptyList()
+  )
 }
-
-//fun ProductCategory.toDto(): ProductCategoryDto {
-//  return when(this) {
-//    ProductCategory.rssProxy -> ProductCategoryDto.rssProxy
-//    ProductCategory.visualDiff -> ProductCategoryDto.visualDiff
-//    else -> throw IllegalArgumentException("Unsupported product name: $this")
-//  }
-//}
 
 private fun org.migor.feedless.repository.PluginExecution.toDto(): PluginExecution {
-  return PluginExecution.newBuilder()
-    .pluginId(id)
-    .params(params.toDto())
-    .build()
+  return PluginExecution(
+    pluginId = id,
+    params = params.toDto(),
+  )
 }
 
-private fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
-  return PluginExecutionParams.newBuilder()
-    .org_feedless_fulltext(org_feedless_fulltext?.toDto())
-    .org_feedless_feed(org_feedless_feed?.toDto())
-    .org_feedless_diff_email_forward(org_feedless_diff_email_forward?.toDto())
-    .jsonData(jsonData)
-    .org_feedless_filter(org_feedless_filter?.map { it.toDto() })
-    .build()
+fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
+  return PluginExecutionParams(
+    org_feedless_fulltext = org_feedless_fulltext?.toDto(),
+    org_feedless_feed = org_feedless_feed?.toDto(),
+    org_feedless_diff_email_forward = org_feedless_diff_email_forward?.toDto(),
+    jsonData = jsonData,
+    org_feedless_filter = org_feedless_filter?.map { it.toDto() },
+  )
 }
 
-private fun FeedParamsInput.toDto(): FeedParams {
-  return FeedParams.newBuilder()
-    .generic(generic?.toDto())
-    .build()
+fun FeedParamsInput.toDto(): FeedParams {
+  return FeedParams(
+    generic = generic?.fromDto(),
+  )
 }
 
-private fun CompositeFilterParamsInput.toDto(): CompositeFilterParams {
-  return CompositeFilterParams.newBuilder()
-    .include(include?.toDto())
-    .exclude(exclude?.toDto())
-    .build()
+fun CompositeFilterParamsInput.toDto(): CompositeFilterParams {
+  return CompositeFilterParams(
+    include = include?.toDto(),
+    exclude = exclude?.toDto(),
+  )
 }
 
-private fun CompositeFieldFilterParamsInput.toDto(): CompositeFieldFilterParams {
-  return CompositeFieldFilterParams.newBuilder()
-    .index(index?.toDto())
-    .title(title?.toDto())
-    .content(content?.toDto())
-    .link(link?.toDto())
-    .build()
+fun CompositeFieldFilterParamsInput.toDto(): CompositeFieldFilterParams {
+  return CompositeFieldFilterParams(
+    index = index?.toDto(),
+    title = title?.toDto(),
+    content = content?.toDto(),
+    link = link?.toDto(),
+  )
 }
 
 private fun NumericalFilterParamsInput.toDto(): NumericalFilterParams {
-  return NumericalFilterParams.newBuilder()
-    .value(value)
-    .operator(operator)
-    .build()
+  return NumericalFilterParams(
+    value = value,
+    operator = operator,
+  )
 }
 
 private fun StringFilterParamsInput.toDto(): StringFilterParams {
-  return StringFilterParams.newBuilder()
-    .value(value)
-    .operator(operator)
-    .build()
+  return StringFilterParams(
+    value = value,
+    operator = operator,
+  )
 }
 
 private fun DiffEmailForwardParamsInput.toDto(): DiffEmailForwardParams {
-  return DiffEmailForwardParams.newBuilder()
-    .compareBy(compareBy.toDto())
-    .nextItemMinIncrement(nextItemMinIncrement)
-    .inlineDiffImage(inlineDiffImage)
-    .inlineLatestImage(inlineLatestImage)
-    .inlinePreviousImage(inlinePreviousImage)
-    .build()
+  return DiffEmailForwardParams(
+    compareBy = compareBy.toDto(),
+    nextItemMinIncrement = nextItemMinIncrement,
+    inlineDiffImage = inlineDiffImage,
+    inlineLatestImage = inlineLatestImage,
+    inlinePreviousImage = inlinePreviousImage,
+  )
 }
 
 private fun CompareByInput.toDto(): CompareBy {
-  return CompareBy.newBuilder()
-    .field(field)
-    .fragmentNameRef(fragmentNameRef)
-    .build()
-}
-
-private fun SelectorsInput.toDto(): Selectors {
-  return Selectors.newBuilder()
-    .contextXPath(contextXPath)
-    .dateXPath(dateXPath)
-    .extendContext(extendContext)
-    .linkXPath(linkXPath)
-    .dateIsStartOfEvent(dateIsStartOfEvent)
-    .build()
+  return CompareBy(
+    field = field,
+    fragmentNameRef = fragmentNameRef,
+  )
 }
 
 private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
-  return FulltextPluginParams.newBuilder()
-    .readability(readability)
-    .build()
+  return FulltextPluginParams(
+    readability = readability,
+    inheritParams = false
+  )
 }
 

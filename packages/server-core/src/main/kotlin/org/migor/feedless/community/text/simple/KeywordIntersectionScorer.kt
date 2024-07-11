@@ -43,7 +43,7 @@ class KeywordIntersectionScorer {
     } else {
       val parentKeywords = getKeywordsWIthFreq(parent, parentLocale)
       val childKeywords = getKeywordsWIthFreq(child, parentLocale)
-      parentKeywords.filter { (word, _) -> childKeywords.any { (otherWord, _) -> otherWord == word} }
+      parentKeywords.filter { (word, _) -> childKeywords.any { (otherWord, _) -> otherWord == word } }
         .map { (_, freq) -> freq }
         .sum()
     }

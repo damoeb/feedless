@@ -95,13 +95,13 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   private fun filterBlacklisted(links: List<Element>): List<Element> {
-    return links.filter { link -> blacklistedDomains.none{ link.attr("href").contains(it)} }
+    return links.filter { link -> blacklistedDomains.none { link.attr("href").contains(it) } }
   }
 
   private fun handleImage(
-      corrId: String,
-      imageElement: Element,
-      documentId: UUID
+    corrId: String,
+    imageElement: Element,
+    documentId: UUID
   ): AttachmentEntity? {
     return try {
       val url = imageElement.attr("src")
@@ -155,8 +155,8 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   private fun toAttachment(
-      response: HttpResponse,
-      documentId: UUID
+    response: HttpResponse,
+    documentId: UUID
   ): AttachmentEntity {
     val attachment = AttachmentEntity()
     attachment.contentType = response.contentType

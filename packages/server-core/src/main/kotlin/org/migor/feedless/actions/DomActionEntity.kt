@@ -1,14 +1,22 @@
 package org.migor.feedless.actions
 
 import jakarta.persistence.Column
-import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrimaryKeyJoinColumn
+import jakarta.persistence.Table
 
 @Entity
-@DiscriminatorValue("dom")
-open class DomActionEntity : BrowserActionEntity() {
+@Table(name = "t_action_dom")
+@PrimaryKeyJoinColumn(
+  foreignKey = ForeignKey(
+    name = "fk_base_entity",
+    foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES t_scrape_action(id) ON DELETE CASCADE"
+  )
+)
+open class DomActionEntity : ScrapeActionEntity() {
 
   @Column(name = "xpath")
   open lateinit var xpath: String
@@ -22,9 +30,7 @@ open class DomActionEntity : BrowserActionEntity() {
 }
 
 enum class DomEventType {
-  click,
   purge,
   type,
   select,
-  wait
 }

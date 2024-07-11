@@ -2,24 +2,20 @@ package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.actions.toDto
+import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.actions.FetchActionEntity
+import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionData
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ScrapeEmit
-import org.migor.feedless.generated.types.ScrapePage
-import org.migor.feedless.generated.types.ScrapePrerender
-import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.ScrapeSelector
-import org.migor.feedless.generated.types.ScrapeSelectorExpose
-import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.service.needsPrerendering
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
@@ -27,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.nio.charset.StandardCharsets
 
 @Service
 @Profile(AppProfiles.scrape)
@@ -55,46 +52,24 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   ): DocumentEntity {
     log.debug("[$corrId] mapEntity ${document.url}")
 
-    val emit = ScrapeEmit.newBuilder()
-      .selectorBased(
-        ScrapeSelector.newBuilder()
-          .xpath(DOMElementByXPath.newBuilder().value("/").build())
-          .expose(
-            ScrapeSelectorExpose.newBuilder()
-              .build()
-          )
-          .build()
-      )
-      .build()
-    val request = ScrapeRequest.newBuilder()
-      .page(
-        ScrapePage.newBuilder()
-          .url(document.url)
-          .build()
-      )
-      .emit(listOf(emit))
-      .build()
-
     val source = repository.sources[0]
-    if (BooleanUtils.isTrue(params.org_feedless_fulltext.inheritParams) && source.prerender) {
+
+    val request = SourceEntity()
+    val action = FetchActionEntity()
+    action.url = document.url
+    request.actions = mutableListOf(action)
+    val prerender = needsPrerendering(source, 0)
+    if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
       log.debug("[$corrId] with inheritParams")
-      request.page.actions = source.actions.map { it.toDto() }
-      request.page.prerender = ScrapePrerender.newBuilder()
-        .language(source.language)
-        .viewport(source.viewport)
-        .additionalWaitSec(source.additionalWaitSec ?: 0)
-        .waitUntil(source.waitUntil)
-        .build()
-      request.emit = listOf(emit)
+      request.actions.addAll(source.actions.subList(1, source.actions.size))
     }
 
     val response = scrapeService.scrape(corrId, request)
       .block()!!
 
-
-    if (!response.failed && response.elements.isNotEmpty()) {
-      val element = response.elements.first()!!
-      val html = element.selector.html.data
+    if (response.outputs.isNotEmpty()) {
+      val lastOutput = response.outputs.last()
+      val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
       if (params.org_feedless_fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, document.url)
         document.contentHtml = readability.content
@@ -110,22 +85,22 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
   override fun transformFragment(
     corrId: String,
-    element: ScrapedElement,
-    plugin: PluginExecution,
-    url: String
-  ): ScrapedReadability {
-    val markup = element.selector.html.data
-    val article = webToArticleTransformer.fromHtml(markup, url)
-    return ScrapedReadability.newBuilder()
-      .date(article.date)
-      .content(article.content)
-      .url(article.url)
-      .contentText(article.contentText)
-      .contentMime(article.contentMime)
-      .faviconUrl(article.faviconUrl)
-      .imageUrl(article.imageUrl)
-      .title(article.title)
-      .build()
-
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+  ): PluginExecutionData {
+    val markup = data.responseBody.toString(StandardCharsets.UTF_8)
+    val article = webToArticleTransformer.fromHtml(markup, data.url)
+    return PluginExecutionData(
+      org_feedless_fulltext = ScrapedReadability(
+        date = article.date,
+        content = article.content,
+        url = article.url,
+        contentText = article.contentText,
+        contentMime = article.contentMime,
+        faviconUrl = article.faviconUrl,
+        imageUrl = article.imageUrl,
+        title = article.title,
+      )
+    )
   }
 }

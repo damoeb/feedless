@@ -22,7 +22,7 @@ import { MapModule } from '../../components/map/map.module';
     SearchbarModule,
     BubbleModule,
     MapModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   declarations: [UpcomingProductPage],
 })

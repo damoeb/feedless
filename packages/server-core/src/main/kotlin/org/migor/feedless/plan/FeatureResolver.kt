@@ -48,7 +48,7 @@ class FeatureResolver {
 //        throw IllegalArgumentException("user must be root")
 //      }
       featureService.findAllGroups(inherit, where)
-  }
+    }
 
 //  @DgsData(parentType = DgsConstants.FEATUREGROUP.TYPE_NAME)
 //  @Transactional(propagation = Propagation.REQUIRED)
@@ -60,8 +60,9 @@ class FeatureResolver {
   @Throttled
   @DgsMutation
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun updateFeatureValue(@RequestHeader(ApiParams.corrId) corrId: String,
-                            @InputArgument data: UpdateFeatureValueInput
+  suspend fun updateFeatureValue(
+    @RequestHeader(ApiParams.corrId) corrId: String,
+    @InputArgument data: UpdateFeatureValueInput
   ): Boolean =
     coroutineScope {
       log.info("[$corrId] updateFeature $data")
