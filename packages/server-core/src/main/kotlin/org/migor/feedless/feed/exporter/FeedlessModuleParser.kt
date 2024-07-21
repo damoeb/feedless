@@ -4,7 +4,8 @@ import com.rometools.rome.feed.module.Module
 import com.rometools.rome.io.ModuleParser
 import com.rometools.rome.io.impl.DateParser
 import org.jdom2.Element
-import org.migor.feedless.generated.types.GeoPoint
+import org.migor.feedless.feed.parser.json.JsonPoint
+import org.migor.feedless.util.JsonUtil
 import java.util.*
 
 
@@ -27,10 +28,10 @@ class FeedlessModuleParser: ModuleParser {
     val latLngElement = element.getChild(FeedlessModuleImpl.LAT_LNG, FeedlessModuleImpl.NAMESPACE)
     if (latLngElement != null) {
       match = true
-      module.setLatLng(GeoPoint(
-        lat = latLngElement.getAttribute(FeedlessModuleImpl.LAT).doubleValue,
-        lon = latLngElement.getAttribute(FeedlessModuleImpl.LNG).doubleValue,
-      ))
+      val point = JsonPoint()
+      point.x = latLngElement.getAttribute(FeedlessModuleImpl.LAT).doubleValue
+      point.y = latLngElement.getAttribute(FeedlessModuleImpl.LNG).doubleValue
+      module.setLatLng(JsonUtil.gson.toJson(point))
     }
 
     return if (match) module else null

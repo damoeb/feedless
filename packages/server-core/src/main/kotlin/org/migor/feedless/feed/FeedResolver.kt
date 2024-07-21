@@ -13,6 +13,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
@@ -97,7 +98,7 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         contentText = it.contentText,
         publishedAt = it.publishedAt.time,
         startingAt = it.startingAt?.time,
-        localized = it.latLng,
+        localized = it.latLng?.let { GeoPoint(lat=it.x, lon=it.y) },
         createdAt = Date().time,
         url = it.url,
         enclosures = it.attachments.map { it.toEnclosure() },
@@ -105,7 +106,6 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         contentHtml = contentHtml,
         contentRawMime = contentRawMime,
         contentRawBase64 = contentRawBase64
-
       )
     }
   )

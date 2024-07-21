@@ -108,7 +108,7 @@ class ScrapeService {
   }
 
   private fun handlePluginExecution(corrId: String, index: Int, action: ExecuteActionEntity, context: ScrapeContext) {
-    log.info("[$corrId] handlePluginExecution $action")
+    log.info("[$corrId] handlePluginExecution ${action.pluginId}")
 
     val firstFitchAction = context.outputs.find { it.fetch != null }!!
     val plugin = pluginService.resolveFragmentTransformerById(action.pluginId)

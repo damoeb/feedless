@@ -15,13 +15,21 @@ import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.exporter.FeedlessModule
+import org.migor.feedless.feed.exporter.FeedlessModuleImpl
+import org.migor.feedless.feed.exporter.castToFeedlessModule
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonAuthor
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.io.StringReader
 import java.util.*
 
@@ -131,14 +139,14 @@ class XmlFeedParser : FeedBodyParser {
 
     val entryInformationModule = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
     val mediaEntryModule = entry.modules.find { it is MediaEntryModule } as MediaEntryModule?
-    val feedlessModule = entry.modules.find { it is FeedlessModule } as FeedlessModule?
-//    val dcModule = entry.modules.find { it is DCModule } as DCModule?
+    val feedlessModule = entry.modules.find { it.uri == FeedlessModuleImpl.URI }?.castToFeedlessModule()
+
     val article = JsonItem()
     article.id = entry.uri
     article.title = entry.title
 
     feedlessModule?.let {
-      article.latLng = feedlessModule.getLatLng()
+      article.latLng = JsonUtil.gson.fromJson(feedlessModule.getLatLng(), JsonPoint::class.java)
       article.startingAt = feedlessModule.getStartingAt()
     }
 

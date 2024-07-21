@@ -5,7 +5,12 @@ import com.rometools.rome.io.ModuleGenerator
 import com.rometools.rome.io.impl.DateParser
 import org.jdom2.Element
 import org.jdom2.Namespace
-import org.migor.feedless.generated.types.GeoPoint
+import org.migor.feedless.feed.parser.json.JsonPoint
+import org.migor.feedless.util.JsonUtil
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.util.*
 
 class FeedlessModuleGenerator: ModuleGenerator {
@@ -25,22 +30,19 @@ class FeedlessModuleGenerator: ModuleGenerator {
     }
     root.addNamespaceDeclaration(FeedlessModuleImpl.NAMESPACE)
 
-    val startingAtField = module.javaClass.getDeclaredField("startingAt")
-    startingAtField.isAccessible = true
-    val startingAt = startingAtField.get(module) as Date?
+    val feedlessModule = module.castToFeedlessModule()
+    val startingAt = feedlessModule.getStartingAt()
 
     if (startingAt != null) {
       element.addContent(generateElement(FeedlessModuleImpl.STARTING_AT, DateParser.formatW3CDateTime(startingAt, Locale.US)))
     }
 
-    val latlngField = module.javaClass.getDeclaredField("latLng")
-    latlngField.isAccessible = true
-    val latlng = latlngField.get(module) as GeoPoint?
-
-    if (latlng != null) {
+    val latlngStr = feedlessModule.getLatLng()
+    if (latlngStr != null) {
+      val latlng = JsonUtil.gson.fromJson(latlngStr, JsonPoint::class.java)
       val latLngElement = Element(FeedlessModuleImpl.LAT_LNG, FeedlessModuleImpl.NAMESPACE)
-      latLngElement.setAttribute(FeedlessModuleImpl.LAT, latlng.lat.toString())
-      latLngElement.setAttribute(FeedlessModuleImpl.LNG, latlng.lon.toString())
+      latLngElement.setAttribute(FeedlessModuleImpl.LAT, latlng.x.toString())
+      latLngElement.setAttribute(FeedlessModuleImpl.LNG, latlng.y.toString())
       element.addContent(latLngElement)
     }
   }
@@ -50,4 +52,14 @@ class FeedlessModuleGenerator: ModuleGenerator {
     element.addContent(value)
     return element
   }
+}
+
+fun Module.castToFeedlessModule(): FeedlessModuleImpl {
+  val bout = ByteArrayOutputStream()
+  val oout = ObjectOutputStream(bout)
+  oout.writeObject(this)
+  oout.close()
+
+  val oin = ObjectInputStream(ByteArrayInputStream(bout.toByteArray()))
+  return oin.readObject() as FeedlessModuleImpl
 }

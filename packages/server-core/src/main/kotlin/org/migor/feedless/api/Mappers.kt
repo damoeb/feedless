@@ -428,7 +428,7 @@ private fun JsonItem.toDto(): WebDocument {
     contentText = contentText,
     publishedAt = publishedAt.time,
     startingAt = startingAt?.time,
-    localized = latLng,
+    localized = latLng?.let { GeoPoint(lat=it.x, lon=it.y) },
     updatedAt = publishedAt.time,
     createdAt = Date().time,
   )

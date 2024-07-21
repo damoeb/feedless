@@ -68,5 +68,5 @@ open class JsonItem : Serializable {
   var startingAt: Date? = null
 
   @SerializedName(LAT_LNG)
-  var latLng: GeoPoint? = null
+  var latLng: JsonPoint? = null
 }

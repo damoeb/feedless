@@ -24,7 +24,7 @@ import org.migor.feedless.document.createDocumentUrl
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.generated.types.GeoPoint
+import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
@@ -418,7 +418,10 @@ fun DocumentEntity.toJsonItem(
   val article = JsonItem()
   article.id = id.toString()
   latLon?.let {
-    article.latLng = GeoPoint(lat = it.x, lon = it.y)
+    val point = JsonPoint()
+    point.x = it.x
+    point.y = it.y
+    article.latLng = point
   }
   article.title = StringUtils.trimToEmpty(contentTitle)
   article.attachments = attachments.map {

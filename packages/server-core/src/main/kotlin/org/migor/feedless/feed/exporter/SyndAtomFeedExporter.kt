@@ -27,6 +27,7 @@ import org.jdom2.Namespace
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.util.JsonUtil
 import org.springframework.stereotype.Service
 import java.net.URL
 
@@ -122,7 +123,7 @@ class SyndAtomFeedExporter {
 
     val feedlessModule = FeedlessModuleImpl()
     feedlessModule.setStartingAt(article.startingAt)
-    feedlessModule.setLatLng(article.latLng)
+    feedlessModule.setLatLng(JsonUtil.gson.toJson(article.latLng))
     entry.modules.add(feedlessModule)
 
 

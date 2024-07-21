@@ -130,12 +130,7 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<ScrapeRequest> = coroutineScope {
     val source: Repository = dfe.getSource()
-    sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id)).map { scrapeSource ->
-      run {
-        val scrapeRequest = scrapeSource.toScrapeRequest(corrId)
-        scrapeRequest
-      }
-    }
+    sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id)).map { it.toScrapeRequest(corrId)}
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
