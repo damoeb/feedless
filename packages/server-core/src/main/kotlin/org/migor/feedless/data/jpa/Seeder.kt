@@ -156,7 +156,7 @@ class Seeder {
     repo.ownerId = root.id
     repo.visibility = EntityVisibility.isPrivate
     repo.product = ProductCategory.feedless
-    repo.sourcesSyncExpression = ""
+    repo.sourcesSyncCron = ""
 
     return repositoryDAO.findByTitleAndOwnerId(repoTitleLegacyNotifications, root.id) ?: repositoryDAO.save(repo)
   }

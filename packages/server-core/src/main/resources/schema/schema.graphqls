@@ -101,18 +101,18 @@ type Repository {
   disabledFrom: Long
   archived: Boolean!
   activity: Activity
-#  location: LatLonLocation!
   plugins: [PluginExecution!]
+  cronRuns: [CronRun!]!
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]
 }
 
-#type LatLonLocation {
-#  lat: Long!
-#  lon: Long!
-#  description: String
-#}
+type CronRun {
+  isSuccessful: Boolean!
+  message: String!
+  executedAt: Long!
+}
 
 type SunSetPolicy {
   afterTimestamp: Long
@@ -319,6 +319,7 @@ input SourcesUpdateInput {
 input RetentionUpdateInput {
   maxCapacity: NullableIntUpdateOperationsInput
   maxAgeDays: NullableIntUpdateOperationsInput
+  ageReferenceField: WebDocumentDateFieldUpdateOperationsInput
 }
 
 input CreateWebDocumentInput {
@@ -548,7 +549,7 @@ type RemoteNativeFeed {
   title: String!
   author: String
   description: String
-  items: [WebDocument!]
+  items: [WebDocument!]!
   language: String
   websiteUrl: String
 }
@@ -1191,6 +1192,10 @@ input NullableBoolUpdateOperationsInput {
 
 input NullableIntUpdateOperationsInput {
   set: Int
+}
+
+input WebDocumentDateFieldUpdateOperationsInput {
+  set: WebDocumentDateField!
 }
 
 input NullableLongUpdateOperationsInput {

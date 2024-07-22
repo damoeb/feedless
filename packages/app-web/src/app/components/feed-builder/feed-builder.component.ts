@@ -14,10 +14,11 @@ import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
-  GqlNativeFeed, GqlProductCategory,
+  GqlNativeFeed,
+  GqlProductCategory,
   GqlRemoteNativeFeed,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -174,7 +175,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.repositories.push(...repositories);
     this.changeRef.detectChanges();
   }
-
 
   async scrapeUrl() {
     if (!this.url) {

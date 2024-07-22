@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.util.ResourceUtils
@@ -93,7 +93,7 @@ internal class WebToFeedTransformerTest {
     assertEquals(expected, articles.map { article -> article.url })
   }
 
-  fun getArticles(html: String, url: URL, strictMode: Boolean): List<RichArticle> {
+  fun getArticles(html: String, url: URL, strictMode: Boolean): List<JsonItem> {
 
     val document = Jsoup.parse(html)
 

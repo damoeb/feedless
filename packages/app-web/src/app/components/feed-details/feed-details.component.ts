@@ -1,41 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import {
-  GqlFeedlessPlugins,
-  GqlProductCategory,
-  GqlScrapeRequest,
-  GqlSortOrder,
-  GqlVisibility,
-  GqlWebDocumentField,
-} from '../../../generated/graphql';
-import {
-  FeedlessPlugin,
-  Repository,
-  SubscriptionSource,
-  WebDocument,
-} from '../../graphql/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { GqlFeedlessPlugins, GqlProductCategory, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
+import { FeedlessPlugin, Repository, RepositoryFull, SubscriptionSource, WebDocument } from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
-  getScrapeRequest,
+  getScrapeRequest
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import {
-  AlertController,
-  ModalController,
-  PopoverController,
-  ToastController,
-} from '@ionic/angular';
-import {
-  FeedWithRequest,
-  tagsToString,
-} from '../feed-builder/feed-builder.component';
+import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
+import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -68,7 +41,9 @@ type Pair<A, B> = {
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input({ required: true })
-  repository: Repository;
+  repositoryId: string;
+
+  protected repository: RepositoryFull;
 
   @Input()
   track: boolean;
@@ -98,6 +73,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected readonly compareByPixel: GqlWebDocumentField =
     GqlWebDocumentField.Pixel;
 
+  fromNow = relativeTimeOrElse;
+  private seed = Math.random();
+  sourcesModalId: string = `open-sources-modal-${this.seed}`;
+  settingsModalId: string = `open-settings-modal-${this.seed}`;
+
   constructor(
     private readonly modalService: ModalService,
     private readonly alertCtrl: AlertController,
@@ -118,6 +98,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.repository = await this.repositoryService.getRepositoryById(this.repositoryId);
     if (this.repository.product === GqlProductCategory.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
@@ -126,7 +107,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
-    this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
+    if (this.repository.visibility === GqlVisibility.IsPrivate) {
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}&size=100`;
+    } else {
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom&size=100`;
+    }
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
@@ -189,7 +174,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getHealthColorForSource(
-    source: ArrayElement<Repository['sources']>,
+    source: ArrayElement<RepositoryFull['sources']>,
   ): BubbleColor {
     if (source.errornous) {
       return 'red';
@@ -261,8 +246,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  fromNow = relativeTimeOrElse;
-
   async deleteRepository() {
     await this.popoverCtrl.dismiss();
     const alert = await this.alertCtrl.create({
@@ -290,7 +273,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  getPluginsOfSource(source: ArrayElement<Repository['sources']>): string {
+  getPluginsOfSource(source: ArrayElement<RepositoryFull['sources']>): string {
     // if (!this.plugins) {
     return '';
     // }
@@ -308,11 +291,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return this.plugins.find((plugin) => plugin.id === pluginId)?.name;
   }
 
-  stringifyTags(source: ArrayElement<Repository['sources']>) {
+  stringifyTags(source: ArrayElement<RepositoryFull['sources']>) {
     return tagsToString(source.tags) || 'Add tags';
   }
 
-  stringifyLocalization(source: ArrayElement<Repository['sources']>) {
+  stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
     const { localized } = source;
     return localized
       ? `(${localized.lat},${localized.lon})`
@@ -354,38 +337,40 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  async editLocalization(source: ArrayElement<Repository['sources']>) {
+  async editLocalization(source: ArrayElement<RepositoryFull['sources']>) {
     const geoTag = await this.modalService.openSearchAddressModal();
-    this.repository = await this.repositoryService.updateRepository({
-      where: {
-        id: this.repository.id,
-      },
-      data: {
-        sources: {
-          update: [
-            {
-              where: {
-                id: source.id,
-              },
-              data: {
-                localized: geoTag
-                  ? {
+    if (geoTag) {
+      this.repository = await this.repositoryService.updateRepository({
+        where: {
+          id: this.repository.id,
+        },
+        data: {
+          sources: {
+            update: [
+              {
+                where: {
+                  id: source.id,
+                },
+                data: {
+                  localized: geoTag
+                    ? {
                       set: {
                         lat: parseFloat(`${geoTag.lat}`),
                         lon: parseFloat(`${geoTag.lon}`),
                       },
                     }
-                  : null,
+                    : null,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
-      },
-    });
-    this.changeRef.detectChanges();
+      });
+      this.changeRef.detectChanges();
+    }
   }
 
-  async editTags(source: ArrayElement<Repository['sources']>) {
+  async editTags(source: ArrayElement<RepositoryFull['sources']>) {
     const tags = await this.modalService.openTagModal({
       tags: source.tags || [],
     });
@@ -515,7 +500,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await toast.present();
   }
 
-  getUrl(source: ArrayElement<Repository['sources']>): string {
-    return source.flow.sequence.find(action => action.fetch).fetch.get.url.literal;
+  getUrl(source: ArrayElement<RepositoryFull['sources']>): string {
+    return source.flow.sequence.find((action) => action.fetch).fetch.get.url
+      .literal;
   }
 }

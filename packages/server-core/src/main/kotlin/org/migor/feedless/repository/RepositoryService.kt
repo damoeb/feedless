@@ -151,7 +151,7 @@ class RepositoryService {
     } else {
       ""
     }
-    repo.sourcesSyncExpression = subInput.sinkOptions.refreshCron?.let {
+    repo.sourcesSyncCron = subInput.sinkOptions.refreshCron?.let {
       planConstraintsService.auditCronExpression(subInput.sinkOptions.refreshCron)
     } ?: ""
     repo.retentionMaxCapacity =
@@ -225,13 +225,14 @@ class RepositoryService {
     return saved
   }
 
-  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"repo/\" + #repositoryId + #tag")
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"repo/\" + #repositoryId + #tag + #page + #pageSize")
   @Transactional(readOnly = true)
   fun getFeedByRepositoryId(corrId: String, repositoryId: String, page: Int, tag: String? = null, shareKey: String? = null): JsonFeed {
     val id = UUID.fromString(repositoryId)
     val repository = findById(corrId, id, shareKey)
 
-    val pageable = toPageRequest(page, 10)
+    val pageSize = 11
+    val pageable = toPageRequest(page, pageSize)
     val pageResult =
       documentService.findAllByRepositoryId(id, status = ReleaseStatus.released, tag = tag, pageable = pageable, shareKey = shareKey)
     val items = pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
@@ -251,17 +252,12 @@ class RepositoryService {
     jsonFeed.description = repository.description
     jsonFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
     jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
-    jsonFeed.items = items
+    jsonFeed.items = items.filterIndexed { index, _ -> index < pageSize - 1}
     jsonFeed.imageUrl = null
+    jsonFeed.page = page
     jsonFeed.expired = false
     jsonFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
-
-    if (!pageResult.isLast) {
-      jsonFeed.nextUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page + 1}"
-    }
-    if (!pageResult.isFirst) {
-      jsonFeed.previousUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom?page=${page - 1}"
-    }
+    jsonFeed.isLast = items.size < pageSize
 
     return jsonFeed
   }
@@ -319,7 +315,7 @@ class RepositoryService {
     val product = sessionService.activeProductFromRequest()!!
     data.refreshCron?.let {
       it.set?.let {
-        repository.sourcesSyncExpression = planConstraintsService.auditCronExpression(it)
+        repository.sourcesSyncCron = planConstraintsService.auditCronExpression(it)
         repository.triggerScheduledNextAt = calculateScheduledNextAt(
           it, repository.ownerId,
           product,

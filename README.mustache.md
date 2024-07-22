@@ -14,6 +14,10 @@
 {{{localSetup}}}
 {{{apps.feedless.localSetup}}}
 
+# Support & Contact
+- Public Mail Group feedless@googlegroups.com
+- Contact feedlessapp@proton.me
+
 ## License
 
 {{apps.feedless.title}} {{{license}}}

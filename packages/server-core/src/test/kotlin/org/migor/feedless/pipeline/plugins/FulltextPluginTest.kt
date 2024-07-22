@@ -39,9 +39,7 @@ class FulltextPluginTest {
     val corrId = "test"
     val webDocument = Mockito.mock(DocumentEntity::class.java)
     val subscription = Mockito.mock(RepositoryEntity::class.java)
-    val params = PluginExecutionParamsInput.newBuilder()
-
-      .build()
+    val params = PluginExecutionParamsInput()
     fulltextPlugin.mapEntity(corrId = corrId, document = webDocument, repository = subscription, params = params)
   }
 }

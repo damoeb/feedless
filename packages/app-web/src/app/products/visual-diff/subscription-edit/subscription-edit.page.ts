@@ -1,15 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
-import { BoundingBox, XyPosition } from '../../../components/embedded-image/embedded-image.component';
+import {
+  BoundingBox,
+  XyPosition,
+} from '../../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
   GqlScrapeEmit,
   GqlScrapeRequestInput,
   GqlWebDocumentField,
-  GqlXyPosition
+  GqlXyPosition,
 } from '../../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
@@ -217,6 +226,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
               },
             },
             ...this.getActionsRequestFragment(),
+            this.getEmit(),
           ],
         },
       };
@@ -233,19 +243,22 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         this.embedScreenshot = null;
         this.changeRef.detectChanges();
 
-        const fetchData = scrapeResponse.outputs.find((o) => o.fetch).fetch;
+        const fetchAction = scrapeResponse.outputs.find((o) => o.fetch).fetch;
+        const extractAction = scrapeResponse.outputs.find(
+          (o) => o.extract,
+        ).extract;
 
         this.embedScreenshot = {
-          mimeType: 'image/png',
-          data: fetchData.debug.screenshot,
+          mimeType: extractAction.fragments[0].data.mimeType,
+          data: extractAction.fragments[0].data.data,
           url,
-          viewport: fetchData.debug.viewport,
+          viewport: fetchAction.debug.viewport,
         };
-
         this.embedWebsite = {
           mimeType: 'text/html',
-          data: fetchData.data,
-          url: this.form.value.url,
+          data: extractAction.fragments[0].html.data,
+          url,
+          viewport: fetchAction.debug.viewport,
         };
       }
     } catch (e) {
@@ -438,7 +451,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
                 ? this.form.value.elementXpath
                 : '/',
             },
-            emit: [GqlScrapeEmit.Pixel],
+            emit: [GqlScrapeEmit.Pixel, GqlScrapeEmit.Html],
           },
         },
       };

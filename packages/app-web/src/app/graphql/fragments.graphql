@@ -76,6 +76,20 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
   jsonData
 }
 
+fragment SourceFragment on ScrapeRequest {
+  id
+  errornous
+  tags
+  localized {
+    lat
+    lon
+  }
+  lastErrorMessage
+  flow {
+    ...ScrapeFlowFragment
+  }
+}
+
 fragment RepositoryFragment on Repository {
   id
   ownerId
@@ -113,19 +127,6 @@ fragment RepositoryFragment on Repository {
   retention {
     maxAgeDays
     maxCapacity
-  }
-  sources {
-    id
-    errornous
-    tags
-    localized {
-      lat
-      lon
-    }
-    lastErrorMessage
-    flow {
-      ...ScrapeFlowFragment
-    }
   }
 }
 

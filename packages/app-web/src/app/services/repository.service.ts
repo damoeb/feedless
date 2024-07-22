@@ -26,7 +26,7 @@ import {
   UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { Repository } from '../graphql/types';
+import { Repository, RepositoryFull } from '../graphql/types';
 import { ServerConfigService } from './server-config.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
@@ -140,7 +140,7 @@ export class RepositoryService {
   async getRepositoryById(
     id: string,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Repository> {
+  ): Promise<RepositoryFull> {
     return this.apollo
       .query<GqlRepositoryByIdQuery, GqlRepositoryByIdQueryVariables>({
         query: RepositoryById,

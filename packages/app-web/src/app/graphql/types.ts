@@ -25,6 +25,7 @@ export type SubscriptionSource = GetElementType<
 export type Repository = GetElementType<
   GqlCreateRepositoriesMutation['createRepositories']
 >;
+export type RepositoryFull = GqlRepositoryByIdQuery['repository'];
 export type Product = GetElementType<GqlListProductsQuery['products']>;
 
 export type WebDocument = GqlWebDocumentByIdQuery['webDocument'];

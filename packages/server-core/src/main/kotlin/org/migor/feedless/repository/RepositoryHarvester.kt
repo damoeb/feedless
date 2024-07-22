@@ -17,6 +17,7 @@ import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -126,7 +127,7 @@ class RepositoryHarvester internal constructor() {
 
   private fun updateScheduledNextAt(corrId: String, repository: RepositoryEntity) {
     val scheduledNextAt = repositoryService.calculateScheduledNextAt(
-      repository.sourcesSyncExpression,
+      repository.sourcesSyncCron,
       repository.ownerId,
       repository.product,
       LocalDateTime.now()
@@ -148,7 +149,6 @@ class RepositoryHarvester internal constructor() {
             .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)))
             .also { recoverErrorState(source) }
         } catch (e: Exception) {
-          e.printStackTrace()
           log.warn("[$subCorrId] ${e.message}")
           if (e !is ResumableHarvestException) {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
@@ -257,9 +257,12 @@ class RepositoryHarvester internal constructor() {
   private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed, source: SourceEntity) {
     log.info("[$corrId] importFeed")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+
+//  todo set name  sourceDAO.save()
+
     feed.items
-      ?.distinctBy { it.url }
-      ?.forEach {
+      .distinctBy { it.url }
+      .forEach {
         try {
           val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
           val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
@@ -391,7 +394,7 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, sour
     d.contentRawMime = mime
   }
   d.tags = source.tags
-  d.latLon = source.latLon
+  d.latLon = source.latLon ?: this.localized?.toPoint()
   d.contentHtml = contentHtml
   d.imageUrl = ""
   d.contentText = StringUtils.trimToEmpty(contentText)

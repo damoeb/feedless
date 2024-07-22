@@ -15,6 +15,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
+import org.migor.feedless.generated.types.CronRun
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
@@ -46,6 +47,9 @@ class RepositoryResolver {
 
   @Autowired
   private lateinit var sourceDAO: SourceDAO
+
+  @Autowired
+  private lateinit var repositoryCronRunDAO: RepositoryCronRunDAO
 
 
   @Throttled
@@ -135,6 +139,16 @@ class RepositoryResolver {
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun cronRuns(
+    dfe: DgsDataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<CronRun> = coroutineScope {
+    val source: Repository = dfe.getSource()
+    repositoryCronRunDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id)).map { it.toDto()}
+  }
+
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val source: Repository = dfe.getSource()
     sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id))
@@ -143,6 +157,14 @@ class RepositoryResolver {
       .distinct()
   }
 
+}
+
+private fun RepositoryCronRunEntity.toDto(): CronRun {
+  return CronRun(
+    isSuccessful = !this.isSuccessful,
+    message = this.message,
+    executedAt = this.executedAt.time
+  )
 }
 
 private fun handlePageNumber(page: Int?): Int =

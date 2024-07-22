@@ -25,14 +25,13 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
   private val log = LoggerFactory.getLogger(GraphQLExceptionHandler::class.simpleName)
 
   override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult> {
-    handlerParameters?.exception!!.printStackTrace()
-    return when (handlerParameters.exception) {
+    return when (handlerParameters?.exception) {
       is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(
         handlerParameters.exception,
         handlerParameters
       )
 
-      else -> when (handlerParameters.exception?.cause) {
+      else -> when (handlerParameters?.exception?.cause) {
         is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(
           handlerParameters.exception.cause,
           handlerParameters

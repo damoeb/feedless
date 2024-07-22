@@ -2,6 +2,7 @@
         version="1.0"
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:feedless="http://feedless.org/xml/1.0"
         exclude-result-prefixes="atom"
 >
     <xsl:output method="html" version="1.0" encoding="UTF-8" indent="yes"/>
@@ -120,20 +121,15 @@
                   <xsl:apply-templates select="atom:feed/atom:entry" />
 
                   <p>
-<!--                    <xsl:if test="atom:feed/atom:link[@rel='previous'] != ''">-->
-<!--                      <a>-->
-<!--                        <xsl:attribute name="href">-->
-<!--                          <xsl:value-of select="atom:feed/atom:link[@rel='previous']/@href"  disable-output-escaping="yes" />-->
-<!--                        </xsl:attribute>-->
-<!--                        Previous Page-->
-<!--                      </a>-->
-<!--                    </xsl:if>-->
-<!--                    <a>-->
-<!--                      <xsl:attribute name="href">-->
-<!--                        <xsl:value-of select="atom:feed/atom:link[@rel='next']/@href"  disable-output-escaping="yes" />-->
-<!--                      </xsl:attribute>-->
-<!--                      Next Page-->
-<!--                    </a>-->
+                    Page <xsl:value-of select="atom:feed/feedless:page" disable-output-escaping="yes" />
+                    <xsl:if test="atom:feed/atom:link[@rel='next']">
+                      <a>
+                        <xsl:attribute name="href">
+                          <xsl:value-of select="atom:feed/atom:link[@rel='next']/@href"  disable-output-escaping="yes" />
+                        </xsl:attribute>
+                        Next Page
+                      </a>
+                    </xsl:if>
                   </p>
                 </section>
             </body>
@@ -193,6 +189,10 @@
                     </xsl:attribute>
                     <xsl:value-of select="atom:title"/>
                 </a>
+                <xsl:if
+                  test="feedless:startingAt">
+                  (Event)
+                </xsl:if>
             </h3>
             <p>
               Link: <xsl:value-of select="atom:link/@href"/>
@@ -221,6 +221,28 @@
 <!--                <xsl:value-of select="atom:content[starts-with(@type,'text')]" disable-output-escaping="yes" />-->
 <!--              </xsl:if>-->
             </p>
+            <xsl:if
+              test="feedless:startingAt">
+              <p>
+                <small>
+                    Starting At: <xsl:value-of select="feedless:startingAt" />
+                </small>
+              </p>
+            </xsl:if>
+            <xsl:if
+              test="feedless:latLon">
+              <p>
+                <small>
+                  Location:
+                  <a target="_blank">
+                    <xsl:attribute name="href">
+                      <xsl:value-of select="concat('https://www.openstreetmap.org/#map=14/', feedless:latLon/@lat, '/', feedless:latLon/@lon)"  disable-output-escaping="yes" />
+                    </xsl:attribute>
+                    <xsl:value-of select="feedless:latLon/@lat" />, <xsl:value-of select="feedless:latLon/@lon" />
+                  </a>
+                </small>
+              </p>
+            </xsl:if>
             <small>
                 Published: <xsl:value-of select="atom:updated" />
             </small>

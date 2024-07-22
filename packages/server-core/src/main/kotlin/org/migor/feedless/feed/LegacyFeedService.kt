@@ -88,6 +88,7 @@ class LegacyFeedService {
     return if (legacySupport()) {
       val source = SourceEntity()
       val fetch = FetchActionEntity()
+      fetch.pos = 1
       fetch.forcePrerender = prerender
       fetch.url = url
       fetch.isVariable = false

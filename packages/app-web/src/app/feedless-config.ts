@@ -257,10 +257,24 @@ way to think, learn and remember.`,
       version: [0, 7, 0],
       phase: 'development',
       listed: false,
-      summary: 'Build automated worflows visually or using code',
-      descriptionMarkdown: `It's quite astoinding that the web is so hard to automate, the word _bot_ mainly has a negative connotation. I believe the opposite.
-There is a dual use and everyone should have their well-behaving bots roaming the web in their interest.
-Popular solutions like zapier of ITTT steer into that direction.`,
+      summary: 'Build automated workflows visually or using code',
+      descriptionMarkdown: `Time is precious, let's automate the web, build our custom well-behaving bots. _feedless_ is a general platform to
+      build web-based workflows. Extendable using plugins. Popular solutions like zapier of ITTT steer into that direction.
+
+Extraction
+ * create feed from website
+ * merge multiple feeds
+ * use feed and filter title not includes 'Ad'
+ * track pixel page changes of [url], but ship latest text and latest image
+ * track text page changes of [url], but ship diff to first for 2 weeks
+ * track price of product on [url] by extracting field, but shipping product fragment as pixel and markup
+ * use existing feed -> readability, inline images and untrack urls
+ * generate feed, fix title by removing prefix, trim after length 20
+ * inbox: select feeds, filter last 24h, order by quality, pick best 12
+ * digest: select feed, send best 10 end of week as digest via mail
+ * create feed activate tracking
+ * create just the document repository
+`,
       videoUrl: '',
       features: ['Workflow Builder', 'Self-Hosting or SaaS'],
       localSetupBash: ``,

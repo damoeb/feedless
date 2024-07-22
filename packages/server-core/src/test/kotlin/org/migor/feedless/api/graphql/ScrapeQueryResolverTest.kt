@@ -9,6 +9,7 @@ import org.migor.feedless.agent.AgentJob
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -73,7 +74,7 @@ class ScrapeQueryResolverTest {
       .thenReturn(httpResponse)
 
     // when
-    val scrapeResponse = callScrape(PluginExecutionParamsInput.newBuilder().build())
+    val scrapeResponse = callScrape(PluginExecutionParamsInput())
 
     // then
     executeFeedAssertions(scrapeResponse)
@@ -86,16 +87,18 @@ class ScrapeQueryResolverTest {
     val httpResponse = HttpResponse("text/html", url, 200, feed.toByteArray())
     Mockito.`when`(httpServiceMock.httpGetCaching(anyString(), anyString(), anyInt(), any<Map<String, Any>>()))
       .thenReturn(httpResponse)
-    val params = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_feed(
-        FeedParamsInput.newBuilder()
-          .generic(SelectorsInput.newBuilder()
-            .contextXPath("//div[1]/div[1]/div[1]/div")
-            .linkXPath("./h1[1]/a[1]")
-            .build())
-          .build()
+    val params = PluginExecutionParamsInput(
+      org_feedless_feed = FeedParamsInput(
+        generic = SelectorsInput(
+          contextXPath = "//div[1]/div[1]/div[1]/div",
+          linkXPath = "./h1[1]/a[1]",
+          paginationXPath = "",
+          dateXPath = "",
+          dateIsStartOfEvent = false,
+          extendContext = ExtendContentOptions.NONE
+        )
       )
-      .build()
+    )
 
     // when
     val scrapeResponse = callScrape(params)
@@ -155,12 +158,9 @@ class ScrapeQueryResolverTest {
   }
 
   private fun executeFeedAssertions(scrapeResponse: ScrapeResponse) {
-    val feedField = scrapeResponse.elements[0].selector.fields[0]
-    Assertions.assertThat(feedField.name).isEqualTo(FeedlessPlugins.org_feedless_feed.name)
-    Assertions.assertThat(feedField.value.one.mimeType).isEqualTo("application/json")
-    val actualFeed = JsonUtil.gson.fromJson(feedField.value.one.data, RemoteNativeFeed::class.java)
+    val actualFeed = scrapeResponse.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed
     Assertions.assertThat(actualFeed).isNotNull
-    Assertions.assertThat(actualFeed.items.size).isGreaterThan(0)
+    Assertions.assertThat(actualFeed!!.items.size).isGreaterThan(0)
   }
 
   private fun mockSecurityContext() {

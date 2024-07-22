@@ -3,7 +3,7 @@ import { WorkflowBuilderPage } from './workflow-builder.page';
 import { AppTestModule } from '../../app-test.module';
 import { WorkflowBuilderPageModule } from './workflow-builder.module';
 
-describe('FeedBuilderPage', () => {
+describe('WorkflowBuilderPage', () => {
   let component: WorkflowBuilderPage;
   let fixture: ComponentFixture<WorkflowBuilderPage>;
 

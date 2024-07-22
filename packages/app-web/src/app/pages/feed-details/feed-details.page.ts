@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { Repository, WebDocument } from '../../graphql/types';
+import { Repository, RepositoryFull, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -22,10 +22,9 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = true;
-  pages: WebDocument[][] = [];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  repository: Repository;
+  repository: RepositoryFull;
 
   protected readonly dateFormat = dateFormat;
   feedUrl: string;

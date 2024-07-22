@@ -32,9 +32,6 @@ class AuthAnonymousResolver {
   @Autowired
   private lateinit var cookieProvider: CookieProvider
 
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
   @Throttled
   @DgsMutation
   suspend fun authAnonymous(

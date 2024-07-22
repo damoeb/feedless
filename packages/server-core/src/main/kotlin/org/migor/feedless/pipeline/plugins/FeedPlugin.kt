@@ -24,6 +24,7 @@ import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.Selectors
 import org.migor.feedless.web.WebExtractService
 import org.migor.feedless.web.WebToFeedTransformer
+import org.migor.feedless.web.WebToFeedTransformer.Companion.normalizeTags
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -63,15 +64,19 @@ class FeedPlugin : FragmentTransformerPlugin {
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
 
     val feed = (executorParams.org_feedless_feed?.generic?.let {
-//    val extracts = webExtractService.extract(corrId, executorParams.org_feedless_feed!!.generic!!.toScrapeExtracts(), normalizeTags(document.body()))
-//    val feed = extracts.asJsonFeed()
+      val extracts = webExtractService.extract(
+        corrId,
+        executorParams.org_feedless_feed.generic.toScrapeExtracts(),
+        normalizeTags(document.body())
+      )
+      extracts.asJsonFeed()
 
       webToFeedTransformer.getFeedBySelectors(
         corrId, it.toSelectors(),
         document, URL(data.url)
       )
     } ?: feedParserService.parseFeed(corrId, data)).asRemoteNativeFeed()
-    log.debug("[$corrId] transformed to feed with ${feed.items!!.size} items")
+    log.debug("[$corrId] transformed to feed with ${feed.items.size} items")
 
     return PluginExecutionData(org_feedless_feed = feed)
   }
@@ -81,31 +86,31 @@ class FeedPlugin : FragmentTransformerPlugin {
 
 }
 
-//private fun ScrapeExtractResponse.asJsonFeed(): JsonFeed {
-//  val jsonFeed = JsonFeed()
-//  jsonFeed.id = ""
-//  jsonFeed.title = "feed"
-//  jsonFeed.websiteUrl = ""
-//  jsonFeed.publishedAt = Date()
-//  jsonFeed.items = fragments.map { it.asRichArticle() }
-//  jsonFeed.feedUrl = ""
-//
-//  return jsonFeed
-//}
+private fun ScrapeExtractResponse.asJsonFeed(): JsonFeed {
+  val jsonFeed = JsonFeed()
+  jsonFeed.id = ""
+  jsonFeed.title = "feed"
+  jsonFeed.websiteUrl = ""
+  jsonFeed.publishedAt = Date()
+  jsonFeed.items = fragments.map { it.asJsonItem() }
+  jsonFeed.feedUrl = ""
 
-//private fun ScrapeExtractFragment.asRichArticle(): JsonItem {
-//  val article = JsonItem()
-//
-////  article.id = FeedUtil.toURI("article", articleUrl)
-////  article.title = toTitle(linkText)
-////  article.url = articleUrl
-////  article.contentText = webToTextTransformer.extractText(content)
-////  article.contentRawBase64 = withAbsUrls(content, url).selectFirst("body")!!.html()
-////  article.contentRawMime = "text/html"
-////  article.publishedAt = pubDate
-////  article.startingAt = startingDate
-//  return article
-//}
+  return jsonFeed
+}
+
+private fun ScrapeExtractFragment.asJsonItem(): JsonItem {
+  val article = JsonItem()
+
+//  article.id = FeedUtil.toURI("article", this.text!!.data)
+//  article.title = toTitle(linkText)
+//  article.url = articleUrl
+//  article.contentText = webToTextTransformer.extractText(content)
+//  article.contentRawBase64 = withAbsUrls(content, url).selectFirst("body")!!.html()
+//  article.contentRawMime = "text/html"
+//  article.publishedAt = pubDate
+//  article.startingAt = startingDate
+  return article
+}
 
 private fun SelectorsInput.toScrapeExtracts(): DOMExtract {
   val extracts = mutableListOf(

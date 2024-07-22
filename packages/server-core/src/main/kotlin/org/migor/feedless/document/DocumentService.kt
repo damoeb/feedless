@@ -12,6 +12,7 @@ import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.WebDocumentOrderByInput
 import org.migor.feedless.generated.types.WebDocumentsWhereInput
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.session.SessionService
@@ -156,11 +157,20 @@ class DocumentService {
         val maxDate = Date.from(
           LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()
         )
-        documentDAO.deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
-          repository.id,
-          maxDate,
-          ReleaseStatus.released
-        )
+        if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.startingAt) {
+          documentDAO.deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+            repository.id,
+            maxDate,
+            ReleaseStatus.released
+          )
+        } else {
+          documentDAO.deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+            repository.id,
+            maxDate,
+            ReleaseStatus.released
+          )
+        }
+
       } ?: log.info("[$corrId] no retention with maxAgeDays given")
   }
 

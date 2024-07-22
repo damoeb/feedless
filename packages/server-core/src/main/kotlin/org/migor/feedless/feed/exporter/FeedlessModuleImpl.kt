@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.exporter
 
 import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
 import com.rometools.rome.feed.CopyFrom
 import com.rometools.rome.feed.impl.CloneableBean
 import com.rometools.rome.feed.impl.CopyFromHelper
@@ -13,24 +12,29 @@ class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessM
   @Expose(serialize = false, deserialize = false)
   private var COPY_FROM_HELPER: CopyFromHelper
 
-  @SerializedName(STARTING_AT)
+//  @SerializedName(STARTING_AT)
   private var startingAt: Date? = null
 
-  @SerializedName(LAT_LNG)
+//  @SerializedName(LAT_LNG)
   private var latLng: String? = null
+
+  private var page: Int? = null
 
   init {
     val basePropInterfaceMap: MutableMap<String, Class<*>> = HashMap<String, Class<*>>()
     basePropInterfaceMap["startingAt"] = Date::class.java
+    basePropInterfaceMap["latLng"] = String::class.java
+    basePropInterfaceMap["page"] = Int::class.java
     val basePropClassImplMap: Map<Class<out CopyFrom>, Class<*>> = HashMap<Class<out CopyFrom>, Class<*>>()
 
     COPY_FROM_HELPER = CopyFromHelper(FeedlessModule::class.java, basePropInterfaceMap, basePropClassImplMap)
   }
 
   companion object {
-    const val URI: String = "http://feedless.org/xml/1.0/"
+    const val URI: String = "http://feedless.org/xml/1.0"
     val NAMESPACE = org.jdom2.Namespace.getNamespace("feedless", URI)
     const val STARTING_AT = "startingAt"
+    const val PAGE = "page"
     const val LAT_LNG = "latLon"
     const val LAT = "lat"
     const val LNG = "lon"
@@ -46,6 +50,12 @@ class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessM
 
   override fun setLatLng(value: String?) {
     latLng = value
+  }
+
+  override fun getPage(): Int? = page
+
+  override fun setPage(value: Int?) {
+    page = value
   }
 
   override fun clone(): Any {

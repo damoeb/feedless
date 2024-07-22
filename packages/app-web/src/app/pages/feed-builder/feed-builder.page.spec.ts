@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedBuilderPage } from './feed-builder.page';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { FeedBuilderPageModule } from './feed-builder.module';
 
 describe('FeedBuilderPage', () => {
@@ -9,7 +9,12 @@ describe('FeedBuilderPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FeedBuilderPageModule, AppTestModule.withDefaults()],
+      imports: [
+        FeedBuilderPageModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockRepositories(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderPage);

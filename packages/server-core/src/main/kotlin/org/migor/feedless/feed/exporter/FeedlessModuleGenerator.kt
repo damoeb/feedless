@@ -31,10 +31,15 @@ class FeedlessModuleGenerator: ModuleGenerator {
     root.addNamespaceDeclaration(FeedlessModuleImpl.NAMESPACE)
 
     val feedlessModule = module.castToFeedlessModule()
-    val startingAt = feedlessModule.getStartingAt()
 
+    val startingAt = feedlessModule.getStartingAt()
     if (startingAt != null) {
       element.addContent(generateElement(FeedlessModuleImpl.STARTING_AT, DateParser.formatW3CDateTime(startingAt, Locale.US)))
+    }
+
+    val page = feedlessModule.getPage()
+    if (page != null) {
+      element.addContent(generateElement(FeedlessModuleImpl.PAGE, page.toString()))
     }
 
     val latlngStr = feedlessModule.getLatLng()

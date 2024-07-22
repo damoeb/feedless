@@ -27,5 +27,8 @@ query countRepositories($data: CountRepositoriesInput!) {
 query repositoryById($data: RepositoryWhereInput!) {
   repository(data: $data) {
     ...RepositoryFragment
+    sources {
+      ...SourceFragment
+    }
   }
 }

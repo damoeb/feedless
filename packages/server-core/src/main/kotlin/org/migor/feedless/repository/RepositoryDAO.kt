@@ -26,7 +26,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
       where e.archived = false
         and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
         and u.locked = false
-        and e.sourcesSyncExpression > ''
+        and e.sourcesSyncCron > ''
         and (e.disabledFrom is null or e.disabledFrom > :now)
       order by e.lastUpdatedAt asc """,
   )

@@ -25,14 +25,16 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
         select d1.id from DocumentEntity d1
         where d1.repositoryId = ?1
         and d1.status = ?2
-        order by d1.publishedAt desc
+        order by d1.startingAt asc, d1.publishedAt desc
         offset ?3 ROWS
     )
     """
   )
   fun deleteAllByRepositoryIdAndStatusWithSkip(repositoryId: UUID, status: ReleaseStatus, skip: Int)
 
-  fun deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(repositoryId: UUID, date: Date, status: ReleaseStatus)
+  fun deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(repositoryId: UUID, date: Date, status: ReleaseStatus)
+
+  fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: Date, released: ReleaseStatus)
 
   @Modifying
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -71,7 +73,6 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   )
   fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
   fun deleteAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>)
-  fun deleteAllByRepositoryIdAndIdNotIn(repositoryId: UUID, ids: List<UUID>)
   fun deleteAllByRepositoryIdAndId(repositoryId: UUID, fromString: UUID?)
 
 }

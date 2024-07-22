@@ -47,11 +47,7 @@ export class FeedsPage implements OnInit {
   }
 
   getHealthColorForFeed(repository: Repository): BubbleColor {
-    if (repository.sources.some((source) => source.errornous)) {
-      return 'red';
-    } else {
-      return 'green';
-    }
+    return 'green';
   }
 
   isPrivate(repository: Repository): boolean {

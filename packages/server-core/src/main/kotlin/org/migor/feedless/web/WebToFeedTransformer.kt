@@ -177,25 +177,6 @@ class WebToFeedTransformer(
 
     log.debug("Found ${linkGroups.size} link groups")
 
-//    val scrapeRequest = ScrapeRequest(
-//      id = "",
-//      flow = ScrapeFlow(
-//        sequence = listOf(
-//          ScrapeAction(
-//            fetch = HttpFetch(
-//                get = ScrapePrerender(
-//                  url = StringLiteralOrVariable(
-//                    literal = url.toString()
-//                  )
-//                )
-//            )
-//          )
-//        )
-//      )
-//    )
-
-//    val refineOptions = GenericFeedRefineOptions()
-
     val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
 
     return linkGroups

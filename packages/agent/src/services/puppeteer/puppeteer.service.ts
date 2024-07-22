@@ -328,7 +328,7 @@ export class PuppeteerService {
           data: exposePixel
             ? {
               mimeType: 'image/png',
-              base64Data: await getScreenshot(),
+              data: await getScreenshot(),
             }
             : null,
         }
@@ -360,7 +360,7 @@ export class PuppeteerService {
         {
           data:{
             mimeType: 'image/png',
-            base64Data: screenshot,
+            data: screenshot,
           }
         }
       ]

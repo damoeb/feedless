@@ -11,6 +11,9 @@ open class JsonFeed: java.io.Serializable {
   @SerializedName(value = "title")
   lateinit var title: String
 
+  @SerializedName(value = "page")
+  var page: Int = 0
+
   @SerializedName(value = "icon")
   var iconUrl: String? = null
 
@@ -61,8 +64,6 @@ open class JsonFeed: java.io.Serializable {
   var tags: List<String>? = null
 
   @Transient
-  var previousUrl: String? = null
+  var isLast: Boolean = true
 
-  @Transient
-  var nextUrl: String? = null
 }

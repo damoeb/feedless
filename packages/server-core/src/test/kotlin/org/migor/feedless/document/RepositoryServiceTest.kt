@@ -67,9 +67,9 @@ class RepositoryServiceTest {
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       repositoryService.create(
-        "-", RepositoriesCreateInput.newBuilder()
-          .repositories(listOf())
-          .build()
+        "-", RepositoriesCreateInput(
+          repositories = emptyList()
+        )
       )
     }
   }
@@ -82,26 +82,20 @@ class RepositoryServiceTest {
       .thenReturn(EntityVisibility.isPublic)
 
     val repositories = listOf<RepositoryCreateInput>(
-      RepositoryCreateInput.newBuilder()
-        .sources(listOf())
-//        .sourceOptions(
-//          SourceOptionsInput.newBuilder()
-//            .refreshCron("")
-//            .build()
-//        )
-        .product(ProductCategory.rssProxy)
-        .sinkOptions(
-          SinkOptionsInput.newBuilder()
-            .title("")
-            .description("")
-            .build()
+      RepositoryCreateInput(
+        sources = emptyList(),
+        product = ProductCategory.rssProxy,
+        sinkOptions = SinkOptionsInput(
+          title="",
+          description="",
+          withShareKey = false
         )
-        .build()
+      )
     )
     val createdRepositories = repositoryService.create(
-      corrId, RepositoriesCreateInput.newBuilder()
-        .repositories(repositories)
-        .build()
+      corrId, RepositoriesCreateInput(
+        repositories = repositories
+      )
     )
 
     assertThat(createdRepositories.size).isEqualTo(repositories.size)
@@ -110,8 +104,7 @@ class RepositoryServiceTest {
   @Test
   fun `given user is owner, updating repository works`() {
     val ssId = UUID.randomUUID()
-    val data = RepositoryUpdateDataInput.newBuilder()
-      .build()
+    val data = RepositoryUpdateDataInput()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(userId)
 

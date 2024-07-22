@@ -1,6 +1,9 @@
 package org.migor.feedless.feed
 
 import org.apache.commons.lang3.StringUtils
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -17,6 +20,7 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.WebDocument
@@ -166,6 +170,7 @@ private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
 //    e.contentRawMime = contentRawMime
 //  }
   e.repositoryId = repository.id
+  e.latLon = this.localized?.toPoint()
   e.contentText = StringUtils.trimToEmpty(contentText)
   e.status = ReleaseStatus.released
   e.publishedAt = Date(publishedAt)
@@ -175,4 +180,9 @@ private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
   e.updatedAt = Date(publishedAt)
   e.url = url
   return e
+}
+
+fun GeoPoint.toPoint(): Point {
+  val gf = GeometryFactory()
+  return gf.createPoint(Coordinate(lat, lon))
 }

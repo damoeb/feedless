@@ -2,17 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { RssBuilderProductPage } from './rss-builder-product.page';
-import { RssBuilderMenuComponent } from './rss-builder-menu/rss-builder-menu.component';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { DefaultRoutes } from '../default-routes';
 import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 const routes: Routes = [
-  {
-    path: '',
-    outlet: 'sidemenu',
-    component: RssBuilderMenuComponent,
-  },
   {
     path: '',
     component: RssBuilderProductPage,

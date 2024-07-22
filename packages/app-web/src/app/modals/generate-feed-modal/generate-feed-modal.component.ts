@@ -23,20 +23,21 @@ import {
   GqlScrapeRequestInput,
   GqlStringFilterOperator,
   GqlVisibility,
+  GqlWebDocumentDateField,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { debounce, interval, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
-import { Repository } from '../../graphql/types';
+import { Repository, RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
 
 export interface GenerateFeedModalComponentProps {
-  repository: Repository;
+  repository: RepositoryFull;
   modalTitle?: string;
   openAccordions?: GenerateFeedAccordion[];
 }
@@ -139,7 +140,8 @@ export class GenerateFeedModalComponent
     }),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
     maxCapacity: new FormControl<number>(null),
-    maxAgeDays: new FormControl<number>(null),
+    maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
+    ageReferenceField: new FormControl<GqlWebDocumentDateField>(GqlWebDocumentDateField.PublishedAt),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
@@ -155,7 +157,7 @@ export class GenerateFeedModalComponent
   conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
 
   @Input({ required: true })
-  repository: Repository;
+  repository: RepositoryFull;
 
   @ViewChild('remoteFeedPreviewComponent', { static: true })
   remoteFeedPreview: RemoteFeedPreviewComponent;
@@ -172,6 +174,7 @@ export class GenerateFeedModalComponent
   protected FilterFieldLink: FilterField = 'link';
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
+  protected readonly GqlWebDocumentDateField = GqlWebDocumentDateField;
   isThrottled: boolean;
   modalTitle = 'Finalize Feed';
   @Input()
@@ -343,6 +346,7 @@ export class GenerateFeedModalComponent
           fetchFrequency,
           maxAgeDays,
           maxCapacity,
+          ageReferenceField
         } = this.formFg.value;
         await this.repositoryService.updateRepository({
           where: {
@@ -368,6 +372,9 @@ export class GenerateFeedModalComponent
               },
               maxAgeDays: {
                 set: maxAgeDays || null,
+              },
+              ageReferenceField: {
+                set: ageReferenceField,
               },
             },
           },

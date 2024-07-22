@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { Subscription } from 'rxjs';
 import { RepositoryService } from '../../../services/repository.service';
-import { Repository, WebDocument } from '../../../graphql/types';
+import { Repository, RepositoryFull, WebDocument } from '../../../graphql/types';
 import { DocumentService } from '../../../services/document.service';
 import { Title } from '@angular/platform-browser';
 import { GqlSortOrder } from '../../../../generated/graphql';
@@ -23,7 +23,7 @@ import { GqlSortOrder } from '../../../../generated/graphql';
 export class FeedDetailsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   items: WebDocument[];
-  repository: Repository;
+  repository: RepositoryFull;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,

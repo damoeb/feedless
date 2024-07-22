@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.feed.exporter.FeedlessModule
 import org.migor.feedless.feed.exporter.FeedlessModuleImpl
 import org.migor.feedless.feed.exporter.castToFeedlessModule
 import org.migor.feedless.feed.parser.json.JsonAttachment
@@ -26,10 +25,6 @@ import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.io.StringReader
 import java.util.*
 

@@ -76,6 +76,6 @@ fun SourceEntity.toDto(corrId: String): ScrapeRequest {
         lon = it.y,
       )
     },
-    flow = ScrapeFlow(sequence = actions.map { it.toDto() })
+    flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

@@ -11,6 +11,7 @@ import org.migor.feedless.actions.DomActionEntity
 import org.migor.feedless.actions.DomEventType
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.actions.ExtractEmit
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
@@ -112,14 +113,19 @@ class ScrapeService {
 
     val firstFitchAction = context.outputs.find { it.fetch != null }!!
     val plugin = pluginService.resolveFragmentTransformerById(action.pluginId)
+    try {
     val data = plugin
       ?.transformFragment(corrId, action, firstFitchAction.fetch!!.response)
       ?: throw BadRequestException("plugin '${action.pluginId}' does not exist ($corrId)")
 
-    val output = PluginExecutionResponse(pluginId = plugin.id(), data = data)
-    val result = ScrapeActionOutput(execute = output)
+      val output = PluginExecutionResponse(pluginId = plugin.id(), data = data)
+      val result = ScrapeActionOutput(execute = output)
 
-    context.outputs.add(result)
+      context.outputs.add(result)
+    } catch (e: Exception) {
+      context.logs.add(e.stackTraceToString())
+      log.warn("[$corrId] handlePluginExecution error", e)
+    }
   }
 
   private fun handleDomAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
@@ -145,12 +151,12 @@ class ScrapeService {
   }
 
   private fun handleExtract(corrId: String, action: ExtractXpathActionEntity, context: ScrapeContext) {
-//    if (action.emit) {
-//      this.noopAction(corrId, action)
-//    } else {
+    if (action.emit.contains(ExtractEmit.pixel)) {
+      this.noopAction(corrId, action)
+    } else {
       log.info("[$corrId] handleExtract $action")
       TODO("Not yet implemented")
-//    }
+    }
   }
 
   private fun handleFetch(

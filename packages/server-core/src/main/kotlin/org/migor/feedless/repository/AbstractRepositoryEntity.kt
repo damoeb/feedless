@@ -56,12 +56,20 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.user.UserEntity
 import org.springframework.context.annotation.Lazy
 import java.util.*
 
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
+
+enum class MaxAgeDaysDateField {
+  createdAt,
+  startingAt,
+  publishedAt
+}
+
 
 @Entity
 @Table(name = "t_repository")
@@ -84,13 +92,17 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
   @Column(nullable = false, name = "scheduler_expression")
-  open lateinit var sourcesSyncExpression: String
+  open lateinit var sourcesSyncCron: String
 
   @Column(name = "retention_max_items")
   open var retentionMaxCapacity: Int? = null
 
   @Column(name = "retention_max_age_days")
   open var retentionMaxAgeDays: Int? = null
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "retention_max_age_days_field", nullable = false, length = 50)
+  open var retentionMaxAgeDaysReferenceField: MaxAgeDaysDateField = MaxAgeDaysDateField.publishedAt
 
   @Temporal(TemporalType.TIMESTAMP)
   @UpdateTimestamp
@@ -189,9 +201,10 @@ fun RepositoryEntity.toDto(): Repository {
     description = description,
     title = title,
     segmented = segmentation?.toDto(),
-    refreshCron = sourcesSyncExpression,
+    refreshCron = sourcesSyncCron,
     documentCount = 0,
-    tags = emptyList()
+    tags = emptyList(),
+    cronRuns = emptyList()
   )
 }
 
@@ -270,5 +283,13 @@ private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
     readability = readability,
     inheritParams = false
   )
+}
+
+fun WebDocumentDateField.fromDto(): MaxAgeDaysDateField {
+  return when(this) {
+    WebDocumentDateField.createdAt -> MaxAgeDaysDateField.createdAt
+    WebDocumentDateField.startingAt -> MaxAgeDaysDateField.startingAt
+    WebDocumentDateField.publishedAt -> MaxAgeDaysDateField.publishedAt
+  }
 }
 

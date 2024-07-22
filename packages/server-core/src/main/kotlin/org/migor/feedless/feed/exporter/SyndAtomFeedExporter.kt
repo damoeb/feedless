@@ -44,14 +44,6 @@ class SyndAtomFeedExporter {
 
   private fun toSyndFeed(jsonFeed: JsonFeed): SyndFeed {
     val feed = SyndFeedImpl()
-    val atomLinkModule = AtomLinkModuleImpl()
-    val atomLink = Link()
-    atomLink.rel = "self"
-    atomLink.href = jsonFeed.feedUrl
-    atomLink.type = "application/atom+xml"
-    atomLinkModule.link = atomLink
-    feed.modules.add(atomLinkModule)
-
     feed.uri = "https://feedless.org/feed/${jsonFeed.id}"
     feed.feedType = "atom_1.0"
     feed.title = jsonFeed.title
@@ -83,7 +75,7 @@ class SyndAtomFeedExporter {
     feed.publishedDate = jsonFeed.publishedAt
     val link = SyndLinkImpl()
     link.rel = "self"
-    link.href = jsonFeed.feedUrl
+    link.href = jsonFeed.feedUrl + "?page=${jsonFeed.page}"
     link.type = "application/atom+xml"
 
     val website = SyndLinkImpl()
@@ -93,21 +85,19 @@ class SyndAtomFeedExporter {
 
     val links = mutableListOf(link, website)
 
-    jsonFeed.nextUrl?.let {
+    if (!jsonFeed.isLast) {
       val next = SyndLinkImpl()
       next.rel = "next"
-      next.href = jsonFeed.nextUrl
+      next.href = jsonFeed.feedUrl + "?page=${jsonFeed.page+1}"
       next.type = "application/atom+xml"
-    }
-
-    jsonFeed.previousUrl?.let {
-      val previous = SyndLinkImpl()
-      previous.rel = "previous"
-      previous.href = jsonFeed.previousUrl
-      previous.type = "application/atom+xml"
+      links.add(next)
     }
 
     feed.links = links.toList()
+
+    val feedlessModule = FeedlessModuleImpl()
+    feedlessModule.setPage(jsonFeed.page)
+    feed.modules.add(feedlessModule)
 
     feed.entries = jsonFeed.items.map { toSyndEntry(it) }
     return feed
@@ -126,7 +116,6 @@ class SyndAtomFeedExporter {
     feedlessModule.setLatLng(JsonUtil.gson.toJson(article.latLng))
     entry.modules.add(feedlessModule)
 
-
     article.imageUrl?.let {
       val image = Element("image", Namespace.getNamespace("image", "http://web.resource.org/rss/1.0/modules/image/"))
       image.addContent(article.imageUrl)
@@ -144,18 +133,6 @@ class SyndAtomFeedExporter {
     entryInformation.author = article.authors?.firstOrNull()?.name
 
     entry.modules.add(entryInformation)
-//    article.contentHtml?.let {
-////      val module: ContentModule = ContentModuleImpl()
-////
-////      val item = ContentItem()
-////      item.contentFormat = "text/html"
-////      item.contentValue = it
-////      module.contentItems = listOf(item)
-////      entry.modules.add(module)
-//      val module: ContentModule = ContentModuleImpl()
-//      module.encodeds = listOf(it)
-//      entry.modules.add(module)
-//    }
 
     entry.link = article.url
     entry.author = URL(article.url).host
@@ -167,13 +144,8 @@ class SyndAtomFeedExporter {
 
   private fun toSyndDescription(article: JsonItem): SyndContent {
     val content = SyndContentImpl()
-    if (StringUtils.isBlank(article.contentHtml)) {
-      content.value = article.contentText
-      content.type = "text/plain"
-    } else {
-      content.value = article.contentHtml
-      content.type = "text/html"
-    }
+    content.value = article.contentText
+    content.type = "text/plain"
 
     return content
   }

@@ -29,81 +29,69 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `given no filters are present, it passes`() {
-    val filterParams = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_filter(listOf())
-      .build()
+    val filterParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf()
+    )
     val keep = service.filterEntity(corrId, webDocument, filterParams, 0)
     assertThat(keep).isTrue()
   }
 
   @Test
   fun `given a number filter is provided, it works`() {
-    val filterParams = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_filter(
-        listOf(
-          CompositeFilterParamsInput.newBuilder()
-            .include(
-              CompositeFieldFilterParamsInput.newBuilder()
-                .index(
-                  NumericalFilterParamsInput.newBuilder()
-                    .operator(NumberFilterOperator.eq)
-                    .value(0)
-                    .build()
-                )
-                .build()
+    val filterParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        CompositeFilterParamsInput(
+          include = CompositeFieldFilterParamsInput(
+            index = NumericalFilterParamsInput(
+              operator = NumberFilterOperator.eq,
+              value = 0
             )
-            .build()
+          )
         )
       )
-      .build()
+
+    )
 
     assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isTrue()
   }
 
   @Test
   fun `given a string filter is provided, it works`() {
-    val filterParams = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_filter(
-        listOf(
-          CompositeFilterParamsInput.newBuilder()
-            .include(
-              CompositeFieldFilterParamsInput.newBuilder()
-                .title(
-                  StringFilterParamsInput.newBuilder()
-                    .operator(StringFilterOperator.startsWidth)
-                    .value("foo")
-                    .build()
-                )
-                .build()
+    val filterParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        CompositeFilterParamsInput(
+          include = CompositeFieldFilterParamsInput(
+            title = StringFilterParamsInput(
+              operator = StringFilterOperator.startsWidth,
+              value = "foo"
             )
-            .build()
+
+          )
+
         )
       )
-      .build()
+
+    )
 
     assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isTrue()
   }
 
   @Test
   fun excludeStringFilterWorks() {
-    val filterParams = PluginExecutionParamsInput.newBuilder()
-      .org_feedless_filter(
-        listOf(
-          CompositeFilterParamsInput.newBuilder()
-            .exclude(
-              CompositeFieldFilterParamsInput.newBuilder()
-                .title(
-                  StringFilterParamsInput.newBuilder()
-                    .operator(StringFilterOperator.startsWidth)
-                    .value("foo")
-                    .build()
-                )
-                .build()
+    val filterParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        CompositeFilterParamsInput(
+          exclude = CompositeFieldFilterParamsInput(
+            title = StringFilterParamsInput(
+              operator = StringFilterOperator.startsWidth,
+              value = "foo"
             )
-            .build()
+          )
+
         )
       )
-      .build()
+
+    )
 
     assertThat(service.filterEntity(corrId, webDocument, filterParams, 0)).isFalse()
   }

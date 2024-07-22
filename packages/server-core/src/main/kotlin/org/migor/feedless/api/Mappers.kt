@@ -113,6 +113,7 @@ fun RemoteNativeFeedRef.toDto(): RemoteNativeFeed = RemoteNativeFeed(
   title = title,
   description = description,
   expired = false,
+  items = emptyList(),
   publishedAt = Date().time,
 )
 
@@ -299,9 +300,9 @@ private fun BoundingBoxInput.fromDto(): BoundingBox = BoundingBox(
   h = h,
 )
 
-private fun ScrapeFlowInput.fromDto(): ScrapeFlow = ScrapeFlow(
-  sequence = sequence.map { it.fromDto() },
-)
+//private fun ScrapeFlowInput.fromDto(): ScrapeFlow = ScrapeFlow(
+//  sequence = sequence.map { it.fromDto() },
+//)
 
 private fun ScrapeActionInput.fromDto(): ScrapeAction = ScrapeAction(
   fetch = fetch?.fromDto(),

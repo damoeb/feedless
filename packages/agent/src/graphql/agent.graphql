@@ -39,7 +39,6 @@ subscription registerAgent($data: RegisterAgentInput!) {
             }
             selectorBased {
               fragmentName
-              min
               max
               emit
               xpath {
@@ -47,7 +46,6 @@ subscription registerAgent($data: RegisterAgentInput!) {
               }
               extract {
                 fragmentName
-                min
                 max
                 emit
                 xpath {

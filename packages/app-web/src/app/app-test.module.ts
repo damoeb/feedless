@@ -274,6 +274,7 @@ export const mocks: Mocks = {
     id: '',
     product: GqlProductCategory.RssProxy,
     description: '',
+    shareKey: '',
     title: '',
     tags: [],
     ownerId: '',
@@ -289,27 +290,12 @@ export const mocks: Mocks = {
     createdAt: 0,
     lastUpdatedAt: new Date(),
     retention: {},
-    documentCountSinceCreation: 0,
   },
   scrapeResponse: {
-    url: '',
+    outputs: [],
     failed: false,
-    debug: {
-      corrId: '',
-      prerendered: false,
-      network: [],
-      contentType: 'text/html',
-      console: [],
-      cookies: [],
-      statusCode: 200,
-      html: '',
-      screenshot: '',
-      metrics: {
-        render: 1,
-        queue: 1,
-      },
-    },
-    elements: [],
+    errorMessage: '',
+    logs: [],
   },
 };
 

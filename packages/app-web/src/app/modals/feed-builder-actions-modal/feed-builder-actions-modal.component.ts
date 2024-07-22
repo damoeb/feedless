@@ -12,9 +12,10 @@ import { Embeddable } from '../../components/embedded-website/embedded-website.c
 import { XyPosition } from '../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
-  GqlScrapeActionInput, GqlScrapeEmit,
+  GqlScrapeActionInput,
+  GqlScrapeEmit,
   GqlScrapeRequestInput,
-  GqlXyPosition
+  GqlXyPosition,
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ModalController } from '@ionic/angular';
@@ -114,14 +115,14 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       ).extract;
 
       this.embedScreenshot = {
-        mimeType: extractAction[0].data.mimeType,
-        data: extractAction[0].data.base64Data,
+        mimeType: extractAction.fragments[0].data.mimeType,
+        data: extractAction.fragments[0].data.data,
         url,
         viewport: fetchAction.debug.viewport,
       };
       this.embedMarkup = {
-        mimeType: fetchAction.debug.contentType,
-        data: extractAction[0].html.data,
+        mimeType: 'text/html',
+        data: extractAction.fragments[0].html.data,
         url,
         viewport: fetchAction.debug.viewport,
       };
@@ -182,7 +183,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
 
   applyChanges() {
     const data: FeedBuilderData = {
-      request: this.getScrapeRequest(false, false),
+      request: this.getScrapeRequest(false),
       response: this.scrapeResponse,
     };
     return this.modalCtrl.dismiss(data);
@@ -215,10 +216,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getScrapeRequest(
-    debug = false,
-    addExtract: boolean = false,
-  ): GqlScrapeRequestInput {
+  private getScrapeRequest(addExtract: boolean = false): GqlScrapeRequestInput {
     return {
       flow: {
         sequence: [
@@ -244,7 +242,11 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
                       xpath: {
                         value: '/',
                       },
-                      emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text],
+                      emit: [
+                        GqlScrapeEmit.Html,
+                        GqlScrapeEmit.Text,
+                        GqlScrapeEmit.Pixel,
+                      ],
                     },
                   },
                 },
