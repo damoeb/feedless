@@ -41,12 +41,13 @@ export class SearchAddressModalComponent {
     await this.modalCtrl.dismiss(match);
   }
 
-  private parsePoint(query: string): GqlGeoPoint|undefined {
+  private parsePoint(query: string): GqlGeoPoint | undefined {
     try {
       const parts = query.trim().split(/[, ]+/);
-      return {
-        lat: parseFloat(parts[0]),
-        lon: parseFloat(parts[1]),
+      const lat = parseFloat(parts[0]);
+      const lon = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lon)) {
+        return { lat, lon };
       }
     } catch (e) {}
   }
@@ -55,6 +56,6 @@ export class SearchAddressModalComponent {
     return this.pick({
       lat: `${this.latLon.lat}`,
       lon: `${this.latLon.lon}`,
-    })
+    });
   }
 }

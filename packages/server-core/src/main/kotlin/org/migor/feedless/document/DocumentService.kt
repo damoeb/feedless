@@ -1,14 +1,17 @@
 package org.migor.feedless.document
 
-import com.linecorp.kotlinjdsl.querymodel.jpql.expression.Expression
+import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.Point
+import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
+import jakarta.persistence.EntityManager
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.generated.types.DocumentFrequency
 import org.migor.feedless.generated.types.StringFilter
+import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.generated.types.WebDocumentOrderByInput
 import org.migor.feedless.generated.types.WebDocumentsWhereInput
 import org.migor.feedless.plan.PlanConstraintsService
@@ -30,9 +33,6 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 
-data class FrequencyItem(val year: Int, val month: Int, val day: Int, val count: Int)
-
-
 @Service
 @Profile(AppProfiles.database)
 class DocumentService {
@@ -44,6 +44,9 @@ class DocumentService {
 
   @Autowired
   private lateinit var documentDAO: DocumentDAO
+
+  @Autowired
+  private lateinit var entityManager: EntityManager
 
   @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
@@ -71,8 +74,29 @@ class DocumentService {
     }
 
     return documentDAO.findPage(pageable) {
-      val whereStatements = mutableListOf<Predicatable>()
+      val whereStatements = prepareWhereStatements(where)
 
+      select(
+        entity(DocumentEntity::class),
+      ).from(
+        entity(DocumentEntity::class),
+      )
+        .whereAnd(
+          path(DocumentEntity::repositoryId).eq(repositoryId),
+          path(DocumentEntity::status).`in`(status),
+          path(DocumentEntity::publishedAt).lt(Date()),
+          *whereStatements.toTypedArray()
+        ).orderBy(
+          orderBy?.let {
+            path(DocumentEntity::startingAt).asc().nullsLast()
+          } ?: path(DocumentEntity::publishedAt).desc()
+        )
+    }
+  }
+
+  private fun prepareWhereStatements(where: WebDocumentsWhereInput?): MutableList<Predicatable> {
+    val whereStatements = mutableListOf<Predicatable>()
+    jpql {
       where?.let {
         it.startedAt?.let {
           it.before?.let {
@@ -84,53 +108,24 @@ class DocumentService {
         }
         it.localized?.let {
           // https://postgis.net/docs/ST_Distance.html
-//          val point = function(Point::class,"ST_Point", it.near.lat, it.near.lon)
-//          whereStatements.add(function(Double::class, "ST_Distance", path(DocumentEntity::latLon), point).ge(0.0))
-
-          val st_point = { lat: Double, lon: Double -> function(Point::class, "st_point", lat, lon) }
-          val st_setsrid =
-            { geom: Expression<Geometry>, srid: Int -> function(Geometry::class, "ST_SetSRID", geom, srid) }
-          val st_transform =
-            { geom: Expression<Geometry>, to_srid: Int -> function(Geometry::class, "st_transform", geom, to_srid) }
-          val st_distance = { geom1: Expression<Geometry>, geom2: Expression<Geometry> ->
+          whereStatements.add(path(DocumentEntity::latLon).isNotNull())
+          whereStatements.add(
             function(
               Double::class,
-              "st_distance",
-              geom1,
-              geom2
+              "fl_latlon_distance",
+              path(DocumentEntity::latLon),
+              doubleLiteral(it.near.lat),
+              doubleLiteral(it.near.lon)
             )
-          }
-
-//          whereStatements.add(
-//            st_distance(
-//              st_transform(
-//                st_setsrid(path(DocumentEntity::latLon), 4326),
-//                3857),
-//              st_transform(
-//                st_setsrid(st_point(it.near.lat, it.near.lat), 4326),
-//                3857)).ge(0.0)
-//          )
-          whereStatements.add(
-            st_setsrid(st_point(it.near.lat, it.near.lat), 4326).isNotNull()
+              .lt(doubleLiteral(it.distanceKm))
           )
         }
       }
-
-      select(
-        entity(DocumentEntity::class),
-      ).from(
-        entity(DocumentEntity::class)
-      ).whereAnd(
-        path(DocumentEntity::repositoryId).eq(repositoryId),
-        path(DocumentEntity::status).`in`(status),
-        path(DocumentEntity::publishedAt).lt(Date()),
-        *whereStatements.toTypedArray()
-      ).orderBy(
-        orderBy?.let {
-          path(DocumentEntity::startingAt).asc().nullsLast()
-        } ?: path(DocumentEntity::publishedAt).desc()
-      )
+      // dummy
+      select(expression<String>("")).from(entity(DocumentEntity::class))
     }
+
+    return whereStatements
   }
 
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
@@ -198,16 +193,32 @@ class DocumentService {
   }
 
   fun getDocumentFrequency(
-    repositoryId: UUID,
-  ): List<FrequencyItem> {
-    return documentDAO.histogramPerDayByStreamIdOrImporterId(repositoryId)
-      .map {
-        FrequencyItem(
-          year = (it[0] as Double).toInt(),
-          month = (it[1] as Double).toInt(),
-          day = (it[2] as Double).toInt(),
-          count = (it[3] as Long).toInt(),
+    where: WebDocumentsWhereInput,
+    groupBy: WebDocumentDateField,
+  ): List<DocumentFrequency> {
+    val query = jpql {
+      val whereStatements = prepareWhereStatements(where)
+      val dateGroup = expression<Long>("day")
+
+      selectNew<Pair<Long, Long>>(
+        count(path(DocumentEntity::id)),
+        function(Long::class, "fl_trunc_timestamp_as_millis", path(DocumentEntity::startingAt)).`as`(dateGroup)
+      ).from(
+        entity(DocumentEntity::class),
+      )
+        .whereAnd(
+          path(DocumentEntity::startingAt).isNotNull(),
+          path(DocumentEntity::repositoryId).eq(UUID.fromString(where.repository.id)),
+          path(DocumentEntity::publishedAt).lt(Date()),
+          *whereStatements.toTypedArray()
         )
-      }
+        .groupBy(dateGroup)
+    }
+
+    val context = JpqlRenderContext()
+
+    val q = entityManager.createQuery(query, context)
+    return q.resultList.map { pair -> DocumentFrequency(pair.first.toInt(), pair.second) }
   }
 }
+

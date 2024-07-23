@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
 import { ModalController } from '@ionic/angular';
 import { GqlScrapeRequestInput } from '../../../generated/graphql';
+import { Repository } from '../../graphql/types';
 
 export interface FeedBuilderModalComponentProps {
   scrapeRequest?: GqlScrapeRequestInput;
@@ -28,6 +29,9 @@ export class FeedBuilderModalComponent
   }
 
   async handleFeed(feed: FeedWithRequest) {
-    await this.modalCtrl.dismiss(feed);
+    await this.modalCtrl.dismiss({ feed });
+  }
+  async handleRepository(repository: Repository) {
+    await this.modalCtrl.dismiss({ repository });
   }
 }

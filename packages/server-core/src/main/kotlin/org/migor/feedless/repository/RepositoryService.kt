@@ -1,8 +1,6 @@
 package org.migor.feedless.repository
 
 import org.apache.commons.lang3.StringUtils
-import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.GeometryFactory
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
@@ -35,13 +33,13 @@ import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
-import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -51,6 +49,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -59,7 +58,7 @@ import java.util.*
 
 fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   val fixedPage = (page ?: 0).coerceAtLeast(0)
-  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(50)
+  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(300)
   return PageRequest.of(fixedPage, fixedPageSize)
 }
 
@@ -99,9 +98,6 @@ class RepositoryService {
 
   @Autowired
   private lateinit var scrapeActionDAO: ScrapeActionDAO
-
-  @Autowired
-  private lateinit var pluginService: PluginService
 
   @Transactional
   fun create(corrId: String, data: RepositoriesCreateInput): List<Repository> {
@@ -206,8 +202,7 @@ class RepositoryService {
     entity.tags = source.tags
     entity.repositoryId = repository.id
     req.localized?.let {
-      val gf = GeometryFactory()
-      entity.latLon = gf.createPoint(Coordinate(it.lat, it.lon))
+      entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
     } ?: run {
       entity.latLon = null
     }
@@ -256,7 +251,11 @@ class RepositoryService {
     jsonFeed.imageUrl = null
     jsonFeed.page = page
     jsonFeed.expired = false
-    jsonFeed.feedUrl = "${propertyService.apiGatewayUrl}/f/${repositoryId}/atom"
+    val urlBuilder = UriComponentsBuilder.fromHttpUrl("${propertyService.apiGatewayUrl}/f/${repositoryId}/atom")
+    if (shareKey != null) {
+      urlBuilder.queryParam("skey", shareKey)
+    }
+    jsonFeed.feedUrl = urlBuilder.build().toUri().toString()
     jsonFeed.isLast = items.size < pageSize
 
     return jsonFeed
@@ -368,8 +367,7 @@ class RepositoryService {
             }
             scrapeRequestUpdate.data.localized?.let { point ->
               point.set?.let {
-                val gf = GeometryFactory()
-                source?.latLon = gf.createPoint(Coordinate(it.lat, it.lon))
+                source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
               } ?: run { source?.latLon = null }
             }
             source

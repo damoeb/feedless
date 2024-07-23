@@ -3,6 +3,7 @@ package org.migor.feedless.common
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
+import jakarta.annotation.PostConstruct
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
@@ -16,6 +17,7 @@ import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -31,6 +33,11 @@ class HttpService {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
+  @Autowired
+  private lateinit var propertyService: PropertyService
+
+  private lateinit var gatewayHost: String
+
   private val builderConfig = Dsl.config()
     .setConnectTimeout(60000)
     .setReadTimeout(60000)
@@ -42,6 +49,11 @@ class HttpService {
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
   val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)
+
+  @PostConstruct
+  fun postConstruct() {
+    gatewayHost = URL(propertyService.apiGatewayUrl).host
+  }
 
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)
@@ -75,14 +87,16 @@ class HttpService {
 
   private fun protectFromOverloading(corrId: String, url: String) {
     val actualUrl = URL(url)
-    val probes =
-      listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
-    if (probes.any { !it.isConsumed }) {
-      throw HostOverloadingException(
-        corrId,
-        "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
-        Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
-      )
+    if (actualUrl.host != gatewayHost) {
+      val probes =
+        listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
+      if (probes.any { !it.isConsumed }) {
+        throw HostOverloadingException(
+          corrId,
+          "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
+          Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
+        )
+      }
     }
   }
 

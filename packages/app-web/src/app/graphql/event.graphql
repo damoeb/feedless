@@ -1,0 +1,6 @@
+query findEvents($where: WebDocumentsWhereInput!) {
+  webDocumentsFrequency(where: $where, groupBy: startingAt) {
+    count
+    group
+  }
+}

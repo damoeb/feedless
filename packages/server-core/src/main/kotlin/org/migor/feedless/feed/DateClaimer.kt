@@ -1,9 +1,7 @@
 package org.migor.feedless.feed
 
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -13,7 +11,7 @@ import java.util.*
 
 
 @Service
-class DateClaimer(@Autowired private var propertyService: PropertyService) {
+class DateClaimer {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
 
@@ -87,27 +85,26 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     return Regex(regex, RegexOption.IGNORE_CASE)
   }
 
-  fun claimDateRangeFromString(corrId: String, dateRangeStr: String, locale: Locale): Date? {
-    return dateRangeSplitter
-      .asSequence()
-      .filter { dateRangeStr.contains(it) }
-      .map { dateRangeStr.split(it) }
-      .filter { it.size == 2 }
-      .map {
-        run {
-          val fromDateStr = it[0]
-          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()
-          val fromDate = applyDateFormat(dateString, locale, format, hasTime)
-//            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
-//            fromDate.rangeTo(toDate) // todo enable date range
-          fromDate
-        }
-      }.firstOrNull()
-  }
+//  fun claimDateRangeFromString(corrId: String, dateRangeStr: String, locale: Locale): Date? {
+//    return dateRangeSplitter
+//      .asSequence()
+//      .filter { dateRangeStr.contains(it) }
+//      .map { dateRangeStr.split(it) }
+//      .filter { it.size == 2 }
+//      .map {
+//        run {
+//          val fromDateStr = it[0]
+//          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()
+//          val fromDate = applyDateFormat(dateString, locale, format, hasTime)
+////            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
+////            fromDate.rangeTo(toDate) // todo enable date range
+//          fromDate
+//        }
+//      }.firstOrNull()
+//  }
 
-  fun claimDatesFromString(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
-    log.debug("[${corrId}] parsing $dateTimeStrParam")
-    val locale = localeParam ?: propertyService.locale
+  fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale): Date? {
+    log.debug("[${corrId}] parsing '$dateTimeStrParam' locale=$locale")
 
     runCatching {
       val date = toDate(LocalDateTime.parse(dateTimeStrParam))
@@ -142,13 +139,13 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
         .replace("\\s+".toRegex(), " ")
       val date = guessDateFormats(corrId, simpleDateTimeStr)
         .firstNotNullOfOrNull { (format, dateString, hasTime) -> applyDateFormat(dateString, locale, format, hasTime) }
-      log.info("[${corrId}] -> $date")
+      log.debug("[${corrId}] -> $date")
       date
-    }.onFailure {
-      runCatching {
-        return claimDateRangeFromString(corrId, dateTimeStrParam, locale)
-      }
-      log.error("[$corrId] Cannot parse dateString $dateTimeStrParam")
+//    }.onFailure {
+//      runCatching {
+//        return claimDateRangeFromString(corrId, dateTimeStrParam, locale)
+//      }
+//      log.error("[$corrId] Cannot parse dateString $dateTimeStrParam")
     }.getOrNull()
   }
 
@@ -175,7 +172,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
    * @see SimpleDateFormat
    */
   private fun guessDateFormats(corrId: String, dateString: String): List<Triple<String, String, Boolean>> {
-    log.info("[$corrId] guessDateFormat for '$dateString'")
+    log.debug("[$corrId] guessDateFormat for '$dateString'")
     return dateFormatToRegexp
       .sortedByDescending { it.second.length }
       .sortedByDescending { it.third }
@@ -184,7 +181,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
           val matches = regex.find(dateString)
           val doesMatch = matches?.groups?.isEmpty() == false
           if (doesMatch) {
-            log.info("[$corrId] satisfies $dateFormat")
+            log.debug("[$corrId] satisfies $dateFormat")
             Triple(dateFormat, matches?.groups?.get(0)?.value!!, hasTime)
           } else {
             null

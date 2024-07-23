@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
+import { FeedOrRepository, FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import {
@@ -78,11 +78,11 @@ export class TrackerEditModalComponent
         modalTitle: 'Pick Link Source',
         submitButtonText: 'Use Feed',
       },
-      async (data: FeedWithRequest, role: String) => {
-        if (data) {
+      async (data: FeedOrRepository, role: String) => {
+        if (data?.feed) {
           this.scrapeRequest = getScrapeRequest(
-            data.feed,
-            data.scrapeRequest as GqlScrapeRequest,
+            data.feed.feed,
+            data.feed.scrapeRequest as GqlScrapeRequest,
           );
           await this.updateFeed();
         }

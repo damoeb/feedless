@@ -4,10 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.mockito.Mockito.mock
 import java.util.*
 
 internal class DateClaimerTest {
@@ -17,7 +15,7 @@ internal class DateClaimerTest {
 
   @BeforeEach
   fun setUp() {
-    dateClaimer = DateClaimer(mock(PropertyService::class.java))
+    dateClaimer = DateClaimer()
   }
 
   @ParameterizedTest

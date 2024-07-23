@@ -1,8 +1,6 @@
 package org.migor.feedless.feed
 
 import org.apache.commons.lang3.StringUtils
-import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
@@ -30,6 +28,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
+import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -183,6 +182,5 @@ private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
 }
 
 fun GeoPoint.toPoint(): Point {
-  val gf = GeometryFactory()
-  return gf.createPoint(Coordinate(lat, lon))
+  return JtsUtil.createPoint(lat, lon)
 }

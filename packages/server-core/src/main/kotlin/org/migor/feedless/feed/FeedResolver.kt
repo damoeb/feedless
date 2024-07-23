@@ -75,6 +75,7 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     language = language,
     publishedAt = publishedAt.time,
     tags = tags,
+    nextPageUrls = links,
     expired = BooleanUtils.isTrue(expired),
     items = items.map {
       var contentHtml: String? = null

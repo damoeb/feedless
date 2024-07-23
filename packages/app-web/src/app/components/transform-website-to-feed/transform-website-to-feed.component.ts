@@ -295,7 +295,6 @@ export class TransformWebsiteToFeedComponent
             dateXPath: this.formGroup.value.dateXPath,
             paginationXPath: this.formGroup.value.paginationXPath,
           },
-          samples: [],
           hash: '',
           score: 0,
           count: 0,

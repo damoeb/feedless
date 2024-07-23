@@ -10,12 +10,17 @@ export interface OsmMatch {
   address?: {
     'ISO3166-2-lvl4'?: string;
     country?: string;
+    neighbourhood?: string;
+    city_district?: string;
     country_code?: string;
     county?: string;
     postcode: string;
     state?: string;
     town?: string;
     village?: string;
+    amenity?: string,
+    house_number?: string,
+    road?: string,
   };
 }
 

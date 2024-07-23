@@ -7,14 +7,12 @@ import org.migor.feedless.api.toDto
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
-import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionData
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.GenericFeedParserOptions
-import org.migor.feedless.web.GenericFeedRule
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -45,12 +43,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
 
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
     log.debug("[$corrId] extracting feeds")
-    val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, data.url, false)
-    return PluginExecutionData(org_feedless_feeds = ScrapedFeeds(
-      genericFeeds = genericFeeds.map { it.toDto() },
-      nativeFeeds = nativeFeeds.map { it.toDto() }
-    )
-    )
+    return extractFeeds(corrId, document, data.url)
   }
 
   override fun name(): String = "Feeds"
@@ -59,15 +52,17 @@ class FeedsPlugin : FragmentTransformerPlugin {
     corrId: String,
     document: Document,
     url: String,
-    strictMode: Boolean
-  ): Pair<List<RemoteNativeFeedRef>, List<GenericFeedRule>> {
-    val parserOptions = GenericFeedParserOptions(
-      strictMode = strictMode
-    )
+  ): PluginExecutionData {
+    val parserOptions = GenericFeedParserOptions()
     val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)
-    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
-    log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
-    return Pair(nativeFeeds, genericFeedRules)
+    val genericFeeds = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
+    log.info("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
+
+    return PluginExecutionData(org_feedless_feeds = ScrapedFeeds(
+      genericFeeds = genericFeeds.map { it.toDto() },
+      nativeFeeds = nativeFeeds.map { it.toDto() }
+    )
+    )
   }
 
 }

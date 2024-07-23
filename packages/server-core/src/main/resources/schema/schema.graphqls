@@ -72,13 +72,9 @@ type FeatureValue {
   numVal: FeatureIntValue
 }
 
-type Activity {
-  items: [ActivityItem!]!
-}
-
-type ActivityItem {
+type DocumentFrequency {
   count: Int!
-  index: String!
+  group: Long!
 }
 
 type Repository {
@@ -100,7 +96,7 @@ type Repository {
 #  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
-  activity: Activity
+  frequency(groupBy: WebDocumentDateField!): [DocumentFrequency!]
   plugins: [PluginExecution!]
   cronRuns: [CronRun!]!
   segmented: Segment
@@ -443,6 +439,7 @@ type Query {
 
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
+  webDocumentsFrequency(where: WebDocumentsWhereInput!, groupBy: WebDocumentDateField!): [DocumentFrequency!]
 
   featureGroups(inherit: Boolean!, where: FeatureGroupWhereInput!): [FeatureGroup!]!
 
@@ -511,7 +508,7 @@ input WebDocumentsInput {
 
 input WebDocumentsWhereInput {
   id: StringFilter
-  repository: RepositoryWhereInput!
+  repository: RepositoryUniqueWhereInput!
 #  updatedAt: DatesWhereInput
   startedAt: DatesWhereInput
   localized: GeoPointWhereInput
@@ -520,7 +517,7 @@ input WebDocumentsWhereInput {
 
 input GeoPointWhereInput {
   near: GeoPointInput!
-  distance: Float!
+  distanceKm: Float!
 }
 
 input DatesWhereInput {
@@ -552,6 +549,7 @@ type RemoteNativeFeed {
   items: [WebDocument!]!
   language: String
   websiteUrl: String
+  nextPageUrls: [String!]
 }
 
 type RequestHeader {
@@ -864,9 +862,7 @@ input AuthViaMailInput {
 
 type TransientGenericFeed {
   count: Int!
-#  feedUrl: String!
   hash: String!
-  samples: [WebDocument!]!
   score: Float!
   selectors: Selectors!
 }

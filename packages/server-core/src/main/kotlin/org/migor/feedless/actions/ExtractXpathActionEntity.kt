@@ -1,8 +1,10 @@
 package org.migor.feedless.actions
 
 import io.hypersistence.utils.hibernate.type.array.EnumArrayType
+import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
@@ -25,6 +27,7 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 
+  @Basic(fetch = FetchType.EAGER)
   @Type(EnumArrayType::class)
   @Column(name = "emit", nullable = false, columnDefinition = "text[]")
   open var emit: Array<ExtractEmit> = emptyArray()

@@ -24,10 +24,12 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.notification.NotificationService
+import org.migor.feedless.pipeline.DocumentPipelineJobDAO
+import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
-import org.migor.feedless.pipeline.PipelineJobDAO
-import org.migor.feedless.pipeline.PipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.SourcePipelineJobDAO
+import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
@@ -61,7 +63,10 @@ class RepositoryHarvester internal constructor() {
   private lateinit var documentDAO: DocumentDAO
 
   @Autowired
-  private lateinit var pipelineJobDAO: PipelineJobDAO
+  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+
+  @Autowired
+  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
   @Autowired
   private lateinit var documentService: DocumentService
@@ -189,9 +194,9 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  private fun scrapeSource(corrId: String, source: SourceEntity): Mono<Unit> {
+  fun scrapeSource(corrId: String, source: SourceEntity): Mono<Unit> {
     return scrapeService.scrape(corrId, source)
-      .map { importElement(corrId, it, source.repository!!.id, source) }
+      .map { importElement(corrId, it, source.repositoryId, source) }
   }
 
   private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity) {
@@ -260,19 +265,40 @@ class RepositoryHarvester internal constructor() {
 
 //  todo set name  sourceDAO.save()
 
-    feed.items
+    val hasNew = feed.items
       .distinctBy { it.url }
-      .forEach {
-        try {
-          val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
-          val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
-          updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
-          createOrUpdate(corrId, updated, existing, repository)
-        } catch (e: Exception) {
-          log.error("[$corrId] ${e.message}")
-          notificationService.createNotification(corrId, repositoryId, e.message)
-        }
+      .fold(false) { acc, it -> try {
+        val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
+        val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
+        updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
+        createOrUpdate(corrId, updated, existing, repository)
+        acc || existing == null
+      } catch (e: Exception) {
+        log.error("[$corrId] ${e.message}")
+        notificationService.createNotification(corrId, repositoryId, e.message)
+        acc
       }
+      }
+
+    if (feed.nextPageUrls?.isNotEmpty() == true) {
+      if (hasNew) {
+        val pageUrls = feed.nextPageUrls.filterNot { url -> sourcePipelineJobDAO.existsBySourceIdAndUrl(source.id, url) }
+        log.info("[$corrId] following ${pageUrls.size} (${feed.nextPageUrls.size}) page urls ${pageUrls.joinToString(", ")}")
+        sourcePipelineJobDAO.saveAll(
+          pageUrls
+          .mapIndexed { index, url ->
+          run {
+            val e = SourcePipelineJobEntity()
+            e.sourceId = source.id
+            e.url = url
+            e.sequenceId = index
+            e
+          }
+        })
+      } else {
+        log.info("[$corrId] wont follow page urls")
+      }
+    }
   }
 
   fun detectMainImageUrl(corrId: String, contentHtml: String?): String? {
@@ -338,13 +364,13 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  private fun toPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): PipelineJobEntity {
-    val job = PipelineJobEntity()
+  private fun toPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): DocumentPipelineJobEntity {
+    val job = DocumentPipelineJobEntity()
     job.sequenceId = index
     job.documentId = document.id
     job.executorId = plugin.id
     job.executorParams = plugin.params
-    return pipelineJobDAO.save(job)
+    return documentPipelineJobDAO.save(job)
   }
 
 //  private fun importImageElement(

@@ -6,11 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.util.*
-import java.util.stream.Stream
 
 @Repository
 @Profile(AppProfiles.database)
-interface PipelineJobDAO : JpaRepository<PipelineJobEntity, UUID> {
+interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID> {
   @Query(
     nativeQuery = true,
     value = """
@@ -22,7 +21,7 @@ interface PipelineJobDAO : JpaRepository<PipelineJobEntity, UUID> {
             select distinct on (document_id)
                     document_id, cool_down_until
             from t_pipeline_job
-            where terminated = false
+            where terminated = false AND document_id IS NOT NULL
             order by document_id, sequence_id
         ) g
       where g.cool_down_until is null
@@ -31,8 +30,6 @@ interface PipelineJobDAO : JpaRepository<PipelineJobEntity, UUID> {
       limit 100
     """
   )
-  fun findAllPendingBatched(): List<PipelineJobEntity>
-
-  fun findAllBySchemaVersionNot(schemaVersion: Int): Stream<PipelineJobEntity>
-
+  fun findAllPendingBatched(): List<DocumentPipelineJobEntity>
+  fun deleteAllByCreatedAtBefore(date: Date)
 }

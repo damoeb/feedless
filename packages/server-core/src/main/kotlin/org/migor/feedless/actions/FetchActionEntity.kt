@@ -24,7 +24,7 @@ open class FetchActionEntity : ScrapeActionEntity() {
   @Column(name = "timeout")
   open var timeout: Int? = null
 
-  @Column(name = "url", nullable = false)
+  @Column(name = "url", nullable = false, length = 255)
   open lateinit var url: String
 
   @Column(name = "language")

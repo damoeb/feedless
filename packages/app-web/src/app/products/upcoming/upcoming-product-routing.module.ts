@@ -4,17 +4,30 @@ import { RouterModule, Routes } from '@angular/router';
 import { UpcomingProductPage } from './upcoming-product-page.component';
 
 const routes: Routes = [
+  // {
+  //   path: ':url',
+  //   component: UpcomingProductPage,
+  // },
   {
-    path: ':url',
+    path: 'events/:state',
     component: UpcomingProductPage,
   },
   {
-    path: '',
+    path: 'events/:state/:country/:place',
+    component: UpcomingProductPage,
+  },
+  {
+    path: 'events/:state/:country/:place/:year/:month',
+    component: UpcomingProductPage,
+  },
+  {
+    // H/Zurich/Affoltern%20a.A./2024/6/3
+    path: 'events/:state/:country/:place/:year/:month/:day',
     component: UpcomingProductPage,
   },
   {
     path: '**',
-    redirectTo: '/',
+    redirectTo: '/events/ch',
   },
 ];
 

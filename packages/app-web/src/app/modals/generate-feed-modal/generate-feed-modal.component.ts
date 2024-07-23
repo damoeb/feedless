@@ -112,6 +112,7 @@ export function getScrapeRequest(
     id: null,
     flow: createFlow() as GqlScrapeFlowInput,
     tags: scrapeRequest.tags,
+    localized: scrapeRequest.localized,
   };
 }
 
@@ -136,12 +137,18 @@ export class GenerateFeedModalComponent
 {
   formFg = new FormGroup({
     title: new FormControl<string>('', {
-      validators: [Validators.required, Validators.minLength(3)],
+      validators: [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+      ],
     }),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
     maxCapacity: new FormControl<number>(null),
     maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
-    ageReferenceField: new FormControl<GqlWebDocumentDateField>(GqlWebDocumentDateField.PublishedAt),
+    ageReferenceField: new FormControl<GqlWebDocumentDateField>(
+      GqlWebDocumentDateField.PublishedAt,
+    ),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', {
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
@@ -346,7 +353,7 @@ export class GenerateFeedModalComponent
           fetchFrequency,
           maxAgeDays,
           maxCapacity,
-          ageReferenceField
+          ageReferenceField,
         } = this.formFg.value;
         await this.repositoryService.updateRepository({
           where: {
@@ -451,7 +458,7 @@ export class GenerateFeedModalComponent
 
     const retention = this.repository.retention;
     this.formFg.patchValue({
-      title: this.repository.title,
+      title: this.repository.title.substring(0, 50),
       isPublic: this.repository.visibility == GqlVisibility.IsPublic,
       description: this.repository.description,
       fetchFrequency: this.repository.refreshCron || '0 0 0 * * *',
@@ -464,6 +471,8 @@ export class GenerateFeedModalComponent
       maxAgeDays: retention?.maxAgeDays || null,
       maxCapacity: retention?.maxCapacity || null,
     });
+    this.formFg.markAllAsTouched();
+
     const filterPlugin = this.repository.plugins.find(
       (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
     );

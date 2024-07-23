@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -23,6 +24,9 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.pipeline.PipelineJobStatus
+import org.migor.feedless.pipeline.SourcePipelineJobDAO
+import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,7 +53,7 @@ class RepositoryResolver {
   private lateinit var sourceDAO: SourceDAO
 
   @Autowired
-  private lateinit var repositoryCronRunDAO: RepositoryCronRunDAO
+  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
 
   @Throttled
@@ -144,7 +148,7 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<CronRun> = coroutineScope {
     val source: Repository = dfe.getSource()
-    repositoryCronRunDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id)).map { it.toDto()}
+    sourcePipelineJobDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { it.toDto()}
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
@@ -159,11 +163,11 @@ class RepositoryResolver {
 
 }
 
-private fun RepositoryCronRunEntity.toDto(): CronRun {
+private fun SourcePipelineJobEntity.toDto(): CronRun {
   return CronRun(
-    isSuccessful = !this.isSuccessful,
-    message = this.message,
-    executedAt = this.executedAt.time
+    isSuccessful = this.status === PipelineJobStatus.SUCCEEDED,
+    message = StringUtils.trimToEmpty(this.logs),
+    executedAt = this.terminatedAt!!.time
   )
 }
 

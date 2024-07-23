@@ -99,12 +99,6 @@ fragment RepositoryFragment on Repository {
   visibility
   tags
   createdAt
-  activity {
-    items {
-      count
-      index
-    }
-  }
   lastUpdatedAt
   nextUpdateAt
   plugins {

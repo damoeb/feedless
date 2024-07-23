@@ -23,14 +23,14 @@
         <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>
         Visit website
       </ion-button>
-  <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
-  <!--      <ion-icon-->
-  <!--        name="arrow-down-outline"-->
-  <!--        color="primary"-->
-  <!--        slot="start"-->
-  <!--      ></ion-icon>-->
-  <!--      Pull 2.3k-->
-  <!--    </ion-button>-->
+      <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
+      <!--      <ion-icon-->
+      <!--        name="arrow-down-outline"-->
+      <!--        color="primary"-->
+      <!--        slot="start"-->
+      <!--      ></ion-icon>-->
+      <!--      Pull 2.3k-->
+      <!--    </ion-button>-->
       <ion-button [href]="feedUrl" color="primary" fill="solid">
         <ion-icon name="logo-rss" slot="start"></ion-icon>
         Feed
@@ -125,7 +125,9 @@
           Sources
           <app-bubble *ngIf="hasErrors()" color="red" slot="end"></app-bubble>
         </ion-label>
-        <ion-chip *ngIf="!hasErrors()">{{ repository.sources.length }}</ion-chip>
+        <ion-chip *ngIf="!hasErrors()">{{
+          repository.sources.length
+        }}</ion-chip>
       </ion-button>
 
       <ion-button [id]="settingsModalId">
@@ -229,7 +231,9 @@
   <div style="border-radius: 8px">
     <div style="margin-top: 50px; display: flex" class="ion-padding">
       <h3 style="flex: 1">
-        <span *ngIf="viewModeFc.value === viewModeList">Available articles</span>
+        <span *ngIf="viewModeFc.value === viewModeList"
+          >Available articles</span
+        >
         <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
         <span *ngIf="viewModeFc.value === viewModeHistogram">Activity</span>
       </h3>
@@ -258,7 +262,7 @@
         style="position: relative"
         *ngIf="viewModeFc.value === viewModeHistogram"
       >
-        <app-histogram [data]="repository.activity"></app-histogram>
+        <app-histogram [data]="repository.frequency"></app-histogram>
       </div>
       <ng-container *ngIf="viewModeFc.value === viewModeDiff">
         <ion-item *ngIf="documents.length === 0">
@@ -271,7 +275,10 @@
           ></app-image-diff>
           <ng-container *ngIf="documents.length > 1">
             <div *ngFor="let pair of getDocumentPairs()">
-              <app-image-diff [before]="pair.a" [after]="pair.b"></app-image-diff>
+              <app-image-diff
+                [before]="pair.a"
+                [after]="pair.b"
+              ></app-image-diff>
             </div>
           </ng-container>
         </ng-container>
@@ -340,7 +347,7 @@
                       >{{ fromNow(document.publishedAt) }} on
                       {{ hostname(document.url) }}
 
-<!--                      https://www.openstreetmap.org/#map=14/-->
+                      <!--                      https://www.openstreetmap.org/#map=14/-->
                       <ion-icon
                         name="location-outline"
                         *ngIf="document.localized"

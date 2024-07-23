@@ -6,8 +6,8 @@ import {
   FeedBuilderModalComponentProps,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
 import {
-  FeedBuilderModalComponentExitRole,
-  FeedWithRequest,
+  FeedBuilderModalComponentExitRole, FeedOrRepository,
+  FeedWithRequest
 } from '../components/feed-builder/feed-builder.component';
 import {
   GenerateFeedModalComponent,
@@ -42,7 +42,7 @@ export class ModalService {
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,
     overwriteHandler: (
-      data: FeedWithRequest,
+      data: FeedOrRepository,
       role: String,
     ) => Promise<void> = null,
   ) {
@@ -54,7 +54,7 @@ export class ModalService {
       backdropDismiss: false,
     });
     await modal.present();
-    const { data, role } = await modal.onDidDismiss<FeedWithRequest>();
+    const { data, role } = await modal.onDidDismiss<FeedOrRepository>();
 
     if (overwriteHandler) {
       await overwriteHandler(data, role);

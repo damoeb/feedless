@@ -57,9 +57,6 @@ query scrape($data: ScrapeRequestInput!) {
               score
               hash
               count
-              samples {
-                ...WebDocumentFragment
-              }
             }
             nativeFeeds {
               ...RemoteNativeFeedFragment

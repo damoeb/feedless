@@ -123,6 +123,7 @@ class XmlFeedParser : FeedBodyParser {
       tags.plus(it.map { it.name })
     }
     jsonFeed.tags = tags
+    jsonFeed.links = feed.links.filter { it.rel == "next" }.map { it.href }
 
     return jsonFeed
   }

@@ -2,6 +2,7 @@ package org.migor.feedless.web
 
 import org.jsoup.nodes.Element
 import org.migor.feedless.feed.DateClaimer
+import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeEmit
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
+import java.util.*
 
 @Service
 class WebExtractService {
@@ -20,14 +22,23 @@ class WebExtractService {
   @Autowired
   private lateinit var dateClaimer: DateClaimer
 
-  fun extract(corrId: String, extract: DOMExtract, element: Element): ScrapeExtractResponse {
-    val fragments = Xsoup.compile(extract.xpath.value.replaceFirst("./", "//")).evaluate(element).elements
+  companion object {
+    const val MIME_DATE = "text/x-date"
+    const val MIME_URL = "text/x-uri"
+  }
+
+  private fun fixXpath(xpath: DOMElementByXPath): String {
+    return xpath.value.replaceFirst("/html/body", "/").replaceFirst("./", "//")
+  }
+
+  fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale): ScrapeExtractResponse {
+    val fragments = Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
       .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
     return ScrapeExtractResponse(
       fragmentName = extract.fragmentName,
       fragments = fragments.map { fragment ->
         ScrapeExtractFragment(
-          extracts = extract.extract?.map { extract(corrId, it, fragment) },
+          extracts = extract.extract?.map { extract(corrId, it, fragment, locale) },
           html = if (extract.emit.contains(ScrapeEmit.html)) {
             TextData(fragment.html())
           } else {
@@ -39,12 +50,21 @@ class WebExtractService {
             null
           },
           data = if (extract.emit.contains(ScrapeEmit.date)) {
-            MimeData(
-              mimeType = "text/plain",
-              data = dateClaimer.claimDatesFromString(corrId, fragment.text(), null).toString()
-            )
+            dateClaimer.claimDatesFromString(corrId, fragment.text(), locale)?.let { date ->
+              MimeData(
+                mimeType = MIME_DATE,
+                data = date.time.toString()
+              )
+            }
           } else {
-            null
+            if (fragment.hasAttr("href")) {
+              MimeData(
+                mimeType = MIME_URL,
+                data = fragment.attr("href")
+              )
+            } else {
+              null
+            }
           }
         )
       }

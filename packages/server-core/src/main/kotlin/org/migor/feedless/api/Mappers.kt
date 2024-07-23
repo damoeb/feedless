@@ -132,7 +132,6 @@ fun GenericFeedRule.toDto(): TransientGenericFeed {
     hash = CryptUtil.sha1(JsonUtil.gson.toJson(selectors)),
     selectors = selectors,
     score = score,
-    samples = samples.map { it.toDto() }
   )
 }
 

@@ -9,7 +9,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { Subscription } from 'rxjs';
 import { RepositoryService } from '../../../services/repository.service';
-import { Repository, RepositoryFull, WebDocument } from '../../../graphql/types';
+import {
+  Repository,
+  RepositoryFull,
+  WebDocument,
+} from '../../../graphql/types';
 import { DocumentService } from '../../../services/document.service';
 import { Title } from '@angular/platform-browser';
 import { GqlSortOrder } from '../../../../generated/graphql';
@@ -52,9 +56,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
             },
             where: {
               repository: {
-                where: {
-                  id: params.id,
-                },
+                id: params.id,
               },
             },
           });

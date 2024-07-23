@@ -34,7 +34,7 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.pipeline.PipelineJobEntity
+import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
@@ -115,7 +115,7 @@ open class DocumentEntity : EntityWithUUID() {
   open var scoredAt: Date? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "documentId")
-  open var plugins: MutableList<PipelineJobEntity> = mutableListOf()
+  open var plugins: MutableList<DocumentPipelineJobEntity> = mutableListOf()
 
   @Column(name = StandardJpaFields.repositoryId, nullable = false)
   open lateinit var repositoryId: UUID
@@ -190,7 +190,7 @@ open class DocumentEntity : EntityWithUUID() {
 }
 
 fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
-  var contentHtmlParam: String? = null
+  val contentHtmlParam: String?
   var contentRawBase64Param: String? = null
   var contentRawMimeParam: String? = null
   if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {

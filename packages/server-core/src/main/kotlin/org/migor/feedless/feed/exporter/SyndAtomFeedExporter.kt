@@ -1,12 +1,10 @@
 package org.migor.feedless.feed.exporter
 
-import com.rometools.modules.atom.modules.AtomLinkModuleImpl
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.modules.mediarss.MediaEntryModuleImpl
 import com.rometools.modules.mediarss.types.MediaContent
 import com.rometools.modules.mediarss.types.UrlReference
-import com.rometools.rome.feed.atom.Link
 import com.rometools.rome.feed.synd.SyndCategory
 import com.rometools.rome.feed.synd.SyndCategoryImpl
 import com.rometools.rome.feed.synd.SyndContent
@@ -29,6 +27,7 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.JsonUtil
 import org.springframework.stereotype.Service
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URL
 
 
@@ -75,7 +74,8 @@ class SyndAtomFeedExporter {
     feed.publishedDate = jsonFeed.publishedAt
     val link = SyndLinkImpl()
     link.rel = "self"
-    link.href = jsonFeed.feedUrl + "?page=${jsonFeed.page}"
+
+    link.href = UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page).build().toUri().toString()
     link.type = "application/atom+xml"
 
     val website = SyndLinkImpl()
@@ -88,7 +88,7 @@ class SyndAtomFeedExporter {
     if (!jsonFeed.isLast) {
       val next = SyndLinkImpl()
       next.rel = "next"
-      next.href = jsonFeed.feedUrl + "?page=${jsonFeed.page+1}"
+      next.href = UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page + 1).build().toUri().toString()
       next.type = "application/atom+xml"
       links.add(next)
     }
@@ -113,7 +113,9 @@ class SyndAtomFeedExporter {
 
     val feedlessModule = FeedlessModuleImpl()
     feedlessModule.setStartingAt(article.startingAt)
-    feedlessModule.setLatLng(JsonUtil.gson.toJson(article.latLng))
+    article.latLng?.let {
+      feedlessModule.setLatLng(JsonUtil.gson.toJson(article.latLng))
+    }
     entry.modules.add(feedlessModule)
 
     article.imageUrl?.let {

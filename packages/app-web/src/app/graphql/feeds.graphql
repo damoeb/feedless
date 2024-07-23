@@ -4,6 +4,7 @@ fragment RemoteNativeFeedFragment on RemoteNativeFeed {
   websiteUrl
   tags
   feedUrl
+  nextPageUrls
   items {
     ...WebDocumentFragment
   }

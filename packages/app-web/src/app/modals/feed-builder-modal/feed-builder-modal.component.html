@@ -13,6 +13,7 @@
     [hideSearchBar]="false"
     [submitButtonText]="submitButtonText"
     [scrapeRequest]="scrapeRequest"
+    (selectedRepositoryChanged)="handleRepository($event)"
     (selectedFeedChanged)="handleFeed($event)"
   ></app-feed-builder>
 </ion-content>

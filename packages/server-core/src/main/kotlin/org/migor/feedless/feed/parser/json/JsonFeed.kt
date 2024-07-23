@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.Serializable
 import java.util.*
 
 open class JsonFeed: java.io.Serializable {
@@ -32,8 +31,8 @@ open class JsonFeed: java.io.Serializable {
   @SerializedName(value = "home_page_url")
   var websiteUrl: String? = null
 
-  @SerializedName(value = "user_comment")
-  var user_comment: String? = null
+//  @SerializedName(value = "user_comment")
+//  var user_comment: String? = null
 
   @SerializedName(value = "imagee")
   var imageUrl: String? = null
@@ -50,18 +49,14 @@ open class JsonFeed: java.io.Serializable {
   @SerializedName(value = "feed_url")
   lateinit var feedUrl: String
 
-//  @SerializedName(value = "edit_url")
-//  var editUrl: String? = null
-
   @SerializedName(value = "expired")
   var expired: Boolean = false
 
-  //    @SerializedName(value = "home_page_url")
-//    val lastPage: Int? = null,
-//    @SerializedName(value = "feed_url")
-//    val selfPage: Int? = null,
   @SerializedName(value = "tags")
   var tags: List<String>? = null
+
+  @SerializedName(value = "links")
+  var links: List<String>? = null
 
   @Transient
   var isLast: Boolean = true

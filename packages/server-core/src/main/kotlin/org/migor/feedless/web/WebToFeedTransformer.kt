@@ -1,15 +1,17 @@
 package org.migor.feedless.web
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.generated.types.DOMElementByXPath
+import org.migor.feedless.generated.types.DOMExtract
+import org.migor.feedless.generated.types.ScrapeEmit
+import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -86,13 +88,10 @@ data class GenericFeedRule(
   override val dateIsStartOfEvent: Boolean = false,
   val count: Int = 0,
   val score: Double,
-  val samples: List<JsonItem> = emptyList()
 ) : Selectors()
 
 @JsonIgnoreProperties
 data class GenericFeedParserOptions(
-  val strictMode: Boolean = false,
-  val version: String = "0.1",
   val minLinkGroupSize: Int = 2,
   val minWordCountOfLink: Int = 1,
 )
@@ -104,11 +103,6 @@ enum class PuppeteerWaitUntil {
   domcontentloaded
 
 }
-
-@JsonIgnoreProperties("recovery")
-data class GenericFeedRefineOptions(
-  val filter: String? = null,
-)
 
 @JsonIgnoreProperties
 data class GenericFeedSelectors(
@@ -146,13 +140,12 @@ enum class ExtendContext(val value: String) {
  */
 @Service
 class WebToFeedTransformer(
-
   @Autowired
   private var propertyService: PropertyService,
   @Autowired
   private var webToTextTransformer: WebToTextTransformer,
   @Autowired
-  private var dateClaimer: DateClaimer
+  private var webExtractService: WebExtractService
 ) {
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
@@ -166,7 +159,6 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     parserOptions: GenericFeedParserOptions,
-    sampleSize: Int = 0
   ): List<GenericFeedRule> {
     val body = document.body()
 
@@ -202,7 +194,6 @@ class WebToFeedTransformer(
           contextXPath = selectors.contextXPath,
           dateXPath = selectors.dateXPath,
           paginationXPath = paginationXPath,
-          samples = getArticlesBySelectors(corrId, selectors, document, url, sampleSize)
         )
       }
       .toList()
@@ -290,45 +281,39 @@ class WebToFeedTransformer(
       }
     }
 
-//  fun createFeedUrl(
-//    url: URL,
-//    selectors: Selectors,
-//    parserOptions: GenericFeedParserOptions,
-//    scrapeRequest: ScrapeRequest,
-//    refineOptions: GenericFeedRefineOptions
-//  ): String {
-//    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-//    val params: List<Pair<String, String>> = mapOf(
-//      WebToFeedParamsV2.version to propertyService.webToFeedVersion,
-//      WebToFeedParamsV2.url to url.toString(),
-//      WebToFeedParamsV2.linkPath to selectors.linkXPath,
-//      WebToFeedParamsV2.contextPath to selectors.contextXPath,
-//      WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
-//      WebToFeedParamsV2.extendContext to selectors.extendContext.value,
-////      WebToFeedParamsV2.prerender to "${scrapeRequest.page.prerender != null}",
-//      WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
-//      WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
-//    ).map { entry -> entry.key to encode("${entry.value}") }
-//
-//    val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
-//    return "${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}?$searchParams"
-//  }
-
   fun getFeedBySelectors(
     corrId: String,
     selectors: Selectors,
     document: Document,
     url: URL,
-    sampleSize: Int = 0
   ): JsonFeed {
-    val jsonFeed = JsonFeed()
-    jsonFeed.id = url.toString()
-    jsonFeed.title = document.title()
-    jsonFeed.websiteUrl = url.toString()
-    jsonFeed.publishedAt = Date()
-    jsonFeed.items = getArticlesBySelectors(corrId, selectors, document, url)
-    jsonFeed.feedUrl = ""
-    return jsonFeed
+    val locale = extractLocale(document, propertyService.locale)
+    val element = withAbsUrls(normalizeTags(document.body()), url)
+    val feed = webExtractService.extract(
+      corrId,
+      selectors.toScrapeExtracts(),
+      element,
+      locale,
+    )
+    val links = StringUtils.trimToNull(selectors.paginationXPath)?.let {
+      val xpath = if (it.matches(Regex("a(\\[[0-9]+\\])?$", RegexOption.IGNORE_CASE))) {
+        it
+      } else {
+        "$it//a/@href"
+      }
+      webExtractService.extract(
+        corrId,
+        DOMExtract(
+          fragmentName = "next",
+          xpath = DOMElementByXPath(value = xpath),
+          max = 10,
+          emit = listOf(ScrapeEmit.text)
+        ),
+        element,
+        locale,
+      )
+    }
+    return convertExtractsToJsonFeed(feed, links, url)
   }
 
   fun getArticlesBySelectors(
@@ -336,116 +321,65 @@ class WebToFeedTransformer(
     selectors: Selectors,
     document: Document,
     url: URL,
-    sampleSize: Int = 0
   ): List<JsonItem> {
-
-    val now = Date()
-    val locale = extractLocale(document, propertyService.locale)
-    log.debug("[${corrId}] getArticlesByRule context=${selectors.contextXPath} link=${selectors.linkXPath} date=${selectors.dateXPath}")
-    val articles = evaluateXPath(selectors.contextXPath, document).mapNotNull { element ->
-      try {
-        val content = applyExtendElement(selectors.extendContext, normalizeTags(element.clone()))
-        val link = resolveLink(url, selectors, element)
-        link?.let {
-          val date =
-            Optional.ofNullable(StringUtils.trimToNull(selectors.dateXPath))
-              .map { dateXPath ->
-                Optional.ofNullable(extractDate(corrId, dateXPath, element, locale))
-                  .orElse(now)
-                  .also { evaluateXPath(dateXPath, element).first().remove() }
-              }
-              .orElse(now)
-
-          val (pubDate, startingDate) = if (BooleanUtils.isTrue(selectors.dateIsStartOfEvent)) {
-            if (now.before(date)) {
-              Pair(now, date)
-            } else {
-              Pair(date, date)
-            }
-          } else {
-            Pair(date, null)
-          }
-          val linkText = it.first
-          val articleUrl = it.second
-
-          val toTitle = { text: String -> StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100) }
-
-          val article = JsonItem()
-          article.id = FeedUtil.toURI("article", articleUrl)
-          article.title = toTitle(linkText)
-          article.url = articleUrl
-          article.contentText = webToTextTransformer.extractText(content)
-          article.contentRawBase64 = withAbsUrls(content, url).selectFirst("body")!!.html()
-          article.contentRawMime = "text/html"
-          article.publishedAt = pubDate
-          article.startingAt = startingDate
-
-          if (qualifiesAsArticle(element, selectors)) {
-            article
-          } else {
-            null
-          }
-        }
-
-      } catch (e: Exception) {
-        log.warn("[${corrId}] getArticlesByRule ${e.message}")
-        null
-      }
-    }
-
-    log.debug("[${corrId}] -> ${articles.size} articles")
-
-    return articles.distinctBy { it.url }
-      .filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
+    return getFeedBySelectors(corrId, selectors, document, url).items
   }
 
-  private fun resolveLink(
-    url: URL,
-    selectors: Selectors,
-    element: Element
-  ): Pair<String, String>? {
-    return evaluateXPath(selectors.linkXPath, element)
-      .map {
-        Pair(
-          it.text(), toAbsoluteUrl(
-            url,
-            StringUtils.trimToNull(it.attr("href"))
-              ?: ("/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText())))
-          )
-        )
-      }
-      .firstOrNull()
+  private fun convertExtractsToJsonFeed(feed: ScrapeExtractResponse, links: ScrapeExtractResponse?, url: URL): JsonFeed {
+    val jsonFeed = JsonFeed()
+    jsonFeed.id = ""
+    jsonFeed.title = "feed"
+    jsonFeed.websiteUrl = ""
+    jsonFeed.publishedAt = Date()
+    jsonFeed.items = feed.fragments
+      .map { convertExtractToJsonItem(it, url) }
+      .distinctBy { it.url }
+    jsonFeed.feedUrl = ""
+    links?.let {
+      jsonFeed.links = links.fragments.mapNotNull { it.data?.data }
+        .map { it.replace(Regex("#.*"), "") }
+        .distinct()
+    }
+
+    return jsonFeed
+  }
+
+  private fun convertExtractToJsonItem(fragment: ScrapeExtractFragment, baseUrl: URL): JsonItem {
+    val element = parseHtml(fragment.html!!.data, baseUrl.toString()).body()
+    val text = fragment.text!!.data
+
+    val article = JsonItem()
+    article.id = FeedUtil.toURI("article", text)
+    article.title = StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100)
+    val url = fragment.extracts?.find { it.fragmentName == JsonItem.URL }?.fragments?.find { it.data?.mimeType == WebExtractService.MIME_URL }?.data?.data
+    article.url = url ?: ""
+    article.contentText = webToTextTransformer.extractText(element)
+    article.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
+    article.contentRawMime = "text/html"
+    article.publishedAt = Date()
+
+    val tryExtractDate = { f: ScrapeExtractResponse -> f.fragments.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
+
+    fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.PUBLISHED_AT }?.let {
+      article.publishedAt = tryExtractDate(it) ?: Date()
+    }
+
+    fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.STARTING_AT }?.let {
+      article.startingAt = tryExtractDate(it)
+    }
+    return article
   }
 
   private fun extractLocale(document: Document, fallback: Locale): Locale {
-    val langStr = document.select("html[@lang]").attr("lang")
+    val langStr = document.select("html").attr("lang")
     return Optional.ofNullable(StringUtils.trimToNull(langStr))
       .map {
         run {
-          log.debug("Found lang ${it}")
+          log.debug("Detected locale $it")
           Locale.forLanguageTag(it)
         }
       }
       .orElse(fallback)
-  }
-
-  private fun extractDate(corrId: String, dateXPath: String, element: Element, locale: Locale): Date? {
-    return runCatching {
-      val timeElement = evaluateXPath(dateXPath, element).first()
-      if (timeElement.hasAttr("datetime")) {
-        dateClaimer.claimDatesFromString(corrId, timeElement.attr("datetime"), locale)
-      } else {
-        val text = timeElement.text()
-        val date = dateClaimer.claimDatesFromString(corrId, text, locale)
-        date?.let {
-          if (it.time < System.currentTimeMillis()) {
-            log.warn("[$corrId] failed to parse date from '$text'")
-          }
-        }
-
-        date
-      }
-    }.getOrNull()
   }
 
   private fun applyExtendElement(extendContext: ExtendContext, element: Element): Element {
@@ -466,7 +400,7 @@ class WebToFeedTransformer(
   }
 
 
-  private fun getRelativeCssPath(nodeParam: Element, context: Element, strictMode: Boolean): String {
+  private fun getRelativeCssPath(nodeParam: Element, context: Element): String {
     if (nodeParam == context) {
       // todo mag this is not applicable
       return "self"
@@ -475,42 +409,28 @@ class WebToFeedTransformer(
     var path = node.tagName() // tagName for text nodes is undefined
     while (node.parentNode() !== context && node.hasParent()) {
       node = node.parent()!!
-      path = "${getNodeName(node, strictMode)}>${path}"
+      path = "${getNodeName(node)}>${path}"
     }
     return path
   }
 
-  private fun getNodeName(node: Element, strictMode: Boolean): String {
-    return if (strictMode) {
-      var childId = 0
-      var ps = node.previousElementSibling()
-      while (ps != null) {
-        childId++
-        ps = ps.previousElementSibling()
-      }
-
-      node.tagName() + childId
-    } else {
-      node.tagName()
-    }
+  private fun getNodeName(node: Element): String {
+//    return if (strictMode) {
+//      var childId = 0
+//      var ps = node.previousElementSibling()
+//      while (ps != null) {
+//        childId++
+//        ps = ps.previousElementSibling()
+//      }
+//
+//      node.tagName() + childId
+//    } else {
+    return node.tagName()
+//    }
   }
 
   private fun toWords(text: String): List<String> {
     return text.trim().split(" ").filterTo(ArrayList()) { word: String -> word.isNotEmpty() }
-  }
-
-  private fun qualifiesAsArticle(elem: Element, selectors: Selectors): Boolean {
-    if (elem.text()
-        .replace("\r", "")
-        .replace("\n", "")
-        .replace("\t", "")
-        .isEmpty()
-    ) {
-      return false
-    }
-    val links = evaluateXPath(selectors.linkXPath, elem)
-    return links.isNotEmpty()
-
   }
 
   fun __generalizeXPaths(xpaths: Collection<String>): String {
@@ -770,7 +690,7 @@ class WebToFeedTransformer(
         LinkPointer(
           element = element,
 //          index = getChildIndex(element.parent()!!),
-          path = getRelativeCssPath(element.parent()!!, body, options.strictMode)
+          path = getRelativeCssPath(element.parent()!!, body)
         )
       }
       .collect(Collectors.toList())
@@ -865,7 +785,11 @@ class WebToFeedTransformer(
 
   companion object {
     fun toAbsoluteUrl(url: URL, link: String): String {
-      return URL(url, link).toString()
+      return try {
+        URL(url, link).toString()
+      } catch (e: Exception) {
+        link
+      }
     }
 
     fun withAbsUrls(element: Element, url: URL): Element {
@@ -904,4 +828,37 @@ fun toDto(it: PuppeteerWaitUntil): org.migor.feedless.generated.types.PuppeteerW
     PuppeteerWaitUntil.networkidle0 -> org.migor.feedless.generated.types.PuppeteerWaitUntil.networkidle0
     PuppeteerWaitUntil.load -> org.migor.feedless.generated.types.PuppeteerWaitUntil.load
   }
+}
+
+private fun Selectors.toScrapeExtracts(): DOMExtract {
+  val extracts = mutableListOf(
+    DOMExtract(
+      fragmentName = JsonItem.URL,
+      xpath = DOMElementByXPath(value = linkXPath),
+      max = 1,
+      emit = listOf(ScrapeEmit.text, ScrapeEmit.html)
+    )
+  )
+  if (StringUtils.isNotBlank(dateXPath)) {
+    val fragmentName = if (dateIsStartOfEvent) {
+      JsonItem.STARTING_AT
+    } else {
+      JsonItem.PUBLISHED_AT
+    }
+    extracts.add(
+      DOMExtract(
+        fragmentName = fragmentName,
+        xpath = DOMElementByXPath(value = dateXPath!!),
+        max = 1,
+        emit = listOf(ScrapeEmit.date, ScrapeEmit.html)
+      )
+    )
+  }
+
+  return DOMExtract(
+    fragmentName = "feed",
+    xpath = DOMElementByXPath(value = contextXPath),
+    emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+    extract = extracts
+  )
 }

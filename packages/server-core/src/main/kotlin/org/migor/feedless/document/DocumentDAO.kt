@@ -52,26 +52,26 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   ): DocumentEntity?
 
 
-  fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean
+//  fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean
   fun findByContentTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
 
   fun countByRepositoryId(id: UUID): Long
 
-  @Query(
-    """
-    SELECT date_part('year', released_at\:\:date) as year,
-           date_part('month', released_at\:\:date) AS month,
-           date_part('day', released_at\:\:date) AS day,
-           COUNT(id)
-    FROM t_document
-    WHERE released_at >= date_trunc('month', current_date - interval '1' month)
-       and repository_id = ?1
-    GROUP BY year, month, day
-    ORDER BY year, month, day
-    """,
-    nativeQuery = true
-  )
-  fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
+//  @Query(
+//    """
+//    SELECT date_part('year', released_at\:\:date) as year,
+//           date_part('month', released_at\:\:date) AS month,
+//           date_part('day', released_at\:\:date) AS day,
+//           COUNT(id)
+//    FROM t_document
+//    WHERE released_at >= date_trunc('month', current_date - interval '1' month)
+//       and repository_id = ?1
+//    GROUP BY year, month, day
+//    ORDER BY year, month, day
+//    """,
+//    nativeQuery = true
+//  )
+//  fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
   fun deleteAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>)
   fun deleteAllByRepositoryIdAndId(repositoryId: UUID, fromString: UUID?)
 

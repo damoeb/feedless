@@ -20,6 +20,9 @@
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 14%;
+  &:not(.day--no-header) {
+    min-height: 100px;
+  }
   display: flex;
   flex-direction: column;
   padding: 5px;
@@ -36,8 +39,8 @@
   border: 2px solid transparent;
 
   &--active {
-    --app-border-color: rgba(var(--ion-color-primary-rgb), 0.8);
-    --app-day-bg: rgba(var(--ion-color-primary-rgb), 0.4);
+    --app-border-color: rgba(var(--ion-color-danger-rgb), 0.8);
+    --app-day-bg: rgba(var(--ion-color-danger-rgb), 0.2);
   }
 
   &--today {

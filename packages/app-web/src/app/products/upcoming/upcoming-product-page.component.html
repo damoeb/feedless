@@ -6,7 +6,6 @@
       placeholder="Postleitzahl oder Ortschaft"
       [formControl]="locationFc"
       (ionFocus)="isLocationFocussed = true"
-      (ionBlur)="isLocationFocussed = false"
       style="
         width: 700px;
         margin-left: auto;
@@ -34,6 +33,7 @@
 </ion-header>
 
 <ion-content>
+  <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
   <div
     style="
       width: 700px;
@@ -42,6 +42,7 @@
       display: flex;
       flex-direction: column;
     "
+    *ngIf="!loading"
   >
     <ion-list *ngIf="isLocationFocussed">
       <ion-item
@@ -63,13 +64,20 @@
       </ion-item>
     </ion-list>
 
-    <ion-range
-      labelPlacement="start"
-      label="Maximale Distanz"
-      min="10"
-      max="100"
-      [pin]="true"
-    ></ion-range>
+    <ion-list>
+      <ion-item>
+        <ion-select
+          label="Umkreis"
+          labelPlacement="start"
+          [formControl]="distanceFc"
+        >
+          <ion-select-option [value]="5">+5 Km</ion-select-option>
+          <ion-select-option [value]="10">+10 Km</ion-select-option>
+          <ion-select-option [value]="20">+20 Km</ion-select-option>
+          <ion-select-option [value]="30">+20 Km</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
 
     <!--    <div style="display: flex">-->
     <!--      <h3 class="ion-margin-end">-->
@@ -96,8 +104,18 @@
         </ion-buttons>
 
         <ion-title class="ion-text-center">
-          {{ currentDateRef.format("MMMM") }}
-          {{ currentDateRef.format("YYYY") }}
+          <div style="display: flex;
+                      align-items: center;
+                      justify-content: center;">
+            {{ currentDateRef.format("MMMM") }}
+            {{ currentDateRef.format("YYYY") }}
+
+            <ion-button class="ion-margin-start"
+                        size="small"
+                        color="dark"
+                        *ngIf="!isSame(currentDateRef, now, ['month'])"
+                        (click)="changeMonth(now)">Heute</ion-button>
+          </div>
         </ion-title>
 
         <ion-buttons slot="end">
@@ -110,7 +128,7 @@
       <div class="calendar__body" *ngFor="let year of years | keyvalue">
         <ng-container *ngFor="let month of year.value | keyvalue">
           <div
-            class="day no-background ion-text-center ion-text-uppercase"
+            class="day day--no-header no-background ion-text-center ion-text-uppercase"
             *ngFor="let day of filterFirstWeek(month.value)"
           >
             {{ day.day.format("ddd") }}
@@ -122,11 +140,11 @@
               'day--today': day.today,
               'day--other': day.otherMonth,
               'no-background': day.otherMonth,
-              'day--active': day.day === currentDateRef,
+              'day--active': isSame(day.day, currentDateRef, ['month', 'year', 'day']),
               'day--past': day.past
             }"
           >
-            <a href="javascript:void(0)" (click)="currentDateRef = day.day">
+            <a href="javascript:void(0)" (click)="setCurrentDate(day.day)">
               <div>
                 <h4 class="ion-text-center">
                   <span *ngIf="day.printMonth">
@@ -141,7 +159,7 @@
                   style="color: var(--ion-color-danger)"
                 >
                   <span></span>
-                  <span *ngFor="let dot of getDots(day.day)"> &#9679; </span>
+                  <span *ngFor="let e of getEvents(day.day)"> &#9679; </span>
                 </div>
               </div>
             </a>
@@ -151,25 +169,35 @@
     </div>
     <div class="ion-margin-top">
       <ng-container *ngIf="currentDateRef">
-        <ion-toolbar style="--background: transparent">
-          <ion-title>
-            Veranstaltungen im Umkreis von {{ locationFc.value }}
-          </ion-title>
-        </ion-toolbar>
-        <div class="ion-padding-horizontal">
-          <p *ngIf="getEvents(currentDateRef).length === 0">
-            Keine Einträge gefunden
-          </p>
-          <ul *ngFor="let group of getEventGroups(currentDateRef)">
-            <h3 class="ion-padding-top">{{ group.distance }} Km</h3>
-            <li *ngFor="let event of group.events">
-              <h4>
-                <a [href]="event.url">{{ event.contentTitle }}</a>
-              </h4>
-              <p>
-                {{ event.contentText }}
-              </p>
-            </li>
+        <h1 class="ion-text-center">
+          Veranstaltungen nahe {{ locationFc.value }}
+        </h1>
+        <div>
+          <p *ngIf="placesByDistance.length === 0">Keine Einträge gefunden</p>
+          <ul *ngFor="let placesGroup of placesByDistance">
+            <ng-container *ngFor="let place of placesGroup.places">
+              <h3 class="ion-padding-top">
+                {{ place.place }}
+                <a title="Show on map"
+                     [href]="'https://www.openstreetmap.org/#map=14/'+ place.events[0].localized.lat + '/' + place.events[0].localized.lon"
+                     target="_blank">
+                    <ion-icon name="location-outline"></ion-icon>
+
+                  </a>
+                <ion-note>
+                  {{ placesGroup.distance }} Km entfernt
+                </ion-note>
+              </h3>
+              <li *ngFor="let event of place.events" class="ion-margin-bottom ion-margin-start">
+                <h5>
+                  <a [href]="event.url">{{ event.contentTitle }}</a>
+                </h5>
+                <p style="opacity: 0.8">
+                  {{ event.contentText }}
+                </p>
+              </li>
+            </ng-container>
+
           </ul>
         </div>
       </ng-container>

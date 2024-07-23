@@ -1,14 +1,42 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { GqlFeedlessPlugins, GqlProductCategory, GqlScrapeRequest, GqlVisibility, GqlWebDocumentField } from '../../../generated/graphql';
-import { FeedlessPlugin, Repository, RepositoryFull, SubscriptionSource, WebDocument } from '../../graphql/types';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlFeedlessPlugins,
+  GqlProductCategory,
+  GqlScrapeRequest,
+  GqlVisibility,
+  GqlWebDocumentField,
+} from '../../../generated/graphql';
+import {
+  FeedlessPlugin,
+  Repository,
+  RepositoryFull,
+  SubscriptionSource,
+  WebDocument,
+} from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
-  getScrapeRequest
+  getScrapeRequest,
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { ModalService } from '../../services/modal.service';
-import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
-import { FeedWithRequest, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  AlertController,
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular';
+import {
+  FeedOrRepository,
+  FeedWithRequest,
+  tagsToString
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -98,7 +126,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.repository = await this.repositoryService.getRepositoryById(this.repositoryId);
+    this.repository = await this.repositoryService.getRepositoryById(
+      this.repositoryId,
+    );
     if (this.repository.product === GqlProductCategory.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
@@ -108,9 +138,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
     if (this.repository.visibility === GqlVisibility.IsPrivate) {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}&size=100`;
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
     } else {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom&size=100`;
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
     }
     this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
@@ -164,8 +194,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   hasErrors(): boolean {
     return (
-      this.repository.sources.length === 0 ||
-      this.repository.sources.some((s) => s.errornous)
+      this.repository?.sources?.length === 0 ||
+      this.repository?.sources?.some((s) => s.errornous)
     );
   }
 
@@ -195,9 +225,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       },
       where: {
         repository: {
-          where: {
-            id: this.repository.id,
-          },
+          id: this.repository.id,
         },
       },
     });
@@ -354,11 +382,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
                 data: {
                   localized: geoTag
                     ? {
-                      set: {
-                        lat: parseFloat(`${geoTag.lat}`),
-                        lon: parseFloat(`${geoTag.lon}`),
-                      },
-                    }
+                        set: {
+                          lat: parseFloat(`${geoTag.lat}`),
+                          lon: parseFloat(`${geoTag.lon}`),
+                        },
+                      }
                     : null,
                 },
               },
@@ -407,8 +435,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       {
         scrapeRequest: source as any,
       },
-      async (data: FeedWithRequest) => {
-        if (data) {
+      async (data: FeedOrRepository) => {
+        if (data?.repository) {
+          console.warn('not implemented')
+        }
+        if (data?.feed) {
           this.repository = await this.repositoryService.updateRepository({
             where: {
               id: this.repository.id,
@@ -417,8 +448,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
               sources: {
                 add: [
                   getScrapeRequest(
-                    data.feed,
-                    data.scrapeRequest as GqlScrapeRequest,
+                    data.feed.feed,
+                    data.feed.scrapeRequest as GqlScrapeRequest,
                   ),
                 ],
                 remove: source ? [source.id] : [],
@@ -453,9 +484,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.documentService.removeById({
       where: {
         repository: {
-          where: {
-            id: this.repository.id,
-          },
+          id: this.repository.id,
         },
         id: {
           in: selected.map((document) => document.id),

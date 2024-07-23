@@ -76,6 +76,10 @@ export type Source = {
   response?: ScrapeResponse;
 };
 
+export type FeedOrRepository = {
+  feed: FeedWithRequest,
+  repository: Repository
+}
 export type FeedWithRequest = {
   scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;
@@ -243,6 +247,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
 
     this.scrapeRequest.tags = this.tags;
+    console.log('this.location', this.location);
     if (this.location) {
       this.scrapeRequest.localized = {
         lat: parseFloat(this.location.lat),
@@ -315,6 +320,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   async showLocationPickerModal() {
     this.location = await this.modalService.openSearchAddressModal();
+    console.log('this.location', this.location);
     this.changeRef.detectChanges();
   }
 
