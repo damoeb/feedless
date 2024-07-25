@@ -213,6 +213,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
     try {
       const newScrapeRequest: GqlScrapeRequestInput = {
+        title: `From ${url}`,
         flow: {
           sequence: [
             {
@@ -306,6 +307,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         {
           sources: [
             {
+              title: `From ${this.form.value.url}`,
               tags: [],
               flow: {
                 sequence: [

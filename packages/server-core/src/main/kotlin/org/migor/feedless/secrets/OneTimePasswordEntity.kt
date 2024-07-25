@@ -40,7 +40,7 @@ open class OneTimePasswordEntity : EntityWithUUID() {
   open var user: UserEntity? = null
 
   @Column(name = StandardJpaFields.userId, nullable = false)
-  open var userId: UUID? = null
+  open lateinit var userId: UUID
 
 }
 

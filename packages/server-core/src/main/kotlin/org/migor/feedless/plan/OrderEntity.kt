@@ -83,7 +83,7 @@ open class OrderEntity : EntityWithUUID() {
   open var product: ProductEntity? = null
 
   @Column(name = StandardJpaFields.userId, nullable = false)
-  open var userId: UUID? = null
+  open lateinit var userId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

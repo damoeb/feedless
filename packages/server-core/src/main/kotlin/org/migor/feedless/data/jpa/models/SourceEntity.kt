@@ -32,6 +32,9 @@ open class SourceEntity : EntityWithUUID() {
   @Column(name = "language")
   open var language: String? = null
 
+  @Column(name = "title", nullable = false)
+  open lateinit var title: String
+
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
   open var latLon: Point? = null
 
@@ -76,6 +79,7 @@ fun SourceEntity.toDto(corrId: String): ScrapeRequest {
         lon = it.y,
       )
     },
+    title = title,
     flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

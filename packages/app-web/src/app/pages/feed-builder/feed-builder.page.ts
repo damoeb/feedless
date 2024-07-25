@@ -64,6 +64,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   async handleRepository(repository: Repository) {
     const url = `${this.serverConfig.gatewayUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
     await this.handleSource(`Remix ${repository.title}`, '', {
+      title: `From ${url}`,
       flow: {
         sequence: [
           {

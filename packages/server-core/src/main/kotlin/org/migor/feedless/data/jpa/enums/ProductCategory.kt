@@ -3,6 +3,7 @@ package org.migor.feedless.data.jpa.enums
 import org.migor.feedless.generated.types.ProductCategory as ProductCategoryDto
 
 enum class ProductCategory {
+  all,
   visualDiff,
   pageChangeTracker,
   rssProxy,
@@ -16,6 +17,7 @@ enum class ProductCategory {
 
 fun ProductCategoryDto.fromDto(): ProductCategory {
   return when (this) {
+    ProductCategoryDto.all -> ProductCategory.all
     ProductCategoryDto.visualDiff -> ProductCategory.visualDiff
 //    org.migor.feedless.generated.types.ProductName.pageChangeTracker -> ProductName.pageChangeTracker
     ProductCategoryDto.rssProxy -> ProductCategory.rssProxy
@@ -32,6 +34,7 @@ fun ProductCategoryDto.fromDto(): ProductCategory {
 
 fun ProductCategory.toDto(): ProductCategoryDto {
   return when (this) {
+    ProductCategory.all -> ProductCategoryDto.all
     ProductCategory.visualDiff -> ProductCategoryDto.visualDiff
 //    org.migor.feedless.generated.types.ProductName.pageChangeTracker -> ProductName.pageChangeTracker
     ProductCategory.rssProxy -> ProductCategoryDto.rssProxy

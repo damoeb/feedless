@@ -42,8 +42,8 @@ export class GraphqlClient {
     // console.log(`secretKey: ${secretKey.substring(0, 4)}****`);
 
     this.createSubscriptionClient({
-      keepAlive: 10000,
-      retryWait: () => new Promise((resolve) => setTimeout(resolve, 30000)),
+      // keepAlive: 10000,
+      retryWait: () => new Promise((resolve) => setTimeout(resolve, 3000)),
     });
     const connectionId = (Math.random() + 1).toString(36).substring(7);
     const agentName = `${process.env.APP_AGENT_NAME || 'unnamed'}`;

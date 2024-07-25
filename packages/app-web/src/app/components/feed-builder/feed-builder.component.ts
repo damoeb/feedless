@@ -198,6 +198,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       this.changeRef.detectChanges();
 
       this.scrapeRequest = {
+        title: `From ${this.url}`,
         tags: [],
         flow: {
           sequence: [

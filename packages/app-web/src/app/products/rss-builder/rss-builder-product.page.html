@@ -45,13 +45,14 @@
       >
         Create Feed
       </ion-button>
-      <app-dark-mode-button></app-dark-mode-button>
       <ion-button
         *ngIf="!serverConfig.isSelfHosted()"
         routerLink="/pricing/rss-proxy"
       >
         Pricing
       </ion-button>
+      <app-notifications-button></app-notifications-button>
+      <app-dark-mode-button></app-dark-mode-button>
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>

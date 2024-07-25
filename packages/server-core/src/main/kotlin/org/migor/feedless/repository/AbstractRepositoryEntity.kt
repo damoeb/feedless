@@ -129,7 +129,8 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(nullable = false, name = "is_archived")
   open var archived: Boolean = false
 
-  @Column(nullable = false, name = "for_product")
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, name = "for_product", length = 20)
   open lateinit var product: ProductCategory
 
   @Temporal(TemporalType.TIMESTAMP)

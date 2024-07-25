@@ -355,7 +355,8 @@ input CreateUserInput {
 }
 
 enum ProductCategory {
-  system
+#  system
+  all,
   rssProxy
   visualDiff
   reader
@@ -903,6 +904,8 @@ type User {
   lastName: String
   country: String
   purgeScheduledFor: Long
+  notificationRepositoryId: ID
+  notificationsLastViewedAt: Long
   secrets: [UserSecret!]!
   plan(product: ProductCategory!): Plan
 }
@@ -1293,6 +1296,10 @@ input StringUpdateOperationsInput {
   set: String!
 }
 
+input LongUpdateOperationsInput {
+  set: Long!
+}
+
 input SubmitAgentDataInput {
   corrId: ID!
   callbackId: ID!
@@ -1309,6 +1316,7 @@ input UpdateCurrentUserInput {
   dateFormat: StringUpdateOperationsInput
   timeFormat: StringUpdateOperationsInput
   plan: StringUpdateOperationsInput
+  notificationsLastViewedAt: LongUpdateOperationsInput
 }
 
 input UserSecretCreateInput {
@@ -1436,6 +1444,7 @@ input ScrapeRequestUpdateInput {
 
 input ScrapeRequestUpdateDataInput {
   tags: StringArrayUpdateOperationsInput
+  title: StringUpdateOperationsInput
   localized: NullableUpdateGeoPointInput
 }
 
@@ -1450,6 +1459,7 @@ input ScrapeSourceUniqueWhereInput {
 input ScrapeRequestInput {
   corrId: ID
   id: ID
+  title: String!
   flow: ScrapeFlowInput!
   errornous: Boolean
   localized: GeoPointInput
@@ -1543,6 +1553,7 @@ enum WebDocumentField {
 type ScrapeRequest {
   corrId: ID!
   id: ID!
+  title: String!
   flow: ScrapeFlow!
   errornous: Boolean
   localized: GeoPoint

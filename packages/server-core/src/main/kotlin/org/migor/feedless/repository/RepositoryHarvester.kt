@@ -109,7 +109,7 @@ class RepositoryHarvester internal constructor() {
 
     } catch (it: Exception) {
       log.error(it.message)
-      notificationService.createNotification(corrId, repository.ownerId, it.message ?: "")
+      notificationService.createNotification(corrId, repository.ownerId, it.message ?: "", repository = repository)
 //      if (log.isDebugEnabled) {
 //        it.printStackTrace()
 //      }
@@ -157,7 +157,7 @@ class RepositoryHarvester internal constructor() {
           log.warn("[$subCorrId] ${e.message}")
           if (e !is ResumableHarvestException) {
             meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
-            notificationService.createNotification(corrId, repository.ownerId, e.message)
+//            notificationService.createNotification(corrId, repository.ownerId, e.message)
             sourceDAO.setErrorState(source.id, true, e.message)
           }
           Flux.empty()
@@ -263,6 +263,9 @@ class RepositoryHarvester internal constructor() {
     log.info("[$corrId] importFeed")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
 
+    if (feed.items.isEmpty()) {
+      notificationService.createNotification(corrId, repository.ownerId, "Feed is empty", source = source)
+    }
 //  todo set name  sourceDAO.save()
 
     val hasNew = feed.items
@@ -275,7 +278,6 @@ class RepositoryHarvester internal constructor() {
         acc || existing == null
       } catch (e: Exception) {
         log.error("[$corrId] ${e.message}")
-        notificationService.createNotification(corrId, repositoryId, e.message)
         acc
       }
       }
@@ -283,7 +285,7 @@ class RepositoryHarvester internal constructor() {
     if (feed.nextPageUrls?.isNotEmpty() == true) {
       if (hasNew) {
         val pageUrls = feed.nextPageUrls.filterNot { url -> sourcePipelineJobDAO.existsBySourceIdAndUrl(source.id, url) }
-        log.info("[$corrId] following ${pageUrls.size} (${feed.nextPageUrls.size}) page urls ${pageUrls.joinToString(", ")}")
+        log.info("[$corrId] Trigger following ${pageUrls.size} (${feed.nextPageUrls.size}) page urls ${pageUrls.joinToString(", ")}")
         sourcePipelineJobDAO.saveAll(
           pageUrls
           .mapIndexed { index, url ->
@@ -356,10 +358,13 @@ class RepositoryHarvester internal constructor() {
           log.info("[$corrId] saved ${repository.id} ${document.status} ${document.url} with ${document.plugins.size} plugins")
         }
     } catch (e: Exception) {
-      log.error("[$corrId] ${e.message}")
-      notificationService.createNotification(corrId, repository.ownerId, e.message)
-      if (log.isDebugEnabled) {
-        e.printStackTrace()
+      if (e is ResumableHarvestException) {
+        log.debug("[$corrId] ${e.message}")
+      } else {
+        log.error("[$corrId] ${e.message}")
+        if (log.isDebugEnabled) {
+          e.printStackTrace()
+        }
       }
     }
   }

@@ -13,6 +13,7 @@ import { TrialWarningModule } from '../../components/trial-warning/trial-warning
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
 import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
+import { NotificationsButtonModule } from '../../components/notifications-button/notifications-button.module';
 
 @NgModule({
   imports: [
@@ -26,6 +27,7 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
     BubbleModule,
     AgentsButtonModule,
     RepositoriesButtonModule,
+    NotificationsButtonModule
   ],
   declarations: [RssBuilderProductPage],
 })

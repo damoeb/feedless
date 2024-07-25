@@ -16,7 +16,9 @@
       type="submit"
       (click)="triggerUpdate()"
     >
-      {{ buttonText }}
+      <span style="white-space: nowrap">
+        {{ buttonText }}
+      </span>
       <ion-icon
         [slot]="buttonText ? 'end' : ''"
         name="chevron-forward-outline"

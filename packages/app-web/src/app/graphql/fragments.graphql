@@ -85,6 +85,7 @@ fragment SourceFragment on ScrapeRequest {
     lon
   }
   lastErrorMessage
+  title
   flow {
     ...ScrapeFlowFragment
   }

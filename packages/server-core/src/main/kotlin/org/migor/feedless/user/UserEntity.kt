@@ -3,7 +3,10 @@ package org.migor.feedless.user
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.Email
@@ -15,6 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.plan.OrderEntity
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.subscription.PlanEntity
@@ -102,6 +106,22 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "time_format")
   open var timeFormat: String? = null
 
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+    name = "notification_repository_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_user__to__notifications_repository")
+  )
+  open var notificationRepository: RepositoryEntity? = null
+
+  @Column(name = "notification_repository_id")
+  open var notificationRepositoryId: UUID? = null
+
+  @Column(name = "notifications_last_viewed_at")
+  open var notificationsLastViewedAt: Date? = null
+
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
@@ -135,6 +155,7 @@ fun UserEntity.toDTO(): User =
     firstName = StringUtils.trimToEmpty(firstName),
     lastName = StringUtils.trimToEmpty(lastName),
     country = StringUtils.trimToEmpty(country),
+    notificationRepositoryId = notificationRepositoryId?.toString(),
     secrets = emptyList()
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)

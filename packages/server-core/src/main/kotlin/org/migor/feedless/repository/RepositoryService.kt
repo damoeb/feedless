@@ -58,7 +58,7 @@ import java.util.*
 
 fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   val fixedPage = (page ?: 0).coerceAtLeast(0)
-  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(300)
+  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(20)
   return PageRequest.of(fixedPage, fixedPageSize)
 }
 
@@ -200,6 +200,7 @@ class RepositoryService {
     planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
 //    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.tags = source.tags
+    entity.title = req.title
     entity.repositoryId = repository.id
     req.localized?.let {
       entity.latLon = JtsUtil.createPoint(it.lat, it.lon)

@@ -218,6 +218,7 @@ export class FeedBuilderActionsModalComponent implements OnInit, OnDestroy {
 
   private getScrapeRequest(addExtract: boolean = false): GqlScrapeRequestInput {
     return {
+      title: `From ${this.url}`,
       flow: {
         sequence: [
           {

@@ -7,11 +7,16 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
+import org.migor.feedless.repository.MaxAgeDaysDateField
+import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -45,6 +50,9 @@ class UserService {
 
   @Autowired
   private lateinit var featureService: FeatureService
+
+  @Autowired
+  private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
   private lateinit var productService: ProductService
@@ -83,7 +91,6 @@ class UserService {
     user.root = false
     user.anonymous = false
     user.hasAcceptedTerms = isSelfHosted()
-
 //    if (!user.anonymous && !user.root) {
 //      when (planName) {
 ////        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
@@ -92,7 +99,30 @@ class UserService {
 //      }
 //    }
 
-    return userDAO.saveAndFlush(user)
+    val savedUser = userDAO.save(user)
+
+    createNotificationsRepository(user).id
+
+    return savedUser
+  }
+
+  fun createNotificationsRepository(user: UserEntity): RepositoryEntity {
+    val r = RepositoryEntity()
+    r.title = "Notifications"
+    r.description = ""
+    r.sourcesSyncCron = ""
+    r.product = ProductCategory.all
+    r.ownerId = user.id
+    r.retentionMaxAgeDays = 7
+    r.visibility = EntityVisibility.isPrivate
+    r.retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
+
+    val savedRepository = repositoryDAO.save(r)
+
+    user.notificationRepositoryId = r.id
+    userDAO.save(user)
+
+    return savedRepository
   }
 
   fun findByEmail(email: String): UserEntity? {

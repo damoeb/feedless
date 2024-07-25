@@ -49,7 +49,7 @@ open class AgentEntity : EntityWithUUID() {
   open var secretKey: UserSecretEntity? = null
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)
-  open var ownerId: UUID? = null
+  open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

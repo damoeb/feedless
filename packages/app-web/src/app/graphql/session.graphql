@@ -12,6 +12,7 @@ fragment UserFragment on User {
   firstName
   lastName
   createdAt
+  notificationRepositoryId
   purgeScheduledFor
   secrets {
     ...SecretFragment

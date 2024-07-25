@@ -110,6 +110,7 @@ export function getScrapeRequest(
 
   return {
     id: null,
+    title: 'Empty title',
     flow: createFlow() as GqlScrapeFlowInput,
     tags: scrapeRequest.tags,
     localized: scrapeRequest.localized,

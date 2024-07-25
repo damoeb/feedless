@@ -99,6 +99,7 @@ export class ImportOpmlModalComponent
             product: GqlProductCategory.RssProxy,
             sources: [
               {
+                title: fc.title,
                 flow: {
                   sequence: actions,
                 },

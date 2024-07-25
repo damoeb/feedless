@@ -129,6 +129,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     this.scrapeResponse = await this.scrapeService.scrape({
+      title: `From ${this.url}`,
       flow: {
         sequence: [
           {
