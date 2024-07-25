@@ -11,6 +11,21 @@ import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mod
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { MapModule } from '../../components/map/map.module';
+import {
+  TranslateLoader,
+  TranslateModule,
+  TranslateService,
+} from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { LanguageButtonModule } from '../../components/language-button/language-button.module';
+import dayjs from 'dayjs';
+import 'dayjs/locale/de';
+import { LocalizeModule } from '../../directives/localize/localize.module';
+
+export function createTranslateLoader(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/upcoming/', '.json');
+}
 
 @NgModule({
   imports: [
@@ -22,8 +37,34 @@ import { MapModule } from '../../components/map/map.module';
     SearchbarModule,
     BubbleModule,
     MapModule,
+    LocalizeModule,
     ReactiveFormsModule,
+    TranslateModule.forRoot({
+      isolate: true,
+      extend: false,
+      loader: {
+        provide: TranslateLoader,
+        useFactory: createTranslateLoader,
+        deps: [HttpClient],
+      },
+    }),
+    LanguageButtonModule,
   ],
   declarations: [UpcomingProductPage],
 })
-export class UpcomingProductModule {}
+export class UpcomingProductModule {
+  constructor(translateService: TranslateService) {
+    const defaultLanguage = 'de';
+    translateService.setDefaultLang(defaultLanguage);
+    translateService.langs = ['en', 'de'];
+    const browserLang = translateService.getBrowserLang();
+    if (translateService.langs.includes(browserLang)) {
+      translateService.use(browserLang);
+    } else {
+      translateService.use(defaultLanguage);
+    }
+    translateService.onLangChange.subscribe((lang) => {
+      dayjs.locale(lang.lang);
+    });
+  }
+}

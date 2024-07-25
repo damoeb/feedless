@@ -97,7 +97,7 @@ export class RepositoryService {
   listRepositories(
     data: GqlRepositoriesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Repository[]> {
+  ): Promise<RepositoryFull[]> {
     return this.apollo
       .query<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>({
         query: ListRepositories,

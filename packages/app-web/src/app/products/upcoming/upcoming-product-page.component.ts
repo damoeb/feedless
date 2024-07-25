@@ -1,17 +1,45 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
-import { AppConfigService, ProductConfig } from '../../services/app-config.service';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../services/app-config.service';
 import { debounce, interval, Subscription } from 'rxjs';
-import { debounce as debounceLD, compact, groupBy, isEqual, isUndefined, omit, sortBy, unionBy, DebouncedFunc, times } from 'lodash-es';
+import {
+  debounce as debounceLD,
+  compact,
+  groupBy,
+  isEqual,
+  isUndefined,
+  omit,
+  sortBy,
+  unionBy,
+  DebouncedFunc,
+  times,
+} from 'lodash-es';
 import { DocumentService } from '../../services/document.service';
 import { GetElementType, WebDocument } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
-import { OpenStreetMapService, OsmMatch } from '../../services/open-street-map.service';
+import {
+  OpenStreetMapService,
+  OsmMatch,
+} from '../../services/open-street-map.service';
 import { ApolloClient } from '@apollo/client/core';
-import { FindEvents, GqlFindEventsQuery, GqlFindEventsQueryVariables } from '../../../generated/graphql';
+import {
+  FindEvents,
+  GqlFindEventsQuery,
+  GqlFindEventsQueryVariables,
+} from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 
 type Day = {
   day: Dayjs | null;
@@ -41,21 +69,23 @@ type PlaceByDistance = {
 };
 
 type EventsAtPlace = {
-  place: string
-  events: WebDocument[]
-}
+  place: string;
+  events: WebDocument[];
+};
 
-type LocalizedEvent = GetElementType<GqlFindEventsQuery['webDocumentsFrequency']>;
+type LocalizedEvent = GetElementType<
+  GqlFindEventsQuery['webDocumentsFrequency']
+>;
 
 type UrlFragments = {
-  state?: string,
-  country?: string,
-  place?: string,
-  perimeter?: number,
-  year?: string,
-  month?: string
-  day?: string
-}
+  state?: string;
+  country?: string;
+  place?: string;
+  perimeter?: number;
+  year?: string;
+  month?: string;
+  day?: string;
+};
 
 @Component({
   selector: 'app-upcoming-product-page',
@@ -78,6 +108,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected placesByDistance: PlaceByDistance[] = [];
 
   protected perimeterFc = new FormControl<number>(10);
+  private readonly perimeterUnit = 'Km';
   private timeWindowTo: number;
   private timeWindowFrom: number;
   protected locationSuggestions: OsmMatch[];
@@ -91,6 +122,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly documentService: DocumentService,
+    readonly translateService: TranslateService,
     private readonly repositoryService: RepositoryService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
@@ -99,23 +131,30 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
   ) {
-    this.fetchEventOverviewDebounced = debounceLD(this.fetchEventOverview.bind(this), 500);
+    this.fetchEventOverviewDebounced = debounceLD(
+      this.fetchEventOverview.bind(this),
+      500,
+    );
   }
 
   async ngOnInit() {
     this.now = dayjs();
-    await this.changeMonth(await this.parseDateFromUrl().catch(() => dayjs()), false)
-    this.perimeterFc.patchValue(this.parsePerimeterFromUrl(10))
+    await this.changeMonth(
+      await this.parseDateFromUrl().catch(() => dayjs()),
+      false,
+    );
+    this.perimeterFc.patchValue(this.parsePerimeterFromUrl(10));
 
     this.locationNotAvailable = false;
-    this.currentLocation = await this.parseLocationFromUrl()
-      .catch(() => this.initGeolocation()
+    this.currentLocation = await this.parseLocationFromUrl().catch(() =>
+      this.initGeolocation()
         .then((location) =>
           this.openStreetMapService.reverseSearch(
             location.coords.latitude,
             location.coords.longitude,
           ),
-        ).catch(() => {
+        )
+        .catch(() => {
           this.locationNotAvailable = true;
           return {
             lat: '47.276541',
@@ -125,20 +164,25 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
               postcode: '8912',
               village: 'Affoltern a.A.',
               state: 'Zurich',
-              country: 'CH'
+              country: 'CH',
             },
           };
-        }));
+        }),
+    );
     await this.setLocation(this.currentLocation, false);
 
     await this.patchUrl();
-    await this.setCurrentDate(this.currentDateRef)
+    await this.setCurrentDate(this.currentDateRef);
 
     this.loadingCalendar = false;
 
     this.changeRef.detectChanges();
 
     this.subscriptions.push(
+      this.translateService.onLangChange.subscribe(() => {
+        this.patchUrl();
+        this.changeRef.detectChanges();
+      }),
       this.perimeterFc.valueChanges.subscribe(async () => {
         await this.fetchEventOverviewDebounced();
         await this.setCurrentDate(this.currentDateRef);
@@ -305,6 +349,9 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     });
   }
   private async fetchEventOverview() {
+    if (!this.currentLatLon) {
+      return;
+    }
     this.eventsOfMonth = await this.apollo
       .query<GqlFindEventsQuery, GqlFindEventsQueryVariables>({
         query: FindEvents,
@@ -345,7 +392,6 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       await this.patchUrl();
     }
 
-
     this.fillCalendar(date);
     await this.fetchEventOverviewDebounced();
 
@@ -385,7 +431,18 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   getDisplayName(location: OsmMatch): string {
     const fields: (keyof OsmMatch['address'])[] = [
-      'country', 'country_code', 'ISO3166-2-lvl4', 'postcode', 'state', 'amenity', 'house_number', 'road', 'county', 'neighbourhood', 'city_district', 'state_district'
+      'country',
+      'country_code',
+      'ISO3166-2-lvl4',
+      'postcode',
+      'state',
+      'amenity',
+      'house_number',
+      'road',
+      'county',
+      'neighbourhood',
+      'city_district',
+      'state_district',
     ];
     return compact(Object.values(omit(location.address, ...fields))).join(' ');
   }
@@ -400,11 +457,19 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
     try {
       const events = await this.fetchEventOfDay(day.clone());
-      const places = await Promise.all(unionBy(events.map(e => e.localized), e => `${e.lat},${e.lon}`)
-        .map(latLon => this.openStreetMapService.reverseSearch(latLon.lat, latLon.lon).then(match => ({
-          latLon,
-          place: this.getDisplayName(match)
-        }))));
+      const places = await Promise.all(
+        unionBy(
+          events.map((e) => e.localized),
+          (e) => `${e.lat},${e.lon}`,
+        ).map((latLon) =>
+          this.openStreetMapService
+            .reverseSearch(latLon.lat, latLon.lon)
+            .then((match) => ({
+              latLon,
+              place: this.getDisplayName(match),
+            })),
+        ),
+      );
 
       const groups = events.reduce((agg, event) => {
         const distance = this.getGeoDistance(event).toFixed(0);
@@ -425,22 +490,24 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         })),
         (event) => parseInt(event.distance),
       ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
-
-        const latLonGroups = groupBy(eventGroup.events, e => JSON.stringify(e.localized));
+        const latLonGroups = groupBy(eventGroup.events, (e) =>
+          JSON.stringify(e.localized),
+        );
         groupedPlaces.push({
           distance: eventGroup.distance,
-          places: Object.keys(latLonGroups).map(latLonGroup => {
+          places: Object.keys(latLonGroups).map((latLonGroup) => {
             return {
               events: latLonGroups[latLonGroup],
-              place: places.find(place => isEqual(place.latLon, latLonGroups[latLonGroup][0].localized)).place
-            }
-          })
-        })
+              place: places.find((place) =>
+                isEqual(place.latLon, latLonGroups[latLonGroup][0].localized),
+              ).place,
+            };
+          }),
+        });
 
-        return groupedPlaces
+        return groupedPlaces;
       }, [] as PlaceByDistance[]);
     } catch (e) {
-
     } finally {
       this.loadingDay = false;
     }
@@ -455,32 +522,55 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       place: this.getDisplayName(this.currentLocation),
       year: this.currentDateRef.format('YYYY'),
       month: this.currentDateRef.format('MM'),
-      day: this.currentDateRef.format('DD')
+      day: this.currentDateRef.format('DD'),
     };
-    const url = this.router.createUrlTree(['/events/near', parts.country, parts.state, parts.place, parts.perimeter, parts.year, parts.month, parts.day]).toString()
-    this.location.replaceState(url)
+
+    let texts: string[] = []
+    if (this.translateService.currentLang === 'en') {
+      texts = ['events/near', 'within', 'on'];
+    } else {
+      texts = ['events/nahe', 'innerhalb', 'am'];
+    }
+
+    const url = this.router
+      .createUrlTree([
+        texts[0],
+        parts.country,
+        parts.state,
+        parts.place,
+        texts[1],
+        `${parts.perimeter}${this.perimeterUnit}`,
+        texts[2],
+        parts.year,
+        parts.month,
+        parts.day,
+      ])
+      .toString();
+    this.location.replaceState(url);
   }
 
   private async parseDateFromUrl(): Promise<Dayjs> {
-    const {year, month, day} = this.activatedRoute.snapshot.params;
+    const { year, month, day } = this.activatedRoute.snapshot.params;
     if (year && month && day) {
-      return dayjs(`${year}/${month}/${day}`, "YYYY/MM/DD")
+      return dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
     }
     throw Error();
   }
 
   private parsePerimeterFromUrl(fallback: number): number {
-    const {perimeter} = this.activatedRoute.snapshot.params;
+    const { perimeter } = this.activatedRoute.snapshot.params;
     if (perimeter) {
-      return parseInt(perimeter)
+      return parseInt(perimeter.replace(this.perimeterUnit, ''));
     }
     return fallback;
   }
 
   private async parseLocationFromUrl(): Promise<OsmMatch> {
-    const {state, country, place} = this.activatedRoute.snapshot.params;
+    const { state, country, place } = this.activatedRoute.snapshot.params;
     if (state && country && place) {
-      const results = await this.openStreetMapService.searchAddress(`${state} ${country} ${place}`)
+      const results = await this.openStreetMapService.searchAddress(
+        `${state} ${country} ${place}`,
+      );
       if (results.length > 0) {
         return results[0];
       }
@@ -491,6 +581,6 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   }
 
   isSame(a: Dayjs, b: Dayjs, units: OpUnitType[]) {
-    return units.every(unit => a.isSame(b, unit));
+    return units.every((unit) => a.isSame(b, unit));
   }
 }

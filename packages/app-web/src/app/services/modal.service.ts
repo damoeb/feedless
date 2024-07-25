@@ -6,8 +6,9 @@ import {
   FeedBuilderModalComponentProps,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
 import {
-  FeedBuilderModalComponentExitRole, FeedOrRepository,
-  FeedWithRequest
+  FeedBuilderModalComponentExitRole,
+  FeedOrRepository,
+  FeedWithRequest,
 } from '../components/feed-builder/feed-builder.component';
 import {
   GenerateFeedModalComponent,

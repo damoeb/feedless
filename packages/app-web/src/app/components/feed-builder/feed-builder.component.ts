@@ -77,9 +77,9 @@ export type Source = {
 };
 
 export type FeedOrRepository = {
-  feed: FeedWithRequest,
-  repository: Repository
-}
+  feed: FeedWithRequest;
+  repository: Repository;
+};
 export type FeedWithRequest = {
   scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;

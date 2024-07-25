@@ -17,10 +17,11 @@
     </ion-searchbar>
 
     <div style="display: flex; position: absolute; right: 0; top: 10px">
-<!--      <ion-title>-->
-<!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
-<!--      </ion-title>-->
+      <!--      <ion-title>-->
+      <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
+      <!--      </ion-title>-->
       <ion-buttons>
+        <app-language-button></app-language-button>
         <app-dark-mode-button></app-dark-mode-button>
       </ion-buttons>
     </div>
@@ -46,10 +47,14 @@
         (click)="getCurrentLocation()"
       >
         <ion-icon name="locate-outline" class="ion-margin-end"></ion-icon>
-        Your Location
+        <span localize>
+          Your location
+        </span>
       </ion-item>
       <ion-item *ngIf="locationSuggestions.length === 0">
-        Tippe deine PLZ oder Ortschaft
+<!--        <span translate="type_location"> -->
+          Tippe deine PLZ oder Ortschaft
+<!--        </span>-->
       </ion-item>
       <ion-item
         *ngFor="let location of locationSuggestions"
@@ -64,7 +69,7 @@
     <ion-list>
       <ion-item>
         <ion-select
-          label="Umkreis"
+          localize-label="perimeter"
           labelPlacement="start"
           interface="popover"
           [formControl]="perimeterFc"
@@ -102,17 +107,21 @@
         </ion-buttons>
 
         <ion-title class="ion-text-center">
-          <div style="display: flex;
-                      align-items: center;
-                      justify-content: center;">
+          <div
+            style="display: flex; align-items: center; justify-content: center"
+          >
             {{ currentDateRef.format("MMMM") }}
             {{ currentDateRef.format("YYYY") }}
 
-            <ion-button class="ion-margin-start"
-                        size="small"
-                        color="dark"
-                        *ngIf="!isSame(currentDateRef, now, ['month'])"
-                        (click)="changeMonth(now)">Heute</ion-button>
+            <ion-button
+              class="ion-margin-start"
+              size="small"
+              color="dark"
+              *ngIf="!isSame(currentDateRef, now, ['month'])"
+              (click)="changeMonth(now)"
+              translate="today"
+              >Heute</ion-button
+            >
           </div>
         </ion-title>
 
@@ -138,8 +147,12 @@
               'day--today': day.today,
               'day--other': day.otherMonth,
               'no-background': day.otherMonth,
-              'day--active': isSame(day.day, currentDateRef, ['month', 'year', 'day']),
-              'day--past': day.past
+              'day--active': isSame(day.day, currentDateRef, [
+                'month',
+                'year',
+                'day',
+              ]),
+              'day--past': day.past,
             }"
           >
             <a href="javascript:void(0)" (click)="setCurrentDate(day.day)">
@@ -167,28 +180,52 @@
     </div>
     <div class="ion-margin-top" style="min-height: 50vh">
       <ng-container *ngIf="currentDateRef">
-        <h1 class="ion-text-center">
-          Veranstaltungen am {{currentDateRef.format('DD.MM')}} nahe {{ locationFc.value }}
+        <h1
+          class="ion-text-center"
+          translate="events"
+          [translateParams]="{
+            date: currentDateRef.format('DD.MM'),
+            place: locationFc.value,
+          }"
+        >
+          Veranstaltungen am [date] nahe [place]
         </h1>
         <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
         <div *ngIf="!loadingDay">
-          <p *ngIf="placesByDistance.length === 0"
-             class="ion-text-center">Keine Einträge gefunden</p>
+          <p
+            *ngIf="placesByDistance.length === 0"
+            class="ion-text-center ion-margin-top"
+            translate="no_events_found"
+          >
+            Keine Einträge gefunden
+          </p>
           <ul *ngFor="let placesGroup of placesByDistance">
             <ng-container *ngFor="let place of placesGroup.places">
               <h3 class="ion-padding-top">
                 {{ place.place }}
-                <a title="Show on map"
-                     [href]="'https://www.openstreetmap.org/#map=14/'+ place.events[0].localized.lat + '/' + place.events[0].localized.lon"
-                     target="_blank">
-                    <ion-icon name="location-outline"></ion-icon>
-
-                  </a>
-                <ion-note>
-                  {{ placesGroup.distance }} Km entfernt
+                <a
+                  title="Show on map"
+                  [href]="
+                    'https://www.openstreetmap.org/#map=14/' +
+                    place.events[0].localized.lat +
+                    '/' +
+                    place.events[0].localized.lon
+                  "
+                  target="_blank"
+                >
+                  <ion-icon name="location-outline"></ion-icon>
+                </a>
+                <ion-note
+                  translate="place_distance"
+                  [translateParams]="{ distance: placesGroup.distance }"
+                >
+                  [distance] Km entfernt
                 </ion-note>
               </h3>
-              <li *ngFor="let event of place.events" class="ion-margin-bottom ion-margin-start">
+              <li
+                *ngFor="let event of place.events"
+                class="ion-margin-bottom ion-margin-start"
+              >
                 <h5>
                   <a [href]="event.url">{{ event.contentTitle }}</a>
                 </h5>
@@ -197,10 +234,33 @@
                 </p>
               </li>
             </ng-container>
-
           </ul>
         </div>
       </ng-container>
+    </div>
+
+    <div
+      style="
+        border-top: 1px solid rgba(var(--ion-color-dark-rgb), 0.5);
+        opacity: 0.7;
+        text-align: center;
+      "
+    >
+      <div
+        style="display: flex; justify-content: center; column-gap: 10px"
+        class="ion-margin-top"
+      >
+        <a href="" [innerHtml]="'support' | translate">Unterst&uuml;tzung</a>
+        <a href="" translate="imprint">Impressum</a>
+      </div>
+      <p [innerHtml]="'by' | translate">
+        Entwickelt von <a href="mailto:">Markus Ruepp</a> basierend auf
+        <a href="https://github.com/damoeb/feedless">feedless</a>
+      </p>
+      <p translate="about">
+        Upcoming is ein nicht-kommerzielles Hobbyprojekt um unsere lokalen
+        Strukturen zu stärken
+      </p>
     </div>
   </div>
 </ion-content>

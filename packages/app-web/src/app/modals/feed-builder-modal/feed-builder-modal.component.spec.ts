@@ -20,9 +20,10 @@ describe('FeedBuilderModalComponent', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           mockRepositories(apolloMockController);
           apolloMockController
-            .mockQuery<GqlListPluginsQuery, GqlListPluginsQueryVariables>(
-              ListPlugins,
-            )
+            .mockQuery<
+              GqlListPluginsQuery,
+              GqlListPluginsQueryVariables
+            >(ListPlugins)
             .and.resolveOnce(async () => {
               return {
                 data: {

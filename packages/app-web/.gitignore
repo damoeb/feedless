@@ -33,3 +33,6 @@ npm-debug.log*
 /src/generated
 src/config.json
 feedless-config.json
+
+.nx/cache
+.nx/workspace-data
