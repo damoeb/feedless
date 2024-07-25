@@ -99,7 +99,6 @@
     "@types/lodash-es": "^4.17.9",
     "@types/node": "^20.9.0",
     "@types/pixelmatch": "^5.2.6",
-    "@types/prettier": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
     "brotli-webpack-plugin": "^1.1.0",
@@ -118,8 +117,9 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
+    "prettier": "^3.3.3",
     "protractor": "^7.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "5.4.5"
+    "typescript": "^5.5.4"
   }
 }
