@@ -51,6 +51,7 @@ type UrlFragments = {
   state?: string,
   country?: string,
   place?: string,
+  perimeter?: number,
   year?: string,
   month?: string
   day?: string
@@ -76,14 +77,15 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   private eventsOfMonth: LocalizedEvent[] = [];
   protected placesByDistance: PlaceByDistance[] = [];
 
-  protected distanceFc = new FormControl<number>(10);
+  protected perimeterFc = new FormControl<number>(10);
   private timeWindowTo: number;
   private timeWindowFrom: number;
   protected locationSuggestions: OsmMatch[];
   protected isLocationFocussed: boolean = false;
   protected locationNotAvailable: boolean;
   private currentLocation: OsmMatch;
-  protected loading = true;
+  protected loadingCalendar = true;
+  protected loadingDay = true;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
 
   constructor(
@@ -101,28 +103,9 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.subscriptions.push(
-      this.distanceFc.valueChanges.subscribe(async () => {
-        await this.fetchEventOverviewDebounced();
-        this.changeRef.detectChanges();
-      }),
-      this.locationFc.valueChanges
-        .pipe(debounce(() => interval(800)))
-        .subscribe(async (value) => {
-          this.locationSuggestions =
-            await this.openStreetMapService.searchAddress(value);
-          // console.log('this.locationSuggestions', this.locationSuggestions);
-          this.changeRef.detectChanges();
-        }),
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-        }),
-    );
-
     this.now = dayjs();
     await this.changeMonth(await this.parseDateFromUrl().catch(() => dayjs()), false)
+    this.perimeterFc.patchValue(this.parsePerimeterFromUrl(10))
 
     this.locationNotAvailable = false;
     this.currentLocation = await this.parseLocationFromUrl()
@@ -151,9 +134,31 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     await this.patchUrl();
     await this.setCurrentDate(this.currentDateRef)
 
-    this.loading = false;
+    this.loadingCalendar = false;
 
     this.changeRef.detectChanges();
+
+    this.subscriptions.push(
+      this.perimeterFc.valueChanges.subscribe(async () => {
+        await this.fetchEventOverviewDebounced();
+        await this.setCurrentDate(this.currentDateRef);
+        await this.patchUrl();
+        this.changeRef.detectChanges();
+      }),
+      this.locationFc.valueChanges
+        .pipe(debounce(() => interval(800)))
+        .subscribe(async (value) => {
+          this.locationSuggestions =
+            await this.openStreetMapService.searchAddress(`${value} Schweiz`);
+          // console.log('this.locationSuggestions', this.locationSuggestions);
+          this.changeRef.detectChanges();
+        }),
+      this.appConfigService
+        .getActiveProductConfigChange()
+        .subscribe((productConfig) => {
+          this.productConfig = productConfig;
+        }),
+    );
   }
 
   ngOnDestroy(): void {
@@ -262,7 +267,10 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  private fetchEventDetails(day: Dayjs) {
+  private fetchEventOfDay(day: Dayjs): Promise<WebDocument[]> {
+    if (!this.currentLatLon) {
+      return Promise.resolve([]);
+    }
     return this.documentService.findAllByRepositoryId({
       cursor: {
         page: 0,
@@ -277,7 +285,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
             lat: this.currentLatLon[0],
             lon: this.currentLatLon[1],
           },
-          distanceKm: this.distanceFc.value,
+          distanceKm: this.perimeterFc.value,
         },
         startedAt: {
           after: day
@@ -310,11 +318,11 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
                 lat: this.currentLatLon[0],
                 lon: this.currentLatLon[1],
               },
-              distanceKm: this.distanceFc.value,
+              distanceKm: this.perimeterFc.value,
             },
             startedAt: {
-              after: this.timeWindowFrom,
-              before: this.timeWindowTo,
+              after: dayjs(this.timeWindowFrom).subtract(1, 'month').valueOf(),
+              before: dayjs(this.timeWindowTo).add(1, 'month').valueOf(),
             },
           },
         },
@@ -322,6 +330,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       .then((response) => {
         return response.data.webDocumentsFrequency;
       });
+    this.changeRef.detectChanges();
   }
 
   async changeMonth(date: Dayjs, triggerUrlUpdate = true) {
@@ -370,13 +379,13 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
     this.currentLatLon = [parseFloat(location.lat), parseFloat(location.lon)];
     this.locationSuggestions = [];
-    await this.fetchEventOverview();
+    await this.fetchEventOverviewDebounced();
     this.changeRef.detectChanges();
   }
 
   getDisplayName(location: OsmMatch): string {
     const fields: (keyof OsmMatch['address'])[] = [
-      'country', 'country_code', 'ISO3166-2-lvl4', 'postcode', 'state', 'amenity', 'house_number', 'road', 'county', 'neighbourhood', 'city_district'
+      'country', 'country_code', 'ISO3166-2-lvl4', 'postcode', 'state', 'amenity', 'house_number', 'road', 'county', 'neighbourhood', 'city_district', 'state_district'
     ];
     return compact(Object.values(omit(location.address, ...fields))).join(' ');
   }
@@ -386,44 +395,55 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   async setCurrentDate(day: Dayjs) {
     this.currentDateRef = day;
     await this.patchUrl();
-    const events = await this.fetchEventDetails(day.clone());
-    const places = await Promise.all(unionBy(events.map(e => e.localized), e => `${e.lat},${e.lon}`)
-      .map(latLon => this.openStreetMapService.reverseSearch(latLon.lat, latLon.lon).then(match => ({ latLon, place: this.getDisplayName(match) }))));
+    this.loadingDay = true;
+    this.changeRef.detectChanges();
 
-    const groups = events.reduce((agg, event) => {
-      const distance = this.getGeoDistance(event).toFixed(0);
-      if (!agg[distance]) {
-        agg[distance] = [];
-      }
+    try {
+      const events = await this.fetchEventOfDay(day.clone());
+      const places = await Promise.all(unionBy(events.map(e => e.localized), e => `${e.lat},${e.lon}`)
+        .map(latLon => this.openStreetMapService.reverseSearch(latLon.lat, latLon.lon).then(match => ({
+          latLon,
+          place: this.getDisplayName(match)
+        }))));
 
-      agg[distance].push(event);
+      const groups = events.reduce((agg, event) => {
+        const distance = this.getGeoDistance(event).toFixed(0);
+        if (!agg[distance]) {
+          agg[distance] = [];
+        }
 
-      return agg;
-    }, {} as Distance2Events);
+        agg[distance].push(event);
 
-    this.placesByDistance = sortBy(
-      Object.keys(groups).map((distance) => ({
-        distance,
-        place: null,
-        events: groups[distance],
-      })),
-      (event) => parseInt(event.distance),
-    ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
+        return agg;
+      }, {} as Distance2Events);
 
-      const latLonGroups = groupBy(eventGroup.events, e => JSON.stringify(e.localized));
-      groupedPlaces.push({
-        distance: eventGroup.distance,
-        places: Object.keys(latLonGroups).map(latLonGroup => {
-          return {
-            events: latLonGroups[latLonGroup],
-            place: places.find(place => isEqual(place.latLon, latLonGroups[latLonGroup][0].localized) ).place
-          }
+      this.placesByDistance = sortBy(
+        Object.keys(groups).map((distance) => ({
+          distance,
+          place: null,
+          events: groups[distance],
+        })),
+        (event) => parseInt(event.distance),
+      ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
+
+        const latLonGroups = groupBy(eventGroup.events, e => JSON.stringify(e.localized));
+        groupedPlaces.push({
+          distance: eventGroup.distance,
+          places: Object.keys(latLonGroups).map(latLonGroup => {
+            return {
+              events: latLonGroups[latLonGroup],
+              place: places.find(place => isEqual(place.latLon, latLonGroups[latLonGroup][0].localized)).place
+            }
+          })
         })
-      })
 
-      return groupedPlaces
-    }, [] as PlaceByDistance[]);
+        return groupedPlaces
+      }, [] as PlaceByDistance[]);
+    } catch (e) {
 
+    } finally {
+      this.loadingDay = false;
+    }
     this.changeRef.detectChanges();
   }
 
@@ -431,12 +451,13 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     const parts: UrlFragments = {
       state: this.currentLocation.address.state,
       country: this.currentLocation.address.country,
+      perimeter: this.perimeterFc.value,
       place: this.getDisplayName(this.currentLocation),
       year: this.currentDateRef.format('YYYY'),
       month: this.currentDateRef.format('MM'),
       day: this.currentDateRef.format('DD')
     };
-    const url = this.router.createUrlTree(['/events', parts.country, parts.state, parts.place, parts.year, parts.month, parts.day]).toString()
+    const url = this.router.createUrlTree(['/events/near', parts.country, parts.state, parts.place, parts.perimeter, parts.year, parts.month, parts.day]).toString()
     this.location.replaceState(url)
   }
 
@@ -446,6 +467,14 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       return dayjs(`${year}/${month}/${day}`, "YYYY/MM/DD")
     }
     throw Error();
+  }
+
+  private parsePerimeterFromUrl(fallback: number): number {
+    const {perimeter} = this.activatedRoute.snapshot.params;
+    if (perimeter) {
+      return parseInt(perimeter)
+    }
+    return fallback;
   }
 
   private async parseLocationFromUrl(): Promise<OsmMatch> {

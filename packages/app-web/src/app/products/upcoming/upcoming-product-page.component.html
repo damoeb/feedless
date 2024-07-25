@@ -1,30 +1,25 @@
 <ion-header style="box-shadow: none">
   <ion-toolbar style="--background: transparent">
-    <ion-input
-      color="danger"
-      fill="outline"
+    <ion-searchbar
+      search-icon="location-outline"
       placeholder="Postleitzahl oder Ortschaft"
       [formControl]="locationFc"
       (ionFocus)="isLocationFocussed = true"
       style="
-        width: 700px;
+        max-width: 700px;
         margin-left: auto;
         margin-right: auto;
         margin-top: 5px;
-        --border-color: var(--ion-color-danger);
+        --border-radius: 8px;
+        --box-shadow: 0px 0px 4px 1px var(--ion-color-danger);
       "
     >
-      <ion-icon
-        slot="start"
-        name="location-outline"
-        aria-hidden="true"
-      ></ion-icon>
-    </ion-input>
+    </ion-searchbar>
 
     <div style="display: flex; position: absolute; right: 0; top: 10px">
-      <ion-title>
-        <span [innerHtml]="productConfig?.titleHtml"></span>
-      </ion-title>
+<!--      <ion-title>-->
+<!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
+<!--      </ion-title>-->
       <ion-buttons>
         <app-dark-mode-button></app-dark-mode-button>
       </ion-buttons>
@@ -33,7 +28,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+  <ion-spinner name="dots" *ngIf="loadingCalendar"></ion-spinner>
   <div
     style="
       width: 700px;
@@ -42,14 +37,15 @@
       display: flex;
       flex-direction: column;
     "
-    *ngIf="!loading"
+    *ngIf="!loadingCalendar"
   >
-    <ion-list *ngIf="isLocationFocussed">
+    <ion-list *ngIf="isLocationFocussed" class="ion-margin-bottom">
       <ion-item
         [button]="true"
         *ngIf="!locationNotAvailable"
         (click)="getCurrentLocation()"
       >
+        <ion-icon name="locate-outline" class="ion-margin-end"></ion-icon>
         Your Location
       </ion-item>
       <ion-item *ngIf="locationSuggestions.length === 0">
@@ -60,6 +56,7 @@
         (click)="setLocation(location)"
         [button]="true"
       >
+        <ion-icon name="location-outline" class="ion-margin-end"></ion-icon>
         {{ getDisplayName(location) }}
       </ion-item>
     </ion-list>
@@ -69,7 +66,8 @@
         <ion-select
           label="Umkreis"
           labelPlacement="start"
-          [formControl]="distanceFc"
+          interface="popover"
+          [formControl]="perimeterFc"
         >
           <ion-select-option [value]="5">+5 Km</ion-select-option>
           <ion-select-option [value]="10">+10 Km</ion-select-option>
@@ -167,13 +165,15 @@
         </ng-container>
       </div>
     </div>
-    <div class="ion-margin-top">
+    <div class="ion-margin-top" style="min-height: 50vh">
       <ng-container *ngIf="currentDateRef">
         <h1 class="ion-text-center">
-          Veranstaltungen nahe {{ locationFc.value }}
+          Veranstaltungen am {{currentDateRef.format('DD.MM')}} nahe {{ locationFc.value }}
         </h1>
-        <div>
-          <p *ngIf="placesByDistance.length === 0">Keine Einträge gefunden</p>
+        <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
+        <div *ngIf="!loadingDay">
+          <p *ngIf="placesByDistance.length === 0"
+             class="ion-text-center">Keine Einträge gefunden</p>
           <ul *ngFor="let placesGroup of placesByDistance">
             <ng-container *ngFor="let place of placesGroup.places">
               <h3 class="ion-padding-top">
@@ -204,7 +204,3 @@
     </div>
   </div>
 </ion-content>
-
-<ion-footer class="ion-text-center">
-  <div>made in Aargau by Markus Ruepp</div>
-</ion-footer>

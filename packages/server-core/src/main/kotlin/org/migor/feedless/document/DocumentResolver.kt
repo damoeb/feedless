@@ -13,6 +13,7 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.DeleteWebDocumentsInput
 import org.migor.feedless.generated.types.DocumentFrequency
 import org.migor.feedless.generated.types.Repository
@@ -25,6 +26,7 @@ import org.migor.feedless.generated.types.WebDocumentsWhereInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -32,6 +34,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
+import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
@@ -127,7 +130,9 @@ class DocumentResolver {
   ): List<DocumentFrequency> = coroutineScope {
     val repository: Repository = dfe.getSource()
     documentService.getDocumentFrequency(
-      WebDocumentsWhereInput(repository = RepositoryUniqueWhereInput(id = repository.id)),
+      WebDocumentsWhereInput(
+        repository = RepositoryUniqueWhereInput(id = repository.id),
+        createdAt = DatesWhereInput(after = toDate(LocalDateTime.now().minusMonths(1)).time)),
       WebDocumentDateField.createdAt
     )
   }

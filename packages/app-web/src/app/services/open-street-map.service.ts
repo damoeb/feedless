@@ -13,6 +13,7 @@ export interface OsmMatch {
     neighbourhood?: string;
     city_district?: string;
     country_code?: string;
+    state_district?: string;
     county?: string;
     postcode: string;
     state?: string;

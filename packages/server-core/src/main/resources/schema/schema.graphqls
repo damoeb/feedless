@@ -511,6 +511,8 @@ input WebDocumentsWhereInput {
   repository: RepositoryUniqueWhereInput!
 #  updatedAt: DatesWhereInput
   startedAt: DatesWhereInput
+  createdAt: DatesWhereInput
+  publishedAt: DatesWhereInput
   localized: GeoPointWhereInput
   tags: StringFilter
 }

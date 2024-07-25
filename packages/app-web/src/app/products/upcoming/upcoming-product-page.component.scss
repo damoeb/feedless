@@ -39,21 +39,28 @@
   border: 2px solid transparent;
 
   &--active {
-    --app-border-color: rgba(var(--ion-color-danger-rgb), 0.8);
+    --app-border-color: rgba(var(--ion-color-danger-rgb), 0.8) !important;
     --app-day-bg: rgba(var(--ion-color-danger-rgb), 0.2);
   }
 
   &--today {
     --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
+    background: repeating-linear-gradient(
+        45deg,
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
+    )!important;
   }
 
   &--active,
   &--today {
     border-color: var(--app-border-color);
   }
-  &--active {
-    background: var(--app-day-bg) !important;
-  }
+  //&--active {
+  //  background: var(--app-day-bg) !important;
+  //}
 
   a {
     flex: 1;

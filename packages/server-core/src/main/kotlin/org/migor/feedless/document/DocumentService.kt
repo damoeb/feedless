@@ -1,6 +1,7 @@
 package org.migor.feedless.document
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
+import com.linecorp.kotlinjdsl.querymodel.jpql.path.Path
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
@@ -9,6 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.DocumentFrequency
 import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.WebDocumentDateField
@@ -97,15 +99,18 @@ class DocumentService {
   private fun prepareWhereStatements(where: WebDocumentsWhereInput?): MutableList<Predicatable> {
     val whereStatements = mutableListOf<Predicatable>()
     jpql {
-      where?.let {
-        it.startedAt?.let {
-          it.before?.let {
-            whereStatements.add(path(DocumentEntity::startingAt).le(Date(it)))
-          }
-          it.after?.let {
-            whereStatements.add(path(DocumentEntity::startingAt).ge(Date(it)))
-          }
+      val addDateConstraint = {it: DatesWhereInput, field: Path<Date> -> it.before?.let {
+        whereStatements.add(field.le(Date(it)))
+      }
+        it.after?.let {
+          whereStatements.add(field.ge(Date(it)))
         }
+      }
+
+      where?.let {
+        it.startedAt?.let { addDateConstraint(it, path(DocumentEntity::startingAt)) }
+        it.createdAt?.let { addDateConstraint(it, path(DocumentEntity::createdAt)) }
+        it.publishedAt?.let { addDateConstraint(it, path(DocumentEntity::publishedAt)) }
         it.localized?.let {
           // https://postgis.net/docs/ST_Distance.html
           whereStatements.add(path(DocumentEntity::latLon).isNotNull())
@@ -200,14 +205,20 @@ class DocumentService {
       val whereStatements = prepareWhereStatements(where)
       val dateGroup = expression<Long>("day")
 
+      val groupByEntity = when(groupBy) {
+        WebDocumentDateField.createdAt -> path(DocumentEntity::createdAt)
+        WebDocumentDateField.publishedAt -> path(DocumentEntity::publishedAt)
+        WebDocumentDateField.startingAt -> path(DocumentEntity::startingAt)
+      }
+
       selectNew<Pair<Long, Long>>(
         count(path(DocumentEntity::id)),
-        function(Long::class, "fl_trunc_timestamp_as_millis", path(DocumentEntity::startingAt)).`as`(dateGroup)
+        function(Long::class, "fl_trunc_timestamp_as_millis", groupByEntity).`as`(dateGroup)
       ).from(
         entity(DocumentEntity::class),
       )
         .whereAnd(
-          path(DocumentEntity::startingAt).isNotNull(),
+          groupByEntity.isNotNull(),
           path(DocumentEntity::repositoryId).eq(UUID.fromString(where.repository.id)),
           path(DocumentEntity::publishedAt).lt(Date()),
           *whereStatements.toTypedArray()
