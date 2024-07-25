@@ -78,6 +78,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected placesByDistance: PlaceByDistance[] = [];
 
   protected perimeterFc = new FormControl<number>(10);
+  private readonly perimeterUnit = 'Km';
   private timeWindowTo: number;
   private timeWindowFrom: number;
   protected locationSuggestions: OsmMatch[];
@@ -305,6 +306,9 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     });
   }
   private async fetchEventOverview() {
+    if (!this.currentLatLon) {
+      return;
+    }
     this.eventsOfMonth = await this.apollo
       .query<GqlFindEventsQuery, GqlFindEventsQueryVariables>({
         query: FindEvents,
@@ -457,8 +461,24 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       month: this.currentDateRef.format('MM'),
       day: this.currentDateRef.format('DD')
     };
-    const url = this.router.createUrlTree(['/events/near', parts.country, parts.state, parts.place, parts.perimeter, parts.year, parts.month, parts.day]).toString()
-    this.location.replaceState(url)
+
+    const texts = ['events/near', 'within', 'on'];
+
+    const url = this.router
+      .createUrlTree([
+        texts[0],
+        parts.country,
+        parts.state,
+        parts.place,
+        texts[1],
+        `${parts.perimeter}${this.perimeterUnit}`,
+        texts[2],
+        parts.year,
+        parts.month,
+        parts.day,
+      ])
+      .toString();
+    this.location.replaceState(url);
   }
 
   private async parseDateFromUrl(): Promise<Dayjs> {
@@ -472,7 +492,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   private parsePerimeterFromUrl(fallback: number): number {
     const {perimeter} = this.activatedRoute.snapshot.params;
     if (perimeter) {
-      return parseInt(perimeter)
+      return parseInt(perimeter.replace(this.perimeterUnit, ''));
     }
     return fallback;
   }

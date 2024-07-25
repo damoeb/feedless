@@ -10,7 +10,11 @@ const routes: Routes = [
   },
   {
     // H/Zurich/Affoltern%20a.A./2024/6/3
-    path: 'events/near/:state/:country/:place/:perimeter/:year/:month/:day',
+    path: 'events/near/:state/:country/:place/within/:perimeter/on/:year/:month/:day',
+    component: UpcomingProductPage,
+  },
+  {
+    path: 'events/bei/:state/:country/:place/innerhalb/:perimeter/am/:year/:month/:day',
     component: UpcomingProductPage,
   },
   {

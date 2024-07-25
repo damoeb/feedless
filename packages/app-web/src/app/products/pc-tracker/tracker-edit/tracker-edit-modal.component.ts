@@ -10,7 +10,10 @@ import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { FeedOrRepository, FeedWithRequest } from '../../../components/feed-builder/feed-builder.component';
+import {
+  FeedOrRepository,
+  FeedWithRequest,
+} from '../../../components/feed-builder/feed-builder.component';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import {

@@ -4,7 +4,7 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { Repository, WebDocument } from '../../graphql/types';
+import { Repository, RepositoryFull, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
@@ -19,7 +19,7 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 export class FeedsPage implements OnInit {
   busy = false;
   documents: WebDocument[];
-  repositories: Repository[] = [];
+  repositories: RepositoryFull[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,

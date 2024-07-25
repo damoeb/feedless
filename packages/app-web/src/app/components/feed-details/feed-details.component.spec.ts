@@ -6,8 +6,8 @@ import {
   ApolloMockController,
   AppTestModule,
   mockDocuments,
-  mockPlugins,
-  mockServerSettings,
+  mockPlugins, mockRepository,
+  mockServerSettings
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
@@ -23,6 +23,7 @@ describe('FeedDetailsComponent', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           mockPlugins(apolloMockController);
           mockDocuments(apolloMockController);
+          mockRepository(apolloMockController)
         }),
       ],
     }).compileComponents();

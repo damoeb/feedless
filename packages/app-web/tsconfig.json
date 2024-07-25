@@ -11,8 +11,8 @@
     "resolveJsonModule": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "es2020",
-    "lib": ["es2021", "dom", "esnext.asynciterable"],
+    "module": "ES2020",
+    "lib": ["ES2022", "dom", "esnext.asynciterable"],
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false
   },

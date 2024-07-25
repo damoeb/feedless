@@ -281,9 +281,8 @@ export const mocks: Mocks = {
     sources: [],
     archived: false,
     documentCount: 0,
-    activity: {
-      items: [],
-    },
+    frequency: [],
+    cronRuns: [],
     refreshCron: '',
     plugins: [],
     visibility: GqlVisibility.IsPrivate,

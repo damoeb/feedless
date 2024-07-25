@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { GraphQLError } from 'graphql/error';
+import { GraphQLError, GraphQLFormattedError } from 'graphql/error';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +23,7 @@ export class HttpErrorInterceptorService {
     this.promptToast(message);
   }
 
-  interceptGraphQLErrors(graphQLErrors: ReadonlyArray<GraphQLError>) {
+  interceptGraphQLErrors(graphQLErrors: ReadonlyArray<GraphQLFormattedError>) {
     const messages = graphQLErrors.map(({ message, locations, path }) => {
       const msg = `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`;
       console.error(msg);

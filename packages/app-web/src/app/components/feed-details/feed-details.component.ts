@@ -71,7 +71,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input({ required: true })
   repositoryId: string;
 
-  protected repository: RepositoryFull;
+  repository: RepositoryFull;
 
   @Input()
   track: boolean;
