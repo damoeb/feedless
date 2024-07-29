@@ -7,9 +7,9 @@ import {
 } from '@angular/core';
 import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
 import {
   BoundingBox,
+  Embeddable,
   XyPosition,
 } from '../../../components/embedded-image/embedded-image.component';
 import {
@@ -30,6 +30,7 @@ import { SessionService } from '../../../services/session.service';
 import { environment } from '../../../../environments/environment';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { createEmailFormControl } from '../../../form-controls';
+import { ScrapeController } from '../../../components/interactive-website/scrape-controller';
 
 type Email = string;
 
@@ -48,7 +49,6 @@ interface BrowserAction {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionEditPage implements OnInit, OnDestroy {
-  embedScreenshot: Embeddable;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
   pickXPathDelegate: (xpath: string | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
@@ -90,19 +90,18 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     { updateOn: 'change' },
   );
   actions = new FormArray<FormGroup<BrowserAction>>([]);
-  busy = false;
   protected readonly GqlWebDocumentField = GqlWebDocumentField;
   private subscriptions: Subscription[] = [];
-  errorMessage: null;
+  // errorMessage: null;
   private scrapeRequest: GqlScrapeRequestInput;
   showErrors: boolean;
   isThrottled: boolean;
-  protected embedWebsite: Embeddable;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
   screenMobile: Screen = 'mobile';
   screenElement: Screen = 'element';
   highlightXpath: string;
+  protected scrapeController: ScrapeController;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -195,13 +194,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       this.form.controls.url.setValue(fixUrl(url), { emitEvent: false });
     }
 
-    if (this.busy || this.form.controls.url.invalid) {
+    if (this.form.controls.url.invalid) {
       return;
     }
-
-    this.errorMessage = null;
-    this.busy = true;
-    this.changeRef.detectChanges();
 
     await this.router.navigate(['.'], {
       queryParams: {
@@ -211,61 +206,43 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       skipLocationChange: true,
     });
 
-    try {
-      const newScrapeRequest: GqlScrapeRequestInput = {
-        title: `From ${url}`,
-        flow: {
-          sequence: [
-            {
-              fetch: {
-                get: {
-                  url: {
-                    literal: url,
-                  },
-                  forcePrerender: true,
+    const newScrapeRequest: GqlScrapeRequestInput = {
+      title: `From ${url}`,
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: url,
                 },
+                forcePrerender: true,
               },
             },
-            ...this.getActionsRequestFragment(),
-            this.getEmit(),
-          ],
-        },
-      };
+          },
+          ...this.getActionsRequestFragment(),
+          this.getEmit(),
+        ],
+      },
+    };
 
-      if (isEqual(newScrapeRequest, this.scrapeRequest)) {
-        console.log('scrapeRequest is unchanged');
-      } else {
-        this.scrapeRequest = newScrapeRequest;
+    if (isEqual(newScrapeRequest, this.scrapeRequest)) {
+      console.log('scrapeRequest is unchanged');
+    } else {
+      this.scrapeRequest = newScrapeRequest;
 
-        const scrapeResponse = await this.scrapeService.scrape(
-          this.scrapeRequest,
-        );
+      // const scrapeResponse = await this.scrapeService.scrape(
+      //   this.scrapeRequest,
+      // );
 
-        this.embedScreenshot = null;
-        this.changeRef.detectChanges();
+      this.scrapeController = new ScrapeController(this.scrapeRequest);
 
-        const fetchAction = scrapeResponse.outputs.find((o) => o.fetch).fetch;
-        const extractAction = scrapeResponse.outputs.find(
-          (o) => o.extract,
-        ).extract;
+      // const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
+      //   .response.fetch;
+      // const extractAction = scrapeResponse.outputs.find(
+      //   (o) => o.response.extract,
+      // ).response.extract;
 
-        this.embedScreenshot = {
-          mimeType: extractAction.fragments[0].data.mimeType,
-          data: extractAction.fragments[0].data.data,
-          url,
-          viewport: fetchAction.debug.viewport,
-        };
-        this.embedWebsite = {
-          mimeType: 'text/html',
-          data: extractAction.fragments[0].html.data,
-          url,
-          viewport: fetchAction.debug.viewport,
-        };
-      }
-    } catch (e) {
-      this.errorMessage = e.message;
-    } finally {
-      this.busy = false;
     }
     this.changeRef.detectChanges();
   }
@@ -293,7 +270,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     try {
       await this.createSubscription();
     } catch (e) {
-      this.errorMessage = e.message;
       this.showErrors = false;
     }
     this.changeRef.detectChanges();

@@ -87,3 +87,10 @@ ion-toolbar {
   border-bottom: 1px solid rgba(var(--ion-color-medium-rgb), 0.3);
   padding-left: 10px;
 }
+
+.cm-tag-name {
+  color: rgba(var(--ion-color-tertiary-rgb), 0.8);
+}
+.cm-attribute-name {
+  color: rgba(var(--ion-color-danger-rgb), 0.8);
+}

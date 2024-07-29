@@ -1347,8 +1347,14 @@ type ScrapeResponse {
   failed: Boolean!
   errorMessage: String
   logs: [String!]!
-  outputs: [ScrapeActionResponse!]!
+  outputs: [ScrapeOutputResponse!]!
 }
+
+type ScrapeOutputResponse {
+  index: Int!
+  response: ScrapeActionResponse!
+}
+
 
 type ScrapeActionResponse {
   fetch: HttpFetchResponse
@@ -1639,7 +1645,12 @@ input ScrapeResponseInput {
   failed: Boolean!
   errorMessage: String
   logs: [String!]!
-  outputs: [ScrapeActionResponseInput!]!
+  outputs: [ScrapeOutputResponseInput!]!
+}
+
+input ScrapeOutputResponseInput {
+  index: Int!
+  response: ScrapeActionResponseInput!
 }
 
 input JsonDataInput {

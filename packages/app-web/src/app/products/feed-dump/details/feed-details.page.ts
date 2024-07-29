@@ -9,14 +9,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { Subscription } from 'rxjs';
 import { RepositoryService } from '../../../services/repository.service';
-import {
-  Repository,
-  RepositoryFull,
-  WebDocument,
-} from '../../../graphql/types';
+import { RepositoryFull, WebDocument } from '../../../graphql/types';
 import { DocumentService } from '../../../services/document.service';
 import { Title } from '@angular/platform-browser';
-import { GqlSortOrder } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-feed-details-page',

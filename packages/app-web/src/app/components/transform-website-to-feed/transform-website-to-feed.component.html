@@ -83,6 +83,17 @@
             name="linkXPath"
             placeholder="relative xpath from context"
           ></ion-input>
+          <ion-button
+            slot="end"
+            color="dark"
+            (click)="
+              pickElementWithin(
+                formGroup.value.contextXPath,
+                formGroup.controls.linkXPath
+              )
+            "
+            >Pick</ion-button
+          >
         </ion-item>
         <!--        <ion-item>-->
         <!--          <ion-select-->
@@ -109,6 +120,17 @@
             name="dateXPath"
             placeholder="relative xpath from context"
           ></ion-input>
+          <ion-button
+            slot="end"
+            color="dark"
+            (click)="
+              pickElementWithin(
+                formGroup.value.contextXPath,
+                formGroup.controls.dateXPath
+              )
+            "
+            >Pick</ion-button
+          >
         </ion-item>
         <ion-item *ngIf="formGroup.value.dateXPath">
           <ion-checkbox
@@ -143,12 +165,12 @@
   </div>
 
   <div class="flex__column" right style="flex: 2; position: relative">
-    <app-embedded-website
+    <app-embedded-markup
       [embed]="embedWebsiteData"
-      [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
+      [scrapeController]="scrapeController"
       [ngClass]="{ hidden: !!currentNativeFeed }"
       class="flex"
-    ></app-embedded-website>
+    ></app-embedded-markup>
 
     <app-native-feed
       *ngIf="currentNativeFeed"

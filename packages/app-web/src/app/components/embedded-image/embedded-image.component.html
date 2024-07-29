@@ -1,5 +1,9 @@
 <div class="flex__column">
-  <div #wrapper style="position: relative; flex: 1; overflow: auto">
+  <div
+    #wrapper
+    style="position: relative; flex: 1; overflow: auto"
+    [ngClass]="{ point: mode === 'position' }"
+  >
     <div
       (mousedown)="handleMouseDown($event)"
       (mousemove)="handleMouseMove($event)"

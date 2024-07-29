@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.generated.types.ProductCategory
@@ -56,6 +57,7 @@ class RepositoryServiceTest {
     `when`(user.id).thenReturn(userId)
     `when`(sessionService.userId()).thenReturn(userId)
     `when`(sessionService.user(any(String::class.java))).thenReturn(user)
+    `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
     `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
       .thenAnswer { it.getArgument(0) }
   }

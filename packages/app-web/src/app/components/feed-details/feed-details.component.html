@@ -19,10 +19,10 @@
   </ion-row>
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
     <ion-buttons slot="start">
-<!--      <ion-button>-->
-<!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
-<!--        Visit website-->
-<!--      </ion-button>-->
+      <!--      <ion-button>-->
+      <!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
+      <!--        Visit website-->
+      <!--      </ion-button>-->
       <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
       <!--      <ion-icon-->
       <!--        name="arrow-down-outline"-->
@@ -174,8 +174,8 @@
     <ion-row>
       <ion-col>
         <dl>
-<!--          <dt>Filters</dt>-->
-<!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
+          <!--          <dt>Filters</dt>-->
+          <!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
           <dt>Created</dt>
           <dd>{{ repository.createdAt | date: dateFormat }}</dd>
           <ng-container *ngIf="repository.refreshCron">
@@ -197,7 +197,6 @@
                 Trigger Sync
               </ion-button>
             </dd>
-
           </ng-container>
           <dt>Retention Strategy</dt>
           <dd>
@@ -234,9 +233,7 @@
   <div style="border-radius: 8px">
     <div style="margin-top: 50px; display: flex" class="ion-padding">
       <h3 style="flex: 1">
-        <span *ngIf="viewModeFc.value === viewModeList"
-          >Available items</span
-        >
+        <span *ngIf="viewModeFc.value === viewModeList">Available items</span>
         <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
         <span *ngIf="viewModeFc.value === viewModeHistogram">Activity</span>
       </h3>

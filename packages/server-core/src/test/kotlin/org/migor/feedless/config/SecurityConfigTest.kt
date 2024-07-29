@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -35,6 +36,7 @@ const val feedId = "feed-id"
     MockBean(UserService::class),
     MockBean(LicenseService::class),
     MockBean(MailProviderService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.feed, "metrics"])

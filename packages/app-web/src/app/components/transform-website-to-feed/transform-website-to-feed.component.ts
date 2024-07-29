@@ -13,7 +13,6 @@ import {
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
-  GqlNativeFeed,
   GqlRemoteNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequest,
@@ -21,25 +20,24 @@ import {
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
-import { Embeddable } from '../embedded-website/embedded-website.component';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { format } from 'prettier/standalone';
+import htmlPlugin from 'prettier/plugins/html';
 import { ModalService } from '../../services/modal.service';
 import { FeedService } from '../../services/feed.service';
 import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 import { Subscription } from 'rxjs';
 import { getFirstFetchUrlLiteral } from '../../utils';
+import { Embeddable } from '../embedded-image/embedded-image.component';
+import { ScrapeController } from '../interactive-website/scrape-controller';
+import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
 };
-
-export interface LabelledSelectOption {
-  value: string;
-  label: string;
-}
 
 export type ComponentStatus = 'valid' | 'invalid';
 
@@ -102,6 +100,7 @@ export class TransformWebsiteToFeedComponent
   private selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
   private subscriptions: Subscription[] = [];
+  protected scrapeController = new ScrapeController(null);
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -115,12 +114,16 @@ export class TransformWebsiteToFeedComponent
         this.formGroup.valueChanges.subscribe(() => {
           this.emitSelectedFeed();
         }),
+        this.formGroup.controls.contextXPath.valueChanges.subscribe((xpath) => {
+          this.scrapeController.showElements.emit(xpath);
+        }),
       );
       const elementWithFeeds = this.scrapeResponse.outputs.find(
-        (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
+        (o) =>
+          o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
       );
       if (elementWithFeeds) {
-        const feeds = elementWithFeeds.execute.data
+        const feeds = elementWithFeeds.response.execute.data
           .org_feedless_feeds as GqlScrapedFeeds;
         this.genericFeeds = feeds.genericFeeds;
         this.nativeFeeds = feeds.nativeFeeds;
@@ -132,8 +135,8 @@ export class TransformWebsiteToFeedComponent
           .range([0, 100]);
 
         const fetchAction = this.scrapeResponse.outputs.find(
-          (o) => o.fetch,
-        ).fetch;
+          (o) => o.response.fetch,
+        ).response.fetch;
 
         this.embedWebsiteData = {
           data: fetchAction.data,
@@ -143,10 +146,11 @@ export class TransformWebsiteToFeedComponent
         };
       } else {
         const elementWithFeed = this.scrapeResponse.outputs.find(
-          (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
+          (o) =>
+            o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
         );
         if (elementWithFeed) {
-          const feed = elementWithFeed.execute.data
+          const feed = elementWithFeed.response.execute.data
             .org_feedless_feed as GqlRemoteNativeFeed;
           this.nativeFeeds = [feed];
           await this.pickNativeFeed(feed);
@@ -191,6 +195,9 @@ export class TransformWebsiteToFeedComponent
       this.selectedFeed = {
         genericFeed: omit(this.currentGenericFeed, 'samples') as any,
       };
+      this.scrapeController.showElements.emit(
+        this.selectedFeed.genericFeed.selectors.contextXPath,
+      );
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
 
@@ -305,5 +312,20 @@ export class TransformWebsiteToFeedComponent
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  async pickElementWithin(xpath: string, fc: FormControl<string>) {
+    this.scrapeController.extractElements.emit({
+      xpath,
+      callback: async (elements: HTMLElement[]) => {
+        const componentProps: CodeEditorModalComponentProps = {
+          element: await format(elements[0].innerHTML, {
+            parser: 'html',
+            plugins: [htmlPlugin],
+          }),
+        };
+        await this.modalService.openCodeEditorModal(componentProps);
+      },
+    });
   }
 }

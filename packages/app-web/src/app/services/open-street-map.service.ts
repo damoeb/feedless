@@ -19,9 +19,9 @@ export interface OsmMatch {
     state?: string;
     town?: string;
     village?: string;
-    amenity?: string,
-    house_number?: string,
-    road?: string,
+    amenity?: string;
+    house_number?: string;
+    road?: string;
   };
 }
 

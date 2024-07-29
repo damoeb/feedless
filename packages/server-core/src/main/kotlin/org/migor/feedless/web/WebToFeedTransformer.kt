@@ -172,31 +172,32 @@ class WebToFeedTransformer(
     val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
 
     return linkGroups
-      .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
-      .filterTo(ArrayList()) { (groupId, linksInGroup): Pair<String, MutableList<LinkPointer>> ->
-        hasRelevantSize(
-          groupId,
-          linksInGroup,
-          parserOptions
-        )
-      }
-      .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
-      .map { contexts -> tryAddDateXPath(contexts) }
-      .map { contexts -> convertContextsToRule(contexts, body) }
-      .map { selectors -> scoreRule(selectors) }
-      .sortedByDescending { it.score }
-      .map { selectors ->
-        GenericFeedRule(
-          count = selectors.count ?: 0,
-          score = selectors.score!!,
-          linkXPath = selectors.linkXPath,
-          extendContext = selectors.extendContext,
-          contextXPath = selectors.contextXPath,
-          dateXPath = selectors.dateXPath,
-          paginationXPath = paginationXPath,
-        )
-      }
-      .toList()
+        .asSequence()
+        .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
+        .filterTo(ArrayList()) { (groupId, linksInGroup): Pair<String, MutableList<LinkPointer>> ->
+          hasRelevantSize(
+            groupId,
+            linksInGroup,
+            parserOptions
+          )
+        }
+        .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
+        .map { contexts -> tryAddDateXPath(contexts) }
+        .map { contexts -> convertContextsToRule(contexts, body) }
+        .map { selectors -> scoreRule(selectors) }
+        .sortedByDescending { it.score }
+        .map { selectors ->
+          GenericFeedRule(
+            count = selectors.count ?: 0,
+            score = selectors.score!!,
+            linkXPath = selectors.linkXPath,
+            extendContext = selectors.extendContext,
+            contextXPath = selectors.contextXPath,
+            dateXPath = selectors.dateXPath,
+            paginationXPath = paginationXPath,
+          )
+        }
+        .toList()
   }
 
   private fun findPaginationXPath(

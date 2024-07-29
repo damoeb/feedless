@@ -117,10 +117,10 @@ class AgentService {
 
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
-  fun prerender(corrId: String, scrapeRequest: SourceEntity): Mono<ScrapeResponse> {
+  fun prerender(corrId: String, source: SourceEntity): Mono<ScrapeResponse> {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      prerenderWithAgent(corrId, scrapeRequest, agentRef)
+      prerenderWithAgent(corrId, source, agentRef)
     } else {
       log.warn("[$corrId] no agents present")
       throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
@@ -129,19 +129,18 @@ class AgentService {
 
   private fun prerenderWithAgent(
     corrId: String,
-    scrapeSource: SourceEntity,
+    source: SourceEntity,
     agentRef: AgentRef
   ): Mono<ScrapeResponse> {
     log.info("[$corrId] preparing")
     return Flux.create { emitter ->
       try {
-        val scrapeRequest = scrapeSource.toDto(corrId)
         val harvestJobId = UUID.randomUUID().toString()
         agentRef.emitter.next(
           AgentEvent(
             callbackId = harvestJobId,
             corrId = corrId,
-            scrape = scrapeRequest
+            scrape = source.toDto(corrId)
           )
         )
         log.info("$corrId] submitted agent job $harvestJobId")

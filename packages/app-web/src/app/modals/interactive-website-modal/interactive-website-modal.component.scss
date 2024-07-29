@@ -55,6 +55,10 @@ ion-toolbar {
   }
 }
 
+.action__raw {
+  display: none;
+}
+
 ion-item {
   //--background: transparent;
   //--border-style: none;
@@ -144,4 +148,8 @@ ion-select {
       }
     }
   }
+}
+
+.rendering-options {
+  display: flex;
 }

@@ -27,7 +27,7 @@ import { NotificationsButtonModule } from '../../components/notifications-button
     BubbleModule,
     AgentsButtonModule,
     RepositoriesButtonModule,
-    NotificationsButtonModule
+    NotificationsButtonModule,
   ],
   declarations: [RssBuilderProductPage],
 })

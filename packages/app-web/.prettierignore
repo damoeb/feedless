@@ -4,3 +4,6 @@ dist
 www
 src/generated
 coverage
+.gradle
+build
+.angular

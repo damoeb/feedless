@@ -79,6 +79,7 @@ describe('TransformWebsiteToFeedComponent', () => {
     fixture = TestBed.createComponent(TransformWebsiteToFeedComponent);
     component = fixture.componentInstance;
     component.scrapeRequest = {
+      title: '',
       flow: { sequence: [] },
     };
     component.scrapeResponse = feedResponse;

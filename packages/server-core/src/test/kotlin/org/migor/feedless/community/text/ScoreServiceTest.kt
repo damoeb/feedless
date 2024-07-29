@@ -1,5 +1,6 @@
 package org.migor.feedless.community.text
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import io.jenetics.DoubleChromosome
 import io.jenetics.DoubleGene
 import io.jenetics.Genotype
@@ -48,6 +49,7 @@ import kotlin.math.pow
     MockBean(UserSecretService::class),
     MockBean(LicenseService::class),
     MockBean(ProductService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
 class ScoreServiceTest {

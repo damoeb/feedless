@@ -55,6 +55,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     val source = repository.sources[0]
 
     val request = SourceEntity()
+    request.title = "Feed from ${document.url}"
     val action = FetchActionEntity()
     action.url = document.url
     request.actions = mutableListOf(action)
@@ -69,7 +70,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
     if (response.outputs.isNotEmpty()) {
       val lastOutput = response.outputs.last()
-      val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+      val html = lastOutput?.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
       if (params.org_feedless_fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, document.url)
         document.contentHtml = readability.content

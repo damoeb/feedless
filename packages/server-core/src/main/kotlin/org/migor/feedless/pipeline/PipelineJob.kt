@@ -86,11 +86,11 @@ class PipelineJob internal constructor() {
     val corrId = newCorrId()
     sourcePipelineJobDAO.findAllPendingBatched()
       .groupBy { it.sourceId }
-      .map { processScrapeRequest(newCorrId(3, corrId), it.key, it.value) }
+      .map { processSourcePipeline(newCorrId(3, corrId), it.key, it.value) }
   }
 
-  private fun processScrapeRequest(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
-    log.info("[$corrId] ${jobs.size} processScrapeRequest for source $sourceId")
+  private fun processSourcePipeline(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+    log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
     val source = sourceDAO.findById(sourceId).orElseThrow()
 
     val job = jobs.first()

@@ -1,6 +1,7 @@
 package org.migor.feedless.feed
 
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,6 +53,7 @@ const val feedId = "feed-id"
 //    MockBean(UserDAO::class),
 //    MockBean(DocumentDAO::class),
     MockBean(LegacyFeedService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.legacyFeeds])
@@ -74,7 +76,7 @@ class LegacyFeedControllerTest {
     mockFeed = JsonFeed()
     mockFeed.id = "foo"
     mockFeed.title = "foo"
-    mockFeed.feedUrl = "foo"
+    mockFeed.feedUrl = "https://foo.bar/other-feed"
     mockFeed.publishedAt = Date()
     mockFeed.items = emptyList()
   }

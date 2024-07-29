@@ -1,9 +1,11 @@
 {
-  "name": "agent",
+  "name": "barbar",
   "version": "0.0.1",
+  "description": "",
+  "author": "",
   "private": true,
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   },
   "scripts": {
     "codegen": "graphql-codegen --config codegen.yml",
@@ -17,7 +19,6 @@
     "lint": "prettier --write --log-level=warn .",
     "clean": "rimraf dist",
     "test": "jest",
-    "outdated": "upgrade-interactive --latest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -34,7 +35,6 @@
     "lodash": "4.17.21",
     "node-fetch-commonjs": "3.3.2",
     "puppeteer": "21.6.1",
-    "puppeteer-extra": "3.3.6",
     "reflect-metadata": "0.1.13",
     "rimraf": "5.0.5",
     "rxjs": "7.8.1",

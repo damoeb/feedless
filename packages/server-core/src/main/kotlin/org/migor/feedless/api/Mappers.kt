@@ -41,6 +41,13 @@ fun ScrapeResponseInput.fromDto(): ScrapeResponse = ScrapeResponse(
   outputs = outputs.map { it.fromDto() }
 )
 
+private fun ScrapeOutputResponseInput.fromDto(): ScrapeOutputResponse {
+  return ScrapeOutputResponse(
+    index = index,
+    response = response.fromDto()
+  )
+}
+
 private fun ScrapeActionResponseInput.fromDto(): ScrapeActionResponse {
   return ScrapeActionResponse(
     extract = extract?.fromDto(),
@@ -146,6 +153,7 @@ fun Selectors.fromDto(): GenericFeedSelectors = GenericFeedSelectors(
 
 fun ScrapeRequestInput.fromDto(): SourceEntity {
   val source = SourceEntity()
+  source.title = title
   source.actions = flow.sequence.mapNotNull {
     it.fetch?.let { toFetchAction(it) } ?: it.wait?.let { toWaitAction(it) } ?: it.header?.let { toHeaderAction(it) }
     ?: it.purge?.let { toDomAction(DomEventType.purge, it.value) } ?: it.type?.let {

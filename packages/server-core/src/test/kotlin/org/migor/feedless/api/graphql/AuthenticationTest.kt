@@ -73,6 +73,7 @@ class AuthenticationTest {
         mutation {
             authAnonymous {
                 token
+                corrId
             }
         }
         """.trimIndent()
@@ -100,6 +101,7 @@ class AuthenticationTest {
         mutation {
             authUser(data: {email: "fooEmail", secretKey: "barKey"}) {
                 token
+                corrId
             }
         }
         """.trimIndent()

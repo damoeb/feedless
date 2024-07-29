@@ -16,7 +16,7 @@ export class NotificationsButtonComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
-        this.notificationRepositoryId = session.user.notificationRepositoryId;
+        this.notificationRepositoryId = session.user?.notificationRepositoryId;
       }),
     );
   }

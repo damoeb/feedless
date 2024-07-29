@@ -4,10 +4,9 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { SubscriptionEditPage } from './subscription-edit.page';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EmbeddedImageModule } from '../../../components/embedded-image/embedded-image.module';
 import { SubscriptionEditRoutingModule } from './subscription-edit-routing.module';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
-import { EmbeddedWebsiteModule } from '../../../components/embedded-website/embedded-website.module';
+import { InteractiveWebsiteModule } from '../../../components/interactive-website/interactive-website.module';
 
 @NgModule({
   imports: [
@@ -15,10 +14,9 @@ import { EmbeddedWebsiteModule } from '../../../components/embedded-website/embe
     IonicModule,
     FormsModule,
     ReactiveFormsModule,
-    EmbeddedImageModule,
     SubscriptionEditRoutingModule,
     SearchbarModule,
-    EmbeddedWebsiteModule,
+    InteractiveWebsiteModule
   ],
   declarations: [SubscriptionEditPage],
 })

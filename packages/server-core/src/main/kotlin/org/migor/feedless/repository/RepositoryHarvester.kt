@@ -202,11 +202,11 @@ class RepositoryHarvester internal constructor() {
   private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity) {
     log.debug("[$corrId] importElement")
     val lastAction = output.outputs.last()
-    lastAction.execute?.let {
+    lastAction?.execute?.let {
       it.data.org_feedless_feed?.let { importFeed(corrId, repositoryId, it, source) }
-    } ?: lastAction.extract?.let {
+    } ?: lastAction?.extract?.let {
       TODO()
-    } ?: lastAction.fetch?.let {
+    } ?: lastAction?.fetch?.let {
       TODO()
     }
 //    lastAction.extract.image?.let {

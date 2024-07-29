@@ -8,12 +8,15 @@ import {
   Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
+import { ScrapeController } from '../interactive-website/scrape-controller';
+import { firstValueFrom, lastValueFrom, Subscription } from 'rxjs';
 
 export type XyPosition = GqlXyPosition;
 
@@ -47,7 +50,7 @@ interface Box {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmbeddedImageComponent
-  implements AfterViewInit, OnDestroy, OnChanges
+  implements AfterViewInit, OnDestroy, OnInit
 {
   @Input({ required: true })
   embed: Embeddable;
@@ -56,16 +59,11 @@ export class EmbeddedImageComponent
   strokeStyle: string = 'red';
 
   @Input()
-  pickBoundingBox: boolean = false;
+  scrapeController: ScrapeController;
 
-  @Input()
-  pickPosition: boolean = false;
-
-  @Output()
   pickedBoundingBox: EventEmitter<BoundingBox | null> =
     new EventEmitter<BoundingBox | null>();
 
-  @Output()
   pickedPosition: EventEmitter<XyPosition | null> =
     new EventEmitter<XyPosition | null>();
 
@@ -83,6 +81,8 @@ export class EmbeddedImageComponent
   box: Box;
   position: { x: number; y: number };
 
+  private subscriptions: Subscription[] = [];
+
   private boxFrom: { x: number; y: number };
   private readonly drawBoxDebounced: DebouncedFunc<(box: Box) => void>;
   private imageUrl: string;
@@ -91,27 +91,11 @@ export class EmbeddedImageComponent
     this.drawBoxDebounced = debounce(this.drawBox, 5);
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (
-      changes.pickPosition?.currentValue ||
-      changes.pickBoundingBox?.currentValue
-    ) {
-      if (changes.pickPosition?.currentValue) {
-        this.mode = 'position';
-      }
-      if (changes.pickBoundingBox?.currentValue) {
-        this.mode = 'mark';
-      }
-    } else {
-      this.mode = 'move';
-    }
-    this.changeRef.detectChanges();
-  }
-
   ngOnDestroy() {
     if (this.imageUrl) {
       URL.revokeObjectURL(this.imageUrl);
     }
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   async ngAfterViewInit() {
@@ -279,5 +263,36 @@ export class EmbeddedImageComponent
     const ctx: CanvasRenderingContext2D =
       this.overlayCanvas.nativeElement.getContext('2d');
     ctx.clearRect(0, 0, height, width);
+  }
+
+  ngOnInit(): void {
+    this.subscriptions.push(
+      this.scrapeController.pickPoint.subscribe(
+        (callback: (XyPosition) => void) => {
+          console.log('pickPoint');
+          this.mode = 'position';
+          this.changeRef.detectChanges();
+          firstValueFrom(this.pickedPosition).then((point) => {
+            console.log('pickPoint', point);
+            callback(point);
+            this.mode = 'move';
+            this.changeRef.detectChanges();
+          });
+        },
+      ),
+      this.scrapeController.pickArea.subscribe(
+        (callback: (BoundingBox) => void) => {
+          console.log('pickArea');
+          this.mode = 'mark';
+          this.changeRef.detectChanges();
+          firstValueFrom(this.pickedBoundingBox).then((bbox) => {
+            console.log('pickArea', bbox);
+            this.mode = 'move';
+            callback(bbox);
+            this.changeRef.detectChanges();
+          });
+        },
+      ),
+    );
   }
 }

@@ -17,9 +17,9 @@
     </ion-searchbar>
 
     <div style="display: flex; position: absolute; right: 0; top: 10px">
-<!--      <ion-title>-->
-<!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
-<!--      </ion-title>-->
+      <!--      <ion-title>-->
+      <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
+      <!--      </ion-title>-->
       <ion-buttons>
         <app-dark-mode-button></app-dark-mode-button>
       </ion-buttons>
@@ -102,17 +102,20 @@
         </ion-buttons>
 
         <ion-title class="ion-text-center">
-          <div style="display: flex;
-                      align-items: center;
-                      justify-content: center;">
+          <div
+            style="display: flex; align-items: center; justify-content: center"
+          >
             {{ currentDateRef.format("MMMM") }}
             {{ currentDateRef.format("YYYY") }}
 
-            <ion-button class="ion-margin-start"
-                        size="small"
-                        color="dark"
-                        *ngIf="!isSame(currentDateRef, now, ['month'])"
-                        (click)="changeMonth(now)">Heute</ion-button>
+            <ion-button
+              class="ion-margin-start"
+              size="small"
+              color="dark"
+              *ngIf="!isSame(currentDateRef, now, ['month'])"
+              (click)="changeMonth(now)"
+              >Heute</ion-button
+            >
           </div>
         </ion-title>
 
@@ -138,8 +141,12 @@
               'day--today': day.today,
               'day--other': day.otherMonth,
               'no-background': day.otherMonth,
-              'day--active': isSame(day.day, currentDateRef, ['month', 'year', 'day']),
-              'day--past': day.past
+              'day--active': isSame(day.day, currentDateRef, [
+                'month',
+                'year',
+                'day',
+              ]),
+              'day--past': day.past,
             }"
           >
             <a href="javascript:void(0)" (click)="setCurrentDate(day.day)">
@@ -168,36 +175,44 @@
     <div class="ion-margin-top" style="min-height: 50vh">
       <ng-container *ngIf="currentDateRef">
         <h1 class="ion-text-center">
-          Veranstaltungen am {{currentDateRef.format('DD.MM')}} nahe {{ locationFc.value }}
+          Veranstaltungen am {{ currentDateRef.format("DD.MM") }} nahe
+          {{ locationFc.value }}
         </h1>
         <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
         <div *ngIf="!loadingDay">
-          <p *ngIf="placesByDistance.length === 0"
-             class="ion-text-center">Keine Einträge gefunden</p>
+          <p *ngIf="placesByDistance.length === 0" class="ion-text-center">
+            Keine Einträge gefunden
+          </p>
           <ul *ngFor="let placesGroup of placesByDistance">
             <ng-container *ngFor="let place of placesGroup.places">
               <h3 class="ion-padding-top">
                 {{ place.place }}
-                <a title="Show on map"
-                     [href]="'https://www.openstreetmap.org/#map=14/'+ place.events[0].localized.lat + '/' + place.events[0].localized.lon"
-                     target="_blank">
-                    <ion-icon name="location-outline"></ion-icon>
-
-                  </a>
-                <ion-note>
-                  {{ placesGroup.distance }} Km entfernt
-                </ion-note>
+                <a
+                  title="Show on map"
+                  [href]="
+                    'https://www.openstreetmap.org/#map=14/' +
+                    place.events[0].localized.lat +
+                    '/' +
+                    place.events[0].localized.lon
+                  "
+                  target="_blank"
+                >
+                  <ion-icon name="location-outline"></ion-icon>
+                </a>
+                <ion-note> {{ placesGroup.distance }} Km entfernt </ion-note>
               </h3>
-              <li *ngFor="let event of place.events" class="ion-margin-bottom ion-margin-start">
-<!--                <h5>-->
-                  <a [href]="event.url">{{ event.contentTitle }}</a>
-<!--                </h5>-->
-<!--                <p style="opacity: 0.8">-->
-<!--                  {{ event.contentText }}-->
-<!--                </p>-->
+              <li
+                *ngFor="let event of place.events"
+                class="ion-margin-bottom ion-margin-start"
+              >
+                <!--                <h5>-->
+                <a [href]="event.url">{{ event.contentTitle }}</a>
+                <!--                </h5>-->
+                <!--                <p style="opacity: 0.8">-->
+                <!--                  {{ event.contentText }}-->
+                <!--                </p>-->
               </li>
             </ng-container>
-
           </ul>
         </div>
       </ng-container>

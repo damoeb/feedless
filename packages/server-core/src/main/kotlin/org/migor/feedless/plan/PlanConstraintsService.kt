@@ -24,9 +24,10 @@ import java.util.*
 @Profile(AppProfiles.database)
 class PlanConstraintsService {
 
+  private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
+
   @Autowired
   private lateinit var planDAO: PlanDAO
-  private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
 
   @Autowired
   private lateinit var environment: Environment
@@ -132,7 +133,7 @@ class PlanConstraintsService {
     getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
 
   private fun getFeature(featureName: FeatureName, userId: UUID, product: ProductCategory): FeatureValueEntity? {
-    val user = userDAO.findById(userId).orElseThrow()
+//    val user = userDAO.findById(userId).orElseThrow()
     return try {
       if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
         featureValueDAO.resolveByFeatureGroupIdAndName(

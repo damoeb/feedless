@@ -1,5 +1,14 @@
-import { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions } from 'puppeteer';
-import puppeteer from 'puppeteer-extra';
+import {
+  Browser,
+  Frame,
+  HTTPResponse,
+  Page,
+  Viewport,
+  ScreenshotClip,
+  ScreenshotOptions,
+} from 'puppeteer';
+import process from 'node:process'
+import puppeteer from 'puppeteer';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
 import { VerboseConfigService } from '../common/verbose-config.service';
@@ -18,18 +27,11 @@ import {
   ScrapeEmit,
   ScrapeExtract,
   ScrapeExtractResponse,
-  ScrapeExtractResponseInput,
+  ScrapeExtractResponseInput, ScrapeOutputResponseInput,
   ScrapePrerender,
   ScrapeRequest,
   ScrapeResponseInput
 } from '../../generated/graphql';
-
-interface Viewport {
-  width: number;
-  height: number;
-  isMobile: boolean;
-  isLandscape?: boolean;
-}
 
 interface EvaluateResponse {
   markup: string;
@@ -83,20 +85,15 @@ export class PuppeteerService {
       if (this.currentActiveWorkers < this.maxWorkers) {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
-    }).catch((e) => {
-      this.log.error(`[${job.corrId}] ${e}`);
-      throw e;
     });
   }
 
   private async newBrowser(scrapeRequest: ScrapeRequest): Promise<Browser> {
     const viewport: Viewport = this.resolveViewport(scrapeRequest);
-    console.log('viewport', viewport);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
-      // devtools: false,
-      // defaultViewport: scrapeRequest.page.viewport || {
-      defaultViewport: pick(viewport, ['height', 'width']),
+      devtools: false,
+      defaultViewport: viewport,
       executablePath: '/usr/bin/chromium-browser',
       timeout: getHttpGet(scrapeRequest).timeout || 30000,
       dumpio: this.isDebug,
@@ -143,10 +140,10 @@ export class PuppeteerService {
     const startTime = Date.now();
     const page = await this.newPage(browser, request);
     const logs: string[] = [];
-    let outputs: ScrapeActionResponseInput[];
+    const outputs: ScrapeOutputResponseInput[] = [];
     const appendLog: LogAppender = (msg: string) => {
       logs.push(msg);
-      this.log.debug(msg);
+      this.log.log(msg);
     };
     this.interceptConsole(page, appendLog);
 
@@ -167,9 +164,9 @@ export class PuppeteerService {
 
       appendLog(`executing ${request.flow.sequence.length} actions`);
 
-      outputs = await request.flow.sequence.reduce(
-        (waitFor, action) =>
-          waitFor.then(async (outputs) => {
+      await request.flow.sequence.reduce(
+        (waitFor, action, currentIndex) =>
+          waitFor.then(async () => {
             const output = await this.executeAction(
               corrId,
               action,
@@ -177,11 +174,14 @@ export class PuppeteerService {
               appendLog,
             );
             if (output) {
-              outputs.push(output);
+              appendLog(`outputs[${currentIndex}] -> ${Object.keys(output).find(key => !!output[key])}`)
+              outputs.push({
+                index: currentIndex,
+                response: output
+              });
             }
-            return outputs;
           }),
-        Promise.resolve([] as ScrapeActionResponseInput[]),
+        Promise.resolve(),
       );
       appendLog(`all actions executed with ${outputs.length} outputs`);
 
@@ -327,11 +327,11 @@ export class PuppeteerService {
           },
           data: exposePixel
             ? {
-              mimeType: 'image/png',
-              data: await getScreenshot(),
-            }
+                mimeType: 'image/png',
+                data: await getScreenshot(),
+              }
             : null,
-        }
+        },
       ],
     };
   }
@@ -358,12 +358,12 @@ export class PuppeteerService {
       fragmentName,
       fragments: [
         {
-          data:{
+          data: {
             mimeType: 'image/png',
             data: screenshot,
-          }
-        }
-      ]
+          },
+        },
+      ],
     };
   }
 
@@ -649,14 +649,14 @@ export class PuppeteerService {
     return `::-p-xpath(${element.value})`;
   }
 
-  private resolveViewport(request: ScrapeRequest) {
+  private resolveViewport(request: ScrapeRequest): Viewport {
     if (getHttpGet(request).viewport) {
       return pick(getHttpGet(request).viewport, [
         'height',
         'isLandscape',
         'isMobile',
         'width',
-      ]);
+      ]) as Viewport;
     } else {
       return this.defaultViewport;
     }

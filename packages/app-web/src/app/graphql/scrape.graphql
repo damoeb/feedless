@@ -26,46 +26,49 @@ fragment ScrapeExtractResponseFragment on ScrapeExtractResponse {
 query scrape($data: ScrapeRequestInput!) {
   scrape(data: $data) {
     outputs {
-      extract {
-        ...ScrapeExtractResponseFragment
-      }
-      fetch {
-        data
-        debug {
-          console
-          contentType
-          cookies
-          corrId
-          screenshot
-          statusCode
-          viewport {
-            ...ViewportFragment
+      index
+      response {
+        extract {
+          ...ScrapeExtractResponseFragment
+        }
+        fetch {
+          data
+          debug {
+            console
+            contentType
+            cookies
+            corrId
+            screenshot
+            statusCode
+            viewport {
+              ...ViewportFragment
+            }
           }
         }
-      }
-      execute {
-        pluginId
-        data {
-          org_feedless_feed {
-            ...RemoteNativeFeedFragment
-          }
-          org_feedless_feeds {
-            genericFeeds {
-              selectors {
-                ...SelectorsFragment
-              }
-              score
-              hash
-              count
-            }
-            nativeFeeds {
+        execute {
+          pluginId
+          data {
+            org_feedless_feed {
               ...RemoteNativeFeedFragment
             }
+            org_feedless_feeds {
+              genericFeeds {
+                selectors {
+                  ...SelectorsFragment
+                }
+                score
+                hash
+                count
+              }
+              nativeFeeds {
+                ...RemoteNativeFeedFragment
+              }
+            }
+            org_feedless_fulltext {
+              ...ReadabilityFragment
+            }
+            jsonData
           }
-          org_feedless_fulltext {
-            ...ReadabilityFragment
-          }
-          jsonData
         }
       }
     }

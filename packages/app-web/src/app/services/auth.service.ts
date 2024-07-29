@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import platform from 'platform';
 import {
   AuthAnonymous,
   AuthUser,
@@ -73,7 +72,7 @@ export class AuthService {
           email,
           token: authentication.token,
           product: environment.product,
-          osInfo: `${platform.description}`,
+          osInfo: ``,
           allowCreate: true,
         },
       },

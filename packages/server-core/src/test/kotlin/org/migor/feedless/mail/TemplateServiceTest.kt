@@ -1,5 +1,6 @@
 package org.migor.feedless.mail
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -22,7 +23,8 @@ import org.springframework.test.context.ActiveProfiles
     MockBean(ScoreService::class),
     MockBean(UserService::class),
     MockBean(LicenseService::class),
-    MockBean(ProductService::class)
+    MockBean(ProductService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
 class TemplateServiceTest {

@@ -14,18 +14,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import { isDefined } from '../../types';
-
-interface Viewport {
-  width: number;
-  height: number;
-}
-
-export interface Embeddable {
-  mimeType: string;
-  data: string;
-  url: string;
-  viewport?: Viewport;
-}
+import { Embeddable } from '../embedded-image/embedded-image.component';
+import { ScrapeController } from '../interactive-website/scrape-controller';
+import { debounce, interval, Subscription } from 'rxjs';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath
@@ -58,12 +49,12 @@ interface IframeMessage {
 }
 
 @Component({
-  selector: 'app-embedded-website',
-  templateUrl: './embedded-website.component.html',
-  styleUrls: ['./embedded-website.component.scss'],
+  selector: 'app-embedded-markup',
+  templateUrl: './embedded-markup.component.html',
+  styleUrls: ['./embedded-markup.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedWebsiteComponent
+export class EmbeddedMarkupComponent
   implements OnInit, AfterViewInit, OnChanges, OnDestroy
 {
   @ViewChild('iframeElement')
@@ -73,7 +64,7 @@ export class EmbeddedWebsiteComponent
   embed: Embeddable;
 
   @Input()
-  highlightXpath: string;
+  scrapeController: ScrapeController;
 
   @Input()
   maxHeight: boolean = false;
@@ -81,14 +72,15 @@ export class EmbeddedWebsiteComponent
   @Input()
   showBoxes: boolean = false;
 
-  @Output()
-  pickedXpath: EventEmitter<string> = new EventEmitter<string>();
+  private pickedXpath: EventEmitter<string> = new EventEmitter<string>();
 
   loadedDocument: () => void;
   iframeRefHeight: number;
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
+  private subscriptions: Subscription[] = [];
+  protected currentXpath: string;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -96,23 +88,61 @@ export class EmbeddedWebsiteComponent
     this.waitForDocument = new Promise<void>((resolve) => {
       this.loadedDocument = resolve;
     });
+    this.subscriptions.push(
+      this.pickedXpath
+        .pipe(debounce(() => interval(100)))
+        .subscribe((xpath) => {
+          this.currentXpath = xpath;
+          this.changeRef.detectChanges();
+        }),
+      this.scrapeController.extractElements.subscribe((params) => {
+        const document = new DOMParser().parseFromString(
+          this.embed.data,
+          'text/html',
+        );
+        const xpathResult = document.evaluate(
+          params.xpath,
+          document,
+          null,
+          XPathResult.ANY_TYPE,
+          null,
+        );
+        let element = xpathResult.iterateNext();
+        const elements = [];
+        while (element) {
+          elements.push(element);
+          element = xpathResult.iterateNext();
+        }
+        params.callback(elements);
+      }),
+      this.scrapeController.pickElement.subscribe((callback) => {
+        const unsubscribe = this.pickedXpath.subscribe((xpath) => {
+          unsubscribe.unsubscribe();
+          callback(xpath);
+        });
+      }),
+      this.scrapeController.showElements.subscribe((xpath) => {
+        console.log(`showElements ${xpath}`);
+        this.postIframeMessage({
+          id: '',
+          type: 'xpath',
+          data: xpath,
+        });
+      }),
+    );
   }
 
   ngOnDestroy(): void {
     if (this.proxyUrl) {
-      window.URL.revokeObjectURL(this.proxyUrl);
+      URL.revokeObjectURL(this.proxyUrl);
     }
     if (this.unbindMessageListener) {
       this.unbindMessageListener();
     }
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   async ngOnChanges(changes: SimpleChanges) {
-    if (changes.highlightXpath?.currentValue) {
-      this.highlightXpath = changes.highlightXpath.currentValue;
-      await this.highlightXpathInIframe(this.highlightXpath);
-      this.changeRef.detectChanges();
-    }
     if (isDefined(changes.showBoxes?.currentValue)) {
       await this.postIframeMessage({
         id: '',
@@ -134,18 +164,7 @@ export class EmbeddedWebsiteComponent
 
   async ngAfterViewInit() {
     this.assignToIframe();
-    await this.highlightXpathInIframe(this.highlightXpath);
     this.changeRef.detectChanges();
-  }
-
-  async highlightXpathInIframe(xpath: string) {
-    if (xpath) {
-      await this.postIframeMessage({
-        id: '',
-        type: 'xpath',
-        data: xpath,
-      });
-    }
   }
 
   getWidth() {
@@ -269,7 +288,7 @@ document.body.addEventListener('mousedown', (event) => {
 ${transformXpathToCssPath.toString()}
 
 window.addEventListener('message', (message) => {
-  console.log(message.data);
+  console.log('iframe message', message.data);
   switch (message.data.type) {
     case 'xpath':
       const cssPath = transformXpathToCssPath(message.data.data);
@@ -322,7 +341,7 @@ window.addEventListener('message', (message) => {
     const document = this.embed;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.embed.data, this.embed.url);
-      this.proxyUrl = window.URL.createObjectURL(
+      this.proxyUrl = URL.createObjectURL(
         new Blob([html], {
           type: 'text/html;charset=UTF-8',
         }),

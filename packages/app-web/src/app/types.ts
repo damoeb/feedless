@@ -12,10 +12,10 @@ export type TypedFormGroup<TYPE> = {
   [K in keyof TYPE]: TYPE[K] extends AnyPrimitive
     ? FormControl<TYPE[K] | null>
     : TYPE[K] extends Array<infer U>
-    ? U extends AnyPrimitive
-      ? FormArray<FormControl<U | null>>
-      : FormArray<FormGroup<TypedFormGroup<U>>>
-    : FormGroup<TypedFormGroup<TYPE[K]>>;
+      ? U extends AnyPrimitive
+        ? FormArray<FormControl<U | null>>
+        : FormArray<FormGroup<TypedFormGroup<U>>>
+      : FormGroup<TypedFormGroup<TYPE[K]>>;
 };
 
 export type DeepPartial<T> = T extends object

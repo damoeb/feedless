@@ -1,5 +1,6 @@
 package org.migor.feedless.api.graphql
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -46,6 +47,7 @@ import java.nio.file.Files
     MockBean(SessionService::class),
     MockBean(LicenseService::class),
     MockBean(ProductService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
 class ScrapeQueryResolverTest {

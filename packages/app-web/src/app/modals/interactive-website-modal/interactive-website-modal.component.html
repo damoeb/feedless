@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Interactive Website</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-row class="website flex_column">
+    <app-interactive-website
+      style="flex: 1; display: flex"
+      [scrapeController]="scrapeController"
+    >
+    </app-interactive-website>
+  </ion-row>
+
+  <ion-row class="actions">
+    <ion-list class="flex__column">
+      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
+      <ion-item
+        *ngFor="let action of getActionFgs(); let i = index"
+        [ngClass]="{ action__raw: !!action.value.raw }"
+      >
+        <!--          <ion-reorder slot="start"></ion-reorder>-->
+        <div class="flex__row">
+          <div>
+            <ion-select
+              [formControl]="action.controls.type"
+              fill="outline"
+              interface="popover"
+              placeholder="Action"
+            >
+              <ion-select-option
+                [value]="action"
+                *ngFor="let action of actionTypes"
+              >
+                {{ action }}
+              </ion-select-option>
+            </ion-select>
+          </div>
+
+          <ion-button
+            (click)="pickPosition(action)"
+            *ngIf="action.value.type === 'click'"
+            [ngClass]="{ 'ng-invalid': action.invalid }"
+            color="medium"
+            expand="block"
+            fill="outline"
+            style="flex: 1"
+          >
+            {{ getPositionLabel(action) }}
+          </ion-button>
+
+          <ion-button (click)="removeAction(i)" color="medium" fill="clear">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+      <!--      </ion-reorder-group>-->
+      <ion-item *ngIf="actionsFg.length < 4" [disabled]="actionsFg.invalid">
+        <ion-label>
+          <a (click)="addAction()" href="javascript:void(0)">Add Action</a>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-row>
+  <!--  </form>-->
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()"> Cancel </ion-button>
+      <ion-button
+        (click)="applyChanges()"
+        [disabled]="actionsFg.invalid"
+        color="success"
+        expand="full"
+        fill="solid"
+      >
+        Apply
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

@@ -28,6 +28,10 @@ import {
 } from '../modals/remote-feed-modal/remote-feed-modal.component';
 import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
 import { OsmMatch } from './open-street-map.service';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../modals/code-editor-modal/code-editor-modal.component';
 
 @Injectable({
   providedIn: 'root',
@@ -83,6 +87,20 @@ export class ModalService {
     });
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
+    return data;
+  }
+
+  async openCodeEditorModal(
+    componentProps: CodeEditorModalComponentProps,
+  ): Promise<string[]> {
+    const modal = await this.modalCtrl.create({
+      component: CodeEditorModalComponent,
+      componentProps,
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
     return data;
   }
 

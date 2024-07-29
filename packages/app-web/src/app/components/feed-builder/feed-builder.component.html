@@ -16,7 +16,7 @@
         </p>
         <p class="ion-margin">
           Some errors can be resolved by
-          <a href="javascript:void(0)" (click)="showActionsModal()"
+          <a href="javascript:void(0)" (click)="showInteractiveWebsiteModal()"
             >enabling JavaScript</a
           >
         </p>
@@ -55,12 +55,12 @@
       [scrapeResponse]="scrapeResponse"
     >
       <ion-item
-        (click)="showActionsModal()"
+        (click)="showInteractiveWebsiteModal()"
         class="cy-enable-js-button"
         [button]="true"
         topSlot
       >
-        Enable JavaScript
+        JavaScript Support
         <ion-icon name="logo-javascript" color="warning" slot="end"></ion-icon>
       </ion-item>
       <ion-item
@@ -70,7 +70,7 @@
         topSlot
       >
         <ion-label>
-          Source Tags
+          Tags
           <ion-note *ngIf="tags.length > 0">{{ getTagsString() }}</ion-note>
         </ion-label>
         <ion-icon
@@ -88,9 +88,9 @@
         <ion-label>
           Geo Tag
 
-          <ion-note *ngIf="!location">None</ion-note>
-          <ion-note *ngIf="location"
-            >({{ location.lat }}/{{ location.lon }})</ion-note
+          <ion-note *ngIf="!geoLocation">None</ion-note>
+          <ion-note *ngIf="geoLocation"
+            >({{ geoLocation.lat }}/{{ geoLocation.lon }})</ion-note
           >
         </ion-label>
         <ion-icon name="location-outline" color="primary" slot="end"></ion-icon>

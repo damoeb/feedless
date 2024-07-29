@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.session.SessionService
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.any
 import org.migor.feedless.document.eq
+import org.migor.feedless.session.SessionService
+import org.migor.feedless.subscription.PlanDAO
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toDate
@@ -20,6 +22,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import org.springframework.core.env.Environment
 import java.time.LocalDateTime
 import java.util.*
 
@@ -39,6 +42,12 @@ class PlanConstraintsServiceImplTest {
   @Mock
   lateinit var featureGroupDAO: FeatureGroupDAO
 
+  @Mock
+  lateinit var planDAO: PlanDAO
+
+  @Mock
+  lateinit var environment: Environment
+
   @InjectMocks
   lateinit var service: PlanConstraintsService
 
@@ -53,6 +62,7 @@ class PlanConstraintsServiceImplTest {
     user = mock(UserEntity::class.java)
     `when`(user.id).thenReturn(userId)
     `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(user))
+    `when`(sessionService.activeProductFromRequest()).thenReturn(org.migor.feedless.generated.types.ProductCategory.rssProxy.fromDto())
     `when`(sessionService.userId()).thenReturn(UUID.randomUUID())
 
     val system = mock(FeatureGroupEntity::class.java)

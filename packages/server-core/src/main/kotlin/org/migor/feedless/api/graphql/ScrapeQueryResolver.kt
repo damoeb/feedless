@@ -11,6 +11,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.PluginExecutionResponse
 import org.migor.feedless.generated.types.ScrapeActionResponse
+import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.service.ScrapeActionOutput
@@ -54,19 +55,22 @@ class ScrapeQueryResolver {
   }
 }
 
-private fun ScrapeActionOutput.toDto(): ScrapeActionResponse {
-  return ScrapeActionResponse(
-    fetch = fetch?.let {
-      HttpFetchResponse(
-        data = it.response.responseBody.toString(StandardCharsets.UTF_8),
-        debug = it.debug
-      )
-    },
-    extract = extract,
-    execute = execute?.let {
-      PluginExecutionResponse(
-        pluginId = it.pluginId,
-        data = it.data
-      )
-    })
+private fun ScrapeActionOutput.toDto(): ScrapeOutputResponse {
+  return ScrapeOutputResponse(
+    index = index,
+    response = ScrapeActionResponse(
+      fetch = fetch?.let {
+        HttpFetchResponse(
+          data = it.response.responseBody.toString(StandardCharsets.UTF_8),
+          debug = it.debug
+        )
+      },
+      extract = extract,
+      execute = execute?.let {
+        PluginExecutionResponse(
+          pluginId = it.pluginId,
+          data = it.data
+        )
+      })
+  )
 }

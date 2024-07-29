@@ -35,7 +35,7 @@ import {
 import {
   FeedOrRepository,
   FeedWithRequest,
-  tagsToString
+  tagsToString,
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
@@ -437,7 +437,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       },
       async (data: FeedOrRepository) => {
         if (data?.repository) {
-          console.warn('not implemented')
+          console.warn('not implemented');
         }
         if (data?.feed) {
           this.repository = await this.repositoryService.updateRepository({

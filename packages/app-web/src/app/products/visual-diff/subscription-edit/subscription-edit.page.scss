@@ -50,11 +50,13 @@ ion-header {
   //box-shadow: inset 0px 0px 5px var(--app-foreground);
 }
 
-app-embedded-image,
-app-embedded-website {
+app-interactive-website {
   display: flex;
   flex: 1;
   min-height: 550px;
+  &> div {
+    flex: 1;
+  }
 }
 .controls {
   column-gap: 8px;

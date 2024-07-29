@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FeedBuilderComponent } from './feed-builder.component';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/transform-website-to-feed.module';
-import { FeedBuilderActionsModalModule } from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.module';
+import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 
@@ -15,7 +15,7 @@ import { SearchAddressModalModule } from '../../modals/search-address-modal/sear
     IonicModule,
     TransformWebsiteToFeedModule,
     TagsModalModule,
-    FeedBuilderActionsModalModule,
+    InteractiveWebsiteModalModule,
     SearchbarModule,
     SearchAddressModalModule,
   ],

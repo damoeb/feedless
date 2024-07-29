@@ -24,6 +24,7 @@ import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.PluginExecutionResponse
 import org.migor.feedless.generated.types.ScrapeActionResponse
+import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.util.HtmlUtil
@@ -92,7 +93,7 @@ class ScrapeService {
 
     return Mono.just(
       ScrapeOutput(
-        context.outputs,
+        context.outputs.values.toList(),
         logs = context.logs,
         time = System.nanoTime().minus(startTime).div(1000000).toInt()
       )
@@ -111,7 +112,7 @@ class ScrapeService {
   private fun handlePluginExecution(corrId: String, index: Int, action: ExecuteActionEntity, context: ScrapeContext) {
     log.info("[$corrId] handlePluginExecution ${action.pluginId}")
 
-    val firstFitchAction = context.outputs.find { it.fetch != null }!!
+    val firstFitchAction = context.outputs.values.find { it.fetch != null }!!
     val plugin = pluginService.resolveFragmentTransformerById(action.pluginId)
     try {
     val data = plugin
@@ -119,9 +120,9 @@ class ScrapeService {
       ?: throw BadRequestException("plugin '${action.pluginId}' does not exist ($corrId)")
 
       val output = PluginExecutionResponse(pluginId = plugin.id(), data = data)
-      val result = ScrapeActionOutput(execute = output)
+      val result = ScrapeActionOutput(index= index, execute = output)
 
-      context.outputs.add(result)
+      context.outputs[index] = result
     } catch (e: Exception) {
       context.logs.add(e.stackTraceToString())
       log.warn("[$corrId] handlePluginExecution error", e)
@@ -137,12 +138,12 @@ class ScrapeService {
   }
 
   private fun handlePurgeAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
-    val lastAction = context.outputs.last()
-    val document = HtmlUtil.parseHtml(lastAction.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8), "")
-    val elements = Xsoup.compile(action.xpath).evaluate(document).elements
-    log.info("[$corrId] purge element ${action.xpath} -> ${elements.size}")
-    elements.remove()
-
+//    val lastAction = context.outputs.last()
+//    val document = HtmlUtil.parseHtml(lastAction.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8), "")
+//    val elements = Xsoup.compile(action.xpath).evaluate(document).elements
+    log.info("[$corrId] purge element ${action.xpath}")
+//    elements.remove()
+    TODO()
   }
 
   private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
@@ -172,7 +173,10 @@ class ScrapeService {
       log.info("[$corrId] prerender")
       val response = agentService.prerender(corrId, source).block()!!
       log.info("[$corrId] -> ${response.outputs.size} outputs")
-      context.outputs.addAll(response.outputs.map { it.fromDto() })
+      response.outputs.map { it.fromDto() }.forEach() { scrapeActionOutput ->
+//        log.info("[$corrId] outputs @$outputIndex")
+        context.outputs[scrapeActionOutput.index] = scrapeActionOutput
+      }
       context.logs.addAll(response.logs)
     } else {
       log.info("[$corrId] static")
@@ -198,16 +202,17 @@ class ScrapeService {
 //        html = staticResponse.responseBody.toString(StandardCharsets.UTF_8)
       )
       val fetchOutput = HttpFetchOutput(staticResponse, debug = debug)
-      context.outputs.add(ScrapeActionOutput(fetch = fetchOutput))
+      context.outputs[index] = ScrapeActionOutput(index = index, fetch = fetchOutput)
     }
   }
 }
 
-private fun ScrapeActionResponse.fromDto(): ScrapeActionOutput {
+private fun ScrapeOutputResponse.fromDto(): ScrapeActionOutput {
   return ScrapeActionOutput(
-    execute = execute,
-    fetch = fetch?.fromDto(),
-    extract = extract
+    index = index,
+    execute = response.execute,
+    fetch = response.fetch?.fromDto(),
+    extract = response.extract
   )
 }
 
@@ -227,8 +232,9 @@ fun needsPrerendering(source: SourceEntity, currentActionIndex: Int): Boolean {
   val actions = source.actions.filterIndexed { index, _ -> index >= currentActionIndex }
   val hasClickPosition = actions.filterIsInstance<ClickPositionActionEntity>().isNotEmpty()
   val hasExtractBbox = actions.filterIsInstance<ExtractBoundingBoxActionEntity>().isNotEmpty()
+  val hasPixel = actions.filterIsInstance<ExtractXpathActionEntity>().any { it.emit.contains(ExtractEmit.pixel)}
   val hasForcedPrerendering = actions.filterIsInstance<FetchActionEntity>().any { it.forcePrerender }
-  return hasClickPosition || hasExtractBbox || hasForcedPrerendering
+  return hasClickPosition || hasExtractBbox || hasForcedPrerendering || hasPixel
 }
 
 

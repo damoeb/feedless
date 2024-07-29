@@ -11,23 +11,18 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import {
   ScrapedReadability,
   ScrapeResponse,
   Selectors,
 } from '../../graphql/types';
-import {
-  Embeddable,
-  transformXpathToCssPath,
-} from '../../components/embedded-website/embedded-website.component';
+import { transformXpathToCssPath } from '../../components/embedded-markup/embedded-markup.component';
 import { uniqBy } from 'lodash-es';
 import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl, isValidUrl } from '../../app.module';
+import { Embeddable } from '../../components/embedded-image/embedded-image.component';
 
 type InlineContent = {
   hostname: string;
@@ -160,7 +155,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
     this.embedWebsite = {
       mimeType: 'text/html',
-      data: this.scrapeResponse.outputs[0].fetch.data,
+      data: this.scrapeResponse.outputs[0].response.fetch.data,
       url: this.url,
     };
 
@@ -184,15 +179,17 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
       const feeds = this.scrapeResponse.outputs.find(
-        (o) => o.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ).execute.data.org_feedless_feeds;
+        (o) =>
+          o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
+      ).response.execute.data.org_feedless_feeds;
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
         'contextXPath',
       );
 
-      const raw = this.scrapeResponse.outputs.find((o) => o.fetch).fetch.data;
+      const raw = this.scrapeResponse.outputs.find((o) => o.response.fetch)
+        .response.fetch.data;
 
       const document = new DOMParser().parseFromString(raw, 'text/html');
 
@@ -310,8 +307,9 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   getReadability(): Maybe<ScrapedReadability> {
     return this.scrapeResponse.outputs.find(
       (output) =>
-        output.execute.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
-    ).execute.data.org_feedless_fulltext;
+        output.response.execute.pluginId ===
+        GqlFeedlessPlugins.OrgFeedlessFulltext,
+    ).response.execute.data.org_feedless_fulltext;
   }
 
   private async assignUrlQueryParam(url: string) {

@@ -10,17 +10,7 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import {
-  FeedWithRequest,
-  NativeOrGenericFeed,
-} from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
-import { GqlScrapeRequest } from '../../../generated/graphql';
-import { getFirstFetchUrlLiteral } from '../../utils';
 
 @Component({
   selector: 'app-workflow-builder-page',

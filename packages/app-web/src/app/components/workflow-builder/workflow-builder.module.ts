@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkflowBuilderComponent } from './workflow-builder.component';
 import { IonicModule } from '@ionic/angular';
-import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
+import { EmbeddedMarkupModule } from '../embedded-markup/embedded-markup.module';
 import { NativeFeedModule } from '../native-feed/native-feed.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
@@ -15,7 +15,7 @@ import { BubbleModule } from '../bubble/bubble.module';
   imports: [
     CommonModule,
     IonicModule,
-    EmbeddedWebsiteModule,
+    EmbeddedMarkupModule,
     NativeFeedModule,
     RemoteFeedModalModule,
     ReactiveFormsModule,

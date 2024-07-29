@@ -9,8 +9,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -26,16 +26,17 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Repository, ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
 import {
-  FeedBuilderActionsModalComponent,
+  InteractiveWebsiteModalComponent,
   FeedBuilderData,
-} from '../../modals/feed-builder-actions-modal/feed-builder-actions-modal.component';
+  InteractiveWebsiteModalComponentProps,
+} from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
@@ -43,6 +44,7 @@ import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/tr
 import { OsmMatch } from '../../services/open-street-map.service';
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { RepositoryService } from '../../services/repository.service';
+import { Embeddable } from '../embedded-image/embedded-image.component';
 
 /**
  * IDEEN
@@ -77,9 +79,9 @@ export type Source = {
 };
 
 export type FeedOrRepository = {
-  feed: FeedWithRequest,
-  repository: Repository
-}
+  feed: FeedWithRequest;
+  repository: Repository;
+};
 export type FeedWithRequest = {
   scrapeRequest: GqlScrapeRequestInput;
   feed: NativeOrGenericFeed;
@@ -121,7 +123,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   selectedRepositoryChanged = new EventEmitter<Repository>();
 
   protected tags: string[] = [];
-  protected location: OsmMatch;
+  protected geoLocation: OsmMatch;
   protected repositories: Repository[] = [];
 
   constructor(
@@ -130,6 +132,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     private readonly apolloAbortController: ApolloAbortControllerService,
     private readonly scrapeService: ScrapeService,
     private readonly modalService: ModalService,
+    private readonly location: Location,
+    private readonly router: Router,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController,
@@ -187,7 +191,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
-
+    await this.patchUrl();
     await this.detectLegacyRssProxy();
 
     try {
@@ -248,11 +252,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
 
     this.scrapeRequest.tags = this.tags;
-    console.log('this.location', this.location);
-    if (this.location) {
+    console.log('this.location', this.geoLocation);
+    if (this.geoLocation) {
       this.scrapeRequest.localized = {
-        lat: parseFloat(this.location.lat),
-        lon: parseFloat(this.location.lon),
+        lat: parseFloat(this.geoLocation.lat),
+        lon: parseFloat(this.geoLocation.lon),
       };
     }
     this.selectedFeedChanged.emit({
@@ -261,13 +265,14 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     });
   }
 
-  async showActionsModal() {
+  async showInteractiveWebsiteModal() {
+    const componentProps: InteractiveWebsiteModalComponentProps = {
+      scrapeRequest: this.scrapeRequest,
+    };
     const modal = await this.modalCtrl.create({
-      component: FeedBuilderActionsModalComponent,
+      component: InteractiveWebsiteModalComponent,
       cssClass: 'fullscreen-modal',
-      componentProps: {
-        url: this.url,
-      },
+      componentProps,
     });
 
     this.errorMessage = null;
@@ -299,7 +304,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   private handleResponse(scrapeResponse: ScrapeResponse) {
     this.scrapeResponse = scrapeResponse;
 
-    const fetchAction = scrapeResponse.outputs.find((o) => o.fetch).fetch;
+    const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
+      .response.fetch;
     const { contentType } = fetchAction.debug;
     if (contentType.startsWith('text/html')) {
       this.embedWebsite = {
@@ -320,8 +326,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async showLocationPickerModal() {
-    this.location = await this.modalService.openSearchAddressModal();
-    console.log('this.location', this.location);
+    this.geoLocation = await this.modalService.openSearchAddressModal();
+    console.log('this.location', this.geoLocation);
     this.changeRef.detectChanges();
   }
 
@@ -398,6 +404,16 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         linkXPath: params['linkXPath'],
       });
     }, 200);
+  }
+
+  private async patchUrl() {
+    const url = this.router
+      .createUrlTree(['.'], {
+        queryParams: { url: this.url },
+        relativeTo: this.activatedRoute,
+      })
+      .toString();
+    this.location.replaceState(url);
   }
 }
 

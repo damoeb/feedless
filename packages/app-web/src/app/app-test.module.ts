@@ -11,15 +11,16 @@ import {
 } from '@apollo/client/core/types';
 import {
   AuthAnonymous,
-  Orders,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
-  GqlOrdersQuery,
-  GqlOrdersQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
+  GqlListProductsQuery,
+  GqlListProductsQueryVariables,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
+  GqlOrdersQuery,
+  GqlOrdersQueryVariables,
   GqlProductCategory,
   GqlRepository,
   GqlRepositoryByIdQuery,
@@ -34,14 +35,13 @@ import {
   GqlWebDocumentByIdsQuery,
   GqlWebDocumentByIdsQueryVariables,
   ListPlugins,
+  ListProducts,
   ListRepositories,
+  Orders,
   RepositoryById,
   Scrape,
   ServerSettings,
   WebDocumentByIds,
-  GqlListProductsQuery,
-  GqlListProductsQueryVariables,
-  ListProducts,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -52,7 +52,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ProductConfig, AppConfigService } from './services/app-config.service';
+import { AppConfigService, ProductConfig } from './services/app-config.service';
 
 export type MockedRequestResolver<R, V> = (
   args: V,
@@ -170,9 +170,10 @@ export class AppTestModule {
   ) {
     const apolloMockController = new ApolloMockController();
     apolloMockController
-      .mockMutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>(
-        AuthAnonymous,
-      )
+      .mockMutate<
+        GqlAuthAnonymousMutation,
+        GqlAuthAnonymousMutationVariables
+      >(AuthAnonymous)
       .and.resolveOnce(async () => {
         return {
           data: {
@@ -228,9 +229,10 @@ export class AppTestModule {
 
 export function mockProducts(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<GqlListProductsQuery, GqlListProductsQueryVariables>(
-      ListProducts,
-    )
+    .mockQuery<
+      GqlListProductsQuery,
+      GqlListProductsQueryVariables
+    >(ListProducts)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -253,9 +255,10 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
 }
 export function mockDocuments(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables>(
-      WebDocumentByIds,
-    )
+    .mockQuery<
+      GqlWebDocumentByIdsQuery,
+      GqlWebDocumentByIdsQueryVariables
+    >(WebDocumentByIds)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -300,9 +303,10 @@ export const mocks: Mocks = {
 
 export function mockRepository(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<GqlRepositoryByIdQuery, GqlRepositoryByIdQueryVariables>(
-      RepositoryById,
-    )
+    .mockQuery<
+      GqlRepositoryByIdQuery,
+      GqlRepositoryByIdQueryVariables
+    >(RepositoryById)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -314,9 +318,10 @@ export function mockRepository(apolloMockController: ApolloMockController) {
 
 export function mockRepositories(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>(
-      ListRepositories,
-    )
+    .mockQuery<
+      GqlListRepositoriesQuery,
+      GqlListRepositoriesQueryVariables
+    >(ListRepositories)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -355,9 +360,10 @@ export async function mockServerSettings(
   apolloClient: ApolloClient<any>,
 ) {
   apolloMockController
-    .mockQuery<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>(
-      ServerSettings,
-    )
+    .mockQuery<
+      GqlServerSettingsQuery,
+      GqlServerSettingsQueryVariables
+    >(ServerSettings)
     .and.resolveOnce(async () => {
       const serverSettings: GqlServerSettings = {
         appUrl: '',

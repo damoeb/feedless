@@ -12,7 +12,7 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2020",
-    "lib": ["ES2022", "dom", "esnext.asynciterable"],
+    "lib": ["ES2022", "dom"],
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false
   },

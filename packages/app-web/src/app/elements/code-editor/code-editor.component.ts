@@ -29,6 +29,7 @@ import {
   foldGutter,
   foldKeymap,
   indentOnInput,
+  LanguageSupport,
   syntaxTree,
 } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
@@ -57,6 +58,7 @@ import { inlineImagePlugin } from './inline-image.widget';
 import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
+import { html } from '@codemirror/lang-html';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -173,6 +175,7 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
 
   private getExtensions() {
     const textChangeHook = this.textChange;
+
     const extensions: Extension[] = [
       gutter({
         renderEmptyElements: true,
@@ -208,6 +211,7 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
       ]),
       // defaultHighlightStyle,
       cursorTooltipField.extension,
+      html().extension,
       markdownLanguageSupport,
       // EditorView.updateListener.of((v) => {
       //   // console.log(v.transactions)
@@ -291,13 +295,13 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
             } else {
               if (firstToken === '/') {
                 const selection = context.state.wordAt(context.pos);
-                function resolveQuery() {
+                const resolveQuery = () => {
                   if (selection) {
                     return context.state.sliceDoc(selection.from, selection.to);
                   } else {
                     return '';
                   }
-                }
+                };
 
                 const from = selection?.from || context.pos;
 
