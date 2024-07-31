@@ -12,6 +12,13 @@ interface FeedlessModule: Module, Serializable {
 
   fun setLatLng(value: String?)
   fun getLatLng(): String?
+
+  fun setData(data: String?)
+  fun getData(): String?
+
+  fun setDataType(type: String?)
+  fun getDataType(): String?
+
   fun getPage(): Int?
   fun setPage(value: Int?)
 }

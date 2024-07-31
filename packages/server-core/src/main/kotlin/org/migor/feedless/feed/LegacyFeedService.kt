@@ -114,7 +114,7 @@ class LegacyFeedService {
           corrId,
           selectors,
           HtmlUtil.parseHtml(
-            scrapeResponse.outputs.find { o -> o?.fetch != null }!!.fetch!!.response.responseBody.toString(
+            scrapeResponse.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
               StandardCharsets.UTF_8
             ), url
           ),

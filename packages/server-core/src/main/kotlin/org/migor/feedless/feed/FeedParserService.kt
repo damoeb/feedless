@@ -123,7 +123,7 @@ class FeedParserService {
 
     val items = Flux.fromIterable(scrapeRequests)
       .flatMap { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
-      .map { response -> response.outputs.find { it?.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed!! }
+      .map { response -> response.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed!! }
       .flatMap { feed ->
         Flux.fromIterable(feed.items)
       }

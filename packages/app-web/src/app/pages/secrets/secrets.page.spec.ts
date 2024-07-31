@@ -5,7 +5,7 @@ import { SecretsPageModule } from './secrets.module';
 import { AppTestModule } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('ProfilePage', () => {
+describe('SecretsPage', () => {
   let component: SecretsPage;
   let fixture: ComponentFixture<SecretsPage>;
 

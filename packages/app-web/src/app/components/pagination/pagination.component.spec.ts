@@ -15,7 +15,7 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('AgentsComponent', () => {
+describe('PaginationComponent', () => {
   let component: PaginationComponent;
   let fixture: ComponentFixture<PaginationComponent>;
 

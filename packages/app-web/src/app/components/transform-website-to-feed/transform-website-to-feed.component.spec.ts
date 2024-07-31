@@ -40,24 +40,27 @@ const feedResponse: ScrapeResponse = {
   failed: false,
   outputs: [
     {
-      fetch: {
-        data: '',
-        debug: {
-          corrId: null,
-          console: [],
-          cookies: [],
-          contentType: 'application/rss+xml; charset=UTF-8',
-          statusCode: 200,
-          screenshot: null,
-          // html: '',
-          // metrics: {
-          //   queue: 0,
-          //   render: 239,
-          //   // '__typename': 'ScrapeDebugTimes'
-          // },
-          viewport: null,
-          // '__typename': 'ScrapeDebugResponse'
-        },
+      index: 0,
+      response: {
+        fetch: {
+          data: '',
+          debug: {
+            corrId: null,
+            console: [],
+            cookies: [],
+            contentType: 'application/rss+xml; charset=UTF-8',
+            statusCode: 200,
+            screenshot: null,
+            // html: '',
+            // metrics: {
+            //   queue: 0,
+            //   render: 239,
+            //   // '__typename': 'ScrapeDebugTimes'
+            // },
+            viewport: null,
+            // '__typename': 'ScrapeDebugResponse'
+          },
+        }
       },
     },
   ],

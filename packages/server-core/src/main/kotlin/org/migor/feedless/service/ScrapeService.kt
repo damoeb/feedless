@@ -23,17 +23,14 @@ import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.PluginExecutionResponse
-import org.migor.feedless.generated.types.ScrapeActionResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import us.codecraft.xsoup.Xsoup
 import java.nio.charset.StandardCharsets
 
 
@@ -173,7 +170,7 @@ class ScrapeService {
       log.info("[$corrId] prerender")
       val response = agentService.prerender(corrId, source).block()!!
       log.info("[$corrId] -> ${response.outputs.size} outputs")
-      response.outputs.map { it.fromDto() }.forEach() { scrapeActionOutput ->
+      response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("[$corrId] outputs @$outputIndex")
         context.outputs[scrapeActionOutput.index] = scrapeActionOutput
       }

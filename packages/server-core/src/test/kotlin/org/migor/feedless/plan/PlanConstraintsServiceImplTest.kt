@@ -12,6 +12,7 @@ import org.migor.feedless.document.any
 import org.migor.feedless.document.eq
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.subscription.PlanDAO
+import org.migor.feedless.subscription.PlanEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toDate
@@ -69,6 +70,14 @@ class PlanConstraintsServiceImplTest {
     `when`(system.id).thenReturn(UUID.randomUUID())
     `when`(system.name).thenReturn("")
     `when`(featureGroupDAO.findByParentFeatureGroupIdIsNull()).thenReturn(system)
+
+
+    val mockProduct = mock(ProductEntity::class.java)
+    `when`(mockProduct.featureGroupId).thenReturn(UUID.randomUUID())
+
+    val mockPlan = mock(PlanEntity::class.java)
+    `when`(mockPlan.product).thenReturn(mockProduct)
+    `when`(planDAO.findActiveByUserAndProduct(any(UUID::class.java), any(ProductCategory::class.java))).thenReturn(mockPlan)
   }
 
   @Test
@@ -76,7 +85,7 @@ class PlanConstraintsServiceImplTest {
     val maxItems = 50L
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxCapacity(null, userId, product)).isEqualTo(maxItems)
+    assertThat(service.coerceRetentionMaxCapacity(null, userId, product)).isNull()
     assertThat(service.coerceRetentionMaxCapacity(56, userId, product)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxCapacity(1, userId, product)).isEqualTo(2)
   }

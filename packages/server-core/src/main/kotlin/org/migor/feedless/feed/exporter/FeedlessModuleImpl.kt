@@ -12,11 +12,11 @@ class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessM
   @Expose(serialize = false, deserialize = false)
   private var COPY_FROM_HELPER: CopyFromHelper
 
-//  @SerializedName(STARTING_AT)
   private var startingAt: Date? = null
 
-//  @SerializedName(LAT_LNG)
   private var latLng: String? = null
+  private var data: String? = null
+  private var dataType: String? = null
 
   private var page: Int? = null
 
@@ -33,11 +33,13 @@ class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessM
   companion object {
     const val URI: String = "http://feedless.org/xml/1.0"
     val NAMESPACE = org.jdom2.Namespace.getNamespace("feedless", URI)
-    const val STARTING_AT = "startingAt"
-    const val PAGE = "page"
-    const val LAT_LNG = "latLon"
-    const val LAT = "lat"
-    const val LNG = "lon"
+    const val ELEMENT_STARTING_AT = "startingAt"
+    const val ELEMENT_PAGE = "page"
+    const val ELEMENT_LAT_LNG = "latLon"
+    const val ELEMENT_DATA = "data"
+    const val ATTR_DATA_TYPE = "type"
+    const val ATTR_LAT = "lat"
+    const val ATTR_LNG = "lon"
   }
 
   override fun getStartingAt(): Date? = startingAt
@@ -47,6 +49,17 @@ class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessM
   }
 
   override fun getLatLng(): String? = latLng
+  override fun setData(data: String?) {
+    this.data = data
+  }
+
+  override fun getData(): String? = data
+
+  override fun setDataType(type: String?) {
+    this.dataType = type
+  }
+
+  override fun getDataType(): String? = dataType
 
   override fun setLatLng(value: String?) {
     latLng = value

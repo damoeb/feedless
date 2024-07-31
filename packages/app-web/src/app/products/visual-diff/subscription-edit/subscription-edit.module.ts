@@ -16,7 +16,7 @@ import { InteractiveWebsiteModule } from '../../../components/interactive-websit
     ReactiveFormsModule,
     SubscriptionEditRoutingModule,
     SearchbarModule,
-    InteractiveWebsiteModule
+    InteractiveWebsiteModule,
   ],
   declarations: [SubscriptionEditPage],
 })

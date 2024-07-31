@@ -1,5 +1,6 @@
 package org.migor.feedless.feed.parser
 
+import com.rometools.modules.georss.GeoRSSModule
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.modules.mediarss.MediaEntryModule
@@ -107,6 +108,13 @@ class XmlFeedParser : FeedBodyParser {
     jsonFeed.websiteUrl = feed.link
     jsonFeed.language = feed.language
     jsonFeed.expired = false
+
+    val feedlessModule = feed.modules.find { it.uri == FeedlessModuleImpl.URI }?.castToFeedlessModule()
+    feedlessModule?.let {
+      jsonFeed.page = it.getPage()!!
+    }
+
+//    jsonFeed.tags = feed.categories?.map { it.name }
     jsonFeed.publishedAt = feed.publishedDate ?: Date()
     jsonFeed.items = feed.entries.map { this.fromSyndEntry(it) }
     jsonFeed.feedUrl = feedUrl
@@ -116,11 +124,11 @@ class XmlFeedParser : FeedBodyParser {
         jsonFeed.authors = listOf(JsonAuthor(name = it.author))
       }
       it.keywords?.toList()?.let {
-        tags.plus(it)
+        tags.addAll(it)
       }
     }
     feed.categories?.let {
-      tags.plus(it.map { it.name })
+      tags.addAll(it.map { it.name })
     }
     jsonFeed.tags = tags
     jsonFeed.links = feed.links.filter { it.rel == "next" }.map { it.href }
@@ -135,6 +143,7 @@ class XmlFeedParser : FeedBodyParser {
 
     val entryInformationModule = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
     val mediaEntryModule = entry.modules.find { it is MediaEntryModule } as MediaEntryModule?
+    val geoModule = entry.modules.find { it is GeoRSSModule } as GeoRSSModule?
     val feedlessModule = entry.modules.find { it.uri == FeedlessModuleImpl.URI }?.castToFeedlessModule()
 
     val article = JsonItem()
@@ -142,8 +151,19 @@ class XmlFeedParser : FeedBodyParser {
     article.title = entry.title
 
     feedlessModule?.let {
-      article.latLng = JsonUtil.gson.fromJson(feedlessModule.getLatLng(), JsonPoint::class.java)
+      feedlessModule.getLatLng()?.let {
+        article.latLng = JsonUtil.gson.fromJson(it, JsonPoint::class.java)
+      }
       article.startingAt = feedlessModule.getStartingAt()
+      article.contentRawBase64 = feedlessModule.getData()
+      article.contentRawMime = feedlessModule.getDataType()
+    }
+
+    geoModule?.let {
+      val point = JsonPoint()
+      point.x = it.position.latitude
+      point.y = it.position.longitude
+      article.latLng = point
     }
 
     val tags = mutableListOf<String>()
@@ -155,30 +175,41 @@ class XmlFeedParser : FeedBodyParser {
 
     article.tags = tags
 
+    val assignHtmlContent = {
+//      article.contentRawMime = "text/html"
+      article.contentHtml = contentHtml!!.value
+    }
+    val assignOtherContent = {
+      entry.contents.firstOrNull { !it.type.lowercase().contains("html") }?.let {
+        article.contentRawMime = it.type
+        article.contentRawBase64 = it.value
+      }
+    }
+    val assignTextContent = { text: String -> article.contentText = text
+    }
+
     // content
     val hasText = StringUtils.isNotBlank(contentText)
     val hasHtml = contentHtml != null
     if (hasText || hasHtml) {
       if (hasText && hasHtml) {
-        article.contentText = contentText
-        article.contentRawMime = "text/html"
-        article.contentRawBase64 = contentHtml!!.value
+        assignTextContent(contentText)
+        assignHtmlContent()
       } else {
         if (hasText) {
-          article.contentText = contentText
+          assignTextContent(contentText)
         } else {
-          article.contentRawMime = "text/html"
-          article.contentRawBase64 = contentHtml!!.value
+          assignHtmlContent()
           try {
             val body = HtmlUtil.parseHtml(contentText, "").body()
-            article.contentText = body.text()
+            assignTextContent(body.text())
           } catch (e: Exception) {
             // ignore
           }
-
         }
       }
     }
+    assignOtherContent()
 
     article.url = entry.link ?: entry.uri
 

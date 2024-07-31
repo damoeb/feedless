@@ -14,22 +14,7 @@ services:
 
   plausible:
     image: plausible/analytics
-#  neo4j:
-#    image: neo4j
-#    ports:
-#      - "7474:7474"
-#      - "7687:7687"
-#    volumes:
-#      - ./conf:/conf
-#      - ./data:/data
-#      - ./import:/import
-#      - ./logs:/logs
-#      - ./plugins:/plugins
-#    environment:
-      # Raise memory limits
-#      - NEO4J_dbms_memory_pagecache_size=1G
-#      - NEO4J_dbms.memory.heap.initial_size=1G
-#      - NEO4J_dbms_memory_heap_max__size=1G
+
 
 #  mq:
 #    image: rabbitmq:management
@@ -129,7 +114,7 @@ services:
       - monitoring
 
   feedless-aio-chromium:
-    image: damoeb/feedless:aio-chromium-88a90c8cbe8adb195ce419af2d101d7c70501b6d
+    image: damoeb/feedless:aio-chromium-21b6bb6e2529c1dcb80f70cbae2d736cd1656e15
     restart: unless-stopped
     depends_on:
       - postgres

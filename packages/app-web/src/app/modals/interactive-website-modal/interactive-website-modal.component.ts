@@ -79,9 +79,7 @@ export class InteractiveWebsiteModalComponent
   ) {}
 
   ngOnInit() {
-    console.log(this.scrapeRequest);
     this.scrapeController = new ScrapeController(this.scrapeRequest);
-
     this.scrapeRequest.flow.sequence
       .map((action) => this.convertScrapeActionToActionFg(action))
       .forEach((actionFg) => {

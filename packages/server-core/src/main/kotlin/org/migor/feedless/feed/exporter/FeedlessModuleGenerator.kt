@@ -34,21 +34,29 @@ class FeedlessModuleGenerator: ModuleGenerator {
 
     val startingAt = feedlessModule.getStartingAt()
     if (startingAt != null) {
-      element.addContent(generateElement(FeedlessModuleImpl.STARTING_AT, DateParser.formatW3CDateTime(startingAt, Locale.US)))
+      element.addContent(generateElement(FeedlessModuleImpl.ELEMENT_STARTING_AT, DateParser.formatW3CDateTime(startingAt, Locale.US)))
     }
 
     val page = feedlessModule.getPage()
     if (page != null) {
-      element.addContent(generateElement(FeedlessModuleImpl.PAGE, page.toString()))
+      element.addContent(generateElement(FeedlessModuleImpl.ELEMENT_PAGE, page.toString()))
     }
 
     val latlngStr = feedlessModule.getLatLng()
     if (latlngStr != null) {
       val latlng = JsonUtil.gson.fromJson(latlngStr, JsonPoint::class.java)
-      val latLngElement = Element(FeedlessModuleImpl.LAT_LNG, FeedlessModuleImpl.NAMESPACE)
-      latLngElement.setAttribute(FeedlessModuleImpl.LAT, latlng.x.toString())
-      latLngElement.setAttribute(FeedlessModuleImpl.LNG, latlng.y.toString())
+      val latLngElement = Element(FeedlessModuleImpl.ELEMENT_LAT_LNG, FeedlessModuleImpl.NAMESPACE)
+      latLngElement.setAttribute(FeedlessModuleImpl.ATTR_LAT, latlng.x.toString())
+      latLngElement.setAttribute(FeedlessModuleImpl.ATTR_LNG, latlng.y.toString())
       element.addContent(latLngElement)
+    }
+
+    val data = feedlessModule.getData()
+    if (data != null) {
+      val dataElement = Element(FeedlessModuleImpl.ELEMENT_DATA, FeedlessModuleImpl.NAMESPACE)
+      dataElement.setAttribute(FeedlessModuleImpl.ATTR_DATA_TYPE, feedlessModule.getDataType())
+      dataElement.text = data
+      element.addContent(dataElement)
     }
   }
 

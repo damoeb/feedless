@@ -7,7 +7,7 @@ import {
   ScreenshotClip,
   ScreenshotOptions,
 } from 'puppeteer';
-import process from 'node:process'
+import process from 'node:process';
 import puppeteer from 'puppeteer';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
@@ -27,10 +27,11 @@ import {
   ScrapeEmit,
   ScrapeExtract,
   ScrapeExtractResponse,
-  ScrapeExtractResponseInput, ScrapeOutputResponseInput,
+  ScrapeExtractResponseInput,
+  ScrapeOutputResponseInput,
   ScrapePrerender,
   ScrapeRequest,
-  ScrapeResponseInput
+  ScrapeResponseInput,
 } from '../../generated/graphql';
 
 interface EvaluateResponse {
@@ -174,10 +175,14 @@ export class PuppeteerService {
               appendLog,
             );
             if (output) {
-              appendLog(`outputs[${currentIndex}] -> ${Object.keys(output).find(key => !!output[key])}`)
+              appendLog(
+                `outputs[${currentIndex}] -> ${Object.keys(output).find(
+                  (key) => !!output[key],
+                )}`,
+              );
               outputs.push({
                 index: currentIndex,
-                response: output
+                response: output,
               });
             }
           }),

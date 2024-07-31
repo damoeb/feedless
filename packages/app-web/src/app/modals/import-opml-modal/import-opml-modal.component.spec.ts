@@ -4,7 +4,7 @@ import { ImportOpmlModalComponent } from './import-opml-modal.component';
 import { ImportOpmlModalModule } from './import-opml-modal.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('ImportOpmlComponent', () => {
+describe('ImportOpmlModalComponent', () => {
   let component: ImportOpmlModalComponent;
   let fixture: ComponentFixture<ImportOpmlModalComponent>;
 

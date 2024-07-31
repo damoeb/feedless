@@ -1,6 +1,7 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
+import org.springframework.util.CollectionUtils
 import java.io.Serializable
 import java.util.*
 
@@ -39,8 +40,8 @@ open class JsonItem : Serializable {
   @SerializedName("content_html")
   var contentHtml: String? = null
 
-  @SerializedName("summary")
-  var summary: String? = null
+//  @SerializedName("summary")
+//  var summary: String? = null
 
   @SerializedName("image")
   var imageUrl: String? = null
@@ -68,4 +69,52 @@ open class JsonItem : Serializable {
 
   @SerializedName(LAT_LNG)
   var latLng: JsonPoint? = null
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is JsonItem) return false
+
+//    if (id != other.id) return false
+    if (title != other.title) return false
+    if (url != other.url) return false
+    if (tags != other.tags) return false
+    if (contentText != other.contentText) return false
+    if (contentRawBase64 != other.contentRawBase64) return false
+    if (contentRawMime != other.contentRawMime) return false
+    if (contentHtml != other.contentHtml) return false
+    if (imageUrl != other.imageUrl) return false
+    if (bannerImage != other.bannerImage) return false
+    if (language != other.language) return false
+    if (authors != other.authors) return false
+    if (attachments != other.attachments) return false
+//    if (publishedAt != other.publishedAt) return false
+//    if (modifiedAt != other.modifiedAt) return false
+//    if (startingAt != other.startingAt) return false
+    if (latLng != other.latLng) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = id.hashCode()
+    result = 31 * result + title.hashCode()
+    result = 31 * result + url.hashCode()
+    result = 31 * result + (tags?.hashCode() ?: 0)
+    result = 31 * result + (contentText?.hashCode() ?: 0)
+    result = 31 * result + (contentRawBase64?.hashCode() ?: 0)
+    result = 31 * result + (contentRawMime?.hashCode() ?: 0)
+    result = 31 * result + (contentHtml?.hashCode() ?: 0)
+//    result = 31 * result + (summary?.hashCode() ?: 0)
+    result = 31 * result + (imageUrl?.hashCode() ?: 0)
+    result = 31 * result + (bannerImage?.hashCode() ?: 0)
+    result = 31 * result + (language?.hashCode() ?: 0)
+    result = 31 * result + (authors?.hashCode() ?: 0)
+    result = 31 * result + attachments.hashCode()
+    result = 31 * result + publishedAt.hashCode()
+    result = 31 * result + (modifiedAt?.hashCode() ?: 0)
+    result = 31 * result + (startingAt?.hashCode() ?: 0)
+    result = 31 * result + (latLng?.hashCode() ?: 0)
+    return result
+  }
+
+
 }

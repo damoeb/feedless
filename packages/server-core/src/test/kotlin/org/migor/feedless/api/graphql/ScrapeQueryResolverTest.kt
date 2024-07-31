@@ -160,8 +160,7 @@ class ScrapeQueryResolverTest {
   }
 
   private fun executeFeedAssertions(scrapeResponse: ScrapeResponse) {
-    val actualFeed = scrapeResponse.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed
-    Assertions.assertThat(actualFeed).isNotNull
+    val actualFeed = scrapeResponse.outputs.find { it.response.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.response.execute!!.data.org_feedless_feed
     Assertions.assertThat(actualFeed!!.items.size).isGreaterThan(0)
   }
 

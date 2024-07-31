@@ -11,7 +11,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('PcTrackerProductPage', () => {
+describe('FeedDumpProductPage', () => {
   let component: FeedDumpProductPage;
   let fixture: ComponentFixture<FeedDumpProductPage>;
 

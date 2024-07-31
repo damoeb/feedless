@@ -16,14 +16,12 @@
                   placeholder="Enter a website: www.google.com"
                   [color]="form.value.url.length > 0 ? undefined : 'primary'"
                   buttonText="Go"
-                  [loading]="busy"
                   (querySubmit)="handleQuery($event)"
                 ></app-searchbar>
               </ion-col>
             </ion-row>
             <div style="position: relative">
               <div
-                *ngIf="busy"
                 style="
                   position: absolute;
                   width: 100%;
@@ -47,45 +45,42 @@
                     <!--                      </ion-buttons>-->
                     <!--                    </ion-toolbar>-->
 
-<!--                    <div *ngIf="errorMessage" style="margin: auto">-->
-<!--                      Error: {{errorMessage}}-->
-<!--                    </div>-->
+                    <!--                    <div *ngIf="errorMessage" style="margin: auto">-->
+                    <!--                      Error: {{errorMessage}}-->
+                    <!--                    </div>-->
 
-<!--                    <div *ngIf="!errorMessage" class="flex">-->
-<!--                      <div *ngIf="!embedScreenshot" style="margin: auto">-->
-<!--                        <div *ngIf="!busy">-->
-<!--                          A screenshot of your website will appear here-->
-<!--                        </div>-->
-<!--                        <div *ngIf="busy">Loading Screenshot...</div>-->
-<!--                      </div>-->
+                    <!--                    <div *ngIf="!errorMessage" class="flex">-->
+                    <!--                      <div *ngIf="!embedScreenshot" style="margin: auto">-->
+                    <!--                        <div *ngIf="!busy">-->
+                    <!--                          A screenshot of your website will appear here-->
+                    <!--                        </div>-->
+                    <!--                        <div *ngIf="busy">Loading Screenshot...</div>-->
+                    <!--                      </div>-->
 
-                      <app-interactive-website *ngIf="scrapeController"
-                                               [scrapeController]="scrapeController"></app-interactive-website>
+                    <app-interactive-website
+                      *ngIf="scrapeController"
+                      [scrapeController]="scrapeController"
+                    ></app-interactive-website>
 
-                      <!--                      <app-embedded-image-->
-                      <!--                        (pickedBoundingBox)="handlePickedBoundingBox($event)"-->
-                      <!--                        (pickedPosition)="handlePickedPosition($event)"-->
-                      <!--                        *ngIf="embedScreenshot"-->
-                      <!--                        [embed]="embedScreenshot"-->
-                      <!--                        [ngClass]="{'hidden': form.value.compareType !== GqlWebDocumentField.Pixel && form.value.screen !== screenElement}"-->
-                      <!--                        [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"-->
-                      <!--                        [pickPosition]="isPickPositionMode()"-->
-                      <!--                        strokeStyle="red"-->
-                      <!--                      ></app-embedded-image>-->
+                    <!--                      <app-embedded-image-->
+                    <!--                        (pickedBoundingBox)="handlePickedBoundingBox($event)"-->
+                    <!--                        (pickedPosition)="handlePickedPosition($event)"-->
+                    <!--                        *ngIf="embedScreenshot"-->
+                    <!--                        [embed]="embedScreenshot"-->
+                    <!--                        [ngClass]="{'hidden': form.value.compareType !== GqlWebDocumentField.Pixel && form.value.screen !== screenElement}"-->
+                    <!--                        [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"-->
+                    <!--                        [pickPosition]="isPickPositionMode()"-->
+                    <!--                        strokeStyle="red"-->
+                    <!--                      ></app-embedded-image>-->
 
-                      <!--                      <app-embedded-markup-->
-                      <!--                        [embed]="embedWebsite"-->
-                      <!--                        (pickedXpath)="handlePickedXPath($event)"-->
-                      <!--                        [highlightXpath]="highlightXpath"-->
-                      <!--                        [ngClass]="{'hidden':form.value.compareType === GqlWebDocumentField.Pixel || form.value.screen === screenElement}"-->
-                      <!--                      ></app-embedded-markup>-->
-<!--                    </div>-->
+                    <!--                      <app-embedded-markup-->
+                    <!--                        [embed]="embedWebsite"-->
+                    <!--                        (pickedXpath)="handlePickedXPath($event)"-->
+                    <!--                        [highlightXpath]="highlightXpath"-->
+                    <!--                        [ngClass]="{'hidden':form.value.compareType === GqlWebDocumentField.Pixel || form.value.screen === screenElement}"-->
+                    <!--                      ></app-embedded-markup>-->
+                    <!--                    </div>-->
                   </div>
-                  <ion-progress-bar
-                    *ngIf="busy"
-                    color="primary"
-                    type="indeterminate"
-                  ></ion-progress-bar>
                 </ion-col>
               </ion-row>
               <ion-row class="actions ion-margin-bottom">

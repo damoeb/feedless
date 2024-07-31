@@ -54,7 +54,7 @@ app-interactive-website {
   display: flex;
   flex: 1;
   min-height: 550px;
-  &> div {
+  & > div {
     flex: 1;
   }
 }

@@ -6,7 +6,6 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.subscription.PlanDAO
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,9 +36,6 @@ class PlanConstraintsService {
 
   @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
 
   @Autowired
   private lateinit var featureValueDAO: FeatureValueDAO

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppTestModule } from '../app-test.module';
 import { ServerConfigService } from './server-config.service';
 
-describe('ServerSettingsService', () => {
+describe('ServerConfigService', () => {
   let service: ServerConfigService;
 
   beforeEach(() => {

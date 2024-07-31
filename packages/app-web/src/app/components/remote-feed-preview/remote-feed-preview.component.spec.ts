@@ -4,7 +4,7 @@ import { RemoteFeedPreviewComponent } from './remote-feed-preview.component';
 import { RemoteFeedPreviewModule } from './remote-feed-preview.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('GenerateFeedModalComponent', () => {
+describe('RemoteFeedPreviewComponent', () => {
   let component: RemoteFeedPreviewComponent;
   let fixture: ComponentFixture<RemoteFeedPreviewComponent>;
 

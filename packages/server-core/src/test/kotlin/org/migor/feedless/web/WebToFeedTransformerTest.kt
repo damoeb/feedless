@@ -1,25 +1,48 @@
 package org.migor.feedless.web
 
 import com.google.gson.GsonBuilder
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.license.LicenseService
+import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.plan.ProductService
+import org.migor.feedless.secrets.UserSecretService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
 import java.net.URL
 import java.nio.file.Files
 import java.util.*
 
 
+
+@SpringBootTest
+@ActiveProfiles(profiles = ["test"])
+@MockBeans(
+  value = [
+    MockBean(KotlinJdslJpqlExecutor::class),
+    MockBean(LicenseService::class),
+  ]
+)
 internal class WebToFeedTransformerTest {
 
   private lateinit var parser: WebToFeedTransformer
+
+  @Autowired
+  lateinit var webExtractService: WebExtractService
 
   @BeforeEach
   fun setUp() {
@@ -27,7 +50,7 @@ internal class WebToFeedTransformerTest {
     Mockito.`when`(propertyService.locale).thenReturn(Locale.forLanguageTag("en"))
     Mockito.`when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
 
-    parser = WebToFeedTransformer(propertyService, WebToTextTransformer(), mock(WebExtractService::class.java))
+    parser = WebToFeedTransformer(propertyService, WebToTextTransformer(), webExtractService)
   }
 
   @Test
@@ -64,19 +87,19 @@ internal class WebToFeedTransformerTest {
 
   @ParameterizedTest
   @CsvSource(value = [
-//    "https://webiphany.com/, 10-webiphany-com",
-//    "https://blog.spencermounta.in, 01-spencermounta-in",
-//    "https://spotify.com, 02-spotify-com",
-////    "https://telepolis.de, 03-telepolis-de",
+    "https://webiphany.com/, 10-webiphany-com",
+    "https://blog.spencermounta.in, 01-spencermounta-in",
+    "https://spotify.com, 02-spotify-com",
+    "https://telepolis.de, 03-telepolis-de",
 //    "https://arzg.github.io/lang, 04-arzg-github-io-lang",
-////    "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
+    "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
 //    "https://jon.bo/posts, 06-jon-bo-posts",
 //    "https://paulgraham.com, 00-paulgraham-com-articles",
 //    "https://www.fool.com/author/20415, 09-fool-com",
-////    "https://www.audacityteam.org/posts/, 11-audacityteam-org",
+    "https://www.audacityteam.org/posts/, 11-audacityteam-org",
 //    "https://cloud.google.com/blog, 13-google-cloud-blog",
-//    "https://demo.linkace.org/guest/links, 14-linkace-org",
-////    "https://abilene.craigslist.org, 07-craigslist",
+    "https://demo.linkace.org/guest/links, 14-linkace-org",
+//    "https://abilene.craigslist.org, 07-craigslist",
 //    "https://arxiv.org/list/math.GN/recent, 08-arxiv-org",
     "https://sph.ethz.ch/news, 12-sph-ethz-ch", // todo expand context
 //    "https://lukesmith.xyz/articles, 14-lukesmith-xyz",

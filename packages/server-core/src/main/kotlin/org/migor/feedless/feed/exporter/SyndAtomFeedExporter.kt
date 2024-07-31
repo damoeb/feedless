@@ -1,5 +1,10 @@
 package org.migor.feedless.feed.exporter
 
+import com.rometools.modules.content.ContentItem
+import com.rometools.modules.content.ContentModule
+import com.rometools.modules.content.ContentModuleImpl
+import com.rometools.modules.georss.W3CGeoModuleImpl
+import com.rometools.modules.georss.geometries.Position
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.modules.mediarss.MediaEntryModuleImpl
@@ -33,25 +38,25 @@ import java.net.URL
 
 @Service
 class SyndAtomFeedExporter {
-  fun toAtom(corrId: String, r: JsonFeed): String {
+  fun toAtom(corrId: String, jsonFeed: JsonFeed): String {
     val output = SyndFeedOutput()
-    val feed = output.outputString(toSyndFeed(r))
-    val endOfHead = feed.indexOf("<feed")
+    val xml = output.outputString(toSyndFeed(jsonFeed), true)
+    val endOfHead = xml.indexOf("<feed")
     val xsl = "<?xml-stylesheet href=\"/feed/static/feed.xsl\" type=\"text/xsl\"?>\n"
-    return feed.substring(0, endOfHead) + xsl + feed.substring(endOfHead)
+    return xml.substring(0, endOfHead) + xsl + xml.substring(endOfHead)
   }
 
   private fun toSyndFeed(jsonFeed: JsonFeed): SyndFeed {
-    val feed = SyndFeedImpl()
-    feed.uri = "https://feedless.org/feed/${jsonFeed.id}"
-    feed.feedType = "atom_1.0"
-    feed.title = jsonFeed.title
-    feed.description = jsonFeed.description
+    val syndFeed = SyndFeedImpl()
+    syndFeed.uri = "https://feedless.org/feed/${jsonFeed.id}"
+    syndFeed.feedType = "atom_1.0"
+    syndFeed.title = jsonFeed.title
+    syndFeed.description = jsonFeed.description
 
     val feedInformation = FeedInformationImpl()
     jsonFeed.tags?.let {
       feedInformation.keywords = it.toTypedArray()
-      feed.categories = it.map { category ->
+      syndFeed.categories = it.map { category ->
         run {
           val c = SyndCategoryImpl()
           c.name = category
@@ -62,16 +67,16 @@ class SyndAtomFeedExporter {
     jsonFeed.authors?.let {
       feedInformation.author = it.firstOrNull()?.name
     }
-    feed.modules.add(feedInformation)
+    syndFeed.modules.add(feedInformation)
 //    val imageNamespace = Namespace.getNamespace("image", "http://purl.org/rss/1.0/modules/image/")
 //    val element = Element("image", imageNamespace)
 //    feed.foreignMarkup.add(element)
 
-    feed.image = jsonFeed.imageUrl?.let { toSyndImage(it) }
+    syndFeed.image = jsonFeed.imageUrl?.let { toSyndImage(it) }
     jsonFeed.language?.let {
-      feed.language = it
+      syndFeed.language = it
     }
-    feed.publishedDate = jsonFeed.publishedAt
+    syndFeed.publishedDate = jsonFeed.publishedAt
     val link = SyndLinkImpl()
     link.rel = "self"
 
@@ -93,103 +98,102 @@ class SyndAtomFeedExporter {
       links.add(next)
     }
 
-    feed.links = links.toList()
+    syndFeed.links = links.toList()
 
     val feedlessModule = FeedlessModuleImpl()
     feedlessModule.setPage(jsonFeed.page)
-    feed.modules.add(feedlessModule)
+    syndFeed.modules.add(feedlessModule)
 
-    feed.entries = jsonFeed.items.map { toSyndEntry(it) }
-    return feed
+    syndFeed.entries = jsonFeed.items.map { toSyndEntry(it) }
+    return syndFeed
   }
 
-  private fun toSyndEntry(article: JsonItem): SyndEntry {
-    val entry = SyndEntryImpl()
-    entry.uri = "https://feedless.org/articles/${article.id}"
-    entry.title = article.title
-    entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
-    entry.contents = toSyndContents(article)
-    entry.description = toSyndDescription(article)
+  private fun toSyndEntry(jsonItem: JsonItem): SyndEntry {
+    val syndEntry = SyndEntryImpl()
+    syndEntry.uri = "https://feedless.org/articles/${jsonItem.id}"
+    syndEntry.title = jsonItem.title
+    syndEntry.categories = (jsonItem.tags ?: emptyList()).map { toSyndCategory(it) }
+    syndEntry.contents = toSyndContents(jsonItem)
+    syndEntry.description = toSyndDescription(jsonItem)
 
     val feedlessModule = FeedlessModuleImpl()
-    feedlessModule.setStartingAt(article.startingAt)
-    article.latLng?.let {
-      feedlessModule.setLatLng(JsonUtil.gson.toJson(article.latLng))
+    feedlessModule.setStartingAt(jsonItem.startingAt)
+    feedlessModule.setData(jsonItem.contentRawBase64)
+    feedlessModule.setDataType(jsonItem.contentRawMime)
+    jsonItem.latLng?.let {
+      feedlessModule.setLatLng(JsonUtil.gson.toJson(it))
     }
-    entry.modules.add(feedlessModule)
 
-    article.imageUrl?.let {
+    syndEntry.modules.add(feedlessModule)
+
+//    jsonItem.latLng?.let {
+//      val geo = W3CGeoModuleImpl()
+//      geo.position = Position(it.x, it.y)
+////      feedlessModule.setLatLng(JsonUtil.gson.toJson(jsonItem.latLng))
+//      syndEntry.modules.add(geo)
+//    }
+
+    jsonItem.imageUrl?.let {
       val image = Element("image", Namespace.getNamespace("image", "http://web.resource.org/rss/1.0/modules/image/"))
-      image.addContent(article.imageUrl)
-      entry.foreignMarkup.add(image)
+      image.addContent(jsonItem.imageUrl)
+      syndEntry.foreignMarkup.add(image)
 
       val reference = UrlReference(it)
       val mediaContent = MediaContent(reference)
       val mediaContents = arrayOf(mediaContent)
       val imageModule = MediaEntryModuleImpl()
       imageModule.mediaContents = mediaContents
-      entry.modules.add(imageModule)
+      syndEntry.modules.add(imageModule)
     }
 
     val entryInformation = EntryInformationImpl()
-    entryInformation.author = article.authors?.firstOrNull()?.name
+    entryInformation.author = jsonItem.authors?.firstOrNull()?.name
 
-    entry.modules.add(entryInformation)
+    syndEntry.modules.add(entryInformation)
 
-    entry.link = article.url
-    entry.author = URL(article.url).host
-    entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
-    entry.publishedDate = article.publishedAt
+    syndEntry.link = jsonItem.url
+    syndEntry.author = URL(jsonItem.url).host
+    syndEntry.enclosures = jsonItem.attachments.map { toSyndEnclosure(it) }
+    syndEntry.publishedDate = jsonItem.publishedAt
 
-    return entry
+    return syndEntry
   }
 
   private fun toSyndDescription(article: JsonItem): SyndContent {
-    val content = SyndContentImpl()
-    content.value = article.contentText
-    content.type = "text/plain"
-
-    return content
+    val syndContent = SyndContentImpl()
+    syndContent.value = article.contentText
+    syndContent.type = "text/plain"
+    return syndContent
   }
 
-  private fun toSyndEnclosure(it: JsonAttachment): SyndEnclosure {
-    val e = SyndEnclosureImpl()
-    e.url = it.url
-    e.type = it.type
-    return e
+  private fun toSyndEnclosure(jsonAttachment: JsonAttachment): SyndEnclosure {
+    val syndEnclosure = SyndEnclosureImpl()
+    syndEnclosure.url = jsonAttachment.url
+    syndEnclosure.type = jsonAttachment.type
+    return syndEnclosure
   }
 
-  private fun toSyndCategory(it: String): SyndCategory {
-    val c = SyndCategoryImpl()
-    c.name = it
-    return c
+  private fun toSyndCategory(tag: String): SyndCategory {
+    val syndCategory = SyndCategoryImpl()
+    syndCategory.name = tag
+    return syndCategory
   }
 
-  private fun toSyndContents(it: JsonItem): List<SyndContent> {
+  private fun toSyndContents(jsonItem: JsonItem): MutableList<SyndContent> {
     val contents = mutableListOf<SyndContent>()
-    if (StringUtils.isNoneBlank(it.contentRawBase64)) {
-      val other = SyndContentImpl()
-      other.value = it.contentRawBase64
-      other.type = it.contentRawMime
-      contents.add(other)
+    if (StringUtils.isNoneBlank(jsonItem.contentHtml)) {
+      val htmlContent = SyndContentImpl()
+      htmlContent.value = jsonItem.contentHtml
+      htmlContent.type = "text/html"
+      htmlContent.mode = "encoded"
+      contents.add(htmlContent)
     }
-
-    if (StringUtils.isNoneBlank(it.contentHtml)) {
-      val other = SyndContentImpl()
-      other.value = it.contentHtml
-      other.type = "text/html"
-      other.mode = "encoded"
-      contents.add(other)
-    }
-
-//    contents.add(toSyndDescription(it))
-
     return contents
   }
 
   private fun toSyndImage(imageUrl: String): SyndImage {
-    val image = SyndImageImpl()
-    image.url = imageUrl
-    return image
+    val syndImage = SyndImageImpl()
+    syndImage.url = imageUrl
+    return syndImage
   }
 }

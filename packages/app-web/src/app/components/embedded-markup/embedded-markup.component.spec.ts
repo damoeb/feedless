@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EmbeddedMarkupComponent } from './embedded-markup.component';
 import { EmbeddedMarkupModule } from './embedded-markup.module';
 import { AppTestModule } from '../../app-test.module';
+import { ScrapeController } from '../interactive-website/scrape-controller';
 
 describe('EmbeddedMarkupComponent', () => {
   let component: EmbeddedMarkupComponent;
@@ -15,6 +16,10 @@ describe('EmbeddedMarkupComponent', () => {
 
     fixture = TestBed.createComponent(EmbeddedMarkupComponent);
     component = fixture.componentInstance;
+    component.scrapeController = new ScrapeController({
+      title: '',
+      flow: { sequence: [] },
+    });
     fixture.detectChanges();
   }));
 

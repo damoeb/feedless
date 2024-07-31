@@ -10,7 +10,7 @@ import { FeedTilesModule } from './feed-tiles.module';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('FeedListPage', () => {
+describe('FeedTilesPage', () => {
   let component: FeedTilesPage;
   let fixture: ComponentFixture<FeedTilesPage>;
 

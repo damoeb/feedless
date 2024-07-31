@@ -35,6 +35,7 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
+import { getFirstFetchUrlLiteral } from '../../utils';
 
 export interface GenerateFeedModalComponentProps {
   repository: RepositoryFull;
@@ -108,9 +109,17 @@ export function getScrapeRequest(
     }
   };
 
+  const createTitle = (): string => {
+    if (feed.nativeFeed) {
+      return `Native Feed ${feed.nativeFeed.feedUrl}`;
+    } else {
+      return `Generic Feed ${getFirstFetchUrlLiteral(scrapeRequest.flow.sequence)}`;
+    }
+  };
+
   return {
     id: null,
-    title: 'Empty title',
+    title: createTitle(),
     flow: createFlow() as GqlScrapeFlowInput,
     tags: scrapeRequest.tags,
     localized: scrapeRequest.localized,

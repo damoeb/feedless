@@ -10,9 +10,9 @@ import {
   OperationVariables,
 } from '@apollo/client/core/types';
 import {
-  AuthAnonymous,
+  AuthAnonymous, FindEvents,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables,
+  GqlAuthAnonymousMutationVariables, GqlFindEventsQuery, GqlFindEventsQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
   GqlListProductsQuery,
@@ -41,7 +41,7 @@ import {
   RepositoryById,
   Scrape,
   ServerSettings,
-  WebDocumentByIds,
+  WebDocumentByIds
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -349,6 +349,18 @@ export function mockScrape(apolloMockController: ApolloMockController) {
       return {
         data: {
           scrape: mocks.scrapeResponse,
+        },
+      };
+    });
+}
+
+export function mockEvents(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<GqlFindEventsQuery, GqlFindEventsQueryVariables>(FindEvents)
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          webDocumentsFrequency: [],
         },
       };
     });

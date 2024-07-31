@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UpcomingProductPage } from './upcoming-product-page.component';
 import {
   AppTestModule,
-  mockDocuments,
-  mockScrape,
+  mockDocuments, mockEvents,
+  mockScrape
 } from '../../app-test.module';
 import { UpcomingProductModule } from './upcoming-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -18,6 +18,7 @@ describe('UpcomingProductPage', () => {
         UpcomingProductModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
+          mockEvents(apolloMockController);
           mockDocuments(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),

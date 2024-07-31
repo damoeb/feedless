@@ -15,7 +15,6 @@ describe('CodeEditorModalComponent', () => {
 
     fixture = TestBed.createComponent(CodeEditorModalComponent);
     component = fixture.componentInstance;
-    component.outlines = [];
     fixture.detectChanges();
   }));
 

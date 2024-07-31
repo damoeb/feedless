@@ -80,7 +80,7 @@ export class EmbeddedMarkupComponent
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
   private subscriptions: Subscription[] = [];
-  protected currentXpath: string;
+  protected currentXpath: string = '';
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 

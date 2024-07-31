@@ -83,7 +83,7 @@ class RepositoryServiceTest {
     `when`(planConstraintsService.coerceVisibility(Mockito.anyString(), Mockito.any()))
       .thenReturn(EntityVisibility.isPublic)
 
-    val repositories = listOf<RepositoryCreateInput>(
+    val repositories = listOf(
       RepositoryCreateInput(
         sources = emptyList(),
         product = ProductCategory.rssProxy,
@@ -127,7 +127,8 @@ class RepositoryServiceTest {
       .thenReturn(Optional.of(mockRepository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      repositoryService.update(corrId, ssId, mock(RepositoryUpdateDataInput::class.java))
+      val mockInput = RepositoryUpdateDataInput()
+      repositoryService.update(corrId, ssId, mockInput)
     }
   }
 

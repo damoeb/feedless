@@ -242,7 +242,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       // const extractAction = scrapeResponse.outputs.find(
       //   (o) => o.response.extract,
       // ).response.extract;
-
     }
     this.changeRef.detectChanges();
   }

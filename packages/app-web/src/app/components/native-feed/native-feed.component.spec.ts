@@ -4,7 +4,7 @@ import { NativeFeedComponent } from './native-feed.component';
 import { NativeFeedModule } from './native-feed.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('RemoteFeedComponent', () => {
+describe('NativeFeedComponent', () => {
   let component: NativeFeedComponent;
   let fixture: ComponentFixture<NativeFeedComponent>;
 

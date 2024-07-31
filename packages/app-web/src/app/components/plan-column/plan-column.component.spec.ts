@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { PlanColumnComponent } from './plan-column.component';
 import { PlanColumnModule } from './plan-column.module';
 
-describe('PlansComponent', () => {
+describe('PlanColumnComponent', () => {
   let component: PlanColumnComponent;
   let fixture: ComponentFixture<PlanColumnComponent>;
 

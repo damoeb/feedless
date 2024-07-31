@@ -26,6 +26,10 @@ describe('InteractiveWebsiteModalComponent', () => {
 
     fixture = TestBed.createComponent(InteractiveWebsiteModalComponent);
     component = fixture.componentInstance;
+    component.scrapeRequest = {
+      title: '',
+      flow: { sequence: [] },
+    };
     fixture.detectChanges();
   }));
 
