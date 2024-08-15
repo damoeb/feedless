@@ -14,7 +14,7 @@ plugins {
 }
 
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
-  dependsOn(appWebTask(), serverCoreTask(), agentTask())
+  dependsOn(appWebDockerImageTask(), serverCoreDockerImageTask(), agentDockerImageTask())
 
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
@@ -28,9 +28,41 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-//    "-t", "$baseTag:aio",
+    "-t", "$baseTag:aio-latest",
     "-t", "$baseTag:aio-$gitHash",
     "docker/aio-with-web"
+  )
+}
+
+val buildImages = tasks.register("buildImages") {
+  dependsOn(
+    appWebDockerImageTask(),
+    serverCoreDockerImageTask(),
+    agentDockerImageTask(),
+  )
+}
+
+val stopServices = tasks.register("stopServices", Exec::class) {
+  dependsOn(buildImages)
+  commandLine("docker-compose", "stop", "feedless-app", "feedless-agent", "feedless-core")
+}
+val cleanServices = tasks.register("cleanServices", Exec::class) {
+  dependsOn(stopServices)
+  commandLine("docker-compose", "rm", "-f", "feedless-app", "feedless-agent", "feedless-core")
+}
+val deploySaas = tasks.register("deploySaas", Exec::class) {
+  dependsOn(
+    buildImages,
+    stopServices,
+    cleanServices
+  )
+  commandLine(
+    "docker-compose",
+    "up",
+    "--detach",
+    "feedless-app",
+    "feedless-agent",
+    "feedless-core"
   )
 }
 
@@ -49,7 +81,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-//    "-t", "$baseTag:aio-chromium",
+    "-t", "$baseTag:aio-chromium-latest",
     "-t", "$baseTag:aio-chromium-$gitHash",
     "docker/aio-with-chromium"
   )
@@ -84,6 +116,6 @@ subprojects {
   }
 }
 
-fun appWebTask() = tasks.findByPath("packages:app-web:buildDockerImage")
-fun serverCoreTask() = tasks.findByPath("packages:server-core:buildDockerImage")
-fun agentTask() = tasks.findByPath("packages:agent:buildDockerImage")
+fun appWebDockerImageTask() = tasks.findByPath("packages:app-web:buildDockerImage")
+fun serverCoreDockerImageTask() = tasks.findByPath("packages:server-core:buildDockerImage")
+fun agentDockerImageTask() = tasks.findByPath("packages:agent:buildDockerImage")

@@ -307,7 +307,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   getReadability(): Maybe<ScrapedReadability> {
     return this.scrapeResponse.outputs.find(
       (output) =>
-        output.response.execute.pluginId ===
+        output.response.execute?.pluginId ===
         GqlFeedlessPlugins.OrgFeedlessFulltext,
     ).response.execute.data.org_feedless_fulltext;
   }

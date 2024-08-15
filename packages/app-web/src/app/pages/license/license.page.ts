@@ -14,6 +14,7 @@ import { environment } from '../../../environments/environment';
 import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-license-page',
@@ -29,6 +30,7 @@ export class LicensePage implements OnInit, OnDestroy {
 
   constructor(
     private readonly licenseService: LicenseService,
+    private readonly titleService: Title,
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
@@ -40,6 +42,7 @@ export class LicensePage implements OnInit, OnDestroy {
   licenseFc = new FormControl<string>('', [Validators.minLength(10)]);
 
   async ngOnInit() {
+    this.titleService.setTitle('License');
     this.subscriptions.push(
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.licenseKey) {

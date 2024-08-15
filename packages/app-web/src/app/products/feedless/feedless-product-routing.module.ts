@@ -17,10 +17,18 @@ const routes: Routes = [
         canActivate: [ProfileGuardService],
         children: [
           {
-            path: 'builder',
+            path: 'feed-builder',
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.module').then(
                 (m) => m.FeedBuilderPageModule,
+              ),
+          },
+          {
+            path: 'tracker-builder',
+            // canActivate: [AuthGuardService],
+            loadChildren: () =>
+              import('../../pages/tracker-edit/tracker-edit.module').then(
+                (m) => m.TrackerEditPageModule,
               ),
           },
           {

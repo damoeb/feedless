@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UpcomingProductPage } from './upcoming-product-page.component';
 import {
   AppTestModule,
-  mockDocuments, mockEvents,
-  mockScrape
+  mockDocuments,
+  mockEvents,
+  mockScrape,
 } from '../../app-test.module';
 import { UpcomingProductModule } from './upcoming-product.module';
 import { RouterTestingModule } from '@angular/router/testing';

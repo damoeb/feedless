@@ -92,10 +92,8 @@ export class InteractiveWebsiteModalComponent
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           if (this.actionsFg.valid) {
-            console.log('this.actionsFg.valueChanges');
             this.scrapeController.scrapeRequest.flow.sequence =
               this.getActionsRequestFragment();
-            // console.log('this.scrapeController.scrapeRequest.flow.sequence', this.scrapeController.scrapeRequest.flow.sequence);
             this.scrapeController.actionsChanges.emit();
           }
         }),

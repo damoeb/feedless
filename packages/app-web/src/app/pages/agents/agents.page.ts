@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-agents-page',
@@ -6,5 +7,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./agents.page.scss'],
 })
 export class AgentsPage {
-  constructor() {}
+  constructor(titleService: Title) {
+    titleService.setTitle('Agents');
+  }
 }

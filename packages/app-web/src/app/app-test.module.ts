@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { IonicModule } from '@ionic/angular';
+import { AngularDelegate, IonicModule } from '@ionic/angular';
 import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
@@ -10,9 +10,12 @@ import {
   OperationVariables,
 } from '@apollo/client/core/types';
 import {
-  AuthAnonymous, FindEvents,
+  AuthAnonymous,
+  FindEvents,
   GqlAuthAnonymousMutation,
-  GqlAuthAnonymousMutationVariables, GqlFindEventsQuery, GqlFindEventsQueryVariables,
+  GqlAuthAnonymousMutationVariables,
+  GqlFindEventsQuery,
+  GqlFindEventsQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
   GqlListProductsQuery,
@@ -41,7 +44,7 @@ import {
   RepositoryById,
   Scrape,
   ServerSettings,
-  WebDocumentByIds
+  WebDocumentByIds,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -381,7 +384,10 @@ export async function mockServerSettings(
         appUrl: '',
         gatewayUrl: '',
         // license: {},
-        buildFrom: 0,
+        build: {
+          date: 0,
+          commit: '1234',
+        },
         profiles: [],
         version: '',
         features: [],

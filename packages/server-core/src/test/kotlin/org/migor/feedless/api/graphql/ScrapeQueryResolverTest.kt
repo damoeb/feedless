@@ -15,7 +15,6 @@ import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.license.LicenseService
@@ -78,7 +77,7 @@ class ScrapeQueryResolverTest {
       .thenReturn(httpResponse)
 
     // when
-    val scrapeResponse = callScrape(PluginExecutionParamsInput())
+    val scrapeResponse = scrapeFeed(PluginExecutionParamsInput())
 
     // then
     executeFeedAssertions(scrapeResponse)
@@ -105,45 +104,50 @@ class ScrapeQueryResolverTest {
     )
 
     // when
-    val scrapeResponse = callScrape(params)
+    val scrapeResponse = scrapeFeed(params)
 
     // then
     executeFeedAssertions(scrapeResponse)
   }
 
-  private fun callScrape(params: PluginExecutionParamsInput): ScrapeResponse {
+  private fun scrapeFeed(params: PluginExecutionParamsInput): ScrapeResponse {
     return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
       """
         query (${'$'}pluginId: ID!, ${'$'}params: PluginExecutionParamsInput!) {
-          scrape(data: {
-            page: {
-              url: "$url"
-            }
-            emit: [
+        scrape(data: {
+          title: ""
+          flow: {
+            sequence: [
               {
-                selectorBased: {
-                  xpath: {value: "/"}
-                  expose: {
-                    transformers: [
-                      {
-                        pluginId: ${'$'}pluginId
-                        params: ${'$'}params
-                      }
-                    ]
-                  }
+                fetch: {get: {url: {literal: "$url"}}}
+              }
+              {
+                execute: {
+                  pluginId: ${'$'}pluginId
+                  params: ${'$'}params
                 }
               }
             ]
           }
-          ) {
-            elements {
-              selector {
-                fields {
-                  name
-                  value {
-                    one {
-                      mimeType
-                      data
+        }
+        ) {
+          failed
+          logs
+          outputs {
+            index
+            response {
+              execute {
+                pluginId
+                data {
+                  org_feedless_feed {
+                    title
+                    feedUrl
+                    publishedAt
+                    items {
+                      publishedAt
+                      url
+                      createdAt
+                      id
                     }
                   }
                 }
@@ -151,6 +155,7 @@ class ScrapeQueryResolverTest {
             }
           }
         }
+      }
         """.trimIndent(),
       "data.scrape",
       mapOf(

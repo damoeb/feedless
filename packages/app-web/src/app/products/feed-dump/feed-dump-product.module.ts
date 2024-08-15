@@ -10,6 +10,7 @@ import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mod
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { TrialWarningModule } from '../../components/trial-warning/trial-warning.module';
+import { RepositoriesDirectoryModule } from '../../components/repositories-directory/repositories-directory.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { TrialWarningModule } from '../../components/trial-warning/trial-warning
     LoginButtonModule,
     SearchbarModule,
     TrialWarningModule,
+    RepositoriesDirectoryModule,
   ],
   declarations: [FeedDumpProductPage],
 })

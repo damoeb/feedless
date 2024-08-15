@@ -62,16 +62,16 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async handleQuery(url: string) {
-    try {
-      this.url = fixUrl(url);
-      await this.router.navigate(['/builder'], {
-        queryParams: {
-          url: this.url,
-        },
-      });
-    } catch (e) {
-      console.warn(e);
-    }
-  }
+  // async handleQuery(url: string) {
+  //   try {
+  //     this.url = fixUrl(url);
+  //     await this.router.navigate(['/feed-builder'], {
+  //       queryParams: {
+  //         url: this.url,
+  //       },
+  //     });
+  //   } catch (e) {
+  //     console.warn(e);
+  //   }
+  // }
 }

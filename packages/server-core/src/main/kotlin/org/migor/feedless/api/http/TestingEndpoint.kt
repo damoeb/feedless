@@ -1,6 +1,7 @@
 package org.migor.feedless.api.http
 
 import jakarta.servlet.http.HttpServletResponse
+import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.TokenProvider
@@ -19,6 +20,7 @@ import java.util.*
 
 @RestController
 @Profile(AppProfiles.dev)
+@Tag("stable")
 class TestingEndpoint {
 
   private val log = LoggerFactory.getLogger(TestingEndpoint::class.simpleName)

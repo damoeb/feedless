@@ -4,6 +4,7 @@ import {
   AppTestModule,
   mockDocuments,
   mockRepositories,
+  mockScrape,
 } from '../../app-test.module';
 import { FeedBuilderModule } from './feed-builder.module';
 
@@ -16,6 +17,7 @@ describe('FeedBuilderComponent', () => {
       imports: [
         FeedBuilderModule,
         AppTestModule.withDefaults((apolloMockController) => {
+          mockScrape(apolloMockController);
           mockDocuments(apolloMockController);
           mockRepositories(apolloMockController);
         }),

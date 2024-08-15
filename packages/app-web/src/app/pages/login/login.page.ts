@@ -10,6 +10,7 @@ import { GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-login-page',
@@ -31,6 +32,7 @@ export class LoginPage implements OnInit, OnDestroy {
     protected readonly serverConfig: ServerConfigService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
+    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
     private readonly authService: AuthService,
   ) {
@@ -42,6 +44,7 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.titleService.setTitle('Login');
     if (this.serverConfig.hasProfile(GqlProfileName.SelfHosted)) {
       this.showNoSignupBanner = false;
       this.showUserPasswordLogin = true;

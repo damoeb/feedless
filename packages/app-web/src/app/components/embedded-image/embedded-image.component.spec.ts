@@ -19,7 +19,7 @@ describe('EmbeddedImageComponent', () => {
     component.scrapeController = new ScrapeController({
       title: '',
       flow: { sequence: [] },
-    })
+    });
 
     component.embed = {
       data: '',

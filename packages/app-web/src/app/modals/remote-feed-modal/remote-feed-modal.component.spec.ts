@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RemoteFeedModalComponent } from './remote-feed-modal.component';
 import { RemoteFeedModalModule } from './remote-feed-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('RemoteFeedModalComponent', () => {
   let component: RemoteFeedModalComponent;
@@ -9,7 +10,7 @@ describe('RemoteFeedModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RemoteFeedModalModule],
+      imports: [RemoteFeedModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RemoteFeedModalComponent);

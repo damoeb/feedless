@@ -4,17 +4,17 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { ServerConfigService } from '../../../services/server-config.service';
-import { RepositoryService } from '../../../services/repository.service';
-import { Repository } from '../../../graphql/types';
+import { ServerConfigService } from '../../services/server-config.service';
+import { RepositoryService } from '../../services/repository.service';
+import { Repository } from '../../graphql/types';
 
 @Component({
-  selector: 'app-feed-tiles-page',
-  templateUrl: './feed-tiles.page.html',
-  styleUrls: ['./feed-tiles.page.scss'],
+  selector: 'app-repositories-directory',
+  templateUrl: './repositories-directory.component.html',
+  styleUrls: ['./repositories-directory.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedTilesPage implements OnInit {
+export class RepositoriesDirectoryComponent implements OnInit {
   repositories: Repository[] = [];
 
   constructor(

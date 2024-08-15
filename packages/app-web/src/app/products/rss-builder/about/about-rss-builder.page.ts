@@ -41,7 +41,7 @@ export class AboutRssBuilderPage implements OnInit {
 
   async handleQuery(url: string) {
     try {
-      await this.router.navigate(['/builder'], {
+      await this.router.navigate(['/feed-builder'], {
         queryParams: {
           url: fixUrl(url),
         },

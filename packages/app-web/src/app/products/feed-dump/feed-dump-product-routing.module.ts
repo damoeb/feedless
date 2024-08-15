@@ -8,22 +8,8 @@ const routes: Routes = [
   {
     path: '',
     component: FeedDumpProductPage,
-    children: [
-      {
-        path: '',
-        loadChildren: () =>
-          import('./tiles/feed-tiles.module').then((m) => m.FeedTilesModule),
-      },
-      {
-        path: 'feeds',
-        loadChildren: () =>
-          import('./details/feed-details.module').then(
-            (m) => m.FeedDetailsModule,
-          ),
-      },
-      ...DefaultRoutes,
-    ],
   },
+  ...DefaultRoutes,
   {
     path: '**',
     redirectTo: '/',

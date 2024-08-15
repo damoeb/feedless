@@ -28,7 +28,7 @@ export class AboutPcTrackerPage {
 
   async handleQuery(url: string) {
     try {
-      await this.router.navigate(['/builder'], {
+      await this.router.navigate(['/tracker-builder'], {
         queryParams: {
           url: fixUrl(url),
         },

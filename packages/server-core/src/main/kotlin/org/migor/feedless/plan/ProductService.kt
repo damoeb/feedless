@@ -43,6 +43,7 @@ class ProductService {
       ProductCategory.untoldNotes -> "notes.feedless.org"
       ProductCategory.upcoming -> "upcoming.feedless.org"
       ProductCategory.reader -> "reader.feedless.org"
+      ProductCategory.feedDump -> "dump.feedless.org"
       else -> throw IllegalArgumentException("$product not supported")
     }
   }

@@ -23,6 +23,49 @@ fragment ScrapeExtractResponseFragment on ScrapeExtractResponse {
   }
 }
 
+query scrape2($data: ScrapeRequestInput!) {
+  scrape(
+    data: {
+      title: ""
+      flow: {
+        sequence: [
+          { fetch: { get: { url: { literal: "$url" } } } }
+          {
+            execute: {
+              pluginId: "${'$'}pluginId"
+              params: { org_feedless_feed: {} }
+            }
+          }
+        ]
+      }
+    }
+  ) {
+    outputs {
+      index
+      response {
+        fetch {
+          data
+        }
+        execute {
+          pluginId
+          data {
+            org_feedless_feed {
+              title
+              feedUrl
+              publishedAt
+              items {
+                publishedAt
+                url
+                createdAt
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 query scrape($data: ScrapeRequestInput!) {
   scrape(data: $data) {
     outputs {

@@ -71,6 +71,7 @@ tasks.register("buildDockerImage", Exec::class) {
     "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
+    "-t", "$baseTag:agent-latest",
     "-t", "$baseTag:agent-$gitHash",
     "."
   )

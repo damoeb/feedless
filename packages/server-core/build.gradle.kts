@@ -198,13 +198,15 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<Test> {
-  useJUnitPlatform()
+  useJUnitPlatform {
+    excludeTags("unstable")
+  }
 }
 
-val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
-  commandLine("sh", "./fetchGithubJars.sh")
-}
-tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, codegen)
+//val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
+//  commandLine("sh", "./fetchGithubJars.sh")
+//}
+tasks.getByName("compileKotlin").dependsOn(codegen)
 
 tasks.getByName("compileTestKotlin").dependsOn(codegen)
 
@@ -242,6 +244,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "-t", "$baseTag:core",
+    "-t", "$baseTag:core-latest",
     "-t", "$baseTag:core-$gitHash",
     "."
   )

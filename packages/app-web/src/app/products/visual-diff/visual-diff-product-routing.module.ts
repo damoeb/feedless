@@ -22,8 +22,8 @@ const routes: Routes = [
         path: 'tracker',
         // canActivate: [AuthGuardService],
         loadChildren: () =>
-          import('./subscription-edit/subscription-edit.module').then(
-            (m) => m.SubscriptionEditPageModule,
+          import('../../pages/tracker-edit/tracker-edit.module').then(
+            (m) => m.TrackerEditPageModule,
           ),
       },
       {

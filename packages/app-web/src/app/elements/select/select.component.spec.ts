@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SelectComponent } from './select.component';
 import { SelectModule } from './select.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('SelectComponent', () => {
   let component: SelectComponent<any>;
@@ -9,7 +10,7 @@ describe('SelectComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SelectModule],
+      imports: [SelectModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectComponent);

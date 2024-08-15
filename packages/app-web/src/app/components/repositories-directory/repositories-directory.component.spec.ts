@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FeedTilesPage } from './feed-tiles.page';
+import { RepositoriesDirectoryComponent } from './repositories-directory.component';
 import {
   ApolloMockController,
   AppTestModule,
   mockRepositories,
   mockServerSettings,
-} from '../../../app-test.module';
-import { FeedTilesModule } from './feed-tiles.module';
-import { ServerConfigService } from '../../../services/server-config.service';
+} from '../../app-test.module';
+import { RepositoriesDirectoryModule } from './repositories-directory.module';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('FeedTilesPage', () => {
-  let component: FeedTilesPage;
-  let fixture: ComponentFixture<FeedTilesPage>;
+describe('RepositoriesDirectoryComponent', () => {
+  let component: RepositoriesDirectoryComponent;
+  let fixture: ComponentFixture<RepositoriesDirectoryComponent>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FeedTilesModule,
+        RepositoriesDirectoryModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockRepositories(apolloMockController);
         }),
@@ -30,7 +30,7 @@ describe('FeedTilesPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(FeedTilesPage);
+    fixture = TestBed.createComponent(RepositoriesDirectoryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

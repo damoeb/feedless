@@ -10,7 +10,7 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import { ModalService } from '../../services/modal.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-workflow-builder-page',
@@ -25,11 +25,12 @@ export class WorkflowBuilderPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly appConfigService: AppConfigService,
-    private readonly modalService: ModalService,
+    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Workflow Builder');
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()

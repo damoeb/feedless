@@ -1,9 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { Repository, RepositoryFull, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-feeds-page',
@@ -18,10 +24,12 @@ export class FeedsPage implements OnInit {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
+    private readonly titleService: Title,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Feeds');
     await this.fetchFeeds();
   }
 

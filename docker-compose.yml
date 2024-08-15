@@ -11,18 +11,6 @@ services:
       - ./docker/nginx/config:/etc/nginx/conf.d
       - ./docker/nginx/ssl:/etc/nginx/ssl
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-
-  plausible:
-    image: plausible/analytics
-
-
-#  mq:
-#    image: rabbitmq:management
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-#    networks:
-#      - postgres
 #
 #  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_setting_jvm_heap_size
 #  elastic:
@@ -48,23 +36,23 @@ services:
 #      - "8081:80"
 
   # https://github.com/postgis/docker-postgis
-  postgres:
+  postgis:
     image: postgis/postgis:15-3.4-alpine
-    container_name: postgres
+    container_name: postgis
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     expose:
-      - 5432
+      - 5433
     ports:
-    - "5432:5432"
+    - "5433:5432"
     networks:
-      - postgres
+      - postgis
 
   feedless-agent:
-    image: damoeb/feedless:agent
+    image: damoeb/feedless:agent-latest
 #    deploy:
 #      replicas: 2
     security_opt:
@@ -85,7 +73,7 @@ services:
       - monitoring
 
   feedless-app:
-    image: damoeb/feedless:app
+    image: damoeb/feedless:app-latest
     restart: unless-stopped
     volumes:
       - ./docker/app/app-config.json:/usr/share/nginx/html/config.json
@@ -93,31 +81,31 @@ services:
       - "4200:80"
 
   feedless-core:
-    image: damoeb/feedless:core
+    image: damoeb/feedless:core-latest
     restart: unless-stopped
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
-      - postgres
+      - postgis
     ports:
       - "8080:8080"
     env_file:
       - .env
     environment:
-      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_DATABASE_URL=jdbc:postgresql://postgis:5433/${POSTGRES_DB}
       - APP_ACTIVE_PROFILES=database,cache,metrics,testing
       - APP_AUTHENTICATION=${APP_AUTHENTICATION}
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
     networks:
-      - postgres
+      - postgis
       - monitoring
 
   feedless-aio-chromium:
-    image: damoeb/feedless:aio-chromium-21b6bb6e2529c1dcb80f70cbae2d736cd1656e15
+    image: damoeb/feedless:aio-chromium-latest
     restart: unless-stopped
     depends_on:
-      - postgres
+      - postgis
     ports:
       - "8080:8080"
     volumes:
@@ -128,7 +116,7 @@ services:
     env_file:
       - selfhosting.env
     networks:
-      - postgres
+      - postgis
       - monitoring
 
 
@@ -147,7 +135,7 @@ services:
     #    extra_hosts:
     #      - "feedless-core:localhost"
     networks:
-      - postgres
+      - postgis
       - monitoring
 
   loki:
@@ -179,7 +167,7 @@ services:
       - monitoring
 
 networks:
-  postgres:
+  postgis:
     driver: bridge
   monitoring:
     driver: bridge

@@ -9,9 +9,8 @@ import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   BoundingBox,
-  Embeddable,
   XyPosition,
-} from '../../../components/embedded-image/embedded-image.component';
+} from '../../components/embedded-image/embedded-image.component';
 import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
@@ -19,22 +18,22 @@ import {
   GqlScrapeRequestInput,
   GqlWebDocumentField,
   GqlXyPosition,
-} from '../../../../generated/graphql';
+} from '../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
-import { ScrapeService } from '../../../services/scrape.service';
-import { RepositoryService } from '../../../services/repository.service';
-import { fixUrl, isValidUrl } from '../../../app.module';
+import { RepositoryService } from '../../services/repository.service';
+import { fixUrl, isValidUrl } from '../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SessionService } from '../../../services/session.service';
-import { environment } from '../../../../environments/environment';
-import { ServerConfigService } from '../../../services/server-config.service';
-import { createEmailFormControl } from '../../../form-controls';
-import { ScrapeController } from '../../../components/interactive-website/scrape-controller';
+import { SessionService } from '../../services/session.service';
+import { environment } from '../../../environments/environment';
+import { ServerConfigService } from '../../services/server-config.service';
+import { createEmailFormControl } from '../../form-controls';
+import { ScrapeController } from '../../components/interactive-website/scrape-controller';
+import { Title } from '@angular/platform-browser';
 
 type Email = string;
 
-type Screen = 'area' | 'page' | 'mobile' | 'element';
+type Screen = 'area' | 'page' | 'element';
 type BrowserActionType = keyof GqlScrapeActionInput;
 
 interface BrowserAction {
@@ -43,15 +42,15 @@ interface BrowserAction {
 }
 
 @Component({
-  selector: 'app-visual-diff-edit-page',
-  templateUrl: './subscription-edit.page.html',
-  styleUrls: ['./subscription-edit.page.scss'],
+  selector: 'app-tracker-edit-page',
+  templateUrl: './tracker-edit.page.html',
+  styleUrls: ['./tracker-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubscriptionEditPage implements OnInit, OnDestroy {
-  pickPositionDelegate: (position: GqlXyPosition | null) => void;
-  pickXPathDelegate: (xpath: string | null) => void;
-  pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
+export class TrackerEditPage implements OnInit, OnDestroy {
+  // pickPositionDelegate: (position: GqlXyPosition | null) => void;
+  // pickXPathDelegate: (xpath: string | null) => void;
+  // pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
   additionalWait = new FormControl<number>(0, [
     Validators.required,
     Validators.min(0),
@@ -98,25 +97,35 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   isThrottled: boolean;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
-  screenMobile: Screen = 'mobile';
   screenElement: Screen = 'element';
-  highlightXpath: string;
   protected scrapeController: ScrapeController;
+  protected isLoading: boolean = false;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly sessionService: SessionService,
-    private readonly scrapeService: ScrapeService,
+    private readonly titleService: Title,
     private readonly serverConfig: ServerConfigService,
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   ngOnInit() {
+    this.titleService.setTitle('Tracker Builder');
     this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
+      this.actions.valueChanges
+        .pipe(debounce(() => interval(800)))
+        .subscribe(() => {
+          if (this.actions.valid) {
+            this.scrapeController.scrapeRequest.flow.sequence =
+              this.getActionsRequestFragment();
+            this.scrapeController.actionsChanges.emit();
+          }
+        }),
+
       merge(
         this.form.controls.url.valueChanges,
         this.actions.valueChanges,
@@ -158,32 +167,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  handlePickedPosition(position: XyPosition | null) {
-    if (this.pickPositionDelegate) {
-      this.pickPositionDelegate(position);
-      this.pickPositionDelegate = null;
-      this.changeRef.detectChanges();
-    }
-  }
-
-  handlePickedXPath(xpath: string | null) {
-    console.log(xpath);
-    if (this.pickXPathDelegate) {
-      this.pickXPathDelegate(xpath);
-      this.highlightXpath = xpath;
-      this.pickXPathDelegate = null;
-      this.changeRef.detectChanges();
-    }
-  }
-
-  handlePickedBoundingBox(boundingBox: BoundingBox | null) {
-    if (this.pickBoundingBoxDelegate) {
-      this.pickBoundingBoxDelegate(boundingBox);
-      this.pickBoundingBoxDelegate = null;
-      this.changeRef.detectChanges();
-    }
   }
 
   async scrape() {
@@ -352,25 +335,24 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   pickBoundingBox() {
-    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox) => {
+    this.scrapeController.pickArea.emit((boundingBox: BoundingBox) => {
       this.form.controls.areaBoundingBox.patchValue(boundingBox);
       this.changeRef.detectChanges();
-    };
+    });
   }
 
   pickPosition(action: FormGroup<BrowserAction>) {
-    // action.controls.clickParams.patchValue({ x: 0, y: 0 });
-    this.pickPositionDelegate = (position: XyPosition) => {
+    this.scrapeController.pickPoint.emit((position: XyPosition) => {
       action.controls.clickParams.patchValue(position);
       this.changeRef.detectChanges();
-    };
+    });
   }
 
   pickXPath() {
-    this.pickXPathDelegate = (xpath: string) => {
+    this.scrapeController.pickElement.emit((xpath: string) => {
       this.form.controls.elementXpath.setValue(xpath);
       this.changeRef.detectChanges();
-    };
+    });
   }
 
   removeAction(index: number) {
@@ -393,14 +375,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     } else {
       return 'Draw Area';
     }
-  }
-
-  isPickPositionMode() {
-    return (
-      this.isDefined(this.pickPositionDelegate) ||
-      this.isDefined(this.pickXPathDelegate) ||
-      this.isDefined(this.pickBoundingBoxDelegate)
-    );
   }
 
   protected isDefined(v: any | undefined): boolean {

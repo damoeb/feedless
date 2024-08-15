@@ -7,6 +7,7 @@ import {
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-billings-page',
@@ -20,10 +21,12 @@ export class BillingsPage implements OnInit {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
+    private readonly titleService: Title,
     private readonly orderService: OrderService,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Billings');
     await this.fetchOrders();
   }
 

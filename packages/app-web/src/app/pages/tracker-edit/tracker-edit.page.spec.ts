@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { SubscriptionEditPage } from './subscription-edit.page';
+import { TrackerEditPage } from './tracker-edit.page';
 import {
   ApolloMockController,
   AppTestModule,
   mockServerSettings,
-} from '../../../app-test.module';
-import { SubscriptionEditPageModule } from './subscription-edit.module';
-import { ServerConfigService } from '../../../services/server-config.service';
+} from '../../app-test.module';
+import { TrackerEditPageModule } from './tracker-edit.module';
+import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('SubscriptionEditPage', () => {
-  let component: SubscriptionEditPage;
-  let fixture: ComponentFixture<SubscriptionEditPage>;
+  let component: TrackerEditPage;
+  let fixture: ComponentFixture<TrackerEditPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubscriptionEditPageModule, AppTestModule.withDefaults()],
+      imports: [TrackerEditPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
@@ -24,7 +24,7 @@ describe('SubscriptionEditPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(SubscriptionEditPage);
+    fixture = TestBed.createComponent(TrackerEditPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

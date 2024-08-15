@@ -6,6 +6,7 @@
     <div style="display: flex; align-items: center; column-gap: 10px">
       <ion-input
         class="ion-margin-start"
+        *ngIf="showUrl"
         [formControl]="formFg.controls.url"
       ></ion-input>
 

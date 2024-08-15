@@ -27,6 +27,7 @@ import {
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { Repository } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-feed-builder-page',
@@ -42,11 +43,13 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly modalService: ModalService,
+    private readonly titleService: Title,
     private readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Feed Builder');
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()

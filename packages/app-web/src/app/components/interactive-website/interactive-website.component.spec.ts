@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { InteractiveWebsiteComponent } from './interactive-website.component';
 import { InteractiveWebsiteModule } from './interactive-website.module';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule, mockScrape } from '../../app-test.module';
 import { ScrapeController } from './scrape-controller';
 
 describe('InteractiveWebsiteComponent', () => {
@@ -11,7 +11,12 @@ describe('InteractiveWebsiteComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [InteractiveWebsiteModule, AppTestModule.withDefaults()],
+      imports: [
+        InteractiveWebsiteModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockScrape(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InteractiveWebsiteComponent);

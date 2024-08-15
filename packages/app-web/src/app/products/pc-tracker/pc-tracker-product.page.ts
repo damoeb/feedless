@@ -68,7 +68,7 @@ export class PcTrackerProductPage implements OnInit, OnDestroy {
   async handleQuery(url: string) {
     try {
       this.url = fixUrl(url);
-      await this.router.navigate(['/builder'], {
+      await this.router.navigate(['/tracker-builder'], {
         queryParams: {
           url: this.url,
         },

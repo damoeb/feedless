@@ -16,7 +16,7 @@ import { Authentication, AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 
 @Component({
-  selector: 'app-team-draft-product-page',
+  selector: 'app-feed-dump-product-page',
   templateUrl: './feed-dump-product.page.html',
   styleUrls: ['./feed-dump-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

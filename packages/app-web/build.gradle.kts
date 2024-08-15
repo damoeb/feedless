@@ -74,7 +74,7 @@ tasks.register("buildDockerImage", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
   commandLine(
     "docker", "build",
-    "-t", "$baseTag:app",
+    "-t", "$baseTag:app-latest",
     "-t", "$baseTag:app-$gitHash",
     "."
   )

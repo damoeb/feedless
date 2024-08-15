@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-payment-summary-page',
@@ -24,10 +25,12 @@ export class PaymentSummaryPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly orderService: OrderService,
+    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Payment Summary');
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {

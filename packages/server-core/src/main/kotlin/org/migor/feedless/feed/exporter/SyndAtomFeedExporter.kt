@@ -152,7 +152,7 @@ class SyndAtomFeedExporter {
     syndEntry.modules.add(entryInformation)
 
     syndEntry.link = jsonItem.url
-    syndEntry.author = URL(jsonItem.url).host
+//    syndEntry.author = URL(jsonItem.url).host
     syndEntry.enclosures = jsonItem.attachments.map { toSyndEnclosure(it) }
     syndEntry.publishedDate = jsonItem.publishedAt
 

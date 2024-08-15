@@ -3,6 +3,7 @@ import { FeedDumpProductPage } from './feed-dump-product.page';
 import {
   ApolloMockController,
   AppTestModule,
+  mockRepositories,
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
@@ -21,6 +22,7 @@ describe('FeedDumpProductPage', () => {
         FeedDumpProductModule,
         AppTestModule.withDefaults((apolloMockController) => {
           mockScrape(apolloMockController);
+          mockRepositories(apolloMockController);
         }),
         RouterTestingModule.withRoutes([]),
       ],

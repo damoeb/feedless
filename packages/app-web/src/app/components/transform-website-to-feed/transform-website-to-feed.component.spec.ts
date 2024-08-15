@@ -3,7 +3,11 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { TransformWebsiteToFeedModule } from './transform-website-to-feed.module';
-import { AppTestModule, mockRepositories } from '../../app-test.module';
+import {
+  AppTestModule,
+  mockRepositories,
+  mockScrape,
+} from '../../app-test.module';
 
 // const jsonFeed = {
 //   description: 'Nachrichten nicht nur aus der Welt der Computer',
@@ -60,7 +64,7 @@ const feedResponse: ScrapeResponse = {
             viewport: null,
             // '__typename': 'ScrapeDebugResponse'
           },
-        }
+        },
       },
     },
   ],
@@ -74,6 +78,7 @@ describe('TransformWebsiteToFeedComponent', () => {
       imports: [
         TransformWebsiteToFeedModule,
         AppTestModule.withDefaults((apolloMockController) => {
+          mockScrape(apolloMockController);
           mockRepositories(apolloMockController);
         }),
       ],

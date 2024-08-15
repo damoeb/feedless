@@ -322,7 +322,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       val jwsObject = JWSObject.parse(licenseToken.removeHeaders())
       jwsObject.verify(verifier)
     } catch (e: Exception) {
-      log.warn(e.message)
+      log.error(e.message)
       false
     }
   }

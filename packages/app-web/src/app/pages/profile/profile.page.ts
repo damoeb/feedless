@@ -10,6 +10,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-profile-page',
@@ -36,6 +37,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   constructor(
     private readonly toastCtrl: ToastController,
     protected readonly sessionService: SessionService,
+    private readonly titleService: Title,
     protected readonly serverConfig: ServerConfigService,
   ) {}
 
@@ -55,6 +57,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.titleService.setTitle('Profile');
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
         if (session.isLoggedIn) {

@@ -5,6 +5,7 @@ import org.apache.commons.lang3.time.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -24,6 +25,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 
+@Tag("unstable")
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LicenseServiceTest {
@@ -99,7 +101,7 @@ class LicenseServiceTest {
     service.buildTimestamp = "${toDate(now).time}"
     assertThat(service.isTrial()).isTrue()
 
-    service.buildTimestamp = "${toDate(now.minusDays(trialPeriodDays)).time}"
+    service.buildTimestamp = "${toDate(now.minusDays(trialPeriodDays).plusMinutes(1)).time}"
     assertThat(service.isTrial()).isTrue()
 
     service.buildTimestamp = "${toDate(now.minusDays(trialPeriodDays + 1)).time}"

@@ -50,6 +50,7 @@ class ScrapeQueryResolver {
     ScrapeResponse(
       failed = false,
       logs = output.logs,
+      errorMessage = null,
       outputs = output.outputs.map { it.toDto() }
     )
   }

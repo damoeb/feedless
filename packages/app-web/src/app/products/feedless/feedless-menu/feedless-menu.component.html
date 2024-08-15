@@ -1,9 +1,21 @@
 <ion-list>
-  <ion-item routerLink="/feeds" [queryParams]="{types: ['feed']}" routerLinkActive="active">
+  <!--  <ion-item routerLink="/feeds" routerLinkActive="active">-->
+  <!--    Libraries-->
+  <!--    <ion-chip slot="end" *ngIf="loggedIn">{{ libraryCount }}</ion-chip>-->
+  <!--  </ion-item>-->
+  <ion-item
+    routerLink="/feeds"
+    [queryParams]="{ types: ['feed'] }"
+    routerLinkActive="active"
+  >
     Feeds
     <ion-chip slot="end" *ngIf="loggedIn">{{ feedCount }}</ion-chip>
   </ion-item>
-  <ion-item routerLink="/feeds" [queryParams]="{types: ['page-tracker']}" routerLinkActive="active">
+  <ion-item
+    routerLink="/feeds"
+    [queryParams]="{ types: ['page-tracker'] }"
+    routerLinkActive="active"
+  >
     Trackers
     <ion-chip slot="end" *ngIf="loggedIn">{{ trackerCount }}</ion-chip>
   </ion-item>

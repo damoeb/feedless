@@ -9,6 +9,7 @@ import { dateTimeFormat, SessionService } from '../../services/session.service';
 import { UserSecret } from '../../graphql/types';
 import { AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-secrets-page',
@@ -25,6 +26,7 @@ export class SecretsPage implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly alertCtrl: AlertController,
+    private readonly titleService: Title,
     private readonly sessionService: SessionService,
   ) {}
 
@@ -33,6 +35,7 @@ export class SecretsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.titleService.setTitle('Secrets');
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((profile) => {
         if (profile.user.secrets) {

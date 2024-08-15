@@ -1,9 +1,10 @@
 <ion-content>
   <div class="viewport" [ngClass]="{'show-errors': showErrors}">
-    <div class="pitch">
-      <div>We keep an eye on modifications to websites</div>
-      <div>...saving you the trouble!</div>
-    </div>
+    <h2 class="ion-padding-horizontal">Tracker Builder</h2>
+    <!--    <div class="pitch">-->
+    <!--      <div>We keep an eye on modifications to websites</div>-->
+    <!--      <div>...saving you the trouble!</div>-->
+    <!--    </div>-->
 
     <form (ngSubmit)="scrape()">
       <div>
@@ -27,59 +28,19 @@
                   width: 100%;
                   height: 100%;
                   cursor: progress;
-                  z-index: 1;
+                  z-index: 101;
                 "
+                *ngIf="isLoading"
               ></div>
               <ion-row>
                 <ion-col size="12">
-                  <div
-                    [ngClass]="{'website--mark': isPickPositionMode()}"
-                    class="website"
-                  >
-                    <!--                    <ion-toolbar style="position: absolute">-->
-                    <!--                      <ion-buttons slot="end">-->
-                    <!--                        <ion-button fill="solid" color="primary">-->
-                    <!--                          Pick Element-->
-                    <!--                          <ion-icon name="close-outline"></ion-icon>-->
-                    <!--                        </ion-button>-->
-                    <!--                      </ion-buttons>-->
-                    <!--                    </ion-toolbar>-->
-
-                    <!--                    <div *ngIf="errorMessage" style="margin: auto">-->
-                    <!--                      Error: {{errorMessage}}-->
-                    <!--                    </div>-->
-
-                    <!--                    <div *ngIf="!errorMessage" class="flex">-->
-                    <!--                      <div *ngIf="!embedScreenshot" style="margin: auto">-->
-                    <!--                        <div *ngIf="!busy">-->
-                    <!--                          A screenshot of your website will appear here-->
-                    <!--                        </div>-->
-                    <!--                        <div *ngIf="busy">Loading Screenshot...</div>-->
-                    <!--                      </div>-->
-
+                  <div class="website">
                     <app-interactive-website
                       *ngIf="scrapeController"
+                      [showUrl]="false"
+                      (loadingChange)="isLoading = $event"
                       [scrapeController]="scrapeController"
                     ></app-interactive-website>
-
-                    <!--                      <app-embedded-image-->
-                    <!--                        (pickedBoundingBox)="handlePickedBoundingBox($event)"-->
-                    <!--                        (pickedPosition)="handlePickedPosition($event)"-->
-                    <!--                        *ngIf="embedScreenshot"-->
-                    <!--                        [embed]="embedScreenshot"-->
-                    <!--                        [ngClass]="{'hidden': form.value.compareType !== GqlWebDocumentField.Pixel && form.value.screen !== screenElement}"-->
-                    <!--                        [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"-->
-                    <!--                        [pickPosition]="isPickPositionMode()"-->
-                    <!--                        strokeStyle="red"-->
-                    <!--                      ></app-embedded-image>-->
-
-                    <!--                      <app-embedded-markup-->
-                    <!--                        [embed]="embedWebsite"-->
-                    <!--                        (pickedXpath)="handlePickedXPath($event)"-->
-                    <!--                        [highlightXpath]="highlightXpath"-->
-                    <!--                        [ngClass]="{'hidden':form.value.compareType === GqlWebDocumentField.Pixel || form.value.screen === screenElement}"-->
-                    <!--                      ></app-embedded-markup>-->
-                    <!--                    </div>-->
                   </div>
                 </ion-col>
               </ion-row>
@@ -254,9 +215,6 @@
                   <ion-select-option [value]="screenPage"
                     >All page</ion-select-option
                   >
-                  <ion-select-option [value]="screenMobile"
-                    >Mobile</ion-select-option
-                  >
                   <ion-select-option [value]="screenElement"
                     >Element</ion-select-option
                   >
@@ -370,7 +328,7 @@
                   [disabled]="form.invalid"
                   class="cy-start-monitoring-button"
                 >
-                  Start monitoring
+                  Create Tracker
                 </ion-button>
               </ion-col>
             </ion-row>

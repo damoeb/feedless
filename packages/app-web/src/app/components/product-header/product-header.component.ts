@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
 })
 export class ProductHeaderComponent {
   @Input({ required: true })
-  title: string;
+  productTitle: string;
 
   constructor() {}
 }

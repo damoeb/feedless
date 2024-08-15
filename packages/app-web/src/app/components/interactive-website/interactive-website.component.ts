@@ -2,27 +2,20 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
 } from '@angular/core';
 import { parseInt } from 'lodash-es';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeEmit,
-  GqlScrapeRequestInput,
-} from '../../../generated/graphql';
+import { GqlScrapeEmit } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import { ScrapeResponse } from '../../graphql/types';
-import { getFirstFetchUrlLiteral } from '../../utils';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ScrapeController } from './scrape-controller';
 import { debounce, interval, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import {
-  Embeddable,
-  XyPosition,
-} from '../embedded-image/embedded-image.component';
+import { Embeddable } from '../embedded-image/embedded-image.component';
 
 type ViewMode = 'markup' | 'image';
 
@@ -35,6 +28,12 @@ type ViewMode = 'markup' | 'image';
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input({ required: true })
   scrapeController: ScrapeController;
+
+  @Input()
+  showUrl: boolean = false;
+
+  @Output()
+  loadingChange: EventEmitter<boolean> = new EventEmitter<boolean>(false);
 
   scaleFactor: number = 0.7;
   minScaleFactor: number = 0.5;
@@ -127,6 +126,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   private async scrape() {
     console.log('scrape');
     this.loading = true;
+    this.loadingChange.emit(this.loading);
     this.changeRef.detectChanges();
 
     try {
@@ -190,68 +190,10 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       this.errorMessage = e.message;
     }
     this.loading = false;
+    this.loadingChange.emit(this.loading);
 
     this.changeRef.detectChanges();
   }
-
-  // protected getScrapeRequest(
-  //   scrapeRequest: GqlScrapeRequestInput,
-  //   addExtract: boolean = false,
-  // ): GqlScrapeRequestInput {
-  //   const url = getFirstFetchUrlLiteral(scrapeRequest.flow.sequence);
-  //   const prerenderingOptions = this.formFg.value.prerenderingOptions;
-  //   return {
-  //     title: `From ${url}`,
-  //     flow: {
-  //       sequence: [
-  //         {
-  //           fetch: {
-  //             get: {
-  //               url: {
-  //                 literal: url,
-  //               },
-  //               viewport: {
-  //                 isLandscape: prerenderingOptions.landscape,
-  //                 isMobile: prerenderingOptions.mobile,
-  //                 height: prerenderingOptions.resolutionY,
-  //                 width: prerenderingOptions.resolutionX,
-  //               },
-  //               forcePrerender: true,
-  //               additionalWaitSec: prerenderingOptions.additionalWait,
-  //             },
-  //           },
-  //         },
-  //         ...this.scrapeController.actions,
-  //         ...(addExtract
-  //           ? [
-  //               {
-  //                 extract: {
-  //                   fragmentName: 'full-page',
-  //                   selectorBased: {
-  //                     fragmentName: '',
-  //                     xpath: {
-  //                       value: '/',
-  //                     },
-  //                     emit: [
-  //                       GqlScrapeEmit.Html,
-  //                       GqlScrapeEmit.Text,
-  //                       GqlScrapeEmit.Pixel,
-  //                     ],
-  //                   },
-  //                 },
-  //               },
-  //             ]
-  //           : []),
-  //         {
-  //           execute: {
-  //             pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-  //             params: {},
-  //           },
-  //         },
-  //       ],
-  //     },
-  //   };
-  // }
 
   cancelPickMode() {
     this.scrapeController.cancel.emit();

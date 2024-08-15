@@ -113,7 +113,7 @@ class DateClaimer {
     }
 
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_ZONED_DATE_TIME))
+      val date = toDate(LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_DATE_TIME))
       log.debug("[${corrId}] -> $date")
       return date
     }

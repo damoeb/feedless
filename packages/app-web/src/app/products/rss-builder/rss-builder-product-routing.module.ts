@@ -23,7 +23,7 @@ const routes: Routes = [
               ),
           },
           {
-            path: 'builder',
+            path: 'feed-builder',
             canActivate: [AuthGuardService],
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.module').then(

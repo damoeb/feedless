@@ -21,6 +21,7 @@ import {
   GqlUserCreateOrConnectInput,
 } from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
+import { Title } from '@angular/platform-browser';
 
 type Country = {
   name: string;
@@ -330,11 +331,13 @@ export class CheckoutPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly orderService: OrderService,
     private readonly sessionService: SessionService,
+    private readonly titleService: Title,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Checkout');
     this.loginWithRedirect = `/login?redirectUrl=${location.pathname}`;
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {

@@ -11,6 +11,7 @@ import { Feature, FeatureGroup } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
 import { sortBy } from 'lodash-es';
+import { Title } from '@angular/platform-browser';
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -30,10 +31,12 @@ export class SettingsPage implements OnInit {
   constructor(
     private readonly featureService: FeatureService,
     private readonly toastCtrl: ToastController,
+    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
+    this.titleService.setTitle('Settings');
     this.featureService.findAll({}, false).then((featureGroups) => {
       this.featureGroups = featureGroups;
       this.featureGroupsFc.valueChanges.subscribe((featureGroup) => {
