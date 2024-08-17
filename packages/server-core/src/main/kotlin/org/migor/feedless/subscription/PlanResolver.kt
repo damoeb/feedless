@@ -33,7 +33,7 @@ class PlanResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
     val user: User = dfe.getSource()
-    planDAO.findActiveByUserAndProduct(UUID.fromString(user.id), product.fromDto())?.toDto()
+    planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))?.toDto()
   }
 }
 

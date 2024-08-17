@@ -328,7 +328,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly productService: ProductService,
     private readonly router: Router,
-    private readonly billingService: OrderService,
+    private readonly orderService: OrderService,
     private readonly sessionService: SessionService,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
@@ -389,7 +389,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
     try {
       this.loading = true;
-      const billing = await this.billingService.upsertOrder({
+      const billing = await this.orderService.upsertOrder({
         isOffer: false,
         overwritePrice: 0,
         invoiceRecipientName: `${this.formFg.value.firstName} ${this.formFg.value.lastName}`,

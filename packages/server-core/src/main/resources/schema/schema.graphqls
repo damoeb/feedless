@@ -826,11 +826,16 @@ type Selectors {
 type ServerSettings {
   gatewayUrl: String!
   appUrl: String!
-  buildFrom: Long!
+  build: BuildInfo!
   version: String!
   features: [Feature!]!
   profiles: [ProfileName!]!
   license: LocalizedLicense
+}
+
+type BuildInfo {
+  date: Long!
+  commit: String!
 }
 
 type LocalizedLicense {

@@ -265,6 +265,7 @@ class RepositoryService {
   fun findAll(offset: Int, pageSize: Int, where: RepositoriesWhereInput?, userId: UUID?): List<RepositoryEntity> {
     val pageable =
       PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
+    log.info("userId=$userId")
     return (userId
       ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
       ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable))

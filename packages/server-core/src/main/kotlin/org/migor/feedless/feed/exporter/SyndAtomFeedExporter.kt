@@ -1,10 +1,5 @@
 package org.migor.feedless.feed.exporter
 
-import com.rometools.modules.content.ContentItem
-import com.rometools.modules.content.ContentModule
-import com.rometools.modules.content.ContentModuleImpl
-import com.rometools.modules.georss.W3CGeoModuleImpl
-import com.rometools.modules.georss.geometries.Position
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.modules.mediarss.MediaEntryModuleImpl
@@ -31,13 +26,17 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.JsonUtil
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
-import java.net.URL
 
 
 @Service
 class SyndAtomFeedExporter {
+
+  @Value("\${APP_GIT_HASH}")
+  lateinit var commit: String
+
   fun toAtom(corrId: String, jsonFeed: JsonFeed): String {
     val output = SyndFeedOutput()
     val xml = output.outputString(toSyndFeed(jsonFeed), true)
@@ -50,6 +49,7 @@ class SyndAtomFeedExporter {
     val syndFeed = SyndFeedImpl()
     syndFeed.uri = "https://feedless.org/feed/${jsonFeed.id}"
     syndFeed.feedType = "atom_1.0"
+    syndFeed.generator = "feedless.org/$commit"
     syndFeed.title = jsonFeed.title
     syndFeed.description = jsonFeed.description
 

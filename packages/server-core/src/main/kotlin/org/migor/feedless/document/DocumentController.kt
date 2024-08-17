@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Controller
-@Profile(AppProfiles.database)
+@Profile(AppProfiles.api)
 class DocumentController {
 
   private val log = LoggerFactory.getLogger(DocumentController::class.simpleName)
@@ -40,7 +40,7 @@ class DocumentController {
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
   ): ResponseEntity<String> {
-    return documentService.findById(UUID.fromString(documentId))?.let {
+    return documentService.findById(UUID.fromString(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "document"),
@@ -49,11 +49,9 @@ class DocumentController {
       ).increment()
       log.debug("GET document id=$documentId")
 
-      val url = if (request.getParameterValues("source").isEmpty()) {
-        it.url
-      } else {
-        "${it.url}?source=${URLEncoder.encode(request.getParameter("source"), StandardCharsets.UTF_8)}"
-      }
+      val url = request.getParameter("source")?.let {
+        "${document.url}?source=${URLEncoder.encode(it, StandardCharsets.UTF_8)}"
+      } ?: document.url
 
       val headers = HttpHeaders()
       headers.add(HttpHeaders.LOCATION, url)

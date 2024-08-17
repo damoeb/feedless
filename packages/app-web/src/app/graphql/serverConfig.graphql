@@ -2,7 +2,10 @@ query serverSettings($data: ServerSettingsContextInput!) {
   serverSettings(data: $data) {
     appUrl
     profiles
-    buildFrom
+    build {
+      commit
+      date
+    }
     version
     gatewayUrl
     features {

@@ -15,7 +15,7 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
   lateinit var version: String
 
   @Value("\${APP_GIT_HASH}")
-  lateinit var hash: String
+  lateinit var commit: String
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     // http://www.patorjk.com/software/taag/#p=display&f=Shimrod&t=feedless
@@ -31,7 +31,7 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
     """.trimIndent()
     )
 
-    System.out.println("Running v$version-$hash https://github.com/damoeb/feedless")
+    System.out.println("Running v$version-$commit https://github.com/damoeb/feedless")
 
   }
 

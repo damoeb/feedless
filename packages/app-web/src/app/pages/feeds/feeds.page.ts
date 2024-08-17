@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Repository, RepositoryFull, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
@@ -32,6 +27,7 @@ export class FeedsPage implements OnInit {
 
   private async fetchFeeds() {
     const page = 0;
+
     const repositories = await this.repositoryService.listRepositories({
       cursor: {
         page,

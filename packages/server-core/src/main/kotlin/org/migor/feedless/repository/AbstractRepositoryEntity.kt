@@ -123,7 +123,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "sunset_after_total_document_count")
   open var sunsetAfterTotalDocumentCount: Int? = null
 
-  @Column(name = "document_count_since_creation")
+  @Column(name = "document_count_since_creation", nullable = false)
   open var documentCountSinceCreation: Int = 0
 
   @Column(nullable = false, name = "is_archived")

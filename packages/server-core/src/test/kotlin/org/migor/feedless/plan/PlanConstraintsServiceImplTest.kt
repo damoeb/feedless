@@ -9,6 +9,7 @@ import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.any
+import org.migor.feedless.document.anyList
 import org.migor.feedless.document.eq
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.subscription.PlanDAO
@@ -77,7 +78,7 @@ class PlanConstraintsServiceImplTest {
 
     val mockPlan = mock(PlanEntity::class.java)
     `when`(mockPlan.product).thenReturn(mockProduct)
-    `when`(planDAO.findActiveByUserAndProduct(any(UUID::class.java), any(ProductCategory::class.java))).thenReturn(mockPlan)
+    `when`(planDAO.findActiveByUserAndProductIn(any(UUID::class.java), anyList<ProductCategory>())).thenReturn(mockPlan)
   }
 
   @Test

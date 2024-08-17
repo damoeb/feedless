@@ -92,7 +92,7 @@ class ProductService {
     if (isFree() || isBought()) {
 
       // terminate existing plan
-      planDAO.findActiveByUserAndProduct(user.id, product.partOf!!)?.let {
+      planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!))?.let {
         log.info("[$corrId]")
         it.terminatedAt = Date()
         planDAO.save(it)

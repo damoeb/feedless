@@ -7,6 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.generated.types.BuildInfo
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
@@ -24,6 +25,9 @@ import org.springframework.core.env.Environment
 class ServerConfigResolver {
 
   private val log = LoggerFactory.getLogger(ServerConfigResolver::class.simpleName)
+
+  @Value("\${APP_GIT_HASH}")
+  lateinit var commit: String
 
   @Autowired
   private lateinit var environment: Environment
@@ -61,7 +65,10 @@ class ServerConfigResolver {
     ServerSettings(
       appUrl = productService.getAppUrl(product),
       version = version,
-      buildFrom = licenseService.buildFrom(),
+      build = BuildInfo(
+        date = licenseService.buildFrom(),
+        commit = commit
+      ),
       profiles = environment.activeProfiles.map {
         when (it) {
           AppProfiles.authMail -> ProfileName.authMail

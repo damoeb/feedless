@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.any
 import org.migor.feedless.document.anyOrNull
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -47,11 +48,10 @@ const val feedId = "feed-id"
     MockBean(UserService::class),
     MockBean(LicenseService::class),
     MockBean(MailProviderService::class),
+    MockBean(DocumentService::class),
     MockBean(AgentService::class),
     MockBean(SessionService::class),
     MockBean(RepositoryDAO::class),
-//    MockBean(UserDAO::class),
-//    MockBean(DocumentDAO::class),
     MockBean(LegacyFeedService::class),
     MockBean(KotlinJdslJpqlExecutor::class),
   ]

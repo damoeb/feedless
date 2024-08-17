@@ -1,5 +1,6 @@
 package org.migor.feedless.user
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
@@ -9,9 +10,16 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.generated.types.OrderCreateInput
+import org.migor.feedless.generated.types.OrderWhereUniqueInput
+import org.migor.feedless.generated.types.PaymentMethod
+import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.generated.types.UserCreateOrConnectInput
+import org.migor.feedless.generated.types.UserWhereUniqueInput
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.plan.OrderService
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.MaxAgeDaysDateField
@@ -86,7 +94,7 @@ class UserService {
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("[$corrId] create user $email")
     val user = UserEntity()
-    user.email = email ?: "${user.id}@feedless.org"
+    user.email = email ?: fallbackEmail(user)
     user.githubId = githubId
     user.root = false
     user.anonymous = false
@@ -130,7 +138,7 @@ class UserService {
   }
 
   fun findByGithubId(githubId: String): UserEntity? {
-    return userDAO.findByGithubId(githubId)
+    return userDAO.findByGithubId(githubId) ?: userDAO.findByEmail("$githubId@github.com")
   }
 
   fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
@@ -182,4 +190,18 @@ class UserService {
   }
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+
+  fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
+    log.info("[$corrId] create legacy user githubId=$githubId")
+    if (user.githubId == null) {
+      user.githubId = githubId
+    }
+    if (user.email.endsWith("github.com")) {
+      user.email = fallbackEmail(user)
+    }
+
+    userDAO.save(user)
+  }
+
+  private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"
 }

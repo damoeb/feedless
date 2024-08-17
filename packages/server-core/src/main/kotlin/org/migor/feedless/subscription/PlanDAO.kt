@@ -17,8 +17,8 @@ interface PlanDAO : JpaRepository<PlanEntity, UUID> {
     """
     select PL from PlanEntity PL
     inner join ProductEntity P on P.id = PL.productId
-    where PL.userId = :userId and P.partOf = :product AND (PL.terminatedAt IS NULL OR PL.terminatedAt <= NOW())
+    where PL.userId = :userId and P.partOf IN :products AND (PL.terminatedAt IS NULL OR PL.terminatedAt <= NOW())
   """
   )
-  fun findActiveByUserAndProduct(@Param("userId") userId: UUID, @Param("product") product: ProductCategory): PlanEntity?
+  fun findActiveByUserAndProductIn(@Param("userId") userId: UUID, @Param("products") products: List<ProductCategory>): PlanEntity?
 }

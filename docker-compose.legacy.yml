@@ -1,0 +1,112 @@
+version: '3.4'
+
+# envs https://medium.com/softonic-eng/docker-compose-from-development-to-production-88000124a57c
+
+services:
+
+  # https://hub.docker.com/_/postgres/
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+
+  feedless-agent:
+    image: damoeb/feedless:agent-0.1
+    security_opt:
+      - seccomp=./chrome.json
+    restart: unless-stopped
+    environment:
+      - APP_EMAIL=${APP_ROOT_EMAIL}
+      - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
+      - APP_PRERENDER_TIMEOUT_MILLIS=${APP_PRERENDER_TIMEOUT_MILLIS}
+      - APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS=${APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS}
+      - APP_SECURE=false
+    #    healthcheck:
+    #      test: curl -f https://localhost:3000 || exit 1
+    networks:
+      - puppeteer
+      - monitoring
+
+  feedless-app:
+    image: damoeb/feedless:app-0.1
+    volumes:
+      - ./docker/legacy/app-config.json:/usr/share/nginx/html/config.json
+    ports:
+      - "4200:80"
+
+  feedless-core:
+    image: damoeb/feedless:core-0.1
+    #    healthcheck:
+    #      test: curl -f https://localhost:8080 || exit 1
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_ACTIVE_PROFILES=database,cache,metrics
+      - APP_WHITELISTED_HOSTS=feedless-core,172.26.0.1
+      - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
+      - DNS_TEST_URL=br.de
+    networks:
+      - postgres
+      - monitoring
+      - puppeteer
+
+  # ----------------------------------------------------------------------------------------------------------------------
+  # -- MONITORING
+  # ----------------------------------------------------------------------------------------------------------------------
+
+  loki:
+    image: grafana/loki:2.5.0
+    volumes:
+      - ./docker/loki:/etc/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki.yml
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    environment:
+      - APP_ACTUATOR_PASSWORD=${APP_ACTUATOR_PASSWORD}
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  autoheal:
+    image: willfarrell/autoheal
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - monitoring
+
+secrets:
+  TOKEN_SECRET:
+    file: ./tokenSecret.txt
+
+networks:
+  postgis:
+    driver: bridge
+  postgres:
+    driver: bridge
+  monitoring:
+    driver: bridge
+  puppeteer:
+    driver: bridge

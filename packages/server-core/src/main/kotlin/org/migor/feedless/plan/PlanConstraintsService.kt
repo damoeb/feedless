@@ -137,7 +137,7 @@ class PlanConstraintsService {
           featureName.name
         )
       } else {
-        planDAO.findActiveByUserAndProduct(userId, product)?.let {
+        planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless))?.let {
           featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
         } ?: throw IllegalArgumentException("user has no subscription")
       }

@@ -176,8 +176,9 @@ class SecurityConfig {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
-    return resolveUserByGithubId(githubId) ?: userService.createUser(
-      newCorrId(),
+    val corrId = newCorrId()
+    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(corrId, it, githubId) } ?: userService.createUser(
+      corrId,
       email = email,
       githubId = githubId,
     )

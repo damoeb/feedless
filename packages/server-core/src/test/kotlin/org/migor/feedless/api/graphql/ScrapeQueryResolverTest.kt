@@ -10,6 +10,7 @@ import org.migor.feedless.agent.AgentJob
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -44,6 +45,7 @@ import java.nio.file.Files
     MockBean(AgentService::class),
     MockBean(AgentJob::class),
     MockBean(UserService::class),
+    MockBean(DocumentService::class),
     MockBean(SessionService::class),
     MockBean(LicenseService::class),
     MockBean(ProductService::class),

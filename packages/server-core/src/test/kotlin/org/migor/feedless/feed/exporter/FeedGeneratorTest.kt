@@ -62,6 +62,7 @@ class FeedGeneratorTest {
 
 
     val exporter = SyndAtomFeedExporter()
+    exporter.commit = "foo-commit-id"
     val atom = exporter.toAtom(corrId, feed)
     val actualFeed = XmlFeedParser().process(corrId, HttpResponse(
       contentType = "application/xml",

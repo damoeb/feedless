@@ -56,7 +56,7 @@ ALTER TABLE IF EXISTS t_mail_forward RENAME CONSTRAINT fko85uxyf2hn04isnhnq8kd4g
 ALTER TABLE IF EXISTS t_notification RENAME CONSTRAINT fkboru2k9q1whuculc2axpggcpa TO fk_notification__to__user;
 
 -- t_otp
-ALTER TABLE IF EXISTS t_otp RENAME CONSTRAINT fk3s2gywtxnvtcjvbkh52jyawnc TO fk_otp__to__user;
+ALTER TABLE IF EXISTS t_otp RENAME CONSTRAINT fk_otp__user TO fk_otp__to__user;
 
 -- t_pipeline_job
 ALTER TABLE IF EXISTS t_pipeline_job
@@ -102,4 +102,4 @@ ALTER TABLE IF EXISTS t_user
 ALTER TABLE IF EXISTS t_user RENAME CONSTRAINT fkciy9noxqwbr96ybkp5fv2c2tz TO fk_user__to__subscription;
 
 -- t_user_secret
-ALTER TABLE IF EXISTS t_user_secret RENAME CONSTRAINT fk4evcslbhw4nofy5xsl2yyqxjk TO fk_user_secret__to__user;
+ALTER TABLE IF EXISTS t_user_secret RENAME CONSTRAINT fk_user_secrets__user TO fk_user_secret__to__user;

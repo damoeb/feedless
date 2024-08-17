@@ -45,6 +45,7 @@ export class ServerConfigService {
   private features: Feature[];
   private profiles: GqlProfileName[];
   private buildFrom: number;
+  private commitId: string;
   private version: string;
   private license: LocalizedLicense;
 
@@ -106,7 +107,8 @@ export class ServerConfigService {
       this.features = response.features;
       this.profiles = response.profiles;
       this.version = response.version;
-      this.buildFrom = response.buildFrom;
+      this.buildFrom = response.build.date;
+      this.commitId = response.build.commit;
       this.license = response.license;
       this.gatewayUrl = response.gatewayUrl;
       this.appUrl = response.appUrl;

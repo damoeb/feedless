@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.user.UserService
@@ -35,6 +36,7 @@ const val feedId = "feed-id"
   value = [
     MockBean(UserService::class),
     MockBean(LicenseService::class),
+    MockBean(DocumentService::class),
     MockBean(MailProviderService::class),
     MockBean(KotlinJdslJpqlExecutor::class),
   ]
