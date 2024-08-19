@@ -10,6 +10,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.Index
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
@@ -44,7 +45,11 @@ import java.util.*
 
 @Entity
 @Table(
-  name = "t_document"
+  name = "t_document",
+  indexes = [
+    Index(name = "url__idx", columnList = StandardJpaFields.url),
+    Index(name = "repository_id__idx", columnList = StandardJpaFields.repositoryId),
+  ]
 )
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
@@ -58,7 +63,7 @@ open class DocumentEntity : EntityWithUUID() {
     const val LEN_URL = 1000
   }
 
-  @Column(nullable = false, length = LEN_URL, name = "url")
+  @Column(nullable = false, length = LEN_URL, name = StandardJpaFields.url)
   open lateinit var url: String
 
   @Column(length = LEN_TITLE, name = "content_title")

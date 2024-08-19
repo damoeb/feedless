@@ -28,6 +28,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -67,11 +69,12 @@ class DocumentService {
     status: ReleaseStatus = ReleaseStatus.released,
     tag: String? = null,
     pageable: Pageable,
-    shareKey: String? = null
+    shareKey: String? = null,
+    ignoreVisibility: Boolean = false
   ): Page<DocumentEntity?> {
     val repo = repositoryDAO.findById(repositoryId).orElseThrow()
 
-    if (repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
+    if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
       throw IllegalArgumentException("repo is not public")
     }
 
@@ -133,6 +136,7 @@ class DocumentService {
     return whereStatements
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
     val retentionSize =
       planConstraintsService.coerceRetentionMaxCapacity(

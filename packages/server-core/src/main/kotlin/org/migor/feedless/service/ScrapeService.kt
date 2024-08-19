@@ -52,49 +52,52 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  fun scrape(corrId: String, source: SourceEntity): Mono<ScrapeOutput> {
-    assert(source.actions.isNotEmpty()) { "no actions present" }
-    val prerender = needsPrerendering(source, 0)
+  fun scrape(corrId: String, source: SourceEntity): ScrapeOutput {
+    return try {
+      assert(source.actions.isNotEmpty()) { "no actions present" }
+      val prerender = needsPrerendering(source, 0)
 
-    val fetch = source.findFirstFetchOrNull()!!
+      val fetch = source.findFirstFetchOrNull()!!
 
-    log.info("[$corrId] scrape ${fetch.resolveUrl()}")
+      log.info("[$corrId] scrape ${fetch.resolveUrl()}")
 
-    meterRegistry.counter(
-      AppMetrics.scrape, listOf(
-        Tag.of("type", "scrape"),
-        Tag.of("prerender", prerender.toString()),
-      )
-    ).increment()
+      meterRegistry.counter(
+        AppMetrics.scrape, listOf(
+          Tag.of("type", "scrape"),
+          Tag.of("prerender", prerender.toString()),
+        )
+      ).increment()
 
-    val startTime = System.nanoTime()
+      val startTime = System.nanoTime()
 
-    val context = source.actions
-      .sortedBy { it.pos }
-      .foldIndexed(ScrapeContext()) { index, context, action ->
-        run {
-          when (action) {
-            is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
-            is HeaderActionEntity -> handleHeader(corrId, action, context)
-            is DomActionEntity -> handleDomAction(corrId, index, action, context)
-            is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
-            is ExtractXpathActionEntity -> handleExtract(corrId, action, context)
-            is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
-            else -> noopAction(corrId, action)
+      val context = source.actions
+        .sortedBy { it.pos }
+        .foldIndexed(ScrapeContext()) { index, context, action ->
+          run {
+            when (action) {
+              is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
+              is HeaderActionEntity -> handleHeader(corrId, action, context)
+              is DomActionEntity -> handleDomAction(corrId, index, action, context)
+              is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
+              is ExtractXpathActionEntity -> handleExtract(corrId, action, context)
+              is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
+              else -> noopAction(corrId, action)
+            }
+            context
           }
-          context
         }
-      }
 
-    log.info("[$corrId] scraping finished")
+      log.info("[$corrId] scraping finished")
 
-    return Mono.just(
       ScrapeOutput(
         context.outputs.values.toList(),
         logs = context.logs,
         time = System.nanoTime().minus(startTime).div(1000000).toInt()
       )
-    )
+    } catch (e: Exception) {
+      log.warn("[$corrId] scrape failed ${e.message}")
+      throw e
+    }
   }
 
   private fun noopAction(corrId: String, action: ScrapeActionEntity) {

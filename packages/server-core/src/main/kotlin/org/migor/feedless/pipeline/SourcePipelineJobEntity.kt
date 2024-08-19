@@ -21,7 +21,7 @@ open class SourcePipelineJobEntity : PipelineJobEntity() {
   @Column(name = "url", length = 500)
   open lateinit var url: String
 
-  @Column(name = StandardJpaFields.sourceId, nullable = false)
+  @Column(name = StandardJpaFields.sourceId, nullable = true)
   open lateinit var sourceId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)

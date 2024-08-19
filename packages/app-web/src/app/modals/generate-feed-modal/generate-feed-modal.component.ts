@@ -150,7 +150,7 @@ export class GenerateFeedModalComponent
       validators: [
         Validators.required,
         Validators.minLength(3),
-        Validators.maxLength(50),
+        Validators.maxLength(255),
       ],
     }),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
@@ -468,7 +468,7 @@ export class GenerateFeedModalComponent
 
     const retention = this.repository.retention;
     this.formFg.patchValue({
-      title: this.repository.title.substring(0, 50),
+      title: this.repository.title.substring(0, 255),
       isPublic: this.repository.visibility == GqlVisibility.IsPublic,
       description: this.repository.description,
       fetchFrequency: this.repository.refreshCron || '0 0 0 * * *',

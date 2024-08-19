@@ -121,14 +121,12 @@ class FeedParserService {
       org_feedless_conditional_tag = tags
     )
 
-    val items = Flux.fromIterable(scrapeRequests)
-      .flatMap { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
+    val items = scrapeRequests
+      .map { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
       .map { response -> response.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed!! }
       .flatMap { feed ->
-        Flux.fromIterable(feed.items)
+        feed.items
       }
-      .collectList()
-      .block(Duration.ofSeconds(30))!!
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
           corrId,

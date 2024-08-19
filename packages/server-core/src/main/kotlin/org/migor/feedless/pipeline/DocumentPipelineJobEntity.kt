@@ -28,7 +28,7 @@ open class DocumentPipelineJobEntity : PipelineJobEntity() {
   @Column(name = "executor_params", columnDefinition = "jsonb")
   open lateinit var executorParams: PluginExecutionParamsInput
 
-  @Column(name = StandardJpaFields.documentId)
+  @Column(name = StandardJpaFields.documentId, nullable = true)
   open lateinit var documentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)

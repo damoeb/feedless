@@ -204,18 +204,22 @@
                 </xsl:for-each>
               </p>
             </xsl:if>
-            <p>
+            <xsl:if
+              test="not(atom:content[starts-with(@type,'html')])">
+              <p>
                 <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
-            </p>
+              </p>
+            </xsl:if>
+
             <p>
               <xsl:if
                 test="atom:content[starts-with(@type,'image/')]">
                 <xsl:value-of select="concat('&lt;img src=data:image/png;base64,', atom:content[starts-with(@type,'image/')], '&gt;')"  disable-output-escaping="yes" />
               </xsl:if>
-<!--              <xsl:if-->
-<!--                test="atom:content[starts-with(@type,'html')]">-->
-<!--                <xsl:value-of select="atom:content[starts-with(@type,'html')]" disable-output-escaping="yes" />-->
-<!--              </xsl:if>-->
+              <xsl:if
+                test="atom:content[starts-with(@type,'html')]">
+                <xsl:value-of select="atom:content[starts-with(@type,'html')]" disable-output-escaping="yes" />
+              </xsl:if>
 <!--              <xsl:if-->
 <!--                test="atom:content[starts-with(@type,'text')]">-->
 <!--                <xsl:value-of select="atom:content[starts-with(@type,'text')]" disable-output-escaping="yes" />-->

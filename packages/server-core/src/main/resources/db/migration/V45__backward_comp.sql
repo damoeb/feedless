@@ -30,6 +30,7 @@
 --       }
 --     }
 
+ALTER TABLE t_action_fetch ALTER COLUMN url TYPE varchar(900);
 
 with source as (
     select ts.id as id, gen_random_uuid() as fetch_action_id, gen_random_uuid() as plugin_action_id, now() as created_at, ts.feedurl, tfg.feedspecification as gen_feed_params
@@ -81,3 +82,5 @@ SELECT gen_random_uuid(), u.created_at, (
   where p.part_of = 'feedless' and p.is_base_product = true
 ), created_at, u.id from t_user u
 ;
+
+ALTER TABLE t_pipeline_job ALTER COLUMN source_id DROP NOT NULL;

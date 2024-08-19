@@ -81,7 +81,7 @@ enum class MaxAgeDaysDateField {
 open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.title, nullable = false)
-  @Size(min = 3, max = 50)
+  @Size(min = 3, max = 255)
   open lateinit var title: String
 
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)

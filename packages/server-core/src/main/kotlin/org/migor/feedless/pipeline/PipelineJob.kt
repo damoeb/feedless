@@ -103,7 +103,7 @@ class PipelineJob internal constructor() {
       }
 
       try {
-        repositoryHarvester.scrapeSource(corrId, patchRequestUrl(source, job.url)).block()
+        repositoryHarvester.scrapeSource(corrId, patchRequestUrl(source, job.url))
         job.status = PipelineJobStatus.SUCCEEDED
         job.updateStatus()
         log.info("[$corrId] job ${job.id} done")
@@ -159,6 +159,7 @@ class PipelineJob internal constructor() {
             throw IllegalArgumentException("max attempts reached")
           }
 
+          log.info("[$corrId] executing ${job.executorId}")
           when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
             is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, document, job.executorParams, 0)) {
               omitted = true

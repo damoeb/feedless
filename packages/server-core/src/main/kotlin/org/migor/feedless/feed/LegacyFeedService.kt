@@ -95,7 +95,7 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeResponse = scrapeService.scrape(corrId, source).block()!!
+      val scrapeResponse = scrapeService.scrape(corrId, source)
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -149,7 +149,8 @@ class LegacyFeedService {
       val documents = documentService.findAllByRepositoryId(
         repo.id,
         status = ReleaseStatus.released,
-        pageable = pageable
+        pageable = pageable,
+        ignoreVisibility = true
       )
       feed.items =
         documents.mapNotNull { it?.toJsonItem(propertyService, EntityVisibility.isPublic, requestURI) }

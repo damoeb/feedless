@@ -72,7 +72,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
       subject: new FormControl<string>('', [
         Validators.required,
         Validators.minLength(3),
-        Validators.maxLength(50),
+        Validators.maxLength(255),
       ]),
       compareType: new FormControl<GqlWebDocumentField>(
         GqlWebDocumentField.Pixel,

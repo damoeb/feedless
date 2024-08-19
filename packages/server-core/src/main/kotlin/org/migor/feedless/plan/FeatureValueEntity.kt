@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -47,11 +48,17 @@ enum class FeatureName {
 
 @Entity
 @Table(
-  name = "t_feature_value", uniqueConstraints = [
+  name = "t_feature_value",
+  uniqueConstraints = [
     UniqueConstraint(
       name = "UniqueFeaturePerPlan",
-      columnNames = ["feature_group_id", StandardJpaFields.featureId]
-    )]
+      columnNames = [StandardJpaFields.featureGroupId, StandardJpaFields.featureId]
+    )
+  ],
+  indexes = [
+    Index(name = "feature_group_id__idx", columnList = StandardJpaFields.featureGroupId),
+    Index(name = "feature_id__idx", columnList = StandardJpaFields.featureId),
+  ]
 )
 open class FeatureValueEntity : EntityWithUUID() {
 
@@ -65,7 +72,7 @@ open class FeatureValueEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
-  @Column(name = "feature_group_id", nullable = false)
+  @Column(name = StandardJpaFields.featureGroupId, nullable = false)
   open lateinit var featureGroupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)

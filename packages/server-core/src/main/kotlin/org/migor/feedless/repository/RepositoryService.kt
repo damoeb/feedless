@@ -393,6 +393,8 @@ class RepositoryService {
       ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)
   }
+
+  fun getRepoTitleForFeedlessOpsNotifications(): String = "feedlessOpsNotifications"
 }
 
 private fun Visibility.fromDto(): EntityVisibility {

@@ -52,7 +52,7 @@ class PlanConstraintsService {
         customMaxItems.coerceAtLeast(minItems)
           .coerceAtMost(maxItems)
       } ?: customMaxItems.coerceAtLeast(minItems)
-    }
+    } ?: maxItems
   }
 
   private fun resolveProduct(product: ProductCategory?): ProductCategory {

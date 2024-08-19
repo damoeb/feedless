@@ -66,7 +66,6 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     }
 
     val response = scrapeService.scrape(corrId, request)
-      .block()!!
 
     if (response.outputs.isNotEmpty()) {
       val lastOutput = response.outputs.last()

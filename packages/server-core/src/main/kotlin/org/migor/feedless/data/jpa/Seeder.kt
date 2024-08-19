@@ -22,6 +22,7 @@ import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretType
@@ -53,7 +54,7 @@ class Seeder {
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
   @Autowired
-  private lateinit var featureSerrvice: FeatureService
+  private lateinit var featureService: FeatureService
 
   @Autowired
   private lateinit var documentDAO: DocumentDAO
@@ -75,6 +76,9 @@ class Seeder {
 
   @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
+
+  @Autowired
+  private lateinit var repositoryService: RepositoryService
 
   @Autowired
   private lateinit var legacyFeedService: LegacyFeedService
@@ -118,15 +122,39 @@ class Seeder {
     }
 
     pushLegacyNotifications(root)
+    pushFeedlessOpsNotifications(root)
 
     return root
   }
 
+  private fun pushFeedlessOpsNotifications(root: UserEntity) {
+    val feedlessOpsNotificationRepo = resolveFeedlessOpsNotificationsRepo(root)
+
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
+      val title = "Important Note: feedless 1 is online!"
+      val repositoryId = feedlessOpsNotificationRepo.id
+
+      val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
+        val n = DocumentEntity()
+        n.repositoryId = repositoryId
+        n
+      }
+
+      notification.url = propertyService.appHost
+      notification.contentTitle = title
+      notification.status = ReleaseStatus.released
+      notification.contentText =
+        "Hi, I released a new version of feedless, that gives you a lot of new features."
+      notification.updatedAt = Date()
+
+      documentDAO.save(notification)
+    }
+  }
   private fun pushLegacyNotifications(root: UserEntity) {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
 
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "Migrate This Legacy Feed"
+      val title = "Important Note: RSS-proxy becomes feedless!"
       val repositoryId = legacyNotificationRepo.id
 
       val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
@@ -139,7 +167,7 @@ class Seeder {
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =
-        "Hi, support for anonymous rss-proxy feeds is coming to an end, but I made migrating especially easy."
+        "Hi, support for anonymous rss-proxy feeds is coming to an end, for new feeds you need to create them on https://feedless.org ."
       notification.updatedAt = Date()
 
       documentDAO.save(notification)
@@ -148,9 +176,17 @@ class Seeder {
 
   private fun resolveLegacyNotificationsRepo(root: UserEntity): RepositoryEntity {
     val repoTitleLegacyNotifications = legacyFeedService.getRepoTitleForLegacyFeedNotifications()
+    return resolveOpsNotificationsRepo(repoTitleLegacyNotifications, root)
+  }
 
+  private fun resolveFeedlessOpsNotificationsRepo(root: UserEntity): RepositoryEntity {
+    val repoTitleOpsNotifications = repositoryService.getRepoTitleForFeedlessOpsNotifications()
+    return resolveOpsNotificationsRepo(repoTitleOpsNotifications, root)
+  }
+
+  private fun resolveOpsNotificationsRepo(repoTitle: String, root: UserEntity): RepositoryEntity {
     val repo = RepositoryEntity()
-    repo.title = repoTitleLegacyNotifications
+    repo.title = repoTitle
     repo.description = ""
     repo.shareKey = ""
     repo.ownerId = root.id
@@ -158,7 +194,7 @@ class Seeder {
     repo.product = ProductCategory.feedless
     repo.sourcesSyncCron = ""
 
-    return repositoryDAO.findByTitleAndOwnerId(repoTitleLegacyNotifications, root.id) ?: repositoryDAO.save(repo)
+    return repositoryDAO.findByTitleAndOwnerId(repoTitle, root.id) ?: repositoryDAO.save(repo)
   }
 
   private fun createAnonymousUser() = createUser(
@@ -193,7 +229,7 @@ class Seeder {
         featureGroupDAO.save(group)
       }
 
-    featureSerrvice.assignFeatureValues(
+    featureService.assignFeatureValues(
       baseFeatureGroup, features = mapOf(
         FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
         FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
@@ -224,7 +260,7 @@ class Seeder {
     )
 
     if (isSelfHosted()) {
-      featureSerrvice.assignFeatureValues(
+      featureService.assignFeatureValues(
         baseFeatureGroup, features = mapOf(
 //          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
 //          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
@@ -397,7 +433,7 @@ class Seeder {
           FeatureName.pluginsBool to asBoolFeature(true),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(100),
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
@@ -429,7 +465,7 @@ class Seeder {
       featureGroupDAO.save(group)
     }
 
-    featureSerrvice.assignFeatureValues(group, features)
+    featureService.assignFeatureValues(group, features)
     return group
   }
 

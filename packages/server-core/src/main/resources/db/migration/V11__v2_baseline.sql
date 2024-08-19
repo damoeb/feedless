@@ -299,9 +299,6 @@ ALTER TABLE t_repository
   RENAME COLUMN lastupdatedat to last_updated_at;
 
 ALTER TABLE t_repository
-  ALTER COLUMN title TYPE character varying(50);
-
-ALTER TABLE t_repository
   ALTER COLUMN visibility TYPE character varying(50);
 
 ALTER TABLE IF EXISTS t_repository
@@ -390,6 +387,16 @@ ALTER TABLE IF EXISTS t_repository
 -- );
 
 ALTER TABLE t_feed_native RENAME TO t_scrape_source;
+
+ALTER TABLE IF EXISTS t_repository DROP CONSTRAINT IF EXISTS fk157cu4wjd97imxmg4ns0x3x85;
+ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS streamid;
+ALTER TABLE IF EXISTS t_repository DROP COLUMN IF EXISTS streamid;
+
+INSERT INTO t_repository(id, created_at, description, last_updated_at, owner_id, title, visibility, scheduler_expression)
+select gen_random_uuid(), now(), '', now(), ownerid, 'orphaned feeds', 'PRIVATE', '' from (select distinct tf.ownerid as ownerid from t_scrape_source tf
+                                                                                       where not exists(select TRUe from t_importer ti where ti.feedid=tf.id)) as users_with_broken_feed;
+
+
 ALTER TABLE t_scrape_source RENAME CONSTRAINT t_feed_native_pkey TO t_scrape_source_pkey;
 ALTER TABLE IF EXISTS t_scrape_source RENAME COLUMN createdat TO created_at;
 
@@ -426,7 +433,6 @@ ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS lon;
 
 ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS nextharvestat;
 
-ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS ownerid;
 
 ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS retentionsize;
 
@@ -483,15 +489,18 @@ ALTER TABLE IF EXISTS t_scrape_source
 
 ALTER TABLE IF EXISTS t_scrape_source
   ADD COLUMN repository_id uuid;
+
+
 UPDATE t_scrape_source ts SET repository_id = (
-  SELECT ti.bucketid from t_importer ti
-  WHERE ti.feedid = ts.id
+  SELECT distinct ti.bucketid from t_importer ti
+  WHERE ti.feedid = ts.id and ti.bucketid is not null
+  union
+  select id from t_repository tr where ts.ownerid=tr.owner_id and tr.title='orphaned feeds'
+  limit 1
 ) WHERE repository_id IS NULL;
 
-ALTER TABLE IF EXISTS t_repository DROP CONSTRAINT IF EXISTS fk157cu4wjd97imxmg4ns0x3x85;
-ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS streamid;
-ALTER TABLE IF EXISTS t_repository DROP COLUMN IF EXISTS streamid;
 
+ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS ownerid;
 ALTER TABLE t_scrape_source ALTER COLUMN repository_id SET NOT NULL;
 ALTER TABLE IF EXISTS t_scrape_source
   ADD CONSTRAINT fkpdn9867c5spvfb785hkvuh71o FOREIGN KEY (repository_id)

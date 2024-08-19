@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.stream.Stream
 
@@ -30,7 +32,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
         and (e.disabledFrom is null or e.disabledFrom > :now)
       order by e.lastUpdatedAt asc """,
   )
-  fun findSomeDue(@Param("now") now: Date, pageable: Pageable): Stream<RepositoryEntity>
+  fun findSomeDue(@Param("now") now: Date, pageable: Pageable): List<RepositoryEntity>
 
   @Modifying
   @Query(
@@ -42,15 +44,16 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
   )
   fun updateScheduledNextAt(@Param("id") id: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
 
-  @Modifying
-  @Query(
-    """
-    update RepositoryEntity e
-    set e.lastUpdatedAt = :lastUpdatedAt
-    where e.id = :id
-    """
-  )
-  fun updateLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+//  @Transactional(propagation = Propagation.REQUIRES_NEW)
+//  @Modifying
+//  @Query(
+//    """
+//    update RepositoryEntity e
+//    set e.lastUpdatedAt = :lastUpdatedAt
+//    where e.id = :id
+//    """
+//  )
+//  fun updateLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
   fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<RepositoryEntity>
 

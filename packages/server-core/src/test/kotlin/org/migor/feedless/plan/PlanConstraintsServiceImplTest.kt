@@ -86,7 +86,7 @@ class PlanConstraintsServiceImplTest {
     val maxItems = 50L
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
-    assertThat(service.coerceRetentionMaxCapacity(null, userId, product)).isNull()
+    assertThat(service.coerceRetentionMaxCapacity(null, userId, product)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxCapacity(56, userId, product)).isEqualTo(maxItems)
     assertThat(service.coerceRetentionMaxCapacity(1, userId, product)).isEqualTo(2)
   }
