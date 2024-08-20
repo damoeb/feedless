@@ -230,8 +230,10 @@ val testDocker = tasks.register("testDocker", Exec::class) {
   )
 }
 
+val buildTask = tasks.findByPath("build")!!.dependsOn(lintTask, "test", "bootJar")
+
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
-  dependsOn(lintTask, "test", "bootJar")
+  dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
@@ -250,7 +252,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   )
 }
 
-val dockerBuild = tasks.register("buildDockerImage") {
+tasks.register("bundle") {
   dependsOn(dockerAmdBuild)
   finalizedBy(testDocker)
 }

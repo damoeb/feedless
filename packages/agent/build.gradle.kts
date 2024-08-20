@@ -38,6 +38,10 @@ val lintTask = tasks.register<YarnTask>("lint") {
   outputs.upToDateWhen { true }
 }
 
+val prepareTask = tasks.register("prepare") {
+  dependsOn(yarnInstallTask)
+}
+
 val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test"))
   dependsOn(yarnInstallTask)
@@ -60,7 +64,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("dist")
 }
 
-tasks.register("buildDockerImage", Exec::class) {
+tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")

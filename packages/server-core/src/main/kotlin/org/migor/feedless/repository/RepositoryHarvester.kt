@@ -2,7 +2,6 @@ package org.migor.feedless.repository
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.jsoup.Jsoup
@@ -43,9 +42,11 @@ import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.scrape}")
@@ -86,9 +87,9 @@ class RepositoryHarvester internal constructor() {
   @Autowired
   private lateinit var planConstraintsService: PlanConstraintsService
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   suspend fun handleRepository(corrId: String, repository: RepositoryEntity) {
-    runBlocking {
+    runCatching {
       log.info("[${corrId}] handleRepository ${repository.id}")
 
       meterRegistry.counter(
@@ -105,7 +106,7 @@ class RepositoryHarvester internal constructor() {
       documentService.applyRetentionStrategy(corrId, repository)
       updateScheduledNextAt(corrId, repository)
 //        repositoryDAO.updateLastUpdatedAt(repository.id, Date())
-    }
+    }.onFailure { log.error("[$corrId] handleRepository failed: ${it.message}", it) }
   }
 
 //  fun updateNextHarvestDateAfterError(corrId: String, repository: RepositoryEntity, e: Throwable) {
@@ -121,6 +122,8 @@ class RepositoryHarvester internal constructor() {
 //    repositoryDAO.save(repository)
 //  }
 
+  private val iso8601DateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY)
+
   private fun updateScheduledNextAt(corrId: String, repository: RepositoryEntity) {
     val scheduledNextAt = repositoryService.calculateScheduledNextAt(
       repository.sourcesSyncCron,
@@ -128,7 +131,7 @@ class RepositoryHarvester internal constructor() {
       repository.product,
       LocalDateTime.now()
     )
-    log.info("[$corrId] Next harvest scheduled for $scheduledNextAt")
+    log.info("[$corrId] Next harvest scheduled for ${iso8601DateFormat.format(scheduledNextAt)}")
     repositoryDAO.updateScheduledNextAt(repository.id, scheduledNextAt)
   }
 
@@ -247,8 +250,8 @@ class RepositoryHarvester internal constructor() {
 //  }
 
   private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed, source: SourceEntity) {
-    log.info("[$corrId] importFeed with ${feed.items.size} items")
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+    log.info("[$corrId] importFeed with ${feed.items.size} items with ${repository.plugins.size} plugins")
 
     if (feed.items.isEmpty()) {
       notificationService.createNotification(corrId, repository.ownerId, "Feed is empty", repository = repository, source = source)
@@ -267,7 +270,7 @@ class RepositoryHarvester internal constructor() {
           updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
           createOrUpdate(corrId, updated, existing, repository)
         } catch (e: Exception) {
-          log.error("[$corrId] ${e.message}")
+          log.error("[$corrId] importFeed failed: ${e.message}")
           null
         }
       }
@@ -277,7 +280,10 @@ class RepositoryHarvester internal constructor() {
       documents
         .filter { (new, _) -> new }
         .mapNotNull { (_, document) -> document }
-        .flatMap { it.plugins }
+        .flatMap { repository.plugins
+          .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, it, index) }
+          .toMutableList()
+        }
     )
 
     val hasNew = documents.any { (new, _) -> new }
@@ -349,11 +355,7 @@ class RepositoryHarvester internal constructor() {
             ReleaseStatus.unreleased
           }
 
-          document.plugins = repository.plugins
-            .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, document, index) }
-            .toMutableList()
-
-          log.debug("[$corrId] saved ${repository.id} ${document.status} ${document.url} with ${document.plugins.size} plugins")
+          log.debug("[$corrId] saved ${repository.id} ${document.status} ${document.url}")
 
           Pair(true, document)
         }
@@ -361,7 +363,7 @@ class RepositoryHarvester internal constructor() {
       if (e is ResumableHarvestException) {
         log.debug("[$corrId] ${e.message}")
       } else {
-        log.error("[$corrId] ${e.message}")
+        log.error("[$corrId] createOrUpdate failed: ${e.message}")
         if (log.isDebugEnabled) {
           e.printStackTrace()
         }

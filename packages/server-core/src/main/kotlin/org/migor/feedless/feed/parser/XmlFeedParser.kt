@@ -78,7 +78,7 @@ class XmlFeedParser : FeedBodyParser {
       doc.html()
     }
       .onFailure {
-        log.error("Cannot patch xml namespaces: ${it.message}")
+        log.error("parseXml failed. Cannot patch xml namespaces: ${it.message}")
       }
       .getOrElse { String(body) }
 
@@ -88,7 +88,7 @@ class XmlFeedParser : FeedBodyParser {
     return try {
       input.build(StringReader(markup))
     } catch (e: Exception) {
-      log.warn("Cannot parse feed ${e.message}, trying BrokenXmlParser")
+      log.warn("xml healing failed: Cannot parse feed ${e.message}")
       input.build(StringReader(BrokenXmlParser.parse(markup)))
     }
   }

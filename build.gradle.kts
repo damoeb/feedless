@@ -50,7 +50,7 @@ val cleanServices = tasks.register("cleanServices", Exec::class) {
   dependsOn(stopServices)
   commandLine("docker-compose", "rm", "-f", "feedless-app", "feedless-agent", "feedless-core")
 }
-val deploySaas = tasks.register("deploySaas", Exec::class) {
+tasks.register("startServices", Exec::class) {
   dependsOn(
     buildImages,
     stopServices,
@@ -87,24 +87,16 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
   )
 }
 
-val prepareTask = tasks.register("prepare") {
-
-}
-
-val buildTask = tasks.register("build") {
-  dependsOn(prepareTask, buildDockerAioWeb, buildDockerAioChromium)
-}
-
-tasks.register("publish", Exec::class) {
-  dependsOn(buildTask)
-
-  val gitHash = grgit.head().id
-  val semver = (findProperty("feedlessVersion") as String).split(".")
-  val major = semver[0]
-  val minor = semver[1]
-  val patch = semver[2]
-  commandLine("sh", "./scripts/semver-tag-docker-images.sh", gitHash, major, minor, patch)
-}
+//tasks.register("publish", Exec::class) {
+////  dependsOn(buildTask)
+//
+//  val gitHash = grgit.head().id
+//  val semver = (findProperty("feedlessVersion") as String).split(".")
+//  val major = semver[0]
+//  val minor = semver[1]
+//  val patch = semver[2]
+//  commandLine("sh", "./scripts/semver-tag-docker-images.sh", gitHash, major, minor, patch)
+//}
 
 subprojects {
   tasks.register("lintDockerImage", Exec::class) {
@@ -116,6 +108,6 @@ subprojects {
   }
 }
 
-fun appWebDockerImageTask() = tasks.findByPath("packages:app-web:buildDockerImage")
-fun serverCoreDockerImageTask() = tasks.findByPath("packages:server-core:buildDockerImage")
-fun agentDockerImageTask() = tasks.findByPath("packages:agent:buildDockerImage")
+fun appWebDockerImageTask() = tasks.findByPath("packages:app-web:bundle")
+fun serverCoreDockerImageTask() = tasks.findByPath("packages:server-core:bundle")
+fun agentDockerImageTask() = tasks.findByPath("packages:agent:bundle")

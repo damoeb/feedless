@@ -13,8 +13,7 @@ node {
 }
 
 val prepareTask = tasks.register("prepare") {
-  mustRunAfter(tasks.findByPath(":prepare")!!)
-  dependsOn(codegenTask)
+  dependsOn(codegenTask, yarnInstallTask)
 }
 
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
@@ -68,7 +67,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("www")
 }
 
-tasks.register("buildDockerImage", Exec::class) {
+tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
   val gitHash = grgit.head().id
   val baseTag = findProperty("dockerImageTag")
@@ -85,11 +84,6 @@ tasks.register("clean", Exec::class) {
     "rm", "-rf",
     "www", "build",
   )
-}
-
-
-tasks.register("prepareDockerImage", Exec::class) {
-  dependsOn(buildTask)
 }
 
 tasks.register<YarnTask>("start") {

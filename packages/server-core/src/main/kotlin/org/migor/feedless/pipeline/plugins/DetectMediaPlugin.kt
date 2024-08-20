@@ -75,7 +75,7 @@ class DetectMediaPlugin : MapEntityPlugin {
       document.attachments = attachmentDAO.saveAll(mediaItems.map { it.toEntity(document.id) })
 
     }.onFailure {
-      log.error("[$corrId] ${it.message}")
+      log.error("[$corrId] mapEntity failed: ${it.message}")
     }
     return document
   }

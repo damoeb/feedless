@@ -17,7 +17,6 @@ import org.migor.feedless.actions.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
-import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
@@ -165,7 +164,7 @@ fun ScrapeRequestInput.fromDto(): SourceEntity {
     } ?: it.select?.let { toDomAction(DomEventType.select, it.element.value, it.selectValue) }
     ?: it.execute?.let { toExecuteAction(it) } ?: it.extract?.let { toExtractAction(it) }
     ?: it.click?.let { toClickAction(it) } ?: run {
-      log.error("No mapper defined for $it")
+      log.error("ScrapeRequestInput.fromDto() failed: No mapper defined for $it")
       null
     }
   }.toMutableList()
@@ -264,29 +263,6 @@ private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext = when 
   else -> ExtendContext.NONE
 }
 
-private fun PluginExecutionInput.fromDto(): PluginExecution = PluginExecution(
-  pluginId = pluginId,
-  params = params.fromDto(),
-)
-
-private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams = PluginExecutionParams(
-  org_feedless_feed = org_feedless_feed?.fromDto(),
-  jsonData = jsonData,
-  org_feedless_diff_email_forward = org_feedless_diff_email_forward?.fromDto(),
-  org_feedless_fulltext = org_feedless_fulltext?.fromDto(),
-)
-
-private fun FeedParamsInput.fromDto(): FeedParams {
-  return FeedParams(
-    generic = generic?.fromDto(),
-  )
-}
-
-private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams = FulltextPluginParams(
-  readability = readability,
-  inheritParams = inheritParams
-)
-
 fun SelectorsInput.fromDto(): Selectors = Selectors(
   contextXPath = contextXPath,
   linkXPath = linkXPath,
@@ -294,106 +270,6 @@ fun SelectorsInput.fromDto(): Selectors = Selectors(
   extendContext = extendContext,
   dateIsStartOfEvent = BooleanUtils.isTrue(dateIsStartOfEvent),
   paginationXPath = paginationXPath,
-)
-
-private fun ScrapeBoundingBoxInput.fromDto(): ScrapeBoundingBox = ScrapeBoundingBox(
-  boundingBox = boundingBox.fromDto(),
-)
-
-private fun BoundingBoxInput.fromDto(): BoundingBox = BoundingBox(
-  x = x,
-  y = y,
-  w = w,
-  h = h,
-)
-
-//private fun ScrapeFlowInput.fromDto(): ScrapeFlow = ScrapeFlow(
-//  sequence = sequence.map { it.fromDto() },
-//)
-
-private fun ScrapeActionInput.fromDto(): ScrapeAction = ScrapeAction(
-  fetch = fetch?.fromDto(),
-  execute = execute?.fromDto(),
-  extract = extract?.fromDto(),
-  type = type?.fromDto(),
-  purge = purge?.fromDto(),
-  select = select?.fromDto(),
-  click = click?.fromDto(),
-  header = header?.fromDto(),
-  wait = wait?.fromDto(),
-)
-
-private fun ScrapeExtractInput.fromDto(): ScrapeExtract = ScrapeExtract(
-  fragmentName = fragmentName,
-  imageBased = imageBased?.fromDto(),
-  selectorBased = selectorBased?.fromDto(),
-)
-
-private fun DOMExtractInput.fromDto(): DOMExtract = DOMExtract(
-  max = max,
-  fragmentName = fragmentName,
-  xpath = xpath.fromDto(),
-  emit = emit,
-  extract = extract?.map { it.fromDto() },
-)
-
-private fun HttpFetchInput.fromDto(): HttpFetch = HttpFetch(
-  get = get.fromDto()
-)
-
-private fun StringLiteralOrVariableInput.fromDto(): StringLiteralOrVariable = StringLiteralOrVariable(
-  literal = literal,
-  variable = variable,
-)
-
-private fun WaitActionInput.fromDto(): WaitAction = WaitAction(
-  element = element.fromDto(),
-)
-
-private fun DOMElementInput.fromDto(): DOMElement = DOMElement(
-  element = element?.fromDto(),
-  position = position?.fromDto(),
-)
-
-private fun XYPositionInput.fromDto(): XYPosition = XYPosition(
-  x = x,
-  y = y,
-)
-
-private fun RequestHeaderInput.fromDto(): RequestHeader = RequestHeader(
-  name = name,
-  value = value,
-)
-
-private fun DOMElementByNameOrXPathInput.fromDto(): DOMElementByNameOrXPath = DOMElementByNameOrXPath(
-  name = name?.fromDto(),
-  xpath = xpath?.fromDto(),
-)
-
-private fun DOMElementByNameInput.fromDto(): DOMElementByName = DOMElementByName(
-  value = value,
-)
-
-private fun DOMActionSelectInput.fromDto(): DOMActionSelect = DOMActionSelect(
-  element = element.fromDto(),
-  selectValue = selectValue,
-)
-
-private fun DOMActionTypeInput.fromDto(): DOMActionType = DOMActionType(
-  element = element.fromDto(),
-  typeValue = typeValue,
-)
-
-private fun DOMElementByXPathInput.fromDto(): DOMElementByXPath = DOMElementByXPath(
-  value = value,
-)
-
-private fun ScrapePrerenderInput.fromDto(): ScrapePrerender = ScrapePrerender(
-  waitUntil = waitUntil,
-  language = language,
-  viewport = viewport?.fromDto(),
-  additionalWaitSec = additionalWaitSec,
-  url = url.fromDto()
 )
 
 private fun ViewPortInput.fromDto(): ViewPort = ViewPort(
@@ -412,50 +288,4 @@ private fun ExtendContext.toDto(): ExtendContentOptions {
   }
 }
 
-private fun JsonItem.toDto(): WebDocument {
-  var contentHtmlParam: String? = null
-  var contentRawBase64Param: String? = null
-  var contentRawMimeParam: String? = null
-  if (isHtml(contentRawMime)) {
-    try {
-      contentHtmlParam = String(Base64.getDecoder().decode(contentRawBase64))
-    } catch (e: Exception) {
-      contentHtmlParam = contentRawBase64
-    }
-  } else {
-    contentRawBase64Param = contentRawBase64
-    contentRawMimeParam = contentRawMime
-  }
-
-  return WebDocument(
-    id = UUID.randomUUID().toString(),
-    url = url,
-    contentHtml = contentHtmlParam,
-    contentRawBase64 = contentRawBase64Param,
-    contentRawMime = contentRawMimeParam,
-    contentText = contentText,
-    publishedAt = publishedAt.time,
-    startingAt = startingAt?.time,
-    localized = latLng?.let { GeoPoint(lat=it.x, lon=it.y) },
-    updatedAt = publishedAt.time,
-    createdAt = Date().time,
-  )
-}
-
-
 fun isHtml(contentRawMime: String?): Boolean = contentRawMime?.lowercase()?.startsWith("text/html") == true
-
-private fun DiffEmailForwardParamsInput.fromDto(): DiffEmailForwardParams = DiffEmailForwardParams(
-  inlineLatestImage = inlineLatestImage,
-  inlineDiffImage = inlineDiffImage,
-  inlinePreviousImage = inlinePreviousImage,
-  nextItemMinIncrement = nextItemMinIncrement,
-  compareBy = compareBy.fromDto(),
-)
-
-private fun CompareByInput.fromDto(): CompareBy {
-  return CompareBy(
-    field = field,
-    fragmentNameRef = fragmentNameRef,
-  )
-}

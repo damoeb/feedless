@@ -146,7 +146,7 @@ class AgentService {
         log.info("$corrId] submitted agent job $harvestJobId")
         pendingJobs[harvestJobId] = emitter
       } catch (e: Exception) {
-        log.error("$corrId] ${e.message}")
+        log.error("$corrId] prerenderWithAgent failed: ${e.message}")
         emitter.error(e)
       }
     }

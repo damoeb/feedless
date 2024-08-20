@@ -137,7 +137,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
           license = parseLicense("boot", it)
         }
       } catch (e: Exception) {
-        log.error(e.message)
+        log.error("initialize failed: ${e.message}")
       }
     } else {
       loadPrivateKey()
@@ -322,7 +322,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       val jwsObject = JWSObject.parse(licenseToken.removeHeaders())
       jwsObject.verify(verifier)
     } catch (e: Exception) {
-      log.error(e.message)
+      log.error("verifyTokenAgainstPubKey failed: ${e.message}")
       false
     }
   }

@@ -11,6 +11,19 @@ services:
       - ./docker/nginx/config:/etc/nginx/conf.d
       - ./docker/nginx/ssl:/etc/nginx/ssl
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+
+  builder:
+    build: docker/builder
+
+#    command: bash -c "gradle buildDockerAioChromium"
+
+#  mq:
+#    image: rabbitmq:management
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    networks:
+#      - postgres
 #
 #  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_setting_jvm_heap_size
 #  elastic:

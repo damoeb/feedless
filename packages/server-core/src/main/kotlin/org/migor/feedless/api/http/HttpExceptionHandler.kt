@@ -29,7 +29,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {
     val corrId = RequestContextHolder.getRequestAttributes()?.getAttribute("corrId", SCOPE_REQUEST)
-    log.error("[$corrId] ${ex?.message}")
+    log.error("[$corrId] handleApiException: ${ex?.message}")
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "${ex?.message}"
@@ -61,7 +61,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   fun handleJWTDecodeException(
     ex: JwtValidationException?, request: WebRequest?
   ): ResponseEntity<Any?>? {
-    log.error("jwt: ${ex?.message}")
+    log.error("handleJWTDecodeException: ${ex?.message}")
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "Provided token cannot be processed."
@@ -76,7 +76,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
     statusCode: HttpStatusCode,
     request: WebRequest
   ): ResponseEntity<Any>? {
-    log.error("internal: ${ex.message}")
+    log.error("handleExceptionInternal: ${ex.message}")
     val payload = mapOf(
       "timestamp" to LocalDateTime.now(),
       "status" to statusCode.value(),

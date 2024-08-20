@@ -142,7 +142,7 @@ class PlanConstraintsService {
         } ?: throw IllegalArgumentException("user has no subscription")
       }
     } catch (e: Exception) {
-      log.error("[corrId] ${e.message}")
+      log.error("[corrId] getFeature featureName=$featureName userId=$userId product=$product failed: ${e.message}")
       null
     }
   }

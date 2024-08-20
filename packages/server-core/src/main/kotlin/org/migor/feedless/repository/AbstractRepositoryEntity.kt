@@ -142,7 +142,6 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb", nullable = false, name = "plugins")
-  @Lazy
   open var plugins: List<org.migor.feedless.repository.PluginExecution> = emptyList()
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)

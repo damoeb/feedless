@@ -88,7 +88,7 @@ class MailAuthenticationService {
           emitter.onDispose { log.debug("[$corrId] disconnected") }
 
         } catch (e: Exception) {
-          log.error("[$corrId] ${e.message}")
+          log.error("[$corrId] authenticateUsingMail failed: ${e.message}")
           emitter.error(e)
         }
       }
@@ -126,7 +126,7 @@ class MailAuthenticationService {
       response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
     },
       {
-        log.error("otp not found ($corrId)")
+        log.error("confirmAuthCode failed: otp not found ($corrId)")
       })
   }
 
