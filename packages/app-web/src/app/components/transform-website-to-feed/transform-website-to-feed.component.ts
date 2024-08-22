@@ -8,16 +8,14 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
+  SimpleChanges
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
-  GqlFeedlessPlugins,
   GqlRemoteNativeFeed,
-  GqlScrapedFeeds,
   GqlScrapeRequest,
-  GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
+  GqlSourceInput,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
@@ -30,8 +28,7 @@ import { FeedService } from '../../services/feed.service';
 import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 import { Subscription } from 'rxjs';
-import { getFirstFetchUrlLiteral } from '../../utils';
-import { Embeddable } from '../embedded-image/embedded-image.component';
+import { getGenericFeedParams } from '../../utils';
 import { ScrapeController } from '../interactive-website/scrape-controller';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 
@@ -51,7 +48,7 @@ export class TransformWebsiteToFeedComponent
   implements OnInit, OnChanges, OnDestroy
 {
   @Input({ required: true })
-  scrapeRequest: GqlScrapeRequestInput;
+  scrapeRequest: GqlSourceInput;
 
   @Input({ required: true })
   scrapeResponse: ScrapeResponse;
@@ -93,14 +90,13 @@ export class TransformWebsiteToFeedComponent
   nativeFeeds: GqlRemoteNativeFeed[] = [];
   currentNativeFeed: GqlRemoteNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
-  embedWebsiteData: Embeddable;
   isNonSelected = true;
   busy = false;
   showSelectors = false;
   private selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
   private subscriptions: Subscription[] = [];
-  protected scrapeController = new ScrapeController(null);
+  protected scrapeController: ScrapeController;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -110,53 +106,44 @@ export class TransformWebsiteToFeedComponent
 
   async ngOnInit() {
     try {
+      this.scrapeController = new ScrapeController(this.scrapeRequest);
+      this.scrapeController.response = this.scrapeResponse;
+
+      const genericFeedParams = getGenericFeedParams(
+        this.scrapeRequest.flow?.sequence,
+      );
+      if (genericFeedParams) {
+        await this.pickGenericFeed({
+          selectors: genericFeedParams,
+          count: 0,
+          score: 0,
+          hash: '',
+        });
+      }
+
       this.subscriptions.push(
         this.formGroup.valueChanges.subscribe(() => {
           this.emitSelectedFeed();
         }),
         this.formGroup.controls.contextXPath.valueChanges.subscribe((xpath) => {
-          this.scrapeController.showElements.emit(xpath);
+          this.scrapeController.showElements.next(xpath);
         }),
       );
       const elementWithFeeds = this.scrapeResponse.outputs.find(
-        (o) =>
-          o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
+        (o) => o.response?.extract?.feeds,
       );
       if (elementWithFeeds) {
-        const feeds = elementWithFeeds.response.execute.data
-          .org_feedless_feeds as GqlScrapedFeeds;
+        const feeds = elementWithFeeds.response.extract.feeds;
         this.genericFeeds = feeds.genericFeeds;
-        this.nativeFeeds = feeds.nativeFeeds;
+        this.nativeFeeds = feeds.nativeFeeds as GqlRemoteNativeFeed[]; // todo
         const scores = feeds.genericFeeds.map((gf) => gf.score);
         const maxScore = max(scores);
         const minScore = min(scores);
         this.scaleScore = scaleLinear()
           .domain([minScore, maxScore])
           .range([0, 100]);
-
-        const fetchAction = this.scrapeResponse.outputs.find(
-          (o) => o.response.fetch,
-        ).response.fetch;
-
-        this.embedWebsiteData = {
-          data: fetchAction.data,
-          mimeType: fetchAction.debug.contentType,
-          url: getFirstFetchUrlLiteral(this.scrapeRequest.flow.sequence),
-          // viewport: null,
-        };
       } else {
-        const elementWithFeed = this.scrapeResponse.outputs.find(
-          (o) =>
-            o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
-        );
-        if (elementWithFeed) {
-          const feed = elementWithFeed.response.execute.data
-            .org_feedless_feed as GqlRemoteNativeFeed;
-          this.nativeFeeds = [feed];
-          await this.pickNativeFeed(feed);
-        } else {
-          throw new Error('not supported');
-        }
+        throw new Error('not supported');
       }
       if (this.feed) {
         if (this.feed.nativeFeed) {
@@ -195,7 +182,7 @@ export class TransformWebsiteToFeedComponent
       this.selectedFeed = {
         genericFeed: omit(this.currentGenericFeed, 'samples') as any,
       };
-      this.scrapeController.showElements.emit(
+      this.scrapeController.showElements.next(
         this.selectedFeed.genericFeed.selectors.contextXPath,
       );
     }
@@ -219,13 +206,6 @@ export class TransformWebsiteToFeedComponent
     return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 
-  // getExtendContextOptions(): LabelledSelectOption[] {
-  //   return Object.values(GqlExtendContentOptions).map((option) => ({
-  //     label: option,
-  //     value: option,
-  //   }));
-  // }
-
   private async resetSelection() {
     this.showSelectors = false;
     this.currentGenericFeed = null;
@@ -248,14 +228,15 @@ export class TransformWebsiteToFeedComponent
   }
 
   async previewGenericFeed() {
-    const request = getScrapeRequest(
-      this.getSelectedFeed(),
-      this.scrapeRequest as GqlScrapeRequest,
-    );
     await this.modalService.openRemoteFeedModal({
       feedProvider: () =>
         this.feedService.previewFeed({
-          requests: [request],
+          sources: [
+            getScrapeRequest(
+              this.getSelectedFeed(),
+              this.scrapeRequest as GqlScrapeRequest,
+            )
+          ],
           filters: [],
           tags: [],
         }),
@@ -319,10 +300,11 @@ export class TransformWebsiteToFeedComponent
       xpath,
       callback: async (elements: HTMLElement[]) => {
         const componentProps: CodeEditorModalComponentProps = {
-          element: await format(elements[0].innerHTML, {
+          text: await format(elements[0].innerHTML, {
             parser: 'html',
             plugins: [htmlPlugin],
           }),
+          contentType: 'html',
         };
         await this.modalService.openCodeEditorModal(componentProps);
       },

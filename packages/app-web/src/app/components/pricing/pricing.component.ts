@@ -7,9 +7,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { filter } from 'lodash-es';
-import { ProductConfig } from '../../services/app-config.service';
 import { FormControl } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { FeatureGroup, Product } from '../../graphql/types';

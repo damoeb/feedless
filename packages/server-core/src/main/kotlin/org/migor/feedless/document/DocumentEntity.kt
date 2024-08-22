@@ -32,6 +32,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.WebDocument
@@ -161,6 +162,20 @@ open class DocumentEntity : EntityWithUUID() {
   )
   open var parent: DocumentEntity? = null
 
+  @Column(name = StandardJpaFields.sourceId)
+  open var sourceId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(
+    name = StandardJpaFields.sourceId,
+    referencedColumnName = StandardJpaFields.id,
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_document__to__source")
+  )
+  open var source: SourceEntity? = null
+
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var children: MutableList<DocumentEntity> = mutableListOf()
@@ -215,7 +230,6 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     contentRawMime = contentRawMimeParam,
     contentTitle = contentTitle,
     contentText = contentText,
-    updatedAt = updatedAt.time,
     createdAt = createdAt.time,
     localized = latLon?.let {
       GeoPoint(

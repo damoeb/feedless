@@ -20,6 +20,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.mail.MailService
+import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
@@ -161,7 +162,7 @@ class PipelineJob internal constructor() {
 
           log.info("[$corrId] executing ${job.executorId}")
           when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
-            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, document, job.executorParams, 0)) {
+            is FilterEntityPlugin -> if (!plugin.filterEntity(corrId, document.asJsonItem(), job.executorParams, 0)) {
               omitted = true
               break
             }
@@ -183,10 +184,12 @@ class PipelineJob internal constructor() {
         }
       }
       if (omitted) {
+        log.info("[$corrId] omitting")
         documentDAO.delete(document)
       } else {
         forwardToMail(corrId, document, repository)
         document.status = ReleaseStatus.released
+        log.info("[$corrId] releasing document")
         documentDAO.save(document)
         documentService.applyRetentionStrategy(corrId, repository)
       }

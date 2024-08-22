@@ -117,7 +117,7 @@ export class AppConfigService {
       id: 'feedless',
       sideMenu: {
         width: 200,
-        breakpoint: 'xl',
+        breakpoint: 'xs',
       },
       routes: [
         {

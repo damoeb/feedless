@@ -10,6 +10,8 @@ import { ProductTitleModule } from '../../components/product-title/product-title
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { FeedlessMenuModule } from './feedless-menu/feedless-menu.module';
+import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
+import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
 
 @NgModule({
   imports: [
@@ -20,6 +22,8 @@ import { FeedlessMenuModule } from './feedless-menu/feedless-menu.module';
     FeedlessMenuModule,
     DarkModeButtonModule,
     LoginButtonModule,
+    AgentsButtonModule,
+    RepositoriesButtonModule
   ],
   declarations: [FeedlessProductPage],
 })

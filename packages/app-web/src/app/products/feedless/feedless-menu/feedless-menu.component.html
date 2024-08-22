@@ -3,33 +3,39 @@
   <!--    Libraries-->
   <!--    <ion-chip slot="end" *ngIf="loggedIn">{{ libraryCount }}</ion-chip>-->
   <!--  </ion-item>-->
-  <ion-item
-    routerLink="/feeds"
-    [queryParams]="{ types: ['feed'] }"
-    routerLinkActive="active"
-  >
-    Feeds
-    <ion-chip slot="end" *ngIf="loggedIn">{{ feedCount }}</ion-chip>
-  </ion-item>
-  <ion-item
-    routerLink="/feeds"
-    [queryParams]="{ types: ['page-tracker'] }"
-    routerLinkActive="active"
-  >
-    Trackers
-    <ion-chip slot="end" *ngIf="loggedIn">{{ trackerCount }}</ion-chip>
-  </ion-item>
+  <ion-menu-toggle>
+    <ion-item
+      routerLink="/feeds"
+      [queryParams]="{ types: ['feed'] }"
+      routerLinkActive="active"
+    >
+      Feeds
+      <ion-chip slot="end" *ngIf="loggedIn">{{ feedCount }}</ion-chip>
+    </ion-item>
+  </ion-menu-toggle>
+  <ion-menu-toggle>
+    <ion-item
+      routerLink="/feeds"
+      [queryParams]="{ types: ['page-tracker'] }"
+      routerLinkActive="active"
+    >
+      Trackers
+      <ion-chip slot="end" *ngIf="loggedIn">{{ trackerCount }}</ion-chip>
+    </ion-item>
+  </ion-menu-toggle>
   <div
     class="ion-margin-vertical"
     style="border-top: 1px solid rgba(var(--app-foreground-rgb), 0.2)"
   ></div>
-  <ion-item href="/agents" routerLinkActive="active">
-    Agents
-    <ng-container *ngIf="loggedIn">
-      <ion-chip slot="end" *ngIf="agentCount">{{ agentCount }}</ion-chip>
-      <app-bubble *ngIf="!agentCount" color="red"></app-bubble>
-    </ng-container>
-  </ion-item>
+  <ion-menu-toggle>
+    <ion-item href="/agents" routerLinkActive="active">
+      Agents
+      <ng-container *ngIf="loggedIn">
+        <ion-chip slot="end" *ngIf="agentCount">{{ agentCount }}</ion-chip>
+        <app-bubble *ngIf="!agentCount" color="red"></app-bubble>
+      </ng-container>
+    </ion-item>
+  </ion-menu-toggle>
 
   <!--  <ion-item routerLink="/feeds">-->
   <!--    Notes-->

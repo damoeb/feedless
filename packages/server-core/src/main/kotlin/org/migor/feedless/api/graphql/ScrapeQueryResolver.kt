@@ -8,12 +8,17 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.feed.parser.json.JsonPoint
+import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.HttpFetchResponse
-import org.migor.feedless.generated.types.PluginExecutionResponse
 import org.migor.feedless.generated.types.ScrapeActionResponse
+import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
-import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil.handleCorrId
@@ -40,18 +45,18 @@ class ScrapeQueryResolver {
   @PreAuthorize("hasAnyAuthority('ANONYMOUS', 'READ', 'WRITE')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun scrape(
-    @InputArgument data: ScrapeRequestInput,
+    @InputArgument data: SourceInput,
     @RequestHeader(ApiParams.corrId, required = false) cid: String,
   ): ScrapeResponse = coroutineScope {
     val corrId = handleCorrId(cid)
     log.info("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
-    val output = scrapeService.scrape(corrId, scrapeRequest)
+    val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest)
     ScrapeResponse(
       failed = false,
-      logs = output.logs,
+      logs = scrapeOutput.logs,
       errorMessage = null,
-      outputs = output.outputs.map { it.toDto() }
+      outputs = scrapeOutput.outputs.map { it.toDto() }
     )
   }
 }
@@ -66,12 +71,42 @@ private fun ScrapeActionOutput.toDto(): ScrapeOutputResponse {
           debug = it.debug
         )
       },
-      extract = extract,
-      execute = execute?.let {
-        PluginExecutionResponse(
-          pluginId = it.pluginId,
-          data = it.data
+      extract = fragment?.let {
+        ScrapeExtractResponse(
+          fragmentName = "",
+          fragments = it.fragments,
+          items = it.items?.map { it.toDto() },
+          feeds = it.feeds
         )
       })
   )
 }
+
+private fun JsonItem.toDto() = WebDocument(
+  contentRawBase64 = contentRawBase64,
+  contentRawMime = contentRawMime,
+  contentHtml = contentHtml,
+  contentText = contentText,
+  contentTitle = title,
+  url = url,
+  tags = tags,
+  createdAt = publishedAt.time,
+  enclosures = attachments.map { it.toDto() },
+  id = id,
+  imageUrl = imageUrl,
+  publishedAt = publishedAt.time,
+  startingAt = startingAt?.time,
+  localized = latLng?.toGeoPoint(),
+)
+
+private fun JsonPoint.toGeoPoint() = GeoPoint(
+  lat = x,
+  lon = y
+)
+
+private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Enclosure(
+  duration = duration,
+  size = length,
+  type = type,
+  url = url,
+)

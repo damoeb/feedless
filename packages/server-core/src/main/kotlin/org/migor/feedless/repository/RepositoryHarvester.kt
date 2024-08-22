@@ -17,12 +17,11 @@ import org.migor.feedless.data.jpa.repositories.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
-import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.notification.NotificationService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
@@ -35,6 +34,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -105,7 +105,7 @@ class RepositoryHarvester internal constructor() {
       log.info("[$corrId] Harvesting done")
       documentService.applyRetentionStrategy(corrId, repository)
       updateScheduledNextAt(corrId, repository)
-//        repositoryDAO.updateLastUpdatedAt(repository.id, Date())
+      repositoryDAO.updateLastUpdatedAt(repository.id, Date())
     }.onFailure { log.error("[$corrId] handleRepository failed: ${it.message}", it) }
   }
 
@@ -192,13 +192,9 @@ class RepositoryHarvester internal constructor() {
   private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity) {
     log.debug("[$corrId] importElement")
     val lastAction = output.outputs.last()
-    lastAction.execute?.let {
-      it.data.org_feedless_feed?.let { importFeed(corrId, repositoryId, it, source) }
-    } ?: lastAction.extract?.let {
-      TODO()
-    } ?: lastAction.fetch?.let {
-      TODO()
-    }
+    lastAction.fragment?.let { fragment ->
+      fragment.items?.let { importItems(corrId, repositoryId, it, fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data }, source) }
+    } ?: TODO()
 //    lastAction.extract.image?.let {
 //      importImageElement(corrId, it, repositoryId, source)
 //    }
@@ -249,20 +245,18 @@ class RepositoryHarvester internal constructor() {
 //    )
 //  }
 
-  private fun importFeed(corrId: String, repositoryId: UUID, feed: RemoteNativeFeed, source: SourceEntity) {
+  private fun importItems(corrId: String, repositoryId: UUID, items: List<JsonItem>, next: List<String>?, source: SourceEntity) {
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-    log.info("[$corrId] importFeed with ${feed.items.size} items with ${repository.plugins.size} plugins")
+    log.info("[$corrId] importItems size=${items.size} with ${repository.plugins.size} plugins")
 
-    if (feed.items.isEmpty()) {
+    if (items.isEmpty()) {
       notificationService.createNotification(corrId, repository.ownerId, "Feed is empty", repository = repository, source = source)
     }
 //  todo set name  sourceDAO.save()
 
-    val maxItems = planConstraintsService.coerceRetentionMaxCapacity(null, repository.ownerId, repository.product)
-
-    val documents = feed.items
+    val documents = items
       .distinctBy { it.url }
-      .filterIndexed { index, _ -> maxItems?.let { it > index } ?: true }
+      .filterIndexed { index, _ -> index < 300 }
       .mapNotNull {
         try {
           val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
@@ -287,10 +281,10 @@ class RepositoryHarvester internal constructor() {
     )
 
     val hasNew = documents.any { (new, _) -> new }
-    if (feed.nextPageUrls?.isNotEmpty() == true) {
+    if (next?.isNotEmpty() == true) {
       if (hasNew) {
-        val pageUrls = feed.nextPageUrls.filterNot { url -> sourcePipelineJobDAO.existsBySourceIdAndUrl(source.id, url) }
-        log.info("[$corrId] Trigger following ${pageUrls.size} (${feed.nextPageUrls.size}) page urls ${pageUrls.joinToString(", ")}")
+        val pageUrls = next.filterNot { url -> sourcePipelineJobDAO.existsBySourceIdAndUrl(source.id, url) }
+        log.info("[$corrId] Trigger following ${pageUrls.size} (${next.size}) page urls ${pageUrls.joinToString(", ")}")
         sourcePipelineJobDAO.saveAll(
           pageUrls
           .mapIndexed { index, url ->
@@ -412,9 +406,10 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
     }
 }
 
-private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
+private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
   val d = DocumentEntity()
-  d.contentTitle = contentTitle
+  d.contentTitle = title
+  d.sourceId = source.id
   d.repositoryId = repositoryId
   if (StringUtils.isNotBlank(contentRawBase64)) {
     val tika = Tika()
@@ -428,29 +423,27 @@ private fun WebDocument.asEntity(repositoryId: UUID, status: ReleaseStatus, sour
     d.contentRawMime = mime
   }
   d.tags = source.tags
-  d.latLon = source.latLon ?: this.localized?.toPoint()
+  d.latLon = source.latLon ?: this.latLng?.toPoint()
   d.contentHtml = contentHtml
   d.imageUrl = ""
   d.contentText = StringUtils.trimToEmpty(contentText)
   d.status = status
-  enclosures?.let {
-    d.attachments = it.map { it.toAttachment(d) }.toMutableList()
-  }
-  d.publishedAt = Date(publishedAt)
+  d.attachments = attachments.map { it.toAttachment(d) }.toMutableList()
+  d.publishedAt = publishedAt
   startingAt?.let {
-    d.startingAt = Date(startingAt)
+    d.startingAt = startingAt
   }
-  d.updatedAt = updatedAt?.let { Date(updatedAt) } ?: d.publishedAt
+//  d.updatedAt = updatedAt?.let { Date(updatedAt) } ?: d.publishedAt
   d.url = url
   return d
 }
 
-private fun Enclosure.toAttachment(document: DocumentEntity): AttachmentEntity {
+private fun JsonAttachment.toAttachment(document: DocumentEntity): AttachmentEntity {
   val a = AttachmentEntity()
   a.contentType = type
   a.remoteDataUrl = url
   a.originalUrl = url
-  a.size = size
+  a.size = length
   a.duration = duration
   a.documentId = document.id
   return a

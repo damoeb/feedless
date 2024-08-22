@@ -314,7 +314,22 @@ ALTER TABLE IF EXISTS t_repository
   ADD COLUMN document_count_since_creation integer not null default 0;
 
 ALTER TABLE IF EXISTS t_repository
-  ADD COLUMN plugins jsonb NOT NULL DEFAULT '{}';
+  ADD COLUMN plugins jsonb NOT NULL DEFAULT '[]';
+
+UPDATE t_repository SET plugins = '[{
+  "id": "org_feedless_fulltext",
+  "params": {
+    "org_feedless_fulltext": {
+      "readability": true,
+      "inheritParams": true
+    }
+  }
+}]'::jsonb where exists(
+  select true from t_importer ti
+  inner join t_feed_native tfn
+  on tfn.id = ti.feedid
+  where ti.bucketid = t_repository.id and tfn.plugins = '["fulltext"]'
+);
 
 ALTER TABLE IF EXISTS t_repository
   ADD COLUMN for_product smallint NOT NULL DEFAULT 2;
@@ -507,7 +522,7 @@ ALTER TABLE IF EXISTS t_scrape_source
     REFERENCES t_repository (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE;
-DROP TABLE t_importer;
+
 ALTER TABLE t_user DROP CONSTRAINT fk_user__stream;
 DROP TABLE t_stream;
 

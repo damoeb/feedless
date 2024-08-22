@@ -15,7 +15,6 @@ import {
 } from '../../../generated/graphql';
 import {
   FeedlessPlugin,
-  Repository,
   RepositoryFull,
   SubscriptionSource,
   WebDocument,
@@ -34,7 +33,6 @@ import {
 } from '@ionic/angular';
 import {
   FeedOrRepository,
-  FeedWithRequest,
   tagsToString,
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
@@ -162,16 +160,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
     await this.fetchPage();
     this.changeRef.detectChanges();
-  }
-
-  getPluginsOfRepository(repository: Repository) {
-    if (!this.plugins) {
-      return '';
-    }
-    return repository.plugins
-      .map((plugin) => this.getPluginName(plugin.pluginId))
-      .filter((name) => name?.length > 0)
-      .join(', ');
   }
 
   hostname(url: string): string {
@@ -315,10 +303,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     //   .join(', ');
   }
 
-  private getPluginName(pluginId: string) {
-    return this.plugins.find((plugin) => plugin.id === pluginId)?.name;
-  }
-
   stringifyTags(source: ArrayElement<RepositoryFull['sources']>) {
     return tagsToString(source.tags) || 'Add tags';
   }
@@ -335,7 +319,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const alert = await this.alertCtrl.create({
       header: 'Delete Source?',
       message: `You won't be able to recover it.`,
-      cssClass: 'fatal-alert',
+      // cssClass: 'fatal-alert',
       buttons: [
         {
           text: 'Cancel',
@@ -532,5 +516,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   getUrl(source: ArrayElement<RepositoryFull['sources']>): string {
     return source.flow.sequence.find((action) => action.fetch).fetch.get.url
       .literal;
+  }
+
+  async showCode() {
+    await this.modalService.openCodeEditorModal({
+      text: JSON.stringify(this.repository, null, 2),
+      contentType: 'json',
+    });
   }
 }

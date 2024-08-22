@@ -64,11 +64,11 @@ const routes: Routes = [
       },
     ],
   },
-  {
-    path: '',
-    outlet: 'sidemenu',
-    component: FeedlessMenuComponent,
-  },
+  // {
+  //   path: '',
+  //   outlet: 'sidemenu',
+  //   component: FeedlessMenuComponent,
+  // },
   {
     path: '**',
     redirectTo: '/',

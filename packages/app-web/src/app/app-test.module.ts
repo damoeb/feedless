@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { AngularDelegate, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';

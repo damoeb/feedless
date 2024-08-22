@@ -3,7 +3,6 @@ package org.migor.feedless.repository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.license.LicenseService
@@ -15,9 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import reactor.core.publisher.Flux
 import java.util.*
-import java.util.stream.Collectors
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.cron}")

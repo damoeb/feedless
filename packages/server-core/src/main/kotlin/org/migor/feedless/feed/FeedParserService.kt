@@ -15,16 +15,17 @@ import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
 import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.generated.types.CompositeFilterParamsInput
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.ConditionalTagInput
-import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.GeoPoint
+import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
-import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.ScrapeActionOutput
+import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
@@ -33,9 +34,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
-import java.time.Duration
 import java.util.*
+
+private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
+  return this.outputs.last()
+}
 
 @Service
 @Profile(AppProfiles.scrape)
@@ -111,7 +114,7 @@ class FeedParserService {
   fun parseFeedFromRequest(
     corrId: String,
     scrapeRequests: List<SourceEntity>,
-    filters: List<CompositeFilterParamsInput>,
+    filters: List<ItemFilterParamsInput>,
     tags: List<ConditionalTagInput>
   ): RemoteNativeFeed {
     val params = filters.toPluginExecutionParamsInput()
@@ -123,14 +126,11 @@ class FeedParserService {
 
     val items = scrapeRequests
       .map { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
-      .map { response -> response.outputs.find { it.execute?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.execute!!.data.org_feedless_feed!! }
-      .flatMap { feed ->
-        feed.items
-      }
+      .flatMap { response -> response.lastOutput().fragment!!.items!! }
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
           corrId,
-          item.asEntity(dummyRepository),
+          item,
           params,
           index
         )
@@ -153,32 +153,32 @@ class FeedParserService {
 
 }
 
-private fun <E : CompositeFilterParamsInput> List<E>.toPluginExecutionParamsInput(): PluginExecutionParamsInput {
+private fun <E : ItemFilterParamsInput> List<E>.toPluginExecutionParamsInput(): PluginExecutionParamsInput {
   return PluginExecutionParamsInput(
     org_feedless_filter = this
   )
 }
 
-private fun WebDocument.asEntity(repository: RepositoryEntity): DocumentEntity {
+private fun JsonItem.asEntity(repository: RepositoryEntity): DocumentEntity {
   val e = DocumentEntity()
-  e.contentTitle = contentTitle
+  e.contentTitle = title
 //  if (StringUtils.isNotBlank(contentRawBase64)) {
 //    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
 //    e.contentRawMime = contentRawMime
 //  }
   e.repositoryId = repository.id
-  e.latLon = this.localized?.toPoint()
+  e.latLon = this.latLng?.toPoint()
   e.contentText = StringUtils.trimToEmpty(contentText)
   e.status = ReleaseStatus.released
-  e.publishedAt = Date(publishedAt)
+  e.publishedAt = publishedAt
   startingAt?.let {
-    e.startingAt = Date(startingAt)
+    e.startingAt = startingAt
   }
-  e.updatedAt = Date(publishedAt)
+  e.updatedAt = publishedAt
   e.url = url
   return e
 }
 
-fun GeoPoint.toPoint(): Point {
-  return JtsUtil.createPoint(lat, lon)
+fun JsonPoint.toPoint(): Point {
+  return JtsUtil.createPoint(x, y)
 }

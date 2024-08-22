@@ -1,14 +1,5 @@
-import {
-  Browser,
-  Frame,
-  HTTPResponse,
-  Page,
-  Viewport,
-  ScreenshotClip,
-  ScreenshotOptions,
-} from 'puppeteer';
+import puppeteer, { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions, Viewport } from 'puppeteer';
 import process from 'node:process';
-import puppeteer from 'puppeteer';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
 import { VerboseConfigService } from '../common/verbose-config.service';
@@ -20,24 +11,37 @@ import {
   FetchActionDebugResponseInput,
   FieldWrapper,
   HttpFetch,
+  HttpGetRequest,
+  LogStatementInput,
   NetworkRequest,
   PuppeteerWaitUntil,
   ScrapeAction,
   ScrapeActionResponseInput,
   ScrapeEmit,
   ScrapeExtract,
-  ScrapeExtractResponse,
   ScrapeExtractResponseInput,
   ScrapeOutputResponseInput,
-  ScrapePrerender,
   ScrapeRequest,
-  ScrapeResponseInput,
+  ScrapeResponseInput
 } from '../../generated/graphql';
 
 interface EvaluateResponse {
   markup: string;
   text: string;
   boundingBox: ScreenshotClip;
+}
+
+// credits https://stackoverflow.com/a/38340730
+function removeEmpty(obj) {
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([_, v]) => v != null)
+      .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
+  );
+}
+
+function stringifyJson(obj: object) {
+  return JSON.stringify(removeEmpty(obj), null, 2);
 }
 
 type LogAppender = (msg: string) => void;
@@ -138,14 +142,18 @@ export class PuppeteerService {
     browser: Browser,
   ): Promise<ScrapeResponseInput> {
     const corrId = request.corrId;
-    const startTime = Date.now();
-    const page = await this.newPage(browser, request);
-    const logs: string[] = [];
-    const outputs: ScrapeOutputResponseInput[] = [];
+    const logs: LogStatementInput[] = [];
     const appendLog: LogAppender = (msg: string) => {
-      logs.push(msg);
+      logs.push({
+        time: new Date().getTime(),
+        message: msg
+      });
       this.log.log(msg);
     };
+    appendLog(`Starting job id=${request.id} corrId=${request.corrId}`)
+
+    const page = await this.newPage(browser, request);
+    const outputs: ScrapeOutputResponseInput[] = [];
     this.interceptConsole(page, appendLog);
 
     try {
@@ -163,27 +171,36 @@ export class PuppeteerService {
 
       await page.setExtraHTTPHeaders(headers);
 
-      appendLog(`executing ${request.flow.sequence.length} actions`);
+      appendLog(`executing ${stringifyJson(request.flow.sequence)}`);
+
+      const createLogAppender = (prefix: string) => (msg: string) => appendLog(`${prefix} ${msg}`);
 
       await request.flow.sequence.reduce(
         (waitFor, action, currentIndex) =>
           waitFor.then(async () => {
-            const output = await this.executeAction(
-              corrId,
-              action,
-              page,
-              appendLog,
-            );
-            if (output) {
-              appendLog(
-                `outputs[${currentIndex}] -> ${Object.keys(output).find(
-                  (key) => !!output[key],
-                )}`,
+            const writeLog = createLogAppender(`action#${currentIndex}`);
+            try {
+              const output = await this.executeAction(
+                corrId,
+                action,
+                page,
+                writeLog,
               );
-              outputs.push({
-                index: currentIndex,
-                response: output,
-              });
+              if (output) {
+                writeLog(
+                  `terminated with output of type ${Object.keys(output).find(
+                    (key) => !!output[key],
+                  )}`,
+                );
+                outputs.push({
+                  index: currentIndex,
+                  response: output,
+                });
+              } else {
+                writeLog(`terminated without output`);
+              }
+            } catch (e) {
+              writeLog(e.message)
             }
           }),
         Promise.resolve(),
@@ -206,6 +223,7 @@ export class PuppeteerService {
         failed: false,
       };
     } catch (e) {
+      appendLog(e.message);
       this.log.error(`[${corrId}] ${e.message}`);
       return {
         failed: true,
@@ -264,7 +282,7 @@ export class PuppeteerService {
       // html: await page.evaluate(() => document.documentElement.outerHTML),
       cookies: await page
         .cookies()
-        .then((cookies) => cookies.map((cookie) => JSON.stringify(cookie))),
+        .then((cookies) => cookies.map((cookie) => stringifyJson(cookie))),
       prerendered: true,
       screenshot: await this.extractScreenshot(page, undefined),
     };
@@ -275,7 +293,7 @@ export class PuppeteerService {
     fragmentName: string,
     xpath: string,
     exposePixel: boolean,
-  ): Promise<ScrapeExtractResponse> {
+  ): Promise<ScrapeExtractResponseInput> {
     const evaluateResponse: EvaluateResponse = await page.evaluate(
       (baseXpath) => {
         let element: HTMLElement = document
@@ -473,7 +491,7 @@ export class PuppeteerService {
 
   private interceptConsole(page: Page, appendLog: LogAppender) {
     page.on('console', (consoleObj) => {
-      appendLog(`[${consoleObj.type()}] ${consoleObj.text()}`);
+      appendLog(`[browser] ${consoleObj.text()}`);
     });
   }
 
@@ -482,8 +500,8 @@ export class PuppeteerService {
     const options: ScreenshotOptions = {};
 
     if (hasBoundingBox) {
-      this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
-      this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
+      this.log.log(`screenshot ${stringifyJson(boundingBox)}`);
+      this.log.log(`viewport ${stringifyJson(page.viewport())}`);
       options.clip = boundingBox;
     } else {
       this.log.log(`screenshot full page`);
@@ -519,28 +537,29 @@ export class PuppeteerService {
     page: Page,
     appendLog: LogAppender,
   ): Promise<ScrapeActionResponseInput | void> {
-    const appender = (msg: string) => appendLog(`action ${msg}`);
+    const createLogger = (prefix: string) => (msg: string) => appendLog(`${prefix} ${msg}`);
     // if (action.header) {
     //   return this.executeHeaderAction(action.header, page, appender);
     // }
     if (action.click) {
-      return this.executeClickAction(action.click, page, appender);
+      return this.executeClickAction(action.click, page, createLogger('click'));
     }
     if (action.fetch) {
-      return this.executeFetchAction(corrId, action.fetch, page, appender);
+      return this.executeFetchAction(corrId, action.fetch, page, createLogger('fetch'));
     }
     if (action.wait) {
-      return this.executeWaitAction(action.wait, page, appender);
+      return this.executeWaitAction(action.wait, page, createLogger('wait'));
     }
     if (action.type) {
-      return this.executeTypeAction(action.type, page, appender);
+      return this.executeTypeAction(action.type, page, createLogger('type'));
     }
     if (action.purge) {
-      return this.executePurgeAction(action.purge, page, appender);
+      return this.executePurgeAction(action.purge, page, createLogger('purge'));
     }
     if (action.extract) {
-      return this.extractAction(corrId, action.extract, page, appender);
+      return this.extractAction(corrId, action.extract, page, createLogger('extract'));
     }
+    appendLog(`ignoring action ${stringifyJson(action)}`);
   }
 
   private async executeWaitAction(
@@ -548,7 +567,7 @@ export class PuppeteerService {
     page: Page,
     appendLog: LogAppender,
   ) {
-    appendLog(`wait for ${JSON.stringify(element.element)}`);
+    appendLog(`wait for ${stringifyJson(element.element)}`);
     await page.waitForSelector(this.resolveSelector(element.element));
   }
 
@@ -563,7 +582,7 @@ export class PuppeteerService {
       const xpath = extract.selectorBased.xpath.value;
       const exposePixel = extract.selectorBased.emit.includes(ScrapeEmit.Pixel);
       appendLog(
-        `extract fragment '${fragmentName}' xpath ${xpath} pixel=${exposePixel}`,
+        `fragment='${fragmentName}' xpath='${xpath}' pixel=${exposePixel}`,
       );
       return {
         extract: await this.grabElement(page, fragmentName, xpath, exposePixel),
@@ -571,7 +590,7 @@ export class PuppeteerService {
     } else {
       if (extract.imageBased.boundingBox) {
         appendLog(
-          `extract fragment '${fragmentName}' bbox ${extract.imageBased.boundingBox}`,
+          `fragment='${fragmentName}' bbox=${extract.imageBased.boundingBox}`,
         );
         return {
           extract: await this.grabBoundingBox(
@@ -592,7 +611,7 @@ export class PuppeteerService {
     appendLog: LogAppender,
   ) {
     appendLog(
-      `type '${element.typeValue}' in ${JSON.stringify(element.element)}`,
+      `type '${element.typeValue}' in ${stringifyJson(element.element)}`,
     );
     await page.type(
       this.resolveXpathSelector(element.element),
@@ -618,8 +637,8 @@ export class PuppeteerService {
     page: Page,
     appendLog: LogAppender,
   ) {
-    appendLog(`click ${JSON.stringify(element)}`);
     if (element.position) {
+      appendLog(`position-click ${stringifyJson(element)}`);
       const pos = element.position;
       await page.mouse.click(pos.x, pos.y);
     } else {
@@ -627,7 +646,9 @@ export class PuppeteerService {
       let frameOrPage: Frame | Page;
 
       if (element.element) {
+        appendLog(`element-click ${stringifyJson(element.element)}`);
         selector = this.resolveSelector(element.element);
+        appendLog(`selector ${selector}`);
         frameOrPage = page;
       } else {
         throw new Error('Unsupported click action');
@@ -683,7 +704,7 @@ export class PuppeteerService {
 
     const logs: string[] = [];
     page.on('console', (consoleObj) => {
-      const message = `[browser] ${consoleObj?.text()}`;
+      const message = `[browser-console] ${consoleObj?.text()}`;
       logs.push(message);
       appendLog(message);
     });
@@ -704,6 +725,6 @@ export class PuppeteerService {
   }
 }
 
-export function getHttpGet(scrapeRequest: ScrapeRequest): ScrapePrerender {
+export function getHttpGet(scrapeRequest: ScrapeRequest): HttpGetRequest {
   return scrapeRequest.flow.sequence.find((a) => a.fetch).fetch.get;
 }

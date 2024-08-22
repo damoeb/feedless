@@ -165,13 +165,12 @@
   </div>
 
   <div class="flex__column" right style="flex: 2; position: relative">
-    <app-embedded-markup
-      [embed]="embedWebsiteData"
+    <app-interactive-website
+      *ngIf="!currentNativeFeed && scrapeController"
+      style="flex: 1; display: flex"
       [scrapeController]="scrapeController"
-      [ngClass]="{ hidden: !!currentNativeFeed }"
-      class="flex"
-    ></app-embedded-markup>
-
+    >
+    </app-interactive-website>
     <app-native-feed
       *ngIf="currentNativeFeed"
       [feedUrl]="currentNativeFeed.feedUrl"

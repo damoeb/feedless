@@ -8,14 +8,19 @@ import org.ehcache.config.units.MemoryUnit
 import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.agent.AgentResponse
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ServerSettings
+import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.JsonUtil
 import org.springframework.cache.annotation.EnableCaching
+import org.springframework.cache.interceptor.KeyGenerator
 import org.springframework.cache.jcache.JCacheCacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import java.lang.reflect.Method
 import java.time.Duration
 import javax.cache.Caching
 
@@ -23,7 +28,15 @@ import javax.cache.Caching
 object CacheNames {
   const val FEED_RESPONSE = "feedResponseCache"
   const val HTTP_RESPONSE = "httpResponseCache"
+  const val AGENT_RESPONSE = "agentResponseCache"
   const val GRAPHQL_RESPONSE = "graphqlResponseCache"
+}
+
+class AgentResponseCacheKeyGenerator : KeyGenerator {
+  override fun generate(target: Any, method: Method, vararg params: Any?): Any {
+    return CryptUtil.sha1(JsonUtil.gson.toJson(params[1]))
+  }
+
 }
 
 @Configuration
@@ -34,6 +47,11 @@ class CacheConfig {
   @Bean
   fun jCacheCacheManager(): JCacheCacheManager {
     return JCacheCacheManager(cacheManager())
+  }
+
+  @Bean("agentResponseCacheKeyGenerator")
+  fun keyGenerator(): KeyGenerator {
+    return AgentResponseCacheKeyGenerator()
   }
 
   @Bean(destroyMethod = "close")
@@ -58,6 +76,14 @@ class CacheConfig {
     )
       .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
 
+    val agentResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+      String::class.java,
+      AgentResponse::class.java,
+      ResourcePoolsBuilder.heap(1000)
+        .offheap(50, MemoryUnit.MB)
+    )
+      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
+
     val feedCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
       String::class.java,
       JsonFeed::class.java,
@@ -79,6 +105,10 @@ class CacheConfig {
       Eh107Configuration.fromEhcacheCacheConfiguration(httpResponseCache.withService(asynchronousListener))
     )
     cacheManager.createCache(
+      CacheNames.AGENT_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(agentResponseCache.withService(asynchronousListener))
+    )
+    cacheManager.createCache(
       CacheNames.FEED_RESPONSE,
       Eh107Configuration.fromEhcacheCacheConfiguration(feedCache.withService(asynchronousListener))
     )
@@ -87,8 +117,6 @@ class CacheConfig {
       CacheNames.GRAPHQL_RESPONSE,
       Eh107Configuration.fromEhcacheCacheConfiguration(graphqlResponseCache.withService(asynchronousListener))
     )
-
-//    cacheManager.createCache("")
 
     return cacheManager
   }

@@ -58,7 +58,7 @@ class FeedQueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] previewFeed $data")
-    feedParserService.parseFeedFromRequest(corrId, data.requests
+    feedParserService.parseFeedFromRequest(corrId, data.sources
       .filterIndexed { index, _ -> index < 5 }
       .map { it.fromDto() }, data.filters, data.tags
     )

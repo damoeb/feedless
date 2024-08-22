@@ -1,14 +1,16 @@
 import { EventEmitter } from '@angular/core';
 import {
+  GqlHttpGetRequestInput,
   GqlScrapeActionInput,
-  GqlScrapeRequestInput,
+  GqlSourceInput
 } from '../../../generated/graphql';
 import {
   BoundingBox,
   XyPosition,
 } from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
-import { getFirstFetchUrlLiteral } from '../../utils';
+import { getFirstFetch, getFirstFetchUrlLiteral } from '../../utils';
+import { ReplaySubject } from 'rxjs';
 
 export class ScrapeController {
   pickPoint: EventEmitter<(position: XyPosition) => void> = new EventEmitter<
@@ -25,16 +27,16 @@ export class ScrapeController {
     xpath: string;
     callback: (elements: HTMLElement[]) => void;
   }>();
-  showElements = new EventEmitter<string>();
+  showElements = new ReplaySubject<string>();
   cancel = new EventEmitter<void>();
   // actions: GqlScrapeActionInput[] = [];
   response: ScrapeResponse;
 
-  constructor(public scrapeRequest: GqlScrapeRequestInput) {}
+  constructor(public scrapeRequest: GqlSourceInput) {}
 
   getScrapeRequest(
     append: Array<GqlScrapeActionInput> = null,
-  ): GqlScrapeRequestInput {
+  ): GqlSourceInput {
     return {
       title: this.scrapeRequest.title,
       tags: this.scrapeRequest.tags,
@@ -50,5 +52,12 @@ export class ScrapeController {
 
   getUrl() {
     return getFirstFetchUrlLiteral(this.scrapeRequest.flow.sequence);
+  }
+
+  patchFetch(params: Partial<Pick<GqlHttpGetRequestInput, 'additionalWaitSec' | 'url' | 'timeout' | 'language'>>) {
+    const fetchAction = getFirstFetch(this.scrapeRequest.flow.sequence);
+
+    Object.keys(params)
+      .forEach(key => fetchAction.get[key] = params[key])
   }
 }

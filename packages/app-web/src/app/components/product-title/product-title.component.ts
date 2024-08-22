@@ -6,8 +6,8 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 

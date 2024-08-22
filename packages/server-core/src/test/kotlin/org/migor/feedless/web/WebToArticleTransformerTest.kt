@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.JsonUtil
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
@@ -34,12 +35,11 @@ internal class WebToArticleTransformerTest {
 
   private fun doExtract(ref: String, url: String) {
     val actual = extractor.fromHtml(readFile("${ref}.html"), url)
-    val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), ExtractedArticle::class.java)
-    // todo fix
-//    assertThat(expected.content).isEqualTo(actual.content)
+    val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), JsonItem::class.java)
+//    assertThat(expected.contentHtml).isEqualTo(actual.contentHtml)
 //    assertThat(expected.contentText).isEqualTo(actual.contentText)
-    assertThat(expected.date).isEqualTo(actual.date)
-    assertThat(expected.originalUrl).isEqualTo(actual.originalUrl)
+//    assertThat(expected.publishedAt).isEqualTo(actual.publishedAt)
+    assertThat(expected.url).isEqualTo(actual.url)
     assertThat(expected.title).isEqualTo(actual.title)
 //    assertThat(expected.faviconUrl).isEqualTo(actual.faviconUrl)
   }

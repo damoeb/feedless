@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.BadRequestException
 import org.migor.feedless.actions.ClickPositionActionEntity
 import org.migor.feedless.actions.ClickXpathActionEntity
 import org.migor.feedless.actions.DomActionEntity
@@ -22,15 +21,20 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
-import org.migor.feedless.generated.types.PluginExecutionResponse
+import org.migor.feedless.generated.types.LogStatement
+import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ViewPort
+import org.migor.feedless.pipeline.FeedlessPlugin
+import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.pipeline.FragmentOutput
+import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
 
 
@@ -54,8 +58,9 @@ class ScrapeService {
 
   fun scrape(corrId: String, source: SourceEntity): ScrapeOutput {
     return try {
+      val scrapeContext = ScrapeContext(log)
+
       assert(source.actions.isNotEmpty()) { "no actions present" }
-      val prerender = needsPrerendering(source, 0)
 
       val fetch = source.findFirstFetchOrNull()!!
 
@@ -64,7 +69,7 @@ class ScrapeService {
       meterRegistry.counter(
         AppMetrics.scrape, listOf(
           Tag.of("type", "scrape"),
-          Tag.of("prerender", prerender.toString()),
+          Tag.of("prerender", needsPrerendering(source, 0).toString()),
         )
       ).increment()
 
@@ -72,16 +77,18 @@ class ScrapeService {
 
       val context = source.actions
         .sortedBy { it.pos }
-        .foldIndexed(ScrapeContext()) { index, context, action ->
+        .foldIndexed(scrapeContext) { index, context, action ->
           run {
-            when (action) {
-              is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
-              is HeaderActionEntity -> handleHeader(corrId, action, context)
-              is DomActionEntity -> handleDomAction(corrId, index, action, context)
-              is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
-              is ExtractXpathActionEntity -> handleExtract(corrId, action, context)
-              is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
-              else -> noopAction(corrId, action)
+            if (!context.hasOutputAt(index)) {
+              when (action) {
+                is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
+                is HeaderActionEntity -> handleHeader(corrId, action, context)
+                is DomActionEntity -> handleDomAction(corrId, index, action, context)
+                is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
+                is ExtractXpathActionEntity -> handleExtract(corrId, action, context)
+                is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
+                else -> noopAction(corrId, action)
+              }
             }
             context
           }
@@ -90,7 +97,7 @@ class ScrapeService {
       log.info("[$corrId] scraping finished")
 
       ScrapeOutput(
-        context.outputs.values.toList(),
+        context.outputsAsList(),
         logs = context.logs,
         time = System.nanoTime().minus(startTime).div(1000000).toInt()
       )
@@ -105,32 +112,54 @@ class ScrapeService {
   }
 
   private fun handleClickXpathAction(corrId: String, action: ClickXpathActionEntity, context: ScrapeContext) {
-    log.info("[$corrId] handleClickXpathAction $action")
+    context.info("[$corrId] handleClickXpathAction $action")
 
   }
 
   private fun handlePluginExecution(corrId: String, index: Int, action: ExecuteActionEntity, context: ScrapeContext) {
-    log.info("[$corrId] handlePluginExecution ${action.pluginId}")
+    context.info("[$corrId] handlePluginExecution ${action.pluginId}")
 
-    val firstFitchAction = context.outputs.values.find { it.fetch != null }!!
-    val plugin = pluginService.resolveFragmentTransformerById(action.pluginId)
+    val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
     try {
-    val data = plugin
-      ?.transformFragment(corrId, action, firstFitchAction.fetch!!.response)
-      ?: throw BadRequestException("plugin '${action.pluginId}' does not exist ($corrId)")
+      when (plugin) {
+        is FragmentTransformerPlugin -> {
+          val data = context.lastOutput().fetch?.let {
+            context.info("using fetch response")
+            it.response } ?: run {
+            context.info("using last fragment")
+              context.lastOutput().fragment!!.fragments!!.last()
+            }
+            .toHttpResponse(context.firstUrl()!!)
+          context.setOutputAt(index, ScrapeActionOutput(
+              index = index,
+              fragment = plugin.transformFragment(corrId, action, data) { context.info(it) },
+            )
+          )
+        }
+        is FilterEntityPlugin -> run {
+          val output = context.lastOutput()
 
-      val output = PluginExecutionResponse(pluginId = plugin.id(), data = data)
-      val result = ScrapeActionOutput(index= index, execute = output)
-
-      context.outputs[index] = result
+          if (output.fragment?.items == null) {
+            throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items ($corrId)")
+          }
+          val result = ScrapeActionOutput(index = index,
+            fragment = FragmentOutput(
+              fragmentName = "filter",
+              items = output.fragment.items.filterIndexed { i, item -> plugin.filterEntity(corrId, item, action.executorParams!!, i) }
+            )
+          )
+          context.setOutputAt(index, result)
+        }
+        else -> throw IllegalArgumentException("plugin '${action.pluginId}' does not exist ($corrId)")
+      }
     } catch (e: Exception) {
-      context.logs.add(e.stackTraceToString())
+      context.info(e.stackTraceToString())
       log.warn("[$corrId] handlePluginExecution error", e)
     }
   }
 
   private fun handleDomAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
-    log.info("[$corrId] handleDomAction $action")
+    context.info("[$corrId] handleDomAction $action")
     when (action.event) {
       DomEventType.purge -> handlePurgeAction(corrId, index, action, context)
       else -> log.warn("[$corrId] cannot handle dom-action ${action.event}")
@@ -141,13 +170,13 @@ class ScrapeService {
 //    val lastAction = context.outputs.last()
 //    val document = HtmlUtil.parseHtml(lastAction.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8), "")
 //    val elements = Xsoup.compile(action.xpath).evaluate(document).elements
-    log.info("[$corrId] purge element ${action.xpath}")
+    context.info("[$corrId] purge element ${action.xpath}")
 //    elements.remove()
     TODO()
   }
 
   private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
-    log.info("[$corrId] handleHeader $action")
+    context.info("[$corrId] handleHeader $action")
     context.headers[action.name] = action.value
   }
 
@@ -155,7 +184,7 @@ class ScrapeService {
     if (action.emit.contains(ExtractEmit.pixel)) {
       this.noopAction(corrId, action)
     } else {
-      log.info("[$corrId] handleExtract $action")
+      context.info("[$corrId] handleExtract $action")
       TODO("Not yet implemented")
     }
   }
@@ -167,19 +196,19 @@ class ScrapeService {
     action: FetchActionEntity,
     context: ScrapeContext
   ) {
-    log.info("[$corrId] handleFetch $action")
+    context.info("[$corrId] handleFetch $action")
     val prerender = needsPrerendering(source, index)
     if (prerender) {
-      log.info("[$corrId] prerender")
-      val response = agentService.prerender(corrId, source).block()!!
-      log.info("[$corrId] -> ${response.outputs.size} outputs")
+      context.info("[$corrId] send to agent")
+      val response = agentService.prerender(corrId, source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("[$corrId] outputs @$outputIndex")
-        context.outputs[scrapeActionOutput.index] = scrapeActionOutput
+        context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
-      context.logs.addAll(response.logs)
+      context.logs.addAll(response.logs.map { LogStatement(time = it.time, message = "[agent] ${it.message}") })
+      context.info("[$corrId] received -> ${response.outputs.size} outputs")
     } else {
-      log.info("[$corrId] static")
+      context.info("[$corrId] render static")
       val startTime = System.nanoTime()
       val url = action.resolveUrl()
 //      httpService.guardedHttpResource(
@@ -202,17 +231,34 @@ class ScrapeService {
 //        html = staticResponse.responseBody.toString(StandardCharsets.UTF_8)
       )
       val fetchOutput = HttpFetchOutput(staticResponse, debug = debug)
-      context.outputs[index] = ScrapeActionOutput(index = index, fetch = fetchOutput)
+      context.setOutputAt(index, ScrapeActionOutput(index = index, fetch = fetchOutput))
     }
   }
+}
+
+private fun ScrapeExtractFragment.toHttpResponse(url: String): HttpResponse {
+  return HttpResponse(
+    contentType = "text/html",
+    url = url,
+    statusCode = 200,
+    responseBody = html!!.data.toByteArray()
+  )
 }
 
 private fun ScrapeOutputResponse.fromDto(): ScrapeActionOutput {
   return ScrapeActionOutput(
     index = index,
-    execute = response.execute,
+//    execute = response.execute,
     fetch = response.fetch?.fromDto(),
-    extract = response.extract
+    fragment = response.extract?.fromDto()
+//    extract = response.extract
+  )
+}
+
+private fun ScrapeExtractResponse.fromDto(): FragmentOutput {
+  return FragmentOutput(
+    fragmentName = fragmentName,
+    fragments = fragments
   )
 }
 

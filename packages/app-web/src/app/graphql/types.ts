@@ -7,7 +7,6 @@ import {
   GqlListProductsQuery,
   GqlRemoteNativeFeedQuery,
   GqlRepositoryByIdQuery,
-  GqlScrapedReadability,
   GqlScrapeQuery,
   GqlSelectors,
   GqlServerSettingsQuery,
@@ -42,19 +41,9 @@ export type Selectors = Pick<
   | 'dateIsStartOfEvent'
 >;
 
-export type ScrapedReadability = Pick<
-  GqlScrapedReadability,
-  | 'url'
-  | 'content'
-  | 'contentMime'
-  | 'contentText'
-  | 'date'
-  | 'faviconUrl'
-  | 'imageUrl'
-  | 'title'
->;
+export type ScrapedReadability = WebDocument;
 export type User = Session['user'];
-export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
+// export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
 export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];

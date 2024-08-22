@@ -183,7 +183,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
 }
 
 val codegen = tasks.register("codegen") {
-  dependsOn(graphqlCodegen)
+  dependsOn(graphqlCodegen, compilejj)
 }
 
 tasks.named<JavaCompile>("compileJava") {
@@ -203,12 +203,22 @@ tasks.withType<Test> {
   }
 }
 
+val compilejj = tasks.register("compilejj", Exec::class) {
+  inputs.files(fileTree("src/templates"))
+    .withPropertyName("sourceFiles")
+    .withPathSensitivity(PathSensitivity.RELATIVE)
+  commandLine("sh", "./compilejj.sh")
+}
+val cleanjj = tasks.register("cleanjj", Exec::class) {
+  commandLine("sh", "./cleanjj.sh")
+}
+
 //val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
 //  commandLine("sh", "./fetchGithubJars.sh")
 //}
-tasks.getByName("compileKotlin").dependsOn(codegen)
-
-tasks.getByName("compileTestKotlin").dependsOn(codegen)
+tasks.getByName("compileKotlin").dependsOn(compilejj, codegen)
+tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
+tasks.getByName("clean").dependsOn(cleanjj)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   systemProperty("APP_BUILD_TIMESTAMP", Date().time)

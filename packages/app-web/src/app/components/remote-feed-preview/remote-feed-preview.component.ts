@@ -5,9 +5,9 @@ import {
   Input,
 } from '@angular/core';
 import {
-  GqlCompositeFilterParamsInput,
   GqlConditionalTagInput,
-  GqlScrapeRequestInput,
+  GqlItemFilterParamsInput,
+  GqlSourceInput,
 } from '../../../generated/graphql';
 import { FeedService } from '../../services/feed.service';
 import { RemoteFeed } from '../../graphql/types';
@@ -31,15 +31,15 @@ export class RemoteFeedPreviewComponent {
   ) {}
 
   async loadFeedPreview(
-    requests: GqlScrapeRequestInput[],
-    filters: GqlCompositeFilterParamsInput[],
+    sources: GqlSourceInput[],
+    filters: GqlItemFilterParamsInput[],
     tags: GqlConditionalTagInput[],
   ) {
     this.busy = true;
     this.changeRef.detectChanges();
     try {
       this.feed = await this.feedService.previewFeed({
-        requests,
+        sources,
         filters,
         tags,
       });

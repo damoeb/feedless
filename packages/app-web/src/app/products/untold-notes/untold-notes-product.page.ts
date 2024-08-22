@@ -8,8 +8,8 @@ import {
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
 } from '../../services/app-config.service';
 
 @Component({

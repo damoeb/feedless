@@ -43,7 +43,7 @@ with source as (
   ),
   fetch_action as (
     insert into t_action_fetch (id, url, force_prerender, is_variable, width, height, is_mobile, is_landscape)
-    SELECT fetch_action_id, case when ts.gen_feed_params is null then ts.feedurl else (ts.gen_feed_params ->> 'fetchOptions')::json ->> 'websiteUrl' end, false, false, 1024, 768, false, false from source ts
+    SELECT fetch_action_id, case when ts.gen_feed_params is null then ts.feedurl else (ts.gen_feed_params ->> 'fetchOptions')::json ->> 'websiteUrl' end, case when ts.gen_feed_params is null then false else jsonb_path_query_first(ts.gen_feed_params, '$.fetchOptions.prerender')::boolean end, false, 1024, 768, false, false from source ts
   ),
   parent_plugin_action as (
     insert into t_scrape_action (id, created_at, source_id, pos)
@@ -53,6 +53,20 @@ with source as (
   insert into t_action_execute_plugin (id, plugin_id, executor_params)
   SELECT plugin_action_id, 'org_feedless_feed', case when ts.gen_feed_params is null then '{"org_feedless_feed": {}}'::jsonb else concat('{"org_feedless_feed": {"generic": {"dateXPath":', jsonb_path_query_first(ts.gen_feed_params, '$.selectors.dateXPath'), ', "linkXPath":', jsonb_path_query_first(ts.gen_feed_params, '$.selectors.linkXPath'), ', "contextXPath":', jsonb_path_query_first(ts.gen_feed_params, '$.selectors.contextXPath'), ', "extendContext": ', jsonb_path_query_first(ts.gen_feed_params, '$.selectors.extendContext'), ', "paginationXPath": "", "dateIsStartOfEvent": ', jsonb_path_query_first(ts.gen_feed_params, '$.selectors.dateIsStartOfEvent'), '}}}')::jsonb end from source ts
 ;
+
+with importer as (
+  select ti.feedid as source_id, gen_random_uuid() as filter_action_id, ti.createdat as created_at, ti.filter
+  from t_importer ti where ti.filter IS NOT NULL AND ti.filter != ''
+),
+     parent_plugin_action as (
+       insert into t_scrape_action (id, created_at, source_id, pos)
+         SELECT filter_action_id, created_at, source_id, 2 from importer RETURNING id
+     )
+--   plugin_action
+insert into t_action_execute_plugin (id, plugin_id, executor_params)
+SELECT filter_action_id, 'org_feedless_filter', concat('{"org_feedless_filter": [{"expression": "', ti.filter,'"}]}')::jsonb from importer ti
+;
+DROP TABLE t_importer;
 
 ALTER TABLE t_source DROP CONSTRAINT fk_native_feed__generic_feed;
 ALTER TABLE t_source DROP COLUMN feedurl;
@@ -84,3 +98,4 @@ SELECT gen_random_uuid(), u.created_at, (
 ;
 
 ALTER TABLE t_pipeline_job ALTER COLUMN source_id DROP NOT NULL;
+UPDATE t_repository SET visibility = 'isPrivate' where visibility != 'isPrivate';

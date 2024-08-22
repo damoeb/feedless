@@ -503,8 +503,8 @@ INSERT INTO public.t_feed_native (id, createdat, description, domain, failedatte
 -- Data for Name: t_importer; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.t_importer (id, createdat, is_auto_release, bucketid, segment_digest, feedid, filter, lastupdatedat, lookaheadmin, ownerid, segment_size, segmentsortasc, segmentsortfield, title, triggerrefreshon, triggerscheduleexpression, triggerscheduledlastat, triggerschedulednextat, plugins) VALUES ('e14b8591-ad79-412e-866b-124208dc5d6a', '2024-08-16 15:03:57.862', true, '5a853d8f-bc1d-47b8-aec2-8a33de86dd7d', false, '9750f712-023f-4e02-b1c4-a9f71fb7865f', '', '2024-08-16 15:03:59.375', NULL, '2621625f-2de8-4407-912d-04de63fb32a6', NULL, true, NULL, NULL, 'CHANGE', NULL, NULL, NULL, '[]');
-INSERT INTO public.t_importer (id, createdat, is_auto_release, bucketid, segment_digest, feedid, filter, lastupdatedat, lookaheadmin, ownerid, segment_size, segmentsortasc, segmentsortfield, title, triggerrefreshon, triggerscheduleexpression, triggerscheduledlastat, triggerschedulednextat, plugins) VALUES ('aeb218bf-cec5-4016-905c-1ca4210c0c65', '2024-08-16 15:05:11.403', true, '0584f447-9a99-437c-a656-a2bda991193b', false, '7784a903-38a3-4da1-a46a-932d481ea2e4', '', '2024-08-16 15:05:12.833', NULL, '2621625f-2de8-4407-912d-04de63fb32a6', NULL, true, NULL, NULL, 'CHANGE', NULL, NULL, NULL, '[]');
+INSERT INTO public.t_importer (id, createdat, is_auto_release, bucketid, segment_digest, feedid, filter, lastupdatedat, lookaheadmin, ownerid, segment_size, segmentsortasc, segmentsortfield, title, triggerrefreshon, triggerscheduleexpression, triggerscheduledlastat, triggerschedulednextat, plugins) VALUES ('e14b8591-ad79-412e-866b-124208dc5d6a', '2024-08-16 15:03:57.862', true, '5a853d8f-bc1d-47b8-aec2-8a33de86dd7d', false, '9750f712-023f-4e02-b1c4-a9f71fb7865f', 'and(true, true)', '2024-08-16 15:03:59.375', NULL, '2621625f-2de8-4407-912d-04de63fb32a6', NULL, true, NULL, NULL, 'CHANGE', NULL, NULL, NULL, '[]');
+INSERT INTO public.t_importer (id, createdat, is_auto_release, bucketid, segment_digest, feedid, filter, lastupdatedat, lookaheadmin, ownerid, segment_size, segmentsortasc, segmentsortfield, title, triggerrefreshon, triggerscheduleexpression, triggerscheduledlastat, triggerschedulednextat, plugins) VALUES ('aeb218bf-cec5-4016-905c-1ca4210c0c65', '2024-08-16 15:05:11.403', true, '0584f447-9a99-437c-a656-a2bda991193b', false, '7784a903-38a3-4da1-a46a-932d481ea2e4', 'and(true, false)', '2024-08-16 15:05:12.833', NULL, '2621625f-2de8-4407-912d-04de63fb32a6', NULL, true, NULL, NULL, 'CHANGE', NULL, NULL, NULL, '[]');
 
 
 --
@@ -1141,3 +1141,5 @@ ALTER TABLE ONLY public.map_plan_to_feature
 -- PostgreSQL database dump complete
 --
 
+UPDATE public.flyway_schema_history SET checksum='-532135207' where version='2';
+UPDATE public.flyway_schema_history SET checksum='-917906206' where version='1';

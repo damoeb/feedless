@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { GraphQLError, GraphQLFormattedError } from 'graphql/error';
+import { GraphQLFormattedError } from 'graphql/error';
 
 @Injectable({
   providedIn: 'root',

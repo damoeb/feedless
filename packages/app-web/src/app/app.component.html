@@ -2,28 +2,28 @@
   *ngIf="productConfig"
   [style]="{ '--sidemenu-width': productConfig.sideMenu?.width + 'px' }"
 >
-  <ion-split-pane [when]="getBreakpointMinWidth()" contentId="main-content">
-    <ion-menu
-      [hidden]="!productConfig.sideMenu"
-      contentId="main-content"
-      type="reveal"
-    >
-      <ion-header style="box-shadow: none">
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-menu-button></ion-menu-button>
-          </ion-buttons>
+<!--  <ion-split-pane [when]="getBreakpointMinWidth()" contentId="main-content">-->
+<!--    <ion-menu-->
+<!--      [hidden]="!productConfig.sideMenu"-->
+<!--      contentId="main-content"-->
+<!--      type="reveal"-->
+<!--    >-->
+<!--      <ion-header style="box-shadow: none">-->
+<!--        <ion-toolbar>-->
+<!--          <ion-buttons slot="start">-->
+<!--            <ion-menu-button></ion-menu-button>-->
+<!--          </ion-buttons>-->
 
-          <app-product-title class="ion-margin-horizontal"></app-product-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-router-outlet
-          name="sidemenu"
-          style="margin-top: 10px"
-        ></ion-router-outlet>
-      </ion-content>
-    </ion-menu>
+<!--          <app-product-title class="ion-margin-horizontal"></app-product-title>-->
+<!--        </ion-toolbar>-->
+<!--      </ion-header>-->
+<!--      <ion-content>-->
+<!--        <ion-router-outlet-->
+<!--          name="sidemenu"-->
+<!--          style="margin-top: 10px"-->
+<!--        ></ion-router-outlet>-->
+<!--      </ion-content>-->
+<!--    </ion-menu>-->
     <ion-router-outlet id="main-content"></ion-router-outlet>
-  </ion-split-pane>
+<!--  </ion-split-pane>-->
 </ion-app>

@@ -11,8 +11,6 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { FeatureGroup } from '../graphql/types';
-import { zenToRx } from './agent.service';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',

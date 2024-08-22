@@ -10,8 +10,8 @@ import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { Subscription } from 'rxjs';
 import {
-  ProductConfig,
   AppConfigService,
+  ProductConfig,
   SidemenuBreakpoint,
 } from './services/app-config.service';
 import { GqlProductCategory } from '../generated/graphql';
@@ -25,7 +25,6 @@ import { kebabCase } from 'lodash-es';
 })
 export class AppComponent implements OnDestroy, OnInit {
   productConfig: ProductConfig;
-  protected readonly GqlProductName = GqlProductCategory;
   private subscriptions: Subscription[] = [];
   private isDarkMode: boolean;
   private product: GqlProductCategory;

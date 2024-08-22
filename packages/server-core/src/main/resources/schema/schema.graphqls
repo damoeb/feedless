@@ -308,8 +308,8 @@ input RepositoryUpdateDataInput {
 
 input SourcesUpdateInput {
   remove: [ID!]
-  update: [ScrapeRequestUpdateInput!]
-  add: [ScrapeRequestInput!]
+  update: [SourceUpdateInput!]
+  add: [SourceInput!]
 }
 
 input RetentionUpdateInput {
@@ -429,7 +429,7 @@ type Query {
   repositories(data: RepositoriesInput!): [Repository!]!
   countRepositories(data: CountRepositoriesInput!): Int!
 
-  scrape(data: ScrapeRequestInput!): ScrapeResponse!
+  scrape(data: SourceInput!): ScrapeResponse!
   session: Session!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
@@ -496,8 +496,8 @@ input StoriesWhereInput {
 }
 
 input PreviewFeedInput {
-  requests: [ScrapeRequestInput!]!
-  filters: [CompositeFilterParamsInput!]!
+  sources: [SourceInput!]!
+  filters: [ItemFilterParamsInput!]!
   tags: [ConditionalTagInput!]!
 }
 
@@ -535,10 +535,6 @@ input DateWhereInput {
 input ServerSettingsContextInput {
   host: String!
   product: ProductCategory!
-}
-
-type RefineOptions {
-  filter: String
 }
 
 type RemoteNativeFeed {
@@ -631,7 +627,7 @@ type DOMExtract {
 }
 
 type HttpFetch {
-  get: ScrapePrerender!
+  get: HttpGetRequest!
 }
 
 type StringLiteralOrVariable {
@@ -645,7 +641,7 @@ input StringLiteralOrVariableInput {
 }
 
 input HttpFetchInput {
-  get: ScrapePrerenderInput!
+  get: HttpGetRequestInput!
 }
 
 type DOMElement {
@@ -721,7 +717,7 @@ input ScrapeFlowInput {
 #  then: [ScrapeFlowInput!]
 }
 
-type ScrapePrerender {
+type HttpGetRequest {
   url: StringLiteralOrVariable!
   timeout: Int
   viewport: ViewPort
@@ -731,7 +727,7 @@ type ScrapePrerender {
   additionalWaitSec: Int
 }
 
-input ScrapePrerenderInput {
+input HttpGetRequestInput {
   timeout: Int
   url: StringLiteralOrVariableInput!
   viewport: ViewPortInput
@@ -1140,7 +1136,7 @@ input RepositoriesCreateInput {
 
 input RepositoryCreateInput {
   product: ProductCategory!
-  sources: [ScrapeRequestInput!]!
+  sources: [SourceInput!]!
   sinkOptions: SinkOptionsInput!
   additionalSinks: [WebhookOrEmailInput!]
 }
@@ -1254,17 +1250,6 @@ type ScrapedFeeds {
   nativeFeeds: [RemoteNativeFeed!]
 }
 
-type ScrapedReadability {
-  url: String
-  imageUrl: String
-  title: String
-  contentText: String
-  content: String
-  contentMime: String
-  faviconUrl: String
-  date: String
-}
-
 input SecretKey {
   email: String!
   secretKey: String!
@@ -1351,8 +1336,18 @@ input WebDocumentWhereInput {
 type ScrapeResponse {
   failed: Boolean!
   errorMessage: String
-  logs: [String!]!
+  logs: [LogStatement!]!
   outputs: [ScrapeOutputResponse!]!
+}
+
+type LogStatement {
+  message: String!
+  time: Long!
+}
+
+input LogStatementInput {
+  message: String!
+  time: Long!
 }
 
 type ScrapeOutputResponse {
@@ -1364,7 +1359,6 @@ type ScrapeOutputResponse {
 type ScrapeActionResponse {
   fetch: HttpFetchResponse
   extract: ScrapeExtractResponse
-  execute: PluginExecutionResponse
 #  click: DOMElement
 #  type: DOMActionType
 #  wait: WaitAction
@@ -1397,7 +1391,9 @@ input HttpFetchResponseInput {
 
 type ScrapeExtractResponse {
   fragmentName: String!
-  fragments: [ScrapeExtractFragment!]!
+  fragments: [ScrapeExtractFragment!]
+  items: [WebDocument!]
+  feeds: ScrapedFeeds
 }
 
 input ScrapeExtractResponseInput {
@@ -1419,21 +1415,6 @@ input ScrapeExtractFragmentInput {
   extracts: [ScrapeExtractResponseInput!]
 }
 
-type PluginExecutionResponse {
-  pluginId: ID!
-  data: PluginExecutionData!
-}
-
-type PluginExecutionData {
-  org_feedless_feed: RemoteNativeFeed
-  org_feedless_feeds: ScrapedFeeds
-#  org_feedless_diff_email_forward: DiffEmailForwardParams
-#  org_feedless_filter: [CompositeFilterParams!]
-  jsonData: String
-  org_feedless_fulltext: ScrapedReadability
-#  org_feedless_conditional_tag: [ConditionalTag!]
-}
-
 type JsonData {
   jsonSchema: String!
   jsonData: String!
@@ -1448,12 +1429,12 @@ type TextData {
   data: String!
 }
 
-input ScrapeRequestUpdateInput {
-  where: ScrapeSourceUniqueWhereInput!
-  data: ScrapeRequestUpdateDataInput!
+input SourceUpdateInput {
+  where: SourceUniqueWhereInput!
+  data: SourceUpdateDataInput!
 }
 
-input ScrapeRequestUpdateDataInput {
+input SourceUpdateDataInput {
   tags: StringArrayUpdateOperationsInput
   title: StringUpdateOperationsInput
   localized: NullableUpdateGeoPointInput
@@ -1463,11 +1444,11 @@ input NullableUpdateGeoPointInput {
   set: GeoPointInput
 }
 
-input ScrapeSourceUniqueWhereInput {
+input SourceUniqueWhereInput {
   id: ID!
 }
 
-input ScrapeRequestInput {
+input SourceInput {
   corrId: ID
   id: ID
   title: String!
@@ -1490,7 +1471,7 @@ input ScrapeBoundingBoxInput {
 input PluginExecutionParamsInput {
   org_feedless_feed: FeedParamsInput
   org_feedless_diff_email_forward: DiffEmailForwardParamsInput
-  org_feedless_filter: [CompositeFilterParamsInput!]
+  org_feedless_filter: [ItemFilterParamsInput!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
   org_feedless_conditional_tag: [ConditionalTagInput!]
@@ -1503,6 +1484,10 @@ input FeedParamsInput {
 input ConditionalTagInput {
   tag: String!
   filter: CompositeFieldFilterParamsInput!
+}
+input ItemFilterParamsInput {
+  composite: CompositeFilterParamsInput
+  expression: String
 }
 input CompositeFilterParamsInput {
   exclude: CompositeFieldFilterParamsInput
@@ -1589,7 +1574,7 @@ type PluginExecution {
 type PluginExecutionParams {
   org_feedless_feed: FeedParams
   org_feedless_diff_email_forward: DiffEmailForwardParams
-  org_feedless_filter: [CompositeFilterParams!]
+  org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
   org_feedless_conditional_tag: [ConditionalTag!]
@@ -1605,6 +1590,10 @@ type ConditionalTag {
 }
 
 
+type ItemFilterParams {
+  composite: CompositeFilterParams
+  expression: String
+}
 type CompositeFilterParams {
   exclude: CompositeFieldFilterParams
   include: CompositeFieldFilterParams
@@ -1649,7 +1638,7 @@ type FulltextPluginParams {
 input ScrapeResponseInput {
   failed: Boolean!
   errorMessage: String
-  logs: [String!]!
+  logs: [LogStatementInput!]!
   outputs: [ScrapeOutputResponseInput!]!
 }
 

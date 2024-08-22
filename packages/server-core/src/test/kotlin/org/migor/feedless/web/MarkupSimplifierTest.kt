@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.JsonUtil
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
@@ -94,8 +95,8 @@ internal class MarkupSimplifierTest {
   }
 
   private fun resolveRef(ref: String): Element? {
-    val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), ExtractedArticle::class.java)
-    return parse(expected.content!!)
+    val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), JsonItem::class.java)
+    return parse(expected.contentHtml!!)
   }
 
   private fun parse(markup: String): Element? {

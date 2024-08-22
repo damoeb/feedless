@@ -8,7 +8,6 @@ import {
 import {
   FeedBuilderModalComponentExitRole,
   FeedOrRepository,
-  FeedWithRequest,
 } from '../components/feed-builder/feed-builder.component';
 import {
   GenerateFeedModalComponent,

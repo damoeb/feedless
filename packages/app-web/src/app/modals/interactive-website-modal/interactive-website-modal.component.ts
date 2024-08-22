@@ -10,10 +10,10 @@ import { debounce, interval, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   GqlScrapeActionInput,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
   GqlXyPosition,
 } from '../../../generated/graphql';
-import { ItemReorderEventDetail, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { ScrapeResponse } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ScrapeController } from '../../components/interactive-website/scrape-controller';
@@ -27,12 +27,12 @@ export type BrowserAction = {
 };
 
 export interface FeedBuilderData {
-  request: GqlScrapeRequestInput;
+  request: GqlSourceInput;
   response: ScrapeResponse;
 }
 
 export type InteractiveWebsiteModalComponentProps = {
-  scrapeRequest: GqlScrapeRequestInput;
+  scrapeRequest: GqlSourceInput;
 };
 
 @Component({
@@ -45,7 +45,7 @@ export class InteractiveWebsiteModalComponent
   implements OnInit, OnDestroy, InteractiveWebsiteModalComponentProps
 {
   @Input({ required: true })
-  scrapeRequest: GqlScrapeRequestInput;
+  scrapeRequest: GqlSourceInput;
 
   protected scrapeController: ScrapeController;
 

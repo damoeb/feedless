@@ -14,10 +14,10 @@ import { FeedOrRepository } from '../../../components/feed-builder/feed-builder.
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import {
-  GqlCompositeFilterParamsInput,
+  GqlItemFilterParamsInput,
   GqlNumberFilterOperator,
   GqlScrapeRequest,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
 } from '../../../../generated/graphql';
 import { ServerConfigService } from '../../../services/server-config.service';
 
@@ -48,7 +48,7 @@ export class TrackerEditModalComponent
     sensitivity: new FormControl<number>(0),
     limit: new FormControl<number>(null),
   });
-  private scrapeRequest: GqlScrapeRequestInput;
+  private scrapeRequest: GqlSourceInput;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -95,13 +95,15 @@ export class TrackerEditModalComponent
   }
 
   private async updateFeed() {
-    const filters: GqlCompositeFilterParamsInput[] = [];
+    const filters: GqlItemFilterParamsInput[] = [];
     if (this.formFg.controls.limit.valid) {
       filters.push({
-        exclude: {
-          index: {
-            operator: GqlNumberFilterOperator.Gt,
-            value: this.formFg.value.limit,
+        composite: {
+          exclude: {
+            index: {
+              operator: GqlNumberFilterOperator.Gt,
+              value: this.formFg.value.limit,
+            },
           },
         },
       });

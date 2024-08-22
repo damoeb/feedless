@@ -149,7 +149,7 @@ class PrivacyPlugin : MapEntityPlugin {
     val response = httpService.httpGet(corrId, url, 200, null)
 
     if (contentTypes.none { response.contentType.lowercase().startsWith(it) }) {
-      throw IllegalArgumentException("ContentType ${response.contentType} is not supported")
+      throw IllegalArgumentException("ContentType ${response.contentType} will be ignored")
     }
     return response
   }
@@ -177,7 +177,7 @@ class PrivacyPlugin : MapEntityPlugin {
       linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
       attachment
     } catch (t: Throwable) {
-      log.warn("[${corrId}] ${t.message}")
+      log.info("[${corrId}] ${t.message}")
       null
     }
   }

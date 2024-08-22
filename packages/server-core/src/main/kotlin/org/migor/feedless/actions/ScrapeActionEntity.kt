@@ -21,12 +21,12 @@ import org.migor.feedless.generated.types.DOMElementByNameOrXPath
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.HttpFetch
+import org.migor.feedless.generated.types.HttpGetRequest
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.RequestHeader
 import org.migor.feedless.generated.types.ScrapeAction
 import org.migor.feedless.generated.types.ScrapeBoundingBox
 import org.migor.feedless.generated.types.ScrapeExtract
-import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.StringLiteralOrVariable
 import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.generated.types.XYPosition
@@ -52,7 +52,7 @@ open class ScrapeActionEntity : EntityWithUUID() {
     referencedColumnName = StandardJpaFields.id,
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_source__to__browser_action")
+    foreignKey = ForeignKey(name = "fk_scrape_action__to__source")
   )
   open var source: SourceEntity? = null
 }
@@ -142,7 +142,7 @@ private fun DomActionEntity.toSelectActionDto(): DOMActionSelect {
 
 private fun FetchActionEntity.toHttpFetchActionDto(): HttpFetch {
   return HttpFetch(
-    get = ScrapePrerender(
+    get = HttpGetRequest(
       url = if (isVariable) {
         StringLiteralOrVariable(variable = url)
       } else {

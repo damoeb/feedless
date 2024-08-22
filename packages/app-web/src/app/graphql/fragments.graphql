@@ -64,7 +64,10 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
     ...DiffEmailForwardParamsFragment
   }
   org_feedless_filter {
-    ...CompositeFilterParamsFragment
+    composite {
+      ...CompositeFilterParamsFragment
+    }
+    expression
   }
   org_feedless_fulltext {
     readability
@@ -132,21 +135,6 @@ fragment ViewportFragment on ViewPort {
   isMobile
 }
 
-fragment ReadabilityFragment on ScrapedReadability {
-  url
-  content
-  contentMime
-  contentText
-  date
-  faviconUrl
-  imageUrl
-  title
-}
-
-fragment RefineOptionsFragment on RefineOptions {
-  filter
-}
-
 fragment ActionFragment on ScrapeAction {
   execute {
     pluginId
@@ -180,7 +168,7 @@ fragment ActionFragment on ScrapeAction {
   }
   fetch {
     get {
-      ...ScrapePrerenderFragment
+      ...HttpGetRequestFragment
     }
   }
   click {
@@ -218,7 +206,7 @@ fragment ActionFragment on ScrapeAction {
     }
   }
 }
-fragment ScrapePrerenderFragment on ScrapePrerender {
+fragment HttpGetRequestFragment on HttpGetRequest {
   url {
     literal
     variable

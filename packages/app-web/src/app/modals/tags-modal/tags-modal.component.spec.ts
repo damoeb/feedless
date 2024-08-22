@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TagsModalComponent } from './tags-modal.component';
 import { TagsModalModule } from './tags-modal.module';

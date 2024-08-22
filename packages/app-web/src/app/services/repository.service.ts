@@ -10,7 +10,6 @@ import {
   GqlCreateRepositoriesMutationVariables,
   GqlDeleteRepositoryMutation,
   GqlDeleteRepositoryMutationVariables,
-  GqlFeatureName,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
   GqlRepositoriesCreateInput,

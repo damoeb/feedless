@@ -29,7 +29,7 @@ import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.ScrapeRequestInput
+import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
@@ -191,7 +191,7 @@ class RepositoryService {
   private fun createScrapeSource(
     corrId: String,
     ownerId: UUID,
-    req: ScrapeRequestInput,
+    req: SourceInput,
     repository: RepositoryEntity
   ): SourceEntity {
     val entity = SourceEntity()

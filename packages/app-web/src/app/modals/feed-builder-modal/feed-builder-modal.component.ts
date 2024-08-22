@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
 import { ModalController } from '@ionic/angular';
-import { GqlScrapeRequestInput } from '../../../generated/graphql';
+import { GqlSourceInput } from '../../../generated/graphql';
 import { Repository } from '../../graphql/types';
 
 export interface FeedBuilderModalComponentProps {
-  scrapeRequest?: GqlScrapeRequestInput;
+  scrapeRequest?: GqlSourceInput;
   modalTitle?: string;
   submitButtonText?: string;
 }
@@ -18,8 +18,8 @@ export interface FeedBuilderModalComponentProps {
 export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps
 {
-  scrapeRequest: GqlScrapeRequestInput;
-  modalTitle: string = 'Builder';
+  scrapeRequest: GqlSourceInput;
+  modalTitle: string = 'Feed Builder';
   submitButtonText = 'Save Feed';
 
   constructor(private readonly modalCtrl: ModalController) {}

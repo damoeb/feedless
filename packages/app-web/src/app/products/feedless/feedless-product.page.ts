@@ -13,8 +13,8 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import { fixUrl } from '../../app.module';
 import { Authentication, AuthService } from '../../services/auth.service';
+import { GqlProductCategory } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feedless-product-page',
@@ -74,4 +74,5 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
   //     console.warn(e);
   //   }
   // }
+  protected readonly GqlProductName = GqlProductCategory;
 }

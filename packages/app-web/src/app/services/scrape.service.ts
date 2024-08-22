@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
   Scrape,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
@@ -18,7 +18,7 @@ export class ScrapeService {
     private readonly authService: AuthService,
   ) {}
 
-  async scrape(scrapeRequest: GqlScrapeRequestInput): Promise<ScrapeResponse> {
+  async scrape(scrapeRequest: GqlSourceInput): Promise<ScrapeResponse> {
     await this.authService.requireAnyAuthToken();
     return this.apollo
       .query<GqlScrapeQuery, GqlScrapeQueryVariables>({

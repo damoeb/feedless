@@ -43,10 +43,9 @@ class DetectMediaPlugin : MapEntityPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_detect_media.name
   override fun listed(): Boolean = true
-
   override fun name(): String = "Detect Audio/Video"
 
-  @Transactional(propagation = Propagation.NESTED)
+  @Transactional(propagation = Propagation.REQUIRED)
   override fun mapEntity(
     corrId: String,
     document: DocumentEntity,

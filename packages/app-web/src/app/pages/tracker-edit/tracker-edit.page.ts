@@ -15,7 +15,7 @@ import {
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
   GqlScrapeEmit,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
   GqlWebDocumentField,
   GqlXyPosition,
 } from '../../../generated/graphql';
@@ -92,7 +92,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
   protected readonly GqlWebDocumentField = GqlWebDocumentField;
   private subscriptions: Subscription[] = [];
   // errorMessage: null;
-  private scrapeRequest: GqlScrapeRequestInput;
+  private scrapeRequest: GqlSourceInput;
   showErrors: boolean;
   isThrottled: boolean;
   screenArea: Screen = 'area';
@@ -189,7 +189,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
       skipLocationChange: true,
     });
 
-    const newScrapeRequest: GqlScrapeRequestInput = {
+    const newScrapeRequest: GqlSourceInput = {
       title: `From ${url}`,
       flow: {
         sequence: [

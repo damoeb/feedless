@@ -1,3 +1,10 @@
+<ion-toolbar color="success">
+  <ion-label class="ion-padding-horizontal">
+    <strong>New Version online!</strong> Join our
+    <a href="https://discord.gg/6ySGeryD" target="_blank">discord channel</a> to
+    discuss it.
+  </ion-label>
+</ion-toolbar>
 <ion-content>
   <app-product-header productTitle="Web Scraping Swiss Knife">
     <p class="ion-padding-vertical">
@@ -25,13 +32,13 @@
       <ion-item
         style="border-radius: 8px"
         lines="full"
-        color="dark"
+        color="medium"
         routerLink="/tracker-builder"
         [button]="true"
       >
         <ion-icon name="eye-outline" slot="start"></ion-icon>
         Create Page Tracker
-        <ion-badge slot="end" color="light">Alpha</ion-badge>
+        <ion-badge slot="end" color="light">Coming Soon</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
 
@@ -62,32 +69,36 @@
       <a name="products"></a>
       <h2>Self Hosting, anyone?</h2>
       <div>
-        If you care to run and own a piece of software, here are your self
-        hosting options. Everything is released under a
-        <a
-          href="https://github.com/getsentry/fsl.software/blob/main/FSL-1.1-Apache-2.0.template.md"
-          >FSL-1.1-Apache-2.0</a
-        >, which may be described as a non-competitive Open-Source license.
+        Let me know if you want to run feedless locally on your machine, then I
+        will priorize this.
       </div>
-      <div class="products">
-        <ion-card
-          *ngFor="let product of listedProducts"
-          [routerLink]="'/products/'+product.id"
-        >
-          <img alt="Silhouette of mountains" [src]="product.imageUrl" />
-          <ion-card-header>
-            <ion-card-title>{{product.subtitle}}</ion-card-title>
-            <ion-card-subtitle>
-              <ion-badge color="success">{{ product.phase }}</ion-badge>
-            </ion-card-subtitle>
-            <!--            <ion-card-subtitle-->
-            <!--              >Version {{product.version.join('.')}}</ion-card-subtitle-->
-            <!--            >-->
-          </ion-card-header>
+      <!--      <div>-->
+      <!--        If you care to run and own a piece of software, here are your self-->
+      <!--        hosting options. Everything is released under a-->
+      <!--        <a-->
+      <!--          href="https://github.com/getsentry/fsl.software/blob/main/FSL-1.1-Apache-2.0.template.md"-->
+      <!--          >FSL-1.1-Apache-2.0</a-->
+      <!--        >, which may be described as a non-competitive Open-Source license.-->
+      <!--      </div>-->
+      <!--      <div class="products">-->
+      <!--        <ion-card-->
+      <!--          *ngFor="let product of listedProducts"-->
+      <!--          [routerLink]="'/products/'+product.id"-->
+      <!--        >-->
+      <!--          <img alt="Silhouette of mountains" [src]="product.imageUrl" />-->
+      <!--          <ion-card-header>-->
+      <!--            <ion-card-title>{{product.subtitle}}</ion-card-title>-->
+      <!--            <ion-card-subtitle>-->
+      <!--              <ion-badge color="success">{{ product.phase }}</ion-badge>-->
+      <!--            </ion-card-subtitle>-->
+      <!--            &lt;!&ndash;            <ion-card-subtitle&ndash;&gt;-->
+      <!--            &lt;!&ndash;              >Version {{product.version.join('.')}}</ion-card-subtitle&ndash;&gt;-->
+      <!--            &lt;!&ndash;            >&ndash;&gt;-->
+      <!--          </ion-card-header>-->
 
-          <!--          <ion-card-content> {{product.summary}} </ion-card-content>-->
-        </ion-card>
-      </div>
+      <!--          &lt;!&ndash;          <ion-card-content> {{product.summary}} </ion-card-content>&ndash;&gt;-->
+      <!--        </ion-card>-->
+      <!--      </div>-->
     </div>
   </app-product-header>
 

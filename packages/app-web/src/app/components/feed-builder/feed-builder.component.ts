@@ -12,12 +12,10 @@ import {
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
-  GqlExtendContentOptions,
   GqlFeedlessPlugins,
-  GqlNativeFeed,
   GqlProductCategory,
   GqlRemoteNativeFeed,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import {
@@ -33,8 +31,8 @@ import {
   ProductConfig,
 } from '../../services/app-config.service';
 import {
-  InteractiveWebsiteModalComponent,
   FeedBuilderData,
+  InteractiveWebsiteModalComponent,
   InteractiveWebsiteModalComponentProps,
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
@@ -44,7 +42,6 @@ import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/tr
 import { OsmMatch } from '../../services/open-street-map.service';
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { RepositoryService } from '../../services/repository.service';
-import { Embeddable } from '../embedded-image/embedded-image.component';
 
 /**
  * IDEEN
@@ -74,7 +71,7 @@ export enum FeedBuilderModalComponentExitRole {
 
 export type Source = {
   // output?: ScrapeField | ScrapeField[]
-  request: GqlScrapeRequestInput;
+  request: GqlSourceInput;
   response?: ScrapeResponse;
 };
 
@@ -83,7 +80,7 @@ export type FeedOrRepository = {
   repository: Repository;
 };
 export type FeedWithRequest = {
-  scrapeRequest: GqlScrapeRequestInput;
+  scrapeRequest: GqlSourceInput;
   feed: NativeOrGenericFeed;
 };
 
@@ -96,7 +93,7 @@ export type FeedWithRequest = {
 export class FeedBuilderComponent implements OnInit, OnDestroy {
   url: string;
   scrapeResponse: ScrapeResponse;
-  embedWebsite: Embeddable;
+  // embedWebsite: Embeddable;
   loading = false;
 
   @ViewChild('webToFeedTransformer')
@@ -106,7 +103,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   submitButtonText = 'Finalize Feed';
 
   @Input()
-  scrapeRequest: GqlScrapeRequestInput;
+  scrapeRequest: GqlSourceInput;
   hasFeed: boolean;
   selectedFeed: NativeOrGenericFeed;
   productConfig: ProductConfig;
@@ -144,7 +141,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     if (this.scrapeRequest) {
       this.url = getFirstFetchUrlLiteral(this.scrapeRequest.flow.sequence);
-
       await this.scrapeUrl();
     }
     this.subscriptions.push(
@@ -225,7 +221,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         },
       };
 
-      this.handleResponse(await this.scrapeService.scrape(this.scrapeRequest));
+      this.scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
+
     } catch (e) {
       this.errorMessage = e.message;
     }
@@ -282,11 +279,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (result.data) {
       this.scrapeRequest = null;
       this.scrapeResponse = null;
-      this.embedWebsite = null;
       this.changeRef.detectChanges();
 
       this.scrapeRequest = result.data.request;
-      this.handleResponse(result.data.response);
+      this.scrapeResponse = result.data.response;
       this.changeRef.detectChanges();
     }
   }
@@ -299,23 +295,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   handleCancel() {
     console.log('handleCancel');
     this.apolloAbortController.abort('user canceled');
-  }
-
-  private handleResponse(scrapeResponse: ScrapeResponse) {
-    this.scrapeResponse = scrapeResponse;
-
-    const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
-      .response.fetch;
-    const { contentType } = fetchAction.debug;
-    if (contentType.startsWith('text/html')) {
-      this.embedWebsite = {
-        mimeType: 'text/html',
-        data: fetchAction.data,
-        url: this.url,
-      };
-    } else {
-      console.warn(`Unsupported contentType ${contentType}`);
-    }
   }
 
   async showTagsModal() {
@@ -340,7 +319,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   private async detectLegacyRssProxy() {
-    const legacyPathFragemnts = [
+    const legacyPathFragments = [
       '/api/tf',
       '/api/w2f',
       '/api/web-to-feed',
@@ -351,8 +330,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     ];
 
     if (
-      legacyPathFragemnts.some(
-        (pathFragemnt) => this.url.indexOf(pathFragemnt) > -1,
+      legacyPathFragments.some(
+        (pathFragment) => this.url.indexOf(pathFragment) > -1,
       )
     ) {
       const alert = await this.alertCtrl.create({

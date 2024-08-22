@@ -42,6 +42,7 @@ import {
 
 const feedResponse: ScrapeResponse = {
   failed: false,
+  logs: [],
   outputs: [
     {
       index: 0,
@@ -61,7 +62,12 @@ const feedResponse: ScrapeResponse = {
             //   render: 239,
             //   // '__typename': 'ScrapeDebugTimes'
             // },
-            viewport: null,
+            viewport: {
+              width: 1,
+              height: 1,
+              isLandscape: false,
+              isMobile: false
+            },
             // '__typename': 'ScrapeDebugResponse'
           },
         },

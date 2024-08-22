@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { ContentType } from '../../elements/code-editor/code-editor.component';
 
 export interface CodeEditorModalComponentProps {
-  element: string;
+  text: string;
+  readOnly?: boolean;
+  controls?: boolean;
+  contentType?: ContentType;
 }
 
 @Component({
@@ -13,7 +17,10 @@ export interface CodeEditorModalComponentProps {
 export class CodeEditorModalComponent
   implements OnInit, CodeEditorModalComponentProps
 {
-  element: string;
+  text: string;
+  contentType: ContentType;
+  readOnly: boolean;
+  controls: boolean;
 
   constructor(private readonly modalCtrl: ModalController) {}
 

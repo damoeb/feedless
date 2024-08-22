@@ -47,6 +47,8 @@ import org.migor.feedless.generated.types.FeedParams
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
+import org.migor.feedless.generated.types.ItemFilterParams
+import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.NumericalFilterParams
 import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
@@ -59,7 +61,6 @@ import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.user.UserEntity
-import org.springframework.context.annotation.Lazy
 import java.util.*
 
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
@@ -222,6 +223,13 @@ fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
     org_feedless_diff_email_forward = org_feedless_diff_email_forward?.toDto(),
     jsonData = jsonData,
     org_feedless_filter = org_feedless_filter?.map { it.toDto() },
+  )
+}
+
+private fun ItemFilterParamsInput.toDto(): ItemFilterParams {
+  return ItemFilterParams(
+    composite = composite?.toDto(),
+    expression = expression
   )
 }
 

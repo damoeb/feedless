@@ -36,9 +36,11 @@ fun EntityVisibility.toDto(): Visibility = when (this) {
 fun ScrapeResponseInput.fromDto(): ScrapeResponse = ScrapeResponse(
   errorMessage = errorMessage,
   failed = failed,
-  logs = logs,
+  logs = logs.map { it.fromDto() },
   outputs = outputs.map { it.fromDto() }
 )
+
+private fun LogStatementInput.fromDto() = LogStatement(time = time, message = message)
 
 private fun ScrapeOutputResponseInput.fromDto(): ScrapeOutputResponse {
   return ScrapeOutputResponse(
@@ -150,7 +152,7 @@ fun Selectors.fromDto(): GenericFeedSelectors = GenericFeedSelectors(
   paginationXPath = paginationXPath
 )
 
-fun ScrapeRequestInput.fromDto(): SourceEntity {
+fun SourceInput.fromDto(): SourceEntity {
   val source = SourceEntity()
   source.title = title
   source.actions = flow.sequence.mapNotNull {

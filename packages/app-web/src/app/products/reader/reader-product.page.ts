@@ -18,7 +18,7 @@ import {
   Selectors,
 } from '../../graphql/types';
 import { transformXpathToCssPath } from '../../components/embedded-markup/embedded-markup.component';
-import { uniqBy } from 'lodash-es';
+import { last, uniqBy } from 'lodash-es';
 import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl, isValidUrl } from '../../app.module';
@@ -134,6 +134,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                   literal: this.url,
                 },
                 forcePrerender: false,
+                additionalWaitSec: 0
               },
             },
           },
@@ -178,10 +179,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
-      const feeds = this.scrapeResponse.outputs.find(
-        (o) =>
-          o.response.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ).response.execute.data.org_feedless_feeds;
+      const feeds = last(this.scrapeResponse.outputs).response.extract.feeds;
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
@@ -305,11 +303,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   }
 
   getReadability(): Maybe<ScrapedReadability> {
-    return this.scrapeResponse.outputs.find(
-      (output) =>
-        output.response.execute?.pluginId ===
-        GqlFeedlessPlugins.OrgFeedlessFulltext,
-    ).response.execute.data.org_feedless_fulltext;
+    return last(last(this.scrapeResponse.outputs).response.extract.items);
   }
 
   private async assignUrlQueryParam(url: string) {

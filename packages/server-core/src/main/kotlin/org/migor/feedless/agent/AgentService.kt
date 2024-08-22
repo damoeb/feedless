@@ -15,6 +15,7 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,15 +24,23 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
+import java.io.Serializable
 import java.time.Duration
 import java.util.*
+
+class AgentResponse(private val scrapeResponse: String) : Serializable {
+
+  fun get(): ScrapeResponse {
+    return JsonUtil.gson.fromJson(scrapeResponse, ScrapeResponse::class.java)
+  }
+}
 
 @Service
 @Profile(AppProfiles.agent)
 class AgentService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
-  private val pendingJobs: MutableMap<String, FluxSink<ScrapeResponse>> = mutableMapOf()
+  private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
 
   @Autowired
   private lateinit var userSecretService: UserSecretService
@@ -117,10 +126,11 @@ class AgentService {
 
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
-  fun prerender(corrId: String, source: SourceEntity): Mono<ScrapeResponse> {
+//  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
+  fun prerender(corrId: String, source: SourceEntity): AgentResponse {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      prerenderWithAgent(corrId, source, agentRef)
+      prerenderWithAgent(corrId, source, agentRef).block()!!
     } else {
       log.warn("[$corrId] no agents present")
       throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
@@ -131,7 +141,7 @@ class AgentService {
     corrId: String,
     source: SourceEntity,
     agentRef: AgentRef
-  ): Mono<ScrapeResponse> {
+  ): Mono<AgentResponse> {
     log.info("[$corrId] preparing")
     return Flux.create { emitter ->
       try {
@@ -160,7 +170,7 @@ class AgentService {
       if (scrapeResponse.failed) {
         it.error(IllegalArgumentException(scrapeResponse.errorMessage))
       } else {
-        it.next(scrapeResponse.fromDto())
+        it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
       }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")

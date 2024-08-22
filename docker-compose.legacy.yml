@@ -9,7 +9,7 @@ services:
     image: postgres:15
     container_name: postgres
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DB=feedless-legacy
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     expose:
@@ -54,7 +54,7 @@ services:
     env_file:
       - .env
     environment:
-      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/feedless-legacy
       - APP_ACTIVE_PROFILES=database,cache,metrics
       - APP_WHITELISTED_HOSTS=feedless-core,172.26.0.1
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3

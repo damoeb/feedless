@@ -22,7 +22,7 @@ import { ModalService } from '../../services/modal.service';
 import {
   GqlFeedlessPlugins,
   GqlScrapeRequest,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
 } from '../../../generated/graphql';
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { Repository } from '../../graphql/types';
@@ -105,7 +105,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   private async handleSource(
     title: string,
     description: string,
-    source: GqlScrapeRequestInput,
+    source: GqlSourceInput,
   ) {
     const componentProps: GenerateFeedModalComponentProps = {
       repository: {

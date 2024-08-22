@@ -95,7 +95,7 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeResponse = scrapeService.scrape(corrId, source)
+      val scrapeOutput = scrapeService.scrape(corrId, source)
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -114,7 +114,7 @@ class LegacyFeedService {
           corrId,
           selectors,
           HtmlUtil.parseHtml(
-            scrapeResponse.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+            scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
               StandardCharsets.UTF_8
             ), url
           ),

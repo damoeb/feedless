@@ -4,16 +4,18 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
-import org.migor.feedless.feed.asRemoteNativeFeed
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionData
+import org.migor.feedless.generated.types.MimeData
+import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.SelectorsInput
+import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.Selectors
+import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,10 +42,11 @@ class FeedPlugin : FragmentTransformerPlugin {
   override fun listed() = true
 
   override fun transformFragment(
-    corrId: String,
-    action: ExecuteActionEntity,
-    data: HttpResponse,
-  ): PluginExecutionData {
+      corrId: String,
+      action: ExecuteActionEntity,
+      data: HttpResponse,
+      logger: (String) -> Unit,
+  ): FragmentOutput {
     val executorParams = action.executorParams!!
     log.debug("[$corrId] transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")
 
@@ -54,10 +57,14 @@ class FeedPlugin : FragmentTransformerPlugin {
         corrId, it.toSelectors(),
         document, URL(data.url)
       )
-    } ?: feedParserService.parseFeed(corrId, data)).asRemoteNativeFeed()
+    } ?: feedParserService.parseFeed(corrId, data))
     log.debug("[$corrId] transformed to feed with ${feed.items.size} items")
 
-    return PluginExecutionData(org_feedless_feed = feed)
+    return FragmentOutput(
+      fragmentName = id(),
+      items = feed.items,
+      fragments = feed.links?.map { ScrapeExtractFragment(data = MimeData(data = it, mimeType = MIME_URL)) }
+    )
   }
 
   override fun name(): String = "Feed"

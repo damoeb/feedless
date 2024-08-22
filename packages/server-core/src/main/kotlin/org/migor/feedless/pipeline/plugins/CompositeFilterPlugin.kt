@@ -1,6 +1,9 @@
 package org.migor.feedless.pipeline.plugins
 
-import org.migor.feedless.document.DocumentEntity
+import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.document.filter.generated.FilterByExpression
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.NumberFilterOperator
@@ -10,6 +13,7 @@ import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
@@ -17,41 +21,58 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
 
+  @Autowired
+  lateinit var propertyService: PropertyService
+
   override fun id(): String = FeedlessPlugins.org_feedless_filter.name
   override fun listed() = true
   override fun name(): String = "Filter"
 
   override fun filterEntity(
     corrId: String,
-    document: DocumentEntity,
+    item: JsonItem,
     params: PluginExecutionParamsInput,
     index: Int
   ): Boolean {
     val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
-        plugin.exclude?.let { !matches(document, it, index) } ?: true
-          && plugin.include?.let { matches(document, it, index) } ?: true
+        plugin.composite?.let {
+          it.exclude?.let { !matches(item, it, index) } ?: true
+            && it.include?.let { matches(item, it, index) } ?: true
+        } ?: true
+          &&
+          matchesExpression(corrId, plugin.expression, item)
+
       }
     } ?: true
 
     if (keep) {
-      log.debug("[$corrId] qualified ${document.url}")
+      log.debug("[$corrId] qualified ${item.url}")
     } else {
-      log.debug("[$corrId] disqualified ${document.url}")
+      log.debug("[$corrId] disqualified ${item.url}")
     }
 
     return keep
   }
 
+  private fun matchesExpression(corrId: String, expression: String?, item: JsonItem): Boolean {
+    return try {
+      expression?.let { FilterByExpression(it.reader()).matches(item) } ?: true
+    } catch (e: Exception) {
+      log.warn("[$corrId] matchesExpression failed: ${e.message}")
+      true
+    }
+  }
+
   fun matches(
-    document: DocumentEntity,
+    item: JsonItem,
     filterParams: CompositeFieldFilterParamsInput,
     index: Int
   ): Boolean {
     return arrayOf(
-      filterParams.content?.let { applyStringOperation(document.contentText.trim(), it) },
-      filterParams.title?.let { applyStringOperation(document.contentTitle!!.trim(), it) },
-      filterParams.link?.let { applyStringOperation(document.url, it) },
+      filterParams.content?.let { applyStringOperation(StringUtils.trimToEmpty(item.contentText), it) },
+      filterParams.title?.let { applyStringOperation(StringUtils.trimToEmpty(item.title), it) },
+      filterParams.link?.let { applyStringOperation(item.url, it) },
       filterParams.index?.let { applyNumberOperation(index, it) },
     ).filterNotNull()
       .all { it }

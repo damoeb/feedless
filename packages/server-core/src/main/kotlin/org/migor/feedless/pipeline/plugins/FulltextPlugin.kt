@@ -3,14 +3,16 @@ package org.migor.feedless.pipeline.plugins
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
+import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionData
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ScrapedReadability
+import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
@@ -38,10 +40,8 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   @Autowired
   private lateinit var scrapeService: ScrapeService
 
-
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
   override fun name(): String = "Fulltext & Readability"
-
   override fun listed() = true
 
   override fun mapEntity(
@@ -52,27 +52,26 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   ): DocumentEntity {
     log.debug("[$corrId] mapEntity ${document.url}")
 
-    val source = repository.sources[0]
-
     val request = SourceEntity()
     request.title = "Feed from ${document.url}"
-    val action = FetchActionEntity()
-    action.url = document.url
-    request.actions = mutableListOf(action)
-    val prerender = needsPrerendering(source, 0)
+    val fetchAction = FetchActionEntity()
+    fetchAction.url = document.url
+    val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
     if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
       log.debug("[$corrId] with inheritParams")
-      request.actions.addAll(source.actions.subList(1, source.actions.size))
+      request.actions = mergeWithSourceActions(fetchAction, document.source!!.actions).toMutableList()
+    } else {
+      request.actions = mutableListOf(fetchAction)
     }
 
-    val response = scrapeService.scrape(corrId, request)
+    val scrapeOutput = scrapeService.scrape(corrId, request)
 
-    if (response.outputs.isNotEmpty()) {
-      val lastOutput = response.outputs.last()
+    if (scrapeOutput.outputs.isNotEmpty()) {
+      val lastOutput = scrapeOutput.outputs.last()
       val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
       if (params.org_feedless_fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, document.url)
-        document.contentHtml = readability.content
+        document.contentHtml = readability.contentHtml
         document.contentText = readability.contentText!!
         document.contentTitle = readability.title
       } else {
@@ -83,24 +82,33 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     return document
   }
 
+  fun mergeWithSourceActions(
+    fetchAction: FetchActionEntity,
+    sourceActions: List<ScrapeActionEntity>
+  ): List<ScrapeActionEntity> {
+    return if (sourceActions.isEmpty()) {
+      listOf(fetchAction)
+    } else {
+      val cleanedActions = sourceActions.sortedBy { it.pos }
+        .filter { it !is ExecuteActionEntity && it !is ExtractBoundingBoxActionEntity && it !is ExtractXpathActionEntity }
+        .toMutableList()
+      // replace fetch
+      cleanedActions[cleanedActions.indexOfFirst { it is FetchActionEntity }] = fetchAction
+      cleanedActions
+    }
+  }
+
   override fun transformFragment(
-    corrId: String,
-    action: ExecuteActionEntity,
-    data: HttpResponse,
-  ): PluginExecutionData {
+      corrId: String,
+      action: ExecuteActionEntity,
+      data: HttpResponse,
+      logger: (String) -> Unit,
+  ): FragmentOutput {
     val markup = data.responseBody.toString(StandardCharsets.UTF_8)
-    val article = webToArticleTransformer.fromHtml(markup, data.url)
-    return PluginExecutionData(
-      org_feedless_fulltext = ScrapedReadability(
-        date = article.date,
-        content = article.content,
-        url = article.url,
-        contentText = article.contentText,
-        contentMime = article.contentMime,
-        faviconUrl = article.faviconUrl,
-        imageUrl = article.imageUrl,
-        title = article.title,
-      )
+    return FragmentOutput(
+      fragmentName = "",
+      items = listOf(
+        webToArticleTransformer.fromHtml(markup, data.url)      ),
     )
   }
 }

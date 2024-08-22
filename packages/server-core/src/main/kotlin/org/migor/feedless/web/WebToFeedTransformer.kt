@@ -332,12 +332,12 @@ class WebToFeedTransformer(
     jsonFeed.title = "feed"
     jsonFeed.websiteUrl = ""
     jsonFeed.publishedAt = Date()
-    jsonFeed.items = feed.fragments
+    jsonFeed.items = feed.fragments!!
       .map { convertExtractToJsonItem(it, url) }
       .distinctBy { it.url }
     jsonFeed.feedUrl = ""
     links?.let {
-      jsonFeed.links = links.fragments.mapNotNull { it.data?.data }
+      jsonFeed.links = links.fragments!!.mapNotNull { it.data?.data }
         .map { it.replace(Regex("#.*"), "") }
         .distinct()
     }
@@ -359,7 +359,7 @@ class WebToFeedTransformer(
     article.contentRawMime = "text/html"
     article.publishedAt = Date()
 
-    val tryExtractDate = { f: ScrapeExtractResponse -> f.fragments.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
+    val tryExtractDate = { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.PUBLISHED_AT }?.let {
       article.publishedAt = tryExtractDate(it) ?: Date()

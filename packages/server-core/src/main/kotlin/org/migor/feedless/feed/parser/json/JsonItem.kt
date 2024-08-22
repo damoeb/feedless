@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
-import org.springframework.util.CollectionUtils
 import java.io.Serializable
 import java.util.*
 

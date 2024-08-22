@@ -15,11 +15,12 @@
         style="max-width: 200px; width: 200px"
         [formControl]="viewModeFc"
       >
-        <ion-segment-button [value]="viewModeImage">Image</ion-segment-button>
-        <ion-segment-button [value]="viewModeMarkup">Markup</ion-segment-button>
+        <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot">Image</ion-segment-button>
+        <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup">Markup</ion-segment-button>
+        <ion-segment-button [value]="viewLogs">Logs</ion-segment-button>
       </ion-segment>
     </div>
-    <ion-buttons slot="end">
+    <ion-buttons slot="end" *ngIf="viewModeFc.value !== viewLogs">
       <ion-button (click)="zoomIn()">
         <ion-icon name="remove-outline"></ion-icon>
       </ion-button>
@@ -124,7 +125,20 @@
           [embed]="embedMarkup"
         >
         </app-embedded-markup>
+
+<!--        <app-native-feed-->
+<!--          *ngIf="currentNativeFeed"-->
+<!--          [feedUrl]="currentNativeFeed.feedUrl"-->
+<!--          [title]="currentNativeFeed.title"-->
+<!--          class="flex"-->
+<!--        ></app-native-feed>-->
       </div>
+
+      <app-code-editor *ngIf="viewModeFc.value === viewLogs"
+                       [controls]="false"
+                       [text]="logs">
+
+      </app-code-editor>
 
       <ion-row *ngIf="pickMode">
         <ion-item color="primary" style="width: 100%">

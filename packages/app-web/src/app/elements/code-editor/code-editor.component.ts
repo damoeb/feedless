@@ -29,7 +29,6 @@ import {
   foldGutter,
   foldKeymap,
   indentOnInput,
-  LanguageSupport,
   syntaxTree,
 } from '@codemirror/language';
 import { highlightSelectionMatches } from '@codemirror/search';
@@ -59,6 +58,7 @@ import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
 import { html } from '@codemirror/lang-html';
+import { json } from '@codemirror/lang-json';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -103,6 +103,8 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   provide: (f) => showTooltip.computeN([f], (state) => state.field(f)),
 });
 
+export type ContentType = 'json' | 'text' | 'html' | 'markdown';
+
 //   {label: "match", apply: 'karli'},
 //   {label: "hello", info: "(World)"},
 export type AutoSuggestionsProvider = (
@@ -122,6 +124,9 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
 
   @Input({ required: true })
   text: string;
+
+  @Input()
+  contentType: ContentType;
 
   @Input()
   readOnly: boolean = false;
@@ -173,6 +178,18 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
     });
   }
 
+  private getLanguageSupportForMimeType() {
+    switch (this.contentType) {
+      case 'html':
+        return html().extension;
+      case 'json':
+        return json().extension;
+      case 'markdown':
+      default:
+        return markdownLanguageSupport;
+    }
+  }
+
   private getExtensions() {
     const textChangeHook = this.textChange;
 
@@ -211,8 +228,7 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
       ]),
       // defaultHighlightStyle,
       cursorTooltipField.extension,
-      html().extension,
-      markdownLanguageSupport,
+      this.getLanguageSupportForMimeType(),
       // EditorView.updateListener.of((v) => {
       //   // console.log(v.transactions)
       //   // if (v.docChanged) {
@@ -370,7 +386,10 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const scrollLeft = changes.scrollLeft?.currentValue;
+    if (changes.text?.currentValue) {
+      this.setText(changes.text.currentValue);
+    }
+    // const scrollLeft = changes.scrollLeft?.currentValue;
     // if (scrollLeft && this.editorView?.scrollDOM) {
     //   console.log('scrollLeft', scrollLeft)
     //   this.editorView.scrollDOM.scrollLeft = scrollLeft;

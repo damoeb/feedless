@@ -4,8 +4,19 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <div class="flex__row ion-align-items-center ion-hide-xl-up">
-      <app-product-title></app-product-title>
+    <div class="title">
+      <div routerLink="/" style="cursor: pointer">
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </div>
+
+      <ion-buttons class="ion-margin-horizontal">
+        <app-repositories-button
+          name="Feeds"
+          link="/feeds"
+          [product]="GqlProductName.RssProxy"
+        ></app-repositories-button>
+        <app-agents-button></app-agents-button>
+      </ion-buttons>
     </div>
 
     <ion-buttons slot="end">
@@ -13,9 +24,9 @@
       <!--      <ion-button routerLink="/plans">-->
       <!--        <ion-label> Pricing </ion-label>-->
       <!--      </ion-button>-->
-      <ion-button href="https://discord.gg/6ySGeryD">
-        <ion-label> Community </ion-label>
-      </ion-button>
+      <!--      <ion-button href="https://discord.gg/6ySGeryD">-->
+      <!--        <ion-label> Community </ion-label>-->
+      <!--      </ion-button>-->
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>

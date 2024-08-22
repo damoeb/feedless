@@ -28,7 +28,7 @@ export class RepositoriesButtonComponent implements OnInit, OnDestroy {
   @Input({ required: true })
   product: GqlProductCategory;
 
-  feedCount: number = 0;
+  // feedCount: number = 0;
   isLoggedIn: boolean;
   private subscriptions: Subscription[] = [];
 
@@ -45,12 +45,12 @@ export class RepositoriesButtonComponent implements OnInit, OnDestroy {
         this.isLoggedIn = authorization?.loggedIn;
         this.changeRef.detectChanges();
       }),
-      this.repositoryService
-        .countRepositories({ product: this.product })
-        .subscribe((repoCount) => {
-          this.feedCount = repoCount;
-          this.changeRef.detectChanges();
-        }),
+      // this.repositoryService
+      //   .countRepositories({ product: this.product })
+      //   .subscribe((repoCount) => {
+      //     this.feedCount = repoCount;
+      //     this.changeRef.detectChanges();
+      //   }),
     );
   }
 

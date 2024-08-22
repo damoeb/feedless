@@ -186,7 +186,7 @@ export class ServerConfigService {
     }
   }
 
-  isEnabled(featureName: GqlFeatureName): boolean {
+  getFeatureValueBool(featureName: GqlFeatureName): boolean {
     const feature = this.getFeature(featureName);
     if (feature) {
       return feature.value.boolVal.value;

@@ -88,7 +88,8 @@ ion-toolbar {
   padding-left: 10px;
 }
 
-.cm-tag-name {
+.cm-tag-name,
+.cm-property-name {
   color: rgba(var(--ion-color-tertiary-rgb), 0.8);
 }
 .cm-attribute-name {

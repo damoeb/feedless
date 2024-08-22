@@ -15,12 +15,13 @@ import {
   GqlConditionalTagInput,
   GqlFeatureName,
   GqlFeedlessPlugins,
+  GqlItemFilterParamsInput,
   GqlPluginExecutionInput,
   GqlProfileName,
   GqlScrapeFlow,
   GqlScrapeFlowInput,
   GqlScrapeRequest,
-  GqlScrapeRequestInput,
+  GqlSourceInput,
   GqlStringFilterOperator,
   GqlVisibility,
   GqlWebDocumentDateField,
@@ -64,7 +65,7 @@ interface TagConditionData {
 export function getScrapeRequest(
   feed: NativeOrGenericFeed,
   scrapeRequest: GqlScrapeRequest,
-): GqlScrapeRequestInput {
+): GqlSourceInput {
   const createFlow = (): GqlScrapeFlow => {
     if (feed.nativeFeed) {
       return {
@@ -130,9 +131,9 @@ type GeneralFilterParams = ArrayElement<
   ArrayElement<Repository['plugins']>['params']['org_feedless_filter']
 >;
 
-type ConditionalTagParams = ArrayElement<
-  ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
->;
+// type ConditionalTagParams = ArrayElement<
+//   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
+// >;
 
 export type GenerateFeedAccordion = 'privacy' | 'storage';
 
@@ -154,7 +155,7 @@ export class GenerateFeedModalComponent
       ],
     }),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
-    maxCapacity: new FormControl<number>(null),
+    maxCapacity: new FormControl<number>(null, [Validators.min(2)]),
     maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
     ageReferenceField: new FormControl<GqlWebDocumentDateField>(
       GqlWebDocumentDateField.PublishedAt,
@@ -213,7 +214,7 @@ export class GenerateFeedModalComponent
     return this.modalCtrl.dismiss();
   }
 
-  addGeneralFilter(data: GeneralFilterParams = null) {
+  addGeneralFilter(params: GeneralFilterParams = null) {
     if (this.filters.some((filter) => filter.invalid)) {
       return;
     }
@@ -231,7 +232,8 @@ export class GenerateFeedModalComponent
       ]),
     });
 
-    if (data) {
+    if (params?.composite) {
+      const data = params.composite;
       const type = Object.keys(data).find(
         (field) => field != '__typename' && !!data[field],
       );
@@ -408,7 +410,7 @@ export class GenerateFeedModalComponent
           repositories: [
             {
               product: environment.product,
-              sources: this.repository.sources as GqlScrapeRequestInput[],
+              sources: this.repository.sources as GqlSourceInput[],
               sinkOptions: {
                 title: this.formFg.value.title,
                 refreshCron: this.formFg.value.fetchFrequency,
@@ -438,6 +440,14 @@ export class GenerateFeedModalComponent
   async ngOnInit(): Promise<void> {
     this.isLoggedIn = this.sessionService.isAuthenticated();
 
+    const canPublicRepository = this.serverConfig.getFeatureValueBool(
+      GqlFeatureName.PublicRepository,
+    );
+    if (!canPublicRepository) {
+      this.formFg.controls.isPublic.disable();
+      this.formFg.controls.isPublic.setErrors({disabled: 'Feature disabled for you'})
+    }
+
     const maxItemsLowerLimit = this.serverConfig.getFeatureValueInt(
       GqlFeatureName.RepositoryCapacityLowerLimitInt,
     );
@@ -451,7 +461,7 @@ export class GenerateFeedModalComponent
     );
     if (maxItemsUpperLimit) {
       this.formFg.controls.maxCapacity.addValidators([
-        Validators.min(maxItemsUpperLimit),
+        Validators.max(maxItemsUpperLimit),
       ]);
     }
 
@@ -503,21 +513,23 @@ export class GenerateFeedModalComponent
 
   private async loadFeedPreview() {
     await this.remoteFeedPreview.loadFeedPreview(
-      this.repository.sources as GqlScrapeRequestInput[],
+      this.repository.sources as GqlSourceInput[],
       this.getGeneralFilterParams(),
       this.getConditionalTagsParams(),
     );
   }
 
-  private getGeneralFilterParams(): GqlCompositeFilterParamsInput[] {
+  private getGeneralFilterParams(): GqlItemFilterParamsInput[] {
     return this.filters
       .filter((filterFg) => filterFg.valid)
       .map((filterFg) => filterFg.value)
-      .map<GqlCompositeFilterParamsInput>((filter) => ({
-        [filter.type]: {
-          [filter.field]: {
-            value: filter.value,
-            operator: filter.operator,
+      .map<GqlItemFilterParamsInput>((filter) => ({
+        composite: {
+          [filter.type]: {
+            [filter.field]: {
+              value: filter.value,
+              operator: filter.operator,
+            },
           },
         },
       }));
