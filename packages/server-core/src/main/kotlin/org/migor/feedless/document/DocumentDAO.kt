@@ -4,6 +4,7 @@ import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpql
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -74,5 +75,6 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 //  fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
   fun deleteAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>)
   fun deleteAllByRepositoryIdAndId(repositoryId: UUID, fromString: UUID?)
+  fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity>
 
 }

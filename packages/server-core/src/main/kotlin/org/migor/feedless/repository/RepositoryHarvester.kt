@@ -2,6 +2,8 @@ package org.migor.feedless.repository
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import jakarta.validation.Validation
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.jsoup.Jsoup
@@ -11,18 +13,18 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceEntity
-import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.data.jpa.repositories.SourceDAO
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.toDto
+import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_URL
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.notification.NotificationService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -30,7 +32,6 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.plugins.images
-import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
@@ -81,32 +84,32 @@ class RepositoryHarvester internal constructor() {
   @Autowired
   private lateinit var repositoryService: RepositoryService
 
-  @Autowired
-  private lateinit var notificationService: NotificationService
-
-  @Autowired
-  private lateinit var planConstraintsService: PlanConstraintsService
-
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  suspend fun handleRepository(corrId: String, repository: RepositoryEntity) {
-    runCatching {
-      log.info("[${corrId}] handleRepository ${repository.id}")
+  fun handleRepository(corrId: String, repositoryId: UUID) {
+//    runBlocking {
+      runCatching {
+        log.debug("[${corrId}] handleRepository ${repositoryId}")
 
-      meterRegistry.counter(
-        AppMetrics.fetchRepository, listOf(
-          Tag.of("type", "repository"),
-          Tag.of("id", repository.id.toString()),
-          Tag.of("format", "atom")
-        )
-      ).count()
+        meterRegistry.counter(
+          AppMetrics.fetchRepository, listOf(
+            Tag.of("type", "repository"),
+            Tag.of("id", repositoryId.toString()),
+            Tag.of("format", "atom")
+          )
+        ).count()
 
-      scrapeSources(corrId, repository)
+        val repository: RepositoryEntity = repositoryDAO.findById(repositoryId).orElseThrow()
 
-      log.info("[$corrId] Harvesting done")
-      documentService.applyRetentionStrategy(corrId, repository)
-      updateScheduledNextAt(corrId, repository)
-      repositoryDAO.updateLastUpdatedAt(repository.id, Date())
-    }.onFailure { log.error("[$corrId] handleRepository failed: ${it.message}", it) }
+        val appendCount = scrapeSources(corrId, repository)
+
+        log.debug("[$corrId] appended items $appendCount to repo ${repository.id}")
+        documentService.applyRetentionStrategy(corrId, repository)
+        updateScheduledNextAt(corrId, repository)
+        repositoryDAO.updateLastUpdatedAt(repository.id, Date())
+      }.onFailure {
+        log.error("[$corrId] handleRepository failed: ${it.message}", it)
+      }
+//    }
   }
 
 //  fun updateNextHarvestDateAfterError(corrId: String, repository: RepositoryEntity, e: Throwable) {
@@ -131,24 +134,25 @@ class RepositoryHarvester internal constructor() {
       repository.product,
       LocalDateTime.now()
     )
-    log.info("[$corrId] Next harvest scheduled for ${iso8601DateFormat.format(scheduledNextAt)}")
+    log.debug("[$corrId] Next harvest scheduled for ${iso8601DateFormat.format(scheduledNextAt)}")
     repositoryDAO.updateScheduledNextAt(repository.id, scheduledNextAt)
   }
 
   private fun scrapeSources(
     corrId: String,
     repository: RepositoryEntity
-  ): List<Any> {
-    log.info("[$corrId] scrape ${repository.sources.size} sources")
-    return repository.sources.map { source ->
-      run {
-        val subCorrId = newCorrId(parentCorrId = corrId)
+  ): Int {
+    log.debug("[$corrId] scrape ${repository.sources.size} sources")
+    return repository.sources
+      .filter { !it.erroneous }
+      .fold(0) { agg, source ->
         try {
-          scrapeSource(subCorrId, source)
-        } catch (e: Exception) {
-          handleScrapeException(subCorrId, e, source)
+          val subCorrId = newCorrId(parentCorrId = corrId)
+          agg + scrapeSource(subCorrId, source)
+        } catch (e: Throwable) {
+          handleScrapeException(corrId, e, source)
+          agg
         }
-      }
     }
 
 //    val defaultScheduledLastAt = Date.from(
@@ -175,26 +179,28 @@ class RepositoryHarvester internal constructor() {
 
   }
 
-  private fun handleScrapeException(corrId: String, e: Throwable?, source: SourceEntity): Boolean {
-    log.warn("[$corrId] scrape failed with ${e?.message}")
+  private fun handleScrapeException(corrId: String, e: Throwable?, source: SourceEntity) {
     if (e !is ResumableHarvestException) {
+      log.debug("[$corrId] disabling source")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
       sourceDAO.setErrorState(source.id, true, e?.message)
     }
-    return true
   }
 
-  fun scrapeSource(corrId: String, source: SourceEntity) {
-    importElement(corrId, scrapeService.scrape(corrId, source), source.repositoryId, source)
+  fun scrapeSource(corrId: String, source: SourceEntity): Int {
+    return runBlocking {
+      val output = scrapeService.scrape(corrId, source)
+      importElement(corrId, output, source.repositoryId, source)
+    }
   }
 
-  private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity) {
+  private fun importElement(corrId: String, output: ScrapeOutput, repositoryId: UUID, source: SourceEntity): Int {
     log.debug("[$corrId] importElement")
     val lastAction = output.outputs.last()
-    lastAction.fragment?.let { fragment ->
+    return lastAction.fragment?.let { fragment ->
       fragment.items?.let { importItems(corrId, repositoryId, it, fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data }, source) }
-    } ?: TODO()
+    } ?: 0
 //    lastAction.extract.image?.let {
 //      importImageElement(corrId, it, repositoryId, source)
 //    }
@@ -245,15 +251,15 @@ class RepositoryHarvester internal constructor() {
 //    )
 //  }
 
-  private fun importItems(corrId: String, repositoryId: UUID, items: List<JsonItem>, next: List<String>?, source: SourceEntity) {
+  private fun importItems(corrId: String, repositoryId: UUID, items: List<JsonItem>, next: List<String>?, source: SourceEntity): Int {
     val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-    log.info("[$corrId] importItems size=${items.size} with ${repository.plugins.size} plugins")
-
-    if (items.isEmpty()) {
-      notificationService.createNotification(corrId, repository.ownerId, "Feed is empty", repository = repository, source = source)
+    if (repository.plugins.isEmpty()) {
+      log.debug("[$corrId] importItems size=${items.size}")
+    } else {
+      log.debug("[$corrId] importItems size=${items.size} with ${repository.plugins.size} plugins")
     }
-//  todo set name  sourceDAO.save()
 
+    val start = Instant.now()
     val documents = items
       .distinctBy { it.url }
       .filterIndexed { index, _ -> index < 300 }
@@ -264,22 +270,35 @@ class RepositoryHarvester internal constructor() {
           updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
           createOrUpdate(corrId, updated, existing, repository)
         } catch (e: Exception) {
-          log.error("[$corrId] importFeed failed: ${e.message}")
+          log.error("[$corrId] importItems failed: ${e.message}", e)
           null
         }
       }
 
-    documentDAO.saveAll(documents.map { (_, document) -> document })
+    val validator = Validation.buildDefaultValidatorFactory().validator
+    documentDAO.saveAll(documents
+      .filter { document ->
+        validator.validate(document).let { validation ->
+          if (validation.isEmpty()) {
+            true
+          } else {
+            log.warn("[$corrId] document ${StringUtils.substring(document.second.url, 100)} invalid: $validation")
+            false
+          }
+        }
+      }
+      .map { (_, document) -> document })
     documentPipelineJobDAO.saveAll(
       documents
         .filter { (new, _) -> new }
-        .mapNotNull { (_, document) -> document }
+        .map { (_, document) -> document }
         .flatMap { repository.plugins
           .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, it, index) }
           .toMutableList()
         }
     )
 
+    log.debug("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
     val hasNew = documents.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
@@ -300,6 +319,7 @@ class RepositoryHarvester internal constructor() {
         log.info("[$corrId] wont follow page urls")
       }
     }
+    return items.size
   }
 
   fun detectMainImageUrl(corrId: String, contentHtml: String?): String? {
@@ -316,7 +336,7 @@ class RepositoryHarvester internal constructor() {
       try {
         el.attr("width").toInt() * el.attr("height").toInt()
       } catch (e: Exception) {
-        log.warn("[$corrId] during detectMainImageUrl: ${e.message}")
+        log.debug("[$corrId] during detectMainImageUrl: ${e.message}")
         400
       }
     } else {
@@ -329,7 +349,7 @@ class RepositoryHarvester internal constructor() {
     document: DocumentEntity,
     existing: DocumentEntity?,
     repository: RepositoryEntity
-  ): Pair<Boolean, DocumentEntity?>? {
+  ): Pair<Boolean, DocumentEntity>? {
     return try {
       existing
         ?.let {
@@ -357,7 +377,7 @@ class RepositoryHarvester internal constructor() {
       if (e is ResumableHarvestException) {
         log.debug("[$corrId] ${e.message}")
       } else {
-        log.error("[$corrId] createOrUpdate failed: ${e.message}")
+        log.error("[$corrId] createOrUpdate failed: ${e.message}", e)
         if (log.isDebugEnabled) {
           e.printStackTrace()
         }
@@ -435,6 +455,10 @@ private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source:
   }
 //  d.updatedAt = updatedAt?.let { Date(updatedAt) } ?: d.publishedAt
   d.url = url
+  if (url.length > LEN_URL) {
+    throw IllegalArgumentException("url too long. max $LEN_URL, actual ${url.length}")
+  }
+
   return d
 }
 

@@ -32,9 +32,11 @@ import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.data.jpa.models.SegmentationEntity
-import org.migor.feedless.data.jpa.models.SourceEntity
 import org.migor.feedless.data.jpa.models.toDto
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.toDto
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.CompareBy
 import org.migor.feedless.generated.types.CompareByInput
 import org.migor.feedless.generated.types.CompositeFieldFilterParams
@@ -61,6 +63,7 @@ import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.user.UserEntity
+import org.springframework.context.annotation.Lazy
 import java.util.*
 
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
@@ -82,9 +85,10 @@ enum class MaxAgeDaysDateField {
 open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.title, nullable = false)
-  @Size(min = 3, max = 255)
+  @Size(min = 3, max = LEN_STR_DEFAULT)
   open lateinit var title: String
 
+  @Size(max = 1024)
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
 
@@ -92,6 +96,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
+  @Size(max = LEN_STR_DEFAULT)
   @Column(nullable = false, name = "scheduler_expression")
   open lateinit var sourcesSyncCron: String
 
@@ -114,6 +119,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "disabled_from")
   open var disabledFrom: Date? = null
 
+  @Size(max = 10)
   @Column(name = "share_key", nullable = false, length = 10)
   open var shareKey: String = ""
 
@@ -142,6 +148,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   open var schemaVersion: Int = 0
 
   @Type(JsonBinaryType::class)
+  @Lazy
   @Column(columnDefinition = "jsonb", nullable = false, name = "plugins")
   open var plugins: List<org.migor.feedless.repository.PluginExecution> = emptyList()
 

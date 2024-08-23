@@ -60,9 +60,9 @@ class LegacyFeedController {
     "/feed/{feedId}",
     "/feed:{feedId}",
   )
-  fun legacyEntities(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
+  fun legacyEntities(@PathVariable("feedId") feedId: String, request: HttpServletRequest): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(legacyFeedService.getFeed(corrId, feedId), "atom")
+    return serializeFeed(legacyFeedService.getFeed(corrId, feedId, toFullUrlString(request)), "atom")
   }
 
   @Tracked
@@ -105,14 +105,14 @@ class LegacyFeedController {
     ApiUrls.transformFeed
   )
   fun transformFeed(
-    @RequestParam("url") feedUrl: String,
+    @RequestParam("url") nativeFeedUrl: String,
     @RequestParam("q", required = false) filter: String?,
-    @RequestParam("out", required = false, defaultValue = "json") responseFormat: String,
+    @RequestParam("out", required = false, defaultValue = "atom") responseFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = newCorrId()
     return serializeFeed(
-      legacyFeedService.transformFeed(corrId, feedUrl, filter, toFullUrlString(request)),
+      legacyFeedService.transformFeed(corrId, nativeFeedUrl, filter, toFullUrlString(request)),
       responseFormat
     )
   }

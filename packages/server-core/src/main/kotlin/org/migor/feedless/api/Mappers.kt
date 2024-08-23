@@ -15,7 +15,7 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.actions.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.util.CryptUtil

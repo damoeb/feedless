@@ -3,7 +3,7 @@ package org.migor.feedless.notification
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.repository.RepositoryEntity
@@ -54,7 +54,7 @@ class NotificationService {
       documentDAO.save(notification)
 
     } catch (e: Exception) {
-      log.error("[$corrId] Failed to create notification: $message")
+      log.error("[$corrId] Failed to create notification: $message", e)
     }
   }
 }

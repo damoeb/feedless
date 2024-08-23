@@ -16,6 +16,7 @@ ALTER TABLE IF EXISTS t_user
     ON DELETE NO ACTION;
 
 ALTER TABLE IF EXISTS t_source
-  ADD COLUMN title character varying(255) COLLATE pg_catalog."default";
+  ALTER COLUMN title TYPE character varying(255) COLLATE pg_catalog."default";
+
 UPDATE t_source SET title = 'empty title' where title is null;
 ALTER TABLE IF EXISTS t_source ALTER COLUMN title SET NOT NULL;

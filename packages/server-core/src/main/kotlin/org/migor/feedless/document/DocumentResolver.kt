@@ -65,7 +65,7 @@ class DocumentResolver {
     @InputArgument data: WebDocumentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
-    log.info("[$corrId] webDocument $data")
+    log.debug("[$corrId] webDocument $data")
     val document =
       documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
     repositoryService.findById(corrId, document.repositoryId)
@@ -79,7 +79,7 @@ class DocumentResolver {
     @InputArgument data: WebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<WebDocument> = coroutineScope {
-    log.info("[$corrId] webDocuments $data")
+    log.debug("[$corrId] webDocuments $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
     val repository = repositoryService.findById(corrId, repositoryId)

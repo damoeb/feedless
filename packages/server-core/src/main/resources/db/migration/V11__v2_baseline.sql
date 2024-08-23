@@ -454,7 +454,7 @@ ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS retentionsize;
 ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS status;
 
 
-ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS title;
+-- ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS title;
 
 ALTER TABLE IF EXISTS t_scrape_source DROP COLUMN IF EXISTS visibility;
 

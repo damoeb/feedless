@@ -8,6 +8,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -15,6 +17,8 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_URL
 import org.springframework.context.annotation.Lazy
 import java.util.*
 
@@ -22,22 +26,22 @@ import java.util.*
 @Table(name = "t_attachment")
 open class AttachmentEntity : EntityWithUUID() {
 
-  companion object {
-    const val LEN_URL = 1000
-  }
-
   @Column(nullable = false, name = "has_data")
   open var hasData: Boolean = false
 
+  @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "remote_data_url")
   open var remoteDataUrl: String? = null
 
-  @Column(nullable = false, name = "content_type")
+  @Size(max = LEN_STR_DEFAULT)
+  @Column(nullable = false, length = LEN_STR_DEFAULT, name = "content_type")
   open lateinit var contentType: String
 
+  @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "original_url")
   open var originalUrl: String? = null
 
+  @Size(max = LEN_STR_DEFAULT)
   @Column(name = "name")
   open var name: String? = null
 

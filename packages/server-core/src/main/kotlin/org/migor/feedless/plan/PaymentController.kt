@@ -38,7 +38,7 @@ class PaymentController {
       orderService.handlePaymentCallback(corrId, billingId)
       "success=true"
     } catch (ex: Exception) {
-      log.error("Payment callback failed with ${ex.message}")
+      log.error("Payment callback failed with ${ex.message}", ex)
       "success=false&message=${ex.message}"
     }
     headers.add(HttpHeaders.LOCATION, "${propertyService.appHost}/payment/summary/${billingId}?$queryParams")

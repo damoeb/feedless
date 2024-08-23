@@ -56,11 +56,37 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   }
 
   private fun matchesExpression(corrId: String, expression: String?, item: JsonItem): Boolean {
-    return try {
-      expression?.let { FilterByExpression(it.reader()).matches(item) } ?: true
-    } catch (e: Exception) {
-      log.warn("[$corrId] matchesExpression failed: ${e.message}")
-      true
+    return expression?.let {
+      val q = tryConvertFromLegacy(corrId, it)
+      try {
+        log.debug("[$corrId] expression '${q}'")
+        FilterByExpression(q.reader()).matches(item)
+      } catch (e: Exception) {
+        log.warn("[$corrId] matchesExpression failed for expression '${q}'", e)
+        false
+      }
+    } ?: true
+  }
+
+  private fun tryConvertFromLegacy(corrId: String, legacyExpression: String): String {
+    val fields = mapOf(
+      "#body" to "content",
+      "#title" to "title",
+      "#url" to "url",
+      "#any" to "any",
+    )
+    return if(fields.keys.any { legacyExpression.contains(it) } || legacyExpression.contains("not(")) {
+      var converted = legacyExpression
+        .replace("not(", "!(")
+        .replace("\")", "')")
+        .replace(" \"", " '")
+        .replace(",\"", ", '")
+      fields.forEach { (old, new) -> converted = converted.replace(old, new) }
+
+      log.info("[$corrId] converted expression '$legacyExpression' -> '$converted'")
+      converted
+    } else {
+      legacyExpression
     }
   }
 

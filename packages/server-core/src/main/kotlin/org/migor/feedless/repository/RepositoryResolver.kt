@@ -13,7 +13,7 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.repositories.SourceDAO
+import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.CronRun
@@ -63,7 +63,7 @@ class RepositoryResolver {
     @InputArgument data: RepositoriesInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Repository> = coroutineScope {
-    log.info("[$corrId] repositories $data")
+    log.debug("[$corrId] repositories $data")
     val pageNumber = handlePageNumber(data.cursor.page)
     val pageSize = handlePageSize(data.cursor.pageSize)
     val offset = pageNumber * pageSize
@@ -78,7 +78,7 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: CountRepositoriesInput,
   ): Int = coroutineScope {
-    log.info("[$corrId] countRepositories")
+    log.debug("[$corrId] countRepositories")
     repositoryService.countAll(sessionService.userId(), data.product.fromDto())
   }
 
@@ -89,7 +89,7 @@ class RepositoryResolver {
     @InputArgument data: RepositoryWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = coroutineScope {
-    log.info("[$corrId] repository $data")
+    log.debug("[$corrId] repository $data")
     repositoryService.findById(corrId, UUID.fromString(data.where.id)).toDto()
   }
 
@@ -101,7 +101,7 @@ class RepositoryResolver {
     @InputArgument("data") data: RepositoriesCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Repository> = coroutineScope {
-    log.info("[$corrId] createRepositories $data")
+    log.debug("[$corrId] createRepositories $data")
     repositoryService.create(corrId, data)
   }
 
@@ -113,7 +113,7 @@ class RepositoryResolver {
     @InputArgument("data") data: RepositoryUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = coroutineScope {
-    log.info("[$corrId] updateRepository $data")
+    log.debug("[$corrId] updateRepository $data")
     repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
   }
 
@@ -125,7 +125,7 @@ class RepositoryResolver {
     @InputArgument("data") data: RepositoryUniqueWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteRepository $data")
+    log.debug("[$corrId] deleteRepository $data")
     repositoryService.delete(corrId, UUID.fromString(data.id))
     true
   }

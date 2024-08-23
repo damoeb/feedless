@@ -39,7 +39,7 @@ class MailAuthResolver {
   @DgsSubscription
   fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val corrId = CryptUtil.newCorrId()
-    log.info("[$corrId] authViaMail ${data.product}")
+    log.debug("[$corrId] authViaMail ${data.product}")
     this.authService.decodeToken(data.token)
     return mailAuthenticationService.authenticateUsingMail(corrId, data)
   }
@@ -51,7 +51,7 @@ class MailAuthResolver {
     dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] authConfirmCode")
+    log.debug("[$corrId] authConfirmCode")
     mailAuthenticationService.confirmAuthCode(corrId, data, resolveHttpResponse(dfe))
     true
   }

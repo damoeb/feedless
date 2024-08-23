@@ -1,18 +1,23 @@
 package org.migor.feedless.feed
 
+import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.generated.types.ItemFilterParamsInput
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
@@ -59,18 +64,32 @@ class LegacyFeedService {
   private lateinit var userDAO: UserDAO
 
   @Autowired
+  private lateinit var documentDAO: DocumentDAO
+
+  @Autowired
+  private lateinit var sourceDAO: SourceDAO
+
+  @Autowired
   private lateinit var featureService: FeatureService
 
   @Autowired
   private lateinit var documentService: DocumentService
 
+  @Autowired
+  private lateinit var filterPlugin: CompositeFilterPlugin
+
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
-  fun getFeed(corrId: String, feedId: String): JsonFeed {
+  fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
-      TODO()
+      val sourceId = UUID.fromString(feedId)
+      val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
+      feed.items = documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+        .map { it.asJsonItem() }
+
+      appendNotifications(corrId, feed)
     } else {
-      eolFeed()
+      createEolFeed(corrId, feedUrl)
     }
   }
 
@@ -95,7 +114,9 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeOutput = scrapeService.scrape(corrId, source)
+      val scrapeOutput = runBlocking{
+        scrapeService.scrape(corrId, source)
+      }
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -109,28 +130,46 @@ class LegacyFeedService {
         dateXPath = dateXPath,
       )
 
+      val feed = webToFeedTransformer.getFeedBySelectors(
+        corrId,
+        selectors,
+        HtmlUtil.parseHtml(
+          scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+            StandardCharsets.UTF_8
+          ), url
+        ),
+        URL(url)
+      )
+      feed.feedUrl = requestURI
+
+      try {
+        filter?.let {
+          val params = PluginExecutionParamsInput(
+            org_feedless_filter = listOf(
+              ItemFilterParamsInput(
+                expression = it
+              )
+            )
+          )
+          feed.items = feed.items.filterIndexed { index, jsonItem ->  filterPlugin.filterEntity(corrId, jsonItem, params, index) }
+        }
+      } catch (e: Throwable) {
+        log.warn("[$corrId] webToFeed failed: ${e.message}", e)
+      }
+
       appendNotifications(
-        corrId, webToFeedTransformer.getFeedBySelectors(
-          corrId,
-          selectors,
-          HtmlUtil.parseHtml(
-            scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-              StandardCharsets.UTF_8
-            ), url
-          ),
-          URL(url)
-        ), requestURI
+        corrId, feed
       )
     } else {
-      eolFeed(url)
+      createEolFeed(corrId, url)
     }
   }
 
-  fun transformFeed(corrId: String, feedUrl: String, filter: String?, requestURI: String): JsonFeed {
+  fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
-      appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, feedUrl), requestURI)
+      appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl))
     } else {
-      eolFeed(feedUrl)
+      createEolFeed(corrId, feedUrl)
     }
   }
 
@@ -142,7 +181,7 @@ class LegacyFeedService {
 
   // --
 
-  private fun appendNotifications(corrId: String, feed: JsonFeed, requestURI: String): JsonFeed {
+  private fun appendNotifications(corrId: String, feed: JsonFeed): JsonFeed {
     val root = userDAO.findFirstByRootIsTrue()
     repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
@@ -153,9 +192,9 @@ class LegacyFeedService {
         ignoreVisibility = true
       )
       feed.items =
-        documents.mapNotNull { it?.toJsonItem(propertyService, EntityVisibility.isPublic, requestURI) }
+        documents.mapNotNull { it?.asJsonItem() }
           .plus(feed.items)
-    } ?: log.warn("[$corrId] Repo for legacy notification not found")
+    } ?: log.error("[$corrId] Repo for legacy notification not found")
     return feed
   }
 
@@ -163,46 +202,34 @@ class LegacyFeedService {
     return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 
-  private fun eolFeed(url: String? = null): JsonFeed {
-    val feed = createEolFeed()
-    feed.items = listOf(createEolArticle(url))
-    return feed
-  }
-
-  private fun createEolFeed(): JsonFeed {
+  private fun createEolFeed(corrId: String, feedUrl: String): JsonFeed {
     val feed = JsonFeed()
     feed.id = "rss-proxy:2"
     feed.title = "End Of Life"
-    feed.feedUrl = ""
+    feed.feedUrl = feedUrl
     feed.expired = true
     feed.publishedAt = Date()
+    feed.items = listOf(createEolArticle(feedUrl))
+
     return feed
   }
 
-  private fun createEolArticle(url: String?): JsonItem {
+  private fun createEolArticle(url: String): JsonItem {
     val article = JsonItem()
-    val preregistrationLink = if (url == null) {
-      propertyService.appHost
-    } else {
-      "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
-    }
-
+    val preregistrationLink = "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
-    article.title = "Termination of Stateless RSS-Proxy! Stateful RSS-Proxy is here!!"
+    article.title = "Service Announcement: RSS-Proxy Urls have reached End-of-life"
     article.contentHtml = """Dear User,
 
-I hope this message finds you well. I am writing to inform you of some changes regarding our services that may affect you.
+I hope this message finds you well. As of now, RSS-Proxy urls are no longer supported.
 
-As of now, I regret to terminate of our RSS-Proxy and I sincerely apologize for any inconvenience this may cause.
+However, you can easily migrate to feedless and take advantage of all new features.
 
-However, I am excited to share that we transitioned to a new and improved version. We believe this upgrade will enhance your experience and better meet your needs.
+$preregistrationLink
 
-You have the opportunity to register here $preregistrationLink and import your existing RSS-proxy urls.
+Should you have any questions or concerns, reach out to me.
 
-Should you have any questions, concerns, reach out to me at feedlessapp@proton.me.
-
-Best regards,
-
+Regards,
 Markus
 
     """.trimIndent()
@@ -211,4 +238,14 @@ Markus
     article.publishedAt = Date()
     return article
   }
+}
+
+private fun SourceEntity.toJsonFeed(feedUrl: String): JsonFeed {
+  val feed = JsonFeed()
+  feed.id = "legacy-feed"
+  feed.title = title
+  feed.publishedAt = createdAt
+  feed.items = emptyList()
+  feed.feedUrl = feedUrl
+  return feed
 }

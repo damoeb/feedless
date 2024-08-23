@@ -42,7 +42,7 @@ class LinceseResolver {
     @InputArgument data: UpdateLicenseInput,
   ): LocalizedLicense = coroutineScope {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
-    log.info("[$corrId] updateLicense")
+    log.debug("[$corrId] updateLicense")
 
     licenseService.updateLicense(corrId, data.licenseRaw)
     getLicense()

@@ -1,12 +1,13 @@
 package org.migor.feedless.agent
 
 import io.micrometer.core.instrument.MeterRegistry
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
-import org.migor.feedless.data.jpa.models.SourceEntity
-import org.migor.feedless.data.jpa.models.toDto
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.toDto
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -127,7 +128,7 @@ class AgentService {
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
 //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
-  fun prerender(corrId: String, source: SourceEntity): AgentResponse {
+  suspend fun prerender(corrId: String, source: SourceEntity): AgentResponse {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, source, agentRef).block()!!
@@ -138,11 +139,11 @@ class AgentService {
   }
 
   private fun prerenderWithAgent(
-    corrId: String,
-    source: SourceEntity,
-    agentRef: AgentRef
+      corrId: String,
+      source: SourceEntity,
+      agentRef: AgentRef
   ): Mono<AgentResponse> {
-    log.info("[$corrId] preparing")
+    log.debug("[$corrId] preparing")
     return Flux.create { emitter ->
       try {
         val harvestJobId = UUID.randomUUID().toString()
@@ -156,7 +157,7 @@ class AgentService {
         log.info("$corrId] submitted agent job $harvestJobId")
         pendingJobs[harvestJobId] = emitter
       } catch (e: Exception) {
-        log.error("$corrId] prerenderWithAgent failed: ${e.message}")
+        log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)
         emitter.error(e)
       }
     }
@@ -168,7 +169,7 @@ class AgentService {
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.failed) {
-        it.error(IllegalArgumentException(scrapeResponse.errorMessage))
+        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
       } else {
         it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
       }

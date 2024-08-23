@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,7 +15,7 @@ import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.any
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
@@ -50,31 +51,33 @@ class FulltextPluginTest {
 
   @Test
   fun `mapEntity calls scrape`() {
-    val source = mock(SourceEntity::class.java)
-    val document = mock(DocumentEntity::class.java)
-    `when`(document.url).thenReturn("https://example.org")
-    `when`(document.source).thenReturn(source)
+    runBlocking {
+      val source = mock(SourceEntity::class.java)
+      val document = mock(DocumentEntity::class.java)
+      `when`(document.url).thenReturn("https://example.org")
+      `when`(document.source).thenReturn(source)
 
-    val repository = mock(RepositoryEntity::class.java)
-    `when`(repository.sources).thenReturn(mutableListOf(source))
+      val repository = mock(RepositoryEntity::class.java)
+      `when`(repository.sources).thenReturn(mutableListOf(source))
 
-    val params = PluginExecutionParamsInput(
-      org_feedless_fulltext = FulltextPluginParamsInput(
-        readability = true,
-        inheritParams = true
+      val params = PluginExecutionParamsInput(
+        org_feedless_fulltext = FulltextPluginParamsInput(
+          readability = true,
+          inheritParams = true
+        )
       )
-    )
 
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenReturn(ScrapeOutput(
-      outputs = emptyList(),
-      time = 0,
-      logs = emptyList()
-    ))
+      `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenReturn(ScrapeOutput(
+        outputs = emptyList(),
+        time = 0,
+        logs = emptyList()
+      ))
 
-    val response = fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params)
+      val response = fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params)
 
-    assertThat(response).isNotNull
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
+      assertThat(response).isNotNull
+      verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
+    }
   }
 
   @Test

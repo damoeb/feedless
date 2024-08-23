@@ -154,7 +154,7 @@ class Seeder {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
 
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "Important Note: RSS-proxy becomes feedless!"
+      val title = "Service Announcement: Limited support for RSS-Proxy URLs"
       val repositoryId = legacyNotificationRepo.id
 
       val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
@@ -163,11 +163,11 @@ class Seeder {
         n
       }
 
-      notification.url = propertyService.appHost
+      notification.url = "https://feedless.org"
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =
-        "Hi, support for anonymous rss-proxy feeds is coming to an end, for new feeds you need to create them on https://feedless.org ."
+        "Hi, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on https://feedless.org ."
       notification.updatedAt = Date()
 
       documentDAO.save(notification)

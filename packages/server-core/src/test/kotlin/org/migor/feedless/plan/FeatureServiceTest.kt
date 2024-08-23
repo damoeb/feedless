@@ -8,6 +8,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.source.SourceService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -28,6 +29,7 @@ import java.util.*
     MockBean(LicenseService::class),
     MockBean(UserSecretService::class),
     MockBean(ProductService::class),
+    MockBean(SourceService::class),
   ]
 )
 @Testcontainers

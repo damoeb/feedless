@@ -39,7 +39,7 @@ class ScrapeContext(private val logger: Logger) {
   }
 
   fun info(message: String) {
-    logger.info(message)
+    logger.debug(message)
     logs.add(LogStatement(
       time = Date().time,
       message = message,

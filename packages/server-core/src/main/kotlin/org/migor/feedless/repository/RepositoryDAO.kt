@@ -27,6 +27,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
         and u.locked = false
         and e.sourcesSyncCron > ''
         and (e.disabledFrom is null or e.disabledFrom > :now)
+        and EXISTS (SELECT distinct true from SourceEntity s where s.repositoryId=e.id)
       order by e.lastUpdatedAt asc """,
   )
   fun findSomeDue(@Param("now") now: Date, pageable: Pageable): List<RepositoryEntity>

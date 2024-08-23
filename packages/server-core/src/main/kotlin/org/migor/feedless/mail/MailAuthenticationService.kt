@@ -88,7 +88,7 @@ class MailAuthenticationService {
           emitter.onDispose { log.debug("[$corrId] disconnected") }
 
         } catch (e: Exception) {
-          log.error("[$corrId] authenticateUsingMail failed: ${e.message}")
+          log.error("[$corrId] authenticateUsingMail failed: ${e.message}", e)
           emitter.error(e)
         }
       }

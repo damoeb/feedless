@@ -3,6 +3,8 @@ package org.migor.feedless.pipeline.plugins
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
@@ -158,6 +160,43 @@ class CompositeFilterPluginTest {
     )
 
     assertThat(service.filterEntity(corrId, item, filter, 0)).isFalse()
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "not(contains(#any,\"Vol\"));;true",
+      "startsWith(#url, \"https://www.mikrobitti.fi\");;false",
+      "and( not(contains(#url, \"tiramillas\")), not(contains(#url, \"promociones\")) );;true",
+//      todo "not(contains(#body, \"Movies-4K\"))';;true",
+//      "endsWith(#any, \"title\");;true",
+      "endsWith(#any, \"fef\");;false",
+      "and(not(contains(#any, \"hans\")), contains(#any, \"foo\"));;true",
+      "and(and(not(contains(#body,\" - Raw\")),not(contains(#body,\"Audio\"))),and(not(contains(#body,\"Live Action\")),not(contains(#body,\"Non-English\"))));;true",
+      "and(not(contains(#any, \"not\")), and(not(contains(#any, \"must\")), contains(#any, \"must\")));;false",
+    ],
+    delimiterString = ";;"
+  )
+  fun `supports legacy filter expression`(expr: String, expected: Boolean) {
+    val filter = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        ItemFilterParamsInput(
+          expression = expr
+        )
+      )
+    )
+
+    assertThat(service.filterEntity(corrId, item, filter, 0)).isEqualTo(expected)
+
+    val negativeFilter = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        ItemFilterParamsInput(
+          expression = "not(${expr})"
+        )
+      )
+    )
+
+    assertThat(service.filterEntity(corrId, item, negativeFilter, 0)).isEqualTo(!expected)
   }
 
   private fun compositeFieldFilterParamsInput() = CompositeFieldFilterParamsInput(

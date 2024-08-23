@@ -18,6 +18,8 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.hibernate.annotations.OnDelete
@@ -32,7 +34,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.WebDocument
@@ -60,20 +62,24 @@ import java.util.*
 open class DocumentEntity : EntityWithUUID() {
 
   companion object {
-    const val LEN_TITLE = 256
-    const val LEN_URL = 1000
+    const val LEN_50: Int = 50
+    const val LEN_STR_DEFAULT: Int = 255
+    const val LEN_URL: Int = 1500
   }
 
+  @Size(max = LEN_URL)
   @Column(nullable = false, length = LEN_URL, name = StandardJpaFields.url)
   open lateinit var url: String
 
-  @Column(length = LEN_TITLE, name = "content_title")
+  @Size(max = LEN_STR_DEFAULT)
+  @Column(length = LEN_STR_DEFAULT, name = "content_title")
   open var contentTitle: String? = null
     set(value) {
-      field = StringUtils.substring(value, 0, LEN_TITLE)
+      field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
     }
 
-  @Column(length = 50, name = "content_raw_mime")
+  @Size(max = LEN_50)
+  @Column(length = LEN_50, name = "content_raw_mime")
   open var contentRawMime: String? = null
 
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
@@ -93,6 +99,8 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(columnDefinition = "TEXT", name = "content_html")
   open var contentHtml: String? = null
 
+
+  @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "image_url")
   open var imageUrl: String? = null
 

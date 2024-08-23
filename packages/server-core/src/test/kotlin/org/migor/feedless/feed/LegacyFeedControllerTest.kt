@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.any
@@ -21,6 +22,8 @@ import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -85,14 +88,14 @@ class LegacyFeedControllerTest {
   fun `calling tf returns a feed`() {
     val restTemplate = TestRestTemplate()
 
-    Mockito.`when`(legacyFeedService.transformFeed(
+    `when`(legacyFeedService.transformFeed(
       any(String::class.java),
       any(String::class.java),
       anyOrNull(String::class.java),
       any(String::class.java),
     )).thenReturn(mockFeed)
 
-    val url = "${baseEndpoint}/${ApiUrls.transformFeed}?url={url}&re={re}&q={q}&out={out}"
+    val url = "${baseEndpoint}${ApiUrls.transformFeed}?url={url}&re={re}&q={q}&out={out}"
     val params = mapOf(
       "url" to "https://heise.de/some-feed.xml",
       "re" to "",
@@ -114,7 +117,7 @@ class LegacyFeedControllerTest {
   fun `calling w2f returns a feed`() {
     val restTemplate = TestRestTemplate()
 
-    Mockito.`when`(legacyFeedService.webToFeed(
+    `when`(legacyFeedService.webToFeed(
       any(String::class.java),
       any(String::class.java),
       any(String::class.java),
@@ -156,9 +159,10 @@ class LegacyFeedControllerTest {
   fun `calling legacy feed by id returns a feed`(feedUrl: String) {
     val restTemplate = TestRestTemplate()
 
-    Mockito.`when`(legacyFeedService.getFeed(
-      any(String::class.java),
-      any(String::class.java),
+    `when`(legacyFeedService.getFeed(
+        any(String::class.java),
+        any(String::class.java),
+        any(String::class.java),
     )).thenReturn(mockFeed)
 
     val headers = HttpHeaders()
@@ -179,7 +183,7 @@ class LegacyFeedControllerTest {
   ])
   fun `requesting legacy bucket will return redirect`(path: String) {
     val restTemplate = TestRestTemplate()
-    Mockito.`when`(legacyFeedService.getRepository(any(String::class.java))).thenReturn(ResponseEntity.ok().build())
+    `when`(legacyFeedService.getRepository(any(String::class.java))).thenReturn(ResponseEntity.ok().build())
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)

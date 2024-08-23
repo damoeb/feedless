@@ -184,11 +184,11 @@ class UserService {
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
-    log.info("[$corrId] create legacy user githubId=$githubId")
+    log.info("[$corrId] update legacy user githubId=$githubId")
     if (user.githubId == null) {
       user.githubId = githubId
     }
-    if (user.email.endsWith("github.com")) {
+    if (user.email.trim().endsWith("github.com")) {
       user.email = fallbackEmail(user)
     }
 

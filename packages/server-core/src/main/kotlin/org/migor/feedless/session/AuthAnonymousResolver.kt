@@ -38,7 +38,7 @@ class AuthAnonymousResolver {
     dfe: DataFetchingEnvironment,
   ): AuthenticationDto = coroutineScope {
     val corrId = handleCorrId(cid)
-    log.info("[$corrId] authAnonymous")
+    log.debug("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
     addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
     AuthenticationDto(

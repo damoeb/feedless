@@ -37,7 +37,7 @@ class AgentResolver {
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     val corrId = CryptUtil.newCorrId()
-    log.info("[$corrId] registerAgent ${data.secretKey.email}")
+    log.debug("[$corrId] registerAgent ${data.secretKey.email}")
     return data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
   }
 
@@ -45,7 +45,7 @@ class AgentResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
-    log.info("[${data.corrId}] submitAgentData")
+    log.debug("[${data.corrId}] submitAgentData")
     agentService.handleScrapeResponse(data.corrId, data.callbackId, data.scrapeResponse)
     true
   }
@@ -55,7 +55,7 @@ class AgentResolver {
   suspend fun agents(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
-    log.info("[$corrId] agents")
+    log.debug("[$corrId] agents")
     agentService.findAll(sessionService.userId()).map { it.toDto() }
   }
 }

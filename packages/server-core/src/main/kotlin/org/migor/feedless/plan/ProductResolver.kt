@@ -46,7 +46,7 @@ class ProductResolver {
     @InputArgument data: ProductsWhereInput
   ): List<Product> =
     coroutineScope {
-      log.info("[$corrId] products $data")
+      log.debug("[$corrId] products $data")
       productService.findAll(data).map { it.toDTO() }
     }
 

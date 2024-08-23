@@ -39,7 +39,7 @@ class UserResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: CreateUserInput
   ): User = coroutineScope {
-    log.info("[$corrId] createUser $data")
+    log.debug("[$corrId] createUser $data")
     userService.createUser(
       corrId,
       email = data.email,
@@ -54,7 +54,7 @@ class UserResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpdateCurrentUserInput,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] updateCurrentUser ${currentUser.userId()} $data")
+    log.debug("[$corrId] updateCurrentUser ${currentUser.userId()} $data")
     userService.updateUser(corrId, currentUser.userId()!!, data)
     true
   }

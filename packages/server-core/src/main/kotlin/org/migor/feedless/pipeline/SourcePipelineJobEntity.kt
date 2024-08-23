@@ -11,14 +11,15 @@ import jakarta.persistence.PrePersist
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_URL
+import org.migor.feedless.source.SourceEntity
 import java.util.*
 
 @Entity
 @DiscriminatorValue("s")
 open class SourcePipelineJobEntity : PipelineJobEntity() {
 
-  @Column(name = "url", length = 500)
+  @Column(name = "url", length = LEN_URL)
   open lateinit var url: String
 
   @Column(name = StandardJpaFields.sourceId, nullable = true)

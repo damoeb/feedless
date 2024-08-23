@@ -15,6 +15,7 @@ import org.migor.feedless.plan.ProductService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatchers.anyString
@@ -44,6 +45,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
     MockBean(LicenseService::class),
     MockBean(ProductService::class),
     MockBean(OrderService::class),
+    MockBean(SourceService::class),
     MockBean(ScrapeService::class)
 ])
 @Testcontainers

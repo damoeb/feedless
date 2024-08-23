@@ -52,7 +52,7 @@ class ServerConfigResolver {
   suspend fun serverSettings(
     @InputArgument data: ServerSettingsContextInput,
   ): ServerSettings = coroutineScope {
-    log.info("serverSettings $data")
+    log.debug("serverSettings $data")
     val product = data.product.fromDto()
 
     if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(

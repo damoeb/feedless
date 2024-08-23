@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
@@ -46,7 +47,7 @@ class DetectMediaPlugin : MapEntityPlugin {
   override fun name(): String = "Detect Audio/Video"
 
   @Transactional(propagation = Propagation.REQUIRED)
-  override fun mapEntity(
+  override suspend fun mapEntity(
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
@@ -71,10 +72,12 @@ class DetectMediaPlugin : MapEntityPlugin {
 
       log.info("[$corrId] detected media items ${mediaItems.isNotEmpty()}")
 
-      document.attachments = attachmentDAO.saveAll(mediaItems.map { it.toEntity(document.id) })
+      document.attachments = runBlocking {
+        attachmentDAO.saveAll(mediaItems.map { it.toEntity(document.id) })
+      }
 
     }.onFailure {
-      log.error("[$corrId] mapEntity failed: ${it.message}")
+      log.error("[$corrId] mapEntity failed: ${it.message}", it)
     }
     return document
   }

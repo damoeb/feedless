@@ -14,8 +14,8 @@ import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.data.jpa.models.SourceEntity
-import org.migor.feedless.data.jpa.repositories.SourceDAO
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.createDocumentUrl

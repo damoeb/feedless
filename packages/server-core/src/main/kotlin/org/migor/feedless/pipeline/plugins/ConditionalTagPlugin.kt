@@ -30,7 +30,7 @@ class ConditionalTagPlugin : MapEntityPlugin {
   override fun name(): String = "Conditional Tags"
 
   override fun listed() = true
-  override fun mapEntity(
+  override suspend fun mapEntity(
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,

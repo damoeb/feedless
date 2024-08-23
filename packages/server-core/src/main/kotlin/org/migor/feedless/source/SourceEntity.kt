@@ -1,4 +1,4 @@
-package org.migor.feedless.data.jpa.models
+package org.migor.feedless.source
 
 import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.CascadeType

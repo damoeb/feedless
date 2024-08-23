@@ -64,7 +64,7 @@ with importer as (
      )
 --   plugin_action
 insert into t_action_execute_plugin (id, plugin_id, executor_params)
-SELECT filter_action_id, 'org_feedless_filter', concat('{"org_feedless_filter": [{"expression": "', ti.filter,'"}]}')::jsonb from importer ti
+select filter_action_id, 'org_feedless_filter', jsonb_set('{"org_feedless_filter": [{"expression": ""}]}'::jsonb, '{org_feedless_filter, 0, expression}'::text[], to_jsonb(regexp_replace(ti.filter, E'[\\n\\r]+', ' ', 'g' )), true) from importer ti
 ;
 DROP TABLE t_importer;
 

@@ -11,6 +11,7 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.OrderService
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -31,6 +32,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
   MockBean(ScrapeService::class),
   MockBean(LicenseService::class),
   MockBean(ProductService::class),
+  MockBean(SourceService::class),
   MockBean(OrderService::class),
 ])
 @Testcontainers

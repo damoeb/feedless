@@ -36,7 +36,7 @@ class AnnotationResolver {
     @InputArgument data: CreateAnnotationInput
   ): Annotation = coroutineScope {
     val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] createAnnotation $data")
+    log.debug("[$corrId] createAnnotation $data")
     annotationService.createAnnotation(corrId, data).toDto()
   }
 
@@ -49,7 +49,7 @@ class AnnotationResolver {
     @InputArgument data: DeleteAnnotationInput
   ): Boolean = coroutineScope {
     val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] deleteAnnotation $data")
+    log.debug("[$corrId] deleteAnnotation $data")
     annotationService.deleteAnnotation(corrId, data)
   }
 }

@@ -43,7 +43,7 @@ class FeatureResolver {
 
     ): List<FeatureGroup> =
     coroutineScope {
-      log.info("[$corrId] featureGroups inherit=$inherit where=$where")
+      log.debug("[$corrId] featureGroups inherit=$inherit where=$where")
 //      if (!sessionService.user(corrId).root) {
 //        throw IllegalArgumentException("user must be root")
 //      }
@@ -65,7 +65,7 @@ class FeatureResolver {
     @InputArgument data: UpdateFeatureValueInput
   ): Boolean =
     coroutineScope {
-      log.info("[$corrId] updateFeature $data")
+      log.debug("[$corrId] updateFeature $data")
       featureService.updateFeatureValue(corrId, UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
       true
     }

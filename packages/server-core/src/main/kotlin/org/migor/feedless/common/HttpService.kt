@@ -41,6 +41,8 @@ class HttpService {
   private val builderConfig = Dsl.config()
     .setConnectTimeout(60000)
     .setReadTimeout(60000)
+//    .setMaxConnections(20)
+    .setMaxConnectionsPerHost(3)
 //    .setProxyServerSelector({ uri -> proxyUrl(uri) })
     .setFollowRedirect(true)
     .setMaxRedirects(8)
@@ -68,12 +70,12 @@ class HttpService {
     corrId: String,
     url: String,
     expectedHttpStatus: Int,
-    headers: Map<String, Any>? = null
+    headers: Map<String, String>? = null
   ): HttpResponse {
     return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 
-  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
+  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, String>? = null): HttpResponse {
     protectFromOverloading(corrId, url)
     log.debug("[$corrId] GET $url")
     val request = client.prepareGet(url)
@@ -127,9 +129,8 @@ class HttpService {
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
-      val start = System.nanoTime()
       val response = request.execute().get(30, TimeUnit.SECONDS)
-      log.info("[$corrId] -> ${response.statusCode}")
+      log.debug("[$corrId] -> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
         when (response.statusCode) {
           // todo mag readjust bucket
@@ -141,11 +142,13 @@ class HttpService {
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
-        val duration = (System.nanoTime() - start) / 100000
-        log.info("[$corrId] -> ${response.getHeader("content-type")} [${duration}ms]")
+        log.debug("[$corrId] -> ${response.getHeader("content-type")}")
       }
       response
     } catch (e: Exception) {
+      if (e is NullPointerException) {
+        e.printStackTrace()
+      }
       throw HarvestException("${e.message}")
     }
   }

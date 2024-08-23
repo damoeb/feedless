@@ -6,7 +6,7 @@ import org.migor.feedless.repository.RepositoryEntity
 
 interface MapEntityPlugin : FeedlessPlugin {
 
-  fun mapEntity(
+  suspend fun mapEntity(
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,

@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
@@ -8,7 +9,7 @@ import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -44,7 +45,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   override fun name(): String = "Fulltext & Readability"
   override fun listed() = true
 
-  override fun mapEntity(
+  override suspend fun mapEntity(
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
@@ -70,7 +71,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       val lastOutput = scrapeOutput.outputs.last()
       val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
       if (params.org_feedless_fulltext.readability) {
-        val readability = webToArticleTransformer.fromHtml(html, document.url)
+        val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""))
         document.contentHtml = readability.contentHtml
         document.contentText = readability.contentText!!
         document.contentTitle = readability.title

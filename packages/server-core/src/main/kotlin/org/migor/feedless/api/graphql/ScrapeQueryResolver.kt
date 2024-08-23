@@ -49,7 +49,7 @@ class ScrapeQueryResolver {
     @RequestHeader(ApiParams.corrId, required = false) cid: String,
   ): ScrapeResponse = coroutineScope {
     val corrId = handleCorrId(cid)
-    log.info("[$corrId] scrape $data")
+    log.debug("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
     val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest)
     ScrapeResponse(

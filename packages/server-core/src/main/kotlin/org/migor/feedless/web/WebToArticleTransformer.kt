@@ -4,6 +4,7 @@ import net.dankito.readability4j.extended.Readability4JExtended
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -21,7 +22,7 @@ class WebToArticleTransformer {
   fun fromDocument(doc: Document, url: String): JsonItem {
     doc.select("script").remove()
     doc.select("style").remove()
-    doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }
+    HtmlUtil.withAbsoluteUrls(doc)
     val item = JsonItem()
     item.url = url
     item.publishedAt = Date()

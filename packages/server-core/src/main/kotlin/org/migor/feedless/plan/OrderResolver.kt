@@ -54,7 +54,7 @@ class OrderResolver {
     @InputArgument data: OrdersInput
   ): List<Order> =
     coroutineScope {
-      log.info("[$corrId] orders $data")
+      log.debug("[$corrId] orders $data")
       orderService.findAll(corrId, data).map { it.toDTO() }
     }
 
@@ -65,7 +65,7 @@ class OrderResolver {
     @InputArgument data: UpsertOrderInput,
   ): Order =
     coroutineScope {
-      log.info("[$corrId] upsertOrder $data")
+      log.debug("[$corrId] upsertOrder $data")
       orderService.upsert(corrId, data.where, data.create, data.update).toDTO()
     }
 

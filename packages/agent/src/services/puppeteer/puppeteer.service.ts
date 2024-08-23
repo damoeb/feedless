@@ -449,7 +449,7 @@ export class PuppeteerService {
         this.log.warn(
           `[${job.corrId}] prerendered within ${
             (Date.now() - queuedAt) / 1000
-          }s ${e.message}`,
+          }s ${e.message}`,e
         );
         reject(e.message);
       }

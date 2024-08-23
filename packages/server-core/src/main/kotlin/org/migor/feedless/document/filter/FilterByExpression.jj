@@ -91,8 +91,9 @@ TOKEN : { <COMMA : "," > }
 TOKEN : { <NOT : "not" | "!" > }
 TOKEN : { <CONTAINS : "contains" > }
 TOKEN : { <ENDSWITH : "endsWith" > }
+TOKEN : { <STARTSWITH : "startsWith" > }
 TOKEN : { <NUMBER : (["0"-"9"])+ > }
-TOKEN : { <STRING : (["a"-"z","?"])+ > }
+TOKEN : { <STRING_LITERAL : "'" (~["'"])+ "'" > }
 
 public boolean matches(JsonItem data) throws Exception :
 { boolean b; }
@@ -164,7 +165,21 @@ private boolean StringExpr(JsonItem data) throws Exception :
 
   <COMMA>
   strB = StringValue(data)
-  {  result = StringUtils.endsWithIgnoreCase(strA, strB);  }
+  {
+    log.info("endsWith "+strA+" "+strB);
+    result = StringUtils.endsWithIgnoreCase(strA, strB);  }
+  <RBRAKE>
+  { return result; }
+|
+  <STARTSWITH>
+  <LBRAKE>
+  strA = StringValue(data)
+
+  <COMMA>
+  strB = StringValue(data)
+  {
+    log.info("startsWith "+strA+" "+strB);
+    result = StringUtils.startsWithIgnoreCase(strA, strB);  }
   <RBRAKE>
   { return result; }
 |
@@ -191,10 +206,11 @@ private boolean StringExpr(JsonItem data) throws Exception :
 private String StringValue(JsonItem data) throws Exception :
 {  Token t; }
 {
-  <QUOTE>
-  t = <STRING>
-  <QUOTE>
-  {  return t.image;  }
+  t = <STRING_LITERAL>
+  {
+    String s = t.image;
+    return s.substring(1, s.length() - 1);
+  }
 
   |
 

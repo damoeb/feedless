@@ -30,7 +30,7 @@ class PluginResolver {
   suspend fun plugins(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Plugin> = coroutineScope {
-    log.info("[$corrId] plugins")
+    log.debug("[$corrId] plugins")
     pluginsService.findAll().map { it.toDto() }
   }
 }

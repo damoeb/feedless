@@ -21,4 +21,8 @@ object HtmlUtil {
         .addAttributes("div", "role")
     )
   }
+
+  fun withAbsoluteUrls(doc: Document) {
+    doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }
+  }
 }

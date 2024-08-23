@@ -12,7 +12,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.generated.types.BoundingBox
 import org.migor.feedless.generated.types.DOMActionSelect
 import org.migor.feedless.generated.types.DOMActionType

@@ -1,5 +1,7 @@
 package org.migor.feedless.feed
 
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppProfiles
@@ -7,7 +9,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.SourceEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.toDto
 import org.migor.feedless.feed.parser.FeedBodyParser
@@ -124,21 +126,25 @@ class FeedParserService {
       org_feedless_conditional_tag = tags
     )
 
-    val items = scrapeRequests
-      .map { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
-      .flatMap { response -> response.lastOutput().fragment!!.items!! }
-      .filterIndexed { index, item ->
-        filterPlugin.filterEntity(
-          corrId,
-          item,
-          params,
-          index
-        )
+    val items = runBlocking {
+      coroutineScope {
+        scrapeRequests
+          .map { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
+          .flatMap { response -> response.lastOutput().fragment!!.items!! }
+          .filterIndexed { index, item ->
+            filterPlugin.filterEntity(
+              corrId,
+              item,
+              params,
+              index
+            )
+          }
+          .map {
+            conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
+              .toDto(propertyService)
+          }
       }
-      .map {
-        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
-          .toDto(propertyService)
-      }
+    }
 
     val feed = RemoteNativeFeed(
       items = items,

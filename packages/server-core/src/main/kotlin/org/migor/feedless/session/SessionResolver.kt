@@ -109,9 +109,9 @@ class SessionResolver {
     @InputArgument data: AuthUserInput,
   ): Authentication = coroutineScope {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
-    log.info("[$corrId] authUser")
+    log.debug("[$corrId] authUser")
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
-      log.info("[$corrId] authRoot")
+      log.debug("[$corrId] authRoot")
       val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found ($corrId)")
       if (!root.root) {
         throw PermissionDeniedException("account is not root ($corrId)")
@@ -135,7 +135,7 @@ class SessionResolver {
     dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] logout")
+    log.debug("[$corrId] logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain

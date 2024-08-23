@@ -55,7 +55,7 @@ class PrivacyPlugin : MapEntityPlugin {
   override fun name(): String = "Privacy & Robustness"
   override fun listed() = true
 
-  override fun mapEntity(
+  override suspend fun mapEntity(
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
@@ -140,7 +140,7 @@ class PrivacyPlugin : MapEntityPlugin {
         null
       }
     } catch (e: IllegalArgumentException) {
-      log.warn("[${corrId}] ${e.message}")
+      log.warn("[${corrId}] ${e.message}", e)
       null
     }
   }

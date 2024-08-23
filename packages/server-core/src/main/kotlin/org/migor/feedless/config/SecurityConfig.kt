@@ -165,7 +165,7 @@ class SecurityConfig {
             }
           }
         }
-        .failureHandler { _, _, exception -> log.error("conditionalOauth failed: ${exception.message}") }
+        .failureHandler { _, _, exception -> log.error("conditionalOauth failed: ${exception.message}", exception) }
         .and()
     } else {
       http
