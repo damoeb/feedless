@@ -222,7 +222,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       };
 
       this.scrapeResponse = await this.scrapeService.scrape(this.scrapeRequest);
-
     } catch (e) {
       this.errorMessage = e.message;
     }

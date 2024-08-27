@@ -8,14 +8,14 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges
+  SimpleChanges,
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlRemoteNativeFeed,
   GqlScrapeRequest,
   GqlSourceInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
@@ -235,7 +235,7 @@ export class TransformWebsiteToFeedComponent
             getScrapeRequest(
               this.getSelectedFeed(),
               this.scrapeRequest as GqlScrapeRequest,
-            )
+            ),
           ],
           filters: [],
           tags: [],

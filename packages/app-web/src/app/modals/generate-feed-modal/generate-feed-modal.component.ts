@@ -445,7 +445,9 @@ export class GenerateFeedModalComponent
     );
     if (!canPublicRepository) {
       this.formFg.controls.isPublic.disable();
-      this.formFg.controls.isPublic.setErrors({disabled: 'Feature disabled for you'})
+      this.formFg.controls.isPublic.setErrors({
+        disabled: 'Feature disabled for you',
+      });
     }
 
     const maxItemsLowerLimit = this.serverConfig.getFeatureValueInt(

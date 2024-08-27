@@ -40,8 +40,11 @@
           placeholder="Type a title"
           aria-label="Title"
         ></ion-input>
-        <p class="errors" *ngFor="let error of formFg.controls.title.errors | keyvalue">
-          {{error.value | json}}
+        <p
+          class="errors"
+          *ngFor="let error of formFg.controls.title.errors | keyvalue"
+        >
+          {{ error.value | json }}
         </p>
       </ion-item>
       <ion-item>
@@ -57,8 +60,11 @@
           [formControl]="formFg.controls.description"
           aria-label="Describe the feed with #tags and urls"
         ></ion-textarea>
-        <p class="errors" *ngFor="let error of formFg.controls.description.errors | keyvalue">
-          {{error.value | json}}
+        <p
+          class="errors"
+          *ngFor="let error of formFg.controls.description.errors | keyvalue"
+        >
+          {{ error.value | json }}
         </p>
       </ion-item>
     </ion-list>
@@ -364,8 +370,13 @@
                 [clearInput]="true"
                 placeholder="<Auto>"
               ></ion-input>
-              <p class="errors" *ngFor="let error of formFg.controls.maxAgeDays.errors | keyvalue">
-                {{error.value | json}}
+              <p
+                class="errors"
+                *ngFor="
+                  let error of formFg.controls.maxAgeDays.errors | keyvalue
+                "
+              >
+                {{ error.value | json }}
               </p>
             </ion-col>
           </ion-row>
@@ -403,8 +414,13 @@
                 [clearInput]="true"
                 placeholder="<Auto>"
               ></ion-input>
-              <p class="errors" *ngFor="let error of formFg.controls.maxCapacity.errors | keyvalue">
-                {{error.value | json}}
+              <p
+                class="errors"
+                *ngFor="
+                  let error of formFg.controls.maxCapacity.errors | keyvalue
+                "
+              >
+                {{ error.value | json }}
               </p>
             </ion-col>
           </ion-row>
@@ -446,8 +462,10 @@
           </ion-item>
           <ion-item *ngIf="formFg.controls.isPublic.errors">
             <ion-label color="danger">
-              <p *ngFor="let error of formFg.controls.isPublic.errors | keyvalue">
-                {{error.value}}
+              <p
+                *ngFor="let error of formFg.controls.isPublic.errors | keyvalue"
+              >
+                {{ error.value }}
               </p>
             </ion-label>
           </ion-item>

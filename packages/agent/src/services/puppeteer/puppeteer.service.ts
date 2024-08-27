@@ -1,4 +1,12 @@
-import puppeteer, { Browser, Frame, HTTPResponse, Page, ScreenshotClip, ScreenshotOptions, Viewport } from 'puppeteer';
+import puppeteer, {
+  Browser,
+  Frame,
+  HTTPResponse,
+  Page,
+  ScreenshotClip,
+  ScreenshotOptions,
+  Viewport,
+} from 'puppeteer';
 import process from 'node:process';
 import { Injectable, Logger } from '@nestjs/common';
 import { pick } from 'lodash';
@@ -22,7 +30,7 @@ import {
   ScrapeExtractResponseInput,
   ScrapeOutputResponseInput,
   ScrapeRequest,
-  ScrapeResponseInput
+  ScrapeResponseInput,
 } from '../../generated/graphql';
 
 interface EvaluateResponse {
@@ -36,7 +44,7 @@ function removeEmpty(obj) {
   return Object.fromEntries(
     Object.entries(obj)
       .filter(([_, v]) => v != null)
-      .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
+      .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v]),
   );
 }
 
@@ -146,11 +154,11 @@ export class PuppeteerService {
     const appendLog: LogAppender = (msg: string) => {
       logs.push({
         time: new Date().getTime(),
-        message: msg
+        message: msg,
       });
       this.log.log(msg);
     };
-    appendLog(`Starting job id=${request.id} corrId=${request.corrId}`)
+    appendLog(`Starting job id=${request.id} corrId=${request.corrId}`);
 
     const page = await this.newPage(browser, request);
     const outputs: ScrapeOutputResponseInput[] = [];
@@ -173,7 +181,8 @@ export class PuppeteerService {
 
       appendLog(`executing ${stringifyJson(request.flow.sequence)}`);
 
-      const createLogAppender = (prefix: string) => (msg: string) => appendLog(`${prefix} ${msg}`);
+      const createLogAppender = (prefix: string) => (msg: string) =>
+        appendLog(`${prefix} ${msg}`);
 
       await request.flow.sequence.reduce(
         (waitFor, action, currentIndex) =>
@@ -200,7 +209,7 @@ export class PuppeteerService {
                 writeLog(`terminated without output`);
               }
             } catch (e) {
-              writeLog(e.message)
+              writeLog(e.message);
             }
           }),
         Promise.resolve(),
@@ -449,7 +458,8 @@ export class PuppeteerService {
         this.log.warn(
           `[${job.corrId}] prerendered within ${
             (Date.now() - queuedAt) / 1000
-          }s ${e.message}`,e
+          }s ${e.message}`,
+          e,
         );
         reject(e.message);
       }
@@ -537,7 +547,8 @@ export class PuppeteerService {
     page: Page,
     appendLog: LogAppender,
   ): Promise<ScrapeActionResponseInput | void> {
-    const createLogger = (prefix: string) => (msg: string) => appendLog(`${prefix} ${msg}`);
+    const createLogger = (prefix: string) => (msg: string) =>
+      appendLog(`${prefix} ${msg}`);
     // if (action.header) {
     //   return this.executeHeaderAction(action.header, page, appender);
     // }
@@ -545,7 +556,12 @@ export class PuppeteerService {
       return this.executeClickAction(action.click, page, createLogger('click'));
     }
     if (action.fetch) {
-      return this.executeFetchAction(corrId, action.fetch, page, createLogger('fetch'));
+      return this.executeFetchAction(
+        corrId,
+        action.fetch,
+        page,
+        createLogger('fetch'),
+      );
     }
     if (action.wait) {
       return this.executeWaitAction(action.wait, page, createLogger('wait'));
@@ -557,7 +573,12 @@ export class PuppeteerService {
       return this.executePurgeAction(action.purge, page, createLogger('purge'));
     }
     if (action.extract) {
-      return this.extractAction(corrId, action.extract, page, createLogger('extract'));
+      return this.extractAction(
+        corrId,
+        action.extract,
+        page,
+        createLogger('extract'),
+      );
     }
     appendLog(`ignoring action ${stringifyJson(action)}`);
   }

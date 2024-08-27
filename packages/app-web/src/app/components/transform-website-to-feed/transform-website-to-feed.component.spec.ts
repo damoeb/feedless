@@ -66,7 +66,7 @@ const feedResponse: ScrapeResponse = {
               width: 1,
               height: 1,
               isLandscape: false,
-              isMobile: false
+              isMobile: false,
             },
             // '__typename': 'ScrapeDebugResponse'
           },

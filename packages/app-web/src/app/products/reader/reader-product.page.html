@@ -265,7 +265,7 @@
             <a [href]="getReadability().url">{{ getReadability().url }}</a>
           </ion-col>
           <ion-col size="12">
-            <h1>{{ getReadability().title }}</h1>
+            <h1>{{ getReadability().contentTitle }}</h1>
 
             <div
               style="
@@ -301,7 +301,7 @@
         <app-reader
           *ngIf="output === 'article'"
           [linkTarget]="readerOptions.linkTarget"
-          [html]="getReadability().content"
+          [html]="getReadability().contentHtml"
           [textTransform]="readerOptions.textTransform"
           [verboseLink]="readerOptions.verboseLink"
         ></app-reader>

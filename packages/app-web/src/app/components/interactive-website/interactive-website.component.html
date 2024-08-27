@@ -15,8 +15,12 @@
         style="max-width: 200px; width: 200px"
         [formControl]="viewModeFc"
       >
-        <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot">Image</ion-segment-button>
-        <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup">Markup</ion-segment-button>
+        <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot"
+          >Image</ion-segment-button
+        >
+        <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup"
+          >Markup</ion-segment-button
+        >
         <ion-segment-button [value]="viewLogs">Logs</ion-segment-button>
       </ion-segment>
     </div>
@@ -126,18 +130,19 @@
         >
         </app-embedded-markup>
 
-<!--        <app-native-feed-->
-<!--          *ngIf="currentNativeFeed"-->
-<!--          [feedUrl]="currentNativeFeed.feedUrl"-->
-<!--          [title]="currentNativeFeed.title"-->
-<!--          class="flex"-->
-<!--        ></app-native-feed>-->
+        <!--        <app-native-feed-->
+        <!--          *ngIf="currentNativeFeed"-->
+        <!--          [feedUrl]="currentNativeFeed.feedUrl"-->
+        <!--          [title]="currentNativeFeed.title"-->
+        <!--          class="flex"-->
+        <!--        ></app-native-feed>-->
       </div>
 
-      <app-code-editor *ngIf="viewModeFc.value === viewLogs"
-                       [controls]="false"
-                       [text]="logs">
-
+      <app-code-editor
+        *ngIf="viewModeFc.value === viewLogs"
+        [controls]="false"
+        [text]="logs"
+      >
       </app-code-editor>
 
       <ion-row *ngIf="pickMode">

@@ -433,7 +433,7 @@ class Seeder {
           FeatureName.pluginsBool to asBoolFeature(true),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(100),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(1000),
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),

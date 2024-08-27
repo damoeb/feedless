@@ -21,7 +21,7 @@ import { NativeFeedModule } from '../native-feed/native-feed.module';
     EmbeddedMarkupModule,
     ReactiveFormsModule,
     CodeEditorModule,
-    NativeFeedModule
-  ]
+    NativeFeedModule,
+  ],
 })
 export class InteractiveWebsiteModule {}

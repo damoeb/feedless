@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
 import { RemoteFeedModalModule } from '../../modals/remote-feed-modal/remote-feed-modal.module';
 import { InteractiveWebsiteModule } from '../interactive-website/interactive-website.module';
+import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 
 @NgModule({
   declarations: [TransformWebsiteToFeedComponent],
@@ -16,10 +17,11 @@ import { InteractiveWebsiteModule } from '../interactive-website/interactive-web
     IonicModule,
     NativeFeedModule,
     RemoteFeedModalModule,
+    CodeEditorModalModule,
     ReactiveFormsModule,
     ResponsiveColumnsModule,
     FormsModule,
-    InteractiveWebsiteModule
-  ]
+    InteractiveWebsiteModule,
+  ],
 })
 export class TransformWebsiteToFeedModule {}

@@ -134,7 +134,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
                   literal: this.url,
                 },
                 forcePrerender: false,
-                additionalWaitSec: 0
+                additionalWaitSec: 0,
               },
             },
           },

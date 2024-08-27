@@ -15,7 +15,13 @@ import {
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { ScrapeController } from '../interactive-website/scrape-controller';
-import { debounce, firstValueFrom, interval, lastValueFrom, Subscription } from 'rxjs';
+import {
+  debounce,
+  firstValueFrom,
+  interval,
+  lastValueFrom,
+  Subscription,
+} from 'rxjs';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath
@@ -130,7 +136,11 @@ export class EmbeddedMarkupComponent
       }),
     );
 
-    console.log('lastValueFrom(this.scrapeController.showElements)', firstValueFrom(this.scrapeController.showElements), lastValueFrom(this.scrapeController.showElements))
+    console.log(
+      'lastValueFrom(this.scrapeController.showElements)',
+      firstValueFrom(this.scrapeController.showElements),
+      lastValueFrom(this.scrapeController.showElements),
+    );
   }
 
   ngOnDestroy(): void {

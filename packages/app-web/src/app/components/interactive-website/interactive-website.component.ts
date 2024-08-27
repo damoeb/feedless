@@ -108,8 +108,12 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       merge(
         this.formFg.valueChanges,
-        this.formFg.controls.prerenderingOptions.controls.additionalWait.valueChanges
-          .pipe(map(wait => this.scrapeController.patchFetch({additionalWaitSec: wait}))))
+        this.formFg.controls.prerenderingOptions.controls.additionalWait.valueChanges.pipe(
+          map((wait) =>
+            this.scrapeController.patchFetch({ additionalWaitSec: wait }),
+          ),
+        ),
+      )
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           this.scrape();
@@ -186,7 +190,11 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.embedMarkup = null;
     this.changeRef.detectChanges();
 
-    this.logs = scrapeResponse.logs.map(log => `${new Date(log.time).toLocaleTimeString()}\t ${log.message}`).join('\n');
+    this.logs = scrapeResponse.logs
+      .map(
+        (log) => `${new Date(log.time).toLocaleTimeString()}\t ${log.message}`,
+      )
+      .join('\n');
 
     if (scrapeResponse.failed) {
       this.errorMessage = scrapeResponse.errorMessage;
@@ -223,8 +231,11 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
           viewport: fetchAction.debug.viewport,
         };
       } else {
-        const extractAction = first(last(scrapeResponse.outputs.filter((o) => o.response.extract?.fragments))
-          ?.response?.extract?.fragments)?.html;
+        const extractAction = first(
+          last(
+            scrapeResponse.outputs.filter((o) => o.response.extract?.fragments),
+          )?.response?.extract?.fragments,
+        )?.html;
 
         this.viewModeFc.patchValue('markup');
         this.hasMarkup = true;

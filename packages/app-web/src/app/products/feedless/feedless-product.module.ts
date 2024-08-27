@@ -23,7 +23,7 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
     DarkModeButtonModule,
     LoginButtonModule,
     AgentsButtonModule,
-    RepositoriesButtonModule
+    RepositoriesButtonModule,
   ],
   declarations: [FeedlessProductPage],
 })

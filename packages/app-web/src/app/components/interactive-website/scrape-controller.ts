@@ -2,7 +2,7 @@ import { EventEmitter } from '@angular/core';
 import {
   GqlHttpGetRequestInput,
   GqlScrapeActionInput,
-  GqlSourceInput
+  GqlSourceInput,
 } from '../../../generated/graphql';
 import {
   BoundingBox,
@@ -34,9 +34,7 @@ export class ScrapeController {
 
   constructor(public scrapeRequest: GqlSourceInput) {}
 
-  getScrapeRequest(
-    append: Array<GqlScrapeActionInput> = null,
-  ): GqlSourceInput {
+  getScrapeRequest(append: Array<GqlScrapeActionInput> = null): GqlSourceInput {
     return {
       title: this.scrapeRequest.title,
       tags: this.scrapeRequest.tags,
@@ -54,10 +52,16 @@ export class ScrapeController {
     return getFirstFetchUrlLiteral(this.scrapeRequest.flow.sequence);
   }
 
-  patchFetch(params: Partial<Pick<GqlHttpGetRequestInput, 'additionalWaitSec' | 'url' | 'timeout' | 'language'>>) {
+  patchFetch(
+    params: Partial<
+      Pick<
+        GqlHttpGetRequestInput,
+        'additionalWaitSec' | 'url' | 'timeout' | 'language'
+      >
+    >,
+  ) {
     const fetchAction = getFirstFetch(this.scrapeRequest.flow.sequence);
 
-    Object.keys(params)
-      .forEach(key => fetchAction.get[key] = params[key])
+    Object.keys(params).forEach((key) => (fetchAction.get[key] = params[key]));
   }
 }
