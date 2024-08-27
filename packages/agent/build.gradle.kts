@@ -38,13 +38,20 @@ val lintTask = tasks.register<YarnTask>("lint") {
   outputs.upToDateWhen { true }
 }
 
-val prepareTask = tasks.register("prepare") {
+val codegenTask = tasks.register<YarnTask>("codegen") {
+  args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
+  inputs.dir("src")
+  outputs.upToDateWhen { true }
+}
+
+val prepareTask = tasks.register("prepare") {
+  dependsOn(yarnInstallTask, codegenTask)
 }
 
 val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test"))
-  dependsOn(yarnInstallTask)
+  dependsOn(prepareTask)
   inputs.dir("src")
   inputs.files("yarn.lock")
   outputs.upToDateWhen { true }
@@ -57,7 +64,7 @@ val testTask = tasks.register<YarnTask>("test") {
 
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
-  dependsOn(yarnInstallTask, lintTask, testTask)
+  dependsOn(prepareTask, lintTask, testTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
@@ -84,5 +91,5 @@ tasks.register("bundle", Exec::class) {
 
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
-  dependsOn(yarnInstallTask)
+  dependsOn(prepareTask)
 }

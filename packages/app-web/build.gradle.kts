@@ -25,13 +25,13 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
-  inputs.files("codegen.yml", "yarn.lock", "feedless-config-writer.ts", "src/app/feedless-config.ts")
+//  inputs.files("codegen.yml", "yarn.lock", "feedless-config-writer.ts", "src/app/feedless-config.ts")
   outputs.files("src/generated/graphql.ts", "feedless-config.json")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
-  dependsOn(yarnInstallTask, codegenTask)
+  dependsOn(prepareTask)
   inputs.dir("src")
   inputs.files(
     "angular.json",
@@ -48,7 +48,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
 
 val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test:ci"))
-  dependsOn(yarnInstallTask, codegenTask)
+  dependsOn(prepareTask)
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files(
@@ -60,7 +60,7 @@ val testTask = tasks.register<YarnTask>("test") {
 
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build:prod"))
-  dependsOn(yarnInstallTask, lintTask, testTask, codegenTask)
+  dependsOn(prepareTask, lintTask, testTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
