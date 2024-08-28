@@ -60,7 +60,11 @@ services:
     expose:
       - 5433
     ports:
-    - "5433:5432"
+      - "5433:5432"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     networks:
       - postgis
 
@@ -78,6 +82,10 @@ services:
       - APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS=${APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS}
       - APP_HOST=feedless-core:8080
       - APP_SECURE=false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     ports:
       - "3000:3000"
 #    healthcheck:
@@ -88,6 +96,10 @@ services:
   feedless-app:
     image: damoeb/feedless:app-latest
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     volumes:
       - ./docker/app/app-config.json:/usr/share/nginx/html/config.json
     ports:
@@ -100,6 +112,10 @@ services:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - postgis
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     ports:
       - "8080:8080"
     env_file:
