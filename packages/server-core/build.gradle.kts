@@ -6,6 +6,7 @@ plugins {
   id("com.adarshr.test-logger") version "3.2.0"
   id("com.netflix.dgs.codegen") version "6.1.5"
   id("org.ajoberstar.grgit")
+  id("org.javacc.javacc") version "3.0.2"
 //  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.9.20"
   kotlin("plugin.spring") version "1.9.20"
@@ -22,7 +23,8 @@ repositories {
 
 sourceSets.getByName("main") {
   java.srcDir("src/main/java")
-  java.srcDir("src/main/kotlin")
+  java.srcDir("src/generated/java")
+//  java.srcDir("src/main/kotlin")
   resources.srcDir("src/main/resources")
 }
 
@@ -183,7 +185,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
 }
 
 val codegen = tasks.register("codegen") {
-  dependsOn(graphqlCodegen, compilejj)
+  dependsOn(graphqlCodegen)
 }
 
 tasks.named<JavaCompile>("compileJava") {
@@ -203,22 +205,16 @@ tasks.withType<Test> {
   }
 }
 
-val compilejj = tasks.register("compilejj", Exec::class) {
-  inputs.files(fileTree("src/templates"))
-    .withPropertyName("sourceFiles")
-    .withPathSensitivity(PathSensitivity.RELATIVE)
-  commandLine("sh", "./compilejj.sh")
-}
-val cleanjj = tasks.register("cleanjj", Exec::class) {
-  commandLine("sh", "./cleanjj.sh")
-}
-
 //val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
 //  commandLine("sh", "./fetchGithubJars.sh")
 //}
+val compilejj = tasks.getByName<org.javacc.plugin.gradle.javacc.CompileJavaccTask>("compileJavacc") {
+  inputDirectory = file("src/main/kotlin/org/migor/feedless/document/filter")
+  outputDirectory = file("src/generated/java/org/migor/feedless/document/filter/generated")
+}
+
 tasks.getByName("compileKotlin").dependsOn(compilejj, codegen)
 tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
-tasks.getByName("clean").dependsOn(cleanjj)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   systemProperty("APP_BUILD_TIMESTAMP", Date().time)
