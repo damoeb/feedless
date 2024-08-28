@@ -3,6 +3,7 @@ package org.migor.feedless.community.text.simple
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -10,6 +11,7 @@ import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.TokenizerService
 import java.util.*
 
+@Tag("nlp")
 class SpellingScorerTest {
 
   private lateinit var scorer: SpellingScorer

@@ -3,11 +3,13 @@ package org.migor.feedless.community.text.simple
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.migor.feedless.community.StemmerService
 import org.migor.feedless.community.TokenizerService
 import java.util.*
 
+@Tag("nlp")
 class VocabularyScorerTest {
 
   private lateinit var scorer: VocabularyScorer

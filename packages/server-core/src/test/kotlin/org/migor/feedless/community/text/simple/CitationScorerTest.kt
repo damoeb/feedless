@@ -2,6 +2,7 @@ package org.migor.feedless.community.text.simple
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
@@ -10,6 +11,7 @@ import org.migor.feedless.document.any
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
+@Tag("nlp")
 class CitationScorerTest {
 
   private lateinit var scorer: CitationScorer

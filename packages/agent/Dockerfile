@@ -9,7 +9,7 @@ COPY yarn.lock .
 #ENV GIT_SSL_NO_VERIFY=1
 #RUN yarn config set "strict-ssl" false -g \
 #    &&  \
-RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --slient
+RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --slient --network-timeout 600000
 
 FROM zenika/alpine-chrome:117-with-node
 WORKDIR /usr/node/agent

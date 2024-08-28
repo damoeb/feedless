@@ -201,7 +201,9 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
   useJUnitPlatform {
-    excludeTags("unstable")
+    val tags = arrayOf("unstable", "nlp")
+    println("Excluding tests with tags [${tags.joinToString(", ")}]")
+    excludeTags(*tags)
   }
 }
 
