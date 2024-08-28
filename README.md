@@ -1,19 +1,25 @@
-# Feedless 
+# feedless
 
-It&#39;s quite astoinding that the web is so hard to automate, the word _bot_ mainly has a negative connotation. I believe the opposite.
-There is a dual use and everyone should have their well-behaving bots roaming the web in their interest.
-Popular solutions like zapier of ITTT steer into that direction.
+`feedless` is an experimental feed middleware to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. It's goal is to keep the web open and accessible and to create shareable data streams.
 
-[![Watch the video](screenshot.png)]()
+You may Self-host or use [feedless.org](https://feedless.org) to create and share feeds.
+
+
+[![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
 
 ## Features
+- Content enrichment with Full(-text)
+- Web-to-Feed
+- Web-to-Fragment-Feed as pixel, text or markup
+- Aggregation of multiple feeds
+- Filters
+- [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
+- Inline Images for archive/privacy purposes
+
+
+## Todo
 - Workflow Builder
-- Self-Hosting or SaaS
-
-## Version 3.x (Latest)
-
-Once you have [docker-compose](https://docs.docker.com/compose/install/) or [podman-compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), here is the basic setup.
-
+- Self-Hosting documentation
 
 ## License
 
