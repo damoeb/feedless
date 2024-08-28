@@ -44,6 +44,8 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     browsers: ["ChromiumHeadlessCI"],
+    captureTimeout: 60000,
+    browserNoActivityTimeout: 60000,
     autoWatch: false,
     singleRun: true,
     watch: false,

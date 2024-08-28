@@ -2,9 +2,11 @@ package org.migor.feedless.community
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.util.*
 
+@Tag("nlp")
 class PartOfSpeechServiceTest {
 
   private lateinit var service: PartOfSpeechService
