@@ -44,7 +44,6 @@ class LegacyFeedController {
   private lateinit var legacyFeedService: LegacyFeedService
 
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"repo/\" + #repositoryId")
   @Tracked
   @GetMapping(
     "/stream/bucket/{repositoryId}",
@@ -57,7 +56,6 @@ class LegacyFeedController {
     return legacyFeedService.getRepository(repositoryId)
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
   @Tracked
   @GetMapping(
     "/stream/feed/{feedId}",
@@ -69,7 +67,6 @@ class LegacyFeedController {
     return serializeFeed(legacyFeedService.getFeed(corrId, feedId, toFullUrlString(request)), "atom")
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter + #responseFormat")
   @Tracked
   @Throttled
   @Timed
@@ -102,7 +99,6 @@ class LegacyFeedController {
     )
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter + #responseFormat")
   @Tracked
   @Throttled
   @Timed

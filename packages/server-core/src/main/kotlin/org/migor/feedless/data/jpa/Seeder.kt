@@ -158,16 +158,18 @@ class Seeder {
       val repositoryId = legacyNotificationRepo.id
 
       val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
-        val n = DocumentEntity()
-        n.repositoryId = repositoryId
-        n
+        val d = DocumentEntity()
+        d.repositoryId = repositoryId
+        d
       }
 
       notification.url = "https://feedless.org"
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =
-        "Hi, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on https://feedless.org ."
+        "Dear user, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on https://feedless.org ."
+      notification.contentHtml =
+        "Dear user, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on <a href-\"https://feedless.org\">feedless.org</a>."
       notification.updatedAt = Date()
 
       documentDAO.save(notification)

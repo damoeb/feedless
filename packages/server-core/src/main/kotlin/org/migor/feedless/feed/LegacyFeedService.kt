@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceDAO
@@ -27,6 +28,7 @@ import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -80,6 +82,7 @@ class LegacyFeedService {
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
   fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       val sourceId = UUID.fromString(feedId)
@@ -93,6 +96,7 @@ class LegacyFeedService {
     }
   }
 
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
   fun webToFeed(
     corrId: String,
     url: String,
@@ -165,6 +169,7 @@ class LegacyFeedService {
     }
   }
 
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
   fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl))

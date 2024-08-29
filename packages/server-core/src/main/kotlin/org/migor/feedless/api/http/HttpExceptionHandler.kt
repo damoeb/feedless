@@ -29,7 +29,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {
     val corrId = RequestContextHolder.getRequestAttributes()?.getAttribute("corrId", SCOPE_REQUEST)
-    log.error("[$corrId] handleApiException: ${ex?.message}")
+    log.error("[$corrId] handleApiException: ${ex?.message}", ex)
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "${ex?.message}"
@@ -76,7 +76,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
     statusCode: HttpStatusCode,
     request: WebRequest
   ): ResponseEntity<Any>? {
-    log.error("handleExceptionInternal: ${ex.message}")
+    log.error("handleExceptionInternal: ${ex.message}", ex)
     val payload = mapOf(
       "timestamp" to LocalDateTime.now(),
       "status" to statusCode.value(),

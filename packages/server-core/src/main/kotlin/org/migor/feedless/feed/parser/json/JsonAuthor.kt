@@ -1,6 +1,7 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class JsonAuthor(
   @SerializedName(value = "name")
@@ -11,4 +12,4 @@ data class JsonAuthor(
   val avatar: String? = null,
   @SerializedName(value = "email")
   val email: String? = null
-)
+) : Serializable

@@ -83,7 +83,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
         .replace(",\"", ", '")
       fields.forEach { (old, new) -> converted = converted.replace(old, new) }
 
-      log.info("[$corrId] converted expression '$legacyExpression' -> '$converted'")
+      log.debug("[$corrId] converted expression '$legacyExpression' -> '$converted'")
       converted
     } else {
       legacyExpression
