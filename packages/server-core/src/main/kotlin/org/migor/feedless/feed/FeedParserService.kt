@@ -95,7 +95,7 @@ class FeedParserService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String): JsonFeed {
-    log.info("[$corrId] parseFeedFromUrl $url")
+    log.debug("[$corrId] parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,
 //      url,
@@ -107,7 +107,7 @@ class FeedParserService {
 //      request.setHeader("Authorization", it)
 //    }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.info("[$branchedCorrId] GET $url")
+    log.debug("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
     return parseFeed(corrId, response)
   }

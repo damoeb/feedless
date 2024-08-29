@@ -102,8 +102,8 @@ class CacheConfig {
         CacheConfigurationBuilder.newCacheConfigurationBuilder(
           String::class.java,
           JsonFeed::class.java,
-          ResourcePoolsBuilder.heap(10000)
-            .offheap(100, MemoryUnit.MB)
+          ResourcePoolsBuilder.heap(20000)
+            .offheap(1000, MemoryUnit.MB)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
           .withService(asynchronousListener)
@@ -117,7 +117,7 @@ class CacheConfig {
           String::class.java,
           JsonFeed::class.java,
           ResourcePoolsBuilder.heap(10000)
-            .offheap(100, MemoryUnit.MB)
+            .offheap(300, MemoryUnit.MB)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
           .withService(asynchronousListener)
