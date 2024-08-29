@@ -10,7 +10,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.JsonUtil
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class FeedGeneratorTest {
 

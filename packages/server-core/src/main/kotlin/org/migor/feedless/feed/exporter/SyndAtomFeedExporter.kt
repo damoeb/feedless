@@ -37,9 +37,6 @@ import org.springframework.web.util.UriComponentsBuilder
 @Service
 class SyndAtomFeedExporter {
 
-  @Autowired
-  lateinit var environment: Environment
-
   @Value("\${APP_GIT_HASH}")
   lateinit var commit: String
 
@@ -47,11 +44,7 @@ class SyndAtomFeedExporter {
     val output = SyndFeedOutput()
     val xml = output.outputString(toSyndFeed(jsonFeed), true)
     val endOfHead = xml.indexOf("<feed")
-    val xsl = if (environment.acceptsProfiles(Profiles.of("prod"))) {
-      "<?xml-stylesheet href=\"https://api.feedless.org/feed/static/feed.xsl\" type=\"text/xsl\"?>\n"
-    } else {
-      "<?xml-stylesheet href=\"/feed/static/feed.xsl\" type=\"text/xsl\"?>\n"
-    }
+    val xsl = "<?xml-stylesheet href=\"/feed/static/feed.xsl\" type=\"text/xsl\"?>\n"
     return xml.substring(0, endOfHead) + xsl + xml.substring(endOfHead)
   }
 
