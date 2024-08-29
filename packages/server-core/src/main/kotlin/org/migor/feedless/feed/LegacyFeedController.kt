@@ -8,12 +8,10 @@ import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.config.CacheNames
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,7 +26,7 @@ import kotlin.time.toDuration
 // v2 http://localhost:8080/api/w2f?v=0.1&url=https%3A%2F%2Fheise.de&link=.%2Fa%5B1%5D&context=%2F%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&re=none&q=contains(%23any%2C%20%22EM%22)&out=atom
 // v2 http://localhost:8080/api/tf?url=https%3A%2F%2Fwww.telepolis.de%2Fnews-atom.xml&re=none&q=not(contains(%23any%2C%20%22Politik%22))&out=atom
 // v1 http://localhost:8080/api/feed?url=https%3A%2F%2Fwww.heise.de&pContext=%2F%2Fbody%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D
-
+// v1 http://localhost:8080/api/feed?url=http%3A%2F%2Fheise.de&pContext=%2F%2Fbody%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D&x=s
 
 /**
  * To support old versions of rss-proxy
@@ -68,10 +66,37 @@ class LegacyFeedController {
   }
 
   @Tracked
+  @GetMapping(
+    "/api/feed",
+  )
+  fun web2Feedv1(
+    @RequestParam("url") url: String,
+    @RequestParam("pLink") linkXPath: String,
+    @RequestParam("pContext") contextXPath: String,
+    @RequestParam("out", required = false) responseFormat: String?,
+    request: HttpServletRequest): ResponseEntity<String> {
+    val corrId = newCorrId()
+    return serializeFeed(
+      legacyFeedService.webToFeed(
+        corrId,
+        url,
+        linkXPath,
+        "",
+        contextXPath.replace("//body/","//"),
+        null,
+        false,
+        null,
+        toFullUrlString(request)
+      ), responseFormat
+    )
+
+  }
+
+  @Tracked
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
-  fun handle(
+  fun web2Feedv2(
     @RequestParam("url") url: String,
     @RequestParam("link") linkXPath: String,
     @RequestParam("x", defaultValue = "") extendContext: String,

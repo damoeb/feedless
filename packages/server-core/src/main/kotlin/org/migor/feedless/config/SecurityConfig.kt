@@ -111,6 +111,7 @@ class SecurityConfig {
       ApiUrls.webToFeedVerbose,
       ApiUrls.mailForwardingAllow + "/**",
       "/stream/feed/**",
+      "/api/feed**",
       "/feed/**",
       "/f/**",
       "/feed:**",
