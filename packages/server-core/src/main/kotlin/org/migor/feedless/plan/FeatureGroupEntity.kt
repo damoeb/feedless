@@ -9,6 +9,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -30,6 +31,7 @@ enum class PlanName {
   uniqueConstraints = [
     UniqueConstraint(name = "uniquename", columnNames = [StandardJpaFields.name])]
 )
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 open class FeatureGroupEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.name, nullable = true)

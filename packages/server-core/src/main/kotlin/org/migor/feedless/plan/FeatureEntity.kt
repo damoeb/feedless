@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 
@@ -21,6 +22,7 @@ import org.migor.feedless.data.jpa.StandardJpaFields
     Index(name = "name__idx", columnList = StandardJpaFields.name),
   ]
 )
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 open class FeatureEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = StandardJpaFields.name, length = 50)

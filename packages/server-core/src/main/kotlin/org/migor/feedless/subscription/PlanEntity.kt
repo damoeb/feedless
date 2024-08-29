@@ -7,6 +7,7 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -18,6 +19,7 @@ import java.util.*
 
 @Entity
 @Table(name = "t_plan")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 open class PlanEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.userId, nullable = false)

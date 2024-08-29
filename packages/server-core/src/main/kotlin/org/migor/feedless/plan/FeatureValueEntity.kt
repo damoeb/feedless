@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -60,6 +61,7 @@ enum class FeatureName {
     Index(name = "feature_id__idx", columnList = StandardJpaFields.featureId),
   ]
 )
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 open class FeatureValueEntity : EntityWithUUID() {
 
   @Column(name = "value_int")
