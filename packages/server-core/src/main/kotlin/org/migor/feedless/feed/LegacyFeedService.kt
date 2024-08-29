@@ -92,7 +92,7 @@ class LegacyFeedService {
 
       appendNotifications(corrId, feed)
     } else {
-      createEolFeed(corrId, feedUrl)
+      createEolFeed(feedUrl)
     }
   }
 
@@ -165,7 +165,7 @@ class LegacyFeedService {
         corrId, feed
       )
     } else {
-      createEolFeed(corrId, url)
+      createEolFeed(url)
     }
   }
 
@@ -174,7 +174,7 @@ class LegacyFeedService {
     return if (legacySupport()) {
       appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl))
     } else {
-      createEolFeed(corrId, feedUrl)
+      createEolFeed(feedUrl)
     }
   }
 
@@ -196,9 +196,12 @@ class LegacyFeedService {
         pageable = pageable,
         ignoreVisibility = true
       )
-      feed.items =
-        documents.mapNotNull { it?.asJsonItem() }
-          .plus(feed.items)
+        .filterNotNull()
+        .map {
+          it.publishedAt = Date()
+          it.asJsonItem()
+        }
+      feed.items = documents.plus(feed.items)
     } ?: log.error("[$corrId] Repo for legacy notification not found")
     return feed
   }
@@ -207,7 +210,7 @@ class LegacyFeedService {
     return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 
-  private fun createEolFeed(corrId: String, feedUrl: String): JsonFeed {
+  private fun createEolFeed(feedUrl: String): JsonFeed {
     val feed = JsonFeed()
     feed.id = "rss-proxy:2"
     feed.title = "End Of Life"
@@ -223,7 +226,7 @@ class LegacyFeedService {
     val article = JsonItem()
     val preregistrationLink = "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
-    article.title = "Service Announcement: RSS-Proxy Urls have reached End-of-life"
+    article.title = "SERVICE ANNOUNCEMENT: RSS-Proxy Urls have reached End-of-life"
     article.contentHtml = """Dear User,
 
 I hope this message finds you well. As of now, RSS-Proxy urls are no longer supported.

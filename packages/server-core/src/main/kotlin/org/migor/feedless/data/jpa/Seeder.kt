@@ -154,7 +154,7 @@ class Seeder {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
 
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "Service Announcement: Limited support for RSS-Proxy URLs"
+      val title = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
       val repositoryId = legacyNotificationRepo.id
 
       val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
@@ -167,9 +167,10 @@ class Seeder {
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =
-        "Dear user, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on https://feedless.org ."
+        "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at https://feedless.org, where you can import your RSS-proxy feeds."
       notification.contentHtml =
-        "Dear user, support for anonymous rss-proxy feeds is coming to an end, new feeds can be created on <a href-\"https://feedless.org\">feedless.org</a>."
+        "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at <a href-\"https://feedless.org\">feedless.org</a>, where you can import your RSS-proxy feeds."
+      notification.publishedAt = Date() // force to top on most readers
       notification.updatedAt = Date()
 
       documentDAO.save(notification)
