@@ -47,7 +47,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   }
 
   fun resolveIpBucket(remoteAddr: String): Bucket {
-    log.info("throttle by ip $remoteAddr")
+    log.debug("throttle by ip $remoteAddr")
     return cache.computeIfAbsent(remoteAddr) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromIp(remoteAddr))

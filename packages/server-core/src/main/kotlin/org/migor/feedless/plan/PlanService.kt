@@ -24,25 +24,15 @@ class PlanService {
   fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
     return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
       AuthTokenType.AGENT -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
-      AuthTokenType.USER -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
-      AuthTokenType.API -> Bandwidth.classic(60, Refill.intervally(60, Duration.ofMinutes(1)))
-      AuthTokenType.ANON -> Bandwidth.classic(120, Refill.intervally(40, Duration.ofMinutes(1)))
+      AuthTokenType.USER -> Bandwidth.classic(300, Refill.intervally(300, Duration.ofMinutes(1)))
+      AuthTokenType.API -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
+      AuthTokenType.ANON -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
     }
   }
 
   fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
-    return Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)))
+    return Bandwidth.classic(100, Refill.intervally(100, Duration.ofMinutes(1)))
   }
-
-//  fun findAllVisible(product: ProductName): List<FeatureGroupEntity> {
-////    return planDAO.findAllByAvailabilityNotInAndProduct(
-////      listOf(
-////        PlanAvailability.unavailable,
-////        PlanAvailability.availableButHidden
-////      ), product
-////    )
-//    return emptyList();
-//  }
 
   fun findById(id: String): Optional<FeatureGroupEntity> {
     return featureGroupDAO.findById(UUID.fromString(id))
