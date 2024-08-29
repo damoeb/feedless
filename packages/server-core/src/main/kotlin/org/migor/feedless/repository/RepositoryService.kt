@@ -221,7 +221,7 @@ class RepositoryService {
     return saved
   }
 
-  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"repo/\" + #repositoryId + #tag + #page + #pageSize")
+  @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tag")
   @Transactional(readOnly = true)
   fun getFeedByRepositoryId(corrId: String, repositoryId: String, page: Int, tag: String? = null, shareKey: String? = null): JsonFeed {
     val id = UUID.fromString(repositoryId)

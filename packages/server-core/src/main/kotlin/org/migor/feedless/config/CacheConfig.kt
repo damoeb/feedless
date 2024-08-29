@@ -26,10 +26,11 @@ import javax.cache.Caching
 
 
 object CacheNames {
-  const val FEED_RESPONSE = "feedResponseCache"
+  const val FEED_LONG_TTL = "feedResponseCache10min"
+  const val FEED_SHORT_TTL = "feedResponseCache2Min"
   const val HTTP_RESPONSE = "httpResponseCache"
   const val AGENT_RESPONSE = "agentResponseCache"
-  const val GRAPHQL_RESPONSE = "graphqlResponseCache"
+  const val SERVER_SETTINGS = "graphqlResponseCache"
 }
 
 class AgentResponseCacheKeyGenerator : KeyGenerator {
@@ -68,54 +69,72 @@ class CacheConfig {
       .unordered()
       .asynchronous()
 
-    val httpResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-      String::class.java,
-      HttpResponse::class.java,
-      ResourcePoolsBuilder.heap(1000)
-        .offheap(25, MemoryUnit.MB)
-    )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
-
-    val agentResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-      String::class.java,
-      AgentResponse::class.java,
-      ResourcePoolsBuilder.heap(1000)
-        .offheap(50, MemoryUnit.MB)
-    )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
-
-    val feedCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-      String::class.java,
-      JsonFeed::class.java,
-      ResourcePoolsBuilder.heap(1000)
-        .offheap(25, MemoryUnit.MB)
-    )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
-
-    val graphqlResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-      String::class.java,
-      ServerSettings::class.java,
-      ResourcePoolsBuilder.heap(10)
-    )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(20)))
-
 
     cacheManager.createCache(
       CacheNames.HTTP_RESPONSE,
-      Eh107Configuration.fromEhcacheCacheConfiguration(httpResponseCache.withService(asynchronousListener))
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          HttpResponse::class.java,
+          ResourcePoolsBuilder.heap(1000)
+            .offheap(100, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+          .withService(asynchronousListener)
+      )
     )
     cacheManager.createCache(
       CacheNames.AGENT_RESPONSE,
-      Eh107Configuration.fromEhcacheCacheConfiguration(agentResponseCache.withService(asynchronousListener))
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          AgentResponse::class.java,
+          ResourcePoolsBuilder.heap(1000)
+            .offheap(50, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
+          .withService(asynchronousListener)
+      )
     )
     cacheManager.createCache(
-      CacheNames.FEED_RESPONSE,
-      Eh107Configuration.fromEhcacheCacheConfiguration(feedCache.withService(asynchronousListener))
+      CacheNames.FEED_LONG_TTL,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          JsonFeed::class.java,
+          ResourcePoolsBuilder.heap(10000)
+            .offheap(100, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+          .withService(asynchronousListener)
+      )
     )
 
     cacheManager.createCache(
-      CacheNames.GRAPHQL_RESPONSE,
-      Eh107Configuration.fromEhcacheCacheConfiguration(graphqlResponseCache.withService(asynchronousListener))
+      CacheNames.FEED_SHORT_TTL,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          JsonFeed::class.java,
+          ResourcePoolsBuilder.heap(10000)
+            .offheap(100, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
+          .withService(asynchronousListener)
+      )
+    )
+
+    cacheManager.createCache(
+      CacheNames.SERVER_SETTINGS,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          ServerSettings::class.java,
+          ResourcePoolsBuilder.heap(10)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(120)))
+          .withService(asynchronousListener)
+      )
     )
 
     return cacheManager

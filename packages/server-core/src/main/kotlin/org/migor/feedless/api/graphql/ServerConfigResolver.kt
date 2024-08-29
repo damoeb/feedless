@@ -46,7 +46,7 @@ class ServerConfigResolver {
 
   @DgsQuery
   @Cacheable(
-    value = [CacheNames.GRAPHQL_RESPONSE],
+    value = [CacheNames.SERVER_SETTINGS],
     keyGenerator = "cacheKeyGenerator"
   ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
   suspend fun serverSettings(
