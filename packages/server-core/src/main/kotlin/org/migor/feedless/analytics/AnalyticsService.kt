@@ -84,7 +84,7 @@ class AnalyticsService {
         .execute(CompletionHandlerBase(expectedStatusCode))
 
     } catch (e: Exception) {
-      log.error("track failed: ${e.message}")
+      log.debug("track failed: ${e.message}")
     }
   }
 }
