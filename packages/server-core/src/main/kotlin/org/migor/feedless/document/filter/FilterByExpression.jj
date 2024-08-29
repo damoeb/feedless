@@ -166,7 +166,7 @@ private boolean StringExpr(JsonItem data) throws Exception :
   <COMMA>
   strB = StringValue(data)
   {
-    log.info("endsWith "+strA+" "+strB);
+    log.debug("endsWith "+strA+" "+strB);
     result = StringUtils.endsWithIgnoreCase(strA, strB);  }
   <RBRAKE>
   { return result; }
@@ -178,7 +178,7 @@ private boolean StringExpr(JsonItem data) throws Exception :
   <COMMA>
   strB = StringValue(data)
   {
-    log.info("startsWith "+strA+" "+strB);
+    log.debug("startsWith "+strA+" "+strB);
     result = StringUtils.startsWithIgnoreCase(strA, strB);  }
   <RBRAKE>
   { return result; }

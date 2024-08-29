@@ -13,7 +13,10 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
                 <title>Web Feed • <xsl:value-of select="atom:feed/atom:title"/></title>
                 <style type="text/css">
-                    body {
+                  pre {
+                    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+                  }
+                  body {
                         max-width: 90vw;
                         min-width:min(768px, 100vw);
                         margin:0 auto;
@@ -207,7 +210,9 @@
             <xsl:if
               test="not(atom:content[starts-with(@type,'html')])">
               <p>
-                <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
+                <pre>
+                  <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
+                </pre>
               </p>
             </xsl:if>
 

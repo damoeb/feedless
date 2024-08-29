@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
+import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
 import java.io.Serializable
 import java.net.URL
@@ -58,7 +59,17 @@ class HttpService {
   }
 
   fun prepareGet(url: String): BoundRequestBuilder {
-    return client.prepareGet(url)
+    val urlWithProtocol = addProtocol(url)
+    assert(UrlUtils.isAbsoluteUrl(urlWithProtocol)) { "Provided url is not valid" }
+    return client.prepareGet(urlWithProtocol)
+  }
+
+  private fun addProtocol(url: String): String {
+    return if (!url.startsWith("http://", true) && !url.startsWith("https://", true)) {
+      "https://$url"
+    } else {
+      url
+    }
   }
 
   fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
@@ -78,7 +89,7 @@ class HttpService {
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, String>? = null): HttpResponse {
     protectFromOverloading(corrId, url)
     log.debug("[$corrId] GET $url")
-    val request = client.prepareGet(url)
+    val request = prepareGet(url)
     headers?.let {
       headers.forEach {
         request.addHeader(it.key, it.value)

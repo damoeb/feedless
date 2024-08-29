@@ -163,7 +163,7 @@ class Seeder {
         d
       }
 
-      notification.url = "https://feedless.org"
+      notification.url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =

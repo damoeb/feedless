@@ -1,13 +1,14 @@
 package org.migor.feedless.feed
 
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.lang3.time.DateUtils
+import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -20,6 +21,8 @@ import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
@@ -36,6 +39,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -85,12 +89,14 @@ class LegacyFeedService {
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
   fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
-      val sourceId = UUID.fromString(feedId)
-      val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
-      feed.items = documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
-        .map { it.asJsonItem() }
-
-      appendNotifications(corrId, feed)
+      appendNotifications(corrId, resolveFeedCatching(corrId, feedUrl) {
+        val sourceId = UUID.fromString(feedId)
+        val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
+        feed.items =
+          documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+            .map { it.asJsonItem() }
+        feed
+      })
     } else {
       createEolFeed(feedUrl)
     }
@@ -106,63 +112,71 @@ class LegacyFeedService {
     dateXPath: String?,
     prerender: Boolean,
     filter: String?,
-    requestURI: String
+    feedUrl: String
   ): JsonFeed {
     return if (legacySupport()) {
-      val source = SourceEntity()
-      source.title = "Feed from $url"
-      val fetch = FetchActionEntity()
-      fetch.pos = 1
-      fetch.forcePrerender = prerender
-      fetch.url = url
-      fetch.isVariable = false
-      source.actions.add(fetch)
-
-      val scrapeOutput = runBlocking{
-        scrapeService.scrape(corrId, source)
-      }
-
-      val selectors = GenericFeedSelectors(
-        linkXPath = linkXPath,
-        extendContext = when (extendContext) {
-          "p" -> ExtendContext.PREVIOUS
-          "n" -> ExtendContext.NEXT
-          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-          else -> ExtendContext.NONE
-        },
-        contextXPath = contextXPath,
-        dateXPath = dateXPath,
-      )
-
-      val feed = webToFeedTransformer.getFeedBySelectors(
-        corrId,
-        selectors,
-        HtmlUtil.parseHtml(
-          scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-            StandardCharsets.UTF_8
-          ), url
-        ),
-        URL(url)
-      )
-      feed.feedUrl = requestURI
-
-      try {
-        filter?.let {
-          val params = PluginExecutionParamsInput(
-            org_feedless_filter = listOf(
-              ItemFilterParamsInput(
-                expression = it
-              )
-            )
-          )
-          feed.items = feed.items.filterIndexed { index, jsonItem ->  filterPlugin.filterEntity(corrId, jsonItem, params, index) }
-        }
-      } catch (e: Throwable) {
-        log.warn("[$corrId] webToFeed failed: ${e.message}", e)
-      }
-
       appendNotifications(
-        corrId, feed
+        corrId, resolveFeedCatching(corrId, feedUrl) {
+          val source = SourceEntity()
+          source.title = "Feed from $url"
+          val fetch = FetchActionEntity()
+          fetch.pos = 1
+          fetch.forcePrerender = prerender
+          fetch.url = url
+          fetch.isVariable = false
+          source.actions.add(fetch)
+
+          val scrapeOutput = runBlocking {
+            scrapeService.scrape(corrId, source)
+          }
+
+          val selectors = GenericFeedSelectors(
+            linkXPath = linkXPath,
+            extendContext = when (extendContext) {
+              "p" -> ExtendContext.PREVIOUS
+              "n" -> ExtendContext.NEXT
+              "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+              else -> ExtendContext.NONE
+            },
+            contextXPath = contextXPath,
+            dateXPath = dateXPath,
+          )
+
+          val feed = webToFeedTransformer.getFeedBySelectors(
+            corrId,
+            selectors,
+            HtmlUtil.parseHtml(
+              scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+                StandardCharsets.UTF_8
+              ), url
+            ),
+            URL(url)
+          )
+          feed.feedUrl = feedUrl
+
+          try {
+            filter?.let {
+              val params = PluginExecutionParamsInput(
+                org_feedless_filter = listOf(
+                  ItemFilterParamsInput(
+                    expression = it
+                  )
+                )
+              )
+              feed.items = feed.items.filterIndexed { index, jsonItem ->
+                filterPlugin.filterEntity(
+                  corrId,
+                  jsonItem,
+                  params,
+                  index
+                )
+              }
+            }
+          } catch (e: Throwable) {
+            log.warn("[$corrId] webToFeed failed: ${e.message}", e)
+          }
+          feed
+        }
       )
     } else {
       createEolFeed(url)
@@ -172,9 +186,19 @@ class LegacyFeedService {
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
   fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
-      appendNotifications(corrId, feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl))
+      appendNotifications(
+        corrId,
+        resolveFeedCatching(corrId, feedUrl) { feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl) })
     } else {
       createEolFeed(feedUrl)
+    }
+  }
+
+  private fun resolveFeedCatching(corrId: String, feedUrl: String, feedProvider: () -> JsonFeed): JsonFeed {
+    return try {
+      feedProvider()
+    } catch (t: Throwable) {
+      createErrorFeed(corrId, feedUrl, t)
     }
   }
 
@@ -222,6 +246,23 @@ class LegacyFeedService {
     return feed
   }
 
+  private fun createErrorFeed(corrId: String, feedUrl: String, t: Throwable): JsonFeed {
+    val feed = JsonFeed()
+    feed.id = "rss-proxy:2"
+    feed.title = "Feed"
+    feed.feedUrl = feedUrl
+    feed.expired = false
+    feed.publishedAt = Date()
+
+    feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
+      emptyList()
+    } else {
+      listOf(createErrorArticle(corrId, t))
+    }
+
+    return feed
+  }
+
   private fun createEolArticle(url: String): JsonItem {
     val article = JsonItem()
     val preregistrationLink = "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
@@ -243,6 +284,35 @@ Markus
     """.trimIndent()
 //    article.contentText = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
     article.url = preregistrationLink
+    article.publishedAt = Date()
+    return article
+  }
+
+  private fun createErrorArticle(corrId: String, t: Throwable): JsonItem {
+    val article = JsonItem()
+    article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
+    article.title = "ALERT: Potential Issue with Feed"
+    article.contentText = """Dear User,
+an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.
+
+If you believe this is a bug, here is the stack trace.
+---
+corrId: $corrId
+${StringUtils.truncate(t.stackTraceToString(), 800)}
+""".trimIndent()
+    article.contentHtml = """<p>Dear User,</p>
+<p>an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.</p>
+
+<p>If you believe this is a bug, here is the stack trace.
+---
+corrId: $corrId</p>
+<p>
+<pre>
+${StringUtils.truncate(t.stackTraceToString(), 800)}
+</pre>
+</p>
+""".trimIndent()
+    article.url = "https://github.com/damoeb/feedless/wiki/Errors#error-potential-issue-with-feed"
     article.publishedAt = Date()
     return article
   }
