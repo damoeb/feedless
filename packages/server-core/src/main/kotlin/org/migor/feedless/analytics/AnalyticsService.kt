@@ -43,11 +43,11 @@ class AnalyticsService {
   @PostConstruct
   fun postConstruct() {
     log.info("plausibleUrl: $plausibleUrl")
-    if (this.plausibleUrl.isBlank()) {
+    if (plausibleUrl.isBlank()) {
       log.error("plausibleUrl is empty")
     }
     log.info("plausibleSite: $plausibleSite")
-    if (this.plausibleSite.isBlank()) {
+    if (plausibleSite.isBlank()) {
       log.error("plausibleSite is empty")
     }
     val builderConfig = Dsl.config()

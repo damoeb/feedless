@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -41,16 +40,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
 
-  @Query(
-    """
-    SELECT D FROM DocumentEntity D
-    WHERE D.url = :url and D.repositoryId = :repositoryId
-    """
-  )
-  fun findByUrlAndRepositoryId(
-    @Param("url") url: String,
-    @Param("repositoryId") repositoryId: UUID
-  ): DocumentEntity?
+  fun findFirstByUrlAndRepositoryId(url: String, repositoryId: UUID): DocumentEntity?
 
 
 //  fun existsByContentTitleAndRepositoryId(title: String, repositoryId: UUID): Boolean

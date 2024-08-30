@@ -265,7 +265,7 @@ class RepositoryHarvester internal constructor() {
       .filterIndexed { index, _ -> index < 300 }
       .mapNotNull {
         try {
-          val existing = documentDAO.findByUrlAndRepositoryId(it.url, repositoryId)
+          val existing = documentDAO.findFirstByUrlAndRepositoryId(it.url, repositoryId)
           val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
           updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
           createOrUpdate(corrId, updated, existing, repository)
