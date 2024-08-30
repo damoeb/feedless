@@ -89,14 +89,13 @@ class LegacyFeedService {
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
   fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
-      appendNotifications(corrId, resolveFeedCatching(corrId, feedUrl) {
-        val sourceId = UUID.fromString(feedId)
-        val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
-        feed.items =
-          documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
-            .map { it.asJsonItem() }
-        feed
-      })
+      val sourceId = UUID.fromString(feedId)
+      val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
+      feed.items =
+        documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+          .map { it.asJsonItem() }
+
+      appendNotifications(corrId, feed)
     } else {
       createEolFeed(feedUrl)
     }
@@ -115,69 +114,66 @@ class LegacyFeedService {
     feedUrl: String
   ): JsonFeed {
     return if (legacySupport()) {
-      appendNotifications(
-        corrId, resolveFeedCatching(corrId, feedUrl) {
-          val source = SourceEntity()
-          source.title = "Feed from $url"
-          val fetch = FetchActionEntity()
-          fetch.pos = 1
-          fetch.forcePrerender = prerender
-          fetch.url = url
-          fetch.isVariable = false
-          source.actions.add(fetch)
+      val source = SourceEntity()
+      source.title = "Feed from $url"
+      val fetch = FetchActionEntity()
+      fetch.pos = 1
+      fetch.forcePrerender = prerender
+      fetch.url = url
+      fetch.isVariable = false
+      source.actions.add(fetch)
 
-          val scrapeOutput = runBlocking {
-            scrapeService.scrape(corrId, source)
-          }
+      val scrapeOutput = runBlocking {
+        scrapeService.scrape(corrId, source)
+      }
 
-          val selectors = GenericFeedSelectors(
-            linkXPath = linkXPath,
-            extendContext = when (extendContext) {
-              "p" -> ExtendContext.PREVIOUS
-              "n" -> ExtendContext.NEXT
-              "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-              else -> ExtendContext.NONE
-            },
-            contextXPath = contextXPath,
-            dateXPath = dateXPath,
-          )
-
-          val feed = webToFeedTransformer.getFeedBySelectors(
-            corrId,
-            selectors,
-            HtmlUtil.parseHtml(
-              scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-                StandardCharsets.UTF_8
-              ), url
-            ),
-            URL(url)
-          )
-          feed.feedUrl = feedUrl
-
-          try {
-            filter?.let {
-              val params = PluginExecutionParamsInput(
-                org_feedless_filter = listOf(
-                  ItemFilterParamsInput(
-                    expression = it
-                  )
-                )
-              )
-              feed.items = feed.items.filterIndexed { index, jsonItem ->
-                filterPlugin.filterEntity(
-                  corrId,
-                  jsonItem,
-                  params,
-                  index
-                )
-              }
-            }
-          } catch (e: Throwable) {
-            log.warn("[$corrId] webToFeed failed: ${e.message}", e)
-          }
-          feed
-        }
+      val selectors = GenericFeedSelectors(
+        linkXPath = linkXPath,
+        extendContext = when (extendContext) {
+          "p" -> ExtendContext.PREVIOUS
+          "n" -> ExtendContext.NEXT
+          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+          else -> ExtendContext.NONE
+        },
+        contextXPath = contextXPath,
+        dateXPath = dateXPath,
       )
+
+      val feed = webToFeedTransformer.getFeedBySelectors(
+        corrId,
+        selectors,
+        HtmlUtil.parseHtml(
+          scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+            StandardCharsets.UTF_8
+          ), url
+        ),
+        URL(url)
+      )
+      feed.feedUrl = feedUrl
+
+      try {
+        filter?.let {
+          val params = PluginExecutionParamsInput(
+            org_feedless_filter = listOf(
+              ItemFilterParamsInput(
+                expression = it
+              )
+            )
+          )
+          feed.items = feed.items.filterIndexed { index, jsonItem ->
+            filterPlugin.filterEntity(
+              corrId,
+              jsonItem,
+              params,
+              index
+            )
+          }
+        }
+      } catch (e: Throwable) {
+        log.warn("[$corrId] webToFeed failed: ${e.message}", e)
+      }
+
+      appendNotifications(corrId, feed)
     } else {
       createEolFeed(url)
     }
@@ -188,17 +184,10 @@ class LegacyFeedService {
     return if (legacySupport()) {
       appendNotifications(
         corrId,
-        resolveFeedCatching(corrId, feedUrl) { feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl) })
+        feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl)
+      )
     } else {
       createEolFeed(feedUrl)
-    }
-  }
-
-  private fun resolveFeedCatching(corrId: String, feedUrl: String, feedProvider: () -> JsonFeed): JsonFeed {
-    return try {
-      feedProvider()
-    } catch (t: Throwable) {
-      createErrorFeed(corrId, feedUrl, t)
     }
   }
 
@@ -246,7 +235,7 @@ class LegacyFeedService {
     return feed
   }
 
-  private fun createErrorFeed(corrId: String, feedUrl: String, t: Throwable): JsonFeed {
+  fun createErrorFeed(corrId: String, feedUrl: String, t: Throwable): JsonFeed {
     val feed = JsonFeed()
     feed.id = "rss-proxy:2"
     feed.title = "Feed"
@@ -257,7 +246,7 @@ class LegacyFeedService {
     feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
       emptyList()
     } else {
-      listOf(createErrorArticle(corrId, t))
+      listOf(createErrorArticle(corrId, t, feedUrl))
     }
 
     return feed
@@ -288,24 +277,27 @@ Markus
     return article
   }
 
-  private fun createErrorArticle(corrId: String, t: Throwable): JsonItem {
+  private fun createErrorArticle(corrId: String, t: Throwable, feedUrl: String): JsonItem {
     val article = JsonItem()
     article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
     article.title = "ALERT: Potential Issue with Feed"
     article.contentText = """Dear User,
 an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.
+If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.
 
-If you believe this is a bug, here is the stack trace.
 ---
+Feed URL: $feedUrl
 corrId: $corrId
 ${StringUtils.truncate(t.stackTraceToString(), 800)}
 """.trimIndent()
     article.contentHtml = """<p>Dear User,</p>
 <p>an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.</p>
 
-<p>If you believe this is a bug, here is the stack trace.
----
-corrId: $corrId</p>
+<p>If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.<p>
+
+<p>---</p>
+<p>Feed URL: $feedUrl</p>
+<p>corrId: $corrId</p>
 <p>
 <pre>
 ${StringUtils.truncate(t.stackTraceToString(), 800)}

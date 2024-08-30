@@ -2,6 +2,7 @@ package org.migor.feedless.feed
 
 import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -62,66 +62,67 @@ class LegacyFeedController {
   )
   fun legacyEntities(@PathVariable("feedId") feedId: String, request: HttpServletRequest): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(legacyFeedService.getFeed(corrId, feedId, toFullUrlString(request)), "atom")
+    val feedUrl = toFullUrlString(request)
+    val feed = resolveFeedCatching(corrId, feedUrl) {
+      legacyFeedService.getFeed(
+        corrId,
+        feedId,
+        feedUrl
+      )
+    }
+    return feed.export("atom")
   }
 
   @Tracked
   @GetMapping(
     "/api/feed",
   )
-  fun web2Feedv1(
-    @RequestParam("url") url: String,
-    @RequestParam("pLink") linkXPath: String,
-    @RequestParam("pContext") contextXPath: String,
-    @RequestParam("out", required = false) responseFormat: String?,
-    request: HttpServletRequest): ResponseEntity<String> {
+  fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(
+
+    val feedUrl = toFullUrlString(request)
+    val feed = resolveFeedCatching(corrId, feedUrl)
+    {
       legacyFeedService.webToFeed(
         corrId,
-        url,
-        linkXPath,
+        request.param("url"),
+        request.param("pLink"),
         "",
-        contextXPath.replace("//body/","//"),
+        request.param("pContext").replace("//body/", "//"),
         null,
         false,
         null,
-        toFullUrlString(request)
-      ), responseFormat
-    )
-
+        feedUrl
+      )
+    }
+    return feed.export(request.param("out", "atom"))
   }
 
   @Tracked
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
-  fun web2Feedv2(
-    @RequestParam("url") url: String,
-    @RequestParam("link") linkXPath: String,
-    @RequestParam("x", defaultValue = "") extendContext: String,
-    @RequestParam("context") contextXPath: String,
-    @RequestParam("date", required = false) dateXPath: String?,
-    @RequestParam("pp", required = false, defaultValue = "false") prerender: Boolean,
-    @RequestParam("q") filter: String?,
-    @RequestParam("v") version: String,
-    @RequestParam("out", required = false) responseFormat: String?,
-    request: HttpServletRequest
-  ): ResponseEntity<String> {
+  fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(
+    val feedUrl = toFullUrlString(request)
+    val feed = resolveFeedCatching(corrId, feedUrl) {
       legacyFeedService.webToFeed(
         corrId,
-        url,
-        linkXPath,
-        extendContext,
-        contextXPath,
-        dateXPath,
-        prerender,
-        filter,
+        request.param("url"),
+        request.firstParam("link", "linkXPath"),
+        request.firstParamOptional("x", "extendContext") ?: "",
+        request.firstParam("context", "contextXPath"),
+        request.paramOptional("date"),
+        request.paramBool("pp"),
+        request.paramOptional("q"),
         toFullUrlString(request)
-      ), responseFormat
-    )
+      )
+    }
+    return feed.export(request.param("out", "atom"))
+  }
+
+  fun JsonFeed.serialize() {
+
   }
 
   @Tracked
@@ -131,23 +132,34 @@ class LegacyFeedController {
     "/api/feeds/transform",
     ApiUrls.transformFeed
   )
-  fun transformFeed(
-    @RequestParam("url") nativeFeedUrl: String,
-    @RequestParam("q", required = false) filter: String?,
-    @RequestParam("out", required = false, defaultValue = "atom") responseFormat: String,
-    request: HttpServletRequest
-  ): ResponseEntity<String> {
+  fun transformFeed(request: HttpServletRequest): ResponseEntity<String> {
     val corrId = newCorrId()
-    return serializeFeed(
-      legacyFeedService.transformFeed(corrId, nativeFeedUrl, filter, toFullUrlString(request)),
-      responseFormat
-    )
+    val feedUrl = toFullUrlString(request)
+    val feed = resolveFeedCatching(corrId, feedUrl) {
+      legacyFeedService.transformFeed(
+        corrId,
+        request.param("url"),
+        request.paramOptional("q"),
+        feedUrl
+      )
+    }
+    return feed.export(request.param("out", "atom"))
   }
 
-  private fun serializeFeed(feed: JsonFeed, responseType: String?): ResponseEntity<String> {
+  private fun resolveFeedCatching(corrId: String, feedUrl: String, feedProvider: () -> JsonFeed): JsonFeed {
+    return try {
+      val f = feedProvider()
+      f
+    } catch (t: Throwable) {
+      legacyFeedService.createErrorFeed(corrId, feedUrl, t)
+    }
+  }
+
+
+  private fun JsonFeed.export(responseType: String?): ResponseEntity<String> {
     val (_, convert) = feedExporter.resolveResponseType(newCorrId(), StringUtils.trimToNull(responseType) ?: "atom")
     return convert(
-      feed,
+      this,
       HttpStatus.OK,
       1.toDuration(DurationUnit.DAYS)
     )
@@ -158,4 +170,33 @@ class LegacyFeedController {
     return ResponseEntity.status(HttpStatus.GONE).build()
   }
 
+}
+
+private fun HttpServletRequest.firstParam(vararg names: String): String {
+  return names.firstNotNullOfOrNull { paramOptional(it) }
+    ?: throw IllegalArgumentException("Expected one of these query parameters [${names.joinToString(",")}]")
+}
+
+private fun HttpServletRequest.firstParamOptional(vararg names: String): String? {
+  return names.firstNotNullOfOrNull { paramOptional(it) }
+}
+
+private fun HttpServletRequest.paramBool(name: String): Boolean {
+  return BooleanUtils.toBoolean(this.param(name, "false"))
+}
+
+private fun HttpServletRequest.paramOptional(name: String): String? {
+  return try {
+    getParameter(name)
+  } catch (e: Exception) {
+    null
+  }
+}
+
+private fun HttpServletRequest.param(name: String, fallback: String? = null): String {
+  return try {
+    getParameter(name)
+  } catch (e: Exception) {
+    fallback ?: throw IllegalArgumentException("Expected query parameter '$name' not found")
+  }
 }

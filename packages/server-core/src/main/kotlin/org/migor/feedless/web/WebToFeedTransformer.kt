@@ -329,7 +329,7 @@ class WebToFeedTransformer(
   private fun convertExtractsToJsonFeed(feed: ScrapeExtractResponse, links: ScrapeExtractResponse?, url: URL): JsonFeed {
     val jsonFeed = JsonFeed()
     jsonFeed.id = ""
-    jsonFeed.title = "feed"
+    jsonFeed.title = "Feed"
     jsonFeed.websiteUrl = ""
     jsonFeed.publishedAt = Date()
     jsonFeed.items = feed.fragments!!
