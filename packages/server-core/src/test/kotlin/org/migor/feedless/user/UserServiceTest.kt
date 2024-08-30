@@ -1,5 +1,6 @@
 package org.migor.feedless.user
 
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -49,7 +50,7 @@ class UserServiceTest {
   }
 
   @Test
-  fun `updateLegacyUser updates email address`() {
+  fun `updateLegacyUser updates email address`() = runTest {
     // when
     userService.updateLegacyUser(corrId, user, githubId)
 
@@ -61,7 +62,7 @@ class UserServiceTest {
   }
 
   @Test
-  fun `updating email defaults validatedEmailAt and hasValidatedEmail`() {
+  fun `updating email defaults validatedEmailAt and hasValidatedEmail`() = runTest {
     val email = "test@feedless.org"
     val data = UpdateCurrentUserInput(
       email = StringUpdateOperationsInput(email),
@@ -77,7 +78,7 @@ class UserServiceTest {
   }
 
   @Test
-  fun `accepting terms alters acceptedTermsAt`() {
+  fun `accepting terms alters acceptedTermsAt`() = runTest {
     val data = UpdateCurrentUserInput(
       acceptedTermsAndServices = BoolUpdateOperationsInput(true),
     )
@@ -87,11 +88,10 @@ class UserServiceTest {
     verify(user).acceptedTermsAt = any(java.sql.Timestamp::class.java)
     verifyNoMoreInteractions(user)
     verify(userDAO).save(eq(user))
-
   }
 
   @Test
-  fun `rejecting terms alters acceptedTermsAt`() {
+  fun `rejecting terms alters acceptedTermsAt`() = runTest {
     val data = UpdateCurrentUserInput(
       acceptedTermsAndServices = BoolUpdateOperationsInput(false),
     )
@@ -104,7 +104,7 @@ class UserServiceTest {
   }
 
   @Test
-  fun `unsetting purgeScheduledFor will unset purgeScheduledFor`() {
+  fun `unsetting purgeScheduledFor will unset purgeScheduledFor`() = runTest {
     val data = UpdateCurrentUserInput(
       purgeScheduledFor = NullableUpdateOperationsInput(true),
     )
@@ -115,20 +115,20 @@ class UserServiceTest {
     verify(userDAO).save(eq(user))
   }
 
-   @Test
-   fun `setting purgeScheduledFor will set purgeScheduledFor`() {
-     val data = UpdateCurrentUserInput(
-       purgeScheduledFor = NullableUpdateOperationsInput(false),
-     )
-     userService.updateUser(corrId, UUID.randomUUID(), data)
+  @Test
+  fun `setting purgeScheduledFor will set purgeScheduledFor`() = runTest {
+    val data = UpdateCurrentUserInput(
+      purgeScheduledFor = NullableUpdateOperationsInput(false),
+    )
+    userService.updateUser(corrId, UUID.randomUUID(), data)
 
-     verify(user).purgeScheduledFor = any(java.sql.Timestamp::class.java)
-     verifyNoMoreInteractions(user)
-     verify(userDAO).save(eq(user))
+    verify(user).purgeScheduledFor = any(java.sql.Timestamp::class.java)
+    verifyNoMoreInteractions(user)
+    verify(userDAO).save(eq(user))
   }
 
   @Test
-  fun `given updateUser is requested, fields will be altered`() {
+  fun `given updateUser is requested, fields will be altered`() = runTest {
     val firstName = "firstName"
     val lastName = "lastname"
     val country = "country"
@@ -147,7 +147,7 @@ class UserServiceTest {
   }
 
   @Test
-  fun `given github id is not present, updateLegacyUser will set it`() {
+  fun `given github id is not present, updateLegacyUser will set it`() = runTest {
     val user = mock(UserEntity::class.java)
     val githubId = "123678"
     `when`(user.email).thenReturn("")

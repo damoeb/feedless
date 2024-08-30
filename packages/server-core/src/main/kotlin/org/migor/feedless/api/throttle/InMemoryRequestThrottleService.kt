@@ -56,7 +56,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   }
 
   // see https://www.baeldung.com/spring-bucket4j
-  override fun tryConsume(joinPoint: ProceedingJoinPoint): Boolean {
+  override suspend fun tryConsume(joinPoint: ProceedingJoinPoint): Boolean {
     val response = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).response!!
     val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
@@ -79,7 +79,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
     }
   }
 
-  private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
+  private suspend fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
     return runCatching {
       val jwt = authService.interceptJwt(request)
       listOf(resolveTokenBucket(jwt))

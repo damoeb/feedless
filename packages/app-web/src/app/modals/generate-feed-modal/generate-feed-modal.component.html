@@ -106,7 +106,7 @@
             </ion-col>
             <ion-col size="9">
               <ion-button
-                [color]="filters.length === 0 ? 'primary' : 'medium'"
+                color="primary"
                 (click)="addGeneralFilter()"
                 [disabled]="filters.length >= 4"
               >
@@ -185,7 +185,7 @@
       <ion-accordion value="enrich" toggleIconSlot="start">
         <ion-item slot="header">
           <ion-label>
-            Enrich
+            Fulltext
             <ion-note>Improve feed items</ion-note>
           </ion-label>
         </ion-item>

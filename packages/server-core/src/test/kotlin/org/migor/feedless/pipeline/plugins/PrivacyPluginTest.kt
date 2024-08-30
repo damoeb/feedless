@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.common.HttpResponse
-
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.mockito.Mockito
@@ -65,12 +65,14 @@ internal class PrivacyPluginTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "png",
-    "jpeg",
-    "webp",
-  ])
-  fun inlineImages(inputImageType: String) {
+  @CsvSource(
+    value = [
+      "png",
+      "jpeg",
+      "webp",
+    ]
+  )
+  fun inlineImages(inputImageType: String) = runTest {
     val mockHttpResponse = HttpResponse(
       contentType = "image/$inputImageType",
       url = "",
@@ -78,7 +80,8 @@ internal class PrivacyPluginTest {
       responseBody = ResourceUtils.getFile("classpath:images//sample.$inputImageType").readBytes(),
     )
 
-    Mockito.`when`(mockHttpService.httpGet(anyString(), anyString(), anyInt(), Mockito.isNull())).thenAnswer { mockHttpResponse }
+    Mockito.`when`(mockHttpService.httpGet(anyString(), anyString(), anyInt(), Mockito.isNull()))
+      .thenAnswer { mockHttpResponse }
 
     val (markup, _) = plugin.extractAttachments("", UUID.randomUUID(), document)
     val images = Jsoup.parse(markup).select("img[src]")
@@ -89,10 +92,12 @@ internal class PrivacyPluginTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "pdf",
-  ])
-  fun attachPdf(inputFileType: String) {
+  @CsvSource(
+    value = [
+      "pdf",
+    ]
+  )
+  fun attachPdf(inputFileType: String) = runTest {
     val mockPdfResponse = HttpResponse(
       contentType = "application/$inputFileType",
       url = "",

@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.test.runTest
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,30 +63,48 @@ class FeedPluginTest {
   }
 
   @Test
-  fun `extracts generic feed`() {
+  fun `extracts generic feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
-    `when`(action.executorParams).thenReturn(PluginExecutionParamsInput(org_feedless_feed = FeedParamsInput(generic= SelectorsInput(
-      contextXPath="",
-      dateIsStartOfEvent=false,
-      dateXPath="",
-      paginationXPath="",
-      extendContext=ExtendContentOptions.NONE,
-      linkXPath=""
-    ))))
-    `when`(webToFeedTransformer.getFeedBySelectors(any(String::class.java), any(Selectors::class.java), any(Document::class.java), any(URL::class.java))).thenReturn(jsonFeed)
+    `when`(action.executorParams).thenReturn(
+      PluginExecutionParamsInput(
+        org_feedless_feed = FeedParamsInput(
+          generic = SelectorsInput(
+            contextXPath = "",
+            dateIsStartOfEvent = false,
+            dateXPath = "",
+            paginationXPath = "",
+            extendContext = ExtendContentOptions.NONE,
+            linkXPath = ""
+          )
+        )
+      )
+    )
+    `when`(
+      webToFeedTransformer.getFeedBySelectors(
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URL::class.java)
+      )
+    ).thenReturn(jsonFeed)
 
     // when
     feedPlugin.transformFragment(corrId, action, httpResponse) { }
 
-      // then
+    // then
     verify(feedParserService, times(0))
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(1))
-      .getFeedBySelectors(any(String::class.java), any(Selectors::class.java), any(Document::class.java), any(URL::class.java))
+      .getFeedBySelectors(
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URL::class.java)
+      )
   }
 
   @Test
-  fun `extracts native feed`() {
+  fun `extracts native feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(PluginExecutionParamsInput(org_feedless_feed = FeedParamsInput()))
     `when`(feedParserService.parseFeed(any(String::class.java), any(HttpResponse::class.java))).thenReturn(jsonFeed)
@@ -93,10 +112,15 @@ class FeedPluginTest {
     // when
     feedPlugin.transformFragment(corrId, action, httpResponse) { }
 
-      // then
+    // then
     verify(feedParserService, times(1))
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(0))
-      .getFeedBySelectors(any(String::class.java), any(Selectors::class.java), any(Document::class.java), any(URL::class.java))
+      .getFeedBySelectors(
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URL::class.java)
+      )
   }
 }

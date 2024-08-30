@@ -37,6 +37,7 @@ import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
 import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
 import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
 import { getFirstFetchUrlLiteral } from '../../utils';
+import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 
 export interface GenerateFeedModalComponentProps {
   repository: RepositoryFull;
@@ -160,7 +161,7 @@ export class GenerateFeedModalComponent
     ageReferenceField: new FormControl<GqlWebDocumentDateField>(
       GqlWebDocumentDateField.PublishedAt,
     ),
-    fetchFrequency: new FormControl<string>('0 0 0 * * *', {
+    fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, {
       nonNullable: true,
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
@@ -483,7 +484,7 @@ export class GenerateFeedModalComponent
       title: this.repository.title.substring(0, 255),
       isPublic: this.repository.visibility == GqlVisibility.IsPublic,
       description: this.repository.description,
-      fetchFrequency: this.repository.refreshCron || '0 0 0 * * *',
+      fetchFrequency: this.repository.refreshCron || DEFAULT_FETCH_CRON,
       applyFulltextPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
       ),

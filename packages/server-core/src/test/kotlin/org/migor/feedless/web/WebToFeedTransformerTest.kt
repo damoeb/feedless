@@ -2,6 +2,7 @@ package org.migor.feedless.web
 
 import com.google.gson.GsonBuilder
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import kotlinx.coroutines.test.runTest
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +50,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
-  fun generalizeXPathsSimple() {
+  fun generalizeXPathsSimple() = runTest {
     val xpaths = listOf(
       "//body/table[1]/tbody[1]/tr[1]/td[3]/table[1]/tbody[1]/tr[1]/td[1]/font[1]/a[1]",
       "//body/table[1]/tbody[1]/tr[1]/td[3]/table[1]/tbody[1]/tr[1]/td[1]/font[1]/a[2]",
@@ -65,7 +66,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
-  fun generalizeXPathsComplex() {
+  fun generalizeXPathsComplex() = runTest {
     val xpaths = listOf(
       "//div[@id='democracy']/ul[1]/li[2]",
       "//div[@id='democracy']/ul[1]/li[5]",
@@ -81,37 +82,38 @@ internal class WebToFeedTransformerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "https://webiphany.com/, 10-webiphany-com",
-    "https://blog.spencermounta.in, 01-spencermounta-in",
-    "https://spotify.com, 02-spotify-com",
-    "https://telepolis.de, 03-telepolis-de",
+  @CsvSource(
+    value = [
+      "https://webiphany.com/, 10-webiphany-com",
+      "https://blog.spencermounta.in, 01-spencermounta-in",
+      "https://spotify.com, 02-spotify-com",
+      "https://telepolis.de, 03-telepolis-de",
 //    "https://arzg.github.io/lang, 04-arzg-github-io-lang",
-    "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
+      "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
 //    "https://jon.bo/posts, 06-jon-bo-posts",
 //    "https://paulgraham.com, 00-paulgraham-com-articles",
 //    "https://www.fool.com/author/20415, 09-fool-com",
-    "https://www.audacityteam.org/posts/, 11-audacityteam-org",
+      "https://www.audacityteam.org/posts/, 11-audacityteam-org",
 //    "https://cloud.google.com/blog, 13-google-cloud-blog",
-    "https://demo.linkace.org/guest/links, 14-linkace-org",
+      "https://demo.linkace.org/guest/links, 14-linkace-org",
 //    "https://abilene.craigslist.org, 07-craigslist",
 //    "https://arxiv.org/list/math.GN/recent, 08-arxiv-org",
-    "https://sph.ethz.ch/news, 12-sph-ethz-ch", // todo expand context
+      "https://sph.ethz.ch/news, 12-sph-ethz-ch", // todo expand context
 //    "https://lukesmith.xyz/articles, 14-lukesmith-xyz",
-  ])
-  fun testSiteIsSupported(url: String, id: String) {
+    ]
+  )
+  fun testSiteIsSupported(url: String, id: String) = runTest {
     testSupport(url, id)
   }
 
-  private fun testSupport(url: String, source: String) {
+  private suspend fun testSupport(url: String, source: String) {
     val markup = readFile("${source}.input.html")
     val expected = readJson("${source}.output.json")
     val articles = getArticles(markup, URL(url))
     assertEquals(expected, articles.map { article -> article.url })
   }
 
-  private fun getArticles(html: String, url: URL): List<JsonItem> {
-
+  private suspend fun getArticles(html: String, url: URL): List<JsonItem> {
     val document = Jsoup.parse(html)
 
     val parserOptions = GenericFeedParserOptions()

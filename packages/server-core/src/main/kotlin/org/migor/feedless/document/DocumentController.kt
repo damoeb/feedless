@@ -3,9 +3,12 @@ package org.migor.feedless.document
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -36,11 +39,11 @@ class DocumentController {
     "/article/{documentId}",
     "/a/{documentId}",
   )
-  fun documentById(
+  suspend fun documentById(
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
-  ): ResponseEntity<String> {
-    return documentService.findById(UUID.fromString(documentId))?.let { document ->
+  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
+    documentService.findById(UUID.fromString(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "document"),

@@ -14,6 +14,8 @@ import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
 import org.apache.commons.lang3.time.DateUtils
@@ -309,7 +311,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       .generate()
   }
 
-  fun createLicense(corrId: String, payload: LicensePayload, rsaJWK: RSAKey): String {
+  suspend fun createLicense(corrId: String, payload: LicensePayload, rsaJWK: RSAKey): String {
     val signer: JWSSigner = RSASSASigner(rsaJWK)
     val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
     jwsObject.sign(signer)
@@ -349,7 +351,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     } ?: false
   }
 
-  fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
+  suspend fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
     log.info("[$corrId] createLicenseForProduct ${product.name}")
     if (product.isCloudProduct) {
       throw IllegalArgumentException("cloud product cannot be licenced")
@@ -368,7 +370,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     license.payload = singedAndEncoded
     license.orderId = billing.id
 
-    return licenseDAO.save(license)
+    return withContext(Dispatchers.IO) {
+      licenseDAO.save(license)
+    }
   }
 }
 

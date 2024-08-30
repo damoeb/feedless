@@ -25,6 +25,14 @@ class PartOfSpeechServiceTest {
   fun tag() {
     val tagged = service.tag("John is 27 years old.", Locale.ENGLISH)
     assertThat(tagged)
-      .isEqualTo(listOf(Pair("John", "PROPN"), Pair("is", "AUX"), Pair("27", "NUM"), Pair("years", "NOUN"), Pair("old", "ADJ")))
+      .isEqualTo(
+        listOf(
+          Pair("John", "PROPN"),
+          Pair("is", "AUX"),
+          Pair("27", "NUM"),
+          Pair("years", "NOUN"),
+          Pair("old", "ADJ")
+        )
+      )
   }
 }

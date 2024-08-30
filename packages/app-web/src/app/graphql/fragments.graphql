@@ -195,16 +195,16 @@ fragment ActionFragment on ScrapeAction {
     }
     selectValue
   }
-  wait {
-    element {
-      name {
-        value
-      }
-      xpath {
-        value
-      }
-    }
-  }
+#  wait {
+#    element {
+#      name {
+#        value
+#      }
+#      xpath {
+#        value
+#      }
+#    }
+#  }
 }
 fragment HttpGetRequestFragment on HttpGetRequest {
   url {

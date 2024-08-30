@@ -1,7 +1,5 @@
 package org.migor.feedless.feed
 
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppProfiles
@@ -78,7 +76,7 @@ class FeedParserService {
     )
   }
 
-  fun parseFeed(corrId: String, response: HttpResponse): JsonFeed {
+  suspend fun parseFeed(corrId: String, response: HttpResponse): JsonFeed {
     log.debug("[$corrId] Parsing feed")
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
       corrId, response
@@ -94,7 +92,7 @@ class FeedParserService {
     }.getOrThrow()
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): JsonFeed {
+  suspend fun parseFeedFromUrl(corrId: String, url: String): JsonFeed {
     log.debug("[$corrId] parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,
@@ -113,9 +111,9 @@ class FeedParserService {
   }
 
 
-  fun parseFeedFromRequest(
+  suspend fun parseFeedFromRequest(
     corrId: String,
-    scrapeRequests: List<SourceEntity>,
+    sources: List<SourceEntity>,
     filters: List<ItemFilterParamsInput>,
     tags: List<ConditionalTagInput>
   ): RemoteNativeFeed {
@@ -126,25 +124,21 @@ class FeedParserService {
       org_feedless_conditional_tag = tags
     )
 
-    val items = runBlocking {
-      coroutineScope {
-        scrapeRequests
-          .map { scrapeRequest -> scrapeService.scrape(corrId, scrapeRequest) }
-          .flatMap { response -> response.lastOutput().fragment!!.items!! }
-          .filterIndexed { index, item ->
-            filterPlugin.filterEntity(
-              corrId,
-              item,
-              params,
-              index
-            )
-          }
-          .map {
-            conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
-              .toDto(propertyService)
-          }
+    val items = sources
+      .map { source -> scrapeService.scrape(corrId, source) }
+      .flatMap { response -> response.lastOutput().fragment!!.items!! }
+      .filterIndexed { index, item ->
+        filterPlugin.filterEntity(
+          corrId,
+          item,
+          params,
+          index
+        )
       }
-    }
+      .map {
+        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
+          .toDto(propertyService)
+      }
 
     val feed = RemoteNativeFeed(
       items = items,

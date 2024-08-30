@@ -1,5 +1,6 @@
 package org.migor.feedless.community.text.simple
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
@@ -46,14 +47,15 @@ class KeywordIntersectionScorerTest {
       "0.0;; 0.0;; Old English is one of the West Germanic languages, and its closest relatives are Old Frisian and Old Saxon. Like other old Germanic languages, it is very different from Modern English and Modern Scots, and largely incomprehensible for Modern English or Modern Scots speakers without study.[3] Within Old English grammar nouns, adjectives, pronouns and verbs have many inflectional endings and forms, and word order is much freer.[2] The oldest Old English inscriptions were written using a runic system, but from about the 8th century this was replaced by a version of the Latin alphabet.",
     ], delimiterString = ";; "
   )
-  fun `given parent and child share keywords`(expectedIntersection: Double, expectedScore: Double, childText: String) {
-    val parent = mock(CommentEntity::class.java)
-    Mockito.`when`(parent.contentText).thenReturn(parentText)
+  fun `given parent and child share keywords`(expectedIntersection: Double, expectedScore: Double, childText: String) =
+    runTest {
+      val parent = mock(CommentEntity::class.java)
+      Mockito.`when`(parent.contentText).thenReturn(parentText)
 
-    val child = mock(CommentEntity::class.java)
-    Mockito.`when`(child.contentText).thenReturn(childText)
+      val child = mock(CommentEntity::class.java)
+      Mockito.`when`(child.contentText).thenReturn(childText)
 
-    assertThat(scorer.calculateKeywordIntersection(parent, child)).isCloseTo(expectedIntersection, within(0.01))
-    assertThat(scorer.score(parent, child)).isCloseTo(expectedScore, within(0.01))
-  }
+      assertThat(scorer.calculateKeywordIntersection(parent, child)).isCloseTo(expectedIntersection, within(0.01))
+      assertThat(scorer.score(parent, child)).isCloseTo(expectedScore, within(0.01))
+    }
 }

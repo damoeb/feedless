@@ -2,6 +2,8 @@ package org.migor.feedless.session
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
@@ -93,13 +95,13 @@ class AuthService : IAuthService {
     return jwt.getClaim(attrAuthorities) as List<String>
   }
 
-  override fun decodeToken(token: String): OAuth2AuthenticationToken {
+  override suspend fun decodeToken(token: String): OAuth2AuthenticationToken {
     val jwtToken = decodeJwt(token)
     val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
     val attributes = mapOf(
       JwtParameterNames.USER_ID to userId
     )
-    if (StringUtils.isNotBlank(userId) && !userDAO.existsById(UUID.fromString(userId))) {
+    if (StringUtils.isNotBlank(userId) && withContext(Dispatchers.IO) { !userDAO.existsById(UUID.fromString(userId)) }) {
       throw AccessDeniedException("user does not exist")
     }
     val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
@@ -124,17 +126,17 @@ class AuthService : IAuthService {
       .decode(token)
   }
 
-  fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
+  suspend fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
     val rawToken = interceptTokenRaw(request)
     return decodeToken(rawToken)
   }
 
-  override fun interceptJwt(request: HttpServletRequest): Jwt {
+  override suspend fun interceptJwt(request: HttpServletRequest): Jwt {
     val rawToken = interceptTokenRaw(request)
     return decodeJwt(rawToken)
   }
 
-  override fun assertToken(request: HttpServletRequest) {
+  override suspend fun assertToken(request: HttpServletRequest) {
     if (!isWhitelisted(request)) {
       val rawToken = interceptTokenRaw(request)
       decodeToken(rawToken)

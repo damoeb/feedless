@@ -13,7 +13,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.util.*
 
-class FeedlessModuleGenerator: ModuleGenerator {
+class FeedlessModuleGenerator : ModuleGenerator {
 
   override fun getNamespaceUri(): String {
     return FeedlessModuleImpl.URI
@@ -34,7 +34,12 @@ class FeedlessModuleGenerator: ModuleGenerator {
 
     val startingAt = feedlessModule.getStartingAt()
     if (startingAt != null) {
-      element.addContent(generateElement(FeedlessModuleImpl.ELEMENT_STARTING_AT, DateParser.formatW3CDateTime(startingAt, Locale.US)))
+      element.addContent(
+        generateElement(
+          FeedlessModuleImpl.ELEMENT_STARTING_AT,
+          DateParser.formatW3CDateTime(startingAt, Locale.US)
+        )
+      )
     }
 
     val page = feedlessModule.getPage()

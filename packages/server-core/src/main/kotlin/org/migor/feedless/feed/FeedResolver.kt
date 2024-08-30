@@ -3,7 +3,8 @@ package org.migor.feedless.feed
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
@@ -18,6 +19,7 @@ import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -44,7 +46,7 @@ class FeedQueryResolver {
   suspend fun remoteNativeFeed(
     @InputArgument data: RemoteNativeFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed = coroutineScope {
+  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] remoteNativeFeed $data")
     feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
   }
@@ -56,7 +58,7 @@ class FeedQueryResolver {
   suspend fun previewFeed(
     @InputArgument data: PreviewFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed = coroutineScope {
+  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] previewFeed $data")
     feedParserService.parseFeedFromRequest(corrId, data.sources
       .filterIndexed { index, _ -> index < 5 }
@@ -99,7 +101,7 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         contentText = it.contentText,
         publishedAt = it.publishedAt.time,
         startingAt = it.startingAt?.time,
-        localized = it.latLng?.let { GeoPoint(lat=it.x, lon=it.y) },
+        localized = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
         createdAt = Date().time,
         url = it.url,
         enclosures = it.attachments.map { it.toEnclosure() },

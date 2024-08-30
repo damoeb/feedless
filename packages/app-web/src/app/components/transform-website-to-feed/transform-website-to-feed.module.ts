@@ -8,6 +8,7 @@ import { ResponsiveColumnsModule } from '../responsive-columns/responsive-column
 import { RemoteFeedModalModule } from '../../modals/remote-feed-modal/remote-feed-modal.module';
 import { InteractiveWebsiteModule } from '../interactive-website/interactive-website.module';
 import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
+import { RemoteFeedPreviewModule } from '../remote-feed-preview/remote-feed-preview.module';
 
 @NgModule({
   declarations: [TransformWebsiteToFeedComponent],
@@ -22,6 +23,7 @@ import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-edito
     ResponsiveColumnsModule,
     FormsModule,
     InteractiveWebsiteModule,
-  ],
+    RemoteFeedPreviewModule
+  ]
 })
 export class TransformWebsiteToFeedModule {}

@@ -21,7 +21,7 @@ class EngagementScorer {
   @Autowired
   lateinit var commentGraphService: CommentGraphService
 
-  fun score(comment: CommentEntity): Double {
+  suspend fun score(comment: CommentEntity): Double {
     return spline.value(commentGraphService.getReplyCount(comment).toDouble())
       .coerceIn(0.0, 1.0)
   }

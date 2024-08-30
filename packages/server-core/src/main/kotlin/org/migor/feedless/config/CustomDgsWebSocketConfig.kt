@@ -13,9 +13,24 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
+
 @Configuration
 @EnableConfigurationProperties(DgsWebSocketConfigurationProperties::class)
 class CustomDgsWebSocketConfig {
+
+//  @Bean
+//  fun dgsReactiveCustomContextBuilder(): DgsReactiveCustomContextBuilderWithRequest<CustomContext> {
+//    return DgsReactiveCustomContextBuilderWithRequest<CustomContext> { map, httpHeaders, serverRequest ->
+//      ReactiveSecurityContextHolder.getContext()
+//        .map<Any> { securityContext: SecurityContext? ->
+//          CustomContext(
+//            serverRequest,
+//            securityContext
+//          )
+//        }
+//        .defaultIfEmpty(CustomContext(serverRequest, null))
+//    }
+//  }
 
   @Bean
   fun webSocketHandler(

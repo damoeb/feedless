@@ -1,7 +1,10 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,9 +31,9 @@ class PaymentController {
   @GetMapping(
     "/payment/{billingId}/callback",
   )
-  fun paymentCallback(
+  suspend fun paymentCallback(
     @PathVariable("billingId") billingId: String,
-  ): ResponseEntity<String> {
+  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = newCorrId()
     log.info("[$corrId] paymentCallback $billingId")
     val headers = HttpHeaders()
@@ -42,7 +45,7 @@ class PaymentController {
       "success=false&message=${ex.message}"
     }
     headers.add(HttpHeaders.LOCATION, "${propertyService.appHost}/payment/summary/${billingId}?$queryParams")
-    return ResponseEntity<String>(headers, HttpStatus.FOUND)
+    ResponseEntity<String>(headers, HttpStatus.FOUND)
   }
 
 }

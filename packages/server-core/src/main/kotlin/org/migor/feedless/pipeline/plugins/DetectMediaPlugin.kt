@@ -1,7 +1,8 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
@@ -72,7 +73,7 @@ class DetectMediaPlugin : MapEntityPlugin {
 
       log.info("[$corrId] detected media items ${mediaItems.isNotEmpty()}")
 
-      document.attachments = runBlocking {
+      document.attachments = withContext(Dispatchers.IO) {
         attachmentDAO.saveAll(mediaItems.map { it.toEntity(document.id) })
       }
 

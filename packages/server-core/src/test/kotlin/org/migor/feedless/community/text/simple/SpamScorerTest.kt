@@ -17,12 +17,14 @@ class SpamScorerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "0, 0.0",
-    "1, 0.0",
-    "2, 0.0",
-    "3, 1.0"
-  ])
+  @CsvSource(
+    value = [
+      "0, 0.0",
+      "1, 0.0",
+      "2, 0.0",
+      "3, 1.0"
+    ]
+  )
   fun scoreHyperlinks(input: Int, expected: Double) {
     assertThat(scorer.score(withUrls(input))).isEqualTo(expected)
   }

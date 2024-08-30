@@ -6,5 +6,5 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 interface FeedBodyParser {
   fun priority(): Int
   fun canProcess(feedType: FeedType): Boolean
-  fun process(corrId: String, response: HttpResponse): JsonFeed
+  suspend fun process(corrId: String, response: HttpResponse): JsonFeed
 }

@@ -1,5 +1,7 @@
 package org.migor.feedless.secrets
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.user.UserEntity
@@ -27,16 +29,18 @@ class OneTimePasswordService {
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
-  fun createOTP(corrId: String, user: UserEntity, description: String): OneTimePasswordEntity {
+  suspend fun createOTP(corrId: String, user: UserEntity, description: String): OneTimePasswordEntity {
     val otp = createOTP()
     otp.userId = user.id
-    oneTimePasswordDAO.save(otp)
+    withContext(Dispatchers.IO) {
+      oneTimePasswordDAO.save(otp)
+    }
     log.debug("[${corrId}] sending otp '${otp.password}'")
     mailService.sendAuthCode(corrId, user, otp, description)
     return otp
   }
 
-  fun createOTP(): OneTimePasswordEntity {
+  suspend fun createOTP(): OneTimePasswordEntity {
     val otp = OneTimePasswordEntity()
     otp.password = CryptUtil.newCorrId(otpConfirmCodeLength).uppercase()
     otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))

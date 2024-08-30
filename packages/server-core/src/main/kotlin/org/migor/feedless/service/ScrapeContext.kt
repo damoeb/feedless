@@ -39,10 +39,12 @@ class ScrapeContext(private val logger: Logger) {
 
   fun info(message: String) {
     logger.debug(message)
-    logs.add(LogStatement(
-      time = Date().time,
-      message = message,
-    ))
+    logs.add(
+      LogStatement(
+        time = Date().time,
+        message = message,
+      )
+    )
   }
 
   val headers = HashMap<String, String>()

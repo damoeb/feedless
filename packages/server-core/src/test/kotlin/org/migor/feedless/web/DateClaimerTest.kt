@@ -1,5 +1,6 @@
 package org.migor.feedless.web
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
@@ -41,7 +42,7 @@ internal class DateClaimerTest {
 //    "8 Juli;;Thu Dec 12 08:00:00 CET 2024;;de",
     ], delimiterString = ";;"
   )
-  fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) {
+  fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) = runTest {
     val actual =
       dateClaimer.claimDatesFromString(corrId, "${newCorrId()} $dateStringInput ${newCorrId()}", Locale.of(lang))
     assertThat(actual!!.time).isEqualTo(

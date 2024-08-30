@@ -1,21 +1,14 @@
 package org.migor.feedless.pipeline.plugins
 
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.document.DocumentService
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
-import java.util.*
 
-
-fun getLastDocumentByRepositoryId(documentService: DocumentService, repositoryId: UUID): DocumentEntity? {
-  val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
-  return documentService.findAllByRepositoryId(
-    repositoryId,
-    status = ReleaseStatus.released,
-    pageable = pageable
-  ).firstOrNull()
-}
+//fun getLastDocumentByRepositoryId(documentService: DocumentService, repositoryId: UUID): DocumentEntity? {
+//  val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
+//  return documentService.findAllByRepositoryId(
+//    repositoryId,
+//    status = ReleaseStatus.released,
+//    pageable = pageable
+//  ).firstOrNull()
+//}
 
 //@Service
 //@Profile(AppProfiles.database)

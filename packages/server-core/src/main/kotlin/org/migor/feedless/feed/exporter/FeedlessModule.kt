@@ -4,7 +4,7 @@ import com.rometools.rome.feed.module.Module
 import java.io.Serializable
 import java.util.*
 
-interface FeedlessModule: Module, Serializable {
+interface FeedlessModule : Module, Serializable {
 
   fun getStartingAt(): Date?
 

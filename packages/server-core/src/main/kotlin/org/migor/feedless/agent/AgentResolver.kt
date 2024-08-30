@@ -5,15 +5,18 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Agent
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -35,16 +38,24 @@ class AgentResolver {
   private lateinit var agentService: AgentService
 
   @DgsSubscription
-  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
+  suspend fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> = withContext(
+    useRequestContext(
+      currentCoroutineContext()
+    )
+  ) {
     val corrId = CryptUtil.newCorrId()
     log.debug("[$corrId] registerAgent ${data.secretKey.email}")
-    return data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
+    data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
   }
 
   @Throttled
-  @DgsMutation
+  @DgsMutation(field = DgsConstants.MUTATION.SubmitAgentData)
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
-  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
+  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = withContext(
+    useRequestContext(
+      currentCoroutineContext()
+    )
+  ) {
     log.debug("[${data.corrId}] submitAgentData")
     agentService.handleScrapeResponse(data.corrId, data.callbackId, data.scrapeResponse)
     true
@@ -52,11 +63,11 @@ class AgentResolver {
 
   @Throttled
   @DgsQuery
-  suspend fun agents(
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Agent> = coroutineScope {
+  suspend fun agents(@RequestHeader(ApiParams.corrId) corrId: String): List<Agent> {
     log.debug("[$corrId] agents")
-    agentService.findAll(sessionService.userId()).map { it.toDto() }
+    return withContext(useRequestContext(currentCoroutineContext())) {
+      agentService.findAllByUserId(sessionService.userId()).map { it.toDto() }
+    }
   }
 }
 

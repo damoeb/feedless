@@ -41,7 +41,7 @@ class XmlFeedParser : FeedBodyParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
-  override fun process(corrId: String, response: HttpResponse): JsonFeed {
+  override suspend fun process(corrId: String, response: HttpResponse): JsonFeed {
     // parse rss/atom/rdf/opml
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response)
     return when (feedType) {
@@ -185,7 +185,8 @@ class XmlFeedParser : FeedBodyParser {
         article.contentRawBase64 = it.value
       }
     }
-    val assignTextContent = { text: String -> article.contentText = text
+    val assignTextContent = { text: String ->
+      article.contentText = text
     }
 
     // content

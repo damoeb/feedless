@@ -14,7 +14,7 @@
           *ngFor="let nativeFeed of nativeFeeds"
           [button]="true"
           [color]="currentNativeFeed === nativeFeed ? 'primary' : undefined"
-          class="feed cy-feed-native"
+          class="feed"
         >
           <ion-label class="ion-margin-start">
             {{ nativeFeed?.title }}
@@ -55,121 +55,130 @@
               class="generic-feed-score"
             ></div>
           </ion-item>
+
+          <ion-list *ngIf="showSelectors && currentGenericFeed?.hash === genericFeed.hash" class="marked-border-bottom">
+            <ion-item>
+              <ion-input
+                [formControl]="formGroup.controls.contextXPath"
+                color="primary"
+                label="Item"
+                labelPlacement="stacked"
+                name="contextXPath"
+                placeholder="xpath from root"
+              ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input
+                [formControl]="formGroup.controls.linkXPath"
+                color="primary"
+                label="Item Link"
+                labelPlacement="stacked"
+                name="linkXPath"
+                placeholder="relative xpath from context"
+              ></ion-input>
+              <ion-button
+                slot="end"
+                color="dark"
+                (click)="
+            pickElementWithin(
+              formGroup.value.contextXPath,
+              formGroup.controls.linkXPath
+            )
+          "
+              >Pick</ion-button
+              >
+            </ion-item>
+            <!--        <ion-item>-->
+            <!--          <ion-select-->
+            <!--            [formControl]="formGroup.controls.extendContext"-->
+            <!--            [required]="true"-->
+            <!--            label="Extend Context"-->
+            <!--            labelPlacement="stacked"-->
+            <!--            name="extendContext"-->
+            <!--          >-->
+            <!--            <ion-select-option-->
+            <!--              *ngFor="let extendContextOption of getExtendContextOptions()"-->
+            <!--              [value]="extendContextOption.value"-->
+            <!--            >-->
+            <!--              + {{ extendContextOption.label }}-->
+            <!--            </ion-select-option>-->
+            <!--          </ion-select>-->
+            <!--        </ion-item>-->
+            <ion-item>
+              <ion-input
+                [formControl]="formGroup.controls.dateXPath"
+                color="primary"
+                label="Item Date"
+                labelPlacement="stacked"
+                name="dateXPath"
+                placeholder="relative xpath from context"
+              ></ion-input>
+              <ion-button
+                slot="end"
+                color="dark"
+                (click)="
+            pickElementWithin(
+              formGroup.value.contextXPath,
+              formGroup.controls.dateXPath
+            )
+          "
+              >Pick</ion-button
+              >
+            </ion-item>
+            <ion-item *ngIf="formGroup.value.dateXPath">
+              <ion-checkbox
+                [formControl]="formGroup.controls.dateIsStartOfEvent"
+                labelPlacement="end"
+                name="dateIsStartOfEvent"
+              >Item Date is Start Date (Event)
+              </ion-checkbox>
+            </ion-item>
+            <ion-item>
+              <ion-input
+                [formControl]="formGroup.controls.paginationXPath"
+                color="primary"
+                label="Pagination"
+                labelPlacement="stacked"
+                name="paginationXPath"
+                placeholder="xpath from root"
+              ></ion-input>
+            </ion-item>
+          </ion-list>
+
         </ng-container>
       </ion-list>
+
+      <ng-content select="[centerSlot]"></ng-content>
     </div>
 
-    <ion-list class="popup-floater">
-      <ion-list-header (click)="showSelectors = !showSelectors">
-        <ion-label>Generic Feed Selectors</ion-label>
-      </ion-list-header>
-      <ng-container *ngIf="showSelectors">
-        <ion-item>
-          <ion-input
-            [formControl]="formGroup.controls.contextXPath"
-            color="primary"
-            label="Item"
-            labelPlacement="stacked"
-            name="contextXPath"
-            placeholder="xpath from root"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-input
-            [formControl]="formGroup.controls.linkXPath"
-            color="primary"
-            label="Item Link"
-            labelPlacement="stacked"
-            name="linkXPath"
-            placeholder="relative xpath from context"
-          ></ion-input>
-          <ion-button
-            slot="end"
-            color="dark"
-            (click)="
-              pickElementWithin(
-                formGroup.value.contextXPath,
-                formGroup.controls.linkXPath
-              )
-            "
-            >Pick</ion-button
-          >
-        </ion-item>
-        <!--        <ion-item>-->
-        <!--          <ion-select-->
-        <!--            [formControl]="formGroup.controls.extendContext"-->
-        <!--            [required]="true"-->
-        <!--            label="Extend Context"-->
-        <!--            labelPlacement="stacked"-->
-        <!--            name="extendContext"-->
-        <!--          >-->
-        <!--            <ion-select-option-->
-        <!--              *ngFor="let extendContextOption of getExtendContextOptions()"-->
-        <!--              [value]="extendContextOption.value"-->
-        <!--            >-->
-        <!--              + {{ extendContextOption.label }}-->
-        <!--            </ion-select-option>-->
-        <!--          </ion-select>-->
-        <!--        </ion-item>-->
-        <ion-item>
-          <ion-input
-            [formControl]="formGroup.controls.dateXPath"
-            color="primary"
-            label="Item Date"
-            labelPlacement="stacked"
-            name="dateXPath"
-            placeholder="relative xpath from context"
-          ></ion-input>
-          <ion-button
-            slot="end"
-            color="dark"
-            (click)="
-              pickElementWithin(
-                formGroup.value.contextXPath,
-                formGroup.controls.dateXPath
-              )
-            "
-            >Pick</ion-button
-          >
-        </ion-item>
-        <ion-item *ngIf="formGroup.value.dateXPath">
-          <ion-checkbox
-            [formControl]="formGroup.controls.dateIsStartOfEvent"
-            labelPlacement="end"
-            name="dateIsStartOfEvent"
-            >Item Date is Start Date (Event)
-          </ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-input
-            [formControl]="formGroup.controls.paginationXPath"
-            color="primary"
-            label="Pagination"
-            labelPlacement="stacked"
-            name="paginationXPath"
-            placeholder="xpath from root"
-          ></ion-input>
-        </ion-item>
-      </ng-container>
+    <ion-list class="marked-border-top">
+      <ng-content select="[bottomSlot]"></ng-content>
     </ion-list>
-
-    <ion-item
-      *ngIf="currentGenericFeed"
-      (click)="previewGenericFeed()"
-      [button]="true"
-    >
-      Preview Feed
-      <ion-icon name="eye-outline" slot="end" color="primary"></ion-icon>
-    </ion-item>
-    <ng-content select="[bottomSlot]"></ng-content>
   </div>
 
   <div class="flex__column" right style="flex: 2; position: relative">
     <app-interactive-website
+      #interactiveWebsite
       *ngIf="!currentNativeFeed && scrapeController"
       style="flex: 1; display: flex"
+      (segmentChange)="activeSegment = $event"
       [scrapeController]="scrapeController"
     >
+      <ion-segment-button value="feed"
+                          *ngIf="selectedFeed"
+                          segmentButton>
+        Feed
+      </ion-segment-button>
+
+      <div *ngIf="selectedFeed && activeSegment === 'feed'"
+           segmentBody
+           class="flex">
+        <app-remote-feed-preview
+          class="flex"
+          [noMetaColumn]="true"
+          [feed]="remoteFeed"
+        ></app-remote-feed-preview>
+      </div>
     </app-interactive-website>
     <app-native-feed
       *ngIf="currentNativeFeed"

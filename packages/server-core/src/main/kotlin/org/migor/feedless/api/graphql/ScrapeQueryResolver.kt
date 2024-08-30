@@ -3,7 +3,8 @@ package org.migor.feedless.api.graphql
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.fromDto
@@ -21,6 +22,7 @@ import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,7 +49,7 @@ class ScrapeQueryResolver {
   suspend fun scrape(
     @InputArgument data: SourceInput,
     @RequestHeader(ApiParams.corrId, required = false) cid: String,
-  ): ScrapeResponse = coroutineScope {
+  ): ScrapeResponse = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = handleCorrId(cid)
     log.debug("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()

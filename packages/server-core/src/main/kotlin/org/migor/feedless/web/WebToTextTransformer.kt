@@ -6,23 +6,19 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class WebToTextTransformer {
-  fun extractText(elementParam: Element?): String {
-    return Optional.ofNullable(elementParam).map { context ->
-      run {
+  suspend fun extractText(elementParam: Element?): String {
+    return elementParam?.let {
+      val builder = StringBuilder()
+      NodeTraversor.traverse(tagNormalizer(builder), it)
 
-        val builder = StringBuilder()
-        NodeTraversor.traverse(tagNormalizer(builder), context)
-
-        builder.toString().trimEnd()
-      }
-    }.orElse("").trimMargin()
+      builder.toString().trimEnd()
+    } ?: ""
   }
 
-  private fun tagNormalizer(builder: StringBuilder): NodeVisitor {
+  private suspend fun tagNormalizer(builder: StringBuilder): NodeVisitor {
     return object : NodeVisitor {
       override fun head(node: Node, depth: Int) {
         if (node is TextNode) {

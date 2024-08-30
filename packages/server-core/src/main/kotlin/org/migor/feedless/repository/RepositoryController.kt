@@ -4,11 +4,15 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,13 +46,13 @@ class RepositoryController {
   @GetMapping(
     "/f/{repositoryId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
   )
-  fun atomFeed(
+  suspend fun atomFeed(
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
     @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.tag, required = false) tag: String?
-  ): ResponseEntity<String> {
+  ): ResponseEntity<String> = coroutineScope {
     val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -57,7 +61,7 @@ class RepositoryController {
       )
     ).increment()
     log.debug("[$corrId] GET feed/atom id=$repositoryId page=$page")
-    return feedExporter.to(
+    feedExporter.to(
       corrId,
       HttpStatus.OK,
       "atom",
@@ -73,13 +77,13 @@ class RepositoryController {
     "/f/{repositoryId}",
     produces = ["application/json;charset=UTF-8"]
   )
-  fun jsonFeed(
+  suspend fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("repositoryId") repositoryId: String,
     @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
     @RequestParam(ApiParams.tag, required = false) tag: String?
-  ): ResponseEntity<String> {
+  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -88,7 +92,7 @@ class RepositoryController {
       )
     ).increment()
     log.debug("[$corrId] GET feed/json id=$repositoryId page=$page tag=$tag")
-    return feedExporter.to(
+    feedExporter.to(
       corrId,
       HttpStatus.OK,
       "json",

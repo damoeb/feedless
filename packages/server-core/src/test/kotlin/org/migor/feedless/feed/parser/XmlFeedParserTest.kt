@@ -1,5 +1,6 @@
 package org.migor.feedless.feed.parser
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -16,13 +17,15 @@ class XmlFeedParserTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "after-on-rss.in.xml",
-    "apple-rss.in.xml",
-    "medium-rss.in.xml",
-    "yt-atom.in.xml"
-  ])
-  fun `parse feed from xml`(feedFileName: String) {
+  @CsvSource(
+    value = [
+      "after-on-rss.in.xml",
+      "apple-rss.in.xml",
+      "medium-rss.in.xml",
+      "yt-atom.in.xml"
+    ]
+  )
+  fun `parse feed from xml`(feedFileName: String) = runTest {
     val parser = XmlFeedParser()
 
     val httpResponse = HttpResponse(

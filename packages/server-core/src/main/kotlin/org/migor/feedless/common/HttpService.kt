@@ -4,6 +4,8 @@ import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
@@ -58,7 +60,7 @@ class HttpService {
     gatewayHost = URL(propertyService.apiGatewayUrl).host
   }
 
-  fun prepareGet(url: String): BoundRequestBuilder {
+  suspend fun prepareGet(url: String): BoundRequestBuilder {
     val urlWithProtocol = addProtocol(url)
     assert(UrlUtils.isAbsoluteUrl(urlWithProtocol)) { "Provided url is not valid" }
     return client.prepareGet(urlWithProtocol)
@@ -72,12 +74,12 @@ class HttpService {
     }
   }
 
-  fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
+  suspend fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
     return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
   }
 
   @Cacheable(value = [CacheNames.HTTP_RESPONSE], key = "#url")
-  fun httpGetCaching(
+  suspend fun httpGetCaching(
     corrId: String,
     url: String,
     expectedHttpStatus: Int,
@@ -86,7 +88,12 @@ class HttpService {
     return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 
-  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, String>? = null): HttpResponse {
+  suspend fun httpGet(
+    corrId: String,
+    url: String,
+    expectedHttpStatus: Int,
+    headers: Map<String, String>? = null
+  ): HttpResponse {
     protectFromOverloading(corrId, url)
     log.debug("[$corrId] GET $url")
     val request = prepareGet(url)
@@ -98,7 +105,7 @@ class HttpService {
     return toHttpResponse(execute(corrId, request, expectedHttpStatus))
   }
 
-  private fun protectFromOverloading(corrId: String, url: String) {
+  private suspend fun protectFromOverloading(corrId: String, url: String) {
     val actualUrl = URL(url)
     if (actualUrl.host != gatewayHost) {
       val probes =
@@ -113,7 +120,7 @@ class HttpService {
     }
   }
 
-  fun resolveHostBucket(url: URL): Bucket {
+  suspend fun resolveHostBucket(url: URL): Bucket {
     val cacheKey = url.host
     return cache.computeIfAbsent(cacheKey) {
       Bucket.builder()
@@ -122,7 +129,7 @@ class HttpService {
     }
   }
 
-  fun resolveUrlBucket(url: URL): Bucket {
+  suspend fun resolveUrlBucket(url: URL): Bucket {
     val cacheKey = "${url.host}${url.path}"
     return cache.computeIfAbsent(cacheKey) {
       Bucket.builder()
@@ -138,9 +145,11 @@ class HttpService {
     statusCode = response.statusCode
   )
 
-  private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
+  private suspend fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
-      val response = request.execute().get(30, TimeUnit.SECONDS)
+      val response = withContext(Dispatchers.IO) {
+        request.execute().get(30, TimeUnit.SECONDS)
+      }
       log.debug("[$corrId] -> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
         when (response.statusCode) {
@@ -164,29 +173,27 @@ class HttpService {
     }
   }
 
-  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
-    if (supportsHead(url)) {
-      val req = client.prepareHead(url)
-
-      val response = req.execute().get()
-      if (response.statusCode == 404) {
-        throw SiteNotFoundException(url)
-      }
-      if (response.statusCode != 405) {
-        if (response.statusCode != statusCode) {
-          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
-        }
-        if (response.contentType == null) {
-          throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
-        }
-        if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
-          throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
-        }
-      }
-    }
-  }
-
-  private fun supportsHead(url: String): Boolean = true
+//  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
+//    if (supportsHead(url)) {
+//      val req = client.prepareHead(url)
+//
+//      val response = req.execute().get()
+//      if (response.statusCode == 404) {
+//        throw SiteNotFoundException(url)
+//      }
+//      if (response.statusCode != 405) {
+//        if (response.statusCode != statusCode) {
+//          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
+//        }
+//        if (response.contentType == null) {
+//          throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
+//        }
+//        if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
+//          throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
+//        }
+//      }
+//    }
+//  }
 
 }
 

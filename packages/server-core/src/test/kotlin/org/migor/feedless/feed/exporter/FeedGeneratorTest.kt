@@ -1,5 +1,6 @@
 package org.migor.feedless.feed.exporter
 
+import kotlinx.coroutines.test.runTest
 import org.apache.commons.lang3.time.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -16,7 +17,7 @@ class FeedGeneratorTest {
   val corrId = "test"
 
   @Test
-  fun `generated feed and parsed feed is identical`() {
+  fun `generated feed and parsed feed is identical`() = runTest {
     val url = "https://foo.bar"
 
     val feed = JsonFeed()
@@ -35,9 +36,9 @@ class FeedGeneratorTest {
     feed.tags = listOf("tag1", "tag2")
 
     val item = JsonItem()
-    item.id= "id"
-    item.title= "title"
-    item.url= "http://item-url"
+    item.id = "id"
+    item.title = "title"
+    item.url = "http://item-url"
     item.tags = emptyList()
 //    item.authors = emptyList()
     item.contentText = "contentText"
@@ -64,12 +65,13 @@ class FeedGeneratorTest {
     val exporter = SyndAtomFeedExporter()
     exporter.commit = "foo-commit-id"
     val atom = exporter.toAtom(corrId, feed)
-    val actualFeed = XmlFeedParser().process(corrId, HttpResponse(
-      contentType = "application/xml",
-      url = url,
-      statusCode = 200,
-      responseBody = atom.toByteArray(),
-    )
+    val actualFeed = XmlFeedParser().process(
+      corrId, HttpResponse(
+        contentType = "application/xml",
+        url = url,
+        statusCode = 200,
+        responseBody = atom.toByteArray(),
+      )
     )
 
     actualFeed.id = ""

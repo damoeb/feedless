@@ -103,18 +103,18 @@ export class ModalService {
     return data;
   }
 
-  async openRemoteFeedModal(
-    componentProps: RemoteFeedModalComponentProps,
-  ): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: RemoteFeedModalComponent,
-      componentProps,
-      // cssClass: 'fullscreen-modal',
-      showBackdrop: true,
-      backdropDismiss: true,
-    });
-    await modal.present();
-  }
+  // async openRemoteFeedModal(
+  //   componentProps: RemoteFeedModalComponentProps,
+  // ): Promise<void> {
+  //   const modal = await this.modalCtrl.create({
+  //     component: RemoteFeedModalComponent,
+  //     componentProps,
+  //     // cssClass: 'fullscreen-modal',
+  //     showBackdrop: true,
+  //     backdropDismiss: true,
+  //   });
+  //   await modal.present();
+  // }
 
   async openSearchAddressModal(): Promise<OsmMatch> {
     const modal = await this.modalCtrl.create({

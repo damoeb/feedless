@@ -8,7 +8,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
+  SimpleChanges, ViewChild
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
@@ -17,7 +17,7 @@ import {
   GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
-import { ScrapeResponse, Selectors } from '../../graphql/types';
+import { RemoteFeed, ScrapeResponse, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -31,6 +31,7 @@ import { Subscription } from 'rxjs';
 import { getGenericFeedParams } from '../../utils';
 import { ScrapeController } from '../interactive-website/scrape-controller';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
+import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -52,6 +53,9 @@ export class TransformWebsiteToFeedComponent
 
   @Input({ required: true })
   scrapeResponse: ScrapeResponse;
+
+  @ViewChild('interactiveWebsite')
+  interactiveWebsiteComponent: InteractiveWebsiteComponent;
 
   @Input()
   feed: NativeOrGenericFeed;
@@ -93,10 +97,11 @@ export class TransformWebsiteToFeedComponent
   isNonSelected = true;
   busy = false;
   showSelectors = false;
-  private selectedFeed: NativeOrGenericFeed;
+  protected selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
   private subscriptions: Subscription[] = [];
   protected scrapeController: ScrapeController;
+  remoteFeed: RemoteFeed;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -222,26 +227,37 @@ export class TransformWebsiteToFeedComponent
     return false;
   }
 
-  private emitSelectedFeed() {
+  private async emitSelectedFeed() {
     this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     this.selectedFeedChange.emit(this.getSelectedFeed());
+    this.remoteFeed = await this.feedService.previewFeed({
+      sources: [
+        getScrapeRequest(
+          this.getSelectedFeed(),
+          this.scrapeRequest as GqlScrapeRequest,
+        ),
+      ],
+      filters: [],
+      tags: [],
+    })
   }
 
-  async previewGenericFeed() {
-    await this.modalService.openRemoteFeedModal({
-      feedProvider: () =>
-        this.feedService.previewFeed({
-          sources: [
-            getScrapeRequest(
-              this.getSelectedFeed(),
-              this.scrapeRequest as GqlScrapeRequest,
-            ),
-          ],
-          filters: [],
-          tags: [],
-        }),
-    });
-  }
+  // async previewGenericFeed() {
+  //   await this.modalService.openRemoteFeedModal({
+  //     feedProvider: () =>
+  //       this.feedService.previewFeed({
+  //         sources: [
+  //           getScrapeRequest(
+  //             this.getSelectedFeed(),
+  //             this.scrapeRequest as GqlScrapeRequest,
+  //           ),
+  //         ],
+  //         filters: [],
+  //         tags: [],
+  //       }),
+  //   });
+  // }
+  activeSegment: string;
 
   async pickGenericFeedBySelectors(
     selectors: Partial<GqlTransientGenericFeed['selectors']>,
@@ -309,5 +325,9 @@ export class TransformWebsiteToFeedComponent
         await this.modalService.openCodeEditorModal(componentProps);
       },
     });
+  }
+
+  selectTab(tab: string) {
+    this.interactiveWebsiteComponent.selectTab(tab)
   }
 }

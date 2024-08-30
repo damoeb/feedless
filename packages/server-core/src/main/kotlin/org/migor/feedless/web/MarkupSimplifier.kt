@@ -12,7 +12,7 @@ import java.util.*
 
 @Service
 class MarkupSimplifier {
-  fun simplify(elementParam: Element?): String {
+  suspend fun simplify(elementParam: Element?): String {
     return Optional.ofNullable(elementParam).map { context ->
       oneline(flatten(Jsoup.parse(HtmlUtil.cleanHtml(compact(context.clone()).html()))))
     }.orElse("")

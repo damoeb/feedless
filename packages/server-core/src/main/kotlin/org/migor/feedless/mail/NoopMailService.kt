@@ -37,7 +37,7 @@ class NoopMailService : MailService {
     throw IllegalArgumentException("not implemented")
   }
 
-  override fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
+  override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
   }
 
   override fun send(corrId: String, from: String, to: Array<String>, mailData: MailData) {

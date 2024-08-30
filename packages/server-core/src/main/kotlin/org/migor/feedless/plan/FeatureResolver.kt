@@ -4,14 +4,17 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.UpdateFeatureValueInput
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -35,14 +38,14 @@ class FeatureResolver {
   @Throttled
   @DgsQuery
 //  @PreAuthorize("hasAuthority('USER')")
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   suspend fun featureGroups(
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument inherit: Boolean,
     @InputArgument where: FeatureGroupWhereInput,
 
     ): List<FeatureGroup> =
-    coroutineScope {
+    withContext(useRequestContext(currentCoroutineContext())) {
       log.debug("[$corrId] featureGroups inherit=$inherit where=$where")
 //      if (!sessionService.user(corrId).root) {
 //        throw IllegalArgumentException("user must be root")
@@ -53,18 +56,18 @@ class FeatureResolver {
 //  @DgsData(parentType = DgsConstants.FEATUREGROUP.TYPE_NAME)
 //  @Transactional(propagation = Propagation.REQUIRED)
 //  suspend fun features(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
-//    val group: FeatureGroup = dfe.getSource()
+//    val group: FeatureGroup = dfe.getSource()!!
 //    featureService.findAllByGroupId(UUID.fromString(group.id))
 //  }
 
   @Throttled
-  @DgsMutation
+  @DgsMutation(field = DgsConstants.MUTATION.UpdateFeatureValue)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateFeatureValue(
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpdateFeatureValueInput
   ): Boolean =
-    coroutineScope {
+    withContext(useRequestContext(currentCoroutineContext())) {
       log.debug("[$corrId] updateFeature $data")
       featureService.updateFeatureValue(corrId, UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
       true

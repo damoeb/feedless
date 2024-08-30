@@ -4,7 +4,9 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.InputArgument
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
@@ -15,7 +17,6 @@ import org.migor.feedless.plan.toDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -29,11 +30,13 @@ class PlanResolver {
   private lateinit var planDAO: PlanDAO
 
 
-  @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Plan)
+  @Transactional
   suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
-    val user: User = dfe.getSource()
-    planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))?.toDto()
+    val user: User = dfe.getSource()!!
+    withContext(Dispatchers.IO) {
+      planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))?.toDto()
+    }
   }
 }
 

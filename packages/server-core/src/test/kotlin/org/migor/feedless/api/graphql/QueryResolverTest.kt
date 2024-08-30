@@ -27,14 +27,16 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.database])
-@MockBeans(value = [
-  MockBean(PluginService::class),
-  MockBean(ScrapeService::class),
-  MockBean(LicenseService::class),
-  MockBean(ProductService::class),
-  MockBean(SourceService::class),
-  MockBean(OrderService::class),
-])
+@MockBeans(
+  value = [
+    MockBean(PluginService::class),
+    MockBean(ScrapeService::class),
+    MockBean(LicenseService::class),
+    MockBean(ProductService::class),
+    MockBean(SourceService::class),
+    MockBean(OrderService::class),
+  ]
+)
 @Testcontainers
 class QueryResolverTest {
 

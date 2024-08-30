@@ -2,6 +2,8 @@ package org.migor.feedless.user
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -23,7 +25,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.Duration
@@ -32,6 +33,7 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
+@Transactional
 class UserService {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
@@ -57,8 +59,7 @@ class UserService {
   @Autowired
   private lateinit var productService: ProductService
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun createUser(
+  suspend fun createUser(
     corrId: String,
     email: String?,
     githubId: String? = null,
@@ -72,25 +73,25 @@ class UserService {
 //    if (plan.availability == PlanAvailability.unavailable) {
 //      throw BadRequestException("plan $planName for product $productName is unavailable")
 //    }
-
-    if (StringUtils.isNotBlank(email)) {
-      if (userDAO.existsByEmail(email!!)) {
-        throw BadRequestException("user already exists")
+    val savedUser = withContext(Dispatchers.IO) {
+      if (StringUtils.isNotBlank(email)) {
+        if (userDAO.existsByEmail(email!!)) {
+          throw BadRequestException("user already exists")
+        }
       }
-    }
-    if (StringUtils.isNotBlank(githubId)) {
-      if (userDAO.existsByGithubId(githubId!!)) {
-        throw BadRequestException("user already exists")
+      if (StringUtils.isNotBlank(githubId)) {
+        if (userDAO.existsByGithubId(githubId!!)) {
+          throw BadRequestException("user already exists")
+        }
       }
-    }
-    meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-    log.info("[$corrId] create user $email")
-    val user = UserEntity()
-    user.email = email ?: fallbackEmail(user)
-    user.githubId = githubId
-    user.root = false
-    user.anonymous = false
-    user.hasAcceptedTerms = isSelfHosted()
+      meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
+      log.info("[$corrId] create user $email")
+      val user = UserEntity()
+      user.email = email ?: fallbackEmail(user)
+      user.githubId = githubId
+      user.root = false
+      user.anonymous = false
+      user.hasAcceptedTerms = isSelfHosted()
 //    if (!user.anonymous && !user.root) {
 //      when (planName) {
 ////        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
@@ -99,14 +100,15 @@ class UserService {
 //      }
 //    }
 
-    val savedUser = userDAO.save(user)
+      userDAO.save(user)
+    }
 
-    createNotificationsRepository(user).id
+    createNotificationsRepository(savedUser).id
 
     return savedUser
   }
 
-  fun createNotificationsRepository(user: UserEntity): RepositoryEntity {
+  suspend fun createNotificationsRepository(user: UserEntity): RepositoryEntity {
     val r = RepositoryEntity()
     r.title = "Notifications"
     r.description = ""
@@ -117,24 +119,32 @@ class UserService {
     r.visibility = EntityVisibility.isPrivate
     r.retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
 
-    val savedRepository = repositoryDAO.save(r)
+    return withContext(Dispatchers.IO) {
+      val savedRepository = repositoryDAO.save(r)
 
-    user.notificationRepositoryId = r.id
-    userDAO.save(user)
+      user.notificationRepositoryId = r.id
+      userDAO.save(user)
 
-    return savedRepository
+      savedRepository
+    }
   }
 
-  fun findByEmail(email: String): UserEntity? {
-    return userDAO.findByEmail(email)
+  suspend fun findByEmail(email: String): UserEntity? {
+    return withContext(Dispatchers.IO) {
+      userDAO.findByEmail(email)
+    }
   }
 
-  fun findByGithubId(githubId: String): UserEntity? {
-    return userDAO.findByGithubId(githubId) ?: userDAO.findByEmail("$githubId@github.com")
+  suspend fun findByGithubId(githubId: String): UserEntity? {
+    return withContext(Dispatchers.IO) {
+      userDAO.findByGithubId(githubId) ?: userDAO.findByEmail("$githubId@github.com")
+    }
   }
 
-  fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
-    val user = userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
+  suspend fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
+    val user = withContext(Dispatchers.IO) {
+      userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
+    }
     var changed = false
 
     data.email?.let {
@@ -160,7 +170,12 @@ class UserService {
     }
 
     data.plan?.let {
-      productService.enableCloudProduct(corrId, productDAO.findById(UUID.fromString(it.set)).orElseThrow(), user)
+      val product = withContext(Dispatchers.IO) { productDAO.findById(UUID.fromString(it.set)).orElseThrow() }
+      productService.enableCloudProduct(
+        corrId,
+        product,
+        user
+      )
     }
 
     data.acceptedTermsAndServices?.let {
@@ -186,19 +201,23 @@ class UserService {
       changed = true
     }
     if (changed) {
-      userDAO.save(user)
+      withContext(Dispatchers.IO) {
+        userDAO.save(user)
+      }
     } else {
-      log.info("[$corrId] unchanged")
+      log.debug("[$corrId] unchanged")
     }
   }
 
-  fun getAnonymousUser(): UserEntity {
-    return userDAO.findByAnonymousIsTrue()
+  suspend fun getAnonymousUser(): UserEntity {
+    return withContext(Dispatchers.IO) {
+      userDAO.findByAnonymousIsTrue()
+    }
   }
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
-  fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
+  suspend fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
     log.info("[$corrId] update legacy user githubId=$githubId")
     if (user.githubId == null) {
       user.githubId = githubId
@@ -207,7 +226,9 @@ class UserService {
       user.email = fallbackEmail(user)
     }
 
-    userDAO.save(user)
+    withContext(Dispatchers.IO) {
+      userDAO.save(user)
+    }
   }
 
   private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"

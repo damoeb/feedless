@@ -1,5 +1,7 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
@@ -46,20 +48,22 @@ class OrderService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
-  fun findAll(corrId: String, data: OrdersInput): List<OrderEntity> {
+  suspend fun findAll(corrId: String, data: OrdersInput): List<OrderEntity> {
     val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
     val currentUser = sessionService.user(corrId)
-    return if (currentUser.root) {
+    return withContext(Dispatchers.IO) {
+      if (currentUser.root) {
 //      data.where?.id?.let {
 //        orderDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
-      orderDAO.findAll(pageable).toList()
-    } else {
-      orderDAO.findAllByUserId(currentUser.id, pageable).toList()
+        orderDAO.findAll(pageable).toList()
+      } else {
+        orderDAO.findAllByUserId(currentUser.id, pageable).toList()
+      }
     }
   }
 
-  fun upsert(
+  suspend fun upsert(
     corrId: String,
     where: OrderWhereUniqueInput?,
     create: OrderCreateInput?,
@@ -70,7 +74,7 @@ class OrderService {
     } ?: create(corrId, create!!)
   }
 
-  private fun create(corrId: String, create: OrderCreateInput): OrderEntity {
+  private suspend fun create(corrId: String, create: OrderCreateInput): OrderEntity {
     log.info("[$corrId] create $create]")
     val order = OrderEntity()
     order.isOffer = BooleanUtils.isTrue(create.isOffer)
@@ -94,65 +98,74 @@ class OrderService {
     } ?: create.user.create?.let {
       order.userId = createUser(corrId, create.user.create).id
     } ?: throw IllegalArgumentException("Neither connect or create is present")
-    return orderDAO.save(order)
-  }
-
-  private fun createUser(corrId: String, create: UserCreateInput): UserEntity {
-    return userDAO.findByEmail(create.email.trim()) ?: run {
-      log.info("[$corrId] createUser $create]")
-      if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
-        throw IllegalArgumentException("You have to accept the terms")
-      }
-      val user = UserEntity()
-      user.email = create.email
-      user.firstName = create.firstName
-      user.lastName = create.lastName
-      user.hasAcceptedTerms = create.hasAcceptedTerms
-      user.acceptedTermsAt = Date()
-
-      userDAO.save(user)
+    return withContext(Dispatchers.IO) {
+      orderDAO.save(order)
     }
   }
 
-  private fun update(corrId: String, where: OrderWhereUniqueInput, update: OrderUpdateInput): OrderEntity {
+  private suspend fun createUser(corrId: String, create: UserCreateInput): UserEntity {
+    return withContext(Dispatchers.IO) {
+      userDAO.findByEmail(create.email.trim()) ?: run {
+        log.info("[$corrId] createUser $create]")
+        if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
+          throw IllegalArgumentException("You have to accept the terms")
+        }
+        val user = UserEntity()
+        user.email = create.email
+        user.firstName = create.firstName
+        user.lastName = create.lastName
+        user.hasAcceptedTerms = create.hasAcceptedTerms
+        user.acceptedTermsAt = Date()
+
+        userDAO.save(user)
+      }
+    }
+  }
+
+  private suspend fun update(corrId: String, where: OrderWhereUniqueInput, update: OrderUpdateInput): OrderEntity {
     log.info("[$corrId] update $update $where")
     if (!sessionService.user(corrId).root) {
       throw PermissionDeniedException("must be root ($corrId)")
     }
-    val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
-    update.isRejected?.let {
-      order.isOfferRejected = it.set
-    }
-    update.price?.let {
-      order.price = it.set
-    }
-    update.isRejected?.let {
-      order.isOfferRejected = it.set
-    }
+    return withContext(Dispatchers.IO) {
+      val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
-    return orderDAO.save(order)
+      update.isRejected?.let {
+        order.isOfferRejected = it.set
+      }
+      update.price?.let {
+        order.price = it.set
+      }
+      update.isRejected?.let {
+        order.isOfferRejected = it.set
+      }
+
+      orderDAO.save(order)
+    }
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  fun handlePaymentCallback(corrId: String, orderId: String): OrderEntity {
-    val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
+  suspend fun handlePaymentCallback(corrId: String, orderId: String): OrderEntity {
+    return withContext(Dispatchers.IO) {
+      val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
 
-    order.isPaid = true
-    order.paidAt = Date()
-    orderDAO.save(order)
-
-    val product = order.product!!
-    if (product.isCloudProduct) {
-      productService.enableCloudProduct(corrId, product, order.user!!, order)
-    } else {
-      order.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, order))
+      order.isPaid = true
+      order.paidAt = Date()
       orderDAO.save(order)
+
+      val product = order.product!!
+      if (product.isCloudProduct) {
+        productService.enableCloudProduct(corrId, product, order.user!!, order)
+      } else {
+        order.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, order))
+        orderDAO.save(order)
+      }
+
+      // todo send email
+
+      order
     }
-
-    // todo send email
-
-    return order
   }
 }
 

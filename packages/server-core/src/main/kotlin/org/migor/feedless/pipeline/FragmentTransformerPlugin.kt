@@ -15,7 +15,7 @@ data class FragmentOutput(
 
 interface FragmentTransformerPlugin : FeedlessPlugin {
 
-  fun transformFragment(
+  suspend fun transformFragment(
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,

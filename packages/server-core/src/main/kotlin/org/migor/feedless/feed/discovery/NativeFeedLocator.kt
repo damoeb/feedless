@@ -9,13 +9,13 @@ import java.net.URL
 
 @Service
 class NativeFeedLocator {
-  fun locateInDocument(corrId: String, document: Document, url: String): List<RemoteNativeFeedRef> {
+  suspend fun locateInDocument(corrId: String, document: Document, url: String): List<RemoteNativeFeedRef> {
     return document.select("link[rel=alternate][type], link[rel=feed][type]")
       .mapIndexedNotNull { index, element -> toFeedReference(corrId, index, element, url) }
       .distinctBy { it.url }
   }
 
-  private fun toFeedReference(corrId: String, index: Int, element: Element, url: String): RemoteNativeFeedRef? {
+  private suspend fun toFeedReference(corrId: String, index: Int, element: Element, url: String): RemoteNativeFeedRef? {
     return try {
       RemoteNativeFeedRef(
         absUrl(url, element.attr("href")),
@@ -27,7 +27,7 @@ class NativeFeedLocator {
     }
   }
 
-  private fun absUrl(baseUrl: String, relativeUrl: String): String {
+  private suspend fun absUrl(baseUrl: String, relativeUrl: String): String {
     return try {
       URL(URL(baseUrl), relativeUrl).toURI().toString()
     } catch (e: Exception) {

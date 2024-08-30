@@ -2,6 +2,7 @@ package org.migor.feedless.feed
 
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -83,15 +84,17 @@ class LegacyFeedControllerTest {
   }
 
   @Test
-  fun `calling tf returns a feed`() {
+  fun `calling tf returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
-    `when`(legacyFeedService.transformFeed(
-      any(String::class.java),
-      any(String::class.java),
-      anyOrNull(String::class.java),
-      any(String::class.java),
-    )).thenReturn(mockFeed)
+    `when`(
+      legacyFeedService.transformFeed(
+        any(String::class.java),
+        any(String::class.java),
+        anyOrNull(String::class.java),
+        any(String::class.java),
+      )
+    ).thenReturn(mockFeed)
 
     val url = "${baseEndpoint}${ApiUrls.transformFeed}?url={url}&re={re}&q={q}&out={out}"
     val params = mapOf(
@@ -104,8 +107,10 @@ class LegacyFeedControllerTest {
     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE)
     val entity: HttpEntity<*> = HttpEntity<String>(headers)
 
-    val response = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java,
-      params)
+    val response = restTemplate.exchange(
+      url, HttpMethod.GET, entity, String::class.java,
+      params
+    )
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
     assertThat(response.headers.contentType?.type).isEqualTo("application")
     assertThat(response.headers.contentType?.subtype).isEqualTo("xml")
@@ -113,22 +118,25 @@ class LegacyFeedControllerTest {
 
   @Test
   @Tag("unstable")
-  fun `calling w2f returns a feed`() {
+  fun `calling w2f returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
-    `when`(legacyFeedService.webToFeed(
-      any(String::class.java),
-      any(String::class.java),
-      any(String::class.java),
-      any(String::class.java),
-      any(String::class.java),
-      anyOrNull(String::class.java),
-      any(Boolean::class.java),
-      anyOrNull(String::class.java),
-      any(String::class.java),
-    )).thenReturn(mockFeed)
+    `when`(
+      legacyFeedService.webToFeed(
+        any(String::class.java),
+        any(String::class.java),
+        any(String::class.java),
+        any(String::class.java),
+        any(String::class.java),
+        anyOrNull(String::class.java),
+        any(Boolean::class.java),
+        anyOrNull(String::class.java),
+        any(String::class.java),
+      )
+    ).thenReturn(mockFeed)
 
-    val url = "${baseEndpoint}/${ApiUrls.webToFeed}?url={url}&link={link}&date={date}&context={context}&q={q}&out={out}&v={v}"
+    val url =
+      "${baseEndpoint}/${ApiUrls.webToFeed}?url={url}&link={link}&date={date}&context={context}&q={q}&out={out}&v={v}"
     val params = mapOf(
       "v" to 0.1,
       "url" to "https://heise.de",
@@ -142,27 +150,33 @@ class LegacyFeedControllerTest {
     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE)
     val entity: HttpEntity<*> = HttpEntity<String>(headers)
 
-    val response = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java,
-      params)
+    val response = restTemplate.exchange(
+      url, HttpMethod.GET, entity, String::class.java,
+      params
+    )
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
     assertThat(response.headers.contentType?.type).isEqualTo("application")
     assertThat(response.headers.contentType?.subtype).isEqualTo("xml")
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "stream/feed/$feedId",
-    "feed/$feedId",
-    "feed:$feedId",
-  ])
-  fun `calling legacy feed by id returns a feed`(feedUrl: String) {
+  @CsvSource(
+    value = [
+      "stream/feed/$feedId",
+      "feed/$feedId",
+      "feed:$feedId",
+    ]
+  )
+  fun `calling legacy feed by id returns a feed`(feedUrl: String) = runTest {
     val restTemplate = TestRestTemplate()
 
-    `when`(legacyFeedService.getFeed(
+    `when`(
+      legacyFeedService.getFeed(
         any(String::class.java),
         any(String::class.java),
         any(String::class.java),
-    )).thenReturn(mockFeed)
+      )
+    ).thenReturn(mockFeed)
 
     val headers = HttpHeaders()
     headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE)
@@ -175,11 +189,13 @@ class LegacyFeedControllerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "stream/bucket/$feedId",
-    "bucket/$feedId",
-    "bucket:$feedId",
-  ])
+  @CsvSource(
+    value = [
+      "stream/bucket/$feedId",
+      "bucket/$feedId",
+      "bucket:$feedId",
+    ]
+  )
   fun `requesting legacy bucket will return redirect`(path: String) {
     val restTemplate = TestRestTemplate()
     `when`(legacyFeedService.getRepository(any(String::class.java))).thenReturn(ResponseEntity.ok().build())

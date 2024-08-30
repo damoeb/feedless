@@ -7,7 +7,7 @@ import com.rometools.rome.feed.impl.CopyFromHelper
 import com.rometools.rome.feed.module.ModuleImpl
 import java.util.*
 
-class FeedlessModuleImpl: ModuleImpl(FeedlessModule::class.java, URI), FeedlessModule {
+class FeedlessModuleImpl : ModuleImpl(FeedlessModule::class.java, URI), FeedlessModule {
   @Transient
   @Expose(serialize = false, deserialize = false)
   private var COPY_FROM_HELPER: CopyFromHelper

@@ -2,11 +2,12 @@ package org.migor.feedless.api.graphql
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import com.netflix.graphql.dgs.DgsQueryExecutor
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentJob
+import org.migor.feedless.agent.AgentSyncExecutor
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -43,7 +44,7 @@ import java.nio.file.Files
 @MockBeans(
   value = [
     MockBean(AgentService::class),
-    MockBean(AgentJob::class),
+    MockBean(AgentSyncExecutor::class),
     MockBean(UserService::class),
     MockBean(DocumentService::class),
     MockBean(SessionService::class),
@@ -70,7 +71,9 @@ class ScrapeQueryResolverTest {
 
   @Test
   @Disabled
-  fun `scrape native feed`() {
+  fun `scrape native feed`() = runTest {
+
+
     // given
     val url = "http://www.foo.bar/feed.xml"
     val feed = Files.readString(ResourceUtils.getFile("classpath:transform/medium-rss.in.xml").toPath())
@@ -87,7 +90,7 @@ class ScrapeQueryResolverTest {
 
   @Test
   @Disabled
-  fun `scrape generic feed`() {
+  fun `scrape generic feed`() = runTest {
     // given
     val feed = Files.readString(ResourceUtils.getFile("classpath:raw-websites/06-jon-bo-posts.input.html").toPath())
     val httpResponse = HttpResponse("text/html", url, 200, feed.toByteArray())

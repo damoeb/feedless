@@ -1,5 +1,7 @@
 package org.migor.feedless.attachment
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,8 +18,10 @@ class AttachmentService {
   @Autowired
   private lateinit var attachmentDAO: AttachmentDAO
 
-  fun findById(attachmentId: String): Optional<AttachmentEntity> {
-    return attachmentDAO.findById(UUID.fromString(attachmentId))
+  suspend fun findById(attachmentId: String): Optional<AttachmentEntity> {
+    return withContext(Dispatchers.IO) {
+      attachmentDAO.findById(UUID.fromString(attachmentId))
+    }
   }
 
 }

@@ -2,16 +2,17 @@ package org.migor.feedless.pipeline
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.Plugin
 import org.migor.feedless.generated.types.PluginType
+import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 
@@ -26,10 +27,10 @@ class PluginResolver {
 
   @Throttled
   @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   suspend fun plugins(
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Plugin> = coroutineScope {
+  ): List<Plugin> = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] plugins")
     pluginsService.findAll().map { it.toDto() }
   }

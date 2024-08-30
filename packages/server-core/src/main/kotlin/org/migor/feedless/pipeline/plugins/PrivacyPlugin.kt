@@ -79,7 +79,11 @@ class PrivacyPlugin : MapEntityPlugin {
     return document
   }
 
-  fun extractAttachments(corrId: String, documentId: UUID, document: Document): Pair<String, List<AttachmentEntity>> {
+  suspend fun extractAttachments(
+    corrId: String,
+    documentId: UUID,
+    document: Document
+  ): Pair<String, List<AttachmentEntity>> {
     val attachments = mutableListOf<AttachmentEntity>()
       .plus(
         filterBlacklisted(document.links())
@@ -98,7 +102,7 @@ class PrivacyPlugin : MapEntityPlugin {
     return links.filter { link -> blacklistedDomains.none { link.attr("href").contains(it) } }
   }
 
-  private fun handleImage(
+  private suspend fun handleImage(
     corrId: String,
     imageElement: Element,
     documentId: UUID
@@ -145,11 +149,11 @@ class PrivacyPlugin : MapEntityPlugin {
     }
   }
 
-  private fun fetch(corrId: String, url: String, contentTypes: Array<String>): HttpResponse {
+  private suspend fun fetch(corrId: String, url: String, contentTypes: Array<String>): HttpResponse {
     val response = httpService.httpGet(corrId, url, 200, null)
 
     if (contentTypes.none { response.contentType.lowercase().startsWith(it) }) {
-      throw IllegalArgumentException("ContentType ${response.contentType} will be ignored")
+      throw IllegalArgumentException("Ignoring ContentType ${response.contentType}")
     }
     return response
   }
@@ -166,7 +170,7 @@ class PrivacyPlugin : MapEntityPlugin {
     return attachment
   }
 
-  private fun handleLinkedData(
+  private suspend fun handleLinkedData(
     corrId: String,
     linkElement: Element,
     documentId: UUID
@@ -177,7 +181,7 @@ class PrivacyPlugin : MapEntityPlugin {
       linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
       attachment
     } catch (t: Throwable) {
-      log.info("[${corrId}] ${t.message}")
+      log.debug("[${corrId}] ${t.message}")
       null
     }
   }

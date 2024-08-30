@@ -2,6 +2,8 @@ package org.migor.feedless.plan
 
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
@@ -34,7 +36,9 @@ class PlanService {
     return Bandwidth.classic(100, Refill.intervally(100, Duration.ofMinutes(1)))
   }
 
-  fun findById(id: String): Optional<FeatureGroupEntity> {
-    return featureGroupDAO.findById(UUID.fromString(id))
+  suspend fun findById(id: String): Optional<FeatureGroupEntity> {
+    return withContext(Dispatchers.IO) {
+      featureGroupDAO.findById(UUID.fromString(id))
+    }
   }
 }

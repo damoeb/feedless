@@ -1,6 +1,5 @@
 package org.migor.feedless.source
 
-import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,9 +9,9 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.hibernate.annotations.Type
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.toDto
@@ -22,6 +21,7 @@ import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.ScrapeFlow
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.repository.RepositoryEntity
+import java.sql.Types
 import java.util.*
 
 
@@ -38,7 +38,7 @@ open class SourceEntity : EntityWithUUID() {
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
   open var latLon: Point? = null
 
-  @Type(StringArrayType::class)
+  @JdbcTypeCode(Types.ARRAY)
   @Column(name = "tags", columnDefinition = "text[]")
   open var tags: Array<String>? = emptyArray()
 

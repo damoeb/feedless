@@ -30,11 +30,11 @@ class KeywordIntersectionScorer {
 
   private var spline: PolynomialSplineFunction = createSplineInterpolator()
 
-  fun score(parent: CommentEntity, child: CommentEntity): Double {
+  suspend fun score(parent: CommentEntity, child: CommentEntity): Double {
     return spline.value(calculateKeywordIntersection(parent, child))
   }
 
-  fun calculateKeywordIntersection(parent: CommentEntity, child: CommentEntity): Double {
+  suspend fun calculateKeywordIntersection(parent: CommentEntity, child: CommentEntity): Double {
     val parentLocale = languageService.bestLocale(parent.contentText)
     val childLocale = languageService.bestLocale(child.contentText)
 

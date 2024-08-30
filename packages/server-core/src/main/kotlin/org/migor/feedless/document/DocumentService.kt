@@ -6,7 +6,9 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
 import jakarta.persistence.EntityManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
@@ -42,8 +44,10 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -53,6 +57,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Profile(AppProfiles.database)
+@Transactional
 class DocumentService {
 
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
@@ -62,6 +67,9 @@ class DocumentService {
 
   @Autowired
   private lateinit var documentDAO: DocumentDAO
+
+  @Autowired
+  private lateinit var transactionManager: PlatformTransactionManager
 
   @Autowired
   private lateinit var entityManager: EntityManager
@@ -85,11 +93,13 @@ class DocumentService {
   private lateinit var mailForwardDAO: MailForwardDAO
 
 
-  fun findById(id: UUID): DocumentEntity? {
-    return documentDAO.findById(id).getOrNull()
+  suspend fun findById(id: UUID): DocumentEntity? {
+    return withContext(Dispatchers.IO) {
+      documentDAO.findById(id).getOrNull()
+    }
   }
 
-  fun findAllByRepositoryId(
+  suspend fun findAllByRepositoryId(
     repositoryId: UUID,
     where: WebDocumentsWhereInput? = null,
     orderBy: WebDocumentOrderByInput? = null,
@@ -99,30 +109,32 @@ class DocumentService {
     shareKey: String? = null,
     ignoreVisibility: Boolean = false
   ): Page<DocumentEntity?> {
-    val repo = repositoryDAO.findById(repositoryId).orElseThrow()
+    return withContext(Dispatchers.IO) {
+      val repo = repositoryDAO.findById(repositoryId).orElseThrow()
 
-    if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
-      throw IllegalArgumentException("repo is not public")
-    }
+      if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
+        throw IllegalArgumentException("repo is not public")
+      }
 
-    return documentDAO.findPage(pageable) {
-      val whereStatements = prepareWhereStatements(where)
+      documentDAO.findPage(pageable) {
+        val whereStatements = prepareWhereStatements(where)
 
-      select(
-        entity(DocumentEntity::class),
-      ).from(
-        entity(DocumentEntity::class),
-      )
-        .whereAnd(
-          path(DocumentEntity::repositoryId).eq(repositoryId),
-          path(DocumentEntity::status).`in`(status),
-          path(DocumentEntity::publishedAt).lt(Date()),
-          *whereStatements.toTypedArray()
-        ).orderBy(
-          orderBy?.let {
-            path(DocumentEntity::startingAt).asc().nullsLast()
-          } ?: path(DocumentEntity::publishedAt).desc()
+        select(
+          entity(DocumentEntity::class),
+        ).from(
+          entity(DocumentEntity::class),
         )
+          .whereAnd(
+            path(DocumentEntity::repositoryId).eq(repositoryId),
+            path(DocumentEntity::status).`in`(status),
+            path(DocumentEntity::publishedAt).lt(Date()),
+            *whereStatements.toTypedArray()
+          ).orderBy(
+            orderBy?.let {
+              path(DocumentEntity::startingAt).asc().nullsLast()
+            } ?: path(DocumentEntity::publishedAt).desc()
+          )
+      }
     }
   }
 
@@ -164,17 +176,27 @@ class DocumentService {
     return whereStatements
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
-  fun applyRetentionStrategy(corrId: String, repository: RepositoryEntity) {
+  suspend fun applyRetentionStrategy(corrId: String, repositoryId: UUID) {
+    val repository = withContext(Dispatchers.IO) {
+      repositoryDAO.findById(repositoryId).orElseThrow()
+    }
     val retentionSize =
       planConstraintsService.coerceRetentionMaxCapacity(
         repository.retentionMaxCapacity,
         repository.ownerId,
         repository.product
       )
+
     if (retentionSize != null && retentionSize > 0) {
       log.debug("[$corrId] applying retention with maxItems=$retentionSize")
-      documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
+      withContext(Dispatchers.IO) {
+        val transactionTemplate = TransactionTemplate(transactionManager)
+        transactionTemplate.executeWithoutResult {
+          runBlocking {
+            documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
+          }
+        }
+      }
     } else {
       log.debug("[$corrId] no retention with maxItems given")
     }
@@ -185,51 +207,55 @@ class DocumentService {
       repository.product
     )
       ?.let { maxAgeDays ->
-        log.debug("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
-        val maxDate = Date.from(
-          LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()
-        )
-        if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.startingAt) {
-          documentDAO.deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
-            repository.id,
-            maxDate,
-            ReleaseStatus.released
+        withContext(Dispatchers.IO) {
+          log.debug("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
+          val maxDate = Date.from(
+            LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()
           )
-        } else {
-          documentDAO.deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
-            repository.id,
-            maxDate,
-            ReleaseStatus.released
-          )
+          if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.startingAt) {
+            documentDAO.deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+              repository.id,
+              maxDate,
+              ReleaseStatus.released
+            )
+          } else {
+            documentDAO.deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+              repository.id,
+              maxDate,
+              ReleaseStatus.released
+            )
+          }
         }
 
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
-  fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
-    log.info("[$corrId] deleteDocuments $documentIds")
-    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-    if (repository.ownerId != user.id) {
-      throw PermissionDeniedException("current user ist not owner ($corrId)")
-    }
-
-    if (documentIds.`in` != null) {
-      documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
-    } else {
-//      if (documentIds.notIn != null) {
-//        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.notIn`.map { UUID.fromString(it) })
-//      } else {
-      if (documentIds.equals != null) {
-        documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
-      } else {
-        throw IllegalArgumentException("operation not supported")
+  suspend fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+    withContext(Dispatchers.IO) {
+      log.debug("[$corrId] deleteDocuments $documentIds")
+      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      if (repository.ownerId != user.id) {
+        throw PermissionDeniedException("current user ist not owner ($corrId)")
       }
-//      }
 
+      if (documentIds.`in` != null) {
+        documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+      } else {
+        //      if (documentIds.notIn != null) {
+        //        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.notIn`.map { UUID.fromString(it) })
+        //      } else {
+        if (documentIds.equals != null) {
+          documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
+        } else {
+          throw IllegalArgumentException("operation not supported")
+        }
+        //      }
+
+      }
     }
   }
 
-  fun getDocumentFrequency(
+  suspend fun getDocumentFrequency(
     where: WebDocumentsWhereInput,
     groupBy: WebDocumentDateField,
   ): List<DocumentFrequency> {
@@ -259,93 +285,128 @@ class DocumentService {
     }
 
     val context = JpqlRenderContext()
-
-    val q = entityManager.createQuery(query, context)
-    return q.resultList.map { pair -> DocumentFrequency(pair.first.toInt(), pair.second) }
-  }
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun processDocumentPlugins(corrId: String, documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
-    log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
-    documentDAO.findById(documentId).getOrNull()?.let { document ->
-      runBlocking {
-        try {
-          val repository = repositoryDAO.findById(document.repositoryId).orElseThrow()
-          var omitted = false
-          var delayed = false
-          for (job in jobs) {
-            try {
-              if (job.attempt > 10) {
-                throw IllegalArgumentException("max attempts reached")
-              }
-
-              log.debug("[$corrId] executing ${job.executorId} for $documentId")
-              when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
-                is FilterEntityPlugin -> if (!plugin.filterEntity(
-                    corrId,
-                    document.asJsonItem(),
-                    job.executorParams,
-                    0
-                  )
-                ) {
-                  omitted = true
-                  break
-                }
-
-                is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams)
-                else -> throw IllegalArgumentException("Invalid executorId ${job.executorId}")
-              }
-              job.status = PipelineJobStatus.SUCCEEDED
-              job.updateStatus()
-              documentPipelineJobDAO.save(job)
-
-            } catch (e: Exception) {
-              if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-                delayed = true
-                log.debug("[$corrId] delaying (${job.executorId}): ${e.message}")
-
-                val nextRetries = if (e is ResumableHarvestException) {
-                  e.nextRetryAfter.toMillis()
-                } else {
-                  120000
-                }
-                job.coolDownUntil = Date(System.currentTimeMillis() + nextRetries)
-
-                job.attempt += 1
-                documentDAO.save(document)
-                documentPipelineJobDAO.save(job)
-                break
-              }
-            }
-          }
-
-
-          if (omitted) {
-            log.debug("[$corrId] omitted")
-            documentDAO.delete(document)
-          } else {
-            if (!delayed) {
-              forwardToMail(corrId, document, repository)
-              document.status = ReleaseStatus.released
-              log.debug("[$corrId] releasing document")
-              documentDAO.save(document)
-              applyRetentionStrategy(corrId, repository)
-            }
-          }
-
-        } catch (throwable: Throwable) {
-          log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
-          documentDAO.delete(document)
-        }
-      }
-    } ?: run {
-      log.warn("[$corrId] document does not exist")
-      documentPipelineJobDAO.deleteAllByDocumentId(documentId)
+    return withContext(Dispatchers.IO) {
+      val q = entityManager.createQuery(query, context)
+      q.resultList.map { pair -> DocumentFrequency(pair.first.toInt(), pair.second) }
     }
   }
 
-  private fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
-    val mailForwards = mailForwardDAO.findAllByRepositoryId(repository.id)
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  suspend fun processDocumentPlugins(corrId: String, documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+    log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
+    val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
+
+    document?.let {
+      try {
+        val repository = withContext(Dispatchers.IO) {
+          repositoryDAO.findById(document.repositoryId).orElseThrow()
+        }
+        var withError = false
+
+        jobs.takeWhile { job ->
+          try {
+            if (job.attempt > 10) {
+              throw IllegalArgumentException("max attempts reached")
+            }
+
+            when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
+              is FilterEntityPlugin -> if (!plugin.filterEntity(
+                  corrId,
+                  document.asJsonItem(),
+                  job.executorParams,
+                  0
+                )
+              ) {
+                throw FilterMismatchException()
+              }
+
+              is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams)
+              else -> throw IllegalArgumentException("Invalid executorId ${job.executorId}")
+            }
+
+            log.debug("[$corrId] executed ${job.executorId} for $documentId")
+            job.status = PipelineJobStatus.SUCCEEDED
+            job.updateStatus()
+            withContext(Dispatchers.IO) {
+              documentPipelineJobDAO.save(job)
+            }
+            true
+          } catch (e: Exception) {
+            withError = true
+            if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+              delayJob(corrId, job, e, document)
+            } else {
+              if (e !is FilterMismatchException) {
+                log.warn("[${corrId}] ${e.message}")
+              }
+              deleteDocument(corrId, document)
+            }
+            false
+          }
+        }
+
+        if (!withError) {
+          releaseDocument(corrId, document, repository)
+        }
+
+      } catch (throwable: Throwable) {
+        log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
+        deleteDocument(corrId, document)
+      }
+    } ?: withContext(Dispatchers.IO) {
+      log.warn("[$corrId] delete remainging jobs")
+      documentPipelineJobDAO.deleteAllByDocumentId(documentId)
+    }
+
+  }
+
+  private suspend fun DocumentService.releaseDocument(
+      corrId: String,
+      document: DocumentEntity,
+      repository: RepositoryEntity
+  ) {
+//    forwardToMail(corrId, document, repository)
+    document.status = ReleaseStatus.released
+    log.debug("[$corrId] releasing document")
+    withContext(Dispatchers.IO) {
+      documentDAO.save(document)
+    }
+    applyRetentionStrategy(corrId, repository.id)
+  }
+
+  private suspend fun deleteDocument(corrId: String, document: DocumentEntity) {
+    log.debug("[$corrId] delete document ${document.id}")
+    withContext(Dispatchers.IO) {
+      documentDAO.delete(document)
+    }
+  }
+
+  private suspend fun delayJob(
+    corrId: String,
+    job: DocumentPipelineJobEntity,
+    e: Exception,
+    document: DocumentEntity,
+  ) {
+    log.debug("[$corrId] delaying (${job.executorId}): ${e.message}")
+
+    val nextRetries = if (e is ResumableHarvestException) {
+      e.nextRetryAfter.toMillis()
+    } else {
+      120000
+    }
+    job.coolDownUntil = Date(System.currentTimeMillis() + nextRetries)
+
+    job.attempt += 1
+    withContext(Dispatchers.IO) {
+      documentPipelineJobDAO.save(job)
+      documentDAO.save(document)
+    }
+  }
+
+  private suspend fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
+    val mailForwards = withContext(Dispatchers.IO) {
+      mailForwardDAO.findAllByRepositoryId(repository.id)
+    }
     if (mailForwards.isNotEmpty()) {
       val authorizedMailForwards =
         mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
@@ -353,12 +414,12 @@ class DocumentService {
         log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
       } else {
         val (mailFormatter, params) = pluginService.resolveMailFormatter(repository)
-        log.info("[$corrId] using formatter ${mailFormatter::class.java.name}")
+        log.debug("[$corrId] using formatter ${mailFormatter::class.java.name}")
 
         val from = mailService.getNoReplyAddress(repository.product)
         val to = authorizedMailForwards.toTypedArray()
 
-        log.info("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
+        log.debug("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
         mailService.send(
           corrId,
           from,
@@ -370,4 +431,6 @@ class DocumentService {
   }
 
 }
+
+class FilterMismatchException : RuntimeException()
 

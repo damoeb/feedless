@@ -270,7 +270,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const alert = await this.alertCtrl.create({
       header: 'Delete Feed?',
       message: `You won't be able to recover it.`,
-      cssClass: 'fatal-alert',
       buttons: [
         {
           text: 'Cancel',

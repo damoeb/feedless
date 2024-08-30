@@ -1,5 +1,7 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -14,10 +16,12 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 @Profile("!test")
+@Transactional
 class ProductService {
 
   private val log = LoggerFactory.getLogger(ProductService::class.simpleName)
@@ -30,6 +34,9 @@ class ProductService {
 
   @Autowired
   private lateinit var planDAO: PlanDAO
+
+  @Autowired
+  private lateinit var pricedProductDAO: PricedProductDAO
 
   @Autowired
   private lateinit var environment: Environment
@@ -67,14 +74,18 @@ class ProductService {
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
   private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.dev))
 
-  fun findAll(data: ProductsWhereInput): List<ProductEntity> {
-    return data.id?.equals?.let {
-      listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
-    } ?: productDAO.findAllByPartOfOrPartOfIsNull(data.category!!.fromDto())
+  suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
+    return withContext(Dispatchers.IO) {
+      data.id?.equals?.let {
+        listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
+      } ?: productDAO.findAllByPartOfOrPartOfIsNull(data.category!!.fromDto())
+    }
   }
 
-  fun resolvePriceForProduct(productId: UUID, existingUserId: UUID?): Double {
-    val product = productDAO.findById(productId).orElseThrow()
+  suspend fun resolvePriceForProduct(productId: UUID, existingUserId: UUID?): Double {
+    val product = withContext(Dispatchers.IO) {
+      productDAO.findById(productId).orElseThrow()
+    }
     val prices = product.prices.filter { it.validTo?.let { it.time > System.currentTimeMillis() } ?: true }
       .filter { it.validFrom?.let { it.time < System.currentTimeMillis() } ?: true }
 
@@ -86,25 +97,35 @@ class ProductService {
     }
   }
 
-  fun enableCloudProduct(corrId: String, product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
-    val isFree = { product.prices.any { it.price == 0.0 } }
+  suspend fun enableCloudProduct(corrId: String, product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
+
+    val prices = withContext(Dispatchers.IO) {
+      pricedProductDAO.findAllByProductId(product.id)
+    }
+    val isFree = { prices.any { it.price == 0.0 } }
     val isBought = { order?.isPaid == true }
 
     if (isFree() || isBought()) {
 
       // terminate existing plan
-      planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!))?.let {
-        log.info("[$corrId]")
+      val existingPlan = withContext(Dispatchers.IO) {
+        planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!))
+      }
+
+      existingPlan?.let {
+        log.info("[$corrId] terminate existing plan")
         it.terminatedAt = Date()
         planDAO.save(it)
-      } ?: log.info("[$corrId]")
+      }
 
       val plan = PlanEntity()
       plan.productId = product.id
       plan.userId = user.id
       plan.startedAt = Date()
 
-      planDAO.save(plan)
+      withContext(Dispatchers.IO) {
+        planDAO.save(plan)
+      }
     }
   }
 }

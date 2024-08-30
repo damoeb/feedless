@@ -1,10 +1,10 @@
 package org.migor.feedless.community.text.simple
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
-
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.community.CommentEntity
@@ -32,14 +32,16 @@ class EngagementScorerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "0, 0.0",
-    "5, 1.0",
-    "10, 0.5",
-    "15, 0.08",
-    "20, 0.0",
-  ])
-  fun scoreEngagement(repliesCount: Int, expected: Double) {
+  @CsvSource(
+    value = [
+      "0, 0.0",
+      "5, 1.0",
+      "10, 0.5",
+      "15, 0.08",
+      "20, 0.0",
+    ]
+  )
+  fun scoreEngagement(repliesCount: Int, expected: Double) = runTest {
     val comment = mock(CommentEntity::class.java)
     Mockito.`when`(commentGraphService.getReplyCount(any(CommentEntity::class.java))).thenReturn(repliesCount)
     assertThat(scorer.score(comment)).isCloseTo(expected, within(0.01))

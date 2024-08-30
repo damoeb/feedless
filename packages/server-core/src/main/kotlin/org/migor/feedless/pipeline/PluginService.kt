@@ -1,6 +1,8 @@
 package org.migor.feedless.pipeline
 
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.mail.MailProviderService
@@ -45,12 +47,10 @@ class PluginService {
     }
   }
 
-  fun resolveFragmentTransformerById(pluginId: String): FragmentTransformerPlugin? {
-    return transformerPlugins.find { plugin -> plugin.id() == pluginId }
-  }
-
-  fun findAll(): List<FeedlessPlugin> {
-    return entityPlugins.plus(transformerPlugins)
+  suspend fun findAll(): List<FeedlessPlugin> {
+    return withContext(Dispatchers.IO) {
+      entityPlugins.plus(transformerPlugins)
+    }
   }
 
   final inline fun <reified T : FeedlessPlugin> resolveById(id: String): T? {
@@ -59,7 +59,7 @@ class PluginService {
       .firstOrNull()
   }
 
-  fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
+  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
     return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
       .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput())
   }

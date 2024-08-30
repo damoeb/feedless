@@ -1,6 +1,8 @@
 package org.migor.feedless.license
 
 import com.nimbusds.jose.jwk.RSAKey
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.apache.commons.lang3.time.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
@@ -49,7 +51,8 @@ class LicenseServiceTest {
     service.environment = environment
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))
-    licensePayload = LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.feedless)
+    licensePayload =
+      LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.feedless)
   }
 
   @Test
@@ -59,7 +62,7 @@ class LicenseServiceTest {
   }
 
   @Test
-  fun `given a valid license string, it can be parsed`() {
+  fun `given a valid license string, it can be parsed`() = runTest {
     mockPublicKey(thisKeyPair.toRSAPublicKey())
 
     val parsedLicense = service.parseLicense(corrId, createLicenseString())
@@ -67,7 +70,7 @@ class LicenseServiceTest {
     assertThat(parsedLicense).isEqualTo(licensePayload)
   }
 
-  private fun createLicenseString(): String {
+  private suspend fun createLicenseString(): String {
     val licenseStr = service.createLicense(corrId, licensePayload, thisKeyPair)
     assertThat(licenseStr.trim()).isNotBlank()
     assertThat(service.verifyTokenAgainstPubKey(licenseStr, thisKeyPair.toRSAPublicKey())).isTrue()
@@ -75,19 +78,19 @@ class LicenseServiceTest {
   }
 
   @Test
-  fun `given a valid license string and its public key, isValidLicense returns true when valid`() {
+  fun `given a valid license string and its public key, isValidLicense returns true when valid`() = runTest {
     val rsaPublicKey = thisKeyPair.toRSAPublicKey()
     assertThat(service.verifyTokenAgainstPubKey(createLicenseString(), rsaPublicKey)).isTrue()
     assertThat(service.verifyTokenAgainstPubKey("invalid license", rsaPublicKey)).isFalse()
   }
 
   @Test
-  fun `given a valid license, verifyLicense returns true`() {
+  fun `given a valid license, verifyLicense returns true`() = runTest {
     assertThat(service.verifyTokenAgainstPubKey(createLicenseString(), thisKeyPair.toRSAPublicKey())).isTrue()
   }
 
   @Test
-  fun `given an invalid license, verifyLicense returns false`() {
+  fun `given an invalid license, verifyLicense returns false`() = runTest {
     assertThat(service.verifyTokenAgainstPubKey(createLicenseString(), otherKeyPair.toRSAPublicKey())).isFalse()
   }
 
@@ -130,13 +133,13 @@ class LicenseServiceTest {
   }
 
   @Test
-  fun `given a valid license, updateLicense validates license`() {
+  fun `given a valid license, updateLicense validates license`() = runTest {
     service.feedlessPublicKey = thisKeyPair.toRSAPublicKey()
     service.updateLicense(corrId, createLicenseString())
   }
 
   @Test
-  fun `given a valid publicKey, it can be serialized and used`() {
+  fun `given a valid publicKey, it can be serialized and used`() = runTest {
     val privateKeyString: String = thisKeyPair.toRSAPrivateKey().encoodeAsString()
     val publicKeyString: String = thisKeyPair.toRSAPublicKey().encoodeAsString()
     val publicKey = service.decodePublicKey(publicKeyString)
@@ -152,7 +155,7 @@ class LicenseServiceTest {
   }
 
   @Test
-  fun `given valid license and outside trial period, hasValidLicenseOrLicenseNotNeeded returns true`() {
+  fun `given valid license and outside trial period, hasValidLicenseOrLicenseNotNeeded returns true`() = runTest {
     mockAfterTrial()
     mockPublicKey(thisKeyPair.toRSAPublicKey())
     service.updateLicense(corrId, createLicenseString())
@@ -166,7 +169,9 @@ class LicenseServiceTest {
     mockPublicKey(otherKeyPair.toRSAPublicKey())
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      service.updateLicense(corrId, createLicenseString())
+      runBlocking {
+        service.updateLicense(corrId, createLicenseString())
+      }
     }
   }
 

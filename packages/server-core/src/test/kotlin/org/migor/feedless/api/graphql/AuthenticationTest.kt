@@ -3,6 +3,7 @@ package org.migor.feedless.api.graphql
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -33,12 +34,14 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles(profiles = [
-  "test",
-  AppProfiles.api,
-  AppProfiles.database,
-  AppProfiles.authRoot,
-])
+@ActiveProfiles(
+  profiles = [
+    "test",
+    AppProfiles.api,
+    AppProfiles.database,
+    AppProfiles.authRoot,
+  ]
+)
 @MockBeans(
   value = [
     MockBean(PluginService::class),
@@ -47,7 +50,8 @@ import org.testcontainers.junit.jupiter.Testcontainers
     MockBean(OrderService::class),
     MockBean(SourceService::class),
     MockBean(ScrapeService::class)
-])
+  ]
+)
 @Testcontainers
 class AuthenticationTest {
 
@@ -89,7 +93,7 @@ class AuthenticationTest {
   }
 
   @Test
-  fun `authUser works`() {
+  fun `authUser works`() = runTest {
     // given
     val mockUser = UserEntity()
     mockUser.root = true

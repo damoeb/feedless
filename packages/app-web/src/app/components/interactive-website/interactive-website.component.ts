@@ -36,6 +36,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Output()
   loadingChange: EventEmitter<boolean> = new EventEmitter<boolean>(false);
 
+  @Output()
+  segmentChange: EventEmitter<string> = new EventEmitter<string>();
+
   scaleFactor: number = 0.7;
   minScaleFactor: number = 0.5;
   maxScaleFactor: number = 1.3;
@@ -89,7 +92,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
 
   protected readonly parseInt = parseInt;
 
-  viewModeFc = new FormControl<ViewMode>('image');
+  viewModeFc = new FormControl<ViewMode | string>('image');
   viewModeImage: ViewMode = 'image';
   viewModeMarkup: ViewMode = 'markup';
   viewLogs: ViewMode = 'logs';
@@ -118,6 +121,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           this.scrape();
         }),
+      this.viewModeFc.valueChanges.subscribe(value => this.segmentChange.emit(value)),
       this.scrapeController.pickPoint.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
@@ -258,5 +262,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
 
     this.scrapeController.response = scrapeResponse;
     this.changeRef.detectChanges();
+  }
+
+  selectTab(tab: string) {
+    this.viewModeFc.patchValue(tab)
   }
 }

@@ -1,6 +1,7 @@
 package org.migor.feedless.feed
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppProfiles
@@ -87,13 +88,16 @@ class LegacyFeedService {
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
-  fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
+  suspend fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       val sourceId = UUID.fromString(feedId)
-      val feed = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
-      feed.items =
-        documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
-          .map { it.asJsonItem() }
+      val feed = withContext(Dispatchers.IO) {
+        val f = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
+        f.items =
+          documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+            .map { it.asJsonItem() }
+        f
+      }
 
       appendNotifications(corrId, feed)
     } else {
@@ -102,7 +106,7 @@ class LegacyFeedService {
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
-  fun webToFeed(
+  suspend fun webToFeed(
     corrId: String,
     url: String,
     linkXPath: String,
@@ -123,9 +127,7 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeOutput = runBlocking {
-        scrapeService.scrape(corrId, source)
-      }
+      val scrapeOutput = scrapeService.scrape(corrId, source)
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -180,7 +182,7 @@ class LegacyFeedService {
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
-  fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
+  suspend fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       appendNotifications(
         corrId,
@@ -199,9 +201,13 @@ class LegacyFeedService {
 
   // --
 
-  private fun appendNotifications(corrId: String, feed: JsonFeed): JsonFeed {
-    val root = userDAO.findFirstByRootIsTrue()
-    repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
+  private suspend fun appendNotifications(corrId: String, feed: JsonFeed): JsonFeed {
+    val root = withContext(Dispatchers.IO) {
+      userDAO.findFirstByRootIsTrue()
+    }
+    withContext(Dispatchers.IO) {
+      repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)
+    }?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
       val documents = documentService.findAllByRepositoryId(
         repo.id,
@@ -219,7 +225,7 @@ class LegacyFeedService {
     return feed
   }
 
-  private fun legacySupport(): Boolean {
+  private suspend fun legacySupport(): Boolean {
     return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 

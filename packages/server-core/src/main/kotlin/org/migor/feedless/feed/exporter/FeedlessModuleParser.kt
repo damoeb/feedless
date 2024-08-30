@@ -9,7 +9,7 @@ import org.migor.feedless.util.JsonUtil
 import java.util.*
 
 
-class FeedlessModuleParser: ModuleParser {
+class FeedlessModuleParser : ModuleParser {
   override fun getNamespaceUri(): String {
     return FeedlessModuleImpl.URI
   }

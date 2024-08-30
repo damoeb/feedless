@@ -2,6 +2,7 @@ package org.migor.feedless.feed
 
 import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
@@ -60,7 +61,10 @@ class LegacyFeedController {
     "/feed/{feedId}",
     "/feed:{feedId}",
   )
-  fun legacyEntities(@PathVariable("feedId") feedId: String, request: HttpServletRequest): ResponseEntity<String> {
+  suspend fun legacyEntities(
+    @PathVariable("feedId") feedId: String,
+    request: HttpServletRequest
+  ): ResponseEntity<String> = coroutineScope {
     val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(corrId, feedUrl) {
@@ -70,14 +74,14 @@ class LegacyFeedController {
         feedUrl
       )
     }
-    return feed.export("atom")
+    feed.export("atom")
   }
 
   @Tracked
   @GetMapping(
     "/api/feed",
   )
-  fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> {
+  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
     val corrId = newCorrId()
 
     val feedUrl = toFullUrlString(request)
@@ -95,14 +99,14 @@ class LegacyFeedController {
         feedUrl
       )
     }
-    return feed.export(request.param("out", "atom"))
+    feed.export(request.param("out", "atom"))
   }
 
   @Tracked
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
-  fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> {
+  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
     val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(corrId, feedUrl) {
@@ -118,11 +122,7 @@ class LegacyFeedController {
         toFullUrlString(request)
       )
     }
-    return feed.export(request.param("out", "atom"))
-  }
-
-  fun JsonFeed.serialize() {
-
+    feed.export(request.param("out", "atom"))
   }
 
   @Tracked
@@ -132,7 +132,7 @@ class LegacyFeedController {
     "/api/feeds/transform",
     ApiUrls.transformFeed
   )
-  fun transformFeed(request: HttpServletRequest): ResponseEntity<String> {
+  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
     val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(corrId, feedUrl) {
@@ -143,10 +143,14 @@ class LegacyFeedController {
         feedUrl
       )
     }
-    return feed.export(request.param("out", "atom"))
+    feed.export(request.param("out", "atom"))
   }
 
-  private fun resolveFeedCatching(corrId: String, feedUrl: String, feedProvider: () -> JsonFeed): JsonFeed {
+  private suspend fun resolveFeedCatching(
+    corrId: String,
+    feedUrl: String,
+    feedProvider: suspend () -> JsonFeed
+  ): JsonFeed {
     return try {
       val f = feedProvider()
       f

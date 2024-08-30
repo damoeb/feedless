@@ -60,7 +60,7 @@ class TokenProvider {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
 
-  fun createJwtForAnonymous(): Jwt {
+  suspend fun createJwtForAnonymous(): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "anonymous"))).increment()
     log.debug("signedToken for anonymous")
     return encodeJwt(
@@ -73,7 +73,7 @@ class TokenProvider {
     )
   }
 
-  fun createJwtForUser(user: UserEntity): Jwt {
+  suspend fun createJwtForUser(user: UserEntity): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")
     return encodeJwt(
@@ -92,7 +92,7 @@ class TokenProvider {
     )
   }
 
-  fun createJwtForApi(user: UserEntity): Jwt {
+  suspend fun createJwtForApi(user: UserEntity): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for api")
     return encodeJwt(
@@ -110,7 +110,7 @@ class TokenProvider {
     )
   }
 
-  fun createJwtForAgent(securityKey: UserSecretEntity): Jwt {
+  suspend fun createJwtForAgent(securityKey: UserSecretEntity): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
     return encodeJwt(
@@ -127,7 +127,7 @@ class TokenProvider {
     )
   }
 
-  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
+  private suspend fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     val claimsSet = JwtClaimsSet.builder()

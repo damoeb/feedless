@@ -1,6 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -50,38 +50,39 @@ class FulltextPluginTest {
   }
 
   @Test
-  fun `mapEntity calls scrape`() {
-    runBlocking {
-      val source = mock(SourceEntity::class.java)
-      val document = mock(DocumentEntity::class.java)
-      `when`(document.url).thenReturn("https://example.org")
-      `when`(document.source).thenReturn(source)
+  fun `mapEntity calls scrape`() = runTest {
+    val source = mock(SourceEntity::class.java)
+    val document = mock(DocumentEntity::class.java)
+    `when`(document.url).thenReturn("https://example.org")
+    `when`(document.source).thenReturn(source)
 
-      val repository = mock(RepositoryEntity::class.java)
-      `when`(repository.sources).thenReturn(mutableListOf(source))
+    val repository = mock(RepositoryEntity::class.java)
+    `when`(repository.sources).thenReturn(mutableListOf(source))
 
-      val params = PluginExecutionParamsInput(
-        org_feedless_fulltext = FulltextPluginParamsInput(
-          readability = true,
-          inheritParams = true
-        )
+    val params = PluginExecutionParamsInput(
+      org_feedless_fulltext = FulltextPluginParamsInput(
+        readability = true,
+        inheritParams = true
       )
+    )
 
-      `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenReturn(ScrapeOutput(
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenReturn(
+      ScrapeOutput(
         outputs = emptyList(),
         time = 0,
         logs = emptyList()
-      ))
+      )
+    )
 
-      val response = fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params)
+    val response =
+      fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params)
 
-      assertThat(response).isNotNull
-      verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
-    }
+    assertThat(response).isNotNull
+    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
   }
 
   @Test
-  fun `given source actions is empty, merge returns fetchAction param`() {
+  fun `given source actions is empty, merge returns fetchAction param`() = runTest {
     val fetchAction = mock(FetchActionEntity::class.java)
     val sourceActions = listOf<ScrapeActionEntity>()
 
@@ -89,7 +90,7 @@ class FulltextPluginTest {
   }
 
   @Test
-  fun `given source actions contains fetchAction, merge returns fetchAction param`() {
+  fun `given source actions contains fetchAction, merge returns fetchAction param`() = runTest {
     val fetchAction = mock(FetchActionEntity::class.java)
     val sourceActions = listOf<ScrapeActionEntity>(mock(FetchActionEntity::class.java))
 
@@ -97,7 +98,7 @@ class FulltextPluginTest {
   }
 
   @Test
-  fun `given source actions, merge returns actions without extract and execute`() {
+  fun `given source actions, merge returns actions without extract and execute`() = runTest {
     val fetchAction = mock(FetchActionEntity::class.java)
     val sourceFetch = mock(FetchActionEntity::class.java)
     val clickPosition = mock(ClickPositionActionEntity::class.java)

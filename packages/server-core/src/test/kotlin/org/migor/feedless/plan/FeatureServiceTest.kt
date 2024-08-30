@@ -1,5 +1,6 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -72,7 +73,7 @@ class FeatureServiceTest {
   }
 
   @Test
-  fun `given a featureGroup inheritance, feature values will be inherited from parent`() {
+  fun `given a featureGroup inheritance, feature values will be inherited from parent`() = runTest {
     // given
 
     val featureName = FeatureName.scrapeSourceMaxCountActiveInt
@@ -95,7 +96,7 @@ class FeatureServiceTest {
   }
 
   @Test
-  fun `given a featureGroup inheritance, feature values will be overwritten by child`() {
+  fun `given a featureGroup inheritance, feature values will be overwritten by child`() = runTest {
     // given
     val featureNameA = FeatureName.scrapeSourceMaxCountActiveInt
     val featureA = resolveFeature(featureNameA)

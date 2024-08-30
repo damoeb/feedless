@@ -12,6 +12,7 @@ fragment UserFragment on User {
   emailValidated
   firstName
   lastName
+  country
   createdAt
   notificationRepositoryId
   purgeScheduledFor

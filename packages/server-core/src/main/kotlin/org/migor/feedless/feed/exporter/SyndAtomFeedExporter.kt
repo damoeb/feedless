@@ -80,7 +80,8 @@ class SyndAtomFeedExporter {
     val link = SyndLinkImpl()
     link.rel = "self"
 
-    link.href = UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page).build().toUri().toString()
+    link.href =
+      UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page).build().toUri().toString()
     link.type = "application/atom+xml"
 
     val website = SyndLinkImpl()
@@ -93,7 +94,9 @@ class SyndAtomFeedExporter {
     if (!jsonFeed.isLast) {
       val next = SyndLinkImpl()
       next.rel = "next"
-      next.href = UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page + 1).build().toUri().toString()
+      next.href =
+        UriComponentsBuilder.fromHttpUrl(jsonFeed.feedUrl).queryParam("page", jsonFeed.page + 1).build().toUri()
+          .toString()
       next.type = "application/atom+xml"
       links.add(next)
     }

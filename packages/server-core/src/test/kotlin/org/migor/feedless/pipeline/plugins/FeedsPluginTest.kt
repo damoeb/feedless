@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
@@ -29,12 +30,14 @@ import java.util.*
 
 @SpringBootTest
 @ActiveProfiles(profiles = ["test", AppProfiles.scrape])
-@MockBeans(value = [
-  MockBean(UserSecretService::class),
-  MockBean(AgentService::class),
-  MockBean(KotlinJdslJpqlExecutor::class),
-  MockBean(LicenseService::class),
-])
+@MockBeans(
+  value = [
+    MockBean(UserSecretService::class),
+    MockBean(AgentService::class),
+    MockBean(KotlinJdslJpqlExecutor::class),
+    MockBean(LicenseService::class),
+  ]
+)
 class FeedsPluginTest {
 
   @Autowired
@@ -49,17 +52,19 @@ class FeedsPluginTest {
   val corrId = "test";
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "text/xml",
-    "text/rss+xml",
-    "application/rss+xml",
-    "application/rdf+xml",
-    "application/rss+xml",
-    "application/rss+xml; charset=UTF-8",
-    "application/atom+xml",
-    "application/xml"
-  ])
-  fun `given a native feed`(mimeType: String) {
+  @CsvSource(
+    value = [
+      "text/xml",
+      "text/rss+xml",
+      "application/rss+xml",
+      "application/rdf+xml",
+      "application/rss+xml",
+      "application/rss+xml; charset=UTF-8",
+      "application/atom+xml",
+      "application/xml"
+    ]
+  )
+  fun `given a native feed`(mimeType: String) = runTest {
     val data = HttpResponse(
       contentType = mimeType,
       url = "https://test.example",
@@ -79,17 +84,19 @@ class FeedsPluginTest {
     // when
     val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) {}
 
-      // then
+    // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(1)
     assertThat(result.feeds!!.genericFeeds.size).isEqualTo(0)
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "text/html; charset=UTF-8",
-    "text/html",
-  ])
-  fun `given a website`(mimeType: String) {
+  @CsvSource(
+    value = [
+      "text/html; charset=UTF-8",
+      "text/html",
+    ]
+  )
+  fun `given a website`(mimeType: String) = runTest {
     val data = HttpResponse(
       contentType = mimeType,
       url = "https://test.example",
@@ -107,21 +114,25 @@ class FeedsPluginTest {
       paginationXPath = "",
       score = 0.0
     )
-    `when`(genericFeedLocator.locateInDocument(any(String::class.java), any(Document::class.java), any(String::class.java), any(
-      GenericFeedParserOptions::class.java
-    )))
+    `when`(
+      genericFeedLocator.locateInDocument(
+        any(String::class.java), any(Document::class.java), any(String::class.java), any(
+          GenericFeedParserOptions::class.java
+        )
+      )
+    )
       .thenReturn(listOf(mockGenericFeed))
 
     // when
     val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) {}
 
-      // then
+    // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)
     assertThat(result.feeds!!.genericFeeds.size).isEqualTo(1)
   }
 
   @Test
-  fun `given a invalid mime types`() {
+  fun `given a invalid mime types`() = runTest {
     val data = HttpResponse(
       contentType = "application/pdf",
       url = "https://test.example",
@@ -132,7 +143,7 @@ class FeedsPluginTest {
     // when
     val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) { }
 
-      // then
+    // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)
     assertThat(result.feeds!!.genericFeeds.size).isEqualTo(0)
   }

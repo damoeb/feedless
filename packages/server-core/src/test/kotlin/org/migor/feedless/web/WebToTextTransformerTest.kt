@@ -1,5 +1,6 @@
 package org.migor.feedless.web
 
+import kotlinx.coroutines.test.runTest
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,13 +17,13 @@ internal class WebToTextTransformerTest {
   }
 
   @Test
-  fun extractsSimple() {
+  fun extractsSimple() = runTest {
     val actual = extractor.extractText(parse("<app-article>lorem ipsum <b>this</b> or <EM>that</em></app-article>"))
     assertEquals("lorem ipsum this or that", actual)
   }
 
   @Test
-  fun extractsAndPreservesStructure() {
+  fun extractsAndPreservesStructure() = runTest {
     val actual =
       extractor.extractText(parse("<article><header>the title</header><section>lorem ipsum</section> <a href=\"http://google.de\">a link</a> <p>that</p><footer>copyright nobody</footer></article>"))
     assertEquals(

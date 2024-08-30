@@ -76,10 +76,12 @@ class SecurityConfigTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "graphql",
-    "subscriptions",
-  ])
+  @CsvSource(
+    value = [
+      "graphql",
+      "subscriptions",
+    ]
+  )
   fun whenCallingWhitelistedUrl_ThenSuccess(inputPathPrefix: String) {
     val restTemplate = TestRestTemplate()
     val response = restTemplate.postForEntity("${baseEndpoint}/$inputPathPrefix", "", String::class.java)

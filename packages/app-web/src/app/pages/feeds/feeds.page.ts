@@ -45,7 +45,7 @@ export class FeedsPage implements OnInit {
           in: [GqlProductCategory.RssProxy],
         },
       },
-    });
+    }, 'network-only');
     this.repositories.push(...repositories);
     this.changeRef.detectChanges();
   }

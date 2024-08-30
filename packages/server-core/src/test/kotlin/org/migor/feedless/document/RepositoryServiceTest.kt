@@ -1,5 +1,7 @@
 package org.migor.feedless.document
 
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
@@ -52,32 +54,36 @@ class RepositoryServiceTest {
 
   @BeforeEach
   fun beforeEach() {
-    userId = UUID.randomUUID()
-    val user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId)
-    `when`(sessionService.userId()).thenReturn(userId)
-    `when`(sessionService.user(any(String::class.java))).thenReturn(user)
-    `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
-    `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
-      .thenAnswer { it.getArgument(0) }
-  }
-
-  @Test
-  fun `given maxActiveCount is reached, when creating a new repositoru, then return error`() {
-    `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
-      .thenReturn(true)
-
-    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      repositoryService.create(
-        "-", RepositoriesCreateInput(
-          repositories = emptyList()
-        )
-      )
+    runBlocking {
+      userId = UUID.randomUUID()
+      val user = mock(UserEntity::class.java)
+      `when`(user.id).thenReturn(userId)
+      `when`(sessionService.userId()).thenReturn(userId)
+      `when`(sessionService.user(any(String::class.java))).thenReturn(user)
+      `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
+      `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
+        .thenAnswer { it.getArgument(0) }
     }
   }
 
   @Test
-  fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() {
+  fun `given maxActiveCount is reached, when creating a new repositoru, then return error`() = runTest {
+    `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
+      .thenReturn(true)
+
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runBlocking {
+        repositoryService.create(
+          "-", RepositoriesCreateInput(
+            repositories = emptyList()
+          )
+        )
+      }
+    }
+  }
+
+  @Test
+  fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() = runTest {
     `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(Mockito.anyString(), Mockito.any()))
@@ -88,8 +94,8 @@ class RepositoryServiceTest {
         sources = emptyList(),
         product = ProductCategory.rssProxy,
         sinkOptions = SinkOptionsInput(
-          title="",
-          description="",
+          title = "",
+          description = "",
           withShareKey = false
         )
       )
@@ -104,36 +110,38 @@ class RepositoryServiceTest {
   }
 
   @Test
-  fun `given user is owner, updating repository works`() {
+  fun `given user is owner, updating repository works`() = runTest {
     val ssId = UUID.randomUUID()
     val data = RepositoryUpdateDataInput()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(userId)
 
-    `when`(repositoryDAO.findById(any(UUID::class.java)))
-      .thenReturn(Optional.of(mockRepository))
+    `when`(repositoryDAO.findByIdWithSources(any(UUID::class.java)))
+      .thenReturn(mockRepository)
 
     val update = repositoryService.update(corrId, ssId, data)
     assertThat(update).isNotNull()
   }
 
   @Test
-  fun `given user is not owner, updating repository fails`() {
+  fun `given user is not owner, updating repository fails`() = runTest {
     val ssId = UUID.randomUUID()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
 
-    `when`(repositoryDAO.findById(any(UUID::class.java)))
-      .thenReturn(Optional.of(mockRepository))
+    `when`(repositoryDAO.findByIdWithSources(any(UUID::class.java)))
+      .thenReturn(mockRepository)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       val mockInput = RepositoryUpdateDataInput()
-      repositoryService.update(corrId, ssId, mockInput)
+      runBlocking {
+        repositoryService.update(corrId, ssId, mockInput)
+      }
     }
   }
 
   @Test
-  fun `given user is not owner, deleting repository fails`() {
+  fun `given user is not owner, deleting repository fails`() = runTest {
     val ssId = UUID.randomUUID()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
@@ -142,7 +150,9 @@ class RepositoryServiceTest {
       .thenReturn(Optional.of(mockRepository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      repositoryService.delete(corrId, ssId)
+      runBlocking {
+        repositoryService.delete(corrId, ssId)
+      }
     }
   }
 }

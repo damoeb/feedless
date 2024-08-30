@@ -40,7 +40,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun listed() = false
-  override fun transformFragment(
+  override suspend fun transformFragment(
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
@@ -48,13 +48,15 @@ class FeedsPlugin : FragmentTransformerPlugin {
   ): FragmentOutput {
     log.debug("[$corrId] transformFragment")
 
-    val feedMimeTypes = arrayOf("text/xml",
+    val feedMimeTypes = arrayOf(
+      "text/xml",
       "text/rss+xml",
       "application/rss+xml",
       "application/rdf+xml",
       "application/rss+xml",
       "application/atom+xml",
-      "application/xml")
+      "application/xml"
+    )
 
     val mimeType = data.contentType.lowercase()
     logger("Found mimeType=$mimeType")
@@ -90,7 +92,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
 
   override fun name(): String = "Feeds"
 
-  private fun extractFeeds(
+  private suspend fun extractFeeds(
     corrId: String,
     document: Document,
     url: String,

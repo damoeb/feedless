@@ -1,10 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
+val versions = mapOf(
+  "kotlinxCoroutines" to "1.7.2",
+  "dgs-framework" to "8.7.1",
+)
+
 plugins {
-  id("org.springframework.boot") version "3.0.13"
+  // https://github.com/Netflix/dgs-framework/blob/v8.7.1/graphql-dgs-client/dependencies.lock
+  id("org.springframework.boot") version "3.2.5"
+  id("com.netflix.dgs.codegen") version "6.3.0"
+
   id("com.adarshr.test-logger") version "3.2.0"
-  id("com.netflix.dgs.codegen") version "6.1.5"
   id("org.ajoberstar.grgit")
   id("org.javacc.javacc") version "3.0.2"
 //  id("com.google.protobuf") version "0.9.2"
@@ -41,20 +48,14 @@ java {
 
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
-val versions = mapOf(
-  "kotlinxCoroutines" to "1.6.0",
-//  "grpc" to "1.53.0",
-  "dgs" to "6.0.5",
-  "languagetool" to "6.4"
-)
-
 dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["kotlinxCoroutines"]}")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions["kotlinxCoroutines"]}")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")
+//  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework:spring-aspects")
@@ -70,7 +71,7 @@ dependencies {
   implementation("org.apache.pdfbox:pdfbox-tools:2.0.29")
   implementation("net.sf.cssbox:pdf2dom:2.0.3")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
-  implementation("org.redundent:kotlin-xml-builder:1.7.4")
+//  implementation("org.redundent:kotlin-xml-builder:1.7.4")
   // https://mvnrepository.com/artifact/org.apache.commons/commons-text
   implementation("org.apache.commons:commons-text:1.10.0")
   implementation("org.sejda.webp-imageio:webp-imageio-sejda:0.1.0")
@@ -80,11 +81,11 @@ dependencies {
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")
   implementation("org.springframework.boot:spring-boot-starter-websocket")
   implementation("org.springframework.security:spring-security-messaging")
-  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${versions["dgs"]}"))
-  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:${versions["dgs"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:${versions["dgs"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
+  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${versions["dgs-framework"]}"))
+  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:${versions["dgs-framework"]}")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:${versions["dgs-framework"]}")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs-framework"]}")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs-framework"]}")
   testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
 //  implementation("org.mapstruct:mapstruct:1.5.5.Final")
 //  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
@@ -121,9 +122,8 @@ dependencies {
   implementation("io.projectreactor:reactor-core:3.5.0")
 
   // database
-  implementation("org.postgresql:postgresql:42.7.3")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.3")
-  implementation("org.hibernate.orm:hibernate-spatial:6.1.7.Final")
+  implementation("org.postgresql:postgresql:42.7.4")
+  implementation("org.hibernate.orm:hibernate-spatial:6.4.10.Final")
   // https://kotlin-jdsl.gitbook.io/docs/jpql-with-kotlin-jdsl/expressions
   implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.1")
   implementation("com.linecorp.kotlin-jdsl:jpql-render:3.5.1")

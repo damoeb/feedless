@@ -25,10 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 
 @Service
 @Profile(AppProfiles.scrape)
+@Transactional
 class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
@@ -56,6 +58,8 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     request.title = "Feed from ${document.url}"
     val fetchAction = FetchActionEntity()
     fetchAction.url = document.url
+
+
     val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
     if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
       log.debug("[$corrId] with inheritParams")
@@ -82,7 +86,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     return document
   }
 
-  fun mergeWithSourceActions(
+  suspend fun mergeWithSourceActions(
     fetchAction: FetchActionEntity,
     sourceActions: List<ScrapeActionEntity>
   ): List<ScrapeActionEntity> {
@@ -98,17 +102,18 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     }
   }
 
-  override fun transformFragment(
-      corrId: String,
-      action: ExecuteActionEntity,
-      data: HttpResponse,
-      logger: (String) -> Unit,
+  override suspend fun transformFragment(
+    corrId: String,
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+    logger: (String) -> Unit,
   ): FragmentOutput {
     val markup = data.responseBody.toString(StandardCharsets.UTF_8)
     return FragmentOutput(
       fragmentName = "",
       items = listOf(
-        webToArticleTransformer.fromHtml(markup, data.url)      ),
+        webToArticleTransformer.fromHtml(markup, data.url)
+      ),
     )
   }
 }

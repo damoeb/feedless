@@ -1,9 +1,13 @@
 package org.migor.feedless.attachment
 
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,15 +35,17 @@ class AttachmentController {
   @GetMapping(
     "/attachment/{attachmentId}",
   )
-  fun attachmentById(
+  suspend fun attachmentById(
     request: HttpServletRequest,
     @PathVariable("attachmentId") attachmentId: String,
-  ): ResponseEntity<ByteArray> {
+  ): ResponseEntity<ByteArray> = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET attachmentId id=$attachmentId")
-    val attachment = attachmentService.findById(attachmentId)
+    val attachment = withContext(Dispatchers.IO) {
+      attachmentService.findById(attachmentId)
+    }
 
-    return if (attachment.isPresent) {
+    if (attachment.isPresent) {
       val a = attachment.get()
       ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, a.contentType)
@@ -52,14 +58,14 @@ class AttachmentController {
   @GetMapping(
     "/attachment/proxy",
   )
-  fun attachmentProxy(
+  suspend fun attachmentProxy(
     request: HttpServletRequest,
     @RequestParam("url") url: String,
-  ): ResponseEntity<ByteArray> {
+  ): ResponseEntity<ByteArray> = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET proxy attachment url=$url")
     val attachment = httpService.httpGet(corrId, url, 200)
-    return ResponseEntity.ok()
+    ResponseEntity.ok()
       .header(HttpHeaders.CONTENT_TYPE, attachment.contentType)
       .body(attachment.responseBody)
   }

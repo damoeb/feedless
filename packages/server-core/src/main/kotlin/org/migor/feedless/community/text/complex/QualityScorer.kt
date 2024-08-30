@@ -50,7 +50,7 @@ class QualityScorer {
   @Autowired
   private lateinit var languageService: LanguageService
 
-  fun quality(comment: CommentEntity, w: QualityWeights): Double {
+  suspend fun quality(comment: CommentEntity, w: QualityWeights): Double {
     /*
     Length: Let L be the length of the post or comment (e.g., number of characters or words).
 Engagement: Let E be a measure of engagement, such as the number of upvotes, replies, or shares.

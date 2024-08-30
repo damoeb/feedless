@@ -39,7 +39,7 @@ class ScoreService {
   @Autowired
   private lateinit var originalityScorer: OriginalityScorer
 
-  fun score(comment: CommentEntity, weights: ScoreWeights): Double {
+  suspend fun score(comment: CommentEntity, weights: ScoreWeights): Double {
     return arrayOf(
       civilityScorer.civility(comment, weights.civility),
       qualityScorer.quality(comment, weights.quality),

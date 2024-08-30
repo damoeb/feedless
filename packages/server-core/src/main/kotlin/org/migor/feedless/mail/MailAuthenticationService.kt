@@ -1,6 +1,10 @@
 package org.migor.feedless.mail
 
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
@@ -56,11 +60,11 @@ class MailAuthenticationService {
   @Autowired
   private lateinit var oneTimePasswordService: OneTimePasswordService
 
-  fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
+  suspend fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter ->
-      run {
+      CoroutineScope(Dispatchers.Default).launch {
         try {
           if (featureService.isDisabled(FeatureName.canLogin, null)) {
             throw UnavailableException("login is deactivated by feature flag")
@@ -95,39 +99,38 @@ class MailAuthenticationService {
     }
   }
 
-  private fun resolveUserByMail(corrId: String, data: AuthViaMailInput): UserEntity? {
-    return userDAO.findByEmail(data.email) ?: if (data.allowCreate) {
+  private suspend fun resolveUserByMail(corrId: String, data: AuthViaMailInput): UserEntity? {
+    return withContext(Dispatchers.IO) { userDAO.findByEmail(data.email) } ?: if (data.allowCreate) {
       createUser(corrId, data.email)
     } else {
       null
     }
   }
 
-  private fun createUser(corrId: String, email: String): UserEntity {
+  private suspend fun createUser(corrId: String, email: String): UserEntity {
     return userService.createUser(corrId, email)
   }
 
-  fun confirmAuthCode(corrId: String, codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
+  suspend fun confirmAuthCode(corrId: String, codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
     val otpId = UUID.fromString(codeInput.otpId)
-    val otp = oneTimePasswordDAO.findById(otpId)
+    val otp = withContext(Dispatchers.IO) {
+      oneTimePasswordDAO.findById(otpId).orElseThrow()
+    }
 
-    otp.ifPresentOrElse({
-      if (isOtpExpired(it)) {
-        throw PermissionDeniedException("code expired. Please restart authentication ($corrId)")
-      }
-      if (it.password != codeInput.code) {
-        throw PermissionDeniedException("invalid code ($corrId)")
-      }
+    if (isOtpExpired(otp)) {
+      throw PermissionDeniedException("code expired. Please restart authentication ($corrId)")
+    }
+    if (otp.password != codeInput.code) {
+      throw PermissionDeniedException("invalid code ($corrId)")
+    }
 
+    withContext(Dispatchers.IO) {
       oneTimePasswordDAO.deleteById(otpId)
+    }
 
-      val jwt = tokenProvider.createJwtForUser(it.user!!)
+    val jwt = tokenProvider.createJwtForUser(otp.user!!)
 
-      response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
-    },
-      {
-        log.error("confirmAuthCode failed: otp not found ($corrId)")
-      })
+    response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
   }
 
   private fun isOtpExpired(otp: OneTimePasswordEntity) =

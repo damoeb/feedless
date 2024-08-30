@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -98,8 +99,9 @@ class ScrapeServiceTest {
 
   @BeforeEach
   fun setUp() {
-    val httpResponse = HttpResponse(
-      "text/html", "https://base-url.example", 200, """<!DOCTYPE html>
+    runBlocking {
+      val httpResponse = HttpResponse(
+        "text/html", "https://base-url.example", 200, """<!DOCTYPE html>
 <html lang="en-US">
 <head>
   <title>HTML Examples</title>
@@ -110,72 +112,68 @@ class ScrapeServiceTest {
   </body>
 </html>
 """.toByteArray()
+      )
+      `when`(
+        httpService.httpGetCaching(
+          any(String::class.java),
+          any(String::class.java),
+          any(Int::class.java),
+          anyMap()
+        )
+      ).thenReturn(httpResponse)
+        .thenReturn(httpResponse)
+      fetchAction = mock(FetchActionEntity::class.java)
+      `when`(fetchAction.url).thenReturn("http://action.url")
+    }
+  }
+
+  @Test
+  fun `fetch action calls httpService`() = runTest {
+    scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction)))
+
+    verify(httpService, times(1)).httpGetCaching(
+      any(String::class.java),
+      any(String::class.java),
+      any(Int::class.java),
+      anyMap()
     )
-    `when`(
-      httpService.httpGetCaching(
-        any(String::class.java),
-        any(String::class.java),
-        any(Int::class.java),
-        anyMap()
-      )
-    ).thenReturn(httpResponse)
-      .thenReturn(httpResponse)
-    fetchAction = mock(FetchActionEntity::class.java)
-    `when`(fetchAction.url).thenReturn("http://action.url")
   }
 
   @Test
-  fun `fetch action calls httpService`() {
-    runBlocking {
-      scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction)))
+  fun `header action will provide headers for next fetchAction`() = runTest {
+    val headerAction = mock(HeaderActionEntity::class.java)
+    val headerName = "content-type"
+    val headerValue = "application/json"
+    `when`(headerAction.name).thenReturn(headerName)
+    `when`(headerAction.value).thenReturn(headerValue)
+    scrapeService.scrape(corrId, sourceWithActions(listOf(headerAction, fetchAction)))
 
-      verify(httpService, times(1)).httpGetCaching(
-        any(String::class.java),
-        any(String::class.java),
-        any(Int::class.java),
-        anyMap()
-      )
+    verify(httpService, times(1)).httpGetCaching(
+      any(String::class.java),
+      any(String::class.java),
+      any(Int::class.java),
+      eq(mapOf(headerName to headerValue))
+    )
+  }
+
+  @Test
+  fun `purge action removes elements specified by xpath`() = runTest {
+    val purgeAction = mock(DomActionEntity::class.java)
+    `when`(purgeAction.event).thenReturn(DomEventType.purge)
+    `when`(purgeAction.xpath).thenReturn("//title")
+
+    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)))
+    val last = scrapeResponse.outputs.last()
+
+    val html = { v: String ->
+      val document = Jsoup.parse(v)
+      document.outputSettings(Document.OutputSettings().indentAmount(0))
+      document.html()
     }
-  }
 
-  @Test
-  fun `header action will provide headers for next fetchAction`() {
-    runBlocking {
-      val headerAction = mock(HeaderActionEntity::class.java)
-      val headerName = "content-type"
-      val headerValue = "application/json"
-      `when`(headerAction.name).thenReturn(headerName)
-      `when`(headerAction.value).thenReturn(headerValue)
-      scrapeService.scrape(corrId, sourceWithActions(listOf(headerAction, fetchAction)))
-
-      verify(httpService, times(1)).httpGetCaching(
-        any(String::class.java),
-        any(String::class.java),
-        any(Int::class.java),
-        eq(mapOf(headerName to headerValue))
-      )
-    }
-  }
-
-  @Test
-  fun `purge action removes elements specified by xpath`() {
-    runBlocking {
-      val purgeAction = mock(DomActionEntity::class.java)
-      `when`(purgeAction.event).thenReturn(DomEventType.purge)
-      `when`(purgeAction.xpath).thenReturn("//title")
-
-      val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)))
-      val last = scrapeResponse.outputs.last()
-
-      val html = { v: String ->
-        val document = Jsoup.parse(v)
-        document.outputSettings(Document.OutputSettings().indentAmount(0))
-        document.html()
-      }
-
-      assertThat(html(last.fragment!!.fragments!![0].html!!.data)).isEqualTo(
-        html(
-          """<!doctype html>
+    assertThat(html(last.fragment!!.fragments!![0].html!!.data)).isEqualTo(
+      html(
+        """<!doctype html>
   <html lang="en-US">
    <head>
     <meta name="theme-color" content="#ffffff">
@@ -183,9 +181,8 @@ class ScrapeServiceTest {
    <body><a href="https://base-url.example/foo">Link</a>
    </body>
   </html>"""
-        )
       )
-    }
+    )
   }
 
 //  @Test
@@ -194,19 +191,17 @@ class ScrapeServiceTest {
 //  }
 
   @Test
-  fun `extract action`() {
-    runBlocking {
-      val extractAction = mock(ExtractXpathActionEntity::class.java)
-      `when`(extractAction.xpath).thenReturn("//title")
-      `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
+  fun `extract action`() = runTest {
+    val extractAction = mock(ExtractXpathActionEntity::class.java)
+    `when`(extractAction.xpath).thenReturn("//title")
+    `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
 
-      val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)))
-      val last = scrapeResponse.outputs.last()
+    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)))
+    val last = scrapeResponse.outputs.last()
 
-      val fragment = last.fragment!!.fragments!![0]
-      assertThat(fragment.html!!.data).isEqualTo("<title>HTML Examples</title>")
-      assertThat(fragment.text).isNull()
-    }
+    val fragment = last.fragment!!.fragments!![0]
+    assertThat(fragment.html!!.data).isEqualTo("<title>HTML Examples</title>")
+    assertThat(fragment.text).isNull()
   }
 //
 //  @Test

@@ -1,5 +1,7 @@
 package org.migor.feedless.source
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.ClickPositionActionEntity
@@ -20,7 +22,6 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -40,14 +41,17 @@ class SourceService {
   private lateinit var repositoryHarvester: RepositoryHarvester
 
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun processSourcePipeline(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+  @Transactional
+  suspend fun processSourcePipeline(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
     log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
-    val source = sourceDAO.findById(sourceId).orElseThrow()
 
     val job = jobs.first()
     job.status = PipelineJobStatus.IN_PROGRESS
-    sourcePipelineJobDAO.save(job)
+
+    val source = withContext(Dispatchers.IO) {
+      sourcePipelineJobDAO.save(job)
+      sourceDAO.findById(sourceId).orElseThrow()
+    }
 
     try {
       if (job.attempt > 3) {
@@ -72,7 +76,9 @@ class SourceService {
       job.logs = e.message
     }
     try {
-      sourcePipelineJobDAO.save(job)
+      withContext(Dispatchers.IO) {
+        sourcePipelineJobDAO.save(job)
+      }
     } catch (e: Exception) {
       log.warn("[$corrId] ${e.message}]", e)
     }
@@ -80,18 +86,20 @@ class SourceService {
 
   private fun patchRequestUrl(source: SourceEntity, url: String): SourceEntity {
     val newSource = source.clone()
-    newSource.actions = source.actions.mapNotNull { when(it) {
-      is FetchActionEntity -> it.clone()
-      is ExecuteActionEntity -> it.clone()
-      is ClickPositionActionEntity -> it.clone()
-      is ClickXpathActionEntity -> it.clone()
-      is DomActionEntity -> it.clone()
-      is ExtractBoundingBoxActionEntity -> it.clone()
-      is ExtractXpathActionEntity -> it.clone()
-      is HeaderActionEntity -> it.clone()
-      is WaitActionEntity -> it.clone()
-      else -> null
-    } }.toMutableList()
+    newSource.actions = source.actions.mapNotNull {
+      when (it) {
+        is FetchActionEntity -> it.clone()
+        is ExecuteActionEntity -> it.clone()
+        is ClickPositionActionEntity -> it.clone()
+        is ClickXpathActionEntity -> it.clone()
+        is DomActionEntity -> it.clone()
+        is ExtractBoundingBoxActionEntity -> it.clone()
+        is ExtractXpathActionEntity -> it.clone()
+        is HeaderActionEntity -> it.clone()
+        is WaitActionEntity -> it.clone()
+        else -> null
+      }
+    }.toMutableList()
 
     val fetchAction = newSource.actions.filterIsInstance<FetchActionEntity>().first()
     fetchAction.url = url

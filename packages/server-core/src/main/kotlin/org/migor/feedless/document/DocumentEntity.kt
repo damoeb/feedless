@@ -1,6 +1,5 @@
 package org.migor.feedless.document
 
-import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -21,9 +20,9 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.hibernate.annotations.Type
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.annotation.AnnotationEntity
 import org.migor.feedless.api.isHtml
@@ -43,6 +42,7 @@ import org.migor.feedless.repository.classifyDuration
 import org.migor.feedless.source.SourceEntity
 import org.springframework.context.annotation.Lazy
 import java.nio.charset.StandardCharsets
+import java.sql.Types
 import java.util.*
 
 @Entity
@@ -84,7 +84,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
   open var latLon: Point? = null
 
-  @Type(StringArrayType::class)
+  @JdbcTypeCode(Types.ARRAY)
   @Column(name = "tags", columnDefinition = "text[]")
   open var tags: Array<String>? = emptyArray()
 
@@ -92,12 +92,13 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(columnDefinition = "bytea", name = "content_raw")
   open var contentRaw: ByteArray? = null
 
-  @Column(columnDefinition = "TEXT", name = "content_text", nullable = false)
+  @JdbcTypeCode(Types.LONGVARCHAR)
+  @Column(name = "content_text", nullable = false)
   open lateinit var contentText: String
 
-  @Column(columnDefinition = "TEXT", name = "content_html")
+  @JdbcTypeCode(Types.LONGVARCHAR)
+  @Column(name = "content_html")
   open var contentHtml: String? = null
-
 
   @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "image_url")

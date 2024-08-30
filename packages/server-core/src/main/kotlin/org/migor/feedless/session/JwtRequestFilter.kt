@@ -6,6 +6,7 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
@@ -31,9 +32,12 @@ class JwtRequestFilter : Filter {
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     if (request is HttpServletRequest && response is HttpServletResponse) {
-      runCatching {
-        val token = authService.interceptToken(request)
-        SecurityContextHolder.getContext().authentication = token
+      runBlocking {
+        runCatching {
+          val token = authService.interceptToken(request)
+
+          SecurityContextHolder.getContext().authentication = token
+        }
       }
       val attributes = ServletRequestAttributes(request)
       val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()

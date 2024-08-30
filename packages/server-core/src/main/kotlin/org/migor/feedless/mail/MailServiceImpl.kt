@@ -1,6 +1,8 @@
 package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.pipeline.plugins.MailAttachment
@@ -97,11 +99,13 @@ class MailServiceImpl : MailService {
     return javaMailSender.createMimeMessage()
   }
 
-  override fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
-    mailForwardDAO.findById(mailForwardId).ifPresent {
-      it.authorized = authorize
-      it.authorizedAt = Date()
-      mailForwardDAO.save(it)
+  override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
+    withContext(Dispatchers.IO) {
+      mailForwardDAO.findById(mailForwardId).orElseThrow()?.let {
+        it.authorized = authorize
+        it.authorizedAt = Date()
+        mailForwardDAO.save(it)
+      }
     }
   }
 

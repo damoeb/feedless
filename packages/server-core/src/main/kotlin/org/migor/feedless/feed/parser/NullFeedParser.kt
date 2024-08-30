@@ -13,7 +13,7 @@ class NullFeedParser : FeedBodyParser {
     return true
   }
 
-  override fun process(corrId: String, response: HttpResponse): JsonFeed {
+  override suspend fun process(corrId: String, response: HttpResponse): JsonFeed {
     throw IllegalArgumentException("No feed parser found for ${response.contentType} ($corrId)")
   }
 }

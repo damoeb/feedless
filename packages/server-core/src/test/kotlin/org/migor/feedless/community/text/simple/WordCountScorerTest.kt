@@ -24,14 +24,16 @@ class WordCountScorerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "1, 0.0",
-    "8, 0.28",
-    "53, 0.99",
-    "133, 0.7",
-    "500, 0.6",
-    "600, 0.59",
-  ])
+  @CsvSource(
+    value = [
+      "1, 0.0",
+      "8, 0.28",
+      "53, 0.99",
+      "133, 0.7",
+      "500, 0.6",
+      "600, 0.59",
+    ]
+  )
   fun scoreWordCount(input: Int, expected: Double) {
     assertThat(scorer.score(ofWords(input), Locale.ENGLISH)).isCloseTo(expected, within(0.01))
   }

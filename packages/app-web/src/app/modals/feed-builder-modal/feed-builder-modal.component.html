@@ -11,6 +11,7 @@
 <ion-content>
   <app-feed-builder
     [hideSearchBar]="false"
+    [hideCustomizeFeed]="true"
     [submitButtonText]="submitButtonText"
     [scrapeRequest]="scrapeRequest"
     (selectedRepositoryChanged)="handleRepository($event)"

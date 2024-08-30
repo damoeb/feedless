@@ -16,13 +16,13 @@ class PdfService {
 
   private val log = LoggerFactory.getLogger(PdfService::class.simpleName)
 
-  fun toHTML(corrId: String, file: File): String {
+  suspend fun toHTML(corrId: String, file: File): String {
     file.inputStream().use { inputStream ->
       return toHTML(corrId, inputStream)
     }
   }
 
-  private fun toHTML(corrId: String, inputStream: InputStream): String {
+  private suspend fun toHTML(corrId: String, inputStream: InputStream): String {
     PDDocument.load(inputStream).use { pdf ->
       val parser = PDFDomTree()
       ByteArrayOutputStream().use { baos ->

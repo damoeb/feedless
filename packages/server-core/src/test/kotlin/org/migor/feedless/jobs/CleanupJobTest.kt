@@ -29,23 +29,23 @@ class CleanupJobTest {
   lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
   @InjectMocks
-  lateinit var cleanupJob: CleanupJob
+  lateinit var cleanupExecutor: CleanupExecutor
 
   @Test
   fun `executeCleanup removes oneTimePassword`() {
-    cleanupJob.executeCleanup()
+    cleanupExecutor.executeCleanup()
     Mockito.verify(oneTimePasswordDAO, times(1)).deleteAllByValidUntilBefore(any(Date::class.java))
   }
 
   @Test
   fun `executeCleanup removes sourcePipelineJobs`() {
-    cleanupJob.executeCleanup()
+    cleanupExecutor.executeCleanup()
     Mockito.verify(sourcePipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(Date::class.java))
   }
 
   @Test
   fun `executeCleanup removes documentPipelineJobs`() {
-    cleanupJob.executeCleanup()
+    cleanupExecutor.executeCleanup()
     Mockito.verify(documentPipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(Date::class.java))
   }
 }

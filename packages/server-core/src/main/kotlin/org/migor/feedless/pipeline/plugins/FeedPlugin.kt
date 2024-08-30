@@ -41,11 +41,11 @@ class FeedPlugin : FragmentTransformerPlugin {
   override fun id(): String = FeedlessPlugins.org_feedless_feed.name
   override fun listed() = true
 
-  override fun transformFragment(
-      corrId: String,
-      action: ExecuteActionEntity,
-      data: HttpResponse,
-      logger: (String) -> Unit,
+  override suspend fun transformFragment(
+    corrId: String,
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+    logger: (String) -> Unit,
   ): FragmentOutput {
     val executorParams = action.executorParams!!
     log.debug("[$corrId] transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")

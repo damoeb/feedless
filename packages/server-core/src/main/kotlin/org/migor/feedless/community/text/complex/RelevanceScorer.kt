@@ -24,7 +24,7 @@ class RelevanceScorer {
   lateinit var commentGraphService: CommentGraphService
 
 
-  fun relevance(comment: CommentEntity, w: RelevanceWeights): Double {
+  suspend fun relevance(comment: CommentEntity, w: RelevanceWeights): Double {
     /*
 Keyword Analysis: Let K be a score indicating the presence of relevant keywords or phrases.
 Contextual Understanding: Let CU be a score indicating the contextual understanding of the content.

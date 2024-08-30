@@ -1,6 +1,9 @@
 package org.migor.feedless.api.http
 
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.CookieProvider
@@ -36,18 +39,24 @@ class TestingEndpoint {
 
 
   @GetMapping("testing/create-token")
-  fun createTestToken(response: HttpServletResponse) {
-    val user = userDAO.findFirstByRootIsTrue() ?: throw IllegalArgumentException("root user not found")
+  suspend fun createTestToken(response: HttpServletResponse) = coroutineScope {
+    val user = withContext(Dispatchers.IO) {
+      userDAO.findFirstByRootIsTrue() ?: throw IllegalArgumentException("root user not found")
+    }
     if (!user.hasAcceptedTerms) {
       user.hasAcceptedTerms = true
       user.acceptedTermsAt = Timestamp.from(Date().toInstant())
-      userDAO.save(user)
+      withContext(Dispatchers.IO) {
+        userDAO.save(user)
+      }
     }
     response.addCookie(cookieProvider.createTokenCookie("-", tokenProvider.createJwtForUser(user)))
   }
 
   @GetMapping("/testing/file/{file}")
-  fun staticFile(@PathVariable file: String): ResponseEntity<String> {
-    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:test-data/$file").toPath()))
+  suspend fun staticFile(@PathVariable file: String): ResponseEntity<String> = coroutineScope {
+    withContext(Dispatchers.IO) {
+      ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:test-data/$file").toPath()))
+    }
   }
 }

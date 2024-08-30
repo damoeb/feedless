@@ -7,6 +7,8 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.data.jpa.enums.toDto
@@ -14,12 +16,12 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.LocalizedLicense
 import org.migor.feedless.generated.types.UpdateLicenseInput
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 
@@ -35,12 +37,12 @@ class LinceseResolver {
   @Autowired
   private lateinit var licenseService: LicenseService
 
-  @DgsMutation
+  @DgsMutation(field = DgsConstants.MUTATION.UpdateLicense)
   suspend fun updateLicense(
     @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     dfe: DataFetchingEnvironment,
     @InputArgument data: UpdateLicenseInput,
-  ): LocalizedLicense = coroutineScope {
+  ): LocalizedLicense = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.debug("[$corrId] updateLicense")
 
@@ -48,8 +50,8 @@ class LinceseResolver {
     getLicense()
   }
 
-  @DgsData(parentType = DgsConstants.SERVERSETTINGS.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @DgsData(parentType = DgsConstants.SERVERSETTINGS.TYPE_NAME, field = DgsConstants.SERVERSETTINGS.License)
+  @Transactional
   suspend fun license(dfe: DgsDataFetchingEnvironment): LocalizedLicense = coroutineScope {
     getLicense()
   }

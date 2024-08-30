@@ -1,8 +1,8 @@
-.popup-floater {
+.marked-border-bottom {
   box-shadow: 0px -20px 25px -8px var(--ion-item-background);
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-  border-top: 2px solid var(--app-foreground);
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  border-bottom: 2px solid var(--app-foreground);
 
   ion-input {
     --color: var(--app-foreground);
@@ -12,6 +12,13 @@
     cursor: pointer;
     font-weight: bold;
   }
+}
+
+.marked-border-top {
+  box-shadow: 0px -20px 25px -8px var(--ion-item-background);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  border-top: 2px solid var(--app-foreground);
 }
 
 ion-content::part(scroll) {

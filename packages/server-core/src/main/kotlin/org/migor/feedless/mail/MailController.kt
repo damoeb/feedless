@@ -1,6 +1,7 @@
 package org.migor.feedless.mail
 
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.migor.feedless.util.HttpUtil.createCorrId
@@ -28,15 +29,15 @@ class MailController {
   @GetMapping(
     "${mailForwardingAllow}/{mailForwardId}",
   )
-  fun mailForwardingAllow(
+  suspend fun mailForwardingAllow(
     request: HttpServletRequest,
     @PathVariable("mailForwardId") mailForwardId: String,
-  ): ResponseEntity<String> {
+  ): ResponseEntity<String> = coroutineScope {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET authorizeMailForward id=$mailForwardId")
     mailService.updateMailForwardById(UUID.fromString(mailForwardId), true)
 
-    return ResponseEntity.ok()
+    ResponseEntity.ok()
       .body(templateService.renderTemplate(corrId, MailTrackerAuthorizedTemplate()))
   }
 }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
@@ -37,15 +38,15 @@ class MailAuthResolver {
   private lateinit var authService: AuthService
 
   @DgsSubscription
-  fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {
+  suspend fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> = coroutineScope {
     val corrId = CryptUtil.newCorrId()
     log.debug("[$corrId] authViaMail ${data.product}")
-    this.authService.decodeToken(data.token)
-    return mailAuthenticationService.authenticateUsingMail(corrId, data)
+    authService.decodeToken(data.token)
+    mailAuthenticationService.authenticateUsingMail(corrId, data)
   }
 
   @Throttled
-  @DgsMutation
+  @DgsMutation(field = DgsConstants.MUTATION.AuthConfirmCode)
   suspend fun authConfirmCode(
     @InputArgument data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,

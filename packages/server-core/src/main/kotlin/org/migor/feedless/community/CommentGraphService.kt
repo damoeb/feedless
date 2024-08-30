@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service
 @Service
 @Profile(AppProfiles.community)
 class CommentGraphService {
-  fun getReplyCount(comment: CommentEntity): Int {
+  suspend fun getReplyCount(comment: CommentEntity): Int {
     return 0
   }
 
-  fun getParent(comment: CommentEntity): CommentEntity? {
+  suspend fun getParent(comment: CommentEntity): CommentEntity? {
     return null
   }
 

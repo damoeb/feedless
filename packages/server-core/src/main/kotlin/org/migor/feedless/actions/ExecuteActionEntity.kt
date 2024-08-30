@@ -1,6 +1,5 @@
 package org.migor.feedless.actions
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -8,7 +7,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 
 @Entity
@@ -25,7 +25,7 @@ open class ExecuteActionEntity : ScrapeActionEntity() {
   open lateinit var pluginId: String
 
   @Basic(fetch = FetchType.EAGER)
-  @Type(JsonBinaryType::class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb", name = "executor_params", nullable = false)
   open var executorParams: PluginExecutionParamsInput? = null
 }

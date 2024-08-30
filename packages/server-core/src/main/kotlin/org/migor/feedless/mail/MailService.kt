@@ -27,7 +27,7 @@ interface MailService {
 
   fun createMimeMessage(): MimeMessage
 
-  fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean)
+  suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean)
 
   fun send(corrId: String, from: String, to: Array<String>, mailData: MailData)
 }

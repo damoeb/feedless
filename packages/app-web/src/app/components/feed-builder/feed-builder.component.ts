@@ -82,6 +82,7 @@ export type FeedOrRepository = {
 export type FeedWithRequest = {
   scrapeRequest: GqlSourceInput;
   feed: NativeOrGenericFeed;
+  refine: boolean
 };
 
 @Component({
@@ -100,7 +101,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   webToFeedTransformerComponent: TransformWebsiteToFeedComponent;
 
   @Input()
-  submitButtonText = 'Finalize Feed';
+  submitButtonText = 'Create Feed';
 
   @Input()
   scrapeRequest: GqlSourceInput;
@@ -112,6 +113,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   @Input()
   hideSearchBar = false;
+
+  @Input()
+  hideCustomizeFeed = false;
 
   @Output()
   selectedFeedChanged = new EventEmitter<FeedWithRequest>();
@@ -234,7 +238,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async finalizeFeed() {
+  async createOrRefineFeed(refine: boolean) {
     if (!this.hasFeed) {
       const toast = await this.toastCtrl.create({
         message: 'Pick a feed',
@@ -258,6 +262,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.selectedFeedChanged.emit({
       scrapeRequest: this.scrapeRequest,
       feed: this.selectedFeed,
+      refine
     });
   }
 
@@ -392,6 +397,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       })
       .toString();
     this.location.replaceState(url);
+  }
+
+  previewFeed() {
+    this.webToFeedTransformerComponent.selectTab('feed')
   }
 }
 

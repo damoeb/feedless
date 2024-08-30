@@ -31,7 +31,7 @@ class WebExtractService {
     return xpath.value.replaceFirst("/html/body", "/").replaceFirst("./", "//")
   }
 
-  fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale): ScrapeExtractResponse {
+  suspend fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale): ScrapeExtractResponse {
     val fragments = Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
       .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
     return ScrapeExtractResponse(

@@ -12,7 +12,7 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.agent} & ${AppProfiles.cron}")
-class AgentJob {
+class AgentSyncExecutor {
 
   @Autowired
   private lateinit var agentService: AgentService

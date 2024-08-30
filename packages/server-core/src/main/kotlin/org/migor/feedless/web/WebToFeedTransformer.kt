@@ -154,7 +154,7 @@ class WebToFeedTransformer(
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
-  fun parseFeedRules(
+  suspend fun parseFeedRules(
     corrId: String,
     document: Document,
     url: URL,
@@ -172,52 +172,50 @@ class WebToFeedTransformer(
     val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
 
     return linkGroups
-        .asSequence()
-        .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
-        .filterTo(ArrayList()) { (groupId, linksInGroup): Pair<String, MutableList<LinkPointer>> ->
-          hasRelevantSize(
-            groupId,
-            linksInGroup,
-            parserOptions
-          )
-        }
-        .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
-        .map { contexts -> tryAddDateXPath(contexts) }
-        .map { contexts -> convertContextsToRule(contexts, body) }
-        .map { selectors -> scoreRule(selectors) }
-        .sortedByDescending { it.score }
-        .map { selectors ->
-          GenericFeedRule(
-            count = selectors.count ?: 0,
-            score = selectors.score!!,
-            linkXPath = selectors.linkXPath,
-            extendContext = selectors.extendContext,
-            contextXPath = selectors.contextXPath,
-            dateXPath = selectors.dateXPath,
-            paginationXPath = paginationXPath,
-          )
-        }
-        .toList()
+      .asSequence()
+      .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
+      .filterTo(ArrayList()) { (groupId, linksInGroup): Pair<String, MutableList<LinkPointer>> ->
+        hasRelevantSize(
+          groupId,
+          linksInGroup,
+          parserOptions
+        )
+      }
+      .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
+      .map { contexts -> tryAddDateXPath(contexts) }
+      .map { contexts -> convertContextsToRule(contexts, body) }
+      .map { selectors -> scoreRule(selectors) }
+      .sortedByDescending { it.score }
+      .map { selectors ->
+        GenericFeedRule(
+          count = selectors.count ?: 0,
+          score = selectors.score!!,
+          linkXPath = selectors.linkXPath,
+          extendContext = selectors.extendContext,
+          contextXPath = selectors.contextXPath,
+          dateXPath = selectors.dateXPath,
+          paginationXPath = paginationXPath,
+        )
+      }
+      .toList()
   }
 
-  private fun findPaginationXPath(
+  private suspend fun findPaginationXPath(
     groupedLinks: HashMap<String, MutableList<LinkPointer>>,
     url: String,
     document: Document
   ): String? {
-    return Optional.ofNullable(findPaginationElement(groupedLinks, url))
-      .map { "/" + this.getRelativeXPath(it, document.body()) }
-      .orElse(null)
+    return findPaginationElement(groupedLinks, url)
+      ?.let { "/" + getRelativeXPath(it, document.body()) }
   }
 
-  private fun findPaginationElement(
+  private suspend fun findPaginationElement(
     groupedLinks: HashMap<String, MutableList<LinkPointer>>,
     url: String
   ): Element? {
     val ed = org.apache.commons.text.similarity.LevenshteinDistance()
     return groupedLinks
       .values
-      .asSequence()
       .filter { it.size > 2 }
       .map {
         Pair(it, it.map {
@@ -228,14 +226,14 @@ class WebToFeedTransformer(
       .filter { it.second < 4 }
       .map { it.first }
       .map { linkPointers ->
-        this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
+        findCommonParentElement("", linkPointers.map { it.element }).distinct()
       }
       .filter { it.size == 1 }
       .map { it.first() }
       .firstOrNull()
   }
 
-  private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
+  private suspend fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
     val hasTimeField = contexts.all { context ->
       Optional.ofNullable(context.contextElement.selectFirst("time")).map { true }.orElse(false)
     }
@@ -253,7 +251,7 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun hasRelevantSize(
+  private suspend fun hasRelevantSize(
     groupId: String,
     linksInGroup: MutableList<LinkPointer>,
     parserOptions: GenericFeedParserOptions
@@ -269,7 +267,7 @@ class WebToFeedTransformer(
     return hasEnoughMembers
   }
 
-  private fun groupLinksByPath(linkElements: List<LinkPointer>) =
+  private suspend fun groupLinksByPath(linkElements: List<LinkPointer>) =
     linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
       run {
         val groupId = linkPath.path
@@ -282,7 +280,7 @@ class WebToFeedTransformer(
       }
     }
 
-  fun getFeedBySelectors(
+  suspend fun getFeedBySelectors(
     corrId: String,
     selectors: Selectors,
     document: Document,
@@ -317,7 +315,7 @@ class WebToFeedTransformer(
     return convertExtractsToJsonFeed(feed, links, url)
   }
 
-  fun getArticlesBySelectors(
+  suspend fun getArticlesBySelectors(
     corrId: String,
     selectors: Selectors,
     document: Document,
@@ -326,7 +324,11 @@ class WebToFeedTransformer(
     return getFeedBySelectors(corrId, selectors, document, url).items
   }
 
-  private fun convertExtractsToJsonFeed(feed: ScrapeExtractResponse, links: ScrapeExtractResponse?, url: URL): JsonFeed {
+  private suspend fun convertExtractsToJsonFeed(
+    feed: ScrapeExtractResponse,
+    links: ScrapeExtractResponse?,
+    url: URL
+  ): JsonFeed {
     val jsonFeed = JsonFeed()
     jsonFeed.id = ""
     jsonFeed.title = "Feed"
@@ -345,21 +347,23 @@ class WebToFeedTransformer(
     return jsonFeed
   }
 
-  private fun convertExtractToJsonItem(fragment: ScrapeExtractFragment, baseUrl: URL): JsonItem {
+  private suspend fun convertExtractToJsonItem(fragment: ScrapeExtractFragment, baseUrl: URL): JsonItem {
     val element = parseHtml(fragment.html!!.data, baseUrl.toString()).body()
     val text = fragment.text!!.data
 
     val article = JsonItem()
     article.id = FeedUtil.toURI("article", text)
     article.title = StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100)
-    val url = fragment.extracts?.find { it.fragmentName == JsonItem.URL }?.fragments?.find { it.data?.mimeType == WebExtractService.MIME_URL }?.data?.data
+    val url =
+      fragment.extracts?.find { it.fragmentName == JsonItem.URL }?.fragments?.find { it.data?.mimeType == WebExtractService.MIME_URL }?.data?.data
     article.url = url ?: ""
     article.contentText = webToTextTransformer.extractText(element)
     article.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
     article.contentRawMime = "text/html"
     article.publishedAt = Date()
 
-    val tryExtractDate = { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
+    val tryExtractDate =
+      { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.PUBLISHED_AT }?.let {
       article.publishedAt = tryExtractDate(it) ?: Date()
@@ -371,7 +375,7 @@ class WebToFeedTransformer(
     return article
   }
 
-  private fun extractLocale(document: Document, fallback: Locale): Locale {
+  private suspend fun extractLocale(document: Document, fallback: Locale): Locale {
     val langStr = document.select("html").attr("lang")
     return Optional.ofNullable(StringUtils.trimToNull(langStr))
       .map {
@@ -383,7 +387,7 @@ class WebToFeedTransformer(
       .orElse(fallback)
   }
 
-  private fun applyExtendElement(extendContext: ExtendContext, element: Element): Element {
+  private suspend fun applyExtendElement(extendContext: ExtendContext, element: Element): Element {
     val p =
       if (arrayOf(
           ExtendContext.PREVIOUS,
@@ -401,7 +405,7 @@ class WebToFeedTransformer(
   }
 
 
-  private fun getRelativeCssPath(nodeParam: Element, context: Element): String {
+  private suspend fun getRelativeCssPath(nodeParam: Element, context: Element): String {
     if (nodeParam == context) {
       // todo mag this is not applicable
       return "self"
@@ -415,7 +419,7 @@ class WebToFeedTransformer(
     return path
   }
 
-  private fun getNodeName(node: Element): String {
+  private suspend fun getNodeName(node: Element): String {
 //    return if (strictMode) {
 //      var childId = 0
 //      var ps = node.previousElementSibling()
@@ -430,11 +434,11 @@ class WebToFeedTransformer(
 //    }
   }
 
-  private fun toWords(text: String): List<String> {
+  private suspend fun toWords(text: String): List<String> {
     return text.trim().split(" ").filterTo(ArrayList()) { word: String -> word.isNotEmpty() }
   }
 
-  fun __generalizeXPaths(xpaths: Collection<String>): String {
+  suspend fun __generalizeXPaths(xpaths: Collection<String>): String {
     val tokenized = xpaths.map { xpath ->
       xpath.split('/')
         .filterTo(ArrayList()) { xpathFragment: String -> xpathFragment.isNotEmpty() }
@@ -499,7 +503,7 @@ class WebToFeedTransformer(
     return templateXPath.joinToString("/")
   }
 
-  private fun getContextExtension(includeNextSibling: Boolean, includePreviousSibling: Boolean): ExtendContext {
+  private suspend fun getContextExtension(includeNextSibling: Boolean, includePreviousSibling: Boolean): ExtendContext {
     // node 0
     // prev 1
     // next 2
@@ -516,7 +520,7 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun getRelativeXPath(element: Element, context: Element): String {
+  private suspend fun getRelativeXPath(element: Element, context: Element): String {
 
     if (element === context) {
       return ""
@@ -540,7 +544,7 @@ class WebToFeedTransformer(
     throw IllegalArgumentException("Cannot generate xpath")
   }
 
-  private fun evaluateXPath(xpath: String, context: Element): List<Element> {
+  private suspend fun evaluateXPath(xpath: String, context: Element): List<Element> {
     return if (xpath == "./") {
       listOf(context)
     } else {
@@ -549,7 +553,7 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun includeSibling(kind: String, vicinities: List<ContextVicinity>): Boolean {
+  private suspend fun includeSibling(kind: String, vicinities: List<ContextVicinity>): Boolean {
     val elementCollidesWithOtherContext =
       vicinities.stream().anyMatch { vicinity -> vicinity.context === vicinity[kind] }
     val allMatchesHaveElement = vicinities.stream().allMatch { vicinity -> vicinity.hasProperty(kind) }
@@ -560,7 +564,7 @@ class WebToFeedTransformer(
   /**
    * drops the last index if available
    */
-  private fun generalizeContextXPath(contexts: List<ArticleContext>, root: Element): GeneralizedContext {
+  private suspend fun generalizeContextXPath(contexts: List<ArticleContext>, root: Element): GeneralizedContext {
     val vicinity = contexts.map { context ->
       ContextVicinity(
         context = context.contextElement,
@@ -586,10 +590,10 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun words(text: String): List<String> = text.split(" ")
+  private suspend fun words(text: String): List<String> = text.split(" ")
     .filterTo(ArrayList()) { word: String -> word.length > 0 }
 
-  private fun scoreRule(selectors: GenericFeedSelectors): GenericFeedSelectors {
+  private suspend fun scoreRule(selectors: GenericFeedSelectors): GenericFeedSelectors {
 //    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest
     /*
          Here the scoring measure represents how good article rule or feed candidate is in order to be used
@@ -681,10 +685,10 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun findLinks(document: Document, options: GenericFeedParserOptions): List<LinkPointer> {
+  private suspend fun findLinks(document: Document, options: GenericFeedParserOptions): List<LinkPointer> {
     val body = document.body()
 //    return document.select("A[href],AREA[href]").stream()
-    return document.select("A[href]").stream()
+    return document.select("A[href]")
       .filter { element -> toWords(element.text()).size >= options.minWordCountOfLink }
       .filter { element -> !element.attr("href").startsWith("javascript") }
       .map { element ->
@@ -694,11 +698,9 @@ class WebToFeedTransformer(
           path = getRelativeCssPath(element.parent()!!, body)
         )
       }
-      .collect(Collectors.toList())
-
   }
 
-  private fun findCommonParentElement(groupId: String, linkElements: List<Element>): List<Element> {
+  private suspend fun findCommonParentElement(groupId: String, linkElements: List<Element>): List<Element> {
     // articles are not necessarily in the same parent, e.g. in two separate lists <ul>
 
     // first two
@@ -710,7 +712,7 @@ class WebToFeedTransformer(
     return linkElements.map { linkElement -> nthParent(headWalkUp.coerceAtMost(tailWalkUp), linkElement) }
   }
 
-  private fun nthParent(n: Int, element: Element): Element {
+  private suspend fun nthParent(n: Int, element: Element): Element {
     var parent = element
     for (i in 0..n - 1) {
       parent = parent.parent()!!
@@ -718,7 +720,7 @@ class WebToFeedTransformer(
     return parent
   }
 
-  private fun findCommonParent(nodes: List<Element>): Int {
+  private suspend fun findCommonParent(nodes: List<Element>): Int {
     var linkElements = nodes
     var up = 0
     while (true) {
@@ -738,7 +740,7 @@ class WebToFeedTransformer(
     return up
   }
 
-  private fun findArticleContext(
+  private suspend fun findArticleContext(
     groupId: String,
     linkPointers: List<LinkPointer>,
   ): List<ArticleContext> {
@@ -755,7 +757,7 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun convertContextsToRule(contexts: List<ArticleContext>, root: Element): GenericFeedSelectors {
+  private suspend fun convertContextsToRule(contexts: List<ArticleContext>, root: Element): GenericFeedSelectors {
     val linkXPath = "./" + __generalizeXPaths(contexts.map { context ->
       getRelativeXPath(
         context.linkElement,

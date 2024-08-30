@@ -103,7 +103,7 @@ class DateClaimer {
 //      }.firstOrNull()
 //  }
 
-  fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale): Date? {
+  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale): Date? {
     log.debug("[${corrId}] parsing '$dateTimeStrParam' locale=$locale")
 
     runCatching {
@@ -150,7 +150,12 @@ class DateClaimer {
   }
 
 
-  private fun applyDateFormat(simpleDateTimeStr: String, locale: Locale, format: String, hasTime: Boolean): Date? {
+  private suspend fun applyDateFormat(
+    simpleDateTimeStr: String,
+    locale: Locale,
+    format: String,
+    hasTime: Boolean
+  ): Date? {
     val formatter = DateTimeFormatter.ofPattern(format, locale)
     return try {
       if (hasTime) {
@@ -171,7 +176,7 @@ class DateClaimer {
    * @return The matching SimpleDateFormat pattern, or null if format is unknown.
    * @see SimpleDateFormat
    */
-  private fun guessDateFormats(corrId: String, dateString: String): List<Triple<String, String, Boolean>> {
+  private suspend fun guessDateFormats(corrId: String, dateString: String): List<Triple<String, String, Boolean>> {
     log.debug("[$corrId] guessDateFormat for '$dateString'")
     return dateFormatToRegexp
       .sortedByDescending { it.second.length }

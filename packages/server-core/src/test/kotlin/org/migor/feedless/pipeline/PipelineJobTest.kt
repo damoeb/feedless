@@ -25,19 +25,24 @@ class PipelineJobTest {
 
   @Mock
   lateinit var documentDAO: DocumentDAO
+
   @Mock
   lateinit var pluginService: PluginService
+
   @Mock
   lateinit var sourceDAO: SourceDAO
+
   @Mock
   lateinit var repositoryDAO: RepositoryDAO
+
   @Mock
   lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+
   @Mock
   lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
   @InjectMocks
-  lateinit var pipelineJob: PipelineJob
+  lateinit var pipelineJobExecutor: PipelineJobExecutor
 
   @BeforeEach
   fun setUp() {
@@ -61,12 +66,12 @@ class PipelineJobTest {
 
   @Test
   fun processDocumentJobs() {
-    pipelineJob.processDocumentJobs()
+    pipelineJobExecutor.processDocumentJobs()
   }
 
   @Test
   fun processSourceJobs() {
-    pipelineJob.processSourceJobs()
+    pipelineJobExecutor.processSourceJobs()
   }
 
 

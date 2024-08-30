@@ -6,7 +6,10 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.generated.DgsConstants
@@ -16,21 +19,20 @@ import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.UpsertOrderInput
-import org.migor.feedless.generated.types.User
 import org.migor.feedless.license.LicenseDAO
 import org.migor.feedless.license.LicenseEntity
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.user.UserDAO
-import org.migor.feedless.user.toDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.api} & ${AppProfiles.saas}")
+@Transactional
 class OrderResolver {
 
   private val log = LoggerFactory.getLogger(OrderResolver::class.simpleName)
@@ -48,18 +50,16 @@ class OrderResolver {
   lateinit var licenseDAO: LicenseDAO
 
   @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun orders(
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: OrdersInput
   ): List<Order> =
-    coroutineScope {
+    withContext(useRequestContext(currentCoroutineContext())) {
       log.debug("[$corrId] orders $data")
       orderService.findAll(corrId, data).map { it.toDTO() }
     }
 
-  @DgsMutation
-  @Transactional(propagation = Propagation.REQUIRED)
+  @DgsMutation(field = DgsConstants.MUTATION.UpsertOrder)
   suspend fun upsertOrder(
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpsertOrderInput,
@@ -69,25 +69,18 @@ class OrderResolver {
       orderService.upsert(corrId, data.where, data.create, data.update).toDTO()
     }
 
-  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
   suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
-    val order: Order = dfe.getSource()
+    val order: Order = dfe.getRoot()
     productDAO.findById(UUID.fromString(order.productId)).orElseThrow().toDTO()
   }
 
-  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun user(dfe: DgsDataFetchingEnvironment): User = coroutineScope {
-    val order: Order = dfe.getSource()
-    userDAO.findById(UUID.fromString(order.userId)).orElseThrow().toDTO()
-  }
-
-  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
   suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
-    val order: Order = dfe.getSource()
-    licenseDAO.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
+    val order: Order = dfe.getRoot()
+    withContext(Dispatchers.IO) {
+      licenseDAO.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
+    }
   }
 
 }

@@ -3,7 +3,8 @@ package org.migor.feedless.api.graphql
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.config.CacheNames
@@ -15,6 +16,7 @@ import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.plan.ProductService
+import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -53,7 +55,7 @@ class ServerConfigResolver {
   ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
   suspend fun serverSettings(
     @InputArgument data: ServerSettingsContextInput,
-  ): ServerSettings = coroutineScope {
+  ): ServerSettings = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("serverSettings $data")
     val product = data.product.fromDto()
 

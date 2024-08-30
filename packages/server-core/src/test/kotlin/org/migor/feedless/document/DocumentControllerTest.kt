@@ -1,6 +1,7 @@
 package org.migor.feedless.document
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
@@ -55,18 +56,21 @@ class DocumentControllerTest {
 
   @BeforeEach
   fun setUp() {
-    endpointUrl = "http://localhost:$port/article/$documentId"
+    runBlocking {
+      endpointUrl = "http://localhost:$port/article/$documentId"
 
-    mockDocument = DocumentEntity()
-    mockDocument.url = documentUrl
-    mockDocument.contentText = "foo"
-    mockDocument.repositoryId = UUID.randomUUID()
-    mockDocument.status = ReleaseStatus.released
+      mockDocument = DocumentEntity()
+      mockDocument.url = documentUrl
+      mockDocument.contentText = "foo"
+      mockDocument.repositoryId = UUID.randomUUID()
+      mockDocument.status = ReleaseStatus.released
 
-    Mockito.`when`(documentService.findById(
-      any(UUID::class.java),
-    )).thenReturn(mockDocument)
-
+      Mockito.`when`(
+        documentService.findById(
+          any(UUID::class.java),
+        )
+      ).thenReturn(mockDocument)
+    }
   }
 
   @Test

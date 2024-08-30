@@ -1,5 +1,6 @@
 package org.migor.feedless.service
 
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class PdfServiceTest {
   }
 
   @Test
-  fun toHTML() {
+  fun toHTML() = runTest {
     val html = service.toHTML(corrId, pdf)
     "<body> dive into mark".split(" ").forEach {
       Assertions.assertTrue(html.contains(it))
@@ -29,7 +30,7 @@ class PdfServiceTest {
   }
 
   @Test
-  fun toArticle() {
+  fun toArticle() = runTest {
     val html = service.toHTML(corrId, pdf)
     val w2a = WebToArticleTransformer()
     val article = w2a.fromHtml(html, "http://example.org")

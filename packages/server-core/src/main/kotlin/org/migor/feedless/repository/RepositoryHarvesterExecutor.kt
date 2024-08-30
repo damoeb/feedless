@@ -1,5 +1,11 @@
 package org.migor.feedless.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -9,13 +15,12 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.cron}")
-class RepositoryHarvesterJob internal constructor() {
+class RepositoryHarvesterExecutor internal constructor() {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
@@ -29,27 +34,33 @@ class RepositoryHarvesterJob internal constructor() {
   private lateinit var repositoryHarvester: RepositoryHarvester
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   fun refreshSubscriptions() {
     if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
       val corrId = newCorrId()
-      val reposDue = repositoryDAO.findSomeDue(Date(), PageRequest.ofSize(10)).map { it.id }
+      val reposDue = repositoryDAO.findSomeDue(Date(), PageRequest.ofSize(50)).map { it.id }
       log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
       if (reposDue.isNotEmpty()) {
-//        runBlocking {
+        val semaphore = Semaphore(10)
+        runBlocking {
           runCatching {
-//            coroutineScope {
+            coroutineScope {
               reposDue.map {
-//                async {
-                  repositoryHarvester.handleRepository(newCorrId(parentCorrId = corrId), it)
-//                }
-//              }.awaitAll()
+                async(Dispatchers.Unconfined) {
+                  semaphore.acquire()
+                  try {
+                    repositoryHarvester.handleRepository(newCorrId(parentCorrId = corrId), it)
+                  } finally {
+                    semaphore.release()
+                  }
+                }
+              }.awaitAll()
             }
             log.debug("[$corrId] batch refresh done")
           }.onFailure {
             log.error("[$corrId] batch refresh done: ${it.message}", it)
           }
-//        }
+        }
       }
     }
   }

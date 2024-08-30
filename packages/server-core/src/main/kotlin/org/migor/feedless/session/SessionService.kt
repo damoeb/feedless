@@ -1,5 +1,9 @@
 package org.migor.feedless.session
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.reactor.ReactorContext
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -13,6 +17,43 @@ import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import java.util.*
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
+
+fun useRequestContext(currentCoroutineContext: CoroutineContext): RequestContextElement {
+  val rctx = currentCoroutineContext[ReactorContext]
+  return currentCoroutineContext[RequestContextElement] ?: createRequestContext()
+}
+
+fun createRequestContext(): RequestContextElement {
+  val context = RequestContextElement()
+
+  runCatching {
+    context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+      StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String)
+    } else {
+      null
+    }
+
+    context.product = runCatching {
+      RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
+        ?.let {
+          ProductCategory.valueOf(it as String)
+        }
+    }.getOrNull()
+
+  }.onFailure {
+    println(it.message)
+  }
+  return context
+}
+
+class RequestContextElement : AbstractCoroutineContextElement(RequestContextElement) {
+  companion object Key : CoroutineContext.Key<RequestContextElement>
+
+  var product: ProductCategory? = null
+  var userId: String? = null
+}
 
 @Service
 @Profile(AppProfiles.database)
@@ -21,29 +62,21 @@ class SessionService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
-  fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
+  suspend fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
 
-  fun user(corrId: String): UserEntity {
+  suspend fun user(corrId: String): UserEntity {
     val notFoundException = IllegalArgumentException("user not found ($corrId)")
-    return userId()?.let { userDAO.findById(it).orElseThrow { notFoundException } } ?: throw notFoundException
+    return userId()?.let { withContext(Dispatchers.IO) { userDAO.findById(it).orElseThrow { notFoundException } } }
+      ?: throw notFoundException
   }
 
-  fun activeProductFromRequest(): ProductCategory? {
-    return RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
-      ?.let {
-        ProductCategory.valueOf(it as String)
-      }
+  suspend fun activeProductFromRequest(): ProductCategory? {
+    return currentCoroutineContext()[RequestContextElement]?.product
   }
 
-  fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }
+  suspend fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }
 
-  private fun attr(param: String): String? {
-    return runCatching {
-      if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
-        StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[param] as String)
-      } else {
-        null
-      }
-    }.getOrNull()
+  private suspend fun attr(param: String): String? {
+    return currentCoroutineContext()[RequestContextElement]?.userId
   }
 }

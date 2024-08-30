@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -20,10 +19,11 @@ import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
 import jakarta.validation.constraints.Size
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.type.SqlTypes
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -84,7 +84,7 @@ enum class MaxAgeDaysDateField {
 open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.title, nullable = false)
-  @Size(min = 3, max = LEN_STR_DEFAULT)
+  @Size(min = 1, max = LEN_STR_DEFAULT)
   open lateinit var title: String
 
   @Size(max = 1024)
@@ -146,9 +146,9 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(nullable = false, name = "schema_version")
   open var schemaVersion: Int = 0
 
-  @Type(JsonBinaryType::class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Lazy
-  @Column(columnDefinition = "jsonb", nullable = false, name = "plugins")
+  @Column(nullable = false, name = "plugins")
   open var plugins: List<org.migor.feedless.repository.PluginExecution> = emptyList()
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)
@@ -300,7 +300,7 @@ private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
 }
 
 fun WebDocumentDateField.fromDto(): MaxAgeDaysDateField {
-  return when(this) {
+  return when (this) {
     WebDocumentDateField.createdAt -> MaxAgeDaysDateField.createdAt
     WebDocumentDateField.startingAt -> MaxAgeDaysDateField.startingAt
     WebDocumentDateField.publishedAt -> MaxAgeDaysDateField.publishedAt

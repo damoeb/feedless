@@ -16,15 +16,6 @@ class JsonFeedExporter {
     .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
     .create()
 
-//  private fun toJsonFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
-//    return toFeedUrlForPage(feed, "json", page)
-//  }
-
-//  private fun toFeedUrlForPage(feed: RichFeed, type: String, page: Int? = null): String {
-//    return page?.let { actualPage -> "${feed.feedUrl}/${type}?page=${actualPage}" }
-//      ?: feed.feedUrl
-//  }
-
   fun toJson(corrId: String, feed: JsonFeed): String {
     log.debug("[${corrId}] to json")
 

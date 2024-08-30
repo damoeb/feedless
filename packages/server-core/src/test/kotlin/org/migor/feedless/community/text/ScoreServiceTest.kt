@@ -6,6 +6,8 @@ import io.jenetics.DoubleGene
 import io.jenetics.Genotype
 import io.jenetics.engine.Engine
 import io.jenetics.engine.EvolutionResult
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
@@ -73,7 +75,7 @@ class ScoreServiceTest {
   }
 
   @Test
-  fun score() {
+  fun score() = runTest {
     assertThat(scoreService).isNotNull
     val comment = mock(CommentEntity::class.java)
     Mockito.`when`(comment.contentText).thenReturn("Du erzählst nur scheisse")
@@ -103,20 +105,21 @@ class ScoreServiceTest {
         links = neutral,
       )
     )
+
     assertThat(scoreService.score(comment, weights)).isCloseTo(0.3, within(0.01))
   }
 
   @Test
   fun testEstimatePenalty() {
-    val expected = listOf(1,2,3,4)
-    assertThat(estimatePenalty(listOf(1,2,3,4), expected)).isEqualTo(0)
-    assertThat(estimatePenalty(listOf(1,2,4,3), expected)).isEqualTo(-2)
+    val expected = listOf(1, 2, 3, 4)
+    assertThat(estimatePenalty(listOf(1, 2, 3, 4), expected)).isEqualTo(0)
+    assertThat(estimatePenalty(listOf(1, 2, 4, 3), expected)).isEqualTo(-2)
   }
 
 
   @Test
   @Disabled
-  fun train() {
+  fun train() = runTest {
     val comments = listOf(
       mapOf(
         0 to "When I was there (2005-2006, so, ancient history maybe), Google had a cultural problem with languages like Javascript. All their coding standards were developed for languages like C++ and Java and the typical Google engineer had the most experience in such languages. Projects that promised to relieve the programmer from having to write in nasty Javascript (such as GWT) had a lot of support. There are islands of Javascripters in Google, but many of them are working on the browser initiatives.\nThat said, the article is right about the importance of peer review at Google, although the headline is typical journalistic bait. Google's culture isn't so much engineering as it is science. Business is understood as an ongoing experiment. Opinions are worthless, only data counts.\nThe results are stunning and many cowboy developers have become converts. There are many parts of Google's codebase that are so beautiful they almost brought tears to my eyes. You don't know what it's like to see megabyte after megabyte of source code scroll by, and <i>you can't tell who wrote it</i>. The same conventions are used everywhere, \"tricky\" parts are at an absolute minimum, and good documentation is usually a given.\nIf there's one thing about Google culture that is worth preserving in all the startups now budding off, it's the peer review.",
@@ -175,13 +178,16 @@ class ScoreServiceTest {
       ),
     )
 
-    val engine = Engine.builder({ result -> fitness(result, comments) }, gtf).build()
+    val engine = Engine.builder({ result -> runBlocking { fitness(result, comments) } }, gtf).build()
     val result = engine.stream().limit(10).collect(EvolutionResult.toBestGenotype())
     println("Selected: " + result + ". Sum: " + fitness(result, comments, true).toString())
-
   }
 
-  private fun fitness(result: Genotype<DoubleGene>, commentsGroups: List<Map<Int, String>>, log: Boolean = false): Int {
+  private suspend fun fitness(
+    result: Genotype<DoubleGene>,
+    commentsGroups: List<Map<Int, String>>,
+    log: Boolean = false
+  ): Int {
     val chromosomes = result.chromosome().stream().toList()
 
     var i = 0
@@ -233,7 +239,7 @@ class ScoreServiceTest {
     return v.replace("<p>", "\n").replace("&#62;", ">")
   }
 
-  private fun score(
+  private suspend fun score(
     comments: Map<Int, String>,
     weights: ScoreWeights,
     log: Boolean

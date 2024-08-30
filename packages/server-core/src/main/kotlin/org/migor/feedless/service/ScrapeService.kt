@@ -2,6 +2,8 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
@@ -38,11 +40,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 
 
 @Service
 @Profile(AppProfiles.scrape)
+@Transactional
 class ScrapeService {
 
   private val log = LoggerFactory.getLogger(ScrapeService::class.simpleName)
@@ -60,55 +64,57 @@ class ScrapeService {
   private lateinit var meterRegistry: MeterRegistry
 
   suspend fun scrape(corrId: String, source: SourceEntity): ScrapeOutput {
-    return try {
-      val scrapeContext = ScrapeContext(log)
+    return withContext(Dispatchers.IO) {
+      try {
+        val scrapeContext = ScrapeContext(log)
 
-      assert(source.actions.isNotEmpty()) { "no actions present" }
+        assert(source.actions.isNotEmpty()) { "no actions present" }
 
-      val fetch = source.findFirstFetchOrNull()!!
+        val fetch = source.findFirstFetchOrNull()!!
 
-      log.debug("[$corrId] scrape ${source.id} ${fetch.resolveUrl()}")
+        log.debug("[$corrId] scrape ${source.id} ${fetch.resolveUrl()}")
 
-      meterRegistry.counter(
-        AppMetrics.scrape, listOf(
-          Tag.of("type", "scrape"),
-          Tag.of("prerender", needsPrerendering(source, 0).toString()),
-        )
-      ).increment()
+        meterRegistry.counter(
+          AppMetrics.scrape, listOf(
+            Tag.of("type", "scrape"),
+            Tag.of("prerender", needsPrerendering(source, 0).toString()),
+          )
+        ).increment()
 
-      val startTime = System.nanoTime()
+        val startTime = System.nanoTime()
 
-      val context = source.actions
-        .sortedBy { it.pos }
-        .foldIndexed(scrapeContext) { index, context, action ->
-          run {
-            if (!context.hasOutputAt(index)) {
-              when (action) {
-                is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
-                is HeaderActionEntity -> handleHeader(corrId, action, context)
-                is DomActionEntity -> handleDomAction(corrId, index, action, context)
-                is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
-                is ExtractXpathActionEntity -> handleExtract(corrId, index, action, context)
-                is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
-                else -> noopAction(corrId, action)
+        val context = source.actions
+          .sortedBy { it.pos }
+          .foldIndexed(scrapeContext) { index, context, action ->
+            run {
+              if (!context.hasOutputAt(index)) {
+                when (action) {
+                  is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
+                  is HeaderActionEntity -> handleHeader(corrId, action, context)
+                  is DomActionEntity -> handleDomAction(corrId, index, action, context)
+                  is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
+                  is ExtractXpathActionEntity -> handleExtract(corrId, index, action, context)
+                  is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
+                  else -> noopAction(corrId, action)
+                }
               }
+              context
             }
-            context
           }
+
+        log.debug("[$corrId] scraping done")
+
+        ScrapeOutput(
+          context.outputsAsList(),
+          logs = context.logs,
+          time = System.nanoTime().minus(startTime).div(1000000).toInt()
+        )
+      } catch (e: Exception) {
+        if (e !is ResumableHarvestException) {
+          log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}")
         }
-
-      log.debug("[$corrId] scraping done")
-
-      ScrapeOutput(
-        context.outputsAsList(),
-        logs = context.logs,
-        time = System.nanoTime().minus(startTime).div(1000000).toInt()
-      )
-    } catch (e: Exception) {
-      if (e !is ResumableHarvestException) {
-        log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}")
+        throw e
       }
-      throw e
     }
   }
 
@@ -121,7 +127,12 @@ class ScrapeService {
 
   }
 
-  private fun handlePluginExecution(corrId: String, index: Int, action: ExecuteActionEntity, context: ScrapeContext) {
+  private suspend fun handlePluginExecution(
+    corrId: String,
+    index: Int,
+    action: ExecuteActionEntity,
+    context: ScrapeContext
+  ) {
     context.info("[$corrId] handlePluginExecution ${action.pluginId}")
 
     val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
@@ -130,17 +141,20 @@ class ScrapeService {
         is FragmentTransformerPlugin -> {
           val data = context.lastOutput().fetch?.let {
             context.info("using fetch response")
-            it.response } ?: run {
+            it.response
+          } ?: run {
             context.info("using last fragment")
-              context.lastOutput().fragment!!.fragments!!.last()
-            }
+            context.lastOutput().fragment!!.fragments!!.last()
+          }
             .toHttpResponse(context.firstUrl()!!)
-          context.setOutputAt(index, ScrapeActionOutput(
+          context.setOutputAt(
+            index, ScrapeActionOutput(
               index = index,
               fragment = plugin.transformFragment(corrId, action, data) { context.info(it) },
             )
           )
         }
+
         is FilterEntityPlugin -> run {
           val output = context.lastOutput()
 
@@ -150,11 +164,19 @@ class ScrapeService {
           val result = ScrapeActionOutput(index = index,
             fragment = FragmentOutput(
               fragmentName = "filter",
-              items = output.fragment.items.filterIndexed { i, item -> plugin.filterEntity(corrId, item, action.executorParams!!, i) }
+              items = output.fragment.items.filterIndexed { i, item ->
+                plugin.filterEntity(
+                  corrId,
+                  item,
+                  action.executorParams!!,
+                  i
+                )
+              }
             )
           )
           context.setOutputAt(index, result)
         }
+
         else -> throw IllegalArgumentException("plugin '${action.pluginId}' does not exist ($corrId)")
       }
     } catch (e: Exception) {
@@ -210,12 +232,21 @@ class ScrapeService {
       context.info("[$corrId] extract xpath '${xpath}' -> ${elements.size} elements")
       elements.map {
         ScrapeExtractFragment(
-          html = if (emit.contains(ExtractEmit.html)) {TextData(it.outerHtml())} else {null},
-          text = if (emit.contains(ExtractEmit.text)) {TextData(it.text())} else {null},
+          html = if (emit.contains(ExtractEmit.html)) {
+            TextData(it.outerHtml())
+          } else {
+            null
+          },
+          text = if (emit.contains(ExtractEmit.text)) {
+            TextData(it.text())
+          } else {
+            null
+          },
         )
       }
     }
-    val result = ScrapeActionOutput(index = index,
+    val result = ScrapeActionOutput(
+      index = index,
       fragment = FragmentOutput(
         fragmentName = "",
         fragments = fragments,
@@ -224,7 +255,6 @@ class ScrapeService {
 
     context.setOutputAt(index, result)
   }
-
 
 
   private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
@@ -321,7 +351,7 @@ fun needsPrerendering(source: SourceEntity, currentActionIndex: Int): Boolean {
   val actions = source.actions.filterIndexed { index, _ -> index >= currentActionIndex }
   val hasClickPosition = actions.filterIsInstance<ClickPositionActionEntity>().isNotEmpty()
   val hasExtractBbox = actions.filterIsInstance<ExtractBoundingBoxActionEntity>().isNotEmpty()
-  val hasPixel = actions.filterIsInstance<ExtractXpathActionEntity>().any { it.emit.contains(ExtractEmit.pixel)}
+  val hasPixel = actions.filterIsInstance<ExtractXpathActionEntity>().any { it.emit.contains(ExtractEmit.pixel) }
   val hasForcedPrerendering = actions.filterIsInstance<FetchActionEntity>().any { it.forcePrerender }
   return hasClickPosition || hasExtractBbox || hasForcedPrerendering || hasPixel
 }

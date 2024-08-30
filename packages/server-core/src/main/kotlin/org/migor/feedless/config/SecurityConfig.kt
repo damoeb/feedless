@@ -1,6 +1,8 @@
 package org.migor.feedless.config
 
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -36,6 +38,7 @@ import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationF
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.context.request.RequestContextListener
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -139,30 +142,37 @@ class SecurityConfig {
     return urls.toTypedArray()
   }
 
+  @Bean
+  fun requestContextListener(): RequestContextListener {
+    return RequestContextListener()
+  }
+
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
     return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
         .oauth2Login()
         .successHandler { _, response, authentication ->
-          run {
-            val corrId = newCorrId()
-            val authenticationToken = authentication as OAuth2AuthenticationToken
-            val user = when (authenticationToken.authorizedClientRegistrationId) {
-              "github" -> handleGithubAuthResponse(authenticationToken)
+          runBlocking {
+            coroutineScope {
+              val corrId = newCorrId()
+              val authenticationToken = authentication as OAuth2AuthenticationToken
+              val user = when (authenticationToken.authorizedClientRegistrationId) {
+                "github" -> handleGithubAuthResponse(authenticationToken)
 //              "google" -> handleGoogleAuthResponse(authenticationToken)
-              else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
-            }
-            log.info("jwt from user ${user.id}")
-            val jwt = tokenProvider.createJwtForUser(user)
-            response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
-            response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
+                else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
+              }
+              log.info("jwt from user ${user.id}")
+              val jwt = tokenProvider.createJwtForUser(user)
+              response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
+              response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 
-            if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
-              response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
-            } else {
-              response.sendRedirect(propertyService.appHost)
+              if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
+                response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
+              } else {
+                response.sendRedirect(propertyService.appHost)
 //            request.getRequestDispatcher("/").forward(request, response)
+              }
             }
           }
         }
@@ -173,16 +183,17 @@ class SecurityConfig {
     }
   }
 
-  private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
+  private suspend fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
     val corrId = newCorrId()
-    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(corrId, it, githubId) } ?: userService.createUser(
-      corrId,
-      email = email,
-      githubId = githubId,
-    )
+    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(corrId, it, githubId) }
+      ?: userService.createUser(
+        corrId,
+        email = email,
+        githubId = githubId,
+      )
   }
 
 //  private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
@@ -203,7 +214,7 @@ class SecurityConfig {
 //      }
 //  }
 
-  private fun resolveUserByGithubId(githubId: String): UserEntity? {
+  private suspend fun resolveUserByGithubId(githubId: String): UserEntity? {
     return userService.findByGithubId(githubId)
       .also {
         it?.let {

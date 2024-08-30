@@ -19,12 +19,14 @@ class NoveltyScorerTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = [
-    "0, 0.0",
-    "2, 0.8",
-    "3, 1.0",
-    "4, 1.0",
-  ])
+  @CsvSource(
+    value = [
+      "0, 0.0",
+      "2, 0.8",
+      "3, 1.0",
+      "4, 1.0",
+    ]
+  )
   fun score(input: Int, expected: Double) {
     assertThat(scorer.score(withUrls(input))).isCloseTo(expected, within(0.1))
   }

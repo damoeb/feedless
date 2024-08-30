@@ -1,6 +1,10 @@
 package org.migor.feedless.data.jpa
 
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
@@ -90,7 +94,11 @@ class Seeder {
   @Transactional(propagation = Propagation.REQUIRED)
   fun onInit() {
     val root = seedRootUser()
-    seedProducts(root)
+    runBlocking {
+      coroutineScope {
+        seedProducts(root)
+      }
+    }
     seedUsers()
   }
 
@@ -150,6 +158,7 @@ class Seeder {
       documentDAO.save(notification)
     }
   }
+
   private fun pushLegacyNotifications(root: UserEntity) {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
 
@@ -163,7 +172,8 @@ class Seeder {
         d
       }
 
-      notification.url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
+      notification.url =
+        "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
       notification.contentTitle = title
       notification.status = ReleaseStatus.released
       notification.contentText =
@@ -223,14 +233,14 @@ class Seeder {
     return userDAO.saveAndFlush(user)
   }
 
-
-  private fun seedProducts(root: UserEntity) {
-    val baseFeatureGroup =
+  private suspend fun seedProducts(root: UserEntity) {
+    val baseFeatureGroup = withContext(Dispatchers.IO) {
       featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
         val group = FeatureGroupEntity()
         group.name = "server"
         featureGroupDAO.save(group)
       }
+    }
 
     featureService.assignFeatureValues(
       baseFeatureGroup, features = mapOf(
@@ -456,16 +466,18 @@ class Seeder {
     }
   }
 
-  private fun resolveFeatureGroup(
+  private suspend fun resolveFeatureGroup(
     name: String,
     parentFeatureGroup: FeatureGroupEntity?,
     features: Map<FeatureName, FeatureValueEntity>
   ): FeatureGroupEntity {
-    val group = featureGroupDAO.findByName(name) ?: run {
-      val group = FeatureGroupEntity()
-      group.name = name
-      group.parentFeatureGroupId = parentFeatureGroup?.id
-      featureGroupDAO.save(group)
+    val group = withContext(Dispatchers.IO) {
+      featureGroupDAO.findByName(name) ?: run {
+        val group = FeatureGroupEntity()
+        group.name = name
+        group.parentFeatureGroupId = parentFeatureGroup?.id
+        featureGroupDAO.save(group)
+      }
     }
 
     featureService.assignFeatureValues(group, features)
@@ -491,7 +503,7 @@ class Seeder {
     return priced
   }
 
-  private fun createProduct(
+  private suspend fun createProduct(
     name: String,
     description: String,
     group: ProductCategory? = null,
@@ -502,31 +514,33 @@ class Seeder {
     isBaseProduct: Boolean = false
   ): ProductEntity {
 
-    val product = productDAO.findByName(name) ?: run {
-      val product = ProductEntity()
-      product.name = name
-      product.description = description
-      product.baseProduct = isBaseProduct
-      product.partOf = group
+    return withContext(Dispatchers.IO) {
+      val product = productDAO.findByName(name) ?: run {
+        val product = ProductEntity()
+        product.name = name
+        product.description = description
+        product.baseProduct = isBaseProduct
+        product.partOf = group
 
-      productDAO.save(product)
+        productDAO.save(product)
+      }
+
+      features?.let {
+        val featureGroup = resolveFeatureGroup(name, parentFeatureGroup, features)
+        product.featureGroupId = featureGroup.id
+        product.featureGroup = featureGroup
+        product.isCloudProduct = isCloud
+        productDAO.save(product)
+      }
+
+      pricedProductDAO.deleteAllByProductId(product.id)
+      pricedProductDAO.saveAll(prices.map {
+        it.productId = product.id
+        it
+      })
+
+      product
     }
-
-    features?.let {
-      val featureGroup = resolveFeatureGroup(name, parentFeatureGroup, features)
-      product.featureGroupId = featureGroup.id
-      product.featureGroup = featureGroup
-      product.isCloudProduct = isCloud
-      productDAO.save(product)
-    }
-
-    pricedProductDAO.deleteAllByProductId(product.id)
-    pricedProductDAO.saveAll(prices.map {
-      it.productId = product.id
-      it
-    })
-
-    return product
   }
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))

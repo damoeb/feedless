@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class AnnotationService {
-  fun createAnnotation(corrId: String, data: CreateAnnotationInput): AnnotationEntity {
+  suspend fun createAnnotation(corrId: String, data: CreateAnnotationInput): AnnotationEntity {
     TODO()
   }
 
-  fun deleteAnnotation(corrId: String, data: DeleteAnnotationInput): Boolean {
+  suspend fun deleteAnnotation(corrId: String, data: DeleteAnnotationInput): Boolean {
     TODO("Not yet implemented")
   }
 }

@@ -30,6 +30,7 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { createEmailFormControl } from '../../form-controls';
 import { ScrapeController } from '../../components/interactive-website/scrape-controller';
 import { Title } from '@angular/platform-browser';
+import { DEFAULT_FETCH_CRON } from '../feed-builder/feed-builder.page';
 
 type Email = string;
 
@@ -66,7 +67,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
       ]),
       email: createEmailFormControl<Email>(''),
       screen: new FormControl<Screen>('page', [Validators.required]),
-      fetchFrequency: new FormControl<string>('0 0 0 * * *', [
+      fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, [
         Validators.required,
       ]),
       subject: new FormControl<string>('', [

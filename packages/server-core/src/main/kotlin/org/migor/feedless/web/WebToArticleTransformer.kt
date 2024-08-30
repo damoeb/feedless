@@ -15,11 +15,11 @@ class WebToArticleTransformer {
 
   private val log = LoggerFactory.getLogger(WebToArticleTransformer::class.simpleName)
 
-  fun fromHtml(html: String, url: String): JsonItem {
+  suspend fun fromHtml(html: String, url: String): JsonItem {
     return fromDocument(parseHtml(html, url), url)
   }
 
-  fun fromDocument(doc: Document, url: String): JsonItem {
+  suspend fun fromDocument(doc: Document, url: String): JsonItem {
     doc.select("script").remove()
     doc.select("style").remove()
     HtmlUtil.withAbsoluteUrls(doc)
@@ -31,7 +31,7 @@ class WebToArticleTransformer {
     return extractContent(item, url, doc)
   }
 
-  private fun extractContent(item: JsonItem, url: String, doc: Document): JsonItem {
+  private suspend fun extractContent(item: JsonItem, url: String, doc: Document): JsonItem {
     val parser = Readability4JExtended(url, doc.html())
     val article = parser.parse()
 

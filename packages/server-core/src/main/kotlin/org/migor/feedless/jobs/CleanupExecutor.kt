@@ -18,9 +18,9 @@ import java.util.*
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.cron}")
 @Transactional(propagation = Propagation.NEVER)
-class CleanupJob internal constructor() {
+class CleanupExecutor internal constructor() {
 
-  private val log = LoggerFactory.getLogger(CleanupJob::class.simpleName)
+  private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
 
   @Autowired
   private lateinit var oneTimePasswordDAO: OneTimePasswordDAO

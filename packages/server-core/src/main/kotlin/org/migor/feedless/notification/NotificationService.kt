@@ -1,5 +1,7 @@
 package org.migor.feedless.notification
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -33,26 +35,34 @@ class NotificationService {
   @Autowired
   private lateinit var propertyService: PropertyService
 
-  fun createNotification(corrId: String, ownerId: UUID, message: String, repository: RepositoryEntity, source: SourceEntity? = null) {
+  suspend fun createNotification(
+    corrId: String,
+    ownerId: UUID,
+    message: String,
+    repository: RepositoryEntity,
+    source: SourceEntity? = null
+  ) {
     try {
       log.info("[$corrId] Create notification with '$message'")
-      val user = userDAO.findById(ownerId).orElseThrow()
+      withContext(Dispatchers.IO) {
+        val user = userDAO.findById(ownerId).orElseThrow()
 
-      val title = source?.let { "Source '${source.title}' in repository ${repository.title}" } ?: "Repository '${repository.title}'"
+        val title = source?.let { "Source '${source.title}' in repository ${repository.title}" }
+          ?: "Repository '${repository.title}'"
 
-      val payload = NotificationPayload(repositoryId = repository.id, sourceId = source?.id)
+        val payload = NotificationPayload(repositoryId = repository.id, sourceId = source?.id)
 
-      val notification = DocumentEntity()
-      notification.url = "${propertyService.appHost}/article/${notification.id}"
-      notification.contentTitle = title
-      notification.contentText = message
-      notification.contentRaw = JsonUtil.gson.toJson(payload).toByteArray()
-      notification.contentRawMime = "application/json"
-      notification.status = ReleaseStatus.released
-      notification.repositoryId = user.notificationRepositoryId ?: userService.createNotificationsRepository(user).id
+        val notification = DocumentEntity()
+        notification.url = "${propertyService.appHost}/article/${notification.id}"
+        notification.contentTitle = title
+        notification.contentText = message
+        notification.contentRaw = JsonUtil.gson.toJson(payload).toByteArray()
+        notification.contentRawMime = "application/json"
+        notification.status = ReleaseStatus.released
+        notification.repositoryId = user.notificationRepositoryId ?: userService.createNotificationsRepository(user).id
 
-      documentDAO.save(notification)
-
+        documentDAO.save(notification)
+      }
     } catch (e: Exception) {
       log.error("[$corrId] Failed to create notification: $message", e)
     }

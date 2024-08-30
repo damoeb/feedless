@@ -1,33 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  ProductConfig,
-} from '../../services/app-config.service';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import {
-  FeedWithRequest,
-  NativeOrGenericFeed,
-} from '../../components/feed-builder/feed-builder.component';
+import { AppConfigService, ProductConfig } from '../../services/app-config.service';
+import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import { FeedWithRequest, NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeRequest,
-  GqlSourceInput,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapeRequest, GqlSourceInput, GqlVisibility } from '../../../generated/graphql';
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { Repository } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
+import { RepositoryService } from '../../services/repository.service';
+import { Router } from '@angular/router';
+
+export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 
 @Component({
   selector: 'app-feed-builder-page',
@@ -44,6 +30,8 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     private readonly appConfigService: AppConfigService,
     private readonly modalService: ModalService,
     private readonly titleService: Title,
+    private readonly repositoryService: RepositoryService,
+    private readonly router: Router,
     private readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
@@ -87,7 +75,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           },
         ],
       },
-    });
+    }, true);
   }
 
   async handleFeed(feed: FeedWithRequest) {
@@ -99,6 +87,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
       title,
       description,
       getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest),
+      feed.refine
     );
   }
 
@@ -106,16 +95,39 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     title: string,
     description: string,
     source: GqlSourceInput,
+    refine: boolean
   ) {
-    const componentProps: GenerateFeedModalComponentProps = {
-      repository: {
-        title,
-        description,
-        plugins: [],
-        sources: [source],
-      } as any,
-    };
-    await this.modalService.openFeedMetaEditor(componentProps);
+    if (refine) {
+      const componentProps: GenerateFeedModalComponentProps = {
+        repository: {
+          title,
+          description,
+          plugins: [],
+          sources: [source],
+        } as any
+      };
+      await this.modalService.openFeedMetaEditor(componentProps);
+    } else {
+      const repositories = await this.repositoryService.createRepositories({
+        repositories: [
+          {
+            product: environment.product,
+            sources: [source] as GqlSourceInput[],
+            sinkOptions: {
+              title,
+              refreshCron: DEFAULT_FETCH_CRON,
+              withShareKey: true,
+              description,
+              visibility: GqlVisibility.IsPrivate,
+              plugins: [],
+            },
+          },
+        ],
+      });
+
+      const firstRepository = repositories[0];
+      await this.router.navigateByUrl(`/feeds/${firstRepository.id}`);
+    }
   }
 
   private getFeedData(feed: NativeOrGenericFeed, urlString: string) {

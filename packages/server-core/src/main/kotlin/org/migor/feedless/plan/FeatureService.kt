@@ -1,5 +1,7 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.Feature
@@ -18,6 +20,7 @@ import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
 @Profile(AppProfiles.database)
+@Transactional
 class FeatureService {
 
   private val log = LoggerFactory.getLogger(FeatureService::class.simpleName)
@@ -37,23 +40,26 @@ class FeatureService {
   @Autowired
   private lateinit var featureValueDAO: FeatureValueDAO
 
-  fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
-    val featureGroupId = featureGroupIdOptional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
+  suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
+    return withContext(Dispatchers.IO) {
+      val featureGroupId = featureGroupIdOptional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
 
-    return featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
-      run {
-        assert(feature.valueType == FeatureValueType.bool)
-        !feature.valueBoolean!!
-      }
-    } ?: false
+      featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
+        run {
+          assert(feature.valueType == FeatureValueType.bool)
+          !feature.valueBoolean!!
+        }
+      } ?: false
+    }
   }
 
-  @Transactional(readOnly = true)
-  fun findAllByProduct(product: ProductCategory): List<Feature> {
-    val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
-      ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!
-    val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(featureGroup.id)
-    return toDTO(productFeatures)
+  suspend fun findAllByProduct(product: ProductCategory): List<Feature> {
+    return withContext(Dispatchers.IO) {
+      val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
+        ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!
+      val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(featureGroup.id)
+      toDTO(productFeatures)
+    }
   }
 
   private fun toDTO(values: List<FeatureValueEntity>): List<Feature> {
@@ -69,7 +75,7 @@ class FeatureService {
 
   }
 
-  fun updateFeatureValue(
+  suspend fun updateFeatureValue(
     corrId: String,
     id: UUID,
     intValue: FeatureIntValueInput?,
@@ -79,27 +85,30 @@ class FeatureService {
     if (!sessionService.user(corrId).root) {
       throw IllegalArgumentException("must be root")
     }
-    val feature = featureValueDAO.findById(id).orElseThrow()
 
-    if (feature.valueType == FeatureValueType.bool) {
-      feature.valueBoolean = boolValue!!.value
-      featureValueDAO.save(feature)
-    } else {
-      if (feature.valueType == FeatureValueType.number) {
-        feature.valueInt = intValue!!.value
+    withContext(Dispatchers.IO) {
+      val feature = featureValueDAO.findById(id).orElseThrow()
+
+      if (feature.valueType == FeatureValueType.bool) {
+        feature.valueBoolean = boolValue!!.value
         featureValueDAO.save(feature)
       } else {
-        throw IllegalArgumentException("Value type ${feature.valueType} is not supported")
+        if (feature.valueType == FeatureValueType.number) {
+          feature.valueInt = intValue!!.value
+          featureValueDAO.save(feature)
+        } else {
+          throw IllegalArgumentException("Value type ${feature.valueType} is not supported")
+        }
       }
     }
   }
 
-  fun assignFeatureValues(
+  suspend fun assignFeatureValues(
     featureGroup: FeatureGroupEntity,
     features: Map<FeatureName, FeatureValueEntity>
   ) {
     features.forEach { (featureName, nextFeatureValue) ->
-      run {
+      withContext(Dispatchers.IO) {
         val feature = featureDAO.findByName(featureName.name) ?: createFeature(featureName)
 
         featureValueDAO.findByFeatureGroupIdAndFeatureId(featureGroup.id, feature.id)
@@ -129,30 +138,36 @@ class FeatureService {
     }
   }
 
-  private fun createFeature(featureName: FeatureName): FeatureEntity {
+  private suspend fun createFeature(featureName: FeatureName): FeatureEntity {
     val feature = FeatureEntity()
     feature.name = featureName.name
-    return featureDAO.save(feature)
+    return withContext(Dispatchers.IO) {
+      featureDAO.save(feature)
+    }
   }
 
 
-  fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
-    val groups = if (where.id == null) {
-      this.featureGroupDAO.findAll()
-    } else {
-      listOf(this.featureGroupDAO.findById(UUID.fromString(where.id.equals)).orElseThrow())
+  suspend fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
+    val groups = withContext(Dispatchers.IO) {
+      if (where.id == null) {
+        featureGroupDAO.findAll()
+      } else {
+        listOf(featureGroupDAO.findById(UUID.fromString(where.id.equals)).orElseThrow())
+      }
     }
     return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
   }
 
-  private fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
-    return toDTO(
-      if (inherit) {
-        featureValueDAO.resolveAllByFeatureGroupId(featureGroupId)
-      } else {
-        featureValueDAO.findAllByFeatureGroupId(featureGroupId)
-      }
-    )
+  private suspend fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
+    return withContext(Dispatchers.IO) {
+      toDTO(
+        if (inherit) {
+          featureValueDAO.resolveAllByFeatureGroupId(featureGroupId)
+        } else {
+          featureValueDAO.findAllByFeatureGroupId(featureGroupId)
+        }
+      )
+    }
   }
 }
 

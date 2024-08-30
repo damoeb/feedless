@@ -6,7 +6,10 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiParams
@@ -26,12 +29,12 @@ import org.migor.feedless.generated.types.WebDocumentsWhereInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.time.LocalDateTime
@@ -39,6 +42,7 @@ import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.api}")
+@Transactional
 class DocumentResolver {
 
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
@@ -60,11 +64,11 @@ class DocumentResolver {
 
   @Throttled
   @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   suspend fun webDocument(
     @InputArgument data: WebDocumentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): WebDocument = coroutineScope {
+  ): WebDocument = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] webDocument $data")
     val document =
       documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
@@ -74,11 +78,11 @@ class DocumentResolver {
 
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.WebDocuments)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   suspend fun webDocuments(
     @InputArgument data: WebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<WebDocument> = coroutineScope {
+  ): List<WebDocument> = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] webDocuments $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
@@ -91,20 +95,20 @@ class DocumentResolver {
     }.toList()
   }
 
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
-    val repository: Repository = dfe.getSource()
-    documentDAO.countByRepositoryId(UUID.fromString(repository.id))
+    val repository: Repository = dfe.getSource()!!!!
+    withContext(Dispatchers.IO) {
+      documentDAO.countByRepositoryId(UUID.fromString(repository.id))
+    }
   }
 
-  @DgsMutation
+  @DgsMutation(field = DgsConstants.MUTATION.DeleteWebDocuments)
   @PreAuthorize("hasAuthority('USER')")
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteWebDocuments(
     @InputArgument data: DeleteWebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
     documentService.deleteDocuments(
       corrId,
       sessionService.user(corrId),
@@ -115,7 +119,7 @@ class DocumentResolver {
   }
 
   @DgsQuery(field = DgsConstants.QUERY.WebDocumentsFrequency)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @Transactional
   suspend fun webDocumentsFrequency(
     @InputArgument where: WebDocumentsWhereInput,
     @InputArgument groupBy: WebDocumentDateField,
@@ -128,11 +132,12 @@ class DocumentResolver {
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
   ): List<DocumentFrequency> = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSource()!!!!
     documentService.getDocumentFrequency(
       WebDocumentsWhereInput(
         repository = RepositoryUniqueWhereInput(id = repository.id),
-        createdAt = DatesWhereInput(after = toDate(LocalDateTime.now().minusMonths(1)).time)),
+        createdAt = DatesWhereInput(after = toDate(LocalDateTime.now().minusMonths(1)).time)
+      ),
       WebDocumentDateField.createdAt
     )
   }

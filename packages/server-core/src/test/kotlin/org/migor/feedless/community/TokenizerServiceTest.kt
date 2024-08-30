@@ -19,16 +19,37 @@ class TokenizerServiceTest {
 
   @Test
   fun `tokenize german text works`() {
-    assertThat(service.tokenizeWords("Hallo mein Name ist foo", Locale.GERMAN)).isEqualTo(arrayOf("Hallo","mein","Name","ist", "foo"))
+    assertThat(service.tokenizeWords("Hallo mein Name ist foo", Locale.GERMAN)).isEqualTo(
+      arrayOf(
+        "Hallo",
+        "mein",
+        "Name",
+        "ist",
+        "foo"
+      )
+    )
   }
 
   @Test
   fun `tokenize english text works`() {
-    assertThat(service.tokenizeWords("Hello my name is foo", Locale.ENGLISH)).isEqualTo(arrayOf("Hello","my","name","is", "foo"))
+    assertThat(service.tokenizeWords("Hello my name is foo", Locale.ENGLISH)).isEqualTo(
+      arrayOf(
+        "Hello",
+        "my",
+        "name",
+        "is",
+        "foo"
+      )
+    )
   }
 
   @Test
   fun `tokenize as words works`() {
-    assertThat(service.tokenizeWords("Hello, can you help me accessing the website https://example.org", Locale.ENGLISH)).isEqualTo(arrayOf("Hello", "can", "you", "help", "me", "accessing", "the", "website", "https://example.org"))
+    assertThat(
+      service.tokenizeWords(
+        "Hello, can you help me accessing the website https://example.org",
+        Locale.ENGLISH
+      )
+    ).isEqualTo(arrayOf("Hello", "can", "you", "help", "me", "accessing", "the", "website", "https://example.org"))
   }
 }

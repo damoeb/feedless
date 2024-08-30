@@ -24,11 +24,11 @@ class LanguageService {
     languageDetector = LanguageDetectorME(model)
   }
 
-  fun bestLanguage(text: String): Language {
+  suspend fun bestLanguage(text: String): Language {
     return languageDetector.predictLanguage(text)
   }
 
-  fun bestLocale(text: String): Locale {
+  suspend fun bestLocale(text: String): Locale {
     return Locale.of(bestLanguage(text).lang)
   }
 

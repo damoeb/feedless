@@ -1,5 +1,7 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -14,6 +16,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -21,6 +24,7 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
+@Transactional
 class PlanConstraintsService {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
@@ -43,7 +47,7 @@ class PlanConstraintsService {
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
-  fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
+  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
     val minItems =
       (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
     val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
@@ -55,11 +59,11 @@ class PlanConstraintsService {
     } ?: maxItems
   }
 
-  private fun resolveProduct(product: ProductCategory?): ProductCategory {
+  private suspend fun resolveProduct(product: ProductCategory?): ProductCategory {
     return product ?: sessionService.activeProductFromRequest()!!
   }
 
-  fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID, product: ProductCategory): Date {
+  suspend fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID, product: ProductCategory): Date {
     val minRefreshRateInMinutes =
       (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
     val minNextDate = toDate(
@@ -74,7 +78,7 @@ class PlanConstraintsService {
     }
   }
 
-  fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: ProductCategory): Int? {
+  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: ProductCategory): Int? {
     val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
@@ -85,10 +89,10 @@ class PlanConstraintsService {
     return cronString
   }
 
-  fun coerceVisibility(corrId: String, visibility: EntityVisibility?): EntityVisibility {
+  suspend fun coerceVisibility(corrId: String, visibility: EntityVisibility?): EntityVisibility {
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
-      userIdFromRequest()
+      sessionService.userId()!!
     ) ?: false
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate
@@ -100,7 +104,7 @@ class PlanConstraintsService {
     }
   }
 
-  fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
+  suspend fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
     actionsCount
       ?.let {
         val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
@@ -110,7 +114,7 @@ class PlanConstraintsService {
       }
   }
 
-  fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
+  suspend fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
     timeout
       ?.let {
         val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutMsecInt, userId)
@@ -120,26 +124,33 @@ class PlanConstraintsService {
       }
   }
 
-  private fun userIdFromRequest() = sessionService.userId()!!
-
-  private fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? =
+  private suspend fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? =
     getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
-  private fun getFeatureBool(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Boolean? =
+  private suspend fun getFeatureBool(
+    featureName: FeatureName,
+    userId: UUID,
+    product: ProductCategory? = null
+  ): Boolean? =
     getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
 
-  private fun getFeature(featureName: FeatureName, userId: UUID, product: ProductCategory): FeatureValueEntity? {
-//    val user = userDAO.findById(userId).orElseThrow()
+  private suspend fun getFeature(
+    featureName: FeatureName,
+    userId: UUID,
+    product: ProductCategory
+  ): FeatureValueEntity? {
     return try {
-      if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
-        featureValueDAO.resolveByFeatureGroupIdAndName(
-          featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id,
-          featureName.name
-        )
-      } else {
-        planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless))?.let {
-          featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
-        } ?: throw IllegalArgumentException("user has no subscription")
+      withContext(Dispatchers.IO) {
+        if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
+          featureValueDAO.resolveByFeatureGroupIdAndName(
+            featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id,
+            featureName.name
+          )
+        } else {
+          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless))?.let {
+            featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
+          } ?: throw IllegalArgumentException("user has no subscription")
+        }
       }
     } catch (e: Exception) {
       log.error("getFeature featureName=$featureName userId=$userId product=$product failed: ${e.message}")
@@ -147,19 +158,21 @@ class PlanConstraintsService {
     }
   }
 
-  fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
+  suspend fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
     val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotalInt, userId)
     if (maxSubscriptions != null && maxSubscriptions < count) {
       throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
     }
   }
 
-  fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
-    val activeCount = repositoryDAO.countByOwnerIdAndArchived(userId, false)
+  suspend fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
+    val activeCount = withContext(Dispatchers.IO) {
+      repositoryDAO.countByOwnerIdAndArchived(userId, false)
+    }
     return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
-  fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
+  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
     val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")

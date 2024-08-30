@@ -75,7 +75,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
       "#url" to "url",
       "#any" to "any",
     )
-    return if(fields.keys.any { legacyExpression.contains(it) } || legacyExpression.contains("not(")) {
+    return if (fields.keys.any { legacyExpression.contains(it) } || legacyExpression.contains("not(")) {
       var converted = legacyExpression
         .replace("not(", "!(")
         .replace("\")", "')")

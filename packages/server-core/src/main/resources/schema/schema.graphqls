@@ -348,11 +348,11 @@ input WebDocumentUpdateInput {
   url: StringUpdateOperationsInput
 }
 
-input CreateUserInput {
-  email: String!
-#  product: ProductCategory!
-  newsletter: Boolean!
-}
+#input CreateUserInput {
+#  email: String!
+##  product: ProductCategory!
+#  newsletter: Boolean!
+#}
 
 enum ProductCategory {
 #  system

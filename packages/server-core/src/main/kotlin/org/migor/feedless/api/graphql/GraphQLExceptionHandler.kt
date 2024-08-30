@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture
 class GraphQLExceptionHandler : DataFetcherExceptionHandler {
   private val log = LoggerFactory.getLogger(GraphQLExceptionHandler::class.simpleName)
 
-  override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult> {
+  override fun handleException(handlerParameters: DataFetcherExceptionHandlerParameters?): CompletableFuture<DataFetcherExceptionHandlerResult>? {
     return when (handlerParameters?.exception) {
       is RuntimeException, is IllegalAccessException, is UnknownHostException -> toGraphqlError(
         handlerParameters.exception,
@@ -37,7 +37,7 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
           handlerParameters
         )
 
-        else -> super.handleException(handlerParameters)
+        else -> null
       }
     }
   }
@@ -52,12 +52,13 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
     val errorType = toErrorType(throwable)
     log.warn("[$corrId] ${errorType.name} ${handlerParameters.exception.message}")
     val debugInfo: MutableMap<String, Any> = HashMap()
-    debugInfo["corrId"] = corrId?:""
+    debugInfo["corrId"] = corrId ?: ""
     val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
       .message(handlerParameters.exception.message)
       .debugInfo(debugInfo)
       .errorType(errorType)
-      .path(handlerParameters.path).build()
+      .path(handlerParameters.path)
+      .build()
     val result: DataFetcherExceptionHandlerResult = DataFetcherExceptionHandlerResult.newResult()
       .error(graphqlError)
       .build()

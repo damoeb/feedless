@@ -3,7 +3,7 @@ package org.migor.feedless.feed.parser.json
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
-open class JsonFeed: java.io.Serializable {
+open class JsonFeed : java.io.Serializable {
   @SerializedName(value = "id")
   lateinit var id: String
 

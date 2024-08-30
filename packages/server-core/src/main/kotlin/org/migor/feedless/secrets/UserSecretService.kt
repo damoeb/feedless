@@ -1,5 +1,7 @@
 package org.migor.feedless.secrets
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
@@ -33,7 +35,7 @@ class UserSecretService {
 //    return userSecretDAO.save(k)
 //  }
 
-  fun createUserSecret(corrId: String, user: UserEntity): UserSecretEntity {
+  suspend fun createUserSecret(corrId: String, user: UserEntity): UserSecretEntity {
     val token = tokenProvider.createJwtForApi(user)
     val k = UserSecretEntity()
     k.ownerId = user.id
@@ -43,19 +45,27 @@ class UserSecretService {
       LocalDateTime.now().plus(tokenProvider.getApiTokenExpiration()).atZone(ZoneId.systemDefault()).toInstant()
     )
 
-    return userSecretDAO.save(k)
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.save(k)
+    }
   }
 
-  fun deleteUserSecrets(corrId: String, user: UserEntity, uuids: List<UUID>) {
-    userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
+  suspend fun deleteUserSecrets(corrId: String, user: UserEntity, uuids: List<UUID>) {
+    withContext(Dispatchers.IO) {
+      userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
+    }
   }
 
-  fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecretEntity? {
-    return userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
+  suspend fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecretEntity? {
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
+    }
   }
 
-  fun updateLastUsed(id: UUID, date: Date) {
-    userSecretDAO.updateLastUsed(id, date)
+  suspend fun updateLastUsed(id: UUID, date: Date) {
+    withContext(Dispatchers.IO) {
+      userSecretDAO.updateLastUsed(id, date)
+    }
   }
 
 }

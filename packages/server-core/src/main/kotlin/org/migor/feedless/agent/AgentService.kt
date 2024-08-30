@@ -1,6 +1,11 @@
 package org.migor.feedless.agent
 
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -55,93 +60,103 @@ class AgentService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
+  suspend fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
-      userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
-        ?.let { securityKey ->
-          if (securityKey.validUntil.before(Date())) {
-            emitter.error(IllegalAccessException("Key is expired"))
-            emitter.complete()
-          } else {
-            userSecretService.updateLastUsed(securityKey.id, Date())
-            val agentRef =
-              AgentRef(
-                securityKey.id,
-                securityKey.ownerId,
-                data.name,
-                data.version,
-                data.connectionId,
-                data.os,
-                Date(),
-                emitter
-              )
+      CoroutineScope(Dispatchers.Default).launch {
+        userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
+          ?.let { securityKey ->
+            if (securityKey.validUntil.before(Date())) {
+              emitter.error(IllegalAccessException("Key is expired"))
+              emitter.complete()
+            } else {
+              userSecretService.updateLastUsed(securityKey.id, Date())
+              val agentRef =
+                AgentRef(
+                  securityKey.id,
+                  securityKey.ownerId,
+                  data.name,
+                  data.version,
+                  data.connectionId,
+                  data.os,
+                  Date(),
+                  emitter
+                )
 
-            emitter.onDispose {
-              removeAgent(corrId, agentRef)
-            }
-            emitter.next(
-              AgentEvent(
-                corrId = corrId,
-                callbackId = "none",
-                authentication = AgentAuthentication(
-                  token = tokenProvider.createJwtForAgent(securityKey).tokenValue
+              emitter.onDispose {
+                CoroutineScope(Dispatchers.Default).launch {
+                  removeAgent(corrId, agentRef)
+                }
+              }
+              emitter.next(
+                AgentEvent(
+                  corrId = corrId,
+                  callbackId = "none",
+                  authentication = AgentAuthentication(
+                    token = tokenProvider.createJwtForAgent(securityKey).tokenValue
+                  )
                 )
               )
-            )
-            addAgent(corrId, agentRef)
+              addAgent(corrId, agentRef)
+            }
           }
-        }
-        ?: run {
-          emitter.error(IllegalAccessException("user/key combination not found or account locked"))
-          emitter.complete()
-        }
+          ?: run {
+            emitter.error(IllegalAccessException("user/key combination not found or account locked"))
+            emitter.complete()
+          }
+      }
     }
   }
 
-  private fun addAgent(corrId: String, agentRef: AgentRef) {
+  private suspend fun addAgent(corrId: String, agentRef: AgentRef) {
     agentRefs.add(agentRef)
 
     log.info("[$corrId] Added Agent $agentRef")
 
-    agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+    withContext(Dispatchers.IO) {
+      agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
 
-    val agent = AgentEntity()
-    agent.secretKeyId = agentRef.secretKeyId
-    agent.name = agentRef.name
-    agent.version = agentRef.version
-    agent.lastSyncedAt = Date()
-    agent.connectionId = agentRef.connectionId
-    agent.ownerId = agentRef.ownerId
-    agent.openInstance = true
-    agentDAO.save(agent)
+      val agent = AgentEntity()
+      agent.secretKeyId = agentRef.secretKeyId
+      agent.name = agentRef.name
+      agent.version = agentRef.version
+      agent.lastSyncedAt = Date()
+      agent.connectionId = agentRef.connectionId
+      agent.ownerId = agentRef.ownerId
+      agent.openInstance = true
+      agentDAO.save(agent)
+    }
 
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
-  private fun removeAgent(corrId: String, agentRef: AgentRef) {
+  private suspend fun removeAgent(corrId: String, agentRef: AgentRef) {
     agentRefs.remove(agentRef)
     log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
-    agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+    withContext(Dispatchers.IO) {
+      agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+    }
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }
 
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
-//  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
+  //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
   suspend fun prerender(corrId: String, source: SourceEntity): AgentResponse {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      prerenderWithAgent(corrId, source, agentRef).block()!!
+      runBlocking {
+        prerenderWithAgent(corrId, source, agentRef).block()!!
+      }
     } else {
       log.warn("[$corrId] no agents present")
       throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
     }
   }
 
-  private fun prerenderWithAgent(
-      corrId: String,
-      source: SourceEntity,
-      agentRef: AgentRef
+  private suspend fun prerenderWithAgent(
+    corrId: String,
+    source: SourceEntity,
+    agentRef: AgentRef
   ): Mono<AgentResponse> {
     log.debug("[$corrId] preparing")
     return Flux.create { emitter ->
@@ -154,7 +169,7 @@ class AgentService {
             scrape = source.toDto(corrId)
           )
         )
-        log.info("[$corrId] submitted agent job $harvestJobId")
+        log.debug("[$corrId] submitted agent job $harvestJobId")
         pendingJobs[harvestJobId] = emitter
       } catch (e: Exception) {
         log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)
@@ -165,8 +180,8 @@ class AgentService {
       .next()
   }
 
-  fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
-    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
+  suspend fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+    log.debug("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.failed) {
         it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
@@ -177,8 +192,10 @@ class AgentService {
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
 
-  fun findAll(userId: UUID?): List<AgentEntity> {
-    return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+  suspend fun findAllByUserId(userId: UUID?): List<AgentEntity> {
+    return withContext(Dispatchers.IO) {
+      agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+    }
   }
 
   fun agentRefs(): ArrayList<AgentRef> {
