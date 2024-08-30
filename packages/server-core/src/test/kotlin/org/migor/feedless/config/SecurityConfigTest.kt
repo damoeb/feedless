@@ -2,14 +2,12 @@ package org.migor.feedless.config
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.MailProviderService

@@ -901,6 +901,7 @@ type User {
   hasCompletedSignup: Boolean!
   createdAt: Long!
   email: String!
+  emailValidated: Boolean!
   firstName: String
   lastName: String
   country: String

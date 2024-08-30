@@ -8,13 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.plan.ProductService
-import org.migor.feedless.secrets.UserSecretService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +22,6 @@ import org.springframework.util.ResourceUtils
 import java.net.URL
 import java.nio.file.Files
 import java.util.*
-
 
 
 @SpringBootTest

@@ -10,6 +10,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -42,12 +43,15 @@ open class UserEntity : EntityWithUUID() {
   open lateinit var email: String
 
   @Column(name = "first_name")
+  @Size(max = 150)
   open var firstName: String? = null
 
   @Column(name = "last_name")
+  @Size(max = 150)
   open var lastName: String? = null
 
   @Column(name = "country")
+  @Size(max = 150)
   open var country: String? = null
 
   open var githubId: String? = null
@@ -152,6 +156,7 @@ fun UserEntity.toDTO(): User =
     hasAcceptedTerms = hasAcceptedTerms,
     hasCompletedSignup = hasFinalizedProfile(),
     email = StringUtils.trimToEmpty(email),
+    emailValidated = hasValidatedEmail,
     firstName = StringUtils.trimToEmpty(firstName),
     lastName = StringUtils.trimToEmpty(lastName),
     country = StringUtils.trimToEmpty(country),

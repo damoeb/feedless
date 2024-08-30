@@ -33,8 +33,6 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.toDto
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.CompareBy
@@ -62,6 +60,7 @@ import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.mail.MailForwardEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
 import org.springframework.context.annotation.Lazy
 import java.util.*

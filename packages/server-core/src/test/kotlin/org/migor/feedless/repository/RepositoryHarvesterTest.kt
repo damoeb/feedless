@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.any
 import org.migor.feedless.document.anyList
@@ -17,6 +15,8 @@ import org.migor.feedless.document.anyOrNull
 import org.migor.feedless.document.eq
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceEntity
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock

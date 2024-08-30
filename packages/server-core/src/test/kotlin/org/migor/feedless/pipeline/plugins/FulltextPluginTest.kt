@@ -15,7 +15,6 @@ import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.any
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
@@ -23,6 +22,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceEntity
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock

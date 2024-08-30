@@ -18,7 +18,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
@@ -34,7 +33,6 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.WebDocument
@@ -42,6 +40,7 @@ import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
+import org.migor.feedless.source.SourceEntity
 import org.springframework.context.annotation.Lazy
 import java.nio.charset.StandardCharsets
 import java.util.*

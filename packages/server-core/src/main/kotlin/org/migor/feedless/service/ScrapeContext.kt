@@ -6,7 +6,6 @@ import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.pipeline.FragmentOutput
 import org.slf4j.Logger
 import java.util.*
-import kotlin.collections.HashMap
 
 data class HttpFetchOutput(val response: HttpResponse, val debug: FetchActionDebugResponse)
 data class ScrapeActionOutput(

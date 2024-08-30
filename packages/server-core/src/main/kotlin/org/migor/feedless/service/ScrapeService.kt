@@ -19,7 +19,6 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.LogStatement
@@ -33,6 +32,7 @@ import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

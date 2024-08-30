@@ -9,6 +9,7 @@ fragment UserFragment on User {
   hasAcceptedTerms
   hasCompletedSignup
   email
+  emailValidated
   firstName
   lastName
   createdAt

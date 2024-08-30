@@ -6,8 +6,6 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.toDto
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -16,6 +14,8 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.toDto
 import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -154,7 +154,7 @@ class AgentService {
             scrape = source.toDto(corrId)
           )
         )
-        log.info("$corrId] submitted agent job $harvestJobId")
+        log.info("[$corrId] submitted agent job $harvestJobId")
         pendingJobs[harvestJobId] = emitter
       } catch (e: Exception) {
         log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)

@@ -3,10 +3,10 @@ package org.migor.feedless.notification
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.JsonUtil

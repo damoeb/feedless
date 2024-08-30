@@ -1,6 +1,5 @@
 package org.migor.feedless.pipeline.plugins
 
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
@@ -9,7 +8,6 @@ import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -19,6 +17,7 @@ import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.service.needsPrerendering
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory

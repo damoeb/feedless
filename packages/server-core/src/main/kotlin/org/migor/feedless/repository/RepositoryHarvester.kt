@@ -13,9 +13,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.toDto
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_URL
@@ -34,6 +31,9 @@ import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.toDto
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
 import org.slf4j.LoggerFactory

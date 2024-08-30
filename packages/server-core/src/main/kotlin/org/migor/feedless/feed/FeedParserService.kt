@@ -9,7 +9,6 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.toDto
 import org.migor.feedless.feed.parser.FeedBodyParser
@@ -29,6 +28,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JtsUtil

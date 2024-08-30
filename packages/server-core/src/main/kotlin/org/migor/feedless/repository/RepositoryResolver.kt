@@ -13,7 +13,6 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.CronRun
@@ -28,6 +27,7 @@ import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.source.SourceDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

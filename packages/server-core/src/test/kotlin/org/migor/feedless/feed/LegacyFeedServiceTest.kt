@@ -1,8 +1,5 @@
 package org.migor.feedless.feed
 
-import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 
 val corrId = "test"

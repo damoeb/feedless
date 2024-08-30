@@ -26,10 +26,7 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.JsonUtil
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 

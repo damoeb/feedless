@@ -42,7 +42,7 @@ class AgentResponseCacheKeyGenerator : KeyGenerator {
 
 @Configuration
 @EnableCaching
-@Profile(AppProfiles.cache)
+@Profile("${AppProfiles.cache} & !${AppProfiles.dev}")
 class CacheConfig {
 
   @Bean

@@ -146,6 +146,19 @@ class UserService {
       changed = true
     }
 
+    data.firstName?.let {
+      user.firstName = it.set
+      changed = true
+    }
+    data.lastName?.let {
+      user.lastName = it.set
+      changed = true
+    }
+    data.country?.let {
+      user.country = it.set
+      changed = true
+    }
+
     data.plan?.let {
       productService.enableCloudProduct(corrId, productDAO.findById(UUID.fromString(it.set)).orElseThrow(), user)
     }
@@ -154,11 +167,13 @@ class UserService {
       if (it.set) {
         user.hasAcceptedTerms = true
         user.acceptedTermsAt = Timestamp.from(Date().toInstant())
-        log.info("[$corrId] accepted terms")
-        changed = true
+        log.debug("[$corrId] accepted terms")
       } else {
-        log.info("[$corrId] illegal operation acceptedTermsAndServices.set=false")
+        log.debug("[$corrId] rejecting hasAcceptedTerms")
+        user.hasAcceptedTerms = false
+        user.acceptedTermsAt = null
       }
+      changed = true
     }
     data.purgeScheduledFor?.let {
       if (it.assignNull) {
@@ -171,7 +186,7 @@ class UserService {
       changed = true
     }
     if (changed) {
-      userDAO.saveAndFlush(user)
+      userDAO.save(user)
     } else {
       log.info("[$corrId] unchanged")
     }

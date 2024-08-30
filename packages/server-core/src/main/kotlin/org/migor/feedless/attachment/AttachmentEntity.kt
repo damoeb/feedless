@@ -8,7 +8,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.OnDelete

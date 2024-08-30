@@ -1,9 +1,5 @@
 package org.migor.feedless.repository
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.util.CryptUtil.newCorrId

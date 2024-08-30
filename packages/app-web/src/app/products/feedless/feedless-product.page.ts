@@ -1,20 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ScrapeResponse } from '../../graphql/types';
+import { Session } from '../../graphql/types';
 import { SessionService } from '../../services/session.service';
-import {
-  AppConfigService,
-  ProductConfig,
-} from '../../services/app-config.service';
+import { AppConfigService, ProductConfig } from '../../services/app-config.service';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { GqlProductCategory } from '../../../generated/graphql';
+import { relativeTimeOrElse } from '../../components/agents/agents.component';
 
 @Component({
   selector: 'app-feedless-product-page',
@@ -23,23 +15,28 @@ import { GqlProductCategory } from '../../../generated/graphql';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedlessProductPage implements OnInit, OnDestroy {
-  scrapeResponse: ScrapeResponse;
-  productConfig: ProductConfig;
-  url: string;
+  protected productConfig: ProductConfig;
+  protected url: string;
   private subscriptions: Subscription[] = [];
-  authorization: Authentication;
+  protected authorization: Authentication;
+  protected session: Session;
+  protected readonly GqlProductName = GqlProductCategory;
+  protected fromNow = relativeTimeOrElse
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly appConfigService: AppConfigService,
     private readonly authService: AuthService,
+    private readonly sessionService: SessionService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly router: Router,
     readonly profile: SessionService,
   ) {}
 
   async ngOnInit() {
     this.subscriptions.push(
+      this.sessionService.getSession().subscribe(session => {
+        this.session = session;
+      }),
       this.authService.authorizationChange().subscribe((authorization) => {
         this.authorization = authorization;
       }),
@@ -62,17 +59,12 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  // async handleQuery(url: string) {
-  //   try {
-  //     this.url = fixUrl(url);
-  //     await this.router.navigate(['/feed-builder'], {
-  //       queryParams: {
-  //         url: this.url,
-  //       },
-  //     });
-  //   } catch (e) {
-  //     console.warn(e);
-  //   }
-  // }
-  protected readonly GqlProductName = GqlProductCategory;
+  async cancelAccountDeletion() {
+    await this.sessionService.updateCurrentUser({
+      purgeScheduledFor: {
+        assignNull: true
+      }
+    });
+    location.reload();
+  }
 }

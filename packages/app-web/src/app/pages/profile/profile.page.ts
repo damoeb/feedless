@@ -23,14 +23,18 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
-    country: new FormControl<string>('', Validators.required),
-    firstName: new FormControl<string>('', [
-      Validators.required,
+    emailVerified: new FormControl<boolean>(false),
+    country: new FormControl<string>('', [
       Validators.minLength(2),
+      Validators.maxLength(50),
+    ]),
+    firstName: new FormControl<string>('', [
+      Validators.minLength(2),
+      Validators.maxLength(50),
     ]),
     lastName: new FormControl<string>('', [
-      Validators.required,
       Validators.minLength(2),
+      Validators.maxLength(50),
     ]),
   });
 
@@ -65,6 +69,7 @@ export class ProfilePage implements OnInit, OnDestroy {
             email: session.user.email,
             firstName: session.user.firstName,
             lastName: session.user.lastName,
+            emailVerified: session.user.emailValidated,
           });
         }
       }),
@@ -87,4 +92,31 @@ export class ProfilePage implements OnInit, OnDestroy {
   //     ],
   //   });
   // }
+
+  async saveProfile() {
+    if (this.formFg.valid && this.formFg.dirty) {
+      await this.sessionService.updateCurrentUser({
+        firstName: {
+          set: this.formFg.value.firstName
+        },
+        lastName: {
+          set: this.formFg.value.lastName
+        },
+        country: {
+          set: this.formFg.value.country
+        },
+        email: {
+          set: this.formFg.value.email
+        }
+      });
+
+      const toast = await this.toastCtrl.create({
+        message: 'Saved',
+        duration: 3000,
+        color: 'success',
+      });
+
+      await toast.present();
+    }
+  }
 }

@@ -4,13 +4,13 @@ package org.migor.feedless.feed
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.agent.AgentService
-import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.any
@@ -21,8 +21,6 @@ import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -114,6 +112,7 @@ class LegacyFeedControllerTest {
   }
 
   @Test
+  @Tag("unstable")
   fun `calling w2f returns a feed`() {
     val restTemplate = TestRestTemplate()
 

@@ -14,8 +14,6 @@ import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.document.createDocumentUrl
@@ -35,6 +33,8 @@ import org.migor.feedless.mail.MailForwardDAO
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
@@ -142,11 +142,13 @@ class RepositoryService {
       }
       repo.plugins = it.map { plugin -> plugin.fromDto() }
     }
-    repo.shareKey = if (subInput.sinkOptions.withShareKey) {
-      newCorrId(10)
-    } else {
-      ""
-    }
+    repo.shareKey = newCorrId(10)
+//    if (subInput.sinkOptions.withShareKey) {
+//      newCorrId(10)
+//    } else {
+//      ""
+//    }
+
     repo.sourcesSyncCron = subInput.sinkOptions.refreshCron?.let {
       planConstraintsService.auditCronExpression(subInput.sinkOptions.refreshCron)
     } ?: ""
