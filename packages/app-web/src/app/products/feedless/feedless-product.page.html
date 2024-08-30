@@ -1,9 +1,12 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="danger"
-               style="padding-right: 5px; padding-left: 5px;"
-               *ngIf="session?.user?.purgeScheduledFor">
+  <ion-toolbar
+    color="danger"
+    style="padding-right: 5px; padding-left: 5px"
+    *ngIf="session?.user?.purgeScheduledFor"
+  >
     <ion-label>
-      This account is scheduled to be deleted in {{fromNow(session.user?.purgeScheduledFor)}}
+      This account is scheduled to be deleted in
+      {{fromNow(session.user?.purgeScheduledFor)}}
     </ion-label>
     <ion-button slot="end" color="dark" (click)="cancelAccountDeletion()">
       Cancel Deletion

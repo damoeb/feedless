@@ -97,17 +97,17 @@ export class ProfilePage implements OnInit, OnDestroy {
     if (this.formFg.valid && this.formFg.dirty) {
       await this.sessionService.updateCurrentUser({
         firstName: {
-          set: this.formFg.value.firstName
+          set: this.formFg.value.firstName,
         },
         lastName: {
-          set: this.formFg.value.lastName
+          set: this.formFg.value.lastName,
         },
         country: {
-          set: this.formFg.value.country
+          set: this.formFg.value.country,
         },
         email: {
-          set: this.formFg.value.email
-        }
+          set: this.formFg.value.email,
+        },
       });
 
       const toast = await this.toastCtrl.create({

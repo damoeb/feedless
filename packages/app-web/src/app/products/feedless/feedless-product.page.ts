@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Session } from '../../graphql/types';
 import { SessionService } from '../../services/session.service';
-import { AppConfigService, ProductConfig } from '../../services/app-config.service';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../services/app-config.service';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { GqlProductCategory } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
@@ -21,7 +30,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
   protected authorization: Authentication;
   protected session: Session;
   protected readonly GqlProductName = GqlProductCategory;
-  protected fromNow = relativeTimeOrElse
+  protected fromNow = relativeTimeOrElse;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -34,7 +43,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.sessionService.getSession().subscribe(session => {
+      this.sessionService.getSession().subscribe((session) => {
         this.session = session;
       }),
       this.authService.authorizationChange().subscribe((authorization) => {
@@ -62,8 +71,8 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
   async cancelAccountDeletion() {
     await this.sessionService.updateCurrentUser({
       purgeScheduledFor: {
-        assignNull: true
-      }
+        assignNull: true,
+      },
     });
     location.reload();
   }

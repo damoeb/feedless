@@ -135,7 +135,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
-    if (this.repository.visibility === GqlVisibility.IsPrivate && this.repository.shareKey?.length > 0) {
+    if (
+      this.repository.visibility === GqlVisibility.IsPrivate &&
+      this.repository.shareKey?.length > 0
+    ) {
       this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
     } else {
       this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
