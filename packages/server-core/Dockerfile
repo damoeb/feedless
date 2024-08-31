@@ -18,7 +18,8 @@ ENV APP_ACTIVE_PROFILES="prod" \
     APP_GIT_HASH=$APP_GIT_HASH
 
 EXPOSE 8080
-RUN addgroup -g 1000 java && \
+RUN apk add --no-cache curl && \
+    addgroup -g 1000 java && \
     adduser -u 1000 -G java -s /bin/sh -D java && \
     mkdir debug
 

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -24,7 +25,11 @@ import org.springframework.web.context.request.ServletRequestAttributes
 data class PlausibleEvent(val name: String, val url: String, val domain: String)
 
 fun toFullUrlString(request: HttpServletRequest): String {
-  return request.requestURL.toString() + "?" + request.queryString
+  return if (StringUtils.isBlank(request.queryString)) {
+    request.requestURL.toString()
+  } else {
+    request.requestURL.toString() + "?" + request.queryString
+  }
 }
 
 @Aspect
@@ -39,6 +44,7 @@ class AnalyticsService {
   lateinit var plausibleSite: String
 
   private lateinit var httpClient: AsyncHttpClient
+  private var plausibleIsReady = true
 
   @PostConstruct
   fun postConstruct() {
@@ -63,28 +69,32 @@ class AnalyticsService {
   @Before("@annotation(org.migor.feedless.analytics.Tracked)")
   fun track(joinPoint: JoinPoint) {
     try {
-      val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
+      if (plausibleIsReady) {
+        val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
-      // https://plausible.io/docs/events-api
-      val event = PlausibleEvent(name = "pageview", url = toFullUrlString(request), domain = plausibleSite)
-      val expectedStatusCode = 202
+        val url = toFullUrlString(request)
+        log.debug("track url $url")
+        // https://plausible.io/docs/events-api
+        val event = PlausibleEvent(name = "pageview", url = url, domain = plausibleSite)
+        val expectedStatusCode = 202
 
-      val getHeader = { header: String ->
-        StringUtils.trimToEmpty(request.getHeader(header))
+        val getHeader = { header: String ->
+          StringUtils.trimToEmpty(request.getHeader(header))
+        }
+
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+        val forwardedForHeader = "X-Forwarded-For"
+        httpClient.preparePost("$plausibleUrl/api/event")
+          .addHeader(HttpHeaders.USER_AGENT, getHeader(HttpHeaders.USER_AGENT))
+          .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+          .addHeader(HttpHeaders.REFERER, getHeader(HttpHeaders.REFERER))
+          .addHeader(forwardedForHeader, getHeader(forwardedForHeader))
+          .setBody(JsonUtil.gson.toJson(event))
+          .execute(CompletionHandlerBase(expectedStatusCode))
       }
-
-      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-      val forwardedForHeader = "X-Forwarded-For"
-      httpClient.preparePost("$plausibleUrl/api/event")
-        .addHeader(HttpHeaders.USER_AGENT, getHeader(HttpHeaders.USER_AGENT))
-        .addHeader(HttpHeaders.CONTENT_TYPE, getHeader(HttpHeaders.CONTENT_TYPE))
-        .addHeader(HttpHeaders.REFERER, getHeader(HttpHeaders.REFERER))
-        .addHeader(forwardedForHeader, getHeader(forwardedForHeader))
-        .setBody(JsonUtil.gson.toJson(event))
-        .execute(CompletionHandlerBase(expectedStatusCode))
-
     } catch (e: Exception) {
-      log.debug("track failed: ${e.message}")
+      log.error("track failed: ${e.message}", e)
+      plausibleIsReady = false
     }
   }
 }
@@ -95,7 +105,7 @@ class CompletionHandlerBase(val expectedStatusCode: Int) : AsyncCompletionHandle
   override fun onStatusReceived(status: HttpResponseStatus?): AsyncHandler.State {
     val actualStatusCode = status?.statusCode
     if (actualStatusCode != expectedStatusCode) {
-      log.warn("Received httpStatus $actualStatusCode expected $expectedStatusCode")
+      log.debug("Received httpStatus $actualStatusCode expected $expectedStatusCode")
     }
     return super.onStatusReceived(status)
   }
