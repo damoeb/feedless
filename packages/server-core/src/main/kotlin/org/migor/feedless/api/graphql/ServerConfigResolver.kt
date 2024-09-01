@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.BuildInfo
@@ -44,6 +45,7 @@ class ServerConfigResolver {
   @Autowired
   private lateinit var licenseService: LicenseService
 
+  @Tracked
   @DgsQuery
   @Cacheable(
     value = [CacheNames.SERVER_SETTINGS],
