@@ -44,6 +44,7 @@ import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
+@Suppress("DEPRECATION")
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
@@ -131,9 +132,6 @@ class SecurityConfig {
     }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))) {
       urls.add("/api/auth/magic-mail/**")
-    }
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
-      urls.add("/**")
     }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
       urls.add("/testing/**")
