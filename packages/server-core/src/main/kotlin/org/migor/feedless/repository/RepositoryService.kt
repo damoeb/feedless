@@ -122,7 +122,7 @@ class RepositoryService {
   private suspend fun getActualUserOrDefaultUser(corrId: String): UserEntity {
     return sessionService.userId()?.let {
       sessionService.user(corrId)
-    } ?: userService.getAnonymousUser().also { log.info("[$corrId] fallback to user anonymous") }
+    } ?: userService.getAnonymousUser().also { log.debug("[$corrId] fallback to user anonymous") }
   }
 
   private suspend fun createSubscription(

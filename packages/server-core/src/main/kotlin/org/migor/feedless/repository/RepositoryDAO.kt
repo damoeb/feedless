@@ -3,7 +3,6 @@ package org.migor.feedless.repository
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.source.SourceEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
