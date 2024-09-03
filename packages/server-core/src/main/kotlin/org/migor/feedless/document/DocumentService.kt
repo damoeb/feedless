@@ -63,9 +63,6 @@ class DocumentService {
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
   @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
   private lateinit var documentDAO: DocumentDAO
 
   @Autowired
@@ -110,12 +107,11 @@ class DocumentService {
     ignoreVisibility: Boolean = false
   ): Page<DocumentEntity?> {
     return withContext(Dispatchers.IO) {
-      val repo = repositoryDAO.findById(repositoryId).orElseThrow()
+//      val repo = repositoryDAO.findById(repositoryId).orElseThrow()
 
-      if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
-        throw IllegalArgumentException("repo is not public")
-      }
-
+//      if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
+//        throw IllegalArgumentException("repo is not public")
+//      }
       documentDAO.findPage(pageable) {
         val whereStatements = prepareWhereStatements(where)
 

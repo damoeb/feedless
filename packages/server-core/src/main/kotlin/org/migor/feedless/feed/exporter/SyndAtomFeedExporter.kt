@@ -28,7 +28,6 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.springframework.stereotype.Service
-import java.net.URL
 
 
 @Service
@@ -114,7 +113,7 @@ class SyndAtomFeedExporter {
     entry.modules.add(entryInformation)
 
     entry.link = article.url
-    entry.author = URL(article.url).host
+
     entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
     entry.publishedDate = article.publishedAt
 

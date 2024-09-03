@@ -25,7 +25,13 @@
         <ion-segment-button [value]="viewLogs">Console</ion-segment-button>
       </ion-segment>
     </div>
-    <ion-buttons slot="end" *ngIf="viewModeFc.value === viewModeMarkup || viewModeFc.value === viewModeImage">
+    <ion-buttons
+      slot="end"
+      *ngIf="
+        viewModeFc.value === viewModeMarkup ||
+        viewModeFc.value === viewModeImage
+      "
+    >
       <ion-button (click)="zoomIn()">
         <ion-icon name="remove-outline"></ion-icon>
       </ion-button>

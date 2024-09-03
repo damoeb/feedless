@@ -17,8 +17,8 @@ type AgentAuthentication {
 }
 
 type AgentEvent {
-  callbackId: ID!
-  corrId: ID!
+  callbackId: ID
+  corrId: ID
   authentication: AgentAuthentication
   scrape: ScrapeRequest
 }

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -249,16 +250,22 @@ class RepositoryService {
 
     val pageSize = 11
     val pageable = toPageRequest(page, pageSize)
-    val pageResult = withContext(Dispatchers.IO) {
-      documentService.findAllByRepositoryId(
-        id,
-        status = ReleaseStatus.released,
-        tag = tag,
-        pageable = pageable,
-        shareKey = shareKey
-      )
+    val items = try {
+      val pageResult = withContext(Dispatchers.IO) {
+        documentService.findAllByRepositoryId(
+          id,
+          status = ReleaseStatus.released,
+          tag = tag,
+          pageable = pageable,
+          shareKey = shareKey
+        )
+      }
+       pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
+
+    } catch (e: EmptyResultDataAccessException) {
+      log.error("[$corrId] empty result", e)
+      emptyList()
     }
-    val items = pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
 
     val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
@@ -297,7 +304,7 @@ class RepositoryService {
   ): List<RepositoryEntity> {
     val pageable =
       PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
-    log.info("userId=$userId")
+    log.debug("userId=$userId")
     return withContext(Dispatchers.IO) {
       userId
         ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
@@ -312,15 +319,15 @@ class RepositoryService {
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
-      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
+//      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
         sub
-      } else {
-        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
-          sub
-        } else {
-          throw PermissionDeniedException("unauthorized ($corrId)")
-        }
-      }
+//      } else {
+//        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
+//          sub
+//        } else {
+//          throw PermissionDeniedException("unauthorized ($corrId)")
+//        }
+//      }
     }
   }
 

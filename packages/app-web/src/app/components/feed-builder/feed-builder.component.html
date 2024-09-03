@@ -111,21 +111,12 @@
       <!--        ></ion-icon>-->
       <!--      </ion-item>-->
       <ion-list bottomSlot>
-        <ion-item
-          (click)="previewFeed()"
-          [disabled]="!hasFeed"
-          [button]="true"
-        >
-          <ion-label>
-            Preview Feed
-          </ion-label>
-          <ion-icon name="eye-outline"
-                    color="primary"
-                    slot="end"></ion-icon>
+        <ion-item (click)="previewFeed()" [disabled]="!hasFeed" [button]="true">
+          <ion-label> Preview Feed </ion-label>
+          <ion-icon name="eye-outline" color="primary" slot="end"></ion-icon>
         </ion-item>
         <ion-item [disabled]="!hasFeed">
-          <ion-label color="medium"
-                     class="ion-text-center">or</ion-label>
+          <ion-label color="medium" class="ion-text-center">or</ion-label>
         </ion-item>
         <ng-container *ngIf="!hideCustomizeFeed">
           <ion-item
@@ -133,12 +124,12 @@
             [disabled]="!hasFeed"
             [button]="true"
           >
-            <ion-label>
-              Advanced Options
-            </ion-label>
-            <ion-icon name="settings-outline"
-                      color="primary"
-                      slot="end"></ion-icon>
+            <ion-label> Advanced Options </ion-label>
+            <ion-icon
+              name="settings-outline"
+              color="primary"
+              slot="end"
+            ></ion-icon>
           </ion-item>
         </ng-container>
         <ion-item
@@ -150,8 +141,7 @@
           <ion-label>
             {{ submitButtonText }}
           </ion-label>
-          <ion-icon name="checkmark-outline"
-                    slot="end"></ion-icon>
+          <ion-icon name="checkmark-outline" slot="end"></ion-icon>
         </ion-item>
       </ion-list>
     </app-transform-website-to-feed>

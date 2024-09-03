@@ -1,10 +1,30 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConfigService, ProductConfig } from '../../services/app-config.service';
-import { GenerateFeedModalComponentProps, getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
-import { FeedWithRequest, NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../services/app-config.service';
+import {
+  GenerateFeedModalComponentProps,
+  getScrapeRequest,
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import {
+  FeedWithRequest,
+  NativeOrGenericFeed,
+} from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
-import { GqlFeedlessPlugins, GqlScrapeRequest, GqlSourceInput, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapeRequest,
+  GqlSourceInput,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { getFirstFetchUrlLiteral } from '../../utils';
 import { Repository } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -54,28 +74,33 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
 
   async handleRepository(repository: Repository) {
     const url = `${this.serverConfig.gatewayUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
-    await this.handleSource(`Remix ${repository.title}`, '', {
-      title: `From ${url}`,
-      flow: {
-        sequence: [
-          {
-            fetch: {
-              get: {
-                url: {
-                  literal: url,
+    await this.handleSource(
+      `Remix ${repository.title}`,
+      '',
+      {
+        title: `From ${url}`,
+        flow: {
+          sequence: [
+            {
+              fetch: {
+                get: {
+                  url: {
+                    literal: url,
+                  },
                 },
               },
             },
-          },
-          {
-            execute: {
-              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-              params: {},
+            {
+              execute: {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                params: {},
+              },
             },
-          },
-        ],
+          ],
+        },
       },
-    }, true);
+      true,
+    );
   }
 
   async handleFeed(feed: FeedWithRequest) {
@@ -87,7 +112,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
       title,
       description,
       getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest),
-      feed.refine
+      feed.refine,
     );
   }
 
@@ -95,7 +120,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     title: string,
     description: string,
     source: GqlSourceInput,
-    refine: boolean
+    refine: boolean,
   ) {
     if (refine) {
       const componentProps: GenerateFeedModalComponentProps = {
@@ -104,7 +129,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           description,
           plugins: [],
           sources: [source],
-        } as any
+        } as any,
       };
       await this.modalService.openFeedMetaEditor(componentProps);
     } else {

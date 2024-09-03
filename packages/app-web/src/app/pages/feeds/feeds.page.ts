@@ -36,16 +36,19 @@ export class FeedsPage implements OnInit {
   private async fetchFeeds() {
     const page = 0;
 
-    const repositories = await this.repositoryService.listRepositories({
-      cursor: {
-        page,
-      },
-      where: {
-        product: {
-          in: [GqlProductCategory.RssProxy],
+    const repositories = await this.repositoryService.listRepositories(
+      {
+        cursor: {
+          page,
+        },
+        where: {
+          product: {
+            in: [GqlProductCategory.RssProxy],
+          },
         },
       },
-    }, 'network-only');
+      'network-only',
+    );
     this.repositories.push(...repositories);
     this.changeRef.detectChanges();
   }

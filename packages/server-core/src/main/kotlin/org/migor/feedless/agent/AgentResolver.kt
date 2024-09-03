@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
@@ -38,24 +39,16 @@ class AgentResolver {
   private lateinit var agentService: AgentService
 
   @DgsSubscription
-  suspend fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> = withContext(
-    useRequestContext(
-      currentCoroutineContext()
-    )
-  ) {
+  suspend fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> = coroutineScope {
     val corrId = CryptUtil.newCorrId()
-    log.debug("[$corrId] registerAgent ${data.secretKey.email}")
+    log.info("[$corrId] registerAgent ${data.secretKey.email}")
     data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
   }
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.SubmitAgentData)
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
-  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = withContext(
-    useRequestContext(
-      currentCoroutineContext()
-    )
-  ) {
+  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
     log.debug("[${data.corrId}] submitAgentData")
     agentService.handleScrapeResponse(data.corrId, data.callbackId, data.scrapeResponse)
     true

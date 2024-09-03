@@ -48,6 +48,9 @@ class LegacyFeedController {
     "/stream/bucket/{repositoryId}",
     "/bucket/{repositoryId}",
     "/bucket:{repositoryId}",
+    "/stream/bucket/{repositoryId}/atom",
+    "/bucket/{repositoryId}/atom",
+    "/bucket:{repositoryId}/atom",
   )
   fun bucketFeedWithFormat(
     @PathVariable("repositoryId") repositoryId: String,
@@ -57,6 +60,9 @@ class LegacyFeedController {
 
   @Tracked
   @GetMapping(
+    "/stream/feed/{feedId}/atom",
+    "/feed/{feedId}/atom",
+    "/feed:{feedId}/atom",
     "/stream/feed/{feedId}",
     "/feed/{feedId}",
     "/feed:{feedId}",

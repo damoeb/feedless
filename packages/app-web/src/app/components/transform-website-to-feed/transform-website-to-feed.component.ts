@@ -8,7 +8,8 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges, ViewChild
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
@@ -239,7 +240,7 @@ export class TransformWebsiteToFeedComponent
       ],
       filters: [],
       tags: [],
-    })
+    });
   }
 
   // async previewGenericFeed() {
@@ -328,6 +329,6 @@ export class TransformWebsiteToFeedComponent
   }
 
   selectTab(tab: string) {
-    this.interactiveWebsiteComponent.selectTab(tab)
+    this.interactiveWebsiteComponent.selectTab(tab);
   }
 }

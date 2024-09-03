@@ -121,7 +121,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           this.scrape();
         }),
-      this.viewModeFc.valueChanges.subscribe(value => this.segmentChange.emit(value)),
+      this.viewModeFc.valueChanges.subscribe((value) =>
+        this.segmentChange.emit(value),
+      ),
       this.scrapeController.pickPoint.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
@@ -265,6 +267,6 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   }
 
   selectTab(tab: string) {
-    this.viewModeFc.patchValue(tab)
+    this.viewModeFc.patchValue(tab);
   }
 }

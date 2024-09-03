@@ -56,7 +56,12 @@
             ></div>
           </ion-item>
 
-          <ion-list *ngIf="showSelectors && currentGenericFeed?.hash === genericFeed.hash" class="marked-border-bottom">
+          <ion-list
+            *ngIf="
+              showSelectors && currentGenericFeed?.hash === genericFeed.hash
+            "
+            class="marked-border-bottom"
+          >
             <ion-item>
               <ion-input
                 [formControl]="formGroup.controls.contextXPath"
@@ -80,12 +85,12 @@
                 slot="end"
                 color="dark"
                 (click)="
-            pickElementWithin(
-              formGroup.value.contextXPath,
-              formGroup.controls.linkXPath
-            )
-          "
-              >Pick</ion-button
+                  pickElementWithin(
+                    formGroup.value.contextXPath,
+                    formGroup.controls.linkXPath
+                  )
+                "
+                >Pick</ion-button
               >
             </ion-item>
             <!--        <ion-item>-->
@@ -117,12 +122,12 @@
                 slot="end"
                 color="dark"
                 (click)="
-            pickElementWithin(
-              formGroup.value.contextXPath,
-              formGroup.controls.dateXPath
-            )
-          "
-              >Pick</ion-button
+                  pickElementWithin(
+                    formGroup.value.contextXPath,
+                    formGroup.controls.dateXPath
+                  )
+                "
+                >Pick</ion-button
               >
             </ion-item>
             <ion-item *ngIf="formGroup.value.dateXPath">
@@ -130,7 +135,7 @@
                 [formControl]="formGroup.controls.dateIsStartOfEvent"
                 labelPlacement="end"
                 name="dateIsStartOfEvent"
-              >Item Date is Start Date (Event)
+                >Item Date is Start Date (Event)
               </ion-checkbox>
             </ion-item>
             <ion-item>
@@ -144,7 +149,6 @@
               ></ion-input>
             </ion-item>
           </ion-list>
-
         </ng-container>
       </ion-list>
 
@@ -164,15 +168,15 @@
       (segmentChange)="activeSegment = $event"
       [scrapeController]="scrapeController"
     >
-      <ion-segment-button value="feed"
-                          *ngIf="selectedFeed"
-                          segmentButton>
+      <ion-segment-button value="feed" *ngIf="selectedFeed" segmentButton>
         Feed
       </ion-segment-button>
 
-      <div *ngIf="selectedFeed && activeSegment === 'feed'"
-           segmentBody
-           class="flex">
+      <div
+        *ngIf="selectedFeed && activeSegment === 'feed'"
+        segmentBody
+        class="flex"
+      >
         <app-remote-feed-preview
           class="flex"
           [noMetaColumn]="true"

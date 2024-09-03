@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 
@@ -33,7 +32,6 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
     protected readonly serverConfig: ServerConfigService,
-    private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -54,6 +52,6 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   async logout() {
     await this.sessionService.logout();
-    await this.router.navigateByUrl('/');
+    location.reload();
   }
 }

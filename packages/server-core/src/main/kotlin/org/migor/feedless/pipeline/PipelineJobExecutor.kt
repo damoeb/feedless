@@ -80,7 +80,7 @@ class PipelineJobExecutor internal constructor() {
     }
   }
 
-  @Scheduled(fixedDelay = 5245, initialDelay = 20000)
+//  @Scheduled(fixedDelay = 5245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()

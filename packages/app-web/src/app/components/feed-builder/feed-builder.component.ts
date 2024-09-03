@@ -82,7 +82,7 @@ export type FeedOrRepository = {
 export type FeedWithRequest = {
   scrapeRequest: GqlSourceInput;
   feed: NativeOrGenericFeed;
-  refine: boolean
+  refine: boolean;
 };
 
 @Component({
@@ -262,7 +262,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.selectedFeedChanged.emit({
       scrapeRequest: this.scrapeRequest,
       feed: this.selectedFeed,
-      refine
+      refine,
     });
   }
 
@@ -400,7 +400,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   previewFeed() {
-    this.webToFeedTransformerComponent.selectTab('feed')
+    this.webToFeedTransformerComponent.selectTab('feed');
   }
 }
 

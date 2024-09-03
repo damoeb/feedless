@@ -23,7 +23,7 @@ import { RemoteFeedPreviewModule } from '../remote-feed-preview/remote-feed-prev
     ResponsiveColumnsModule,
     FormsModule,
     InteractiveWebsiteModule,
-    RemoteFeedPreviewModule
-  ]
+    RemoteFeedPreviewModule,
+  ],
 })
 export class TransformWebsiteToFeedModule {}
