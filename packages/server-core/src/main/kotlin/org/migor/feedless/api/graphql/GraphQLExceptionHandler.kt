@@ -50,7 +50,7 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
 //      (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
 
     val errorType = toErrorType(throwable)
-    log.warn("${errorType.name} ${handlerParameters.exception.message}")
+    log.warn("${errorType.name} ${handlerParameters.exception.message}", handlerParameters.exception)
     val debugInfo: MutableMap<String, Any> = HashMap()
 //    debugInfo["corrId"] = corrId ?: ""
     val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()

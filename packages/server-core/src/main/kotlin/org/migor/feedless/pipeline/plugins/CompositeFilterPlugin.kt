@@ -12,6 +12,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.service.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -32,8 +33,10 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     corrId: String,
     item: JsonItem,
     params: PluginExecutionParamsInput,
-    index: Int
+    index: Int,
+    logger: LogCollector?,
   ): Boolean {
+    logger?.log("applying filters to item #$index url=${item.url}")
     val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
         plugin.composite?.let {
@@ -47,9 +50,9 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     } ?: true
 
     if (keep) {
-      log.debug("[$corrId] qualified ${item.url}")
+      logger?.log("keeping item #$index")
     } else {
-      log.debug("[$corrId] disqualified ${item.url}")
+      logger?.log("dropping item #$index")
     }
 
     return keep

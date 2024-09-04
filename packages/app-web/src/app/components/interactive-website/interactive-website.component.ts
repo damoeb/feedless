@@ -9,16 +9,15 @@ import {
   Output,
 } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
-import { GqlScrapeEmit } from '../../../generated/graphql';
-import { ScrapeService } from '../../services/scrape.service';
+import { GqlLogStatement } from '../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ScrapeController } from './scrape-controller';
+import { SourceBuilder } from './source-builder';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 
-type ViewMode = 'markup' | 'image' | 'logs';
+type ViewMode = 'markup' | 'image';
 
 @Component({
   selector: 'app-interactive-website',
@@ -28,7 +27,7 @@ type ViewMode = 'markup' | 'image' | 'logs';
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input({ required: true })
-  scrapeController: ScrapeController;
+  sourceBuilder: SourceBuilder;
 
   @Input()
   showUrl: boolean = false;
@@ -68,42 +67,30 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     }),
   });
   protected errorMessage: string;
-  protected logs: string;
   protected hasScreenshot: boolean;
   protected hasMarkup: boolean;
+  protected logs: GqlLogStatement[];
+
+  protected readonly parseInt = parseInt;
 
   constructor(
-    private readonly scrapeService: ScrapeService,
     protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
-  zoomOut() {
-    this.scaleFactor = Math.min(this.scaleFactor + 0.05, 1.3);
-  }
-
-  zoomIn() {
-    this.scaleFactor = Math.max(this.scaleFactor - 0.05, 0.5);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  protected readonly parseInt = parseInt;
-
-  viewModeFc = new FormControl<ViewMode | string>('image');
+  viewModeFc = new FormControl<ViewMode | string>('markup');
   viewModeImage: ViewMode = 'image';
   viewModeMarkup: ViewMode = 'markup';
-  viewLogs: ViewMode = 'logs';
   pickMode = false;
 
   async ngOnInit() {
     this.formFg.patchValue({
-      url: this.scrapeController.getUrl(),
+      url: this.sourceBuilder.getUrl(),
     });
-    if (this.scrapeController.response) {
-      this.handleScrapeResponse(this.scrapeController.response);
+    this.segmentChange.emit(this.viewModeFc.value);
+
+    if (this.sourceBuilder.response) {
+      this.handleScrapeResponse(this.sourceBuilder.response);
     } else {
       this.scrape();
     }
@@ -113,66 +100,61 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         this.formFg.valueChanges,
         this.formFg.controls.prerenderingOptions.controls.additionalWait.valueChanges.pipe(
           map((wait) =>
-            this.scrapeController.patchFetch({ additionalWaitSec: wait }),
+            this.sourceBuilder.patchFetch({ additionalWaitSec: wait }),
           ),
         ),
-      )
-        .pipe(debounce(() => interval(800)))
-        .subscribe(() => {
-          this.scrape();
-        }),
+      ).subscribe(() => {
+        this.sourceBuilder.events.actionsChanges.emit();
+      }),
       this.viewModeFc.valueChanges.subscribe((value) =>
         this.segmentChange.emit(value),
       ),
-      this.scrapeController.pickPoint.subscribe(() => {
+      this.sourceBuilder.events.pickPoint.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
-      this.scrapeController.showElements.subscribe(() => {
-        this.viewModeFc.patchValue(this.viewModeMarkup);
-      }),
-      this.scrapeController.pickElement.subscribe(() => {
-        this.viewModeFc.patchValue(this.viewModeMarkup);
-      }),
-      this.scrapeController.pickArea.subscribe(() => {
-        this.viewModeFc.patchValue(this.viewModeImage);
-      }),
-      this.scrapeController.actionsChanges.subscribe(() => {
+      // this.sourceBuilder.events.showElements.subscribe(() => {
+      //   this.viewModeFc.patchValue(this.viewModeMarkup);
+      // }),
+      this.sourceBuilder.events.actionsChanges.subscribe(() => {
         this.scrape();
       }),
-      this.scrapeController.cancel.subscribe(() => {
+      this.sourceBuilder.events.pickElement.subscribe(() => {
+        this.viewModeFc.patchValue(this.viewModeMarkup);
+      }),
+      this.sourceBuilder.events.pickArea.subscribe(() => {
+        this.viewModeFc.patchValue(this.viewModeImage);
+      }),
+      this.sourceBuilder.events.cancel.subscribe(() => {
         this.pickMode = false;
         this.changeRef.detectChanges();
       }),
     );
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  zoomOut() {
+    this.scaleFactor = Math.min(this.scaleFactor + 0.05, 1.3);
+  }
+
+  zoomIn() {
+    this.scaleFactor = Math.max(this.scaleFactor - 0.05, 0.5);
+  }
+
   private async scrape() {
     console.log('scrape');
+    if (this.loading) {
+      return;
+    }
+
     this.loading = true;
     this.loadingChange.emit(this.loading);
     this.changeRef.detectChanges();
 
     try {
-      const scrapeResponse = await this.scrapeService.scrape(
-        this.scrapeController.getScrapeRequest([
-          {
-            extract: {
-              fragmentName: 'full-page',
-              selectorBased: {
-                fragmentName: '',
-                xpath: {
-                  value: '/',
-                },
-                emit: [
-                  GqlScrapeEmit.Html,
-                  GqlScrapeEmit.Text,
-                  GqlScrapeEmit.Pixel,
-                ],
-              },
-            },
-          },
-        ]),
-      );
+      const scrapeResponse = await this.sourceBuilder.fetchFeedsFromBrowser();
 
       this.handleScrapeResponse(scrapeResponse);
     } catch (e) {
@@ -181,27 +163,21 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     }
     this.loading = false;
     this.loadingChange.emit(this.loading);
-
     this.changeRef.detectChanges();
   }
 
   cancelPickMode() {
-    this.scrapeController.cancel.emit();
+    this.sourceBuilder.events.cancel.emit();
   }
 
   private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
-    const url = this.scrapeController.getUrl();
+    const url = this.sourceBuilder.getUrl();
 
     this.embedScreenshot = null;
     this.embedMarkup = null;
     this.changeRef.detectChanges();
 
-    this.logs = scrapeResponse.logs
-      .map(
-        (log) => `${new Date(log.time).toLocaleTimeString()}\t ${log.message}`,
-      )
-      .join('\n');
-
+    this.logs = scrapeResponse.logs;
     if (scrapeResponse.failed) {
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
@@ -262,11 +238,12 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.scrapeController.response = scrapeResponse;
     this.changeRef.detectChanges();
   }
 
   selectTab(tab: string) {
-    this.viewModeFc.patchValue(tab);
+    if (tab !== this.viewModeFc.value) {
+      this.viewModeFc.patchValue(tab);
+    }
   }
 }

@@ -13,6 +13,7 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.slf4j.LoggerFactory
@@ -44,7 +45,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
-    logger: (String) -> Unit,
+    logger: LogCollector,
   ): FragmentOutput {
     log.debug("[$corrId] transformFragment")
 
@@ -59,9 +60,9 @@ class FeedsPlugin : FragmentTransformerPlugin {
     )
 
     val mimeType = data.contentType.lowercase()
-    logger("Found mimeType=$mimeType")
+    logger.log("Found mimeType=$mimeType")
     return if (feedMimeTypes.any { mimeType.startsWith(it) }) {
-      logger("Parsing native feed")
+      logger.log("Parsing native feed")
       val jsonFeed = feedParserService.parseFeed(corrId, data)
       FragmentOutput(
         fragmentName = "",
@@ -72,12 +73,12 @@ class FeedsPlugin : FragmentTransformerPlugin {
       )
     } else {
       if (mimeType.contains("text/html")) {
-        logger("extracting feeds")
+        logger.log("extracting feeds")
         val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
         log.debug("[$corrId] extracting feeds")
         extractFeeds(corrId, document, data.url, logger)
       } else {
-        logger("unsupported mimeType")
+        logger.log("unsupported mimeType")
         log.warn("[$corrId] unsupported mimeType $mimeType")
         FragmentOutput(
           fragmentName = "",
@@ -96,13 +97,13 @@ class FeedsPlugin : FragmentTransformerPlugin {
     corrId: String,
     document: Document,
     url: String,
-    logger: (String) -> Unit,
+    logger: LogCollector,
   ): FragmentOutput {
     val parserOptions = GenericFeedParserOptions()
     val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)
-    logger("found ${nativeFeeds.size} native feeds $nativeFeeds")
+    logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
     val genericFeeds = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
-    logger("found ${genericFeeds.size} generic feeds")
+    logger.log("found ${genericFeeds.size} generic feeds")
     log.info("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
     return FragmentOutput(

@@ -10,127 +10,33 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
-  GqlCompositeFieldFilterParamsInput,
-  GqlCompositeFilterParamsInput,
-  GqlConditionalTagInput,
   GqlFeatureName,
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
   GqlPluginExecutionInput,
-  GqlProfileName,
-  GqlScrapeFlow,
-  GqlScrapeFlowInput,
-  GqlScrapeRequest,
   GqlSourceInput,
-  GqlStringFilterOperator,
   GqlVisibility,
   GqlWebDocumentDateField,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
-import { debounce, interval, ReplaySubject } from 'rxjs';
-import { without } from 'lodash-es';
-import { Repository, RepositoryFull } from '../../graphql/types';
+import { RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
-import { ArrayElement, isDefined, TypedFormGroup } from '../../types';
-import { RemoteFeedPreviewComponent } from '../../components/remote-feed-preview/remote-feed-preview.component';
-import { NativeOrGenericFeed } from '../../components/feed-builder/feed-builder.component';
-import { getFirstFetchUrlLiteral } from '../../utils';
+import { isDefined } from '../../types';
 import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 
 export interface GenerateFeedModalComponentProps {
   repository: RepositoryFull;
-  modalTitle?: string;
   openAccordions?: GenerateFeedAccordion[];
 }
 
-type FilterOperator = GqlStringFilterOperator;
-type FilterField = keyof GqlCompositeFieldFilterParamsInput;
-type FilterType = keyof GqlCompositeFilterParamsInput;
-
-interface GeneralFilterData {
-  type: FilterType;
-  field: FilterField;
-  operator: FilterOperator;
-  value: string;
-}
-
-interface TagConditionData {
-  tag: string;
-  field: FilterField;
-  operator: FilterOperator;
-  value: string;
-}
-
-export function getScrapeRequest(
-  feed: NativeOrGenericFeed,
-  scrapeRequest: GqlScrapeRequest,
-): GqlSourceInput {
-  const createFlow = (): GqlScrapeFlow => {
-    if (feed.nativeFeed) {
-      return {
-        sequence: [
-          {
-            fetch: {
-              get: {
-                url: {
-                  literal: feed.nativeFeed.feedUrl,
-                },
-              },
-            },
-          },
-          {
-            execute: {
-              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-              params: {
-                org_feedless_feed: {},
-              },
-            },
-          },
-        ],
-      };
-    } else {
-      return {
-        sequence: [
-          ...scrapeRequest.flow.sequence.filter(
-            (a) => a.execute?.pluginId != GqlFeedlessPlugins.OrgFeedlessFeeds,
-          ),
-          {
-            execute: {
-              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-              params: {
-                org_feedless_feed: {
-                  generic: feed.genericFeed?.selectors,
-                },
-              },
-            },
-          },
-        ],
-      };
-    }
-  };
-
-  const createTitle = (): string => {
-    if (feed.nativeFeed) {
-      return `Native Feed ${feed.nativeFeed.feedUrl}`;
-    } else {
-      return `Generic Feed ${getFirstFetchUrlLiteral(scrapeRequest.flow.sequence)}`;
-    }
-  };
-
-  return {
-    id: null,
-    title: createTitle(),
-    flow: createFlow() as GqlScrapeFlowInput,
-    tags: scrapeRequest.tags,
-    localized: scrapeRequest.localized,
-  };
-}
-
-type GeneralFilterParams = ArrayElement<
-  ArrayElement<Repository['plugins']>['params']['org_feedless_filter']
->;
+// interface TagConditionData {
+//   tag: string;
+//   field: FilterField;
+//   operator: FilterOperator;
+//   value: string;
+// }
 
 // type ConditionalTagParams = ArrayElement<
 //   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
@@ -139,12 +45,12 @@ type GeneralFilterParams = ArrayElement<
 export type GenerateFeedAccordion = 'privacy' | 'storage';
 
 @Component({
-  selector: 'app-generate-feed-modal',
-  templateUrl: './generate-feed-modal.component.html',
-  styleUrls: ['./generate-feed-modal.component.scss'],
+  selector: 'app-repository-modal',
+  templateUrl: './repository-modal.component.html',
+  styleUrls: ['./repository-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GenerateFeedModalComponent
+export class RepositoryModalComponent
   implements GenerateFeedModalComponentProps, OnInit
 {
   formFg = new FormGroup({
@@ -167,38 +73,27 @@ export class GenerateFeedModalComponent
     }),
     applyFulltextPlugin: new FormControl<boolean>(false),
     transformToReadability: new FormControl<boolean>(true),
-    applyFiltersLast: new FormControl<boolean>(false),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
     applyConditionalTagsPlugin: new FormControl<boolean>(false),
   });
-  filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
-  conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
+  // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
 
   @Input({ required: true })
   repository: RepositoryFull;
 
-  @ViewChild('remoteFeedPreviewComponent', { static: true })
-  remoteFeedPreview: RemoteFeedPreviewComponent;
-
   loading = false;
   errorMessage: string;
   isLoggedIn: boolean;
-  filterChanges = new ReplaySubject<void>();
 
   protected readonly dateFormat = dateFormat;
-  protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
-  protected FilterTypeInclude: FilterType = 'include';
-  protected FilterTypeExclude: FilterType = 'exclude';
-  protected FilterFieldLink: FilterField = 'link';
-  protected FilterFieldTitle: FilterField = 'title';
-  protected FilterFieldContent: FilterField = 'content';
   protected readonly GqlWebDocumentDateField = GqlWebDocumentDateField;
-  modalTitle = 'Finalize Feed';
   @Input()
   openAccordions: GenerateFeedAccordion[] = [];
   accordionPrivacy: GenerateFeedAccordion = 'privacy';
   accordionStorage: GenerateFeedAccordion = 'storage';
+
+  private filterParams: GqlItemFilterParamsInput[];
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -212,48 +107,6 @@ export class GenerateFeedModalComponent
 
   closeModal() {
     return this.modalCtrl.dismiss();
-  }
-
-  addGeneralFilter(params: GeneralFilterParams = null) {
-    if (this.filters.some((filter) => filter.invalid)) {
-      return;
-    }
-
-    const filter = new FormGroup({
-      type: new FormControl<FilterType>('exclude', [Validators.required]),
-      field: new FormControl<FilterField>('title', [Validators.required]),
-      operator: new FormControl<FilterOperator>(
-        GqlStringFilterOperator.Contains,
-        [Validators.required],
-      ),
-      value: new FormControl<string>('', [
-        Validators.required,
-        Validators.minLength(1),
-      ]),
-    });
-
-    if (params?.composite) {
-      const data = params.composite;
-      const type = Object.keys(data).find(
-        (field) => field != '__typename' && !!data[field],
-      );
-      const field = Object.keys(data[type]).find(
-        (field) => field != '__typename' && !!data[type][field],
-      );
-      filter.patchValue({
-        type: type as any,
-        field: field as any,
-        value: data[type][field].value,
-        operator: data[type][field].operator,
-      });
-    }
-
-    this.filters.push(filter);
-    filter.statusChanges.subscribe((status) => {
-      if (status === 'VALID') {
-        this.filterChanges.next();
-      }
-    });
   }
 
   // addConditionalTag(data: ConditionalTagParams = null) {
@@ -297,18 +150,13 @@ export class GenerateFeedModalComponent
   //   });
   // }
 
-  removeFilter(index: number) {
-    this.filters = without(this.filters, this.filters[index]);
-    this.filterChanges.next();
-  }
-
-  removeConditionalTag(index: number) {
-    this.conditionalTags = without(
-      this.conditionalTags,
-      this.conditionalTags[index],
-    );
-    this.filterChanges.next();
-  }
+  // removeConditionalTag(index: number) {
+  //   this.conditionalTags = without(
+  //     this.conditionalTags,
+  //     this.conditionalTags[index],
+  //   );
+  //   this.filterChanges.next();
+  // }
 
   async createOrUpdateFeed() {
     if (this.formFg.invalid) {
@@ -321,15 +169,15 @@ export class GenerateFeedModalComponent
     try {
       const plugins: GqlPluginExecutionInput[] = [];
 
-      const hasFilters = this.filters.length > 0;
-      const applyFiltersLast = this.formFg.value.applyFiltersLast;
+      const hasFilters = this.filterParams.length > 0;
+      const applyFiltersLast = false;
 
       const appendFilterPlugin = () => {
         plugins.push({
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
-            org_feedless_filter: this.getGeneralFilterParams(),
-            org_feedless_conditional_tag: this.getConditionalTagsParams(),
+            org_feedless_filter: this.filterParams,
+            // org_feedless_conditional_tag: this.getConditionalTagsParams(),
           },
         });
       };
@@ -492,65 +340,35 @@ export class GenerateFeedModalComponent
       maxCapacity: retention?.maxCapacity || null,
     });
     this.formFg.markAllAsTouched();
-
-    const filterPlugin = this.repository.plugins.find(
-      (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
-    );
-    if (filterPlugin) {
-      filterPlugin.params.org_feedless_filter.forEach((f) =>
-        this.addGeneralFilter(f),
-      );
-    }
-
-    this.filterChanges
-      .pipe(debounce(() => interval(800)))
-      .subscribe(async () => {
-        console.log('changes');
-        await this.loadFeedPreview();
-      });
-    await this.loadFeedPreview();
   }
 
-  private async loadFeedPreview() {
-    await this.remoteFeedPreview.loadFeedPreview(
-      this.repository.sources as GqlSourceInput[],
-      this.getGeneralFilterParams(),
-      this.getConditionalTagsParams(),
-    );
-  }
-
-  private getGeneralFilterParams(): GqlItemFilterParamsInput[] {
-    return this.filters
-      .filter((filterFg) => filterFg.valid)
-      .map((filterFg) => filterFg.value)
-      .map<GqlItemFilterParamsInput>((filter) => ({
-        composite: {
-          [filter.type]: {
-            [filter.field]: {
-              value: filter.value,
-              operator: filter.operator,
-            },
-          },
-        },
-      }));
-  }
-
-  private getConditionalTagsParams(): GqlConditionalTagInput[] {
-    return this.conditionalTags
-      .filter((filterFg) => filterFg.valid)
-      .map((filterFg) => filterFg.value)
-      .map<GqlConditionalTagInput>((data) => ({
-        tag: data.tag,
-        filter: {
-          [data.field]: {
-            value: data.value,
-            operator: data.operator,
-          },
-        },
-      }));
-  }
+  // private getConditionalTagsParams(): GqlConditionalTagInput[] {
+  //   return this.conditionalTags
+  //     .filter((filterFg) => filterFg.valid)
+  //     .map((filterFg) => filterFg.value)
+  //     .map<GqlConditionalTagInput>((data) => ({
+  //       tag: data.tag,
+  //       filter: {
+  //         [data.field]: {
+  //           value: data.value,
+  //           operator: data.operator,
+  //         },
+  //       },
+  //     }));
+  // }
 
   isUpdate() {
     return isDefined(this.repository.id);
+  }
+
+  getFilterPlugin() {
+    return this.repository.plugins.find(
+      (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFilter,
+    )?.params?.org_feedless_filter;
+  }
+
+  handleFilterChange(filterParams: GqlItemFilterParamsInput[]) {
+    this.filterParams = filterParams;
+    // this.loadFeedPreview()
   }
 }

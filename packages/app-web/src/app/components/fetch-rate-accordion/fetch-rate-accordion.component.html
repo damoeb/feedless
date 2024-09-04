@@ -1,0 +1,12 @@
+<ion-row>
+  <ion-col size="3" class="ion-align-self-center ion-text-right">
+    Refresh Rate
+  </ion-col>
+  <ion-col size="9">
+    <ion-select [formControl]="control" fill="outline" interface="popover">
+      <ion-select-option [value]="option.value" *ngFor="let option of options"
+        >{{ option.key }}
+      </ion-select-option>
+    </ion-select>
+  </ion-col>
+</ion-row>

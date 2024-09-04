@@ -28,7 +28,7 @@ import { SessionService } from '../../services/session.service';
 import { environment } from '../../../environments/environment';
 import { ServerConfigService } from '../../services/server-config.service';
 import { createEmailFormControl } from '../../form-controls';
-import { ScrapeController } from '../../components/interactive-website/scrape-controller';
+import { SourceBuilder } from '../../components/interactive-website/source-builder';
 import { Title } from '@angular/platform-browser';
 import { DEFAULT_FETCH_CRON } from '../feed-builder/feed-builder.page';
 
@@ -93,13 +93,13 @@ export class TrackerEditPage implements OnInit, OnDestroy {
   protected readonly GqlWebDocumentField = GqlWebDocumentField;
   private subscriptions: Subscription[] = [];
   // errorMessage: null;
-  private scrapeRequest: GqlSourceInput;
+  private source: GqlSourceInput;
   showErrors: boolean;
   isThrottled: boolean;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
   screenElement: Screen = 'element';
-  protected scrapeController: ScrapeController;
+  protected scrapeController: SourceBuilder;
   protected isLoading: boolean = false;
 
   constructor(
@@ -121,9 +121,10 @@ export class TrackerEditPage implements OnInit, OnDestroy {
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           if (this.actions.valid) {
-            this.scrapeController.scrapeRequest.flow.sequence =
-              this.getActionsRequestFragment();
-            this.scrapeController.actionsChanges.emit();
+            this.scrapeController.overwriteFlow(
+              this.getActionsRequestFragment(),
+            );
+            this.scrapeController.events.actionsChanges.emit();
           }
         }),
 
@@ -190,7 +191,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
       skipLocationChange: true,
     });
 
-    const newScrapeRequest: GqlSourceInput = {
+    const newSource: GqlSourceInput = {
       title: `From ${url}`,
       flow: {
         sequence: [
@@ -210,16 +211,16 @@ export class TrackerEditPage implements OnInit, OnDestroy {
       },
     };
 
-    if (isEqual(newScrapeRequest, this.scrapeRequest)) {
-      console.log('scrapeRequest is unchanged');
+    if (isEqual(newSource, this.source)) {
+      console.log('source is unchanged');
     } else {
-      this.scrapeRequest = newScrapeRequest;
+      this.source = newSource;
 
       // const scrapeResponse = await this.scrapeService.scrape(
       //   this.scrapeRequest,
       // );
 
-      this.scrapeController = new ScrapeController(this.scrapeRequest);
+      // this.scrapeController = new ScrapeController(this.scrapeRequest);
 
       // const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
       //   .response.fetch;
@@ -336,21 +337,21 @@ export class TrackerEditPage implements OnInit, OnDestroy {
   }
 
   pickBoundingBox() {
-    this.scrapeController.pickArea.emit((boundingBox: BoundingBox) => {
+    this.scrapeController.events.pickArea.emit((boundingBox: BoundingBox) => {
       this.form.controls.areaBoundingBox.patchValue(boundingBox);
       this.changeRef.detectChanges();
     });
   }
 
   pickPosition(action: FormGroup<BrowserAction>) {
-    this.scrapeController.pickPoint.emit((position: XyPosition) => {
+    this.scrapeController.events.pickPoint.emit((position: XyPosition) => {
       action.controls.clickParams.patchValue(position);
       this.changeRef.detectChanges();
     });
   }
 
   pickXPath() {
-    this.scrapeController.pickElement.emit((xpath: string) => {
+    this.scrapeController.events.pickElement.emit((xpath: string) => {
       this.form.controls.elementXpath.setValue(xpath);
       this.changeRef.detectChanges();
     });

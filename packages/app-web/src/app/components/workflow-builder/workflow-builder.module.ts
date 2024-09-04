@@ -6,7 +6,6 @@ import { EmbeddedMarkupModule } from '../embedded-markup/embedded-markup.module'
 import { NativeFeedModule } from '../native-feed/native-feed.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
-import { RemoteFeedModalModule } from '../../modals/remote-feed-modal/remote-feed-modal.module';
 import { BubbleModule } from '../bubble/bubble.module';
 
 @NgModule({
@@ -17,7 +16,6 @@ import { BubbleModule } from '../bubble/bubble.module';
     IonicModule,
     EmbeddedMarkupModule,
     NativeFeedModule,
-    RemoteFeedModalModule,
     ReactiveFormsModule,
     ResponsiveColumnsModule,
     FormsModule,

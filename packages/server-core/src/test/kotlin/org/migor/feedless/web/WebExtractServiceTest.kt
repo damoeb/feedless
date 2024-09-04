@@ -9,6 +9,7 @@ import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.ScrapeEmit
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -26,6 +27,8 @@ class WebExtractServiceTest {
 
   @InjectMocks
   lateinit var webExtractService: WebExtractService
+
+  val logCollector = LogCollector("test")
 
   val html = """
   <html><body>
@@ -47,7 +50,7 @@ class WebExtractServiceTest {
       )
       val element = Jsoup.parse(html.trimIndent())
 
-      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN)
+      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN, logCollector)
       assertThat(response.fragments!!.first().text!!.data).isEqualTo("foo-text")
     }
   }
@@ -63,7 +66,7 @@ class WebExtractServiceTest {
       )
       val element = Jsoup.parse(html.trimIndent())
 
-      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN)
+      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN, logCollector)
       val data = response.fragments!!.first().data!!
       assertThat(data.data).isEqualTo("https://foo.bar")
       assertThat(data.mimeType).isEqualTo(MIME_URL)

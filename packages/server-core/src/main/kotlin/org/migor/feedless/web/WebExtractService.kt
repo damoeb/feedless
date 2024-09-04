@@ -9,6 +9,7 @@ import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.TextData
+import org.migor.feedless.service.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -31,19 +32,20 @@ class WebExtractService {
     return xpath.value.replaceFirst("/html/body", "/").replaceFirst("./", "//")
   }
 
-  suspend fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale): ScrapeExtractResponse {
+  suspend fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale, logger: LogCollector, level: Int = 0): ScrapeExtractResponse {
     val fragments = if (extract.xpath.value == "./") {
       listOf(element)
     } else {
       Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
         .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
     }
+    logger.log("extracting @level $level ${extract.xpath} -> ${fragments.size} elements (max ${extract.max})")
 
     return ScrapeExtractResponse(
       fragmentName = extract.fragmentName,
       fragments = fragments.map { fragment ->
         ScrapeExtractFragment(
-          extracts = extract.extract?.map { extract(corrId, it, fragment, locale) },
+          extracts = extract.extract?.map { extract(corrId, it, fragment, locale, logger, level+1) },
           html = if (extract.emit.contains(ScrapeEmit.html)) {
             TextData(fragment.html())
           } else {
@@ -55,7 +57,7 @@ class WebExtractService {
             null
           },
           data = if (extract.emit.contains(ScrapeEmit.date)) {
-            dateClaimer.claimDatesFromString(corrId, fragment.text(), locale)?.let { date ->
+            dateClaimer.claimDatesFromString(corrId, fragment.text(), locale, logger)?.let { date ->
               MimeData(
                 mimeType = MIME_DATE,
                 data = date.time.toString()

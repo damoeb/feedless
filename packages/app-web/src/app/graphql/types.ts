@@ -5,6 +5,7 @@ import {
   GqlFeatureGroupsQuery,
   GqlListPluginsQuery,
   GqlListProductsQuery,
+  GqlPreviewFeedQuery,
   GqlRemoteNativeFeedQuery,
   GqlRepositoryByIdQuery,
   GqlScrapeQuery,
@@ -46,6 +47,7 @@ export type User = Session['user'];
 // export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
+export type FeedPreview = GqlPreviewFeedQuery['previewFeed'];
 export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];
 export type FeatureGroup = GetElementType<
   GqlFeatureGroupsQuery['featureGroups']

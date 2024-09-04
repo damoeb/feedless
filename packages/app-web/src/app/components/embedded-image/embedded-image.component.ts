@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
-import { ScrapeController } from '../interactive-website/scrape-controller';
+import { SourceBuilder } from '../interactive-website/source-builder';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 export type XyPosition = GqlXyPosition;
@@ -56,7 +56,7 @@ export class EmbeddedImageComponent
   strokeStyle: string = 'red';
 
   @Input()
-  scrapeController: ScrapeController;
+  sourceBuilder: SourceBuilder;
 
   pickedBoundingBox: EventEmitter<BoundingBox | null> =
     new EventEmitter<BoundingBox | null>();
@@ -264,7 +264,7 @@ export class EmbeddedImageComponent
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.scrapeController.pickPoint.subscribe(
+      this.sourceBuilder.events.pickPoint.subscribe(
         (callback: (XyPosition) => void) => {
           console.log('pickPoint');
           this.mode = 'position';
@@ -277,7 +277,7 @@ export class EmbeddedImageComponent
           });
         },
       ),
-      this.scrapeController.pickArea.subscribe(
+      this.sourceBuilder.events.pickArea.subscribe(
         (callback: (BoundingBox) => void) => {
           console.log('pickArea');
           this.mode = 'mark';

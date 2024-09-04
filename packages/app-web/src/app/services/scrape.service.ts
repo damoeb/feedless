@@ -18,13 +18,13 @@ export class ScrapeService {
     private readonly authService: AuthService,
   ) {}
 
-  async scrape(scrapeRequest: GqlSourceInput): Promise<ScrapeResponse> {
+  async scrape(source: GqlSourceInput): Promise<ScrapeResponse> {
     await this.authService.requireAnyAuthToken();
     return this.apollo
       .query<GqlScrapeQuery, GqlScrapeQueryVariables>({
         query: Scrape,
         variables: {
-          data: scrapeRequest,
+          data: source,
         },
       })
       .then((response) => {

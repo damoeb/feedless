@@ -181,7 +181,7 @@ class AgentService {
   }
 
   suspend fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
-    log.debug("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
+    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.failed) {
         it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))

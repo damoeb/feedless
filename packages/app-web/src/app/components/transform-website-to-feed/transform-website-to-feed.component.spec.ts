@@ -8,6 +8,8 @@ import {
   mockRepositories,
   mockScrape,
 } from '../../app-test.module';
+import { SourceBuilder } from '../interactive-website/source-builder';
+import { ScrapeService } from '../../services/scrape.service';
 
 // const jsonFeed = {
 //   description: 'Nachrichten nicht nur aus der Welt der Computer',
@@ -92,11 +94,11 @@ describe('TransformWebsiteToFeedComponent', () => {
 
     fixture = TestBed.createComponent(TransformWebsiteToFeedComponent);
     component = fixture.componentInstance;
-    component.scrapeRequest = {
-      title: '',
-      flow: { sequence: [] },
-    };
-    component.scrapeResponse = feedResponse;
+    component.sourceBuilder = SourceBuilder.fromUrl(
+      '',
+      TestBed.inject(ScrapeService),
+    );
+    // component.scrapeResponse = feedResponse;
     fixture.detectChanges();
   }));
 

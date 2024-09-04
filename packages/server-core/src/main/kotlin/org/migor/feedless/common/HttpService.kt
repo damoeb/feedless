@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
@@ -84,6 +85,7 @@ class HttpService {
     expectedHttpStatus: Int,
     headers: Map<String, String>? = null
   ): HttpResponse {
+    log.info("cache miss $url")
     return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 
@@ -110,11 +112,16 @@ class HttpService {
       val probes =
         listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
       if (probes.any { !it.isConsumed }) {
-        throw HostOverloadingException(
-          corrId,
-          "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
-          Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
-        )
+        val waitFor = Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
+        if(waitFor.toMillis() < 1000) {
+          delay(waitFor.toMillis())
+        } else {
+          throw HostOverloadingException(
+            corrId,
+            "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
+            Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
+          )
+        }
       }
     }
   }

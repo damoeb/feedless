@@ -64,7 +64,6 @@ class DocumentResolver {
 
   @Throttled
   @DgsQuery
-  @Transactional
   suspend fun webDocument(
     @InputArgument data: WebDocumentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
@@ -78,7 +77,6 @@ class DocumentResolver {
 
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.WebDocuments)
-  @Transactional
   suspend fun webDocuments(
     @InputArgument data: WebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
@@ -97,7 +95,7 @@ class DocumentResolver {
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
-    val repository: Repository = dfe.getSource()!!!!
+    val repository: Repository = dfe.getSource()!!
     withContext(Dispatchers.IO) {
       documentDAO.countByRepositoryId(UUID.fromString(repository.id))
     }
@@ -119,7 +117,6 @@ class DocumentResolver {
   }
 
   @DgsQuery(field = DgsConstants.QUERY.WebDocumentsFrequency)
-  @Transactional
   suspend fun webDocumentsFrequency(
     @InputArgument where: WebDocumentsWhereInput,
     @InputArgument groupBy: WebDocumentDateField,
@@ -132,7 +129,7 @@ class DocumentResolver {
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
   ): List<DocumentFrequency> = coroutineScope {
-    val repository: Repository = dfe.getSource()!!!!
+    val repository: Repository = dfe.getSource()!!
     documentService.getDocumentFrequency(
       WebDocumentsWhereInput(
         repository = RepositoryUniqueWhereInput(id = repository.id),

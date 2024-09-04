@@ -17,7 +17,7 @@ import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 export class ControlValueAccessorDirective<T>
   implements ControlValueAccessor, OnInit
 {
-  control: FormControl | undefined;
+  control: FormControl<T> | undefined;
   isRequired = false;
 
   private _isDisabled = false;

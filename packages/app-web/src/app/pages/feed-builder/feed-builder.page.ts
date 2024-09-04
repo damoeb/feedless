@@ -10,10 +10,7 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import {
-  GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+import { GenerateFeedModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
 import {
   FeedWithRequest,
   NativeOrGenericFeed,
@@ -21,17 +18,16 @@ import {
 import { ModalService } from '../../services/modal.service';
 import {
   GqlFeedlessPlugins,
-  GqlScrapeRequest,
   GqlSourceInput,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { getFirstFetchUrlLiteral } from '../../utils';
 import { Repository } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { RepositoryService } from '../../services/repository.service';
 import { Router } from '@angular/router';
+import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
 
 export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 
@@ -104,16 +100,12 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   }
 
   async handleFeed(feed: FeedWithRequest) {
+    console.log('handleFeed', feed);
     const { title, description } = this.getFeedData(
       feed.feed,
-      getFirstFetchUrlLiteral(feed.scrapeRequest.flow.sequence),
+      getFirstFetchUrlLiteral(feed.source.flow.sequence),
     );
-    await this.handleSource(
-      title,
-      description,
-      getScrapeRequest(feed.feed, feed.scrapeRequest as GqlScrapeRequest),
-      feed.refine,
-    );
+    await this.handleSource(title, description, feed.source, feed.refine);
   }
 
   private async handleSource(

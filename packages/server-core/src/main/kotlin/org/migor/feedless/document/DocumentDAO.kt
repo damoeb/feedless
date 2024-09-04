@@ -37,12 +37,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 
   fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: Date, released: ReleaseStatus)
 
-//  @Modifying
-//  @Transactional(propagation = Propagation.REQUIRES_NEW)
-//  override fun deleteById(id: UUID)
-
   fun findFirstByUrlAndRepositoryId(url: String, repositoryId: UUID): DocumentEntity?
-
 
   fun findByContentTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
 
@@ -55,8 +50,8 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 
   @Query(
     """SELECT DISTINCT s FROM DocumentEntity s
-    JOIN FETCH s.source
-    JOIN FETCH s.source.actions
+    LEFT JOIN FETCH s.source
+    LEFT JOIN FETCH s.source.actions
     WHERE s.id = :id"""
   )
   fun findByIdWithSource(@Param("id") documentId: UUID): DocumentEntity?

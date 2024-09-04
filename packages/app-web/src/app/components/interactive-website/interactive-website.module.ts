@@ -8,6 +8,7 @@ import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { EmbeddedMarkupModule } from '../embedded-markup/embedded-markup.module';
 import { CodeEditorModule } from '../../elements/code-editor/code-editor.module';
 import { NativeFeedModule } from '../native-feed/native-feed.module';
+import { ConsoleButtonModule } from '../console-button/console-button.module';
 
 @NgModule({
   declarations: [InteractiveWebsiteComponent],
@@ -22,6 +23,7 @@ import { NativeFeedModule } from '../native-feed/native-feed.module';
     ReactiveFormsModule,
     CodeEditorModule,
     NativeFeedModule,
+    ConsoleButtonModule,
   ],
 })
 export class InteractiveWebsiteModule {}

@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -91,7 +92,7 @@ class DateClaimer {
 //      .filter { dateRangeStr.contains(it) }
 //      .map { dateRangeStr.split(it) }
 //      .filter { it.size == 2 }
-//      .map {
+//      .map {=
 //        run {
 //          val fromDateStr = it[0]
 //          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()
@@ -103,30 +104,30 @@ class DateClaimer {
 //      }.firstOrNull()
 //  }
 
-  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale): Date? {
-    log.debug("[${corrId}] parsing '$dateTimeStrParam' locale=$locale")
+  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale, logger: LogCollector): Date? {
+    logger.log(" parsing '$dateTimeStrParam' locale=$locale")
 
     runCatching {
       val date = toDate(LocalDateTime.parse(dateTimeStrParam))
-      log.debug("[${corrId}] -> $date")
+      logger.log("-> $date")
       return date
     }
 
     runCatching {
       val date = toDate(LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_DATE_TIME))
-      log.debug("[${corrId}] -> $date")
+      logger.log("-> $date")
       return date
     }
 
     runCatching {
       val date = toDate(DateTimeFormatter.ISO_DATE_TIME.parse(dateTimeStrParam))
-      log.debug("[${corrId}] -> $date")
+      logger.log("-> $date")
       return date
     }
 
 //    runCatching {
 //      val date = toDate(LocalDate.parse(dateTimeStrParam).atTime(8, 0))
-//      log.debug("[${corrId}] -> $date")
+//      logger.log("[${corrId}] -> $date")
 //      return date
 //    }
 
@@ -137,9 +138,9 @@ class DateClaimer {
         .replace("[^a-z0-9:]".toRegex(RegexOption.IGNORE_CASE), " ")
         .replace("T", " ")
         .replace("\\s+".toRegex(), " ")
-      val date = guessDateFormats(corrId, simpleDateTimeStr)
+      val date = guessDateFormats(simpleDateTimeStr, logger)
         .firstNotNullOfOrNull { (format, dateString, hasTime) -> applyDateFormat(dateString, locale, format, hasTime) }
-      log.debug("[${corrId}] -> $date")
+      logger.log("-> $date")
       date
 //    }.onFailure {
 //      runCatching {
@@ -176,8 +177,8 @@ class DateClaimer {
    * @return The matching SimpleDateFormat pattern, or null if format is unknown.
    * @see SimpleDateFormat
    */
-  private suspend fun guessDateFormats(corrId: String, dateString: String): List<Triple<String, String, Boolean>> {
-    log.debug("[$corrId] guessDateFormat for '$dateString'")
+  private suspend fun guessDateFormats(dateString: String, logger: LogCollector): List<Triple<String, String, Boolean>> {
+    logger.log("guessDateFormat for '$dateString'")
     return dateFormatToRegexp
       .sortedByDescending { it.second.length }
       .sortedByDescending { it.third }
@@ -186,7 +187,7 @@ class DateClaimer {
           val matches = regex.find(dateString)
           val doesMatch = matches?.groups?.isEmpty() == false
           if (doesMatch) {
-            log.debug("[$corrId] satisfies $dateFormat")
+            logger.log("satisfies $dateFormat")
             Triple(dateFormat, matches?.groups?.get(0)?.value!!, hasTime)
           } else {
             null

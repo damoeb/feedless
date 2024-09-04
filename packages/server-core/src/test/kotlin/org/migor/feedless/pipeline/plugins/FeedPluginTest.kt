@@ -14,6 +14,7 @@ import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.web.Selectors
 import org.migor.feedless.web.WebToFeedTransformer
 import org.mockito.InjectMocks
@@ -44,6 +45,8 @@ class FeedPluginTest {
 
   @InjectMocks
   lateinit var feedPlugin: FeedPlugin
+
+  val logCollector = LogCollector("test")
 
   @BeforeEach
   fun setUp() {
@@ -81,25 +84,27 @@ class FeedPluginTest {
     )
     `when`(
       webToFeedTransformer.getFeedBySelectors(
-        any(String::class.java),
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URL::class.java)
+          any(String::class.java),
+          any(Selectors::class.java),
+          any(Document::class.java),
+          any(URL::class.java),
+          any(LogCollector::class.java),
       )
     ).thenReturn(jsonFeed)
 
     // when
-    feedPlugin.transformFragment(corrId, action, httpResponse) { }
+    feedPlugin.transformFragment(corrId, action, httpResponse, logCollector)
 
     // then
     verify(feedParserService, times(0))
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(1))
       .getFeedBySelectors(
-        any(String::class.java),
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URL::class.java)
+          any(String::class.java),
+          any(Selectors::class.java),
+          any(Document::class.java),
+          any(URL::class.java),
+          any(LogCollector::class.java)
       )
   }
 
@@ -110,17 +115,18 @@ class FeedPluginTest {
     `when`(feedParserService.parseFeed(any(String::class.java), any(HttpResponse::class.java))).thenReturn(jsonFeed)
 
     // when
-    feedPlugin.transformFragment(corrId, action, httpResponse) { }
+    feedPlugin.transformFragment(corrId, action, httpResponse, logCollector)
 
     // then
     verify(feedParserService, times(1))
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(0))
       .getFeedBySelectors(
-        any(String::class.java),
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URL::class.java)
+          any(String::class.java),
+          any(Selectors::class.java),
+          any(Document::class.java),
+          any(URL::class.java),
+          any(LogCollector::class.java)
       )
   }
 }

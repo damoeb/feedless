@@ -11,12 +11,9 @@ import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { FeedOrRepository } from '../../../components/feed-builder/feed-builder.component';
-import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
-import { getScrapeRequest } from '../../../modals/generate-feed-modal/generate-feed-modal.component';
 import {
   GqlItemFilterParamsInput,
   GqlNumberFilterOperator,
-  GqlScrapeRequest,
   GqlSourceInput,
 } from '../../../../generated/graphql';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -38,9 +35,6 @@ export class TrackerEditModalComponent
   private subscriptions: Subscription[] = [];
   isThrottled: boolean;
 
-  @ViewChild('remoteFeedPreviewComponent')
-  remoteFeedPreview: RemoteFeedPreviewComponent;
-
   formFg = new FormGroup({
     kind: new FormControl<KindOfTracker>('dynamic'),
     fetchFrequency: new FormControl<string>('0 */15 * * * *'),
@@ -48,7 +42,7 @@ export class TrackerEditModalComponent
     sensitivity: new FormControl<number>(0),
     limit: new FormControl<number>(null),
   });
-  private scrapeRequest: GqlSourceInput;
+  private source: GqlSourceInput;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -80,11 +74,12 @@ export class TrackerEditModalComponent
       },
       async (data: FeedOrRepository, role: String) => {
         if (data?.feed) {
-          this.scrapeRequest = getScrapeRequest(
-            data.feed.feed,
-            data.feed.scrapeRequest as GqlScrapeRequest,
-          );
-          await this.updateFeed();
+          throw new Error('not implemented');
+          // this.source = createSource(
+          //   data.feed.feed,
+          //   data.feed.source as GqlScrapeRequest,
+          // );
+          // await this.updateFeed();
         }
       },
     );
@@ -109,11 +104,6 @@ export class TrackerEditModalComponent
       });
     }
 
-    await this.remoteFeedPreview.loadFeedPreview(
-      [this.scrapeRequest],
-      filters,
-      [],
-    );
     this.changeRef.detectChanges();
   }
 

@@ -3,53 +3,55 @@
   style="display: flex; flex: 1; flex-direction: column"
 >
   <ion-toolbar style="--background: transparent">
-    <div style="display: flex; align-items: center; column-gap: 10px">
-      <ion-input
-        class="ion-margin-start"
-        *ngIf="showUrl"
-        [formControl]="formFg.controls.url"
-      ></ion-input>
+    <ion-row>
+      <ion-col size="9">
+        <div style="display: flex; align-items: center; column-gap: 10px">
+          <ion-input
+            class="ion-margin-start"
+            *ngIf="showUrl"
+            [formControl]="formFg.controls.url"
+          ></ion-input>
 
-      <ion-segment
-        mode="ios"
-        style="max-width: 250px; width: 250px"
-        [formControl]="viewModeFc"
-      >
-        <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot"
-          >Image</ion-segment-button
+          <ion-segment mode="ios" [formControl]="viewModeFc">
+            <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot"
+              >Image</ion-segment-button
+            >
+            <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup"
+              >Markup</ion-segment-button
+            >
+            <ng-content select="[segmentButton]"></ng-content>
+          </ion-segment>
+        </div>
+      </ion-col>
+      <ion-col size="3">
+        <ion-buttons
+          *ngIf="
+            viewModeFc.value === viewModeMarkup ||
+            viewModeFc.value === viewModeImage
+          "
         >
-        <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup"
-          >Markup</ion-segment-button
-        >
-        <ng-content select="[segmentButton]"></ng-content>
-        <ion-segment-button [value]="viewLogs">Console</ion-segment-button>
-      </ion-segment>
-    </div>
-    <ion-buttons
-      slot="end"
-      *ngIf="
-        viewModeFc.value === viewModeMarkup ||
-        viewModeFc.value === viewModeImage
-      "
-    >
-      <ion-button (click)="zoomIn()">
-        <ion-icon name="remove-outline"></ion-icon>
-      </ion-button>
-      <ion-range
-        class="ion-no-padding"
-        [min]="minScaleFactor"
-        [step]="0.05"
-        [label]="parseInt(scaleFactor * 100 + '') + '%'"
-        [(ngModel)]="scaleFactor"
-        style="width: 100px"
-        [max]="maxScaleFactor"
-      ></ion-range>
-      <ion-button (click)="zoomOut()">
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+          <ion-button (click)="zoomIn()">
+            <ion-icon name="remove-outline"></ion-icon>
+          </ion-button>
+          <ion-range
+            class="ion-no-padding"
+            [min]="minScaleFactor"
+            [step]="0.05"
+            [label]="parseInt(scaleFactor * 100 + '') + '%'"
+            [(ngModel)]="scaleFactor"
+            style="width: 100px"
+            [max]="maxScaleFactor"
+          ></ion-range>
+          <ion-button (click)="zoomOut()">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
   </ion-toolbar>
-  <div style="display: flex; flex: 1; position: relative">
+  <div
+    style="display: flex; flex: 1; flex-direction: column; position: relative"
+  >
     <ion-toolbar color="danger" *ngIf="errorMessage">
       <ion-label class="ion-margin-horizontal"
         >{{ errorMessage }}.
@@ -126,31 +128,35 @@
       >
         <app-embedded-image
           *ngIf="embedScreenshot && viewModeFc.value === viewModeImage"
-          [scrapeController]="scrapeController"
+          [sourceBuilder]="sourceBuilder"
           [embed]="embedScreenshot"
         >
         </app-embedded-image>
         <app-embedded-markup
           *ngIf="embedMarkup && viewModeFc.value === viewModeMarkup"
-          [scrapeController]="scrapeController"
+          [sourceBuilder]="sourceBuilder"
           [embed]="embedMarkup"
         >
         </app-embedded-markup>
-
-        <!--        <app-native-feed-->
-        <!--          *ngIf="currentNativeFeed"-->
-        <!--          [feedUrl]="currentNativeFeed.feedUrl"-->
-        <!--          [title]="currentNativeFeed.title"-->
-        <!--          class="flex"-->
-        <!--        ></app-native-feed>-->
       </div>
 
-      <app-code-editor
-        *ngIf="viewModeFc.value === viewLogs"
-        [controls]="false"
-        [text]="logs"
-      >
-      </app-code-editor>
+      <app-console-button
+        [logs]="logs"
+        *ngIf="
+          viewModeFc.value === viewModeMarkup ||
+          viewModeFc.value === viewModeImage
+        "
+      ></app-console-button>
+
+      <!--      <div>-->
+      <!--        <ion-button shape="round" size="small">Console</ion-button>-->
+      <!--      </div>-->
+      <!--      <app-code-editor-->
+      <!--        *ngIf="viewModeFc.value === viewLogs"-->
+      <!--        [controls]="false"-->
+      <!--        [text]="logs"-->
+      <!--      >-->
+      <!--      </app-code-editor>-->
 
       <ng-content select="[segmentBody]"></ng-content>
 

@@ -10,9 +10,9 @@ import {
   FeedOrRepository,
 } from '../components/feed-builder/feed-builder.component';
 import {
-  GenerateFeedModalComponent,
   GenerateFeedModalComponentProps,
-} from '../modals/generate-feed-modal/generate-feed-modal.component';
+  RepositoryModalComponent,
+} from '../modals/repository-modal/repository-modal.component';
 import {
   TrackerEditModalComponent,
   TrackerEditModalComponentProps,
@@ -21,10 +21,6 @@ import {
   TagsModalComponent,
   TagsModalComponentProps,
 } from '../modals/tags-modal/tags-modal.component';
-import {
-  RemoteFeedModalComponent,
-  RemoteFeedModalComponentProps,
-} from '../modals/remote-feed-modal/remote-feed-modal.component';
 import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
 import { OsmMatch } from './open-street-map.service';
 import {
@@ -131,8 +127,7 @@ export class ModalService {
 
   async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {
     const modal = await this.modalCtrl.create({
-      component: GenerateFeedModalComponent,
-      cssClass: 'fullscreen-modal',
+      component: RepositoryModalComponent,
       componentProps,
     });
 

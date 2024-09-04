@@ -1,0 +1,37 @@
+@import "../../../mixins";
+
+ion-input,
+ion-textarea {
+  --app-border-radius: 8px;
+  --padding-start: 10px !important;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
+  @include control();
+}
+
+ion-input,
+ion-select {
+  --border-radius: 8px;
+  min-height: 45px !important;
+
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+
+  &:not(.has-focus):hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+}
+
+ion-select {
+  min-height: 45px;
+  &::part(container) {
+    width: 100%;
+  }
+  &::part(label) {
+    padding: 5px;
+  }
+  &::part(icon) {
+    --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+}

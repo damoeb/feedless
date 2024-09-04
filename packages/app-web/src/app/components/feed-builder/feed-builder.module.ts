@@ -8,6 +8,8 @@ import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/trans
 import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
+import { FilterItemsAccordionModule } from '../filter-items-accordion/filter-items-accordion.module';
+import { FetchRateAccordionModule } from '../fetch-rate-accordion/fetch-rate-accordion.module';
 
 @NgModule({
   imports: [
@@ -18,6 +20,8 @@ import { SearchAddressModalModule } from '../../modals/search-address-modal/sear
     InteractiveWebsiteModalModule,
     SearchbarModule,
     SearchAddressModalModule,
+    FilterItemsAccordionModule,
+    FetchRateAccordionModule,
   ],
   declarations: [FeedBuilderComponent],
   exports: [FeedBuilderComponent],

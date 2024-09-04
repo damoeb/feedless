@@ -5,6 +5,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapedFeeds
+import org.migor.feedless.service.LogCollector
 
 data class FragmentOutput(
   val fragmentName: String,
@@ -19,7 +20,7 @@ interface FragmentTransformerPlugin : FeedlessPlugin {
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
-    logger: (String) -> Unit,
+    logger: LogCollector,
   ): FragmentOutput
 
 }

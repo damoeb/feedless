@@ -10,6 +10,7 @@ import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.ExtendContext
@@ -45,20 +46,22 @@ class FeedPlugin : FragmentTransformerPlugin {
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
-    logger: (String) -> Unit,
+    logger: LogCollector,
   ): FragmentOutput {
     val executorParams = action.executorParams!!
-    log.debug("[$corrId] transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")
+    logger.log("transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")
+
 
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
 
     val feed = (executorParams.org_feedless_feed?.generic?.let {
       webToFeedTransformer.getFeedBySelectors(
         corrId, it.toSelectors(),
-        document, URL(data.url)
+        document, URL(data.url),
+        logger
       )
     } ?: feedParserService.parseFeed(corrId, data))
-    log.debug("[$corrId] transformed to feed with ${feed.items.size} items")
+    logger.log("transformed to feed with ${feed.items.size} items")
 
     return FragmentOutput(
       fragmentName = id(),

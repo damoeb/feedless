@@ -20,7 +20,7 @@ type AgentEvent {
   callbackId: ID
   corrId: ID
   authentication: AgentAuthentication
-  scrape: ScrapeRequest
+  scrape: ScrapeRequest # todo rename to source
 }
 
 type Authentication {
@@ -432,8 +432,8 @@ type Query {
   scrape(data: SourceInput!): ScrapeResponse!
   session: Session!
 
-  remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
-  previewFeed(data: PreviewFeedInput!): RemoteNativeFeed!
+  remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed! # todo replace by scrape
+  previewFeed(data: PreviewFeedInput!): FeedPreview! # todo replace by scrape
 
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 #  license: License!
@@ -446,6 +446,11 @@ type Query {
 
   products(data: ProductsWhereInput!): [Product!]!
   orders(data: OrdersInput!): [Order!]!
+}
+
+type FeedPreview {
+  logs: [LogStatement!]!
+  feed: RemoteNativeFeed!
 }
 
 input FeatureGroupWhereInput {

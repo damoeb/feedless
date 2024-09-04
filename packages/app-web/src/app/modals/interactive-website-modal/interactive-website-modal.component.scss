@@ -55,8 +55,10 @@ ion-toolbar {
   }
 }
 
-.action__raw {
-  display: none;
+.hide-non-ui-actions {
+  .action__raw {
+    display: none;
+  }
 }
 
 ion-item {

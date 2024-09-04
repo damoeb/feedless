@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline
 
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.service.LogCollector
 
 interface FilterEntityPlugin : FeedlessPlugin {
 
@@ -9,7 +10,8 @@ interface FilterEntityPlugin : FeedlessPlugin {
     corrId: String,
     item: JsonItem,
     params: PluginExecutionParamsInput,
-    index: Int
+    index: Int,
+    logger: LogCollector? = null,
   ): Boolean
 
 }

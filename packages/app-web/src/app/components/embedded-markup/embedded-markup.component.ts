@@ -14,9 +14,10 @@ import {
 } from '@angular/core';
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
-import { ScrapeController } from '../interactive-website/scrape-controller';
+import { SourceBuilder } from '../interactive-website/source-builder';
 import {
   debounce,
+  distinct,
   firstValueFrom,
   interval,
   lastValueFrom,
@@ -69,7 +70,7 @@ export class EmbeddedMarkupComponent
   embed: Embeddable;
 
   @Input()
-  scrapeController: ScrapeController;
+  sourceBuilder: SourceBuilder;
 
   @Input()
   maxHeight: boolean = false;
@@ -100,7 +101,7 @@ export class EmbeddedMarkupComponent
           this.currentXpath = xpath;
           this.changeRef.detectChanges();
         }),
-      this.scrapeController.extractElements.subscribe((params) => {
+      this.sourceBuilder.events.extractElements.subscribe((params) => {
         const document = new DOMParser().parseFromString(
           this.embed.data,
           'text/html',
@@ -120,26 +121,22 @@ export class EmbeddedMarkupComponent
         }
         params.callback(elements);
       }),
-      this.scrapeController.pickElement.subscribe((callback) => {
+      this.sourceBuilder.events.pickElement.subscribe((callback) => {
         const unsubscribe = this.pickedXpath.subscribe((xpath) => {
           unsubscribe.unsubscribe();
           callback(xpath);
         });
       }),
-      this.scrapeController.showElements.subscribe((xpath) => {
-        console.log(`showElements ${xpath}`);
-        this.postIframeMessage({
-          id: '',
-          type: 'xpath',
-          data: xpath,
-        });
-      }),
-    );
-
-    console.log(
-      'lastValueFrom(this.scrapeController.showElements)',
-      firstValueFrom(this.scrapeController.showElements),
-      lastValueFrom(this.scrapeController.showElements),
+      this.sourceBuilder.events.showElements
+        .pipe(distinct())
+        .subscribe((xpath) => {
+          console.log(`showElements ${xpath}`);
+          this.postIframeMessage({
+            id: '',
+            type: 'xpath',
+            data: xpath,
+          });
+        }),
     );
   }
 
@@ -200,7 +197,7 @@ export class EmbeddedMarkupComponent
 
   private postIframeMessage(message: IframeMessage) {
     return this.waitForDocument?.then(() =>
-      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'),
+      this.iframeRef.nativeElement.contentWindow?.postMessage(message, '*'),
     );
   }
 
@@ -303,7 +300,7 @@ window.addEventListener('message', (message) => {
   switch (message.data.type) {
     case 'xpath':
       const cssPath = transformXpathToCssPath(message.data.data);
-      document.querySelector('#feedless-style').textContent = cssPath + '{border: 2px solid red!important; box-shadow: 0px 0px 6px 2px red;}';
+      document.querySelector('#feedless-style').textContent = cssPath + '{filter: drop-shadow(2px 4px 6px blue);}';
       document.querySelector(cssPath).scrollIntoView()
       break;
     case 'show-boxes':

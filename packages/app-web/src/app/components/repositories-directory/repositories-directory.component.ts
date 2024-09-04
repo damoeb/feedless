@@ -23,18 +23,6 @@ export class RepositoriesDirectoryComponent implements OnInit {
     readonly serverConfig: ServerConfigService,
   ) {}
 
-  async handleQuery(query: string) {
-    try {
-      // await this.router.navigate(['/draft'], {
-      //   queryParams: {
-      //     code,
-      //   },
-      // });
-    } catch (e) {
-      console.warn(e);
-    }
-  }
-
   async ngOnInit() {
     await this.fetch();
   }

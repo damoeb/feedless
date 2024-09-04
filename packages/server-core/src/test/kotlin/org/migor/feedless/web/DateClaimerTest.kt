@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.feed.DateClaimer
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toDate
 import java.text.SimpleDateFormat
@@ -16,10 +17,12 @@ internal class DateClaimerTest {
   private val corrId = "test"
 
   private lateinit var dateClaimer: DateClaimer
+  private lateinit var logCollector: LogCollector
 
   @BeforeEach
   fun setUp() {
     dateClaimer = DateClaimer()
+    logCollector = LogCollector("test")
   }
 
   @ParameterizedTest
@@ -44,7 +47,12 @@ internal class DateClaimerTest {
   )
   fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) = runTest {
     val actual =
-      dateClaimer.claimDatesFromString(corrId, "${newCorrId()} $dateStringInput ${newCorrId()}", Locale.of(lang))
+      dateClaimer.claimDatesFromString(
+          corrId,
+          "${newCorrId()} $dateStringInput ${newCorrId()}",
+          Locale.of(lang),
+          logCollector
+      )
     assertThat(actual!!.time).isEqualTo(
       toDate(
         SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss' 'Z").parse(expectedOuput).toInstant().atZone(

@@ -13,26 +13,26 @@ import {
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
+  GqlFeedlessPlugins,
   GqlRemoteNativeFeed,
   GqlScrapeRequest,
-  GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
-import { RemoteFeed, ScrapeResponse, Selectors } from '../../graphql/types';
+import { FeedPreview, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { cloneDeep, max, min, omit } from 'lodash-es';
+import { assign, cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
 import { ModalService } from '../../services/modal.service';
 import { FeedService } from '../../services/feed.service';
-import { getScrapeRequest } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
-import { Subscription } from 'rxjs';
-import { getGenericFeedParams } from '../../utils';
-import { ScrapeController } from '../interactive-website/scrape-controller';
+import { debounce as rxDebounce, interval, Subscription } from 'rxjs';
+import { SourceBuilder } from '../interactive-website/source-builder';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -46,14 +46,11 @@ export type ComponentStatus = 'valid' | 'invalid';
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TransformWebsiteToFeedComponent
-  implements OnInit, OnChanges, OnDestroy
-{
-  @Input({ required: true })
-  scrapeRequest: GqlSourceInput;
+export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
+  protected readonly CUSTOM_HASH = 'custom-hash';
 
   @Input({ required: true })
-  scrapeResponse: ScrapeResponse;
+  sourceBuilder: SourceBuilder;
 
   @ViewChild('interactiveWebsite')
   interactiveWebsiteComponent: InteractiveWebsiteComponent;
@@ -62,80 +59,118 @@ export class TransformWebsiteToFeedComponent
   feed: NativeOrGenericFeed;
 
   @Output()
-  statusChange: EventEmitter<ComponentStatus> =
+  readonly statusChange: EventEmitter<ComponentStatus> =
     new EventEmitter<ComponentStatus>();
 
   @Output()
-  selectedFeedChange: EventEmitter<NativeOrGenericFeed> =
+  readonly selectedFeedChange: EventEmitter<NativeOrGenericFeed> =
     new EventEmitter<NativeOrGenericFeed>();
 
-  formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
-    TypedFormControls<Selectors>
-  >(
-    {
-      contextXPath: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required, Validators.minLength(1)],
-      }),
-      dateXPath: new FormControl('', []),
-      paginationXPath: new FormControl('', []),
-      linkXPath: new FormControl('', {
-        nonNullable: true,
-      }),
-      dateIsStartOfEvent: new FormControl(false, {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      extendContext: new FormControl(GqlExtendContentOptions.None, []),
-    },
-    { updateOn: 'change' },
-  );
+  readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> =
+    new FormGroup<TypedFormControls<Selectors>>(
+      {
+        contextXPath: new FormControl<string>('', {
+          nonNullable: true,
+          validators: [Validators.required, Validators.minLength(1)],
+        }),
+        dateXPath: new FormControl<string>('', []),
+        paginationXPath: new FormControl<string>('', []),
+        linkXPath: new FormControl<string>('', {
+          nonNullable: true,
+        }),
+        dateIsStartOfEvent: new FormControl<boolean>(false, {
+          nonNullable: true,
+          validators: [Validators.required],
+        }),
+        extendContext: new FormControl<GqlExtendContentOptions>(
+          GqlExtendContentOptions.None,
+          [],
+        ),
+      },
+      { updateOn: 'change' },
+    );
 
   genericFeeds: GqlTransientGenericFeed[] = [];
   nativeFeeds: GqlRemoteNativeFeed[] = [];
   currentNativeFeed: GqlRemoteNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
-  isNonSelected = true;
   busy = false;
-  showSelectors = false;
   protected selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
   private subscriptions: Subscription[] = [];
-  protected scrapeController: ScrapeController;
-  remoteFeed: RemoteFeed;
+  feedPreview: FeedPreview;
+  // protected useCustomSelectors: boolean;
+  protected shouldRefresh: boolean = false;
+  activeSegment: string;
+  private customSelectorsFgChangeSubscription: Subscription;
+  protected loadingFeedPreview: boolean;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly feedService: FeedService,
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly location: Location,
     private readonly modalService: ModalService,
   ) {}
 
   async ngOnInit() {
     try {
-      this.scrapeController = new ScrapeController(this.scrapeRequest);
-      this.scrapeController.response = this.scrapeResponse;
+      const genericFeedParams = this.sourceBuilder.findFirstByPluginsId(
+        GqlFeedlessPlugins.OrgFeedlessFeed,
+      )?.execute?.params?.org_feedless_feed?.generic;
 
-      const genericFeedParams = getGenericFeedParams(
-        this.scrapeRequest.flow?.sequence,
-      );
       if (genericFeedParams) {
-        await this.pickGenericFeed({
+        this.customizeGenericFeed({
           selectors: genericFeedParams,
           count: 0,
           score: 0,
           hash: '',
         });
+      } else {
+        this.genFeedXpathsFg.patchValue(
+          this.activatedRoute.snapshot.queryParams,
+        );
+        if (this.genFeedXpathsFg.valid) {
+          this.customizeGenericFeed({
+            hash: '',
+            score: 0,
+            count: 0,
+            selectors: {
+              linkXPath: this.genFeedXpathsFg.value.linkXPath,
+              contextXPath: this.genFeedXpathsFg.value.contextXPath,
+              paginationXPath: this.genFeedXpathsFg.value.paginationXPath,
+              dateIsStartOfEvent: this.genFeedXpathsFg.value.dateIsStartOfEvent,
+              extendContext: this.genFeedXpathsFg.value.extendContext,
+              dateXPath: this.genFeedXpathsFg.value.dateXPath,
+            },
+          });
+        }
       }
+      this.changeRef.detectChanges();
 
       this.subscriptions.push(
-        this.formGroup.valueChanges.subscribe(() => {
-          this.emitSelectedFeed();
-        }),
-        this.formGroup.controls.contextXPath.valueChanges.subscribe((xpath) => {
-          this.scrapeController.showElements.next(xpath);
-        }),
+        this.sourceBuilder.events.stateChange
+          .pipe(rxDebounce(() => interval(200)))
+          .subscribe((state) => {
+            this.shouldRefresh = state === 'DIRTY';
+            this.changeRef.detectChanges();
+          }),
+        this.genFeedXpathsFg.valueChanges
+          .pipe(rxDebounce(() => interval(200)))
+          .subscribe(() => {
+            this.patchCurrentUrl(this.genFeedXpathsFg.value);
+            this.emitSelectedFeed();
+          }),
+        this.genFeedXpathsFg.controls.contextXPath.valueChanges
+          .pipe(rxDebounce(() => interval(500)))
+          .subscribe((xpath) => {
+            if (this.activeSegment !== 'feed') {
+              this.sourceBuilder.events.showElements.next(`${xpath}`);
+            }
+          }),
       );
-      const elementWithFeeds = this.scrapeResponse.outputs.find(
+      const elementWithFeeds = this.sourceBuilder.response.outputs.find(
         (o) => o.response?.extract?.feeds,
       );
       if (elementWithFeeds) {
@@ -167,144 +202,79 @@ export class TransformWebsiteToFeedComponent
   }
 
   async pickNativeFeed(feed: GqlRemoteNativeFeed) {
-    await this.resetSelection();
+    this.resetSelection();
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);
       this.selectedFeed = {
         nativeFeed: this.currentNativeFeed,
       };
+      this.sourceBuilder
+        .patchFetch({
+          url: {
+            literal: this.feed.nativeFeed.feedUrl,
+          },
+        })
+        .addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFeed, {
+          execute: {
+            pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+            params: {},
+          },
+        });
+
       this.emitSelectedFeed();
+      this.patchCurrentUrl({ url: this.currentNativeFeed.feedUrl });
     }
-    this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
   }
 
   async pickGenericFeed(genericFeed: GqlTransientGenericFeed) {
-    await this.resetSelection();
-    this.showSelectors = true;
-    if (this.currentGenericFeed?.hash !== genericFeed.hash) {
-      this.currentGenericFeed = cloneDeep(genericFeed);
-      this.selectedFeed = {
-        genericFeed: omit(this.currentGenericFeed, 'samples') as any,
-      };
-      this.scrapeController.showElements.next(
-        this.selectedFeed.genericFeed.selectors.contextXPath,
-      );
-    }
-    this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
+    this.resetSelection();
+    this.customizeGenericFeed(genericFeed);
+  }
 
-    const selectors = genericFeed.selectors;
-    this.formGroup.setValue({
-      contextXPath: selectors.contextXPath,
-      dateIsStartOfEvent: selectors.dateIsStartOfEvent,
-      dateXPath: selectors.dateXPath,
-      paginationXPath: selectors.paginationXPath || '',
-      linkXPath: selectors.linkXPath,
-      extendContext: selectors.extendContext,
-    });
-    this.emitSelectedFeed();
-
-    this.changeRef.detectChanges();
+  private patchCurrentUrl(queryParams: object) {
+    const url = this.router
+      .createUrlTree(this.activatedRoute.snapshot.url, {
+        queryParams: {
+          url: this.sourceBuilder.getUrl(),
+          ...queryParams,
+        },
+        relativeTo: this.activatedRoute,
+      })
+      .toString();
+    this.location.replaceState(url);
   }
 
   getRelativeScore(genericFeed: GqlTransientGenericFeed): number {
     return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 
-  private async resetSelection() {
-    this.showSelectors = false;
+  private resetSelection() {
     this.currentGenericFeed = null;
     this.currentNativeFeed = null;
   }
 
   private isValid(): boolean {
     if (this.selectedFeed) {
-      if (this.selectedFeed.genericFeed) {
-        return this.formGroup.valid;
+      if (this.selectedFeed.nativeFeed) {
+        return true;
+      } else {
+        return this.genFeedXpathsFg.valid;
       }
-      return true;
     }
     return false;
   }
 
   private async emitSelectedFeed() {
+    console.log('emitSelectedFeed');
     this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
-    this.selectedFeedChange.emit(this.getSelectedFeed());
-    this.remoteFeed = await this.feedService.previewFeed({
-      sources: [
-        getScrapeRequest(
-          this.getSelectedFeed(),
-          this.scrapeRequest as GqlScrapeRequest,
-        ),
-      ],
-      filters: [],
-      tags: [],
-    });
-  }
-
-  // async previewGenericFeed() {
-  //   await this.modalService.openRemoteFeedModal({
-  //     feedProvider: () =>
-  //       this.feedService.previewFeed({
-  //         sources: [
-  //           getScrapeRequest(
-  //             this.getSelectedFeed(),
-  //             this.scrapeRequest as GqlScrapeRequest,
-  //           ),
-  //         ],
-  //         filters: [],
-  //         tags: [],
-  //       }),
-  //   });
-  // }
-  activeSegment: string;
-
-  async pickGenericFeedBySelectors(
-    selectors: Partial<GqlTransientGenericFeed['selectors']>,
-  ) {
-    console.log('pickGenericFeedBySelectors', selectors, this.genericFeeds);
-    const contextXPath = selectors.contextXPath;
-    const linkXPath = selectors.linkXPath;
-    if (contextXPath && linkXPath) {
-      const matchingGenericFeed = this.genericFeeds.find(
-        (genericFeed) =>
-          genericFeed.selectors.contextXPath === contextXPath &&
-          genericFeed.selectors.linkXPath === linkXPath,
-      );
-      if (matchingGenericFeed) {
-        await this.pickGenericFeed(matchingGenericFeed);
-      } else {
-        console.warn('no matching feed found');
-      }
+    this.selectedFeedChange.emit(this.selectedFeed);
+    if (this.isValid()) {
+      this.sourceBuilder.events.stateChange.next('DIRTY');
     }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.scrapeResponse?.currentValue) {
-      console.log('changed scrapeResponse');
-    }
-  }
-
-  private getSelectedFeed(): NativeOrGenericFeed {
-    if (this.selectedFeed.nativeFeed) {
-      return this.selectedFeed;
-    } else {
-      return {
-        genericFeed: {
-          selectors: {
-            linkXPath: this.formGroup.value.linkXPath,
-            contextXPath: this.formGroup.value.contextXPath,
-            dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
-            extendContext: this.formGroup.value.extendContext,
-            dateXPath: this.formGroup.value.dateXPath,
-            paginationXPath: this.formGroup.value.paginationXPath,
-          },
-          hash: '',
-          score: 0,
-          count: 0,
-        },
-      };
+    if (!this.feedPreview) {
+      this.fetchFeedPreview(false);
     }
   }
 
@@ -313,10 +283,11 @@ export class TransformWebsiteToFeedComponent
   }
 
   async pickElementWithin(xpath: string, fc: FormControl<string>) {
-    this.scrapeController.extractElements.emit({
+    this.sourceBuilder.events.extractElements.emit({
       xpath,
       callback: async (elements: HTMLElement[]) => {
         const componentProps: CodeEditorModalComponentProps = {
+          title: 'HTML Editor',
           text: await format(elements[0].innerHTML, {
             parser: 'html',
             plugins: [htmlPlugin],
@@ -328,7 +299,112 @@ export class TransformWebsiteToFeedComponent
     });
   }
 
-  selectTab(tab: string) {
-    this.interactiveWebsiteComponent.selectTab(tab);
+  protected async fetchFeedPreview(switchTab: boolean) {
+    console.log('fetchFeedPreview');
+    if (this.selectedFeed) {
+      this.genFeedXpathsFg.markAsPristine();
+      if (switchTab) {
+        this.interactiveWebsiteComponent?.selectTab('feed');
+      }
+
+      try {
+        this.loadingFeedPreview = true;
+        this.feedPreview = await this.feedService.previewFeed({
+          sources: [this.sourceBuilder.build()],
+          filters: [],
+          tags: [],
+        });
+        this.sourceBuilder.events.stateChange.next('PRISTINE');
+      } finally {
+        this.loadingFeedPreview = false;
+      }
+    }
+    this.changeRef.detectChanges();
+  }
+
+  customizeGenericFeed(genericFeed: GqlTransientGenericFeed) {
+    this.genFeedXpathsFg.patchValue(
+      {
+        contextXPath: genericFeed.selectors.contextXPath,
+        linkXPath: genericFeed.selectors.linkXPath,
+        paginationXPath: genericFeed.selectors.paginationXPath,
+        dateIsStartOfEvent: genericFeed.selectors.dateIsStartOfEvent,
+        extendContext: genericFeed.selectors.extendContext,
+      },
+      { emitEvent: false },
+    );
+    this.genFeedXpathsFg.markAsPristine();
+
+    this.sourceBuilder.events.showElements.next(
+      genericFeed.selectors.contextXPath,
+    );
+
+    if (this.customSelectorsFgChangeSubscription) {
+      this.customSelectorsFgChangeSubscription.unsubscribe();
+    }
+
+    this.propagateCurrentGenFeed(genericFeed.hash);
+
+    this.customSelectorsFgChangeSubscription = this.genFeedXpathsFg.valueChanges
+      .pipe(rxDebounce(() => interval(200)))
+      .subscribe(() => {
+        this.propagateCurrentGenFeed();
+      });
+
+    this.changeRef.detectChanges();
+  }
+
+  private propagateCurrentGenFeed(hash: string | undefined = undefined) {
+    const value = this.genFeedXpathsFg.value;
+    this.currentGenericFeed = assign(
+      {},
+      {
+        selectors: {
+          linkXPath: value.linkXPath,
+          contextXPath: value.contextXPath,
+          dateIsStartOfEvent: value.dateIsStartOfEvent,
+          extendContext: value.extendContext,
+          dateXPath: value.dateXPath,
+          paginationXPath: value.paginationXPath,
+        },
+        hash: '',
+        score: 0,
+        count: 0,
+      },
+      {
+        hash: hash || this.CUSTOM_HASH,
+      },
+    );
+    this.selectedFeed = {
+      genericFeed: this.currentGenericFeed,
+    };
+
+    this.sourceBuilder.addOrUpdatePluginById(
+      GqlFeedlessPlugins.OrgFeedlessFeed,
+      {
+        execute: {
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+          params: {
+            org_feedless_feed: {
+              generic: this.currentGenericFeed.selectors,
+            },
+          },
+        },
+      },
+    );
+
+    this.patchCurrentUrl(omit(this.currentGenericFeed.selectors, '__typename'));
+    this.changeRef.detectChanges();
+    this.emitSelectedFeed();
+  }
+
+  handleSegmentChange(segment: string) {
+    if (this.activeSegment != segment) {
+      this.activeSegment = segment;
+
+      if (segment === 'feed' && this.shouldRefresh) {
+        this.fetchFeedPreview(false);
+      }
+    }
   }
 }

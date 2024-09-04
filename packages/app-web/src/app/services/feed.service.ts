@@ -10,7 +10,7 @@ import {
   RemoteNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
-import { RemoteFeed, RemoteFeedItem } from '../graphql/types';
+import { FeedPreview, RemoteFeed, RemoteFeedItem } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +35,7 @@ export class FeedService {
       .then((response) => response.data.remoteNativeFeed);
   }
 
-  async previewFeed(data: GqlPreviewFeedInput): Promise<RemoteFeed> {
+  async previewFeed(data: GqlPreviewFeedInput): Promise<FeedPreview> {
     return this.apollo
       .query<GqlPreviewFeedQuery, GqlPreviewFeedQueryVariables>({
         query: PreviewFeed,

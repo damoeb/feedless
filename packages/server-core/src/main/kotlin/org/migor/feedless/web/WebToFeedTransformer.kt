@@ -12,6 +12,7 @@ import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractResponse
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -285,21 +286,25 @@ class WebToFeedTransformer(
     selectors: Selectors,
     document: Document,
     url: URL,
+    logger: LogCollector,
   ): JsonFeed {
     val locale = extractLocale(document, propertyService.locale)
     val element = withAbsUrls(normalizeTags(document.body()), url)
-    val feed = webExtractService.extract(
+    val response = webExtractService.extract(
       corrId,
       selectors.toScrapeExtracts(),
       element,
       locale,
+      logger
     )
+    logger.log("Extracting pagination xpath ${selectors.paginationXPath}")
     val links = StringUtils.trimToNull(selectors.paginationXPath)?.let {
       val xpath = if (it.matches(Regex("a(\\[[0-9]+\\])?$", RegexOption.IGNORE_CASE))) {
         it
       } else {
         "$it//a/@href"
       }
+      logger.log("pagination xpath $xpath")
       webExtractService.extract(
         corrId,
         DOMExtract(
@@ -310,9 +315,10 @@ class WebToFeedTransformer(
         ),
         element,
         locale,
+        logger,
       )
     }
-    return convertExtractsToJsonFeed(feed, links, url)
+    return convertExtractsToJsonFeed(response, links, url, logger)
   }
 
   suspend fun getArticlesBySelectors(
@@ -321,21 +327,27 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
   ): List<JsonItem> {
-    return getFeedBySelectors(corrId, selectors, document, url).items
+    return getFeedBySelectors(corrId, selectors, document, url, LogCollector(corrId, log)).items
   }
 
   private suspend fun convertExtractsToJsonFeed(
     feed: ScrapeExtractResponse,
     links: ScrapeExtractResponse?,
-    url: URL
+    url: URL,
+    logger: LogCollector
   ): JsonFeed {
+
+    val items = feed.fragments!!
+      .map { convertExtractToJsonItem(it, url) }
+
+    logger.log("Create feed with items [\n${items.map { "\t${it.title} -> ${it.url}\n" }}\n]")
+
     val jsonFeed = JsonFeed()
     jsonFeed.id = ""
     jsonFeed.title = "Feed"
     jsonFeed.websiteUrl = ""
     jsonFeed.publishedAt = Date()
-    jsonFeed.items = feed.fragments!!
-      .map { convertExtractToJsonItem(it, url) }
+    jsonFeed.items = items
       .distinctBy { it.url }
     jsonFeed.feedUrl = ""
     links?.let {
@@ -351,28 +363,29 @@ class WebToFeedTransformer(
     val element = parseHtml(fragment.html!!.data, baseUrl.toString()).body()
     val text = fragment.text!!.data
 
-    val article = JsonItem()
-    article.id = FeedUtil.toURI("article", text)
-    article.title = StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100)
+    val item = JsonItem()
+    item.id = FeedUtil.toURI("article", text)
+    item.title = StringUtils.substring(text.replace(reLinebreaks, " "), 0, 100)
     val url =
       fragment.extracts?.find { it.fragmentName == JsonItem.URL }?.fragments?.find { it.data?.mimeType == WebExtractService.MIME_URL }?.data?.data
-    article.url = url ?: ""
-    article.contentText = webToTextTransformer.extractText(element)
-    article.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
-    article.contentRawMime = "text/html"
-    article.publishedAt = Date()
+    item.url = url ?: ""
+
+    item.contentText = webToTextTransformer.extractText(element)
+    item.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
+    item.contentRawMime = "text/html"
+    item.publishedAt = Date()
 
     val tryExtractDate =
       { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.PUBLISHED_AT }?.let {
-      article.publishedAt = tryExtractDate(it) ?: Date()
+      item.publishedAt = tryExtractDate(it) ?: Date()
     }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.STARTING_AT }?.let {
-      article.startingAt = tryExtractDate(it)
+      item.startingAt = tryExtractDate(it)
     }
-    return article
+    return item
   }
 
   private suspend fun extractLocale(document: Document, fallback: Locale): Locale {

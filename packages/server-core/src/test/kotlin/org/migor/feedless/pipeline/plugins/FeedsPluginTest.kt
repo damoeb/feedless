@@ -17,6 +17,7 @@ import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule
@@ -49,7 +50,8 @@ class FeedsPluginTest {
   @MockBean
   lateinit var genericFeedLocator: GenericFeedLocator
 
-  val corrId = "test";
+  val corrId = "test"
+  val logCollector = LogCollector("test")
 
   @ParameterizedTest
   @CsvSource(
@@ -82,7 +84,7 @@ class FeedsPluginTest {
       .thenReturn(mockFeed)
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) {}
+    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(1)
@@ -124,7 +126,7 @@ class FeedsPluginTest {
       .thenReturn(listOf(mockGenericFeed))
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) {}
+    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)
@@ -141,7 +143,7 @@ class FeedsPluginTest {
     )
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data) { }
+    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)

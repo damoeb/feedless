@@ -14,9 +14,9 @@ import {
   GqlXyPosition,
 } from '../../../generated/graphql';
 import { ModalController } from '@ionic/angular';
-import { ScrapeResponse } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
-import { ScrapeController } from '../../components/interactive-website/scrape-controller';
+import { SourceBuilder } from '../../components/interactive-website/source-builder';
+import { ScrapeService } from '../../services/scrape.service';
 
 type BrowserActionType = keyof GqlScrapeActionInput;
 
@@ -26,13 +26,8 @@ export type BrowserAction = {
   raw?: FormControl<GqlScrapeActionInput>;
 };
 
-export interface FeedBuilderData {
-  request: GqlSourceInput;
-  response: ScrapeResponse;
-}
-
 export type InteractiveWebsiteModalComponentProps = {
-  scrapeRequest: GqlSourceInput;
+  source: GqlSourceInput;
 };
 
 @Component({
@@ -45,19 +40,9 @@ export class InteractiveWebsiteModalComponent
   implements OnInit, OnDestroy, InteractiveWebsiteModalComponentProps
 {
   @Input({ required: true })
-  scrapeRequest: GqlSourceInput;
+  source: GqlSourceInput;
 
-  protected scrapeController: ScrapeController;
-
-  formFg = new FormGroup({
-    prerendered: new FormControl<boolean>(false),
-    prerenderingOptions: new FormGroup({
-      resolutionX: new FormControl<number>(1024),
-      resolutionY: new FormControl<number>(768),
-      mobile: new FormControl<boolean>(false),
-      landscape: new FormControl<boolean>(false),
-    }),
-  });
+  protected sourceBuilder: SourceBuilder;
 
   actionsFg = new FormArray<FormGroup<BrowserAction>>([]);
   private subscriptions: Subscription[] = [];
@@ -71,16 +56,21 @@ export class InteractiveWebsiteModalComponent
     'select',
     'wait',
   ];
+  hideNonUiActions: boolean = true;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
+    private readonly scrapeService: ScrapeService,
     protected readonly serverConfig: ServerConfigService,
   ) {}
 
   ngOnInit() {
-    this.scrapeController = new ScrapeController(this.scrapeRequest);
-    this.scrapeRequest.flow.sequence
+    this.sourceBuilder = SourceBuilder.fromSource(
+      this.source,
+      this.scrapeService,
+    );
+    this.source.flow.sequence
       .map((action) => this.convertScrapeActionToActionFg(action))
       .forEach((actionFg) => {
         this.actionsFg.push(actionFg);
@@ -88,15 +78,12 @@ export class InteractiveWebsiteModalComponent
     this.changeRef.detectChanges();
 
     this.subscriptions.push(
-      this.actionsFg.valueChanges
-        .pipe(debounce(() => interval(800)))
-        .subscribe(() => {
-          if (this.actionsFg.valid) {
-            this.scrapeController.scrapeRequest.flow.sequence =
-              this.getActionsRequestFragment();
-            this.scrapeController.actionsChanges.emit();
-          }
-        }),
+      this.actionsFg.valueChanges.subscribe(() => {
+        if (this.actionsFg.valid) {
+          this.sourceBuilder.overwriteFlow(this.getActionsRequestFragment());
+          this.sourceBuilder.events.actionsChanges.emit();
+        }
+      }),
     );
   }
 
@@ -106,11 +93,15 @@ export class InteractiveWebsiteModalComponent
 
   addAction() {
     if (this.actionsFg.valid) {
-      const index = this.getActionFgs().findIndex(
+      const firstExecuteIndex = this.getActionFgs().findIndex(
         (action) => action.value.type === 'execute',
       );
+      const insertAt =
+        firstExecuteIndex == -1
+          ? this.getActionFgs().length
+          : firstExecuteIndex;
       this.actionsFg.insert(
-        index,
+        insertAt,
         new FormGroup<BrowserAction>({
           type: new FormControl<BrowserActionType>('click'),
           clickParams: new FormControl<GqlXyPosition>(null, [
@@ -118,6 +109,8 @@ export class InteractiveWebsiteModalComponent
           ]),
         }),
       );
+    } else {
+      console.log(this.actionsFg.errors);
     }
   }
 
@@ -148,11 +141,7 @@ export class InteractiveWebsiteModalComponent
   }
 
   applyChanges() {
-    const data: FeedBuilderData = {
-      request: this.scrapeController.getScrapeRequest(),
-      response: this.scrapeController.response,
-    };
-    return this.modalCtrl.dismiss(data);
+    return this.modalCtrl.dismiss(this.sourceBuilder);
   }
 
   private getActionsRequestFragment(): GqlScrapeActionInput[] {
@@ -185,15 +174,18 @@ export class InteractiveWebsiteModalComponent
         ]),
       });
     } else {
-      return new FormGroup<BrowserAction>({
+      const actionFg = new FormGroup<BrowserAction>({
         type: new FormControl<BrowserActionType>(this.getActionType(action)),
         raw: new FormControl<GqlScrapeActionInput>(action),
       });
+      // debugger
+      // actionFg.disable()
+      return actionFg;
     }
   }
 
   pickPosition(action: FormGroup<BrowserAction>) {
-    this.scrapeController.pickPoint.emit((position) =>
+    this.sourceBuilder.events.pickPoint.emit((position) =>
       action.patchValue({
         clickParams: {
           x: position.x,

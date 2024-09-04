@@ -1,0 +1,22 @@
+@import "../../../mixins";
+
+ion-input,
+ion-select {
+  --border-radius: 8px;
+  min-height: 45px;
+  &::part(container) {
+    width: 100%;
+  }
+
+  &::part(icon) {
+    --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+
+  &:not(.has-focus):hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+}

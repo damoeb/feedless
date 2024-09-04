@@ -46,7 +46,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
 
   @Query(
     """SELECT DISTINCT s FROM RepositoryEntity s
-    JOIN FETCH s.sources
+    LEFT JOIN FETCH s.sources
     WHERE s.id = :id"""
   )
   fun findByIdWithSources(@Param("id") id: UUID): RepositoryEntity?

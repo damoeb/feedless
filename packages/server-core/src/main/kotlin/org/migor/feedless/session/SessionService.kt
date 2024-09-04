@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import java.util.*
@@ -57,6 +58,7 @@ class RequestContextElement : AbstractCoroutineContextElement(RequestContextElem
 
 @Service
 @Profile(AppProfiles.database)
+@Transactional
 class SessionService {
 
   @Autowired

@@ -79,8 +79,11 @@
                 ></app-bubble>
                 <ion-label>
                   <h3 class="ion-padding-horizontal">
-                    From {{ getUrl(source) }}
+                    {{ source.title }}
                   </h3>
+                  <p class="ion-padding-horizontal">
+                    <ion-note>{{ getUrl(source) }}</ion-note>
+                  </p>
                   <p class="ion-padding-horizontal">
                     {{ getPluginsOfSource(source) }}
                   </p>
@@ -119,11 +122,32 @@
         </ng-template>
       </ion-modal>
 
+      <ion-modal [trigger]="harvestsModalId">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Last Harvests</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="dismissModal()">
+                  <ion-icon name="close-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding"> </ion-content>
+        </ng-template>
+      </ion-modal>
+
+      <ion-button *ngIf="isOwner" [id]="harvestsModalId" [disabled]="true">
+        <ion-icon name="pulse-outline" slot="start"></ion-icon>
+        <ion-label> Recent Harvests </ion-label>
+      </ion-button>
+
       <ion-button [id]="sourcesModalId">
         <ion-icon name="git-branch-outline" slot="start"></ion-icon>
         <ion-label>
           Sources
-          <app-bubble *ngIf="hasErrors()" color="red" slot="end"></app-bubble>
+          <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>
         </ion-label>
         <ion-chip *ngIf="!hasErrors()">{{
           repository.sources.length
@@ -259,7 +283,7 @@
       </div>
     </div>
 
-    <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
 
     <ng-container *ngIf="!loading">
       <div

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Code Editor</ion-title>
+    <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">
         <ion-icon name="close-outline"></ion-icon>
@@ -10,7 +10,7 @@
 </ion-header>
 <ion-content>
   <app-code-editor
-    [controls]="controls"
+    [markdownControls]="controls"
     [readOnly]="readOnly"
     [contentType]="contentType"
     [text]="text"

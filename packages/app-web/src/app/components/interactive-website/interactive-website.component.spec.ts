@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { InteractiveWebsiteComponent } from './interactive-website.component';
 import { InteractiveWebsiteModule } from './interactive-website.module';
 import { AppTestModule, mockScrape } from '../../app-test.module';
-import { ScrapeController } from './scrape-controller';
+import { SourceBuilder } from './source-builder';
+import { ScrapeService } from '../../services/scrape.service';
 
 describe('InteractiveWebsiteComponent', () => {
   let component: InteractiveWebsiteComponent;
@@ -21,11 +22,11 @@ describe('InteractiveWebsiteComponent', () => {
 
     fixture = TestBed.createComponent(InteractiveWebsiteComponent);
     component = fixture.componentInstance;
-    const scrapeController = new ScrapeController({
-      title: '',
-      flow: { sequence: [] },
-    });
-    component.scrapeController = scrapeController;
+
+    component.sourceBuilder = SourceBuilder.fromUrl(
+      '',
+      TestBed.inject(ScrapeService),
+    );
     fixture.detectChanges();
   }));
 

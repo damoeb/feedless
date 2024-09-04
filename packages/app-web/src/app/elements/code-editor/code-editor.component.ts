@@ -132,7 +132,7 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
   readOnly: boolean = false;
 
   @Input()
-  controls: boolean = true;
+  markdownControls: boolean = false;
 
   @Input()
   autofocus: boolean = false;
@@ -279,62 +279,62 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
       markdownDecorator,
       urlDecorator,
       inlineImagePlugin,
-      autocompletion({
-        selectOnOpen: true,
-        activateOnTyping: true,
-        aboveCursor: false,
-        closeOnBlur: false,
-        override: [
-          async (
-            context: CompletionContext,
-          ): Promise<CompletionResult | null> => {
-            const firstToken = context.matchBefore(/[^ ]*/).text[0];
-            const node = syntaxTree(context.state).resolve(context.pos).node;
-            const token = node.cursor(IterMode.ExcludeBuffers);
-            console.log('autocomplete');
-
-            // if (true) {
-            //   return null;
-            // }
-
-            if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
-              const query = context.state.sliceDoc(token.from, token.to);
-              const options = await this.autoSuggestionsProvider(
-                query,
-                node.name,
-              );
-              return {
-                from: token.from,
-                filter: false,
-                options,
-              };
-            } else {
-              if (firstToken === '/') {
-                const selection = context.state.wordAt(context.pos);
-                const resolveQuery = () => {
-                  if (selection) {
-                    return context.state.sliceDoc(selection.from, selection.to);
-                  } else {
-                    return '';
-                  }
-                };
-
-                const from = selection?.from || context.pos;
-
-                const options = await this.autoSuggestionsProvider(
-                  resolveQuery(),
-                  node.name,
-                );
-                return {
-                  from: firstToken === '/' ? from - 1 : from,
-                  filter: false,
-                  options,
-                };
-              }
-            }
-          },
-        ],
-      }),
+      // autocompletion({
+      //   selectOnOpen: true,
+      //   activateOnTyping: true,
+      //   aboveCursor: false,
+      //   closeOnBlur: false,
+      //   override: [
+      //     async (
+      //       context: CompletionContext,
+      //     ): Promise<CompletionResult | null> => {
+      //       const firstToken = context.matchBefore(/[^ ]*/).text[0];
+      //       const node = syntaxTree(context.state).resolve(context.pos).node;
+      //       const token = node.cursor(IterMode.ExcludeBuffers);
+      //       console.log('autocomplete');
+      //
+      //       // if (true) {
+      //       //   return null;
+      //       // }
+      //
+      //       if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
+      //         const query = context.state.sliceDoc(token.from, token.to);
+      //         const options = await this.autoSuggestionsProvider(
+      //           query,
+      //           node.name,
+      //         );
+      //         return {
+      //           from: token.from,
+      //           filter: false,
+      //           options,
+      //         };
+      //       } else {
+      //         if (firstToken === '/') {
+      //           const selection = context.state.wordAt(context.pos);
+      //           const resolveQuery = () => {
+      //             if (selection) {
+      //               return context.state.sliceDoc(selection.from, selection.to);
+      //             } else {
+      //               return '';
+      //             }
+      //           };
+      //
+      //           const from = selection?.from || context.pos;
+      //
+      //           const options = await this.autoSuggestionsProvider(
+      //             resolveQuery(),
+      //             node.name,
+      //           );
+      //           return {
+      //             from: firstToken === '/' ? from - 1 : from,
+      //             filter: false,
+      //             options,
+      //           };
+      //         }
+      //       }
+      //     },
+      //   ],
+      // }),
       // EditorView.updateListener.of(debounce((update: ViewUpdate) => {
       //   console.log('this.highlightedLines', this.highlightedLines)
       //   this.highlightedLines = [1, 4, 10];
@@ -362,10 +362,12 @@ export class CodeEditorComponent implements AfterViewInit, OnChanges {
       doc: text,
       extensions: this.getExtensions(),
     });
+
     this.editorView = new EditorView({
       state,
       parent: this.editor.nativeElement,
     });
+
     if (this.autofocus) {
       this.setFocus();
     }

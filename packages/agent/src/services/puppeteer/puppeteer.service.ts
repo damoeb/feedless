@@ -437,7 +437,7 @@ export class PuppeteerService {
           this.executeRequest(job, browser),
           new Promise<ScrapeResponseInput>((_, reject) =>
             setTimeout(
-              () => reject(`timeout exceeded`),
+              () => reject(new Error(`timeout exceeded`)),
               httpGet.timeout || this.prerenderTimeout,
             ),
           ),

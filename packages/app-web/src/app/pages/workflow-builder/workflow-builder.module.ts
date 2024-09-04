@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { FeedBuilderPageRoutingModule } from './workflow-builder-routing.module';
 import { WorkflowBuilderPage } from './workflow-builder.page';
 import { FeedBuilderModule } from '../../components/feed-builder/feed-builder.module';
-import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/generate-feed-modal.module';
+import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { WorkflowBuilderModule } from '../../components/workflow-builder/workflow-builder.module';
 
 @NgModule({
@@ -14,7 +14,7 @@ import { WorkflowBuilderModule } from '../../components/workflow-builder/workflo
     CommonModule,
     IonicModule,
     FeedBuilderPageRoutingModule,
-    GenerateFeedModalModule,
+    RepositoryModalModule,
     FeedBuilderModule,
     WorkflowBuilderModule,
   ],

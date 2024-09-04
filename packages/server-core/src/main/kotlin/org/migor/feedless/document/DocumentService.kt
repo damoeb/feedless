@@ -13,7 +13,6 @@ import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.DocumentFrequency
@@ -36,7 +35,6 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -227,26 +225,26 @@ class DocumentService {
   }
 
   suspend fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+    log.info("[$corrId] deleteDocuments $documentIds")
+    val repository = withContext(Dispatchers.IO) { repositoryDAO.findById(repositoryId).orElseThrow() }
+    if (repository.ownerId != user.id) {
+      throw PermissionDeniedException("current user ist not owner ($corrId)")
+    }
+
     withContext(Dispatchers.IO) {
-      log.debug("[$corrId] deleteDocuments $documentIds")
-      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-      if (repository.ownerId != user.id) {
-        throw PermissionDeniedException("current user ist not owner ($corrId)")
-      }
-
-      if (documentIds.`in` != null) {
-        documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
-      } else {
-        //      if (documentIds.notIn != null) {
-        //        documentDAO.deleteAllByRepositoryIdAndIdNotIn(repositoryId, documentIds.notIn`.map { UUID.fromString(it) })
-        //      } else {
-        if (documentIds.equals != null) {
-          documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
-        } else {
-          throw IllegalArgumentException("operation not supported")
+    val transactionTemplate = TransactionTemplate(transactionManager)
+      transactionTemplate.executeWithoutResult {
+        runBlocking {
+          if (documentIds.`in` != null) {
+            documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+          } else {
+            if (documentIds.equals != null) {
+              documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
+            } else {
+              throw IllegalArgumentException("operation not supported")
+            }
+          }
         }
-        //      }
-
       }
     }
   }
@@ -357,9 +355,9 @@ class DocumentService {
   }
 
   private suspend fun DocumentService.releaseDocument(
-      corrId: String,
-      document: DocumentEntity,
-      repository: RepositoryEntity
+    corrId: String,
+    document: DocumentEntity,
+    repository: RepositoryEntity
   ) {
 //    forwardToMail(corrId, document, repository)
     document.status = ReleaseStatus.released

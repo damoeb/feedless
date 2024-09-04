@@ -22,8 +22,7 @@ import {
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
-  getScrapeRequest,
-} from '../../modals/generate-feed-modal/generate-feed-modal.component';
+} from '../../modals/repository-modal/repository-modal.component';
 import { ModalService } from '../../services/modal.service';
 import {
   AlertController,
@@ -43,8 +42,8 @@ import { Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { without } from 'lodash-es';
-import { Subscription } from 'rxjs';
+import { uniq, without } from 'lodash-es';
+import { distinct, Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 
@@ -102,6 +101,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   fromNow = relativeTimeOrElse;
   private seed = Math.random();
   sourcesModalId: string = `open-sources-modal-${this.seed}`;
+  harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
 
   constructor(
@@ -176,7 +176,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async editRepository(accordions: GenerateFeedAccordion[] = []) {
     const componentProps: GenerateFeedModalComponentProps = {
       repository: this.repository,
-      modalTitle: `Customize ${this.repository.title}`,
       openAccordions: accordions,
     };
     await this.modalService.openFeedMetaEditor(componentProps);
@@ -209,17 +208,20 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.selectAllFc.setValue(false);
     this.loading = true;
     this.changeRef.detectChanges();
-    const documents = await this.documentService.findAllByRepositoryId({
-      cursor: {
-        page,
-        pageSize: 10,
-      },
-      where: {
-        repository: {
-          id: this.repository.id,
+    const documents = await this.documentService.findAllByRepositoryId(
+      {
+        cursor: {
+          page,
+          pageSize: 10,
+        },
+        where: {
+          repository: {
+            id: this.repository.id,
+          },
         },
       },
-    });
+      'network-only',
+    );
     this.documents = documents.map((document) => {
       const fc = new FormControl<boolean>(false);
       this.subscriptions.push(
@@ -283,7 +285,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
             await this.repositoryService.deleteRepository({
               id: this.repository.id,
             });
-            await this.router.navigateByUrl('/feeds');
+            await this.router.navigateByUrl('/feeds?reload=true');
           },
         },
       ],
@@ -292,17 +294,19 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getPluginsOfSource(source: ArrayElement<RepositoryFull['sources']>): string {
-    // if (!this.plugins) {
-    return '';
-    // }
-    // return source.page.actions
-    //   .flatMap(
-    //     (emit) =>
-    //       emit.selectorBased?.expose?.transformers?.flatMap((transformer) =>
-    //         this.getPluginName(transformer.pluginId),
-    //       ),
-    //   )
-    //   .join(', ');
+    return uniq(
+      source.flow.sequence.map((it) => it.execute?.pluginId).filter((p) => p),
+    )
+      .map((pluginId) => {
+        switch (pluginId) {
+          case GqlFeedlessPlugins.OrgFeedlessFilter:
+            return 'Filter';
+          case GqlFeedlessPlugins.OrgFeedlessFulltext:
+            return 'Fulltext';
+        }
+      })
+      .filter((p) => p)
+      .join(', ');
   }
 
   stringifyTags(source: ArrayElement<RepositoryFull['sources']>) {
@@ -419,7 +423,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async editSource(source: SubscriptionSource = null) {
     await this.modalService.openFeedBuilder(
       {
-        scrapeRequest: source as any,
+        source: source as any,
       },
       async (data: FeedOrRepository) => {
         if (data?.repository) {
@@ -432,12 +436,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
             },
             data: {
               sources: {
-                add: [
-                  getScrapeRequest(
-                    data.feed.feed,
-                    data.feed.scrapeRequest as GqlScrapeRequest,
-                  ),
-                ],
+                add: [data.feed.source],
                 remove: source ? [source.id] : [],
               },
             },
@@ -479,6 +478,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     });
     this.documents = without(this.documents, ...selected);
     this.selectAllFc.setValue(false);
+    this.fetchPage(this.currentPage);
     this.changeRef.detectChanges();
   }
 
@@ -522,6 +522,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async showCode() {
     await this.modalService.openCodeEditorModal({
+      title: 'JSON Editor',
       text: JSON.stringify(this.repository, null, 2),
       contentType: 'json',
     });

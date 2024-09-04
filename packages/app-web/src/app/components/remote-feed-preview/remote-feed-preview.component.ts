@@ -33,16 +33,17 @@ export class RemoteFeedPreviewComponent {
   async loadFeedPreview(
     sources: GqlSourceInput[],
     filters: GqlItemFilterParamsInput[],
-    tags: GqlConditionalTagInput[],
+    // tags: GqlConditionalTagInput[],
   ) {
     this.busy = true;
     this.changeRef.detectChanges();
     try {
-      this.feed = await this.feedService.previewFeed({
+      const preview = await this.feedService.previewFeed({
         sources,
         filters,
-        tags,
+        tags: [],
       });
+      this.feed = preview.feed;
     } catch (e) {}
     this.busy = false;
     this.changeRef.detectChanges();

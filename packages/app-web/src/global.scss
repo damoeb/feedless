@@ -282,3 +282,11 @@ a {
     }
   }
 }
+
+ion-accordion.accordion-expanded {
+  box-shadow: 0px 0px 17px 10px var(--ion-item-background);
+  border-radius: 1rem;
+  border: 2px solid rgba(var(--app-foreground-rgb), 0.4);
+  margin-bottom: 10px;
+  margin-top: 10px;
+}

@@ -12,13 +12,16 @@
   <ion-row class="website flex_column">
     <app-interactive-website
       style="flex: 1; display: flex"
-      [scrapeController]="scrapeController"
+      [sourceBuilder]="sourceBuilder"
     >
     </app-interactive-website>
   </ion-row>
 
   <ion-row class="actions">
-    <ion-list class="flex__column">
+    <ion-list
+      class="flex__column"
+      [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }"
+    >
       <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
       <ion-item
         *ngFor="let action of getActionFgs(); let i = index"
@@ -40,6 +43,10 @@
                 {{ action }}
               </ion-select-option>
             </ion-select>
+          </div>
+
+          <div *ngIf="action.value.raw">
+            {{ action.value.raw | json }}
           </div>
 
           <ion-button
@@ -71,6 +78,14 @@
 </ion-content>
 <ion-footer>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="hideNonUiActions = !hideNonUiActions">
+        <ion-label color="medium" *ngIf="hideNonUiActions"
+          >Debug Mode Off</ion-label
+        >
+        <span *ngIf="!hideNonUiActions">Debug Mode On</span>
+      </ion-button>
+    </ion-buttons>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()"> Cancel </ion-button>
       <ion-button

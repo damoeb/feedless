@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EmbeddedImageComponent } from './embedded-image.component';
 import { EmbeddedImageModule } from './embedded-image.module';
 import { AppTestModule } from '../../app-test.module';
-import { ScrapeController } from '../interactive-website/scrape-controller';
+import { SourceBuilder } from '../interactive-website/source-builder';
+import { ScrapeService } from '../../services/scrape.service';
 
 describe('EmbeddedImageComponent', () => {
   let component: EmbeddedImageComponent;
@@ -16,10 +17,10 @@ describe('EmbeddedImageComponent', () => {
 
     fixture = TestBed.createComponent(EmbeddedImageComponent);
     component = fixture.componentInstance;
-    component.scrapeController = new ScrapeController({
-      title: '',
-      flow: { sequence: [] },
-    });
+    component.sourceBuilder = SourceBuilder.fromUrl(
+      '',
+      TestBed.inject(ScrapeService),
+    );
 
     component.embed = {
       data: '',

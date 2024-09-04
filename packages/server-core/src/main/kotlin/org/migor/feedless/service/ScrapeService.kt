@@ -36,12 +36,22 @@ import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
+import java.util.*
+
+class LogCollector(private val corrId: String, private val log: Logger? = null) {
+  val logs = mutableListOf<LogStatement>()
+  fun log(message: String) {
+    logs.add(LogStatement(message=message, time = Date().time))
+    log?.debug("[$corrId] $message")
+  }
+}
 
 
 @Service
@@ -66,7 +76,7 @@ class ScrapeService {
   suspend fun scrape(corrId: String, source: SourceEntity): ScrapeOutput {
     return withContext(Dispatchers.IO) {
       try {
-        val scrapeContext = ScrapeContext(log)
+        val scrapeContext = ScrapeContext(LogCollector(corrId, log))
 
         assert(source.actions.isNotEmpty()) { "no actions present" }
 
@@ -106,12 +116,12 @@ class ScrapeService {
 
         ScrapeOutput(
           context.outputsAsList(),
-          logs = context.logs,
+          logs = context.logCollector.logs,
           time = System.nanoTime().minus(startTime).div(1000000).toInt()
         )
       } catch (e: Exception) {
         if (e !is ResumableHarvestException) {
-          log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}")
+          log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}", e)
         }
         throw e
       }
@@ -123,7 +133,7 @@ class ScrapeService {
   }
 
   private fun handleClickXpathAction(corrId: String, action: ClickXpathActionEntity, context: ScrapeContext) {
-    context.info("[$corrId] handleClickXpathAction $action")
+    context.log("[$corrId] handleClickXpathAction $action")
 
   }
 
@@ -133,24 +143,24 @@ class ScrapeService {
     action: ExecuteActionEntity,
     context: ScrapeContext
   ) {
-    context.info("[$corrId] handlePluginExecution ${action.pluginId}")
+    context.log("[$corrId] handlePluginExecution ${action.pluginId}")
 
     val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
     try {
       when (plugin) {
         is FragmentTransformerPlugin -> {
           val data = context.lastOutput().fetch?.let {
-            context.info("using fetch response")
+            context.log("using fetch response")
             it.response
           } ?: run {
-            context.info("using last fragment")
+            context.log("using last fragment")
             context.lastOutput().fragment!!.fragments!!.last()
           }
             .toHttpResponse(context.firstUrl()!!)
           context.setOutputAt(
             index, ScrapeActionOutput(
               index = index,
-              fragment = plugin.transformFragment(corrId, action, data) { context.info(it) },
+              fragment = plugin.transformFragment(corrId, action, data, context.logCollector),
             )
           )
         }
@@ -161,6 +171,8 @@ class ScrapeService {
           if (output.fragment?.items == null) {
             throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items ($corrId)")
           }
+
+          context.log("""filter params: ${action.executorParams}""")
           val result = ScrapeActionOutput(index = index,
             fragment = FragmentOutput(
               fragmentName = "filter",
@@ -169,7 +181,8 @@ class ScrapeService {
                   corrId,
                   item,
                   action.executorParams!!,
-                  i
+                  i,
+                  context.logCollector
                 )
               }
             )
@@ -180,14 +193,14 @@ class ScrapeService {
         else -> throw IllegalArgumentException("plugin '${action.pluginId}' does not exist ($corrId)")
       }
     } catch (e: Exception) {
-      context.info(e.stackTraceToString())
+      context.log(e.stackTraceToString())
       log.warn("[$corrId] handlePluginExecution error ${e.message}")
       throw e
     }
   }
 
   private fun handleDomAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
-    context.info("[$corrId] handleDomAction $action")
+    context.log("[$corrId] handleDomAction $action")
     when (action.event) {
       DomEventType.purge -> handlePurgeAction(corrId, index, action, context)
       else -> log.warn("[$corrId] cannot handle dom-action ${action.event}")
@@ -202,7 +215,7 @@ class ScrapeService {
     if (action.emit.contains(ExtractEmit.pixel)) {
       this.noopAction(corrId, action)
     } else {
-      context.info("[$corrId] handleExtract $action")
+      context.log("[$corrId] handleExtract $action")
       purgeOrExtract(corrId, index, action.xpath, false, action.emit, context)
     }
   }
@@ -221,7 +234,7 @@ class ScrapeService {
     HtmlUtil.withAbsoluteUrls(document)
     val elements = document.selectXpath(xpath)
     val fragments = if (purge) {
-      context.info("[$corrId] purge xpath '${xpath}' -> ${elements.size} elements")
+      context.log("[$corrId] purge xpath '${xpath}' -> ${elements.size} elements")
       elements.remove()
       listOf(
         ScrapeExtractFragment(
@@ -229,7 +242,7 @@ class ScrapeService {
         )
       )
     } else {
-      context.info("[$corrId] extract xpath '${xpath}' -> ${elements.size} elements")
+      context.log("[$corrId] extract xpath '${xpath}' -> ${elements.size} elements")
       elements.map {
         ScrapeExtractFragment(
           html = if (emit.contains(ExtractEmit.html)) {
@@ -258,7 +271,7 @@ class ScrapeService {
 
 
   private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
-    context.info("[$corrId] handleHeader $action")
+    context.log("[$corrId] handleHeader $action")
     context.headers[action.name] = action.value
   }
 
@@ -269,19 +282,19 @@ class ScrapeService {
     action: FetchActionEntity,
     context: ScrapeContext
   ) {
-    context.info("[$corrId] handleFetch $action")
+    context.log("[$corrId] handleFetch $action")
     val prerender = needsPrerendering(source, index)
     if (prerender) {
-      context.info("[$corrId] send to agent")
+      context.log("[$corrId] send to agent")
       val response = agentService.prerender(corrId, source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("[$corrId] outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
-      context.logs.addAll(response.logs.map { LogStatement(time = it.time, message = "[agent] ${it.message}") })
-      context.info("[$corrId] received -> ${response.outputs.size} outputs")
+      context.logCollector.logs.addAll(response.logs.map { LogStatement(time = it.time, message = "[agent] ${it.message}") })
+      context.log("[$corrId] received -> ${response.outputs.size} outputs")
     } else {
-      context.info("[$corrId] render static")
+      context.log("[$corrId] render static")
 //      val startTime = System.nanoTime()
       val url = action.resolveUrl()
 //      httpService.guardedHttpResource(

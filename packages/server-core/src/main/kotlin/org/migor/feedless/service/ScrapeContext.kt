@@ -4,7 +4,6 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.pipeline.FragmentOutput
-import org.slf4j.Logger
 import java.util.*
 
 data class HttpFetchOutput(val response: HttpResponse, val debug: FetchActionDebugResponse)
@@ -16,7 +15,7 @@ data class ScrapeActionOutput(
 
 data class ScrapeOutput(val outputs: List<ScrapeActionOutput>, val time: Int, val logs: List<LogStatement>)
 
-class ScrapeContext(private val logger: Logger) {
+class ScrapeContext(val logCollector: LogCollector) {
   fun outputsAsList(): List<ScrapeActionOutput> {
     return outputs.toList().sortedBy { it.first }.map { it.second }
   }
@@ -26,7 +25,7 @@ class ScrapeContext(private val logger: Logger) {
   }
 
   fun lastOutput(): ScrapeActionOutput {
-    return outputs[outputs.keys.sortedDescending().first()]!!
+    return outputs[outputs.keys.maxOf { it }]!!
   }
 
   fun firstUrl(): String? {
@@ -37,17 +36,10 @@ class ScrapeContext(private val logger: Logger) {
     return this.outputs[index] != null
   }
 
-  fun info(message: String) {
-    logger.debug(message)
-    logs.add(
-      LogStatement(
-        time = Date().time,
-        message = message,
-      )
-    )
+  fun log(message: String) {
+    logCollector.log(message)
   }
 
   val headers = HashMap<String, String>()
   private val outputs = mutableMapOf<Int, ScrapeActionOutput>()
-  val logs = mutableListOf<LogStatement>()
 }

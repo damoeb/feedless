@@ -10,6 +10,7 @@ import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-feeds-page',
@@ -27,11 +28,13 @@ export class FeedsPage implements OnInit {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
+    console.log('reload?', this.activatedRoute.snapshot.queryParams['reload']);
     this.titleService.setTitle('Feeds');
     await this.fetchFeeds(0);
   }

@@ -1,23 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { GenerateFeedModalComponent } from './generate-feed-modal.component';
-import { GenerateFeedModalModule } from './generate-feed-modal.module';
+import { FilterItemsAccordionComponent } from './filter-items-accordion.component';
+import { FilterItemsAccordionModule } from './filter-items-accordion.module';
 import {
   ApolloMockController,
   AppTestModule,
-  mocks,
   mockServerSettings,
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('GenerateFeedModalComponent', () => {
-  let component: GenerateFeedModalComponent;
-  let fixture: ComponentFixture<GenerateFeedModalComponent>;
+describe('FilterItemsAccordionComponent', () => {
+  let component: FilterItemsAccordionComponent;
+  let fixture: ComponentFixture<FilterItemsAccordionComponent>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), GenerateFeedModalModule],
+      imports: [AppTestModule.withDefaults(), FilterItemsAccordionModule],
     }).compileComponents();
 
     await mockServerSettings(
@@ -26,9 +25,9 @@ describe('GenerateFeedModalComponent', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(GenerateFeedModalComponent);
+    fixture = TestBed.createComponent(FilterItemsAccordionComponent);
     component = fixture.componentInstance;
-    component.repository = mocks.repository;
+    component.filterPlugin = null;
     fixture.detectChanges();
   }));
 

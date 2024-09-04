@@ -5,7 +5,7 @@ import { GqlSourceInput } from '../../../generated/graphql';
 import { Repository } from '../../graphql/types';
 
 export interface FeedBuilderModalComponentProps {
-  scrapeRequest?: GqlSourceInput;
+  source?: GqlSourceInput;
   modalTitle?: string;
   submitButtonText?: string;
 }
@@ -18,7 +18,7 @@ export interface FeedBuilderModalComponentProps {
 export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps
 {
-  scrapeRequest: GqlSourceInput;
+  source: GqlSourceInput;
   modalTitle: string = 'Feed Builder';
   submitButtonText = 'Save Feed';
 

@@ -15,6 +15,7 @@ import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.service.needsPrerendering
 import org.migor.feedless.source.SourceEntity
@@ -106,7 +107,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
-    logger: (String) -> Unit,
+    logger: LogCollector,
   ): FragmentOutput {
     val markup = data.responseBody.toString(StandardCharsets.UTF_8)
     return FragmentOutput(

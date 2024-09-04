@@ -65,18 +65,6 @@ export class PcTrackerProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-  async handleQuery(url: string) {
-    try {
-      this.url = fixUrl(url);
-      await this.router.navigate(['/tracker-builder'], {
-        queryParams: {
-          url: this.url,
-        },
-      });
-    } catch (e) {
-      console.warn(e);
-    }
-  }
 
   protected readonly dateFormat = dateFormat;
 

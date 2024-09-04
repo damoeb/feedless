@@ -3,28 +3,12 @@
     <ng-content></ng-content>
   </div>
   <div style="display: flex; flex-direction: column; flex: 1">
-    <ion-list>
-      <ion-item>
-        <ion-label>
-          Feed Preview
-          <ion-note *ngIf="feed">({{ feed.items?.length }})</ion-note>
-          <ion-note class="ion-margin-horizontal"
-            >(Plugins are not applied in Preview)</ion-note
-          >
-        </ion-label>
-      </ion-item>
-      <ion-progress-bar
-        *ngIf="busy || !feed"
-        color="medium"
-        type="indeterminate"
-      ></ion-progress-bar>
-    </ion-list>
     <div
       style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
     >
       <ion-list
         *ngIf="feed"
-        style="position: absolute; width: 100vw; opacity: 0.6"
+        style="position: absolute; width: 100%; opacity: 0.6"
       >
         <ion-item *ngIf="feed.items.length === 0">
           <ion-label>Feed is empty</ion-label>

@@ -15,7 +15,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
 
   @Query(
     """SELECT DISTINCT s FROM SourceEntity s
-    JOIN FETCH s.actions
+    LEFT JOIN FETCH s.actions
     WHERE s.repositoryId = :id"""
   )
   fun findAllByRepositoryIdOrderByCreatedAtDesc(@Param("id") id: UUID): List<SourceEntity>

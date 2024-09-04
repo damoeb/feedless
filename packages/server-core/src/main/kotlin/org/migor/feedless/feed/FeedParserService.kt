@@ -17,7 +17,9 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.ConditionalTagInput
+import org.migor.feedless.generated.types.FeedPreview
 import org.migor.feedless.generated.types.ItemFilterParamsInput
+import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
@@ -116,7 +118,7 @@ class FeedParserService {
     sources: List<SourceEntity>,
     filters: List<ItemFilterParamsInput>,
     tags: List<ConditionalTagInput>
-  ): RemoteNativeFeed {
+  ): FeedPreview {
     val params = filters.toPluginExecutionParamsInput()
 
     val dummyRepository = RepositoryEntity()
@@ -124,9 +126,14 @@ class FeedParserService {
       org_feedless_conditional_tag = tags
     )
 
+    val logs = mutableListOf<LogStatement>()
+
     val items = sources
       .map { source -> scrapeService.scrape(corrId, source) }
-      .flatMap { response -> response.lastOutput().fragment!!.items!! }
+      .flatMap { response ->
+        logs.addAll(response.logs)
+        response.lastOutput().fragment!!.items!!
+      }
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
           corrId,
@@ -148,7 +155,10 @@ class FeedParserService {
       title = "Preview Feed"
     )
 
-    return feed
+    return FeedPreview(
+      logs = logs,
+      feed = feed
+    )
   }
 
 }

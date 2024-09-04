@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
@@ -21,6 +22,7 @@ import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.plan.FeatureName
 import org.migor.feedless.plan.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
@@ -92,7 +94,7 @@ class LegacyFeedService {
     return if (legacySupport()) {
       val sourceId = UUID.fromString(feedId)
       val feed = withContext(Dispatchers.IO) {
-        val f = sourceDAO.findById(sourceId).orElseThrow().toJsonFeed(feedUrl)
+        val f = sourceDAO.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
         f.items =
           documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
             .map { it.asJsonItem() }
@@ -149,7 +151,8 @@ class LegacyFeedService {
             StandardCharsets.UTF_8
           ), url
         ),
-        URL(url)
+        URL(url),
+        LogCollector(corrId, log)
       )
       feed.feedUrl = feedUrl
 

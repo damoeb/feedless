@@ -1,14 +1,14 @@
 <div class="text-diff">
   <app-code-editor
     [readOnly]="true"
-    [controls]="false"
+    [markdownControls]="false"
     [lineWrapping]="false"
     [text]="textBefore"
   ></app-code-editor>
   <app-code-editor
     [readOnly]="true"
     #diffEditor
-    [controls]="false"
+    [markdownControls]="false"
     [highlightedLines]="highlightedLines"
     [lineWrapping]="false"
     [text]="textAfter"

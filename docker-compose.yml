@@ -4,17 +4,6 @@ version: '3.4'
 
 services:
 
-  ingress:
-    image: nginx
-    network_mode: host
-    volumes:
-      - ./docker/nginx/config:/etc/nginx/conf.d
-      - ./docker/nginx/ssl:/etc/nginx/ssl
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-
-  builder:
-    build: docker/builder
-
 #    command: bash -c "gradle buildDockerAioChromium"
 
 #  mq:
@@ -79,7 +68,6 @@ services:
       - APP_EMAIL=${APP_ROOT_EMAIL}
       - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
       - APP_PRERENDER_TIMEOUT_MILLIS=${APP_PRERENDER_TIMEOUT_MILLIS}
-      - APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS=${APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS}
       - APP_HOST=feedless-core:8080
       - APP_SECURE=false
     logging:

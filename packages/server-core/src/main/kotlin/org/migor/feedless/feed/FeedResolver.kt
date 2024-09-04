@@ -14,6 +14,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.FeedPreview
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
@@ -58,12 +59,16 @@ class FeedQueryResolver {
   suspend fun previewFeed(
     @InputArgument data: PreviewFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext())) {
+  ): FeedPreview = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] previewFeed $data")
-    feedParserService.parseFeedFromRequest(corrId, data.sources
-      .filterIndexed { index, _ -> index < 5 }
-      .map { it.fromDto() }, data.filters, data.tags
-    )
+    runCatching {
+      feedParserService.parseFeedFromRequest(corrId, data.sources
+        .filterIndexed { index, _ -> index < 5 }
+        .map { it.fromDto() }, data.filters, data.tags
+      )
+    }.onFailure {
+      log.warn("[$corrId]", it)
+    }.getOrThrow()
   }
 }
 
