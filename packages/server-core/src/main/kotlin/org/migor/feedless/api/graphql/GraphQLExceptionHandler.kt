@@ -46,13 +46,13 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
     throwable: Throwable?,
     handlerParameters: DataFetcherExceptionHandlerParameters
   ): CompletableFuture<DataFetcherExceptionHandlerResult> {
-    val corrId =
-      (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
+//    val corrId =
+//      (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
 
     val errorType = toErrorType(throwable)
-    log.warn("[$corrId] ${errorType.name} ${handlerParameters.exception.message}")
+    log.warn("${errorType.name} ${handlerParameters.exception.message}")
     val debugInfo: MutableMap<String, Any> = HashMap()
-    debugInfo["corrId"] = corrId ?: ""
+//    debugInfo["corrId"] = corrId ?: ""
     val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
       .message(handlerParameters.exception.message)
       .debugInfo(debugInfo)

@@ -45,7 +45,6 @@ class HttpService {
     .setConnectTimeout(60000)
     .setReadTimeout(60000)
 //    .setMaxConnections(20)
-    .setMaxConnectionsPerHost(3)
 //    .setProxyServerSelector({ uri -> proxyUrl(uri) })
     .setFollowRedirect(true)
     .setMaxRedirects(8)

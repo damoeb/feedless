@@ -32,8 +32,13 @@ class WebExtractService {
   }
 
   suspend fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale): ScrapeExtractResponse {
-    val fragments = Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
-      .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
+    val fragments = if (extract.xpath.value == "./") {
+      listOf(element)
+    } else {
+      Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
+        .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
+    }
+
     return ScrapeExtractResponse(
       fragmentName = extract.fragmentName,
       fragments = fragments.map { fragment ->

@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
@@ -39,10 +40,14 @@ class AgentResolver {
   private lateinit var agentService: AgentService
 
   @DgsSubscription
-  suspend fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> = coroutineScope {
+  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     val corrId = CryptUtil.newCorrId()
     log.info("[$corrId] registerAgent ${data.secretKey.email}")
-    data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
+    return runBlocking {
+      coroutineScope {
+        data.secretKey.let { agentService.registerPrerenderAgent(corrId, data) }
+      }
+    }
   }
 
   @Throttled

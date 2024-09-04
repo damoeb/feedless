@@ -88,7 +88,7 @@
             <body>
                 <section>
                     <div class="alert">
-                        <p><strong>This is a web feed</strong>, also known as an RSS feed. <strong>Subscribe</strong> by copying the URL from the address bar into your newsreader app.</p>
+                        <p><strong>This is a web feed</strong>, also known as an RSS feed. <strong>Subscribe</strong> by copying the URL from the address bar into your newsreader or feedreader app.</p>
                     </div>
                 </section>
 <!--                <section>-->
@@ -96,7 +96,10 @@
 <!--                </section>-->
                 <section>
                   <h1><xsl:value-of select="atom:feed/atom:title"/></h1>
-                  <p>This RSS feed provides the latest posts from "<xsl:value-of select="atom:feed/atom:title"/>".
+                  <p>This RSS feed is provided by
+                    <a class="head_link" target="_blank" href="https://feedless.org">
+                      feedless.org
+                    </a>.
 
                     <a class="head_link" target="_blank" href="https://github.com/voidfiles/awesome-rss">
                       What is an RSS Feed &#x2192;
