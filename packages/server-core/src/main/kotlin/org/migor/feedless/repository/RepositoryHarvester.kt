@@ -2,6 +2,8 @@ package org.migor.feedless.repository
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import io.micrometer.core.instrument.Timer
+import jakarta.annotation.PostConstruct
 import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -9,6 +11,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import org.languagetool.tools.CircuitBreakers.registry
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
@@ -87,6 +90,17 @@ class RepositoryHarvester internal constructor() {
   @Autowired
   private lateinit var repositoryService: RepositoryService
 
+  private lateinit var harvestOffsetTimer: Timer
+
+  @PostConstruct
+  fun register() {
+    harvestOffsetTimer = Timer
+      .builder("harvest.offset")
+      .description("offset between when harvest should and did happen")
+      .register(meterRegistry)
+  }
+
+
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun handleRepository(corrId: String, repositoryId: UUID) {
     runCatching {
@@ -96,9 +110,16 @@ class RepositoryHarvester internal constructor() {
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "repository"),
           Tag.of("id", repositoryId.toString()),
-          Tag.of("format", "atom")
         )
       ).count()
+
+      withContext(Dispatchers.IO) {
+        repositoryDAO.findById(repositoryId).ifPresent {
+          it.triggerScheduledNextAt?.let {
+            harvestOffsetTimer.record(Duration.ofMillis(Date().time - it.time))
+          }
+        }
+      }
 
       val appendCount = scrapeSources(corrId, repositoryId)
 
