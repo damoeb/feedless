@@ -19,8 +19,11 @@ import { Title } from '@angular/platform-browser';
 })
 export class FeedsPage implements OnInit {
   busy = false;
+  currentPage: number = 0;
   documents: WebDocument[];
   repositories: RepositoryFull[] = [];
+  fromNow = relativeTimeOrElse;
+  isLastPage: boolean;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -30,16 +33,18 @@ export class FeedsPage implements OnInit {
 
   async ngOnInit() {
     this.titleService.setTitle('Feeds');
-    await this.fetchFeeds();
+    await this.fetchFeeds(0);
   }
 
-  private async fetchFeeds() {
-    const page = 0;
+  protected async fetchFeeds(page: number) {
+    this.currentPage = page;
+    const pageSize = 10;
 
     const repositories = await this.repositoryService.listRepositories(
       {
         cursor: {
           page,
+          pageSize,
         },
         where: {
           product: {
@@ -49,7 +54,8 @@ export class FeedsPage implements OnInit {
       },
       'network-only',
     );
-    this.repositories.push(...repositories);
+    this.isLastPage = repositories.length < pageSize;
+    this.repositories = repositories;
     this.changeRef.detectChanges();
   }
 
@@ -60,6 +66,4 @@ export class FeedsPage implements OnInit {
   isPrivate(repository: Repository): boolean {
     return repository.visibility === GqlVisibility.IsPrivate;
   }
-
-  fromNow = relativeTimeOrElse;
 }

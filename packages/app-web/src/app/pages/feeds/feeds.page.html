@@ -39,5 +39,11 @@
         </div>
       </ion-item>
     </ion-list>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [isLastPage]="isLastPage"
+      (pageChange)="fetchFeeds($event)"
+    ></app-pagination>
   </div>
 </ion-content>

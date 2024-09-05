@@ -8,6 +8,7 @@ import { FeedsRoutingModule } from './feeds-routing.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { HistogramModule } from '../../components/histogram/histogram.module';
 import { ImportButtonModule } from '../../components/import-button/import-button.module';
+import { PaginationModule } from '../../components/pagination/pagination.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { ImportButtonModule } from '../../components/import-button/import-button
     BubbleModule,
     HistogramModule,
     ImportButtonModule,
+    PaginationModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],
