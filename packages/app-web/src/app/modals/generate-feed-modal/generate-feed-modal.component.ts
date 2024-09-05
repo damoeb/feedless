@@ -194,7 +194,6 @@ export class GenerateFeedModalComponent
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
   protected readonly GqlWebDocumentDateField = GqlWebDocumentDateField;
-  isThrottled: boolean;
   modalTitle = 'Finalize Feed';
   @Input()
   openAccordions: GenerateFeedAccordion[] = [];
@@ -476,8 +475,6 @@ export class GenerateFeedModalComponent
         Validators.min(maxDaysLowerLimit),
       ]);
     }
-
-    this.isThrottled = !this.serverConfig.hasProfile(GqlProfileName.SelfHosted);
 
     const retention = this.repository.retention;
     this.formFg.patchValue({

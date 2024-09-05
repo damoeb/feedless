@@ -158,18 +158,18 @@ class PlanConstraintsService {
     }
   }
 
-  suspend fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
-    val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotalInt, userId)
-    if (maxSubscriptions != null && maxSubscriptions < count) {
-      throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
+  suspend fun auditRepositoryMaxCount(count: Int, userId: UUID) {
+    val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
+    if (maxRepoCount != null && maxRepoCount < count) {
+      throw IllegalArgumentException("Too many repository (limit $maxRepoCount, actual $count")
     }
   }
 
-  suspend fun violatesScrapeSourceMaxActiveCount(userId: UUID): Boolean {
+  suspend fun violatesRepositoriesMaxActiveCount(userId: UUID): Boolean {
     val activeCount = withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerIdAndArchived(userId, false)
+      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
     }
-    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
+    return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
   suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {

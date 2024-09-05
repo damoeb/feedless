@@ -227,26 +227,26 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeSourceMaxCountTotalInt is undefined, all sourceCounts will pass`() = runTest {
-    mockFeatureValue(FeatureName.scrapeSourceMaxCountTotalInt, intValue = null)
-    service.auditScrapeSourceMaxCount(0, userId)
-    service.auditScrapeSourceMaxCount(10000, userId)
+    mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = null)
+    service.auditRepositoryMaxCount(0, userId)
+    service.auditRepositoryMaxCount(10000, userId)
   }
 
   @Test
   fun `given scrapeSourceMaxCountTotalInt is defined, violating sourceCounts will fail`() = runTest {
-    mockFeatureValue(FeatureName.scrapeSourceMaxCountTotalInt, intValue = 4)
+    mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runBlocking {
-        service.auditScrapeSourceMaxCount(12, userId)
+        service.auditRepositoryMaxCount(12, userId)
       }
     }
-    service.auditScrapeSourceMaxCount(2, userId)
-    service.auditScrapeSourceMaxCount(4, userId)
+    service.auditRepositoryMaxCount(2, userId)
+    service.auditRepositoryMaxCount(4, userId)
   }
 
 
   @Test
-  fun violatesScrapeSourceMaxActiveCount() {
+  fun violatesRepositoriesMaxActiveCount() {
     // todo
   }
 

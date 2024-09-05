@@ -76,7 +76,7 @@ class FeatureServiceTest {
   fun `given a featureGroup inheritance, feature values will be inherited from parent`() = runTest {
     // given
 
-    val featureName = FeatureName.scrapeSourceMaxCountActiveInt
+    val featureName = FeatureName.repositoriesMaxCountActiveInt
     val feature = resolveFeature(featureName)
 
     assertThat(featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)).isNull()
@@ -98,7 +98,7 @@ class FeatureServiceTest {
   @Test
   fun `given a featureGroup inheritance, feature values will be overwritten by child`() = runTest {
     // given
-    val featureNameA = FeatureName.scrapeSourceMaxCountActiveInt
+    val featureNameA = FeatureName.repositoriesMaxCountActiveInt
     val featureA = resolveFeature(featureNameA)
 
     val featureNameB = FeatureName.refreshRateInMinutesLowerLimitInt

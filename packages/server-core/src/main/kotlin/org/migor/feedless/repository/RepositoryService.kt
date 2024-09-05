@@ -42,6 +42,7 @@ import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JtsUtil
+import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -110,14 +111,14 @@ class RepositoryService {
     val totalCount = withContext(Dispatchers.IO) {
       repositoryDAO.countByOwnerId(ownerId)
     }
-    planConstraintsService.auditScrapeSourceMaxCount(totalCount, ownerId)
-    if (planConstraintsService.violatesScrapeSourceMaxActiveCount(ownerId)) {
+    planConstraintsService.auditRepositoryMaxCount(totalCount, ownerId)
+    if (planConstraintsService.violatesRepositoriesMaxActiveCount(ownerId)) {
       log.info("[$corrId] violates maxActiveCount")
-      throw IllegalArgumentException("violates maxActiveCount")
+      throw IllegalArgumentException("Too many active repositories")
 //      log.info("[$corrId] violates maxActiveCount, archiving oldest")
 //      RepositoryDAO.updateArchivedForOldestActive(ownerId)
     }
-    return data.repositories.map { createSubscription(corrId, ownerId, it).toDto() }
+    return data.repositories.map { createRepository(corrId, ownerId, it).toDto() }
   }
 
   private suspend fun getActualUserOrDefaultUser(corrId: String): UserEntity {
@@ -126,22 +127,22 @@ class RepositoryService {
     } ?: userService.getAnonymousUser().also { log.debug("[$corrId] fallback to user anonymous") }
   }
 
-  private suspend fun createSubscription(
+  private suspend fun createRepository(
     corrId: String,
     ownerId: UUID,
-    subInput: RepositoryCreateInput
+    repoInput: RepositoryCreateInput
   ): RepositoryEntity {
     val repo = RepositoryEntity()
 
     repo.shareKey = newCorrId(10)
-    repo.title = subInput.sinkOptions.title
-    repo.description = subInput.sinkOptions.description
-    repo.visibility = planConstraintsService.coerceVisibility(corrId, subInput.sinkOptions.visibility?.fromDto())
+    repo.title = repoInput.sinkOptions.title
+    repo.description = repoInput.sinkOptions.description
+    repo.visibility = planConstraintsService.coerceVisibility(corrId, repoInput.sinkOptions.visibility?.fromDto())
     val product = sessionService.activeProductFromRequest()!!
 
-    planConstraintsService.auditSourcesMaxCountPerRepository(subInput.sources.size, ownerId, product)
+    planConstraintsService.auditSourcesMaxCountPerRepository(repoInput.sources.size, ownerId, product)
     repo.ownerId = ownerId
-    subInput.sinkOptions.plugins?.let {
+    repoInput.sinkOptions.plugins?.let {
       if (it.size > 5) {
         throw BadRequestException("Too many plugins ${it.size}, limit 5")
       }
@@ -154,25 +155,25 @@ class RepositoryService {
 //      ""
 //    }
 
-    repo.sourcesSyncCron = subInput.sinkOptions.refreshCron?.let {
-      planConstraintsService.auditCronExpression(subInput.sinkOptions.refreshCron)
+    repo.sourcesSyncCron = repoInput.sinkOptions.refreshCron?.let {
+      planConstraintsService.auditCronExpression(repoInput.sinkOptions.refreshCron)
     } ?: ""
     repo.retentionMaxCapacity =
-      planConstraintsService.coerceRetentionMaxCapacity(subInput.sinkOptions.retention?.maxCapacity, ownerId, product)
+      planConstraintsService.coerceRetentionMaxCapacity(repoInput.sinkOptions.retention?.maxCapacity, ownerId, product)
     repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
-      subInput.sinkOptions.retention?.maxAgeDays,
+      repoInput.sinkOptions.retention?.maxAgeDays,
       ownerId,
       product
     )
-    repo.product = subInput.product.fromDto()
+    repo.product = repoInput.product.fromDto()
 
     val saved = withContext(Dispatchers.IO) {
       repositoryDAO.save(repo)
     }
 
-    repo.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
+    repo.sources = repoInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
 
-    subInput.additionalSinks?.let { sink ->
+    repoInput.additionalSinks?.let { sink ->
       val owner = withContext(Dispatchers.IO) {
         userDAO.findById(ownerId).orElseThrow()
       }
@@ -349,7 +350,7 @@ class RepositoryService {
   ): Date {
     return planConstraintsService.coerceMinScheduledNextAt(
       Date(),
-      nextCronDate(cron, after),
+      toDate(nextCronDate(cron, after)),
       ownerId,
       product
     )

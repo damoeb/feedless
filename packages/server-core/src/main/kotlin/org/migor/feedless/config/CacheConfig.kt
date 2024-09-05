@@ -43,7 +43,7 @@ class AgentResponseCacheKeyGenerator : KeyGenerator {
 @Configuration
 @EnableCaching
 @Profile("${AppProfiles.cache} & !${AppProfiles.dev}")
-class CacheConfig {
+class ProdCacheConfig {
 
   @Bean
   fun jCacheCacheManager(): JCacheCacheManager {
@@ -77,9 +77,9 @@ class CacheConfig {
           String::class.java,
           HttpResponse::class.java,
           ResourcePoolsBuilder.heap(1000)
-            .offheap(100, MemoryUnit.MB)
+            .offheap(200, MemoryUnit.MB)
         )
-          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
           .withService(asynchronousListener)
       )
     )
@@ -90,9 +90,9 @@ class CacheConfig {
           String::class.java,
           AgentResponse::class.java,
           ResourcePoolsBuilder.heap(1000)
-            .offheap(50, MemoryUnit.MB)
+            .offheap(100, MemoryUnit.MB)
         )
-          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
           .withService(asynchronousListener)
       )
     )
@@ -103,9 +103,9 @@ class CacheConfig {
           String::class.java,
           JsonFeed::class.java,
           ResourcePoolsBuilder.heap(20000)
-            .offheap(1000, MemoryUnit.MB)
+            .offheap(200, MemoryUnit.MB)
         )
-          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
           .withService(asynchronousListener)
       )
     )
@@ -133,6 +133,103 @@ class CacheConfig {
           ResourcePoolsBuilder.heap(10)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(120)))
+          .withService(asynchronousListener)
+      )
+    )
+
+    return cacheManager
+  }
+}
+
+@Configuration
+@EnableCaching
+@Profile("${AppProfiles.cache} & ${AppProfiles.dev}")
+class DevCacheConfig {
+
+  @Bean
+  fun jCacheCacheManager(): JCacheCacheManager {
+    return JCacheCacheManager(cacheManager())
+  }
+
+  @Bean("agentResponseCacheKeyGenerator")
+  fun keyGenerator(): KeyGenerator {
+    return AgentResponseCacheKeyGenerator()
+  }
+
+  @Bean(destroyMethod = "close")
+  fun cacheManager(): javax.cache.CacheManager {
+    val provider = Caching.getCachingProvider()
+    val cacheManager = provider.cacheManager
+
+    val asynchronousListener = CacheEventListenerConfigurationBuilder
+      .newEventListenerConfiguration(
+        CacheEventLogger(),
+        EventType.CREATED,
+        EventType.EXPIRED
+      )
+      .unordered()
+      .asynchronous()
+
+
+    cacheManager.createCache(
+      CacheNames.HTTP_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          HttpResponse::class.java,
+          ResourcePoolsBuilder.heap(20)
+            .offheap(30, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
+          .withService(asynchronousListener)
+      )
+    )
+
+    cacheManager.createCache(
+      CacheNames.AGENT_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          AgentResponse::class.java,
+          ResourcePoolsBuilder.heap(20)
+            .offheap(40, MemoryUnit.MB)
+        )
+          .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
+          .withService(asynchronousListener)
+      )
+    )
+    cacheManager.createCache(
+      CacheNames.FEED_LONG_TTL,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          JsonFeed::class.java,
+          ResourcePoolsBuilder.heap(1)
+        )
+          .withService(asynchronousListener)
+      )
+    )
+
+    cacheManager.createCache(
+      CacheNames.FEED_SHORT_TTL,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          JsonFeed::class.java,
+          ResourcePoolsBuilder.heap(1)
+        )
+          .withService(asynchronousListener)
+      )
+    )
+
+    cacheManager.createCache(
+      CacheNames.SERVER_SETTINGS,
+      Eh107Configuration.fromEhcacheCacheConfiguration(
+        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String::class.java,
+          ServerSettings::class.java,
+          ResourcePoolsBuilder.heap(1)
+        )
           .withService(asynchronousListener)
       )
     )

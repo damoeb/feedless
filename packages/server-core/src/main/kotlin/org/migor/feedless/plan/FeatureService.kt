@@ -184,8 +184,8 @@ val mapFeatureName2Dto = mapOf(
   FeatureName.repositoryCapacityUpperLimitInt to FeatureNameDto.repositoryCapacityUpperLimitInt,
 
   FeatureName.pluginsBool to FeatureNameDto.plugins,
-  FeatureName.scrapeSourceMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
-  FeatureName.scrapeSourceMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
+  FeatureName.repositoriesMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
+  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
   FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
 )
 

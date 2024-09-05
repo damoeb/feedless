@@ -127,10 +127,10 @@
               [interfaceOptions]="{ subHeader: 'Filter Type', size: 'auto' }"
             >
               <ion-select-option [value]="FilterTypeInclude"
-                >include
+              >include
               </ion-select-option>
               <ion-select-option [value]="FilterTypeExclude"
-                >exclude
+              >exclude
               </ion-select-option>
             </ion-select>
             <ion-text class="ion-padding-horizontal">if</ion-text>
@@ -141,13 +141,14 @@
               [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
             >
               <ion-select-option [value]="FilterFieldLink"
-                >link</ion-select-option
+              >link
+              </ion-select-option
               >
               <ion-select-option [value]="FilterFieldTitle"
-                >title
+              >title
               </ion-select-option>
               <ion-select-option [value]="FilterFieldContent"
-                >content
+              >content
               </ion-select-option>
             </ion-select>
             <ion-select
@@ -158,16 +159,16 @@
               [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
             >
               <ion-select-option [value]="GqlStringFilterOperator.Contains"
-                >contains
+              >contains
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.Matches"
-                >matches
+              >matches
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-                >starts with
+              >starts with
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-                >ends with
+              >ends with
               </ion-select-option>
             </ion-select>
             <ion-input
@@ -262,13 +263,14 @@
               [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
             >
               <ion-select-option [value]="FilterFieldLink"
-                >link</ion-select-option
+              >link
+              </ion-select-option
               >
               <ion-select-option [value]="FilterFieldTitle"
-                >title
+              >title
               </ion-select-option>
               <ion-select-option [value]="FilterFieldContent"
-                >content
+              >content
               </ion-select-option>
             </ion-select>
             <ion-select
@@ -279,16 +281,16 @@
               [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
             >
               <ion-select-option [value]="GqlStringFilterOperator.Contains"
-                >contains
+              >contains
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.Matches"
-                >matches
+              >matches
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-                >starts with
+              >starts with
               </ion-select-option>
               <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-                >ends with
+              >ends with
               </ion-select-option>
             </ion-select>
             <ion-input
@@ -312,7 +314,7 @@
         <ion-item slot="header">
           <ion-label>
             Refresh and Storage
-            <ion-note>Fetch frequency and persistence </ion-note>
+            <ion-note>Fetch frequency and persistence</ion-note>
           </ion-label>
         </ion-item>
         <ion-list slot="content">
@@ -327,40 +329,47 @@
                 interface="popover"
               >
                 <ion-select-option
-                  [disabled]="isThrottled"
+                  value="0 */5 * * * *"
+                >Every 5 min
+                </ion-select-option>
+                <ion-select-option
+                  value="0 */10 * * * *"
+                >Every 10 min
+                </ion-select-option>
+                <ion-select-option
                   value="0 */15 * * * *"
-                  >Every 15 min
+                >Every 15 min
                 </ion-select-option>
                 <ion-select-option
-                  [disabled]="isThrottled"
                   value="0 */30 * * * *"
-                  >Every 30 min
+                >Every 30 min
                 </ion-select-option>
-                <ion-select-option [disabled]="isThrottled" value="0 0 * * * *"
-                  >Every hour
-                </ion-select-option>
-                <ion-select-option
-                  [disabled]="isThrottled"
-                  value="0 0 */8 * * *"
-                  >Every 6 hours
+                <ion-select-option value="0 0 * * * *"
+                >Every hour
                 </ion-select-option>
                 <ion-select-option
-                  [disabled]="isThrottled"
+                  value="0 0 */6 * * *"
+                >Every 6 hours
+                </ion-select-option>
+                <ion-select-option
                   value="0 0 */12 * * *"
-                  >Every 12 hours
+                >Every 12 hours
                 </ion-select-option>
                 <ion-select-option value="0 0 0 * * *"
-                  >Every Day</ion-select-option
+                >Every Day
+                </ion-select-option
                 >
                 <ion-select-option value="0 0 0 * * 0"
-                  >Every Week</ion-select-option
+                >Every Week
+                </ion-select-option
                 >
               </ion-select>
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col size="3" class="ion-align-self-center ion-text-right"
-              >Delete after days</ion-col
+            >Delete after days
+            </ion-col
             >
             <ion-col size="9">
               <ion-input
@@ -391,20 +400,24 @@
                 interface="popover"
               >
                 <ion-select-option [value]="GqlWebDocumentDateField.CreatedAt"
-                  >CreatedAt</ion-select-option
+                >CreatedAt
+                </ion-select-option
                 >
                 <ion-select-option [value]="GqlWebDocumentDateField.PublishedAt"
-                  >PublishedAt</ion-select-option
+                >PublishedAt
+                </ion-select-option
                 >
                 <ion-select-option [value]="GqlWebDocumentDateField.StartingAt"
-                  >StartingAt</ion-select-option
+                >StartingAt
+                </ion-select-option
                 >
               </ion-select>
             </ion-col>
           </ion-row>
           <ion-row>
             <ion-col size="3" class="ion-align-self-center ion-text-right"
-              >max capacity</ion-col
+            >max capacity
+            </ion-col
             >
             <ion-col size="9">
               <ion-input
@@ -432,7 +445,8 @@
           <ion-label>
             Privacy
             <ion-note *ngIf="formFg.value.isPublic"
-              >Visible to everyone</ion-note
+            >Visible to everyone
+            </ion-note
             >
             <ion-note *ngIf="!formFg.value.isPublic">Visible to you</ion-note>
           </ion-label>
@@ -456,7 +470,8 @@
               <ion-note> Others can find your feed.</ion-note>
               <ion-note *ngIf="formFg.value.isPublic">
                 This enables analytics, but only ships limited content until you
-                verify source authority.</ion-note
+                verify source authority.
+              </ion-note
               >
             </ion-label>
           </ion-item>

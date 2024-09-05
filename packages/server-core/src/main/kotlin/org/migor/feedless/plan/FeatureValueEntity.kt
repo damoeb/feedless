@@ -41,10 +41,10 @@ enum class FeatureName {
   canSignUp,
 
   scrapeRequestTimeoutMsecInt,
-  scrapeSourceMaxCountActiveInt,
+  repositoriesMaxCountActiveInt,
   sourceMaxCountPerRepositoryInt,
   scrapeRequestActionMaxCountInt,
-  scrapeSourceMaxCountTotalInt,
+  repositoriesMaxCountTotalInt,
 }
 
 @Entity

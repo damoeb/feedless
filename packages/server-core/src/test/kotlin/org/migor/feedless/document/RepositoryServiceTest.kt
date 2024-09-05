@@ -68,7 +68,7 @@ class RepositoryServiceTest {
 
   @Test
   fun `given maxActiveCount is reached, when creating a new repositoru, then return error`() = runTest {
-    `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UUID::class.java)))
       .thenReturn(true)
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
@@ -84,7 +84,7 @@ class RepositoryServiceTest {
 
   @Test
   fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() = runTest {
-    `when`(planConstraintsService.violatesScrapeSourceMaxActiveCount(any(UUID::class.java)))
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UUID::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(Mockito.anyString(), Mockito.any()))
       .thenReturn(EntityVisibility.isPublic)

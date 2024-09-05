@@ -491,6 +491,6 @@ private fun JsonAttachment.toAttachment(document: DocumentEntity): AttachmentEnt
   return a
 }
 
-fun nextCronDate(cronString: String, from: LocalDateTime): Date {
-  return Date.from(CronExpression.parse(cronString).next(from)!!.toInstant(ZoneOffset.UTC))
+fun nextCronDate(cronString: String, from: LocalDateTime): LocalDateTime {
+  return CronExpression.parse(cronString).next(from)!!
 }

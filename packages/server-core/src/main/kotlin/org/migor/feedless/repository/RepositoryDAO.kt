@@ -37,7 +37,8 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
   fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<RepositoryEntity>
 
   fun countByOwnerId(id: UUID): Int
-  fun countByOwnerIdAndArchived(id: UUID, archived: Boolean): Int
+
+  fun countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(id: UUID, cron: String): Int
   fun countAllByOwnerIdAndProduct(it: UUID, product: ProductCategory): Int
   fun countAllByVisibility(visibility: EntityVisibility): Int
   fun findAllByVisibility(visibility: EntityVisibility, pageable: PageRequest): List<RepositoryEntity>

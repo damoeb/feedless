@@ -237,7 +237,7 @@ class Seeder {
     val baseFeatureGroup = withContext(Dispatchers.IO) {
       featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
         val group = FeatureGroupEntity()
-        group.name = "server"
+        group.name = "feedless"
         featureGroupDAO.save(group)
       }
     }
@@ -245,7 +245,7 @@ class Seeder {
     featureService.assignFeatureValues(
       baseFeatureGroup, features = mapOf(
         FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
-        FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+        FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(5),
         FeatureName.publicRepositoryBool to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(false),
         FeatureName.legacyApiBool to asBoolFeature(true),
@@ -256,8 +256,8 @@ class Seeder {
         FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(0),
 
         FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(0),
-        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(0),
-        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(0),
+        FeatureName.repositoriesMaxCountTotalInt to asIntFeature(0),
+        FeatureName.repositoriesMaxCountActiveInt to asIntFeature(0),
         FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(0),
         FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(0),
 
@@ -287,8 +287,8 @@ class Seeder {
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
-          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
+          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(10000),
+          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(10000),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
           FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(2),
 
@@ -302,126 +302,126 @@ class Seeder {
         )
       )
     } else {
-      val price = 59.99
-      createProduct(
-        "RSS-proxy", "Current version incl. all minor and patch",
-        group = ProductCategory.rssProxy,
-        isCloud = false,
-        prices = listOf(
-          createPricedProduct(
-            individual = true,
-            price = price,
-            unit = "First major release"
-          ),
-          createPricedProduct(
-            individual = true,
-            price = floor(price * 0.5),
-            unit = "Second consecutive releases"
-          ),
-          createPricedProduct(
-            individual = true,
-            price = floor(price * 0.4),
-            unit = "Third consecutive releases onwards"
-          ),
-          createPricedProduct(
-            other = true,
-            unit = "Major Release",
-            price = 4.99
-          ),
-        )
-      )
-      createProduct(
-        "All Products Forever",
-        "Everything released under the feedless umbrella, forever",
-        isCloud = false,
-        prices = listOf(
-          createPricedProduct(
-            individual = true,
-            price = 399.99,
-            inStock = 50,
-            unit = "One time"
-          )
-        )
-      )
+//      val price = 59.99
+//      createProduct(
+//        "RSS-proxy", "Current version incl. all minor and patch",
+//        group = ProductCategory.rssProxy,
+//        isCloud = false,
+//        prices = listOf(
+//          createPricedProduct(
+//            individual = true,
+//            price = price,
+//            unit = "First major release"
+//          ),
+//          createPricedProduct(
+//            individual = true,
+//            price = floor(price * 0.5),
+//            unit = "Second consecutive releases"
+//          ),
+//          createPricedProduct(
+//            individual = true,
+//            price = floor(price * 0.4),
+//            unit = "Third consecutive releases onwards"
+//          ),
+//          createPricedProduct(
+//            other = true,
+//            unit = "Major Release",
+//            price = 4.99
+//          ),
+//        )
+//      )
+//      createProduct(
+//        "All Products Forever",
+//        "Everything released under the feedless umbrella, forever",
+//        isCloud = false,
+//        prices = listOf(
+//          createPricedProduct(
+//            individual = true,
+//            price = 399.99,
+//            inStock = 50,
+//            unit = "One time"
+//          )
+//        )
+//      )
 
-      val rpFree = createProduct(
-        "RSS-proxy Free",
-        "Getting started",
-        group = ProductCategory.rssProxy,
-        isBaseProduct = true,
-        isCloud = true,
-        prices = listOf(
-          createPricedProduct(
-            individual = true,
-            enterprise = true,
-            other = true,
-            unit = "Per Month",
-            price = 0.0
-          ),
-        ),
-        parentFeatureGroup = baseFeatureGroup,
-        features = mapOf(
-//          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
-//          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
-//          FeatureName.publicRepositoryBool to asBoolFeature(false),
-          FeatureName.pluginsBool to asBoolFeature(true),
-
-          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10),
-          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
-
-          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
-          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10),
-          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(5),
-
-//          FeatureName.hasWaitList to asBoolFeature(false),
-          FeatureName.canActivatePlan to asBoolFeature(true),
-
-//          FeatureName.itemEmailForwardBool to asBoolFeature(false),
-//          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
-        )
-      )
-
-      createProduct(
-        "RSS-proxy Pro",
-        "Getting serious",
-        group = ProductCategory.rssProxy,
-        isCloud = true,
-        parentFeatureGroup = rpFree.featureGroup!!,
-        prices = listOf(
-          createPricedProduct(
-            individual = true,
-            enterprise = true,
-            other = true,
-            unit = "Per Month",
-            price = -1.0
-          ),
-        ),
-        features = mapOf(
-//          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
-          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(10),
-          FeatureName.publicRepositoryBool to asBoolFeature(true),
-          FeatureName.pluginsBool to asBoolFeature(true),
-
+//      val rpFree = createProduct(
+//        "RSS-proxy Free",
+//        "Getting started",
+//        group = ProductCategory.rssProxy,
+//        isBaseProduct = true,
+//        isCloud = true,
+//        prices = listOf(
+//          createPricedProduct(
+//            individual = true,
+//            enterprise = true,
+//            other = true,
+//            unit = "Per Month",
+//            price = 0.0
+//          ),
+//        ),
+//        parentFeatureGroup = baseFeatureGroup,
+//        features = mapOf(
+////          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
+////          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+////          FeatureName.publicRepositoryBool to asBoolFeature(false),
+//          FeatureName.pluginsBool to asBoolFeature(true),
+//
 //          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
-          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+//          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10),
+//          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
+//
+//          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
+//          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(10),
+//          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(10),
+//          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
+//          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(5),
+//
+////          FeatureName.hasWaitList to asBoolFeature(false),
+//          FeatureName.canActivatePlan to asBoolFeature(true),
+//
+////          FeatureName.itemEmailForwardBool to asBoolFeature(false),
+////          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
+//        )
+//      )
 
-          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(60000),
-          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(null),
-          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(null),
-          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
-
-          FeatureName.canJoinPlanWaitList to asBoolFeature(true),
-          FeatureName.canActivatePlan to asBoolFeature(false),
-
-          FeatureName.itemEmailForwardBool to asBoolFeature(true),
-          FeatureName.itemWebhookForwardBool to asBoolFeature(true),
-        )
-      )
+//      createProduct(
+//        "RSS-proxy Pro",
+//        "Getting serious",
+//        group = ProductCategory.rssProxy,
+//        isCloud = true,
+//        parentFeatureGroup = rpFree.featureGroup!!,
+//        prices = listOf(
+//          createPricedProduct(
+//            individual = true,
+//            enterprise = true,
+//            other = true,
+//            unit = "Per Month",
+//            price = -1.0
+//          ),
+//        ),
+//        features = mapOf(
+////          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
+//          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(10),
+//          FeatureName.publicRepositoryBool to asBoolFeature(true),
+//          FeatureName.pluginsBool to asBoolFeature(true),
+//
+////          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
+//          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
+//          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+//
+//          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(60000),
+//          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(null),
+//          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(null),
+//          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
+//          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
+//
+//          FeatureName.canJoinPlanWaitList to asBoolFeature(true),
+//          FeatureName.canActivatePlan to asBoolFeature(false),
+//
+//          FeatureName.itemEmailForwardBool to asBoolFeature(true),
+//          FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+//        )
+//      )
 
       val feedlessFree = createProduct(
         "feedless Free",
@@ -450,10 +450,10 @@ class Seeder {
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
-          FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10),
+          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(30),
+          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(30),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(5),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),
