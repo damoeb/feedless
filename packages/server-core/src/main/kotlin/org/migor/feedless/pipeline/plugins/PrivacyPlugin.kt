@@ -89,11 +89,11 @@ class PrivacyPlugin : MapEntityPlugin {
         filterBlacklisted(document.links())
           .filterIndexed { index, _ -> index < 10 }
           .mapNotNull { handleLinkedData(corrId, it, documentId) })
-      .plus(document.images()
-        .filterIndexed { index, _ -> index < 10 }
-        .mapNotNull {
-          handleImage(corrId, it, documentId)
-        })
+//      .plus(document.images()
+//        .filterIndexed { index, _ -> index < 10 }
+//        .mapNotNull {
+//          handleImage(corrId, it, documentId)
+//        })
 
     return Pair(document.body().html(), attachments)
   }
@@ -112,8 +112,8 @@ class PrivacyPlugin : MapEntityPlugin {
       val response = fetch(corrId, url, arrayOf("image/jpeg", "image/png", "image/webp"))
 
       val encoder = Base64.getEncoder()
-      val (isResized, resizeImage, origFormat) = resizeImage(corrId, response.responseBody)
-      val inlineImage = "data:${response.contentType};base64, " + encoder.encodeToString(resizeImage)
+      val (isResized, resizedImage, origFormat) = resizeImage(corrId, response.responseBody)
+      val inlineImage = "data:${response.contentType};base64, " + encoder.encodeToString(resizedImage)
       imageElement.attr("src", inlineImage)
       imageElement.removeAttr("width")
       imageElement.removeAttr("height")

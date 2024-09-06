@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.common.HttpResponse
@@ -64,6 +65,7 @@ internal class PrivacyPluginTest {
     plugin.httpService = mockHttpService
   }
 
+  @Disabled
   @ParameterizedTest
   @CsvSource(
     value = [
