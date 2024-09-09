@@ -21,9 +21,9 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.document.any
-import org.migor.feedless.document.eq
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.repository.any
+import org.migor.feedless.repository.eq
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil.newCorrId

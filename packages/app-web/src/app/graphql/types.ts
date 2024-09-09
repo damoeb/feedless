@@ -4,7 +4,8 @@ import {
   GqlCreateUserSecretMutation,
   GqlFeatureGroupsQuery,
   GqlListPluginsQuery,
-  GqlListProductsQuery, GqlListRepositoriesQuery,
+  GqlListProductsQuery,
+  GqlListRepositoriesQuery,
   GqlPreviewFeedQuery,
   GqlRemoteNativeFeedQuery,
   GqlRepositoryByIdQuery,
@@ -12,15 +13,15 @@ import {
   GqlSelectors,
   GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery
+  GqlWebDocumentByIdQuery,
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
-export type SubscriptionSource = GetElementType<
+export type RepositorySource = GetElementType<
   GqlRepositoryByIdQuery['repository']['sources']
 >;
 export type Repository = GetElementType<
-  GqlCreateRepositoriesMutation['createRepositories']
+  GqlListRepositoriesQuery['repositories']
 >;
 export type RepositoryFull = GqlRepositoryByIdQuery['repository'];
 export type Product = GetElementType<GqlListProductsQuery['products']>;

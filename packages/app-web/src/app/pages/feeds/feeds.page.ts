@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Repository, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
@@ -36,11 +42,11 @@ export class FeedsPage implements OnInit, OnDestroy {
     this.titleService.setTitle('Feeds');
 
     this.subscriptions.push(
-      this.activatedRoute.queryParams.subscribe(async queryParams => {
+      this.activatedRoute.queryParams.subscribe(async (queryParams) => {
         if (queryParams.reload) {
           await this.fetchFeeds(0, 'network-only');
         }
-      })
+      }),
     );
 
     await this.fetchFeeds(0);
@@ -50,7 +56,10 @@ export class FeedsPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  protected async fetchFeeds(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
+  protected async fetchFeeds(
+    page: number,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ) {
     this.currentPage = page;
     const pageSize = 10;
 
@@ -66,7 +75,7 @@ export class FeedsPage implements OnInit, OnDestroy {
           },
         },
       },
-      fetchPolicy
+      fetchPolicy,
     );
     this.isLastPage = repositories.length < pageSize;
     this.repositories = repositories;
@@ -74,7 +83,11 @@ export class FeedsPage implements OnInit, OnDestroy {
   }
 
   getHealthColorForFeed(repository: Repository): BubbleColor {
-    return 'green';
+    if (repository.hasDisabledSources) {
+      return 'red';
+    } else {
+      return 'green';
+    }
   }
 
   isPrivate(repository: Repository): boolean {

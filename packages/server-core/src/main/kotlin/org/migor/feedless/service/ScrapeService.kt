@@ -36,7 +36,6 @@ import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

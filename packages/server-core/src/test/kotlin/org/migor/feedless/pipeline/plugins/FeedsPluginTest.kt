@@ -11,11 +11,11 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.document.any
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.repository.any
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.service.LogCollector
 import org.migor.feedless.web.ExtendContext

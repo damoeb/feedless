@@ -19,7 +19,6 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.generated.types.FeedPreview
 import org.migor.feedless.generated.types.ItemFilterParamsInput
-import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin

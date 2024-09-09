@@ -289,6 +289,7 @@ export const mocks: Mocks = {
     documentCount: 0,
     frequency: [],
     harvests: [],
+    hasDisabledSources: false,
     cronRuns: [],
     refreshCron: '',
     plugins: [],

@@ -8,16 +8,18 @@ import {
 } from '@angular/core';
 import {
   FieldWrapper,
-  GqlFeedlessPlugins, GqlHarvest,
+  GqlFeedlessPlugins,
+  GqlHarvest,
   GqlProductCategory,
   GqlScrapeRequest,
   GqlVisibility,
-  GqlWebDocumentField, Scalars
+  GqlWebDocumentField,
+  Scalars,
 } from '../../../generated/graphql';
 import {
   FeedlessPlugin,
   RepositoryFull,
-  SubscriptionSource,
+  RepositorySource,
   WebDocument,
 } from '../../graphql/types';
 import {
@@ -33,6 +35,7 @@ import {
 } from '@ionic/angular';
 import {
   FeedOrRepository,
+  Source,
   tagsToString,
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
@@ -40,7 +43,11 @@ import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
 import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
-import { dateFormat, dateTimeFormat, SessionService } from '../../services/session.service';
+import {
+  dateFormat,
+  dateTimeFormat,
+  SessionService,
+} from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { uniq, without } from 'lodash-es';
@@ -49,6 +56,7 @@ import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { stringifyLogStatement } from '../console-button/console-button.component';
+import dayjs from 'dayjs';
 
 export type WebDocumentWithFornmControl = WebDocument & {
   fc: FormControl<boolean>;
@@ -86,6 +94,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private userId: string;
   private subscriptions: Subscription[] = [];
   currentPage: number;
+  fromNow = relativeTimeOrElse;
 
   protected readonly dateTimeFormat = dateTimeFormat;
   protected loading: boolean;
@@ -101,7 +110,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected readonly compareByPixel: GqlWebDocumentField =
     GqlWebDocumentField.Pixel;
 
-  fromNow = relativeTimeOrElse;
   private seed = Math.random();
   sourcesModalId: string = `open-sources-modal-${this.seed}`;
   harvestsModalId: string = `open-harvests-modal-${this.seed}`;
@@ -187,7 +195,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   hasErrors(): boolean {
     return (
       this.repository?.sources?.length === 0 ||
-      this.repository?.sources?.some((s) => s.errornous)
+      this.repository?.sources?.some((s) => s.disabled)
     );
   }
 
@@ -198,7 +206,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   getHealthColorForSource(
     source: ArrayElement<RepositoryFull['sources']>,
   ): BubbleColor {
-    if (source.errornous) {
+    if (source.disabled) {
       return 'red';
     } else {
       return 'green';
@@ -322,7 +330,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       : 'Localize Source';
   }
 
-  async deleteSource(source: SubscriptionSource) {
+  async deleteSource(source: RepositorySource) {
     console.log('deleteSource', source);
     const alert = await this.alertCtrl.create({
       header: 'Delete Source?',
@@ -422,7 +430,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return tagsToString(document.tags);
   }
 
-  async editSource(source: SubscriptionSource = null) {
+  async editSource(source: RepositorySource = null) {
     await this.modalService.openFeedBuilder(
       {
         source: source as any,
@@ -534,7 +542,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return new Date(date);
   }
 
-  openLogsModal(harvest: Pick<GqlHarvest, 'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'>) {
+  openLogsModal(
+    harvest: Pick<
+      GqlHarvest,
+      'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'
+    >,
+  ) {
     const props: CodeEditorModalComponentProps = {
       title: 'Log Output',
       contentType: 'text',
@@ -543,5 +556,34 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       text: harvest.logs,
     };
     return this.modalService.openCodeEditorModal(props);
+  }
+
+  async setDisabledForSource(source: RepositorySource, isDisabled: boolean) {
+    this.repository = await this.repositoryService.updateRepository({
+      where: {
+        id: this.repository.id,
+      },
+      data: {
+        sources: {
+          update: [
+            {
+              where: {
+                id: source.id,
+              },
+              data: {
+                disabled: {
+                  set: isDisabled,
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+    this.changeRef.detectChanges();
+  }
+
+  diffInSeconds(a: number, b: number) {
+    return dayjs(a).diff(b, 'seconds');
   }
 }

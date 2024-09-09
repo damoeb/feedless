@@ -413,17 +413,22 @@ class RepositoryService {
           repository.sources.addAll(it.map { createScrapeSource(corrId, repository.ownerId, it, repository) })
         }
         it.update?.let {
-          val sources: List<SourceEntity> = it.mapNotNull { scrapeRequestUpdate ->
+          val sources: List<SourceEntity> = it.mapNotNull { sourceUpdate ->
             run {
-              val source = repository.sources.firstOrNull { it.id.toString() == scrapeRequestUpdate.where.id }
-              scrapeRequestUpdate.data.tags?.let {
-                source?.tags = scrapeRequestUpdate.data.tags.set.toTypedArray()
+              val source = repository.sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }
+              sourceUpdate.data.tags?.let {
+                source?.tags = sourceUpdate.data.tags.set.toTypedArray()
               }
-              scrapeRequestUpdate.data.localized?.let { point ->
+              sourceUpdate.data.localized?.let { point ->
                 point.set?.let {
                   source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
                 } ?: run { source?.latLon = null }
               }
+              sourceUpdate.data.disabled?.let { disabled ->
+                source?.disabled = disabled.set
+                source?.errorsInSuccession = 0
+              }
+
               source
             }
           }

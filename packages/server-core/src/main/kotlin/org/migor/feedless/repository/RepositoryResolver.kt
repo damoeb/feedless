@@ -160,6 +160,17 @@ class RepositoryResolver {
     harvests
   }
 
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.HasDisabledSources)
+  suspend fun hasDisabledSources(
+    dfe: DgsDataFetchingEnvironment,
+  ): Boolean = coroutineScope {
+    val repository: Repository = dfe.getSource()
+    val errornous = withContext(Dispatchers.IO) {
+      sourceDAO.existsByRepositoryIdAndDisabledTrue(UUID.fromString(repository.id))
+    }
+    errornous
+  }
+
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.CronRuns)
   suspend fun cronRuns(
     dfe: DgsDataFetchingEnvironment,

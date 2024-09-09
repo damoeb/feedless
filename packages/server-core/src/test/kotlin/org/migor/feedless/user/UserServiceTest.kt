@@ -4,12 +4,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.document.any
-import org.migor.feedless.document.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.repository.any
+import org.migor.feedless.repository.eq
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock

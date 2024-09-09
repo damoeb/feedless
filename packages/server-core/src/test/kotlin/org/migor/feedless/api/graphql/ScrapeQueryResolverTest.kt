@@ -7,8 +7,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentSyncExecutor
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.agent.AgentSyncExecutor
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.document.DocumentService

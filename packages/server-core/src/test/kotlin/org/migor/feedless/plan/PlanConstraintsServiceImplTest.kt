@@ -10,9 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.document.any
-import org.migor.feedless.document.anyList
-import org.migor.feedless.document.eq
+import org.migor.feedless.repository.any
+import org.migor.feedless.repository.anyList
+import org.migor.feedless.repository.eq
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.subscription.PlanDAO
 import org.migor.feedless.subscription.PlanEntity

@@ -11,11 +11,8 @@ import org.migor.feedless.HarvestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
-import org.migor.feedless.api.ApiParams
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.UnknownHostException
 import java.util.concurrent.CompletableFuture
 

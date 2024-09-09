@@ -203,7 +203,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   async pickNativeFeed(feed: GqlRemoteNativeFeed) {
     this.resetSelection();
-    console.log('pickNativeFeed', feed)
+    console.log('pickNativeFeed', feed);
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);

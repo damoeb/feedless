@@ -212,6 +212,7 @@ fun RepositoryEntity.toDto(): Repository {
     documentCount = 0,
     tags = emptyList(),
     harvests = emptyList(),
+    hasDisabledSources = false,
     cronRuns = emptyList()
   )
 }

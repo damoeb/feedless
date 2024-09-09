@@ -2,10 +2,10 @@ package org.migor.feedless.jobs
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.document.any
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.repository.HarvestDAO
+import org.migor.feedless.repository.any
 import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.mockito.InjectMocks
 import org.mockito.Mock

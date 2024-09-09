@@ -22,9 +22,9 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
 
   @Modifying
   @Query(
-    """
+      """
       update SourceEntity C
-        set C.erroneous = :erroneous,
+        set C.disabled = :erroneous,
             C.lastErrorMessage = :errorMessage
       where C.id = :id
     """
@@ -34,4 +34,6 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
     @Param("erroneous") erroneous: Boolean,
     @Param("errorMessage") errorMessage: String? = null
   )
+
+  fun existsByRepositoryIdAndDisabledTrue(id: UUID): Boolean
 }

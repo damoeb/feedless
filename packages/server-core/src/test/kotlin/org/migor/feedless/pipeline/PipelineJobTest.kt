@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.document.eq
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.eq
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.mockito.InjectMocks

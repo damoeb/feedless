@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.repository.any
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired

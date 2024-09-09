@@ -169,11 +169,21 @@ class RepositoryHarvester internal constructor() {
 
     log.debug("[$corrId] queueing ${sources.size} sources")
     return sources
-      .filter { !it.erroneous }
       .fold(0) { agg, source ->
         try {
           val subCorrId = newCorrId(parentCorrId = corrId)
-          agg + scrapeSource(subCorrId, source, logCollector)
+          val appended = scrapeSource(subCorrId, source, logCollector)
+
+          if (source.errorsInSuccession > 0) {
+            source.errorsInSuccession = 0
+            source.lastErrorMessage = null
+
+            withContext(Dispatchers.IO) {
+              sourceDAO.save(source)
+            }
+          }
+
+          agg + appended
         } catch (e: Throwable) {
           handleScrapeException(corrId, e, source)
           agg
@@ -210,7 +220,8 @@ class RepositoryHarvester internal constructor() {
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
       withContext(Dispatchers.IO) {
-        source.erroneous = true
+        source.errorsInSuccession += 1
+        source.disabled = source.errorsInSuccession >= 3
         source.lastErrorMessage = e?.message
         sourceDAO.save(source)
       }
@@ -375,7 +386,7 @@ class RepositoryHarvester internal constructor() {
           log.debug("[$corrId] wont follow page urls")
         }
       }
-      items.size
+      documents.filter { (isNew, _) -> isNew }.size
     }
   }
 

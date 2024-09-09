@@ -1,7 +1,5 @@
 package org.migor.feedless.api.throttle
 
-import org.aspectj.lang.ProceedingJoinPoint
-import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory

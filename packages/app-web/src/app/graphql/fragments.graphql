@@ -81,7 +81,7 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
 
 fragment SourceFragment on ScrapeRequest {
   id
-  errornous
+  disabled
   tags
   localized {
     lat
@@ -118,6 +118,7 @@ fragment RepositoryFragment on Repository {
     sortBy
   }
   refreshCron
+  hasDisabledSources
   shareKey
   disabledFrom
   archived

@@ -8,11 +8,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.document.any
-import org.migor.feedless.document.anyList
-import org.migor.feedless.document.eq
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
@@ -21,7 +18,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
@@ -41,6 +37,12 @@ class RepositoryHarvesterTest {
 
   @Mock
   lateinit var meterRegistry: MeterRegistry
+
+  @Mock
+  lateinit var documentService: DocumentService
+
+  @Mock
+  lateinit var harvestDAO: HarvestDAO
 
   @Mock
   lateinit var repositoryDAO: RepositoryDAO
@@ -63,8 +65,9 @@ class RepositoryHarvesterTest {
     `when`(meterRegistry.counter(any(String::class.java))).thenReturn(mock(Counter::class.java))
 
     source = mock(SourceEntity::class.java)
-    `when`(source.erroneous).thenReturn(false)
+    `when`(source.disabled).thenReturn(false)
     `when`(source.id).thenReturn(UUID.randomUUID())
+    `when`(source.errorsInSuccession).thenReturn(0)
 
     repository = mock(RepositoryEntity::class.java)
     `when`(repository.id).thenReturn(UUID.randomUUID())
@@ -90,16 +93,35 @@ class RepositoryHarvesterTest {
   }
 
   @Test
-  fun `given scrape fails will flag the source errornous`() = runTest {
+  fun `given scrape fails will increment the error count`() = runTest {
     `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
       IllegalArgumentException("this is off")
     )
+    `when`(source.errorsInSuccession).thenReturn(0)
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
     verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
 
-    verify(source).erroneous = true
+    verify(source).disabled = false
+    verify(source).errorsInSuccession = 1
+    verify(source).lastErrorMessage = "this is off"
+    verify(sourceDAO, times(1)).save(source)
+  }
+
+  @Test
+  fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
+      IllegalArgumentException("this is off")
+    )
+    `when`(source.errorsInSuccession).thenReturn(4)
+
+    repositoryHarvester.handleRepository(corrId, repository.id)
+
+    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
+
+    verify(source).disabled = true
+    verify(source).errorsInSuccession = 5
     verify(source).lastErrorMessage = "this is off"
     verify(sourceDAO, times(1)).save(source)
   }
@@ -116,29 +138,4 @@ class RepositoryHarvesterTest {
     verify(sourceDAO, times(0)).save(source)
   }
 
-  @Test
-  fun `handleRepository ignores errornous sources`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java)))
-      .thenReturn(
-        ScrapeOutput(
-          outputs = emptyList(),
-          time = 0
-        )
-      )
-
-    val sourceNonErrornous = mock(SourceEntity::class.java)
-    `when`(sourceNonErrornous.erroneous).thenReturn(false)
-    `when`(sourceNonErrornous.id).thenReturn(UUID.randomUUID())
-
-    val sourceErrornous = mock(SourceEntity::class.java)
-    `when`(sourceErrornous.erroneous).thenReturn(true)
-    `when`(sourceErrornous.id).thenReturn(UUID.randomUUID())
-
-    `when`(sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(any(UUID::class.java))).thenReturn(mutableListOf(sourceNonErrornous, sourceErrornous))
-
-    repositoryHarvester.handleRepository(corrId, repository.id)
-
-    verify(scrapeService, times(1)).scrape(any(String::class.java), eq(sourceNonErrornous), any(LogCollector::class.java))
-    verifyNoMoreInteractions(scrapeService)
-  }
 }

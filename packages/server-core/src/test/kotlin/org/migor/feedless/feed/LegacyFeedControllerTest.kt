@@ -14,12 +14,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.document.any
-import org.migor.feedless.document.anyOrNull
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.MailProviderService
 import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.any
+import org.migor.feedless.repository.anyOrNull
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.`when`

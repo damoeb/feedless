@@ -49,7 +49,10 @@ open class SourceEntity : EntityWithUUID() {
   open lateinit var repositoryId: UUID
 
   @Column(nullable = false, name = "erroneous")
-  open var erroneous: Boolean = false
+  open var disabled: Boolean = false
+
+  @Column(nullable = false, name = "errors_in_succession")
+  open var errorsInSuccession: Int = 0
 
   @Column(name = "last_error_message")
   open var lastErrorMessage: String? = null
@@ -70,7 +73,7 @@ fun SourceEntity.toDto(corrId: String): ScrapeRequest {
   return ScrapeRequest(
     id = id.toString(),
     corrId = corrId,
-    errornous = erroneous,
+    disabled = disabled,
     lastErrorMessage = lastErrorMessage,
     tags = tags?.asList() ?: emptyList(),
     localized = latLon?.let {

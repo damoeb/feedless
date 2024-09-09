@@ -2,9 +2,7 @@ package org.migor.feedless.service
 
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.generated.types.FetchActionDebugResponse
-import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.pipeline.FragmentOutput
-import java.util.*
 
 data class HttpFetchOutput(val response: HttpResponse, val debug: FetchActionDebugResponse)
 data class ScrapeActionOutput(

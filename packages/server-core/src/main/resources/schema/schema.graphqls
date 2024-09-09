@@ -97,6 +97,7 @@ type Repository {
 #  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
+  hasDisabledSources: Boolean!
   frequency(groupBy: WebDocumentDateField!): [DocumentFrequency!]
   plugins: [PluginExecution!]
   cronRuns: [CronRun!]!
@@ -1454,6 +1455,7 @@ input SourceUpdateDataInput {
   tags: StringArrayUpdateOperationsInput
   title: StringUpdateOperationsInput
   localized: NullableUpdateGeoPointInput
+  disabled: BoolUpdateOperationsInput
 }
 
 input NullableUpdateGeoPointInput {
@@ -1567,7 +1569,7 @@ type ScrapeRequest {
   id: ID!
   title: String!
   flow: ScrapeFlow!
-  errornous: Boolean
+  disabled: Boolean
   localized: GeoPoint
   tags: [String!]
   lastErrorMessage: String

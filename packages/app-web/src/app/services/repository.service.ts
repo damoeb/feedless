@@ -22,7 +22,7 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository
+  UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository, RepositoryFull } from '../graphql/types';

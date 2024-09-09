@@ -85,7 +85,7 @@ class HttpService {
     expectedHttpStatus: Int,
     headers: Map<String, String>? = null
   ): HttpResponse {
-    log.info("cache miss $url")
+    log.debug("cache miss $url")
     return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 

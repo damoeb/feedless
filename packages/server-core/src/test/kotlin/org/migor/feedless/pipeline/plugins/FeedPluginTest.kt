@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.document.any
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
+import org.migor.feedless.repository.any
 import org.migor.feedless.service.LogCollector
 import org.migor.feedless.web.Selectors
 import org.migor.feedless.web.WebToFeedTransformer

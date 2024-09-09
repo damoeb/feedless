@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.TokenizerService
-import org.migor.feedless.document.any
+import org.migor.feedless.repository.any
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
