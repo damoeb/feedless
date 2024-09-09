@@ -449,8 +449,8 @@ class Seeder {
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(30),
-          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(30),
+          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
+          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
           FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
 
