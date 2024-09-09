@@ -154,7 +154,7 @@ class RepositoryResolver {
   ): List<Harvest> = coroutineScope {
     val repository: Repository = dfe.getSource()
     val harvests = withContext(Dispatchers.IO) {
-      val pageable = PageRequest.of(0, 3)
+      val pageable = PageRequest.of(0, 5)
       harvestDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id), pageable).map { it.toDto() }
     }
     harvests
