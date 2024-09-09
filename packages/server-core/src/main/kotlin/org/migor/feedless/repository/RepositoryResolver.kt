@@ -19,6 +19,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.CronRun
+import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.Harvest
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesInput
@@ -43,6 +44,13 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
+
+fun handleCursor(cursor: Cursor): Pair<Int,Int> {
+  val pageNumber = handlePageNumber(cursor.page).coerceAtLeast(0)
+  val pageSize = handlePageSize(cursor.pageSize)
+  return Pair(pageNumber, pageSize)
+}
+
 
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.api}")
@@ -74,11 +82,11 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Repository> = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] repositories $data")
-    val pageNumber = handlePageNumber(data.cursor.page)
-    val pageSize = handlePageSize(data.cursor.pageSize)
-    val offset = pageNumber * pageSize
+
+    val (pageNumber, pageSize) = handleCursor(data.cursor)
+
     val userId = sessionService.userId()
-    repositoryService.findAll(offset, pageSize, data.where, userId)
+    repositoryService.findAll(pageNumber, pageSize, data.where, userId)
       .map { it.toDto() }
   }
 
