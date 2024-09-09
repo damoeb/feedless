@@ -7,11 +7,12 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  GqlFeedlessPlugins,
+  FieldWrapper,
+  GqlFeedlessPlugins, GqlHarvest,
   GqlProductCategory,
   GqlScrapeRequest,
   GqlVisibility,
-  GqlWebDocumentField,
+  GqlWebDocumentField, Scalars
 } from '../../../generated/graphql';
 import {
   FeedlessPlugin,
@@ -39,13 +40,15 @@ import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
 import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
-import { dateFormat, SessionService } from '../../services/session.service';
+import { dateFormat, dateTimeFormat, SessionService } from '../../services/session.service';
 import { DocumentService } from '../../services/document.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { uniq, without } from 'lodash-es';
 import { distinct, Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
+import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
+import { stringifyLogStatement } from '../console-button/console-button.component';
 
 export type WebDocumentWithFornmControl = WebDocument & {
   fc: FormControl<boolean>;
@@ -76,8 +79,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected documents: WebDocumentWithFornmControl[] = [];
   protected feedUrl: string;
 
-  private plugins: FeedlessPlugin[];
-
   protected readonly GqlVisibility = GqlVisibility;
   protected readonly dateFormat = dateFormat;
   showFullDescription: boolean = false;
@@ -85,6 +86,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private userId: string;
   private subscriptions: Subscription[] = [];
   currentPage: number;
+
+  protected readonly dateTimeFormat = dateTimeFormat;
   protected loading: boolean;
   protected isOwner: boolean;
   protected selectAllFc = new FormControl<boolean>(false);
@@ -143,7 +146,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     } else {
       this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
     }
-    this.plugins = await this.pluginService.listPlugins();
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
         this.userId = session.user?.id;
@@ -520,11 +522,26 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       .literal;
   }
 
-  async showCode() {
-    await this.modalService.openCodeEditorModal({
-      title: 'JSON Editor',
-      text: JSON.stringify(this.repository, null, 2),
-      contentType: 'json',
-    });
+  // async showCode() {
+  //   await this.modalService.openCodeEditorModal({
+  //     title: 'JSON Editor',
+  //     text: JSON.stringify(this.repository, null, 2),
+  //     contentType: 'json',
+  //   });
+  // }
+
+  toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
+    return new Date(date);
+  }
+
+  openLogsModal(harvest: Pick<GqlHarvest, 'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'>) {
+    const props: CodeEditorModalComponentProps = {
+      title: 'Log Output',
+      contentType: 'text',
+      readOnly: true,
+      controls: false,
+      text: harvest.logs,
+    };
+    return this.modalService.openCodeEditorModal(props);
   }
 }

@@ -35,6 +35,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -289,6 +290,7 @@ class DocumentService {
   suspend fun processDocumentPlugins(corrId: String, documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
+    val logCollector = LogCollector()
 
     document?.let {
       try {
@@ -308,13 +310,14 @@ class DocumentService {
                   corrId,
                   document.asJsonItem(),
                   job.executorParams,
-                  0
+                  0,
+                  logCollector
                 )
               ) {
                 throw FilterMismatchException()
               }
 
-              is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams)
+              is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams, logCollector)
               else -> throw IllegalArgumentException("Invalid executorId ${job.executorId}")
             }
 

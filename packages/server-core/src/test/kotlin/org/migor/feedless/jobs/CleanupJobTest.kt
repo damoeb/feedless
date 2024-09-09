@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.document.any
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
+import org.migor.feedless.repository.HarvestDAO
 import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -28,8 +29,17 @@ class CleanupJobTest {
   @Mock
   lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
+  @Mock
+  lateinit var harvestDAO: HarvestDAO
+
   @InjectMocks
   lateinit var cleanupExecutor: CleanupExecutor
+
+  @Test
+  fun `executeCleanup removes trailing harvests`() {
+    cleanupExecutor.executeCleanup()
+    Mockito.verify(harvestDAO, times(1)).deleteAllTailingByRepositoryId()
+  }
 
   @Test
   fun `executeCleanup removes oneTimePassword`() {

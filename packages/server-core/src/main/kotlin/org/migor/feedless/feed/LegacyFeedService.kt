@@ -129,7 +129,7 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeOutput = scrapeService.scrape(corrId, source)
+      val scrapeOutput = scrapeService.scrape(corrId, source, LogCollector())
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -152,7 +152,7 @@ class LegacyFeedService {
           ), url
         ),
         URL(url),
-        LogCollector(corrId, log)
+        LogCollector()
       )
       feed.feedUrl = feedUrl
 
@@ -170,7 +170,8 @@ class LegacyFeedService {
               corrId,
               jsonItem,
               params,
-              index
+              index,
+              LogCollector()
             )
           }
         }

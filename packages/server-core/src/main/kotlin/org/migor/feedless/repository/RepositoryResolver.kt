@@ -19,6 +19,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.CronRun
+import org.migor.feedless.generated.types.Harvest
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
@@ -35,6 +36,7 @@ import org.migor.feedless.source.SourceDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
@@ -55,6 +57,9 @@ class RepositoryResolver {
 
   @Autowired
   private lateinit var sourceDAO: SourceDAO
+
+  @Autowired
+  private lateinit var harvestDAO: HarvestDAO
 
   @Autowired
   private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
@@ -142,6 +147,19 @@ class RepositoryResolver {
     sources
   }
 
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
+  suspend fun harvests(
+    dfe: DgsDataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<Harvest> = coroutineScope {
+    val repository: Repository = dfe.getSource()
+    val harvests = withContext(Dispatchers.IO) {
+      val pageable = PageRequest.of(0, 3)
+      harvestDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id), pageable).map { it.toDto() }
+    }
+    harvests
+  }
+
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.CronRuns)
   suspend fun cronRuns(
     dfe: DgsDataFetchingEnvironment,
@@ -159,7 +177,6 @@ class RepositoryResolver {
       .flatten()
       .distinct()
   }
-
 }
 
 private fun SourcePipelineJobEntity.toDto(): CronRun {

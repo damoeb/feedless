@@ -211,6 +211,7 @@ fun RepositoryEntity.toDto(): Repository {
     refreshCron = sourcesSyncCron,
     documentCount = 0,
     tags = emptyList(),
+    harvests = emptyList(),
     cronRuns = emptyList()
   )
 }

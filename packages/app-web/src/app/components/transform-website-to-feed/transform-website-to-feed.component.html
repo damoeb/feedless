@@ -15,8 +15,8 @@
             <div style="position: relative; height: 400px; overflow-y: auto">
               <div style="position: absolute; width: 100%">
                 <ion-item
-                  (click)="pickNativeFeed(nativeFeed)"
                   *ngFor="let nativeFeed of nativeFeeds"
+                  (click)="pickNativeFeed(nativeFeed)"
                   [button]="true"
                   [color]="
                     currentNativeFeed === nativeFeed ? 'primary' : undefined

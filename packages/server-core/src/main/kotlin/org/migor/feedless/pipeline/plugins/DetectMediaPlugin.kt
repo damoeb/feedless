@@ -14,6 +14,7 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,7 +53,8 @@ class DetectMediaPlugin : MapEntityPlugin {
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    logCollector: LogCollector
   ): DocumentEntity {
     val url = document.url
     log.debug("[$corrId] mapEntity $url")

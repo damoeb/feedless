@@ -51,9 +51,10 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    logCollector: LogCollector
   ): DocumentEntity {
-    log.debug("[$corrId] mapEntity ${document.url}")
+    logCollector.log("[$corrId] mapEntity ${document.url}")
 
     val request = SourceEntity()
     request.title = "Feed from ${document.url}"
@@ -63,18 +64,19 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
     val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
     if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
-      log.debug("[$corrId] with inheritParams")
+      logCollector.log("[$corrId] inheritParams from source")
       request.actions = mergeWithSourceActions(fetchAction, document.source!!.actions).toMutableList()
     } else {
       request.actions = mutableListOf(fetchAction)
     }
 
-    val scrapeOutput = scrapeService.scrape(corrId, request)
+    val scrapeOutput = scrapeService.scrape(corrId, request, logCollector)
 
     if (scrapeOutput.outputs.isNotEmpty()) {
       val lastOutput = scrapeOutput.outputs.last()
       val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
       if (params.org_feedless_fulltext.readability) {
+        logCollector.log("[$corrId] convert to readability")
         val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""))
         document.contentHtml = readability.contentHtml
         document.contentText = readability.contentText!!

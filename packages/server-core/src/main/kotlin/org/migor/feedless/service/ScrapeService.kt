@@ -45,11 +45,11 @@ import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class LogCollector(private val corrId: String, private val log: Logger? = null) {
+class LogCollector() {
   val logs = mutableListOf<LogStatement>()
   fun log(message: String) {
     logs.add(LogStatement(message=message, time = Date().time))
-    log?.debug("[$corrId] $message")
+//    log?.debug("[$corrId] $message")
   }
 }
 
@@ -73,16 +73,16 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun scrape(corrId: String, source: SourceEntity): ScrapeOutput {
+  suspend fun scrape(corrId: String, source: SourceEntity, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
       try {
-        val scrapeContext = ScrapeContext(LogCollector(corrId, log))
+        val scrapeContext = ScrapeContext(logCollector)
 
         assert(source.actions.isNotEmpty()) { "no actions present" }
 
         val fetch = source.findFirstFetchOrNull()!!
 
-        log.debug("[$corrId] scrape ${source.id} ${fetch.resolveUrl()}")
+        logCollector.log("scrape ${source.id} ${fetch.resolveUrl()}")
 
         meterRegistry.counter(
           AppMetrics.scrape, listOf(
@@ -116,7 +116,6 @@ class ScrapeService {
 
         ScrapeOutput(
           context.outputsAsList(),
-          logs = context.logCollector.logs,
           time = System.nanoTime().minus(startTime).div(1000000).toInt()
         )
       } catch (e: Exception) {

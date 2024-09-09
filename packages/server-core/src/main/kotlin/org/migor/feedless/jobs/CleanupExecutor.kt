@@ -3,6 +3,7 @@ package org.migor.feedless.jobs
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
+import org.migor.feedless.repository.HarvestDAO
 import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
@@ -29,11 +30,16 @@ class CleanupExecutor internal constructor() {
   private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
   @Autowired
+  private lateinit var harvestDAO: HarvestDAO
+
+  @Autowired
   private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
-  @Scheduled(cron = "0 0 0 * * *")
+//  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(fixedDelay = 1000)
   @Transactional
   fun executeCleanup() {
+    harvestDAO.deleteAllTailingByRepositoryId()
     oneTimePasswordDAO.deleteAllByValidUntilBefore(Date())
     sourcePipelineJobDAO.deleteAllByCreatedAtBefore(toDate(LocalDateTime.now().minusDays(3)))
     documentPipelineJobDAO.deleteAllByCreatedAtBefore(toDate(LocalDateTime.now().minusDays(3)))

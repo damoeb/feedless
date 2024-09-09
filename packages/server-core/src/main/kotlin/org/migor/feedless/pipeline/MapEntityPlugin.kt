@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 
 interface MapEntityPlugin : FeedlessPlugin {
 
@@ -10,7 +11,8 @@ interface MapEntityPlugin : FeedlessPlugin {
     corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput
+    params: PluginExecutionParamsInput,
+    logCollector: LogCollector
   ): DocumentEntity
 
 }

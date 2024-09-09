@@ -11,7 +11,7 @@ interface FilterEntityPlugin : FeedlessPlugin {
     item: JsonItem,
     params: PluginExecutionParamsInput,
     index: Int,
-    logger: LogCollector? = null,
+    logCollector: LogCollector
   ): Boolean
 
 }

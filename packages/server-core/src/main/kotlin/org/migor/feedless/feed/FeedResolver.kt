@@ -56,6 +56,7 @@ class FeedQueryResolver {
   @DgsQuery
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.NEVER)
+  @Deprecated("replace with scrape")
   suspend fun previewFeed(
     @InputArgument data: PreviewFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,

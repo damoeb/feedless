@@ -28,7 +28,7 @@ class WebExtractServiceTest {
   @InjectMocks
   lateinit var webExtractService: WebExtractService
 
-  val logCollector = LogCollector("test")
+  val logCollector = LogCollector()
 
   val html = """
   <html><body>

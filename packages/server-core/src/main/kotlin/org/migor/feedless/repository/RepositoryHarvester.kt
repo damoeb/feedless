@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.languagetool.tools.CircuitBreakers.registry
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
@@ -33,6 +32,7 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.plugins.images
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.source.SourceDAO
@@ -51,7 +51,6 @@ import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.*
 
 
@@ -59,6 +58,8 @@ import java.util.*
 @Profile("${AppProfiles.database} & ${AppProfiles.scrape}")
 class RepositoryHarvester internal constructor() {
 
+  @Autowired
+  private lateinit var harvestDAO: HarvestDAO
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
   private val iso8601DateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY)
@@ -106,6 +107,11 @@ class RepositoryHarvester internal constructor() {
     runCatching {
       log.debug("[${corrId}] handleRepository $repositoryId")
 
+      val logCollector = LogCollector()
+      val harvest = HarvestEntity()
+      harvest.repositoryId = repositoryId
+      harvest.startedAt = Date()
+
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "repository"),
@@ -121,13 +127,20 @@ class RepositoryHarvester internal constructor() {
         }
       }
 
-      val appendCount = scrapeSources(corrId, repositoryId)
+      val appendCount = scrapeSources(corrId, repositoryId, logCollector)
 
       if (appendCount > 0) {
-        log.info("[$corrId] appended ${StringUtils.leftPad("$appendCount", 4)} to repository ${repositoryId}")
+        harvest.itemsAdded = appendCount
+        val message = "[$corrId] appended ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
+        log.info(message)
+        logCollector.log(message)
       }
       documentService.applyRetentionStrategy(corrId, repositoryId)
       withContext(Dispatchers.IO) {
+        harvest.finishedAt = Date()
+        harvest.logs = logCollector.logs.map { "${iso8601DateFormat.format(Date(it.time))}  ${it.message}" }.joinToString("\n")
+        harvestDAO.save(harvest)
+
         val repository = repositoryDAO.findById(repositoryId).orElseThrow()
         val scheduledNextAt = repositoryService.calculateScheduledNextAt(
           repository.sourcesSyncCron,
@@ -147,7 +160,8 @@ class RepositoryHarvester internal constructor() {
 
   private suspend fun scrapeSources(
     corrId: String,
-    repositoryId: UUID
+    repositoryId: UUID,
+    logCollector: LogCollector
   ): Int {
     val sources = withContext(Dispatchers.IO) {
       sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
@@ -159,7 +173,7 @@ class RepositoryHarvester internal constructor() {
       .fold(0) { agg, source ->
         try {
           val subCorrId = newCorrId(parentCorrId = corrId)
-          agg + scrapeSource(subCorrId, source)
+          agg + scrapeSource(subCorrId, source, logCollector)
         } catch (e: Throwable) {
           handleScrapeException(corrId, e, source)
           agg
@@ -203,16 +217,17 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  suspend fun scrapeSource(corrId: String, source: SourceEntity): Int {
-    val output = scrapeService.scrape(corrId, source)
-    return importElement(corrId, output, source.repositoryId, source)
+  suspend fun scrapeSource(corrId: String, source: SourceEntity, logCollector: LogCollector): Int {
+    val output = scrapeService.scrape(corrId, source, logCollector)
+    return importElement(corrId, output, source.repositoryId, source, logCollector)
   }
 
   private suspend fun importElement(
     corrId: String,
     output: ScrapeOutput,
     repositoryId: UUID,
-    source: SourceEntity
+    source: SourceEntity,
+    logCollector: LogCollector
   ): Int {
     log.debug("[$corrId] importElement")
     return if(output.outputs.isEmpty()) {
@@ -226,7 +241,8 @@ class RepositoryHarvester internal constructor() {
             repositoryId,
             it,
             fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data },
-            source
+            source,
+            logCollector
           )
         }
       } ?: 0
@@ -286,14 +302,15 @@ class RepositoryHarvester internal constructor() {
     repositoryId: UUID,
     items: List<JsonItem>,
     next: List<String>?,
-    source: SourceEntity
+    source: SourceEntity,
+    logCollector: LogCollector
   ): Int {
     return withContext(Dispatchers.IO) {
       val repository = repositoryDAO.findById(repositoryId).orElseThrow()
       if (repository.plugins.isEmpty()) {
-        log.debug("[$corrId] importItems size=${items.size}")
+        logCollector.log("[$corrId] importItems size=${items.size}")
       } else {
-        log.debug("[$corrId] importItems size=${items.size} with [${repository.plugins.joinToString(", ") { it.id }}]")
+        logCollector.log("[$corrId] importItems size=${items.size} with [${repository.plugins.joinToString(", ") { it.id }}]")
       }
 
       val start = Instant.now()
@@ -305,8 +322,9 @@ class RepositoryHarvester internal constructor() {
             val existing = documentDAO.findFirstByUrlAndRepositoryId(it.url, repositoryId)
             val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
             updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
-            createOrUpdate(corrId, updated, existing, repository)
+            createOrUpdate(corrId, updated, existing, repository, logCollector)
           } catch (e: Exception) {
+            logCollector.log("[$corrId] importItems failed: ${e.message}")
             log.error("[$corrId] importItems failed: ${e.message}", e)
             null
           }
@@ -387,7 +405,8 @@ class RepositoryHarvester internal constructor() {
     corrId: String,
     document: DocumentEntity,
     existing: DocumentEntity?,
-    repository: RepositoryEntity
+    repository: RepositoryEntity,
+    logCollector: LogCollector
   ): Pair<Boolean, DocumentEntity>? {
     return try {
       existing
@@ -396,19 +415,19 @@ class RepositoryHarvester internal constructor() {
           existing.latLon = document.latLon
           existing.tags = document.tags
           existing.startingAt = document.startingAt
-          log.debug("[$corrId] updated item ${document.url}")
+          logCollector.log("[$corrId] updated item ${document.url}")
           Pair(false, existing)
         }
         ?: run {
           meterRegistry.counter(AppMetrics.createDocument).increment()
 
           document.status = if (repository.plugins.isEmpty()) {
+            logCollector.log("[$corrId] released ${document.url}")
             ReleaseStatus.released
           } else {
+            logCollector.log("[$corrId] queued for post-processing ${document.url}")
             ReleaseStatus.unreleased
           }
-
-          log.debug("[$corrId] saved ${repository.id} ${document.status} ${document.url}")
 
           Pair(true, document)
         }

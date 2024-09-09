@@ -20,6 +20,7 @@ import org.migor.feedless.document.any
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.source.SourceEntity
@@ -66,19 +67,18 @@ class FulltextPluginTest {
       )
     )
 
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenReturn(
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenReturn(
       ScrapeOutput(
         outputs = emptyList(),
         time = 0,
-        logs = emptyList()
       )
     )
 
     val response =
-      fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params)
+      fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params, logCollector = LogCollector())
 
     assertThat(response).isNotNull
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
+    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
   }
 
   @Test

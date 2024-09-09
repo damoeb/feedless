@@ -87,6 +87,7 @@ type Repository {
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
+  harvests: [Harvest!]!
 #  pulls: Int
   sunset: SunSetPolicy
   createdAt: Long!
@@ -102,6 +103,15 @@ type Repository {
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]
+}
+
+type Harvest {
+  errornous: Boolean!
+  itemsAdded: Int!
+  itemsIgnored: Int!
+  logs: String!
+  startedAt: Long!
+  finishedAt: Long
 }
 
 type CronRun {

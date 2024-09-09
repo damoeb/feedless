@@ -17,6 +17,7 @@ import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.repository.RepositoryHarvester
+import org.migor.feedless.service.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -59,7 +60,7 @@ class SourceService {
       }
 
       try {
-        repositoryHarvester.scrapeSource(corrId, patchRequestUrl(source, job.url))
+        repositoryHarvester.scrapeSource(corrId, patchRequestUrl(source, job.url), LogCollector())
         job.status = PipelineJobStatus.SUCCEEDED
         job.updateStatus()
         log.info("[$corrId] job ${job.id} done")

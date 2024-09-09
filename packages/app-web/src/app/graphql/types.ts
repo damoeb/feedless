@@ -4,7 +4,7 @@ import {
   GqlCreateUserSecretMutation,
   GqlFeatureGroupsQuery,
   GqlListPluginsQuery,
-  GqlListProductsQuery,
+  GqlListProductsQuery, GqlListRepositoriesQuery,
   GqlPreviewFeedQuery,
   GqlRemoteNativeFeedQuery,
   GqlRepositoryByIdQuery,
@@ -12,13 +12,10 @@ import {
   GqlSelectors,
   GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery,
+  GqlWebDocumentByIdQuery
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
-export type FeedlessPluginExecution = GetElementType<
-  GqlRepositoryByIdQuery['repository']['plugins']
->['params'];
 export type SubscriptionSource = GetElementType<
   GqlRepositoryByIdQuery['repository']['sources']
 >;

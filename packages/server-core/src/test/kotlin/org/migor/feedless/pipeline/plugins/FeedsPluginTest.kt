@@ -51,7 +51,7 @@ class FeedsPluginTest {
   lateinit var genericFeedLocator: GenericFeedLocator
 
   val corrId = "test"
-  val logCollector = LogCollector("test")
+  val logCollector = LogCollector()
 
   @ParameterizedTest
   @CsvSource(

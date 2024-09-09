@@ -11,6 +11,7 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.document.any
 import org.migor.feedless.document.anyList
 import org.migor.feedless.document.eq
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.source.SourceDAO
@@ -90,13 +91,13 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails will flag the source errornous`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenThrow(
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
       IllegalArgumentException("this is off")
     )
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
+    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
 
     verify(source).erroneous = true
     verify(source).lastErrorMessage = "this is off"
@@ -105,23 +106,22 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails recoverable will not flag the source errornous`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java))).thenThrow(
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
       ResumableHarvestException(corrId, "", Duration.ofMinutes(5))
     )
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java))
+    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
     verify(sourceDAO, times(0)).save(source)
   }
 
   @Test
   fun `handleRepository ignores errornous sources`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java)))
+    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java)))
       .thenReturn(
         ScrapeOutput(
           outputs = emptyList(),
-          logs = emptyList(),
           time = 0
         )
       )
@@ -138,7 +138,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), eq(sourceNonErrornous))
+    verify(scrapeService, times(1)).scrape(any(String::class.java), eq(sourceNonErrornous), any(LogCollector::class.java))
     verifyNoMoreInteractions(scrapeService)
   }
 }

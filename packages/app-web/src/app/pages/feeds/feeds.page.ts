@@ -1,16 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
-import { Repository, RepositoryFull, WebDocument } from '../../graphql/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Repository, WebDocument } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { FetchPolicy } from '@apollo/client/core';
 
 @Component({
   selector: 'app-feeds-page',
@@ -18,11 +15,12 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./feeds.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedsPage implements OnInit {
+export class FeedsPage implements OnInit, OnDestroy {
   busy = false;
   currentPage: number = 0;
+  private subscriptions: Subscription[] = [];
   documents: WebDocument[];
-  repositories: RepositoryFull[] = [];
+  repositories: Repository[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;
 
@@ -36,10 +34,23 @@ export class FeedsPage implements OnInit {
   async ngOnInit() {
     console.log('reload?', this.activatedRoute.snapshot.queryParams['reload']);
     this.titleService.setTitle('Feeds');
+
+    this.subscriptions.push(
+      this.activatedRoute.queryParams.subscribe(async queryParams => {
+        if (queryParams.reload) {
+          await this.fetchFeeds(0, 'network-only');
+        }
+      })
+    );
+
     await this.fetchFeeds(0);
   }
 
-  protected async fetchFeeds(page: number) {
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  protected async fetchFeeds(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
     this.currentPage = page;
     const pageSize = 10;
 
@@ -55,7 +66,7 @@ export class FeedsPage implements OnInit {
           },
         },
       },
-      'network-only',
+      fetchPolicy
     );
     this.isLastPage = repositories.length < pageSize;
     this.repositories = repositories;

@@ -129,7 +129,7 @@ class ScrapeServiceTest {
 
   @Test
   fun `fetch action calls httpService`() = runTest {
-    scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction)))
+    scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction)), LogCollector())
 
     verify(httpService, times(1)).httpGetCaching(
       any(String::class.java),
@@ -146,7 +146,7 @@ class ScrapeServiceTest {
     val headerValue = "application/json"
     `when`(headerAction.name).thenReturn(headerName)
     `when`(headerAction.value).thenReturn(headerValue)
-    scrapeService.scrape(corrId, sourceWithActions(listOf(headerAction, fetchAction)))
+    scrapeService.scrape(corrId, sourceWithActions(listOf(headerAction, fetchAction)), LogCollector())
 
     verify(httpService, times(1)).httpGetCaching(
       any(String::class.java),
@@ -162,7 +162,7 @@ class ScrapeServiceTest {
     `when`(purgeAction.event).thenReturn(DomEventType.purge)
     `when`(purgeAction.xpath).thenReturn("//title")
 
-    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)))
+    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val html = { v: String ->
@@ -196,7 +196,7 @@ class ScrapeServiceTest {
     `when`(extractAction.xpath).thenReturn("//title")
     `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
 
-    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)))
+    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val fragment = last.fragment!!.fragments!![0]

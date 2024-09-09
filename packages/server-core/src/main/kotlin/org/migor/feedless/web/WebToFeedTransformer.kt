@@ -327,7 +327,7 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
   ): List<JsonItem> {
-    return getFeedBySelectors(corrId, selectors, document, url, LogCollector(corrId, log)).items
+    return getFeedBySelectors(corrId, selectors, document, url, LogCollector()).items
   }
 
   private suspend fun convertExtractsToJsonFeed(

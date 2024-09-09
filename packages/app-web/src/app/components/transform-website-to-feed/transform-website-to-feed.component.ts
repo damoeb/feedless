@@ -203,6 +203,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   async pickNativeFeed(feed: GqlRemoteNativeFeed) {
     this.resetSelection();
+    console.log('pickNativeFeed', feed)
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);
@@ -212,7 +213,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       this.sourceBuilder
         .patchFetch({
           url: {
-            literal: this.feed.nativeFeed.feedUrl,
+            literal: feed.feedUrl,
           },
         })
         .addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFeed, {

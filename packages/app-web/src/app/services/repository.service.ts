@@ -22,7 +22,7 @@ import {
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
   RepositoryById,
-  UpdateRepository,
+  UpdateRepository
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Repository, RepositoryFull } from '../graphql/types';
@@ -79,7 +79,7 @@ export class RepositoryService {
       .then();
   }
 
-  updateRepository(data: GqlRepositoryUpdateInput): Promise<Repository> {
+  updateRepository(data: GqlRepositoryUpdateInput): Promise<RepositoryFull> {
     return this.apollo
       .mutate<
         GqlUpdateRepositoryMutation,
@@ -96,7 +96,7 @@ export class RepositoryService {
   listRepositories(
     data: GqlRepositoriesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<RepositoryFull[]> {
+  ): Promise<Repository[]> {
     return this.apollo
       .query<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>({
         query: ListRepositories,

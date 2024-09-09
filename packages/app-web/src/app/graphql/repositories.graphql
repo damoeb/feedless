@@ -8,15 +8,6 @@ mutation deleteRepository($data: RepositoryUniqueWhereInput!) {
   deleteRepository(data: $data)
 }
 
-mutation updateRepository($data: RepositoryUpdateInput!) {
-  updateRepository(data: $data) {
-    ...RepositoryFragment
-    sources {
-      ...SourceFragment
-    }
-  }
-}
-
 query listRepositories($data: RepositoriesInput!) {
   repositories(data: $data) {
     ...RepositoryFragment
@@ -31,15 +22,32 @@ query countRepositories($data: CountRepositoriesInput!) {
   countRepositories(data: $data)
 }
 
+fragment RepositoryFull on Repository {
+  ...RepositoryFragment
+  frequency(groupBy: createdAt) {
+    count
+    group
+  }
+  harvests {
+    startedAt
+    finishedAt
+    itemsAdded
+    itemsIgnored
+    logs
+  }
+  sources {
+    ...SourceFragment
+  }
+}
+
 query repositoryById($data: RepositoryWhereInput!) {
   repository(data: $data) {
-    ...RepositoryFragment
-    frequency(groupBy: createdAt) {
-      count
-      group
-    }
-    sources {
-      ...SourceFragment
-    }
+    ...RepositoryFull
+  }
+}
+
+mutation updateRepository($data: RepositoryUpdateInput!) {
+  updateRepository(data: $data) {
+    ...RepositoryFull
   }
 }

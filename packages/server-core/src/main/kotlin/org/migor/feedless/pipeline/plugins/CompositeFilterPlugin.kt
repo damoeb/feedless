@@ -34,9 +34,9 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     item: JsonItem,
     params: PluginExecutionParamsInput,
     index: Int,
-    logger: LogCollector?,
+    logCollector: LogCollector,
   ): Boolean {
-    logger?.log("applying filters to item #$index url=${item.url}")
+    logCollector.log("applying filters to item #$index url=${item.url}")
     val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
         plugin.composite?.let {
@@ -50,9 +50,9 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     } ?: true
 
     if (keep) {
-      logger?.log("keeping item #$index")
+      logCollector.log("keeping item #$index")
     } else {
-      logger?.log("dropping item #$index")
+      logCollector.log("dropping item #$index")
     }
 
     return keep

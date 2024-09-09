@@ -46,7 +46,7 @@ class FeedPluginTest {
   @InjectMocks
   lateinit var feedPlugin: FeedPlugin
 
-  val logCollector = LogCollector("test")
+  val logCollector = LogCollector()
 
   @BeforeEach
   fun setUp() {

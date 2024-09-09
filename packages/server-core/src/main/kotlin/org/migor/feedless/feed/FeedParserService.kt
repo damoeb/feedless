@@ -25,6 +25,7 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeOutput
 import org.migor.feedless.service.ScrapeService
@@ -113,6 +114,7 @@ class FeedParserService {
   }
 
 
+  @Deprecated("obsolete")
   suspend fun parseFeedFromRequest(
     corrId: String,
     sources: List<SourceEntity>,
@@ -126,24 +128,22 @@ class FeedParserService {
       org_feedless_conditional_tag = tags
     )
 
-    val logs = mutableListOf<LogStatement>()
+    val logCollector = LogCollector()
 
     val items = sources
-      .map { source -> scrapeService.scrape(corrId, source) }
-      .flatMap { response ->
-        logs.addAll(response.logs)
-        response.lastOutput().fragment!!.items!!
-      }
+      .map { source -> scrapeService.scrape(corrId, source, logCollector) }
+      .flatMap { response -> response.lastOutput().fragment!!.items!! }
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
           corrId,
           item,
           params,
-          index
+          index,
+          LogCollector()
         )
       }
       .map {
-        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams)
+        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams, logCollector)
           .toDto(propertyService)
       }
 
@@ -156,7 +156,7 @@ class FeedParserService {
     )
 
     return FeedPreview(
-      logs = logs,
+      logs = logCollector.logs,
       feed = feed
     )
   }

@@ -20,6 +20,7 @@ import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.service.LogCollector
 import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.session.useRequestContext
@@ -53,10 +54,11 @@ class ScrapeQueryResolver {
     val corrId = handleCorrId(cid)
     log.debug("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
-    val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest)
+    val logCollector = LogCollector()
+    val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest, logCollector)
     ScrapeResponse(
       failed = false,
-      logs = scrapeOutput.logs,
+      logs = logCollector.logs,
       errorMessage = null,
       outputs = scrapeOutput.outputs.map { it.toDto() }
     )

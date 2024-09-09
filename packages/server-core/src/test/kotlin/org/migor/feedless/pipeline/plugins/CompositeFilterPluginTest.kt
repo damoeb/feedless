@@ -15,6 +15,7 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.service.LogCollector
 import org.mockito.Mockito.mock
 
 class CompositeFilterPluginTest {
@@ -38,7 +39,7 @@ class CompositeFilterPluginTest {
     val filter = PluginExecutionParamsInput(
       org_feedless_filter = listOf()
     )
-    val keep = service.filterEntity(corrId, item, filter, 0)
+    val keep = service.filterEntity(corrId, item, filter, 0, LogCollector())
     assertThat(keep).isTrue()
   }
 
@@ -51,7 +52,7 @@ class CompositeFilterPluginTest {
         )
       )
     )
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isTrue()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isTrue()
   }
 
   @Test
@@ -63,7 +64,7 @@ class CompositeFilterPluginTest {
         )
       )
     )
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isFalse()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isFalse()
   }
 
   @Test
@@ -78,7 +79,7 @@ class CompositeFilterPluginTest {
         )
       )
     )
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isTrue()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isTrue()
   }
 
   @Test
@@ -93,7 +94,7 @@ class CompositeFilterPluginTest {
         )
       )
     )
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isFalse()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isFalse()
   }
 
   @Test
@@ -108,7 +109,7 @@ class CompositeFilterPluginTest {
         )
       )
     )
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isFalse()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isFalse()
   }
 
   @Test
@@ -128,7 +129,7 @@ class CompositeFilterPluginTest {
       )
     )
 
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isTrue()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isTrue()
   }
 
   @Test
@@ -144,7 +145,7 @@ class CompositeFilterPluginTest {
 
     )
 
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isTrue()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isTrue()
   }
 
   @Test
@@ -159,7 +160,7 @@ class CompositeFilterPluginTest {
       )
     )
 
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isFalse()
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isFalse()
   }
 
   @ParameterizedTest
@@ -186,7 +187,7 @@ class CompositeFilterPluginTest {
       )
     )
 
-    assertThat(service.filterEntity(corrId, item, filter, 0)).isEqualTo(expected)
+    assertThat(service.filterEntity(corrId, item, filter, 0, LogCollector())).isEqualTo(expected)
 
     val negativeFilter = PluginExecutionParamsInput(
       org_feedless_filter = listOf(
@@ -196,7 +197,7 @@ class CompositeFilterPluginTest {
       )
     )
 
-    assertThat(service.filterEntity(corrId, item, negativeFilter, 0)).isEqualTo(!expected)
+    assertThat(service.filterEntity(corrId, item, negativeFilter, 0, LogCollector())).isEqualTo(!expected)
   }
 
   private fun compositeFieldFilterParamsInput() = CompositeFieldFilterParamsInput(

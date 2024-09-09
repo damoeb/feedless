@@ -22,7 +22,7 @@ internal class DateClaimerTest {
   @BeforeEach
   fun setUp() {
     dateClaimer = DateClaimer()
-    logCollector = LogCollector("test")
+    logCollector = LogCollector()
   }
 
   @ParameterizedTest
