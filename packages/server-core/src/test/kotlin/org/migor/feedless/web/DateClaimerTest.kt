@@ -9,8 +9,12 @@ import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toDate
+import org.migor.feedless.util.toLocalDateTime
+import org.migor.feedless.util.toMillis
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal class DateClaimerTest {
@@ -53,12 +57,6 @@ internal class DateClaimerTest {
           Locale.of(lang),
           logCollector
       )
-    assertThat(actual!!.time).isEqualTo(
-      toDate(
-        SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss' 'Z").parse(expectedOuput).toInstant().atZone(
-          ZoneId.systemDefault()
-        )
-      ).time
-    )
+    assertThat(actual!!.toMillis()).isEqualTo(LocalDateTime.parse(expectedOuput, DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm:ss' 'z")).toMillis())
   }
 }

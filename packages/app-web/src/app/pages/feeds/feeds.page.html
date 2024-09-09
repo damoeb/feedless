@@ -20,8 +20,14 @@
     </ion-row>
 
     <ion-list style="border-radius: 8px">
-      <ion-item *ngIf="repositories?.length === 0">
-        <p>You have no feeds yet</p>
+      <ion-progress-bar
+        *ngIf="loading"
+        color="medium"
+        type="indeterminate"
+      ></ion-progress-bar>
+
+      <ion-item *ngIf="!loading && repositories?.length === 0">
+        <p><em>Empty</em></p>
       </ion-item>
       <ion-item *ngFor="let feed of repositories" lines="inset">
         <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>

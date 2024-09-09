@@ -16,7 +16,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.time.LocalDateTime
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.cron}")
@@ -38,7 +38,7 @@ class RepositoryHarvesterExecutor internal constructor() {
   fun refreshSubscriptions() {
     if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
       val corrId = newCorrId()
-      val reposDue = repositoryDAO.findSomeDue(Date(), PageRequest.ofSize(50)).map { it.id }
+      val reposDue = repositoryDAO.findSomeDue(LocalDateTime.now(), PageRequest.ofSize(50)).map { it.id }
       log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
       if (reposDue.isNotEmpty()) {
         val semaphore = Semaphore(10)

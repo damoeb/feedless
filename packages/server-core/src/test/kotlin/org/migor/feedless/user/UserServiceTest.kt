@@ -20,6 +20,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -85,7 +86,7 @@ class UserServiceTest {
     userService.updateUser(corrId, UUID.randomUUID(), data)
 
     verify(user).hasAcceptedTerms = true
-    verify(user).acceptedTermsAt = any(java.sql.Timestamp::class.java)
+    verify(user).acceptedTermsAt = any(LocalDateTime::class.java)
     verifyNoMoreInteractions(user)
     verify(userDAO).save(eq(user))
   }
@@ -122,7 +123,7 @@ class UserServiceTest {
     )
     userService.updateUser(corrId, UUID.randomUUID(), data)
 
-    verify(user).purgeScheduledFor = any(java.sql.Timestamp::class.java)
+    verify(user).purgeScheduledFor = any(LocalDateTime::class.java)
     verifyNoMoreInteractions(user)
     verify(userDAO).save(eq(user))
   }

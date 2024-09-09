@@ -15,11 +15,13 @@ import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.service.LogCollector
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
-import java.net.URL
+import java.net.URI
+import java.time.LocalDateTime
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.math.ln
@@ -158,7 +160,7 @@ class WebToFeedTransformer(
   suspend fun parseFeedRules(
     corrId: String,
     document: Document,
-    url: URL,
+    uri: URI,
     parserOptions: GenericFeedParserOptions,
   ): List<GenericFeedRule> {
     val body = document.body()
@@ -170,7 +172,7 @@ class WebToFeedTransformer(
 
     log.debug("Found ${linkGroups.size} link groups")
 
-    val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
+    val paginationXPath = findPaginationXPath(linkGroups, uri.toURL().toString(), document)
 
     return linkGroups
       .asSequence()
@@ -218,10 +220,14 @@ class WebToFeedTransformer(
     return groupedLinks
       .values
       .filter { it.size > 2 }
-      .map {
-        Pair(it, it.map {
-          ed.apply(toAbsoluteUrl(URL(url), it.element.attr("href")), url)
-        }.average())
+      .mapNotNull {
+        try {
+          Pair(it, it.map {
+            ed.apply(toAbsoluteUrl(URI(url), it.element.attr("href")).toURL().toString(), url)
+          }.average())
+        } catch(e: Exception) {
+          null
+        }
       }
       .sortedBy { listAndEditDistance -> listAndEditDistance.second }
       .filter { it.second < 4 }
@@ -285,11 +291,11 @@ class WebToFeedTransformer(
     corrId: String,
     selectors: Selectors,
     document: Document,
-    url: URL,
+    uri: URI,
     logger: LogCollector,
   ): JsonFeed {
     val locale = extractLocale(document, propertyService.locale)
-    val element = withAbsUrls(normalizeTags(document.body()), url)
+    val element = withAbsUrls(normalizeTags(document.body()), uri)
     val response = webExtractService.extract(
       corrId,
       selectors.toScrapeExtracts(),
@@ -318,22 +324,22 @@ class WebToFeedTransformer(
         logger,
       )
     }
-    return convertExtractsToJsonFeed(response, links, url, logger)
+    return convertExtractsToJsonFeed(response, links, uri, logger)
   }
 
   suspend fun getArticlesBySelectors(
     corrId: String,
     selectors: Selectors,
     document: Document,
-    url: URL,
+    uri: URI,
   ): List<JsonItem> {
-    return getFeedBySelectors(corrId, selectors, document, url, LogCollector()).items
+    return getFeedBySelectors(corrId, selectors, document, uri, LogCollector()).items
   }
 
   private suspend fun convertExtractsToJsonFeed(
     feed: ScrapeExtractResponse,
     links: ScrapeExtractResponse?,
-    url: URL,
+    url: URI,
     logger: LogCollector
   ): JsonFeed {
 
@@ -346,7 +352,7 @@ class WebToFeedTransformer(
     jsonFeed.id = ""
     jsonFeed.title = "Feed"
     jsonFeed.websiteUrl = ""
-    jsonFeed.publishedAt = Date()
+    jsonFeed.publishedAt = LocalDateTime.now()
     jsonFeed.items = items
       .distinctBy { it.url }
     jsonFeed.feedUrl = ""
@@ -359,7 +365,7 @@ class WebToFeedTransformer(
     return jsonFeed
   }
 
-  private suspend fun convertExtractToJsonItem(fragment: ScrapeExtractFragment, baseUrl: URL): JsonItem {
+  private suspend fun convertExtractToJsonItem(fragment: ScrapeExtractFragment, baseUrl: URI): JsonItem {
     val element = parseHtml(fragment.html!!.data, baseUrl.toString()).body()
     val text = fragment.text!!.data
 
@@ -373,13 +379,13 @@ class WebToFeedTransformer(
     item.contentText = webToTextTransformer.extractText(element)
     item.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
     item.contentRawMime = "text/html"
-    item.publishedAt = Date()
+    item.publishedAt = LocalDateTime.now()
 
     val tryExtractDate =
-      { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.let { timeStr -> Date(timeStr.toLong()) } }
+      { f: ScrapeExtractResponse -> f.fragments!!.firstOrNull()?.data?.data?.toLong()?.toLocalDateTime() }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.PUBLISHED_AT }?.let {
-      item.publishedAt = tryExtractDate(it) ?: Date()
+      item.publishedAt = tryExtractDate(it) ?: LocalDateTime.now()
     }
 
     fragment.extracts?.find { childFragment -> childFragment.fragmentName == JsonItem.STARTING_AT }?.let {
@@ -800,24 +806,30 @@ class WebToFeedTransformer(
   }
 
   companion object {
-    fun toAbsoluteUrl(url: URL, link: String): String {
-      return try {
-        URL(url, link).toString()
-      } catch (e: Exception) {
-        link
+    fun toAbsoluteUrl(base: URI, maybeRelativeLink: String): URI {
+      return toAbsoluteUrl(base, URI.create(maybeRelativeLink))
+    }
+    private fun toAbsoluteUrl(uri: URI, maybeRelativeLink: URI): URI {
+      return if (maybeRelativeLink.isAbsolute) {
+        maybeRelativeLink
+      } else {
+        uri.resolve(maybeRelativeLink)
       }
     }
 
-    fun withAbsUrls(element: Element, url: URL): Element {
+    fun withAbsUrls(element: Element, url: URI): Element {
       element.select("a[href]")
         .filter { link -> !link.attr("href").startsWith("javascript") }
-        .forEach { link ->
-          link.attr("href", toAbsoluteUrl(url, link.attr("href")))
+        .forEach { link -> try {
+          link.attr("href", toAbsoluteUrl(url, link.attr("href")).toURL().toString())
+        } catch (_: Exception) {
+
+        }
         }
       element.select("img[src]")
         .filter { img -> !img.attr("src").startsWith("data:") }
         .forEach { link ->
-          link.attr("src", toAbsoluteUrl(url, link.attr("src")))
+          link.attr("src", toAbsoluteUrl(url, link.attr("src")).toURL().toString())
         }
       return element
     }

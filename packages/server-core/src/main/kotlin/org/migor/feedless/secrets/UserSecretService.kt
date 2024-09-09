@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 
 @Service
@@ -41,9 +40,7 @@ class UserSecretService {
     k.ownerId = user.id
     k.value = token.tokenValue
     k.type = UserSecretType.SecretKey
-    k.validUntil = Date.from(
-      LocalDateTime.now().plus(tokenProvider.getApiTokenExpiration()).atZone(ZoneId.systemDefault()).toInstant()
-    )
+    k.validUntil = LocalDateTime.now().plus(tokenProvider.getApiTokenExpiration())
 
     return withContext(Dispatchers.IO) {
       userSecretDAO.save(k)
@@ -62,7 +59,7 @@ class UserSecretService {
     }
   }
 
-  suspend fun updateLastUsed(id: UUID, date: Date) {
+  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
     withContext(Dispatchers.IO) {
       userSecretDAO.updateLastUsed(id, date)
     }

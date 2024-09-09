@@ -27,6 +27,7 @@ import org.jdom2.Namespace
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.util.toLegacyDate
 import org.springframework.stereotype.Service
 
 
@@ -71,7 +72,7 @@ class SyndAtomFeedExporter {
     richFeed.language?.let {
       feed.language = it
     }
-    feed.publishedDate = richFeed.publishedAt
+    feed.publishedDate = richFeed.publishedAt.toLegacyDate()
     val link = SyndLinkImpl()
     link.rel = "self"
     link.href = richFeed.feedUrl
@@ -115,7 +116,7 @@ class SyndAtomFeedExporter {
     entry.link = article.url
 
     entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
-    entry.publishedDate = article.publishedAt
+    entry.publishedDate = article.publishedAt.toLegacyDate()
 
     return entry
   }

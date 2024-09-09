@@ -8,7 +8,7 @@ import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
+import java.time.LocalDateTime
 
 @Service
 class WebToArticleTransformer {
@@ -25,7 +25,7 @@ class WebToArticleTransformer {
     HtmlUtil.withAbsoluteUrls(doc)
     val item = JsonItem()
     item.url = url
-    item.publishedAt = Date()
+    item.publishedAt = LocalDateTime.now()
     item.contentRawMime = "text/html"
     item.url = url
     return extractContent(item, url, doc)

@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
@@ -134,6 +133,6 @@ class MailAuthenticationService {
   }
 
   private fun isOtpExpired(otp: OneTimePasswordEntity) =
-    otp.validUntil.before(Timestamp.valueOf(LocalDateTime.now()))
+    otp.validUntil.isBefore(LocalDateTime.now())
 
 }

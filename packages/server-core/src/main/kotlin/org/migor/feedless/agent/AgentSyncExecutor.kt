@@ -7,8 +7,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.*
 
 @Service
 @Profile("${AppProfiles.database} & ${AppProfiles.agent} & ${AppProfiles.cron}")
@@ -27,7 +25,7 @@ class AgentSyncExecutor {
       agentService.agentRefs().mapNotNull {
         agentDAO.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
       }.map {
-        it.lastSyncedAt = Date()
+        it.lastSyncedAt = LocalDateTime.now()
         it
       })
   }
@@ -36,9 +34,7 @@ class AgentSyncExecutor {
   @Transactional
   fun executeCleanup() {
     agentDAO.deleteAllByLastSyncedAtBefore(
-      Date.from(
-        LocalDateTime.now().minusMinutes(2).atZone(ZoneId.systemDefault()).toInstant()
-      )
+        LocalDateTime.now().minusMinutes(2)
     )
   }
 }

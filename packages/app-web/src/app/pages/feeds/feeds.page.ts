@@ -22,7 +22,7 @@ import { FetchPolicy } from '@apollo/client/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedsPage implements OnInit, OnDestroy {
-  busy = false;
+  loading = false;
   currentPage: number = 0;
   private subscriptions: Subscription[] = [];
   documents: WebDocument[];
@@ -60,25 +60,31 @@ export class FeedsPage implements OnInit, OnDestroy {
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ) {
+    this.loading = true;
     this.currentPage = page;
+    this.changeRef.detectChanges();
     const pageSize = 10;
 
-    const repositories = await this.repositoryService.listRepositories(
-      {
-        cursor: {
-          page,
-          pageSize,
-        },
-        where: {
-          product: {
-            in: [GqlProductCategory.RssProxy],
+    try {
+      const repositories = await this.repositoryService.listRepositories(
+        {
+          cursor: {
+            page,
+            pageSize,
+          },
+          where: {
+            product: {
+              in: [GqlProductCategory.RssProxy],
+            },
           },
         },
-      },
-      fetchPolicy,
-    );
-    this.isLastPage = repositories.length < pageSize;
-    this.repositories = repositories;
+        fetchPolicy,
+      );
+      this.isLastPage = repositories.length == 0;
+      this.repositories = repositories;
+    } finally {
+      this.loading = false;
+    }
     this.changeRef.detectChanges();
   }
 

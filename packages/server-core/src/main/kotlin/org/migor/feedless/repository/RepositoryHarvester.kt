@@ -39,6 +39,7 @@ import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.util.toLocalDateTime
 import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,10 +49,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.net.UnknownHostException
-import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 
@@ -63,7 +65,7 @@ class RepositoryHarvester internal constructor() {
   private lateinit var harvestDAO: HarvestDAO
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
-  private val iso8601DateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY)
+  private val iso8601DateFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 
   @Autowired
   private lateinit var scrapeService: ScrapeService
@@ -111,7 +113,7 @@ class RepositoryHarvester internal constructor() {
       val logCollector = LogCollector()
       val harvest = HarvestEntity()
       harvest.repositoryId = repositoryId
-      harvest.startedAt = Date()
+      harvest.startedAt = LocalDateTime.now()
 
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
@@ -123,7 +125,7 @@ class RepositoryHarvester internal constructor() {
       withContext(Dispatchers.IO) {
         repositoryDAO.findById(repositoryId).ifPresent {
           it.triggerScheduledNextAt?.let {
-            harvestOffsetTimer.record(Duration.ofMillis(Date().time - it.time))
+            harvestOffsetTimer.record(Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it)))
           }
         }
       }
@@ -138,10 +140,6 @@ class RepositoryHarvester internal constructor() {
       }
       documentService.applyRetentionStrategy(corrId, repositoryId)
       withContext(Dispatchers.IO) {
-        harvest.finishedAt = Date()
-        harvest.logs = logCollector.logs.map { "${iso8601DateFormat.format(Date(it.time))}  ${it.message}" }.joinToString("\n")
-        harvestDAO.save(harvest)
-
         val repository = repositoryDAO.findById(repositoryId).orElseThrow()
         val scheduledNextAt = repositoryService.calculateScheduledNextAt(
           repository.sourcesSyncCron,
@@ -149,10 +147,15 @@ class RepositoryHarvester internal constructor() {
           repository.product,
           LocalDateTime.now()
         )
-        log.debug("[$corrId] Next harvest scheduled for ${iso8601DateFormat.format(scheduledNextAt)}")
+        log.debug("[$corrId] Next harvest scheduled for ${scheduledNextAt.format(iso8601DateFormat)}")
         repository.triggerScheduledNextAt = scheduledNextAt
-        repository.lastUpdatedAt = Date()
+        repository.lastUpdatedAt = LocalDateTime.now()
         repositoryDAO.save(repository)
+
+        harvest.finishedAt = LocalDateTime.now()
+        harvest.logs = StringUtils.abbreviate(logCollector.logs.map { "${it.time.toLocalDateTime().format(iso8601DateFormat)}  ${it.message}" }
+          .joinToString("\n"), "...", 5000)
+        harvestDAO.save(harvest)
       }
     }.onFailure {
       log.error("[$corrId] handleRepository failed: ${it.message}", it)

@@ -17,6 +17,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -86,8 +87,8 @@ class ProductService {
     val product = withContext(Dispatchers.IO) {
       productDAO.findById(productId).orElseThrow()
     }
-    val prices = product.prices.filter { it.validTo?.let { it.time > System.currentTimeMillis() } ?: true }
-      .filter { it.validFrom?.let { it.time < System.currentTimeMillis() } ?: true }
+    val prices = product.prices.filter { it.validTo?.isAfter(LocalDateTime.now()) ?: true }
+      .filter { it.validFrom?.isBefore(LocalDateTime.now()) ?: true }
 
     return if (prices.size == 1) {
       prices[0].price
@@ -108,20 +109,21 @@ class ProductService {
     if (isFree() || isBought()) {
 
       // terminate existing plan
+      val now = LocalDateTime.now()
       val existingPlan = withContext(Dispatchers.IO) {
-        planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!))
+        planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!), now)
       }
 
       existingPlan?.let {
         log.info("[$corrId] terminate existing plan")
-        it.terminatedAt = Date()
+        it.terminatedAt = now
         planDAO.save(it)
       }
 
       val plan = PlanEntity()
       plan.productId = product.id
       plan.userId = user.id
-      plan.startedAt = Date()
+      plan.startedAt = now
 
       withContext(Dispatchers.IO) {
         planDAO.save(plan)

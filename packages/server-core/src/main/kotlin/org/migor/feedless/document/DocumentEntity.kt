@@ -40,9 +40,11 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.util.toMillis
 import org.springframework.context.annotation.Lazy
 import java.nio.charset.StandardCharsets
 import java.sql.Types
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -105,13 +107,13 @@ open class DocumentEntity : EntityWithUUID() {
   open var imageUrl: String? = null
 
   @Column(nullable = false, name = "updated_at")
-  open var updatedAt: Date = Date()
+  open var updatedAt: LocalDateTime = LocalDateTime.now()
 
   @Column(nullable = false, name = StandardJpaFields.publishedAt)
-  open var publishedAt: Date = Date()
+  open var publishedAt: LocalDateTime = LocalDateTime.now()
 
   @Column(name = "starting_at")
-  open var startingAt: Date? = null
+  open var startingAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "is_dead")
   open var isDead: Boolean = false
@@ -126,7 +128,7 @@ open class DocumentEntity : EntityWithUUID() {
   open var score: Int = 0
 
   @Column(name = "scored_at")
-  open var scoredAt: Date? = null
+  open var scoredAt: LocalDateTime? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "documentId")
   open var plugins: MutableList<DocumentPipelineJobEntity> = mutableListOf()
@@ -238,7 +240,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     contentRawMime = contentRawMimeParam,
     contentTitle = contentTitle,
     contentText = contentText,
-    createdAt = createdAt.time,
+    createdAt = createdAt.toMillis(),
     localized = latLon?.let {
       GeoPoint(
         lat = it.x,
@@ -259,8 +261,8 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
         size = it.size,
       )
     }),
-    publishedAt = publishedAt.time,
-    startingAt = startingAt?.time,
+    publishedAt = publishedAt.toMillis(),
+    startingAt = startingAt?.toMillis(),
   )
 }
 

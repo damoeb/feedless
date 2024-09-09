@@ -89,7 +89,7 @@ class RepositoryHarvesterTest {
           LocalDateTime::class.java
         )
       )
-    ).thenReturn(Date())
+    ).thenReturn(LocalDateTime.now())
   }
 
   @Test

@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.net.URL
+import java.net.URI
 import java.nio.charset.StandardCharsets
 
 @Service
@@ -57,7 +57,7 @@ class FeedPlugin : FragmentTransformerPlugin {
     val feed = (executorParams.org_feedless_feed?.generic?.let {
       webToFeedTransformer.getFeedBySelectors(
         corrId, it.toSelectors(),
-        document, URL(data.url),
+        document, URI(data.url),
         logger
       )
     } ?: feedParserService.parseFeed(corrId, data))

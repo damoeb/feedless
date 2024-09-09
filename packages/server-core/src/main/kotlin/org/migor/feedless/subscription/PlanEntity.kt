@@ -14,6 +14,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.plan.ProductEntity
 import org.migor.feedless.user.UserEntity
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -51,10 +52,10 @@ open class PlanEntity : EntityWithUUID() {
   open var product: ProductEntity? = null
 
   @Column(name = "started_at")
-  open var startedAt: Date? = null
+  open var startedAt: LocalDateTime? = null
 
   @Column(name = "terminated_at")
-  open var terminatedAt: Date? = null
+  open var terminatedAt: LocalDateTime? = null
 
 
 }

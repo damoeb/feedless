@@ -20,11 +20,12 @@ import org.migor.feedless.generated.types.*
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.util.toMillis
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.GenericFeedSelectors
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.time.LocalDateTime
 
 private val log = LoggerFactory.getLogger("Mapper")
 
@@ -122,7 +123,7 @@ fun RemoteNativeFeedRef.toDto(): RemoteNativeFeed = RemoteNativeFeed(
   description = description,
   expired = false,
   items = emptyList(),
-  publishedAt = Date().time,
+  publishedAt = LocalDateTime.now().toMillis()
 )
 
 fun GenericFeedRule.toDto(): TransientGenericFeed {

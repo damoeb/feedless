@@ -10,6 +10,7 @@ import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.service.LogCollector
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -60,7 +61,7 @@ class WebExtractService {
             dateClaimer.claimDatesFromString(corrId, fragment.text(), locale, logger)?.let { date ->
               MimeData(
                 mimeType = MIME_DATE,
-                data = date.time.toString()
+                data = date.toMillis().toString()
               )
             }
           } else {

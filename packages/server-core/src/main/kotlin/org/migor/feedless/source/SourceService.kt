@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -66,7 +67,7 @@ class SourceService {
         log.info("[$corrId] job ${job.id} done")
       } catch (e: ResumableHarvestException) {
         log.info("[$corrId] delaying: ${e.message}")
-        job.coolDownUntil = Date(System.currentTimeMillis() + e.nextRetryAfter.toMillis())
+        job.coolDownUntil = LocalDateTime.now().plus(e.nextRetryAfter)
         job.attempt += 1
       }
 

@@ -2,7 +2,7 @@ package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.*
+import java.time.LocalDateTime
 
 open class JsonItem : Serializable {
 
@@ -58,13 +58,13 @@ open class JsonItem : Serializable {
   var attachments: List<JsonAttachment> = emptyList()
 
   @SerializedName(PUBLISHED_AT)
-  lateinit var publishedAt: Date
+  lateinit var publishedAt: LocalDateTime
 
   @SerializedName("date_modified")
-  var modifiedAt: Date? = null
+  var modifiedAt: LocalDateTime? = null
 
   @SerializedName(STARTING_AT)
-  var startingAt: Date? = null
+  var startingAt: LocalDateTime? = null
 
   @SerializedName(LAT_LNG)
   var latLng: JsonPoint? = null

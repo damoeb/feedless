@@ -25,8 +25,10 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import java.io.StringReader
+import java.time.LocalDateTime
 import java.util.*
 
 class XmlFeedParser : FeedBodyParser {
@@ -115,7 +117,7 @@ class XmlFeedParser : FeedBodyParser {
     }
 
 //    jsonFeed.tags = feed.categories?.map { it.name }
-    jsonFeed.publishedAt = feed.publishedDate ?: Date()
+    jsonFeed.publishedAt = feed.publishedDate?.toLocalDateTime() ?: LocalDateTime.now()
     jsonFeed.items = feed.entries.map { this.fromSyndEntry(it) }
     jsonFeed.feedUrl = feedUrl
     val tags = mutableListOf<String>()
@@ -154,7 +156,7 @@ class XmlFeedParser : FeedBodyParser {
       feedlessModule.getLatLng()?.let {
         article.latLng = JsonUtil.gson.fromJson(it, JsonPoint::class.java)
       }
-      article.startingAt = feedlessModule.getStartingAt()
+      article.startingAt = feedlessModule.getStartingAt()?.toLocalDateTime()
       article.contentRawBase64 = feedlessModule.getData()
       article.contentRawMime = feedlessModule.getDataType()
     }
@@ -257,7 +259,7 @@ class XmlFeedParser : FeedBodyParser {
       .firstOrNull { it.type.lowercase().startsWith("image") }?.url
     article.imageUrl = imageUrl
 
-    article.publishedAt = entry.publishedDate ?: Date()
+    article.publishedAt = entry.publishedDate?.toLocalDateTime() ?: LocalDateTime.now()
 
 //    entryInformation?.let {
 //      it.duration

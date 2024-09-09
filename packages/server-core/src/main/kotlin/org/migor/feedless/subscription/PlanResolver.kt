@@ -14,10 +14,12 @@ import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.plan.toDTO
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
@@ -35,7 +37,7 @@ class PlanResolver {
   suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
     val user: User = dfe.getSource()!!
     withContext(Dispatchers.IO) {
-      planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))?.toDto()
+      planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()), LocalDateTime.now())?.toDto()
     }
   }
 }
@@ -43,8 +45,8 @@ class PlanResolver {
 private fun PlanEntity.toDto(): Plan {
   return Plan(
     productId = productId.toString(),
-    startedAt = startedAt?.time,
-    terminatedAt = terminatedAt?.time,
+    startedAt = startedAt?.toMillis(),
+    terminatedAt = terminatedAt?.toMillis(),
     product = product!!.toDTO()
   )
 }

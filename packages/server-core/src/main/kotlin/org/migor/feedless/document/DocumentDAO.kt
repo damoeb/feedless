@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -31,9 +32,9 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   )
   fun deleteAllByRepositoryIdAndStatusWithSkip(repositoryId: UUID, status: ReleaseStatus, skip: Int)
 
-  fun deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(repositoryId: UUID, date: Date, status: ReleaseStatus)
+  fun deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(repositoryId: UUID, date: LocalDateTime, status: ReleaseStatus)
 
-  fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: Date, released: ReleaseStatus)
+  fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: LocalDateTime, released: ReleaseStatus)
 
   fun findFirstByUrlAndRepositoryId(url: String, repositoryId: UUID): DocumentEntity?
 

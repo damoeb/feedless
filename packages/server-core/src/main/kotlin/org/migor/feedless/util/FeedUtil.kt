@@ -5,14 +5,12 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.FeedType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object FeedUtil {
 
-  private val uriDateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
-
-  fun toURI(prefix: String, url: String, publishedAt: Date? = null): String {
+  fun toURI(prefix: String, url: String, publishedAt: LocalDateTime? = null): String {
     // example tag:diveintomark.org,2004-05-27:1192 from https://web.archive.org/web/20080701231200/http://diveintomark.org/archives/2004/05/28/howto-atom-id
     val basic = "tag:feedless,${prefix},${
       URLEncoder.encode(
@@ -20,7 +18,7 @@ object FeedUtil {
         StandardCharsets.UTF_8
       )
     }"
-    return Optional.ofNullable(publishedAt).map { basic + ":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
+    return publishedAt?.let { basic + ":${publishedAt.format(DateTimeFormatter.ISO_DATE)}" } ?: basic
   }
 
   fun detectFeedTypeForResponse(corrId: String, response: HttpResponse): Pair<FeedType, String> {

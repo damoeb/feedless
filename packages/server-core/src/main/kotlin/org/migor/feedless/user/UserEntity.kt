@@ -23,7 +23,8 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.subscription.PlanEntity
-import java.sql.Timestamp
+import org.migor.feedless.util.toMillis
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -60,7 +61,7 @@ open class UserEntity : EntityWithUUID() {
   open var hasValidatedEmail: Boolean = false
 
   @Column(name = "validated_email_at")
-  open var validatedEmailAt: Timestamp? = null
+  open var validatedEmailAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "total_usage_mb")
   open var usageTotalMb: Double = 0.0
@@ -72,7 +73,7 @@ open class UserEntity : EntityWithUUID() {
   open var anonymous: Boolean = false
 
   @Column(name = "last_login")
-  open var lastLogin: Timestamp = Timestamp(System.currentTimeMillis())
+  open var lastLogin: LocalDateTime = LocalDateTime.now()
 
   @Column(nullable = false, name = "karma")
   open var karma: Int = 0
@@ -90,19 +91,19 @@ open class UserEntity : EntityWithUUID() {
   open var banned: Boolean = false
 
   @Column(name = "is_banned_until")
-  open var bannedUntil: Timestamp? = null
+  open var bannedUntil: LocalDateTime? = null
 
   @Column(nullable = false, name = "hasapprovedterms")
   open var hasAcceptedTerms: Boolean = false
 
   @Column(name = "approved_terms_at")
-  open var acceptedTermsAt: Date? = null
+  open var acceptedTermsAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "is_locked")
   open var locked: Boolean = false
 
   @Column(name = "purge_scheduled_for")
-  open var purgeScheduledFor: Timestamp? = null
+  open var purgeScheduledFor: LocalDateTime? = null
 
   @Column(name = "date_format")
   open var dateFormat: String? = null // todo make nullable=false
@@ -124,7 +125,7 @@ open class UserEntity : EntityWithUUID() {
   open var notificationRepositoryId: UUID? = null
 
   @Column(name = "notifications_last_viewed_at")
-  open var notificationsLastViewedAt: Date? = null
+  open var notificationsLastViewedAt: LocalDateTime? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
   @OnDelete(action = OnDeleteAction.NO_ACTION)
@@ -151,8 +152,8 @@ open class UserEntity : EntityWithUUID() {
 fun UserEntity.toDTO(): User =
   User(
     id = id.toString(),
-    createdAt = createdAt.time,
-    purgeScheduledFor = purgeScheduledFor?.time,
+    createdAt = createdAt.toMillis(),
+    purgeScheduledFor = purgeScheduledFor?.toMillis(),
     hasAcceptedTerms = hasAcceptedTerms,
     hasCompletedSignup = hasFinalizedProfile(),
     email = StringUtils.trimToEmpty(email),

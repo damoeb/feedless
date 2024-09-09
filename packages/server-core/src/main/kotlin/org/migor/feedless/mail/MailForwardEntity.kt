@@ -7,13 +7,12 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import jakarta.persistence.Temporal
-import jakarta.persistence.TemporalType
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.repository.RepositoryEntity
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -26,9 +25,8 @@ open class MailForwardEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var authorized: Boolean = false
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column
-  open var authorizedAt: Date? = null
+  open var authorizedAt: LocalDateTime? = null
 
   @Column(name = StandardJpaFields.repositoryId, nullable = false)
   open lateinit var repositoryId: UUID

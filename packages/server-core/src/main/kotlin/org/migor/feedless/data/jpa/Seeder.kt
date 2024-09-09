@@ -43,8 +43,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.*
 
 @Service
 @Order(1)
@@ -123,8 +121,7 @@ class Seeder {
       userSecret.ownerId = root.id
       userSecret.value = propertyService.rootSecretKey
       userSecret.type = UserSecretType.SecretKey
-      userSecret.validUntil =
-        Date.from(LocalDateTime.now().plus(Duration.ofDays(356)).atZone(ZoneId.systemDefault()).toInstant())
+      userSecret.validUntil = LocalDateTime.now().plus(Duration.ofDays(356))
       userSecretDAO.save(userSecret)
     }
 
@@ -152,7 +149,7 @@ class Seeder {
       notification.status = ReleaseStatus.released
       notification.contentText =
         "Hi, I released a new version of feedless, that gives you a lot of new features."
-      notification.updatedAt = Date()
+      notification.updatedAt = LocalDateTime.now()
 
       documentDAO.save(notification)
     }
@@ -179,8 +176,8 @@ class Seeder {
         "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at https://feedless.org, where you can import your RSS-proxy feeds."
       notification.contentHtml =
         "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at <a href-\"https://feedless.org\">feedless.org</a>, where you can import your RSS-proxy feeds."
-      notification.publishedAt = Date() // force to top on most readers
-      notification.updatedAt = Date()
+      notification.publishedAt = LocalDateTime.now() // force to top on most readers
+      notification.updatedAt = LocalDateTime.now()
 
       documentDAO.save(notification)
     }

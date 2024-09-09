@@ -14,6 +14,7 @@ import org.mockito.Mockito.times
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -44,18 +45,18 @@ class CleanupJobTest {
   @Test
   fun `executeCleanup removes oneTimePassword`() {
     cleanupExecutor.executeCleanup()
-    Mockito.verify(oneTimePasswordDAO, times(1)).deleteAllByValidUntilBefore(any(Date::class.java))
+    Mockito.verify(oneTimePasswordDAO, times(1)).deleteAllByValidUntilBefore(any(LocalDateTime::class.java))
   }
 
   @Test
   fun `executeCleanup removes sourcePipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    Mockito.verify(sourcePipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(Date::class.java))
+    Mockito.verify(sourcePipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
   }
 
   @Test
   fun `executeCleanup removes documentPipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    Mockito.verify(documentPipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(Date::class.java))
+    Mockito.verify(documentPipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
   }
 }

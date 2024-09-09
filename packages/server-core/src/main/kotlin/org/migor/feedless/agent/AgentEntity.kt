@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -32,7 +33,7 @@ open class AgentEntity : EntityWithUUID() {
   open lateinit var name: String
 
   @Column(nullable = false)
-  open lateinit var lastSyncedAt: Date
+  open lateinit var lastSyncedAt: LocalDateTime
 
   @Column(name = "secret_id", nullable = false)
   open var secretKeyId: UUID? = null

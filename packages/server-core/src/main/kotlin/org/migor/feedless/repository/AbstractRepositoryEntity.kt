@@ -16,13 +16,10 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.persistence.Temporal
-import jakarta.persistence.TemporalType
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.type.SqlTypes
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
@@ -62,7 +59,9 @@ import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.toMillis
 import org.springframework.context.annotation.Lazy
+import java.time.LocalDateTime
 import java.util.*
 
 data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
@@ -109,22 +108,18 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "retention_max_age_days_field", nullable = false, length = 50)
   open var retentionMaxAgeDaysReferenceField: MaxAgeDaysDateField = MaxAgeDaysDateField.publishedAt
 
-  @Temporal(TemporalType.TIMESTAMP)
-  @UpdateTimestamp
   @Column(name = "last_updated_at")
-  open var lastUpdatedAt: Date = Date()
+  open var lastUpdatedAt: LocalDateTime = LocalDateTime.now()
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "disabled_from")
-  open var disabledFrom: Date? = null
+  open var disabledFrom: LocalDateTime? = null
 
   @Size(max = 10)
   @Column(name = "share_key", nullable = false, length = 10)
   open var shareKey: String = ""
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "sunset_after")
-  open var sunsetAfterTimestamp: Date? = null
+  open var sunsetAfterTimestamp: LocalDateTime? = null
 
   @Column(name = "sunset_after_total_document_count")
   open var sunsetAfterTotalDocumentCount: Int? = null
@@ -139,9 +134,8 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(nullable = false, name = "for_product", length = 20)
   open lateinit var product: ProductCategory
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "trigger_scheduled_next_at")
-  open var triggerScheduledNextAt: Date? = null
+  open var triggerScheduledNextAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "schema_version")
   open var schemaVersion: Int = 0
@@ -192,7 +186,7 @@ fun RepositoryEntity.toDto(): Repository {
     id = id.toString(),
     ownerId = ownerId.toString(),
     product = product.toDto(),
-    disabledFrom = disabledFrom?.time,
+    disabledFrom = disabledFrom?.toMillis(),
     plugins = plugins.map { it.toDto() },
     archived = archived,
     retention =
@@ -202,9 +196,9 @@ fun RepositoryEntity.toDto(): Repository {
     ),
     shareKey = shareKey,
     visibility = visibility.toDto(),
-    createdAt = createdAt.time,
-    lastUpdatedAt = lastUpdatedAt.time,
-    nextUpdateAt = triggerScheduledNextAt?.time,
+    createdAt = createdAt.toMillis(),
+    lastUpdatedAt = lastUpdatedAt.toMillis(),
+    nextUpdateAt = triggerScheduledNextAt?.toMillis(),
     description = description,
     title = title,
     segmented = segmentation?.toDto(),

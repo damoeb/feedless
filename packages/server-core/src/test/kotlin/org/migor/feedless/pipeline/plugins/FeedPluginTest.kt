@@ -26,7 +26,9 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import java.net.URI
 import java.net.URL
+import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -61,7 +63,7 @@ class FeedPluginTest {
     jsonFeed.id = ""
     jsonFeed.title = ""
     jsonFeed.feedUrl = "https://example.org"
-    jsonFeed.publishedAt = Date()
+    jsonFeed.publishedAt = LocalDateTime.now()
     jsonFeed.items = emptyList()
   }
 
@@ -87,7 +89,7 @@ class FeedPluginTest {
           any(String::class.java),
           any(Selectors::class.java),
           any(Document::class.java),
-          any(URL::class.java),
+          any(URI::class.java),
           any(LogCollector::class.java),
       )
     ).thenReturn(jsonFeed)
@@ -103,7 +105,7 @@ class FeedPluginTest {
           any(String::class.java),
           any(Selectors::class.java),
           any(Document::class.java),
-          any(URL::class.java),
+          any(URI::class.java),
           any(LogCollector::class.java)
       )
   }
@@ -125,7 +127,7 @@ class FeedPluginTest {
           any(String::class.java),
           any(Selectors::class.java),
           any(Document::class.java),
-          any(URL::class.java),
+          any(URI::class.java),
           any(LogCollector::class.java)
       )
   }

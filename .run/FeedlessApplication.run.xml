@@ -6,7 +6,7 @@
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="org.migor.feedless.feedless.packages.server-core.main" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.migor.feedless.RichRssApplication" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.migor.feedless.FeedlessApplication" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/packages/server-core" />
     <extension name="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.IdeaRunConfigurationExtension">
       <option name="DIRENV_ENABLED" value="false" />

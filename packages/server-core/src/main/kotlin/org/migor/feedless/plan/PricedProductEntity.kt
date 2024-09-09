@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.PricedProduct
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -21,10 +22,10 @@ import java.util.*
 open class PricedProductEntity : EntityWithUUID() {
 
   @Column(name = "valid_from")
-  open var validFrom: Date? = null
+  open var validFrom: LocalDateTime? = null
 
   @Column(name = "valid_to")
-  open var validTo: Date? = null
+  open var validTo: LocalDateTime? = null
 
   @Column(name = "sold_unit", nullable = false)
   open lateinit var unit: String

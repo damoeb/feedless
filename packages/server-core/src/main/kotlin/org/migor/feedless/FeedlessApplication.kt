@@ -25,8 +25,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
     DgsWebSocketAutoConfig::class,
   ]
 )
-class RichRssApplication
+class FeedlessApplication
 
 fun main(args: Array<String>) {
-  runApplication<RichRssApplication>(*args)
+  runApplication<FeedlessApplication>(*args)
 }

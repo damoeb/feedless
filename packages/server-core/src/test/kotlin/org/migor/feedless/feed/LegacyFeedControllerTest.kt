@@ -37,6 +37,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import java.time.LocalDateTime
 import java.util.*
 
 const val feedId = "feed-id"
@@ -79,7 +80,7 @@ class LegacyFeedControllerTest {
     mockFeed.id = "foo"
     mockFeed.title = "foo"
     mockFeed.feedUrl = "https://foo.bar/other-feed"
-    mockFeed.publishedAt = Date()
+    mockFeed.publishedAt = LocalDateTime.now()
     mockFeed.items = emptyList()
   }
 

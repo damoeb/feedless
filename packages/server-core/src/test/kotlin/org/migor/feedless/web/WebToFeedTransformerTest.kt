@@ -3,6 +3,7 @@ package org.migor.feedless.web
 import com.google.gson.GsonBuilder
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -12,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.web.WebToFeedTransformer.Companion.toAbsoluteUrl
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
+import java.net.URI
 import java.net.URL
 import java.nio.file.Files
 import java.util.*
@@ -106,14 +109,27 @@ internal class WebToFeedTransformerTest {
     testSupport(url, id)
   }
 
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "https://somwhere.com/, /article, https://somwhere.com/article",
+      "https://somwhere.com/foo/bar, /article, https://somwhere.com/article",
+      "https://somwhere.com/foo/bar, https://other.site/article, https://other.site/article",
+      "https://somwhere.com/foo/bar/, ../article, https://somwhere.com/foo/article",
+    ]
+  )
+  fun testAbsoluteUrl(base: String, link: String, expected: String) = runTest {
+    assertThat(toAbsoluteUrl(URI(base), link).toURL().toString()).isEqualTo(expected)
+  }
+
   private suspend fun testSupport(url: String, source: String) {
     val markup = readFile("${source}.input.html")
     val expected = readJson("${source}.output.json")
-    val articles = getArticles(markup, URL(url))
+    val articles = getArticles(markup, URI(url))
     assertEquals(expected, articles.map { article -> article.url })
   }
 
-  private suspend fun getArticles(html: String, url: URL): List<JsonItem> {
+  private suspend fun getArticles(html: String, url: URI): List<JsonItem> {
     val document = Jsoup.parse(html)
 
     val parserOptions = GenericFeedParserOptions()

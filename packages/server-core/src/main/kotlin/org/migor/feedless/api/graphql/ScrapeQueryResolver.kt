@@ -25,6 +25,7 @@ import org.migor.feedless.service.ScrapeActionOutput
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil.handleCorrId
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -94,12 +95,12 @@ private fun JsonItem.toDto() = WebDocument(
   contentTitle = title,
   url = url,
   tags = tags,
-  createdAt = publishedAt.time,
+  createdAt = publishedAt.toMillis(),
   enclosures = attachments.map { it.toDto() },
   id = id,
   imageUrl = imageUrl,
-  publishedAt = publishedAt.time,
-  startingAt = startingAt?.time,
+  publishedAt = publishedAt.toMillis(),
+  startingAt = startingAt?.toMillis(),
   localized = latLng?.toGeoPoint(),
 )
 

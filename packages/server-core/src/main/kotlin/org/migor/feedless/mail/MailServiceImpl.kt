@@ -17,6 +17,7 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -103,7 +104,7 @@ class MailServiceImpl : MailService {
     withContext(Dispatchers.IO) {
       mailForwardDAO.findById(mailForwardId).orElseThrow()?.let {
         it.authorized = authorize
-        it.authorizedAt = Date()
+        it.authorizedAt = LocalDateTime.now()
         mailForwardDAO.save(it)
       }
     }

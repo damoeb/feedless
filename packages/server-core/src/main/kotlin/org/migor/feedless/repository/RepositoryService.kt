@@ -42,7 +42,7 @@ import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JtsUtil
-import org.migor.feedless.util.toDate
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -57,7 +57,6 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 
 fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
@@ -282,7 +281,7 @@ class RepositoryService {
     jsonFeed.title = title
     jsonFeed.description = repository.description
     jsonFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
-    jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
+    jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: LocalDateTime.now()
     jsonFeed.items = items.filterIndexed { index, _ -> index < pageSize - 1 }
     jsonFeed.imageUrl = null
     jsonFeed.page = page
@@ -347,10 +346,10 @@ class RepositoryService {
     ownerId: UUID,
     product: ProductCategory,
     after: LocalDateTime
-  ): Date {
+  ): LocalDateTime {
     return planConstraintsService.coerceMinScheduledNextAt(
-      Date(),
-      toDate(nextCronDate(cron, after)),
+      LocalDateTime.now(),
+      nextCronDate(cron, after),
       ownerId,
       product
     )
@@ -372,7 +371,7 @@ class RepositoryService {
         repository.triggerScheduledNextAt = calculateScheduledNextAt(
           it, repository.ownerId,
           product,
-          LocalDateTime.ofInstant(repository.lastUpdatedAt.toInstant(), ZoneId.systemDefault())
+          repository.lastUpdatedAt
         )
       }
     }
@@ -385,7 +384,7 @@ class RepositoryService {
       }
     }
     data.nextUpdateAt?.let {
-      val next = it.set?.let { Date(it) } ?: Date(0)
+      val next = it.set?.toLocalDateTime() ?: LocalDateTime.now()
       repository.triggerScheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(
         repository.lastUpdatedAt,
         next,

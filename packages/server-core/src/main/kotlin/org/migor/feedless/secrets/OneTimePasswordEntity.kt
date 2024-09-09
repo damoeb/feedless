@@ -7,14 +7,12 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.persistence.Temporal
-import jakarta.persistence.TemporalType
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.user.UserEntity
-import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -25,8 +23,7 @@ open class OneTimePasswordEntity : EntityWithUUID() {
   open lateinit var password: String
 
   @Column(nullable = false, name = "valid_until")
-  @Temporal(TemporalType.TIMESTAMP)
-  open lateinit var validUntil: Timestamp
+  open lateinit var validUntil: LocalDateTime
 
   @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

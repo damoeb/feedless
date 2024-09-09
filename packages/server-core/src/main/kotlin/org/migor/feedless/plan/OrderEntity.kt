@@ -18,6 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.license.LicenseEntity
 import org.migor.feedless.user.UserEntity
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -27,7 +28,7 @@ import java.util.*
 open class OrderEntity : EntityWithUUID() {
 
   @Column(name = "due_to")
-  open var dueTo: Date? = null
+  open var dueTo: LocalDateTime? = null
 
   @Column(name = "price", nullable = false)
   @Min(0)
@@ -66,7 +67,7 @@ open class OrderEntity : EntityWithUUID() {
   open var paymentMethod: PaymentMethod? = null
 
   @Column(name = "paid_at")
-  open var paidAt: Date? = null
+  open var paidAt: LocalDateTime? = null
 
   @Column(name = StandardJpaFields.product_id, nullable = false)
   open var productId: UUID? = null

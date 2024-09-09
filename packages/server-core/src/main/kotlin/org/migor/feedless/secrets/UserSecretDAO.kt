@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -36,7 +37,7 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
     update UserSecretEntity K SET K.lastUsedAt = :date where K.id = :id
   """
   )
-  fun updateLastUsed(@Param("id") id: UUID, @Param("date") date: Date)
+  fun updateLastUsed(@Param("id") id: UUID, @Param("date") date: LocalDateTime)
 
   fun findAllByOwnerId(id: UUID): List<UserSecretEntity>
 

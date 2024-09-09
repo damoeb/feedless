@@ -18,6 +18,7 @@ import org.migor.feedless.generated.types.LocalizedLicense
 import org.migor.feedless.generated.types.UpdateLicenseInput
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -68,7 +69,7 @@ class LinceseResolver {
         License(
           name = payload.name,
           email = payload.email,
-          createdAt = payload.createdAt.time,
+          createdAt = payload.createdAt.toMillis(),
           scope = payload.scope.toDto(),
           version = payload.version,
         )

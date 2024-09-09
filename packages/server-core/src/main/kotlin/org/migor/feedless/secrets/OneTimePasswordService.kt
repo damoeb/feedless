@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 
@@ -43,7 +42,7 @@ class OneTimePasswordService {
   suspend fun createOTP(): OneTimePasswordEntity {
     val otp = OneTimePasswordEntity()
     otp.password = CryptUtil.newCorrId(otpConfirmCodeLength).uppercase()
-    otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
+    otp.validUntil = LocalDateTime.now().plusMinutes(otpValidForMinutes)
     return otp
   }
 

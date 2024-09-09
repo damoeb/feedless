@@ -9,6 +9,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -21,7 +22,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -134,9 +134,9 @@ class TokenProvider {
       .issuer(propertyService.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "rich" }
-      .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond() }
+      .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().toMillis() }
       .claims { c ->
-        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toEpochSecond()
+        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn).toMillis()
       }
       .build()
     val params = JwtEncoderParameters.from(jwsHeader, claimsSet)

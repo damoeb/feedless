@@ -16,6 +16,7 @@ import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
@@ -115,7 +117,7 @@ class OrderService {
         user.firstName = create.firstName
         user.lastName = create.lastName
         user.hasAcceptedTerms = create.hasAcceptedTerms
-        user.acceptedTermsAt = Date()
+        user.acceptedTermsAt = LocalDateTime.now()
 
         userDAO.save(user)
       }
@@ -151,7 +153,7 @@ class OrderService {
       val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
 
       order.isPaid = true
-      order.paidAt = Date()
+      order.paidAt = LocalDateTime.now()
       orderDAO.save(order)
 
       val product = order.product!!
@@ -182,16 +184,16 @@ private fun PaymentMethodDto.fromDTO(): PaymentMethod {
 fun OrderEntity.toDTO(): Order {
   return Order(
     id = id.toString(),
-    createdAt = createdAt.time,
+    createdAt = createdAt.toMillis(),
     userId = userId.toString(),
     productId = productId.toString(),
 
     isOffer = isOffer,
-    paymentDueTo = dueTo?.time,
+    paymentDueTo = dueTo?.toMillis(),
     isPaid = isPaid,
     isOfferRejected = isOfferRejected,
 
-    paidAt = paidAt?.time,
+    paidAt = paidAt?.toMillis(),
     paymentMethod = paymentMethod?.toDTO(),
     invoiceRecipientName = invoiceRecipientName,
     invoiceRecipientEmail = invoiceRecipientEmail,

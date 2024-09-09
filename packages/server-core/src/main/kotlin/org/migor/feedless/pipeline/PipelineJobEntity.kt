@@ -11,7 +11,7 @@ import jakarta.persistence.InheritanceType
 import jakarta.persistence.Lob
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
-import java.util.*
+import java.time.LocalDateTime
 
 enum class PipelineJobStatus {
   PENDING,
@@ -38,13 +38,13 @@ open class PipelineJobEntity : EntityWithUUID() {
   open var attempt: Int = 0
 
   @Column(name = "terminated_at")
-  open var terminatedAt: Date? = null
+  open var terminatedAt: LocalDateTime? = null
 
   @Column(name = "terminated")
   open var terminated: Boolean = false
 
   @Column(name = "cool_down_until")
-  open var coolDownUntil: Date? = null
+  open var coolDownUntil: LocalDateTime? = null
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
@@ -56,7 +56,7 @@ open class PipelineJobEntity : EntityWithUUID() {
 
   fun updateStatus() {
     if (status != PipelineJobStatus.PENDING) {
-      terminatedAt = Date()
+      terminatedAt = LocalDateTime.now()
       terminated = true
     }
   }

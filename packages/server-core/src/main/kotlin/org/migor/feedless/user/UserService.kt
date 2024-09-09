@@ -26,9 +26,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.temporal.ChronoUnit
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -181,7 +179,7 @@ class UserService {
     data.acceptedTermsAndServices?.let {
       if (it.set) {
         user.hasAcceptedTerms = true
-        user.acceptedTermsAt = Timestamp.from(Date().toInstant())
+        user.acceptedTermsAt = LocalDateTime.now()
         log.debug("[$corrId] accepted terms")
       } else {
         log.debug("[$corrId] rejecting hasAcceptedTerms")
@@ -195,7 +193,7 @@ class UserService {
         user.purgeScheduledFor = null
         log.info("[$corrId] unset purgeScheduledFor")
       } else {
-        user.purgeScheduledFor = Timestamp.from(Date().toInstant().plus(Duration.of(30, ChronoUnit.DAYS)))
+        user.purgeScheduledFor = LocalDateTime.now().plusDays(30)
         log.info("[$corrId] set purgeScheduledFor")
       }
       changed = true

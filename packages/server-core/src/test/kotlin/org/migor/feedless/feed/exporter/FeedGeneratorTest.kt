@@ -11,6 +11,8 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.JsonUtil
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class FeedGeneratorTest {
@@ -31,7 +33,7 @@ class FeedGeneratorTest {
     feed.websiteUrl = "http://websiteUrl"
     feed.imageUrl = "http://imageUrl"
     feed.language = "language"
-    feed.publishedAt = DateUtils.truncate(Date(), Calendar.MILLISECOND)
+    feed.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
     feed.links = emptyList()
     feed.feedUrl = url
     feed.expired = false
@@ -52,7 +54,7 @@ class FeedGeneratorTest {
 //    item.language = "language"
 //    item.authors = emptyList()
 //    item.attachments = emptyList()
-    item.publishedAt = DateUtils.truncate(Date(), Calendar.MILLISECOND)
+    item.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 //    item.modifiedAt = DateUtils.truncate(Date(), Calendar.MILLISECOND)
 //    item.startingAt = Date()
     val latLng = JsonPoint()

@@ -7,6 +7,7 @@ import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
@@ -17,6 +18,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -54,14 +56,14 @@ class PipelineJobTest {
       createDocumentPipelineJob(id2, repositoryId),
       createDocumentPipelineJob(id1, repositoryId)
     )
-    `when`(documentPipelineJobDAO.findAllPendingBatched()).thenReturn(documentJobs)
+    `when`(documentPipelineJobDAO.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(documentJobs)
 
     val sourceJobs = listOf(
       createSourcePipelineJob(id1),
       createSourcePipelineJob(id2),
       createSourcePipelineJob(id1)
     )
-    `when`(sourcePipelineJobDAO.findAllPendingBatched()).thenReturn(sourceJobs)
+    `when`(sourcePipelineJobDAO.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
   }
 
   @Test

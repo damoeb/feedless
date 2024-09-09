@@ -20,6 +20,7 @@ import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.toMillis
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,7 +74,7 @@ private fun AgentEntity.toDto(): Agent {
   return Agent(
     ownerId = ownerId.toString(),
     name = name,
-    addedAt = createdAt.time,
+    addedAt = createdAt.toMillis(),
     version = version,
     openInstance = openInstance,
     secretKeyId = secretKeyId.toString(),

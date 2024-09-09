@@ -52,7 +52,7 @@ class LicenseServiceTest {
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))
     licensePayload =
-      LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = Date(), scope = ProductCategory.feedless)
+      LicensePayload(name = "foo", email = "bar@foo", version = 1, createdAt = LocalDateTime.now(), scope = ProductCategory.feedless)
   }
 
   @Test

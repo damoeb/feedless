@@ -12,7 +12,7 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
-  fun findAllByRepositoryIdOrderByCreatedAtDesc(id: UUID, pageable: PageRequest): List<HarvestEntity>
+  fun findAllByRepositoryId(id: UUID, pageable: PageRequest): List<HarvestEntity>
 
   @Modifying
   @Query("""

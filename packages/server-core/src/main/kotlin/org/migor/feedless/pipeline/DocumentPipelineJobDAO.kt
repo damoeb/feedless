@@ -4,7 +4,9 @@ import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -25,12 +27,12 @@ interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID
             order by document_id, sequence_id
         ) g
       where g.cool_down_until is null
-         or g.cool_down_until < current_timestamp)
+         or g.cool_down_until < :now)
       order by document_id, sequence_id
       limit 100
     """
   )
-  fun findAllPendingBatched(): List<DocumentPipelineJobEntity>
-  fun deleteAllByCreatedAtBefore(date: Date)
+  fun findAllPendingBatched(@Param("now") now: LocalDateTime): List<DocumentPipelineJobEntity>
+  fun deleteAllByCreatedAtBefore(date: LocalDateTime)
   fun deleteAllByDocumentId(documentId: UUID)
 }

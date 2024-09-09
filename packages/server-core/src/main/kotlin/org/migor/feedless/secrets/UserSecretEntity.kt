@@ -18,8 +18,9 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.toMillis
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -30,14 +31,14 @@ open class UserSecretEntity : EntityWithUUID() {
   open lateinit var value: String
 
   @Column(nullable = false)
-  open lateinit var validUntil: Date
+  open lateinit var validUntil: LocalDateTime
 
   @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var type: UserSecretType
 
   @Column
-  open var lastUsedAt: Timestamp? = null
+  open var lastUsedAt: LocalDateTime? = null
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
@@ -71,8 +72,8 @@ fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
     type = type.toDto(),
     value = if (mask) value.substring(0..4) + "****" else value,
     valueMasked = mask,
-    validUntil = validUntil.time,
-    lastUsed = lastUsedAt?.time,
+    validUntil = validUntil.toMillis(),
+    lastUsed = lastUsedAt?.toMillis(),
   )
 }
 

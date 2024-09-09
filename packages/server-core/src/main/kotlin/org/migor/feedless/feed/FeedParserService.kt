@@ -32,11 +32,12 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JtsUtil
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.*
+import java.time.LocalDateTime
 
 private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
   return this.outputs.last()
@@ -150,7 +151,7 @@ class FeedParserService {
       items = items,
       expired = false,
       feedUrl = "",
-      publishedAt = Date().time,
+      publishedAt = LocalDateTime.now().toMillis(),
       title = "Preview Feed"
     )
 

@@ -18,8 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Files
-import java.sql.Timestamp
-import java.util.*
+import java.time.LocalDateTime
 
 @RestController
 @Profile(AppProfiles.dev)
@@ -45,7 +44,7 @@ class TestingEndpoint {
     }
     if (!user.hasAcceptedTerms) {
       user.hasAcceptedTerms = true
-      user.acceptedTermsAt = Timestamp.from(Date().toInstant())
+      user.acceptedTermsAt = LocalDateTime.now()
       withContext(Dispatchers.IO) {
         userDAO.save(user)
       }

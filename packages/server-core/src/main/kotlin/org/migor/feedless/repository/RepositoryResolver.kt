@@ -33,10 +33,12 @@ import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
@@ -154,8 +156,8 @@ class RepositoryResolver {
   ): List<Harvest> = coroutineScope {
     val repository: Repository = dfe.getSource()
     val harvests = withContext(Dispatchers.IO) {
-      val pageable = PageRequest.of(0, 5)
-      harvestDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id), pageable).map { it.toDto() }
+      val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+      harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
     }
     harvests
   }
@@ -194,7 +196,7 @@ private fun SourcePipelineJobEntity.toDto(): CronRun {
   return CronRun(
     isSuccessful = this.status === PipelineJobStatus.SUCCEEDED,
     message = StringUtils.trimToEmpty(this.logs),
-    executedAt = this.terminatedAt!!.time
+    executedAt = this.terminatedAt!!.toMillis()
   )
 }
 

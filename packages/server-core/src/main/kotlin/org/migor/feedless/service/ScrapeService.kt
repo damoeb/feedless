@@ -36,18 +36,19 @@ import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.time.LocalDateTime
 
 class LogCollector() {
   val logs = mutableListOf<LogStatement>()
   fun log(message: String) {
-    logs.add(LogStatement(message=message, time = Date().time))
+    logs.add(LogStatement(message=message, time = LocalDateTime.now().toMillis()))
 //    log?.debug("[$corrId] $message")
   }
 }

@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -52,7 +53,7 @@ class PipelineJobExecutor internal constructor() {
   @Transactional
   fun processDocumentJobs() {
     val corrId = newCorrId()
-    val groupedDocuments = documentPipelineJobDAO.findAllPendingBatched()
+    val groupedDocuments = documentPipelineJobDAO.findAllPendingBatched(LocalDateTime.now())
       .groupBy { it.documentId }
 
     if (groupedDocuments.isNotEmpty()) {
@@ -84,7 +85,7 @@ class PipelineJobExecutor internal constructor() {
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()
-    val groupedSources = sourcePipelineJobDAO.findAllPendingBatched()
+    val groupedSources = sourcePipelineJobDAO.findAllPendingBatched(LocalDateTime.now())
       .groupBy { it.sourceId }
 
     if (groupedSources.isNotEmpty()) {

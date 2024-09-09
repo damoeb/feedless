@@ -23,11 +23,13 @@ import org.migor.feedless.license.LicenseDAO
 import org.migor.feedless.license.LicenseEntity
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.user.UserDAO
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
+import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
@@ -87,5 +89,5 @@ class OrderResolver {
 
 private fun LicenseEntity.toDTO(): License {
   // todo decode license and fill
-  return License(name = "", email = "", scope = ProductCategory.feedless, createdAt = Date().time, version = 0)
+  return License(name = "", email = "", scope = ProductCategory.feedless, createdAt = LocalDateTime.now().toMillis(), version = 0)
 }

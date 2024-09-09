@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -37,13 +38,13 @@ interface SourcePipelineJobDAO : JpaRepository<SourcePipelineJobEntity, UUID> {
             order by source_id, sequence_id
         ) g
       where g.cool_down_until is null
-         or g.cool_down_until < current_timestamp)
+         or g.cool_down_until < :now)
       order by source_id, sequence_id
       limit 100
     """
   )
-  fun findAllPendingBatched(): List<SourcePipelineJobEntity>
-  fun deleteAllByCreatedAtBefore(date: Date)
+  fun findAllPendingBatched(@Param("now") now: LocalDateTime): List<SourcePipelineJobEntity>
+  fun deleteAllByCreatedAtBefore(date: LocalDateTime)
   fun existsBySourceIdAndUrl(sourceId: UUID, url: String): Boolean
 
 

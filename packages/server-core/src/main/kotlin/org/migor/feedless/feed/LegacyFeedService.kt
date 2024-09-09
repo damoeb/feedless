@@ -29,6 +29,7 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.toMillis
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.WebToFeedTransformer
@@ -43,9 +44,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
-import java.net.URL
+import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -151,7 +154,7 @@ class LegacyFeedService {
             StandardCharsets.UTF_8
           ), url
         ),
-        URL(url),
+        URI(url),
         LogCollector()
       )
       feed.feedUrl = feedUrl
@@ -221,7 +224,7 @@ class LegacyFeedService {
       )
         .filterNotNull()
         .map {
-          it.publishedAt = Date()
+          it.publishedAt = LocalDateTime.now()
           it.asJsonItem()
         }
       feed.items = documents.plus(feed.items)
@@ -239,7 +242,7 @@ class LegacyFeedService {
     feed.title = "End Of Life"
     feed.feedUrl = feedUrl
     feed.expired = true
-    feed.publishedAt = Date()
+    feed.publishedAt = LocalDateTime.now()
     feed.items = listOf(createEolArticle(feedUrl))
 
     return feed
@@ -251,7 +254,7 @@ class LegacyFeedService {
     feed.title = "Feed"
     feed.feedUrl = feedUrl
     feed.expired = false
-    feed.publishedAt = Date()
+    feed.publishedAt = LocalDateTime.now()
 
     feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
       emptyList()
@@ -283,7 +286,7 @@ Markus
     """.trimIndent()
 //    article.contentText = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
     article.url = preregistrationLink
-    article.publishedAt = Date()
+    article.publishedAt = LocalDateTime.now()
     return article
   }
 
@@ -315,7 +318,7 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
 </p>
 """.trimIndent()
     article.url = "https://github.com/damoeb/feedless/wiki/Errors#error-potential-issue-with-feed"
-    article.publishedAt = Date()
+    article.publishedAt = LocalDateTime.now()
     return article
   }
 }

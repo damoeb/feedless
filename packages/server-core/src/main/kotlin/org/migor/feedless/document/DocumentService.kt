@@ -37,6 +37,7 @@ import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.service.LogCollector
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -48,7 +49,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -122,7 +122,7 @@ class DocumentService {
           .whereAnd(
             path(DocumentEntity::repositoryId).eq(repositoryId),
             path(DocumentEntity::status).`in`(status),
-            path(DocumentEntity::publishedAt).lt(Date()),
+            path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
             *whereStatements.toTypedArray()
           ).orderBy(
             orderBy?.let {
@@ -136,12 +136,12 @@ class DocumentService {
   private fun prepareWhereStatements(where: WebDocumentsWhereInput?): MutableList<Predicatable> {
     val whereStatements = mutableListOf<Predicatable>()
     jpql {
-      val addDateConstraint = { it: DatesWhereInput, field: Path<Date> ->
+      val addDateConstraint = { it: DatesWhereInput, field: Path<LocalDateTime> ->
         it.before?.let {
-          whereStatements.add(field.le(Date(it)))
+          whereStatements.add(field.le(it.toLocalDateTime()))
         }
         it.after?.let {
-          whereStatements.add(field.ge(Date(it)))
+          whereStatements.add(field.ge(it.toLocalDateTime()))
         }
       }
 
@@ -204,9 +204,7 @@ class DocumentService {
       ?.let { maxAgeDays ->
         withContext(Dispatchers.IO) {
           log.debug("[$corrId] applying retention with maxAgeDays=$maxAgeDays")
-          val maxDate = Date.from(
-            LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()
-          )
+          val maxDate = LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS)
           if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.startingAt) {
             documentDAO.deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
               repository.id,
@@ -273,7 +271,7 @@ class DocumentService {
         .whereAnd(
           groupByEntity.isNotNull(),
           path(DocumentEntity::repositoryId).eq(UUID.fromString(where.repository.id)),
-          path(DocumentEntity::publishedAt).lt(Date()),
+          path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
           *whereStatements.toTypedArray()
         )
         .groupBy(dateGroup)
@@ -386,12 +384,12 @@ class DocumentService {
   ) {
     log.debug("[$corrId] delaying (${job.executorId}): ${e.message}")
 
-    val nextRetries = if (e is ResumableHarvestException) {
-      e.nextRetryAfter.toMillis()
+    val coolDownUntil = if (e is ResumableHarvestException) {
+      LocalDateTime.now().plus(e.nextRetryAfter)
     } else {
-      120000
+      LocalDateTime.now().plusSeconds(120)
     }
-    job.coolDownUntil = Date(System.currentTimeMillis() + nextRetries)
+    job.coolDownUntil = coolDownUntil
 
     job.attempt += 1
     withContext(Dispatchers.IO) {

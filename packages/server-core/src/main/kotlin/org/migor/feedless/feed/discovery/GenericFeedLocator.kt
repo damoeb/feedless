@@ -19,6 +19,6 @@ class GenericFeedLocator {
     url: String,
     parserOptions: GenericFeedParserOptions
   ): List<GenericFeedRule> {
-    return webToFeedTransformer.parseFeedRules(corrId, document, URI(url).toURL(), parserOptions)
+    return webToFeedTransformer.parseFeedRules(corrId, document, URI(url), parserOptions)
   }
 }

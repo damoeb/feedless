@@ -32,6 +32,7 @@ import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
 import java.io.Serializable
 import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 
 class AgentResponse(private val scrapeResponse: String) : Serializable {
@@ -65,11 +66,12 @@ class AgentService {
       CoroutineScope(Dispatchers.Default).launch {
         userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
           ?.let { securityKey ->
-            if (securityKey.validUntil.before(Date())) {
+            val now = LocalDateTime.now()
+            if (securityKey.validUntil.isBefore(now)) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
             } else {
-              userSecretService.updateLastUsed(securityKey.id, Date())
+              userSecretService.updateLastUsed(securityKey.id, now)
               val agentRef =
                 AgentRef(
                   securityKey.id,
@@ -78,7 +80,7 @@ class AgentService {
                   data.version,
                   data.connectionId,
                   data.os,
-                  Date(),
+                  now,
                   emitter
                 )
 
@@ -119,7 +121,7 @@ class AgentService {
       agent.secretKeyId = agentRef.secretKeyId
       agent.name = agentRef.name
       agent.version = agentRef.version
-      agent.lastSyncedAt = Date()
+      agent.lastSyncedAt = LocalDateTime.now()
       agent.connectionId = agentRef.connectionId
       agent.ownerId = agentRef.ownerId
       agent.openInstance = true
@@ -210,7 +212,7 @@ data class AgentRef(
   val version: String,
   val connectionId: String,
   val os: OsInfo,
-  val addedAt: Date,
+  val addedAt: LocalDateTime,
   val emitter: FluxSink<AgentEvent>
 ) {
   override fun toString(): String {

@@ -30,7 +30,7 @@ import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
-import org.migor.feedless.util.toDate
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -133,7 +133,7 @@ class DocumentResolver {
     documentService.getDocumentFrequency(
       WebDocumentsWhereInput(
         repository = RepositoryUniqueWhereInput(id = repository.id),
-        createdAt = DatesWhereInput(after = toDate(LocalDateTime.now().minusMonths(1)).time)
+        createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1).toMillis())
       ),
       WebDocumentDateField.createdAt
     )

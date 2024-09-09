@@ -8,7 +8,6 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.subscription.PlanDAO
-import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -17,7 +16,7 @@ import org.springframework.core.env.Profiles
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZoneId
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -63,13 +62,10 @@ class PlanConstraintsService {
     return product ?: sessionService.activeProductFromRequest()!!
   }
 
-  suspend fun coerceMinScheduledNextAt(lastDate: Date, nextDate: Date, userId: UUID, product: ProductCategory): Date {
+  suspend fun coerceMinScheduledNextAt(lastDate: LocalDateTime, nextDate: LocalDateTime, userId: UUID, product: ProductCategory): LocalDateTime {
     val minRefreshRateInMinutes =
       (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
-    val minNextDate = toDate(
-      lastDate.toInstant().atZone(ZoneId.systemDefault())
-        .toLocalDateTime().plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
-    )
+    val minNextDate = lastDate.plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
 
     return if (nextDate < minNextDate) {
       minNextDate
@@ -147,7 +143,7 @@ class PlanConstraintsService {
             featureName.name
           )
         } else {
-          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless))?.let {
+          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())?.let {
             featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
           } ?: throw IllegalArgumentException("user has no subscription")
         }

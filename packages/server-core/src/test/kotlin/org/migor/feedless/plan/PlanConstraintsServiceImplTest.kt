@@ -80,7 +80,7 @@ class PlanConstraintsServiceImplTest {
 
     val mockPlan = mock(PlanEntity::class.java)
     `when`(mockPlan.product).thenReturn(mockProduct)
-    `when`(planDAO.findActiveByUserAndProductIn(any(UUID::class.java), anyList())).thenReturn(mockPlan)
+    `when`(planDAO.findActiveByUserAndProductIn(any(UUID::class.java), anyList(), any(LocalDateTime::class.java))).thenReturn(mockPlan)
   }
 
   @Test
@@ -141,12 +141,12 @@ class PlanConstraintsServiceImplTest {
   fun `given invalid refreshRate when coerceMinScheduledNextAt returns minimum rate`() = runTest {
     mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
-    val minNext = toDate(now.plusMinutes(4))
+    val minNext = now.plusMinutes(4)
 
     assertThat(
       service.coerceMinScheduledNextAt(
-        Date(),
-        toDate(now.minusDays(2)),
+        LocalDateTime.now(),
+        now.minusDays(2),
         userId,
         product
       )
@@ -157,11 +157,11 @@ class PlanConstraintsServiceImplTest {
   fun `given valid refreshRate when coerceMinScheduledNextAt returns refreshRate`() = runTest {
     mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
-    val future = toDate(now.plusDays(2))
+    val future = now.plusDays(2)
 
     assertThat(
       service.coerceMinScheduledNextAt(
-        Date(),
+        LocalDateTime.now(),
         future,
         userId,
         product

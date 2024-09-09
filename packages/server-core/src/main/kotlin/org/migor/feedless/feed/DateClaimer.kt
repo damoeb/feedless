@@ -1,7 +1,6 @@
 package org.migor.feedless.feed
 
 import org.migor.feedless.service.LogCollector
-import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.text.SimpleDateFormat
@@ -15,8 +14,6 @@ import java.util.*
 class DateClaimer {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
-
-  private val dateRangeSplitter = listOf(" - ")
 
   private val days = listOf(Pair("\\d{1}", "d"), Pair("\\d{2}", "dd"))
   private val months =
@@ -104,23 +101,17 @@ class DateClaimer {
 //      }.firstOrNull()
 //  }
 
-  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale, logger: LogCollector): Date? {
+  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale, logger: LogCollector): LocalDateTime? {
     logger.log(" parsing '$dateTimeStrParam' locale=$locale")
 
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStrParam))
+      val date = LocalDateTime.parse(dateTimeStrParam)
       logger.log("-> $date")
       return date
     }
 
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_DATE_TIME))
-      logger.log("-> $date")
-      return date
-    }
-
-    runCatching {
-      val date = toDate(DateTimeFormatter.ISO_DATE_TIME.parse(dateTimeStrParam))
+      val date = LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_DATE_TIME)
       logger.log("-> $date")
       return date
     }
@@ -156,13 +147,13 @@ class DateClaimer {
     locale: Locale,
     format: String,
     hasTime: Boolean
-  ): Date? {
+  ): LocalDateTime? {
     val formatter = DateTimeFormatter.ofPattern(format, locale)
     return try {
       if (hasTime) {
-        toDate(LocalDateTime.parse(simpleDateTimeStr, formatter))
+        LocalDateTime.parse(simpleDateTimeStr, formatter)
       } else {
-        toDate(LocalDate.parse(simpleDateTimeStr, formatter).atTime(8, 0))
+        LocalDate.parse(simpleDateTimeStr, formatter).atTime(8, 0)
       }
     } catch (e: Exception) {
       null

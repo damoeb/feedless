@@ -13,7 +13,9 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.Harvest
+import org.migor.feedless.util.toMillis
 import java.sql.Types
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -36,10 +38,10 @@ open class HarvestEntity : EntityWithUUID() {
   open var logs: String = ""
 
   @Column(name = "started_at")
-  open lateinit var startedAt: Date
+  open lateinit var startedAt: LocalDateTime
 
   @Column(name = "finished_at")
-  open var finishedAt: Date? = null
+  open var finishedAt: LocalDateTime? = null
 
   @Column(name = StandardJpaFields.repositoryId, nullable = false)
   open lateinit var repositoryId: UUID
@@ -63,7 +65,7 @@ fun HarvestEntity.toDto(): Harvest {
     itemsAdded = itemsAdded,
     itemsIgnored = itemsIgnored,
     logs = logs,
-    startedAt = startedAt.time,
-    finishedAt = finishedAt?.time
+    startedAt = startedAt.toMillis(),
+    finishedAt = finishedAt?.toMillis()
   )
 }

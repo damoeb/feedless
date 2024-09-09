@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -32,7 +33,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
         and EXISTS (SELECT distinct true from SourceEntity s where s.disabled = false and s.repositoryId=r.id)
       order by r.lastUpdatedAt asc """,
   )
-  fun findSomeDue(@Param("now") now: Date, pageable: Pageable): List<RepositoryEntity>
+  fun findSomeDue(@Param("now") now: LocalDateTime, pageable: Pageable): List<RepositoryEntity>
 
   fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<RepositoryEntity>
 

@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDateTime
 import java.util.*
 
 @SpringBootTest
@@ -77,7 +78,7 @@ class FeedsPluginTest {
     val mockFeed = JsonFeed()
     mockFeed.title = ""
     mockFeed.feedUrl = ""
-    mockFeed.publishedAt = Date()
+    mockFeed.publishedAt = LocalDateTime.now()
     mockFeed.items = emptyList()
 
     `when`(feedParserService.parseFeed(any(String::class.java), any(HttpResponse::class.java)))

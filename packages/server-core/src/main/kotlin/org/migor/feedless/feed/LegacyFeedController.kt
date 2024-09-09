@@ -183,7 +183,7 @@ class LegacyFeedController {
 }
 
 private fun HttpServletRequest.firstParam(vararg names: String): String {
-  return firstParamOptional()
+  return firstParamOptional(*names)
     ?: throw IllegalArgumentException("Expected one of these query parameters [${names.joinToString(",")}]")
 }
 

@@ -21,6 +21,7 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
@@ -81,7 +83,7 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     feedUrl = feedUrl,
     websiteUrl = websiteUrl,
     language = language,
-    publishedAt = publishedAt.time,
+    publishedAt = publishedAt.toMillis(),
     tags = tags,
     nextPageUrls = links,
     expired = BooleanUtils.isTrue(expired),
@@ -105,10 +107,10 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         tags = it.tags,
         contentTitle = it.title,
         contentText = it.contentText,
-        publishedAt = it.publishedAt.time,
-        startingAt = it.startingAt?.time,
+        publishedAt = it.publishedAt.toMillis(),
+        startingAt = it.startingAt?.toMillis(),
         localized = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
-        createdAt = Date().time,
+        createdAt = LocalDateTime.now().toMillis(),
         url = it.url,
         enclosures = it.attachments.map { it.toEnclosure() },
         imageUrl = it.imageUrl,

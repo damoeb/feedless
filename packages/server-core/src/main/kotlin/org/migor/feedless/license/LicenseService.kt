@@ -24,6 +24,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.ProductEntity
+import org.migor.feedless.util.toLocalDateTime
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -42,6 +44,8 @@ import java.security.SecureRandom
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.text.DateFormat
+import java.time.Duration
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -51,8 +55,8 @@ data class LicensePayload(
   @SerializedName("v") val version: Int,
   @SerializedName("n") val name: String,
   @SerializedName("e") val email: String,
-  @SerializedName("c") val createdAt: Date,
-  @SerializedName("u") val validUntil: Date? = null,
+  @SerializedName("c") val createdAt: LocalDateTime,
+  @SerializedName("u") val validUntil: LocalDateTime? = null,
   @SerializedName("s") val scope: ProductCategory
 ) {
   override fun equals(other: Any?): Boolean {
@@ -61,8 +65,8 @@ data class LicensePayload(
 
     other as LicensePayload
 
-    val trunc = { date: Date? ->
-      date?.toInstant()
+    val trunc = { date: LocalDateTime? ->
+      date
         ?.atZone(ZoneId.systemDefault())
         ?.toLocalDateTime()
         ?.truncatedTo(ChronoUnit.DAYS)
@@ -112,9 +116,10 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   fun initialize() {
     if (NumberUtils.isParsable(buildTimestamp)) {
-      val buildTime = buildTimestamp!!.toLong()
-      if (buildTime > Date().time) {
-        throw IllegalArgumentException("Invalid properties. Build time is in the future")
+      val buildTime = buildTimestamp!!.toLong().toLocalDateTime()
+      val now = LocalDateTime.now()
+      if (buildTime.isAfter(now)) {
+        throw IllegalArgumentException("Invalid properties. Build time $buildTime is in the future (system time $now)")
       }
     } else {
       throw IllegalArgumentException("Invalid properties. APP_BUILD_TIMESTAMP expected, found '$buildTimestamp'")
@@ -220,7 +225,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     initialize()
     if (isSelfHosted()) {
       if (license == null) {
-        val trialUntil = Date(getTrialUntil())
+        val trialUntil = getTrialUntil().toLocalDateTime()
         if (isTrial()) {
           log.info("[boot] Your trial lasts until $trialUntil")
         } else {
@@ -264,9 +269,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun isLicenseNotNeeded(): Boolean {
-    val now = Date().time
-    val buildAge = now - buildFrom()
-    val licensePeriodExceeded = buildAge > DateUtils.MILLIS_PER_DAY * 365 * 2
+    val now = LocalDateTime.now()
+    val buildAge = now.minus(Duration.of(buildFrom(), ChronoUnit.MILLIS))
+    val licensePeriodExceeded = buildAge > now.plusDays(365 * 2)
     val enforcePeriodReached = !isTrial()
     return if (enforcePeriodReached) {
       licensePeriodExceeded
@@ -288,7 +293,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun isTrial(): Boolean {
-    return getTrialUntil() > Date().time
+    return getTrialUntil() > LocalDateTime.now().toMillis()
   }
 
   fun updateLicense(corrId: String, licenseRaw: String) {
@@ -346,7 +351,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   fun isLicensedForProduct(product: ProductCategory): Boolean {
     return this.license?.let {
       (it.scope === product || it.scope == ProductCategory.feedless) &&
-        (it.validUntil == null || it.validUntil.time > Date().time) &&
+        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&
         (it.version == 1) // todo validate version
     } ?: false
   }
@@ -359,7 +364,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     val license = LicenseEntity()
     val payload = LicensePayload(
       name = billing.invoiceRecipientName,
-      createdAt = Date(),
+      createdAt = LocalDateTime.now(),
       version = 1,
       scope = product.partOf ?: ProductCategory.feedless,
       validUntil = null,
