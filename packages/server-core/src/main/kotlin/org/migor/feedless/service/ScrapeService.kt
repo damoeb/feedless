@@ -120,7 +120,7 @@ class ScrapeService {
         )
       } catch (e: Exception) {
         if (e !is ResumableHarvestException) {
-          log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}", e)
+          log.warn("[$corrId] scrape failed for source ${source.id} ${e.message}")
         }
         throw e
       }
