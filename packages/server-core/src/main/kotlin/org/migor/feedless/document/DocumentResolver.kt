@@ -125,7 +125,7 @@ class DocumentResolver {
   }
 
 
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Frequency)
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
   ): List<DocumentFrequency> = coroutineScope {

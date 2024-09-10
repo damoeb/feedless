@@ -16,5 +16,6 @@
 
 # Solution
 - as lean as possible
-- many little steps -> CD
+- many little steps -> CD with hight test coverage
+- strong typed languages
 - dog feeding

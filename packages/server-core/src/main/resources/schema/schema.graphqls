@@ -97,10 +97,11 @@ type Repository {
 #  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
+  pullsPerMonth: Int!
+  currentUserIsOwner: Boolean!
   hasDisabledSources: Boolean!
   frequency(groupBy: WebDocumentDateField!): [DocumentFrequency!]
   plugins: [PluginExecution!]
-  cronRuns: [CronRun!]!
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]
@@ -113,12 +114,6 @@ type Harvest {
   logs: String!
   startedAt: Long!
   finishedAt: Long
-}
-
-type CronRun {
-  isSuccessful: Boolean!
-  message: String!
-  executedAt: Long!
 }
 
 type SunSetPolicy {
@@ -1103,7 +1098,14 @@ input RepositoriesInput {
 }
 
 input RepositoriesWhereInput {
-  product: StringFilter
+  product: ProductCategoryFilter
+  visibility: VisibilityFilter
+  text: FulltextQueryFilter
+  tags: StringArrayFilter
+}
+
+input FulltextQueryFilter {
+  query: String!
 }
 
 input ConfirmAuthCodeInput {
@@ -1296,6 +1298,18 @@ input StringArrayFilter {
 input StringFilter {
   equals: String
   in: [String!]
+#  notIn: [String!]
+}
+
+input VisibilityFilter {
+#  equals: Visibility
+  in: [Visibility!]
+#  notIn: [String!]
+}
+
+input ProductCategoryFilter {
+#  equals: Visibility
+  in: [ProductCategory!]
 #  notIn: [String!]
 }
 

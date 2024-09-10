@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.regex.Pattern
 
 @Service
 @Profile(AppProfiles.community)
@@ -18,7 +17,7 @@ class CitationScorer {
   @Autowired
   lateinit var commentGraphService: CommentGraphService
 
-  private val quotePattern = Pattern.compile("\"([^\"]+)\"", Pattern.MULTILINE)
+  private val quotePattern = Regex("\"([^\"]+)\"")
 
   suspend fun score(comment: CommentEntity): Double {
     val blockCitations = comment.contentText.split("\n").filter { it.startsWith(">") }
@@ -37,15 +36,8 @@ class CitationScorer {
 
   private fun getInlineCitations(comment: CommentEntity): List<String> {
     val text = comment.contentText
-    val urlMatcher = quotePattern.matcher(text)
-    val candidates = mutableListOf<String>()
-    while (urlMatcher.find()) {
-      val matchStart = urlMatcher.start(1)
-      val matchEnd = urlMatcher.end(1)
-      candidates.add(text.substring(matchStart, matchEnd))
-    }
 
-    return candidates.filter { it.isNotEmpty() }
+    return quotePattern.findAll(text).map { it.value }.toList()
   }
 
 }

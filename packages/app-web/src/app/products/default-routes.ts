@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { ProfileGuardService } from '../guards/profile-guard.service';
+import { SaasGuardService } from '../guards/saas-guard.service';
 
 export const DefaultRoutes: Routes = [
   {
@@ -24,8 +25,15 @@ export const DefaultRoutes: Routes = [
   },
   {
     path: '',
-    // canActivate: [SaasGuardService], todo enable
+    canActivate: [SaasGuardService],
     children: [
+      {
+        path: 'directory',
+        loadChildren: () =>
+          import('../pages/directory/directory.module').then(
+            (m) => m.DirectoryPageModule,
+          ),
+      },
       {
         path: 'pricing',
         loadChildren: () =>

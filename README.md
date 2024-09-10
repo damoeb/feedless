@@ -1,8 +1,10 @@
 # feedless
 
-`feedless` is an experimental feed middleware to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. It's goal is to keep the web open and accessible and to create shareable data streams.
+`feedless` is a feed service to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. 
+It's goal is to keep the web open and accessible and to create shareable data streams.
 
-You may Self-host or use [feedless.org](https://feedless.org) to create and share feeds.
+You may Self-host or use [feedless.org](https://feedless.org) to create and share feeds. For troubleshooting please join
+the [discord channel](https://discord.gg/8Tu742HQkr).
 
 
 [![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
@@ -17,9 +19,9 @@ You may Self-host or use [feedless.org](https://feedless.org) to create and shar
 - Inline Images for archive/privacy purposes
 
 
-## Todo
+## In Progress
 - Workflow Builder
-- Self-Hosting documentation
+- Self-Hosting
 
 ## License
 

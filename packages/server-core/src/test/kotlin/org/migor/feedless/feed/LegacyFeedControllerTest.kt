@@ -17,6 +17,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.MailProviderService
+import org.migor.feedless.plan.ProductDataLoader
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.anyOrNull
@@ -37,6 +38,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.web.socket.WebSocketHandler
 import java.time.LocalDateTime
 import java.util.*
 
@@ -54,9 +56,10 @@ const val feedId = "feed-id"
     MockBean(DocumentService::class),
     MockBean(AgentService::class),
     MockBean(SessionService::class),
-    MockBean(RepositoryDAO::class),
     MockBean(LegacyFeedService::class),
     MockBean(KotlinJdslJpqlExecutor::class),
+    MockBean(ProductDataLoader::class),
+    MockBean(WebSocketHandler::class),
   ]
 )
 @ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.legacyFeeds])

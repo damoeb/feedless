@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.plan.ProductDataLoader
+import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.any
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito
@@ -25,6 +27,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.web.socket.WebSocketHandler
 import java.util.*
 
 
@@ -37,6 +40,8 @@ import java.util.*
     MockBean(UserService::class),
     MockBean(LicenseService::class),
     MockBean(DocumentService::class),
+    MockBean(ProductDataLoader::class),
+    MockBean(WebSocketHandler::class),
     MockBean(KotlinJdslJpqlExecutor::class),
   ]
 )
@@ -75,7 +80,6 @@ class DocumentControllerTest {
   }
 
   @Test
-  @Disabled
   fun `redirect with source param`() {
     val params = mapOf(
       "source" to "https://heise.de/some-feed.xml",

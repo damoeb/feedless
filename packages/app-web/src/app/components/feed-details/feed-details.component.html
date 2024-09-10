@@ -155,11 +155,11 @@
           <ion-content class="ion-padding">
             <ion-list>
               <ion-item *ngFor="let h of repository.harvests">
-                <ion-label> Started {{ fromNow(h.startedAt) }} ago </ion-label>
+                <ion-label> Started {{ fromNow(h.startedAt) }} ago</ion-label>
                 <ion-label>
                   Took {{ diffInSeconds(h.finishedAt, h.startedAt) }} sec
                 </ion-label>
-                <ion-label> Added {{ h.itemsAdded }} </ion-label>
+                <ion-label> Added {{ h.itemsAdded }}</ion-label>
                 <ion-button (click)="openLogsModal(h)">
                   <ion-icon name="list-outline" slot="start"></ion-icon>
                   Logs
@@ -172,7 +172,7 @@
 
       <ion-button *ngIf="isOwner" [id]="harvestsModalId">
         <ion-icon name="pulse-outline" slot="start"></ion-icon>
-        <ion-label> Harvests </ion-label>
+        <ion-label> Harvests</ion-label>
       </ion-button>
 
       <ion-button [id]="sourcesModalId">
@@ -181,9 +181,9 @@
           Sources
           <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>
         </ion-label>
-        <ion-chip *ngIf="!hasErrors()">{{
-          repository.sources.length
-        }}</ion-chip>
+        <ion-chip *ngIf="!hasErrors()"
+          >{{ repository.sources.length }}
+        </ion-chip>
       </ion-button>
 
       <ion-button [id]="settingsModalId">
@@ -241,12 +241,13 @@
           <ng-container *ngIf="repository.refreshCron">
             <dt>Last Updated</dt>
             <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
+          </ng-container>
+          <ng-container *ngIf="isOwner && repository.refreshCron">
             <dt>Next Update</dt>
             <dd>
               {{ fromNow(repository.nextUpdateAt) }}
               <ion-button
                 size="small"
-                *ngIf="isOwner"
                 [disabled]="repository.sources.length === 0"
                 (click)="refreshSources()"
                 shape="round"
@@ -258,20 +259,22 @@
               </ion-button>
             </dd>
           </ng-container>
-          <dt>Retention Strategy</dt>
-          <dd>
-            {{ getRetentionStrategy() }}
-            <ion-button
-              size="small"
-              *ngIf="isOwner"
-              (click)="editRepository(['storage'])"
-              shape="round"
-              class="ion-margin-start"
-            >
-              <ion-icon name="pencil-outline" slot="start"></ion-icon>
-              Edit
-            </ion-button>
-          </dd>
+          <ng-container *ngIf="isOwner">
+            <dt>Retention Strategy</dt>
+            <dd>
+              {{ getRetentionStrategy() }}
+              <ion-button
+                size="small"
+                *ngIf="isOwner"
+                (click)="editRepository(['storage'])"
+                shape="round"
+                class="ion-margin-start"
+              >
+                <ion-icon name="pencil-outline" slot="start"></ion-icon>
+                Edit
+              </ion-button>
+            </dd>
+          </ng-container>
         </dl>
       </ion-col>
     </ion-row>
@@ -309,8 +312,8 @@
           <ion-segment-button
             [value]="viewModeDiff"
             *ngIf="repository.product === GqlProductName.VisualDiff"
-            >Diff</ion-segment-button
-          >
+            >Diff
+          </ion-segment-button>
         </ion-segment>
       </div>
     </div>

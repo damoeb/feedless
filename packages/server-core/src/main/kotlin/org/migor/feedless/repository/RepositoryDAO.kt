@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -15,7 +16,7 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
+interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlExecutor {
 
   @Query(
     """
@@ -33,16 +34,13 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
         and EXISTS (SELECT distinct true from SourceEntity s where s.disabled = false and s.repositoryId=r.id)
       order by r.lastUpdatedAt asc """,
   )
-  fun findSomeDue(@Param("now") now: LocalDateTime, pageable: Pageable): List<RepositoryEntity>
-
-  fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<RepositoryEntity>
+  fun findAllWhereNextHarvestIsDue(@Param("now") now: LocalDateTime, pageable: Pageable): List<RepositoryEntity>
 
   fun countByOwnerId(id: UUID): Int
 
   fun countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(id: UUID, cron: String): Int
   fun countAllByOwnerIdAndProduct(it: UUID, product: ProductCategory): Int
   fun countAllByVisibility(visibility: EntityVisibility): Int
-  fun findAllByVisibility(visibility: EntityVisibility, pageable: PageRequest): List<RepositoryEntity>
   fun findByTitleAndOwnerId(title: String, ownerId: UUID): RepositoryEntity?
 
   @Query(
@@ -51,5 +49,11 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID> {
     WHERE s.id = :id"""
   )
   fun findByIdWithSources(@Param("id") id: UUID): RepositoryEntity?
+
+  fun findAllByVisibilityAndLastPullSyncBefore(
+    public: EntityVisibility,
+    now: LocalDateTime?,
+    pageable: PageRequest
+  ): List<RepositoryEntity>
 
 }

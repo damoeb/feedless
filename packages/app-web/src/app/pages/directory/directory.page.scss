@@ -1,0 +1,20 @@
+app-product-header {
+  p,
+  div,
+  ul {
+    font-size: 1.1rem;
+    letter-spacing: -0.003em;
+    line-height: 32px;
+    font-weight: 400;
+    hyphens: auto;
+    color: rgba(var(--app-foreground-rgb), 0.8);
+    //text-align: justify;
+  }
+}
+
+.grid {
+  display: flex;
+  .grid-item {
+    width: 400px;
+  }
+}

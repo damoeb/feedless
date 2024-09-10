@@ -7,7 +7,6 @@ export type ProductId =
   | 'reader'
   | 'upcoming'
   | 'digest'
-  | 'feedDump'
   | 'untold'
   | 'feedless';
 
@@ -109,22 +108,6 @@ cd rss-proxy
 touch your-license.key
 docker-compose up`,
       localSetupAfterMarkup: `Then, open http://localhost:8080 in your browser`,
-    },
-    {
-      id: 'feedDump',
-      product: GqlProductCategory.FeedDump,
-      title: 'FeedDump',
-      titleHtml: '<strong>Feed</strong><em>Dump</em>',
-      pageTitle: 'Feed Dump',
-      subtitle: 'Alternative feeds',
-      version: [3, 0, 0, 'rc-1'],
-      phase: 'rc',
-      listed: false,
-      summary: 'Create feeds from Websites',
-      descriptionMarkdown: ``,
-      videoUrl: 'https://www.youtube.com/watch?v=7weraU_FpUs',
-      features: [],
-      localSetupBash: ``,
     },
     {
       id: 'visual-diff',

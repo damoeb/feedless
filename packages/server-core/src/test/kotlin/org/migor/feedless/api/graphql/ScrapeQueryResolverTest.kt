@@ -19,6 +19,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.plan.ProductDataLoader
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserService
@@ -37,6 +38,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
+import org.springframework.web.socket.WebSocketHandler
 import java.nio.file.Files
 
 @SpringBootTest
@@ -51,6 +53,8 @@ import java.nio.file.Files
     MockBean(LicenseService::class),
     MockBean(ProductService::class),
     MockBean(KotlinJdslJpqlExecutor::class),
+    MockBean(ProductDataLoader::class),
+    MockBean(WebSocketHandler::class),
   ]
 )
 class ScrapeQueryResolverTest {

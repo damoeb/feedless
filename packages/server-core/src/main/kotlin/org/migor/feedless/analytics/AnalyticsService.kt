@@ -2,6 +2,7 @@ package org.migor.feedless.analytics
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.future.await
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
@@ -20,8 +21,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 data class PlausibleEvent(val name: String, val url: String, val domain: String)
+data class PlausibleStatsResults(val results: List<PlausibleStatsResult>)
+data class PlausibleStatsResult(val date: String /* 2020-09-01 */, val visitors: Int)
 
 fun toFullUrlString(request: HttpServletRequest): String {
   return if (StringUtils.isBlank(request.queryString)) {
@@ -41,20 +46,33 @@ class AnalyticsService {
 
   lateinit var plausibleUrl: String
   lateinit var plausibleSite: String
+  lateinit var plausibleApiKey: String
 
   private lateinit var httpClient: AsyncHttpClient
-  private var plausibleIsReady = true
+  private var canPush: Boolean = true
+  private var canPull: Boolean = true
 
   @PostConstruct
   fun postConstruct() {
+
     log.info("plausibleUrl: $plausibleUrl")
-    if (plausibleUrl.isBlank()) {
+    val hasUrl = plausibleUrl.isBlank()
+    if (hasUrl) {
       log.error("plausibleUrl is empty")
     }
     log.info("plausibleSite: $plausibleSite")
-    if (plausibleSite.isBlank()) {
+    val hasSite = plausibleSite.isBlank()
+    if (hasSite) {
       log.error("plausibleSite is empty")
     }
+    val hasKey = plausibleApiKey.isBlank()
+    if (hasKey) {
+      log.error("plausibleApiKey is empty")
+    }
+
+    canPush = hasUrl && hasSite
+    canPull = canPush && hasKey
+
     val builderConfig = Dsl.config()
       .setConnectTimeout(60000)
       .setReadTimeout(60000)
@@ -68,7 +86,7 @@ class AnalyticsService {
   @Before("@annotation(org.migor.feedless.analytics.Tracked)")
   fun track(joinPoint: JoinPoint) {
     try {
-      if (plausibleIsReady) {
+      if (canPush) {
         val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
         val url = toFullUrlString(request)
@@ -93,8 +111,34 @@ class AnalyticsService {
       }
     } catch (e: Exception) {
       log.error("track failed: ${e.message}", e)
-      plausibleIsReady = false
+      canPush = false
     }
+  }
+
+  suspend fun getUniquePageViewsForRepository(repoId: UUID): Int {
+//    curl "https://plausible.io/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo&filters=visit:source%3D%3DGoogle" \
+//    -H "Authorization: Bearer ${TOKEN}"
+    val response = httpClient.prepareGet("$plausibleUrl/api/event")
+      .addHeader(HttpHeaders.AUTHORIZATION, "Bearer $plausibleApiKey")
+      .execute()
+      .toCompletableFuture()
+      .orTimeout(5, TimeUnit.SECONDS)
+      .await()
+//      .get(3, TimeUnit.SECONDS)
+
+    return if (response.statusCode == 200) {
+      parseStatsResponse(response.responseBody)
+    } else {
+      0
+    }
+  }
+
+  suspend fun parseStatsResponse(responseBody: String): Int {
+    return JsonUtil.gson.fromJson(responseBody, PlausibleStatsResults::class.java).results.sumOf { it.visitors }
+  }
+
+  fun canPullEvents(): Boolean {
+    return canPull
   }
 }
 

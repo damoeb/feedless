@@ -16,6 +16,7 @@ import {
 import { Authentication, AuthService } from '../../services/auth.service';
 import { GqlProductCategory } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
+import { ServerConfigService } from '../../services/server-config.service';
 
 @Component({
   selector: 'app-feedless-product-page',
@@ -36,6 +37,7 @@ export class FeedlessProductPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly appConfigService: AppConfigService,
     private readonly authService: AuthService,
+    readonly serverConfig: ServerConfigService,
     private readonly sessionService: SessionService,
     private readonly changeRef: ChangeDetectorRef,
     readonly profile: SessionService,

@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
@@ -100,6 +101,9 @@ class RepositoryService {
   @Autowired
   private lateinit var propertyService: PropertyService
 
+//  @Autowired
+//  private lateinit var analyticsService: AnalyticsService
+
   @Autowired
   private lateinit var scrapeActionDAO: ScrapeActionDAO
 
@@ -117,7 +121,7 @@ class RepositoryService {
 //      log.info("[$corrId] violates maxActiveCount, archiving oldest")
 //      RepositoryDAO.updateArchivedForOldestActive(ownerId)
     }
-    return data.repositories.map { createRepository(corrId, ownerId, it).toDto() }
+    return data.repositories.map { createRepository(corrId, ownerId, it).toDto(true) }
   }
 
   private suspend fun getActualUserOrDefaultUser(corrId: String): UserEntity {
@@ -260,7 +264,7 @@ class RepositoryService {
           shareKey = shareKey
         )
       }
-       pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
+      pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
       log.error("[$corrId] empty result", e)
@@ -305,22 +309,104 @@ class RepositoryService {
     val pageable =
       PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     log.debug("userId=$userId")
+
     return withContext(Dispatchers.IO) {
-      userId
-        ?.let { repositoryDAO.findAllByOwnerId(it, pageable) }
-        ?: repositoryDAO.findAllByVisibility(EntityVisibility.isPublic, pageable)
-    }
+      repositoryDAO.findPage(pageable) {
+        val whereStatements = mutableListOf<Predicatable>()
+        where?.let {
+          where.visibility?.let { visibility ->
+            visibility.`in`?.let {
+              whereStatements.add(
+                path(RepositoryEntity::visibility).`in`(visibility.`in`.map { it.fromDto() }),
+              )
+            }
+          }
+
+          userId?.let {
+            whereStatements.add(
+              path(RepositoryEntity::ownerId).eq(userId)
+            )
+          }
+
+//        where.text?.let { text ->
+//          whereStatements.add(
+//            or(
+//              function(
+//                Boolean::class,
+//                "fl_fulltext_search",
+//                path(RepositoryEntity::title),
+//              )
+//                .eq(true),
+//              function(
+//                Boolean::class,
+//                "fl_fulltext_search",
+//                path(RepositoryEntity::description),
+//              )
+//                .eq(true)
+//            )
+//          )
+//        }
+
+//          where.product?.let {
+//            whereStatements.add(
+//              path(RepositoryEntity::product).`in`(ProductCategory.rssProxy)
+//            )
+//          }
+          where.tags?.let {
+            it.every?.let { every ->
+              whereStatements.add(
+                function(
+                  Boolean::class,
+                  "fl_array_contains",
+                  path(RepositoryEntity::tags),
+                  every,
+                  true
+                )
+                  .eq(true)
+              )
+            }
+            it.some?.let { some ->
+              whereStatements.add(
+                function(
+                  Boolean::class,
+                  "fl_array_contains",
+                  path(RepositoryEntity::tags),
+                  some,
+                  false
+                )
+                  .eq(true)
+              )
+            }
+          }
+        }
+
+        select(
+          entity(RepositoryEntity::class)
+        ).from(
+          entity(RepositoryEntity::class)
+        ).whereAnd(
+          *whereStatements.toTypedArray(),
+          or(
+            path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
+            path(RepositoryEntity::ownerId).eq(userId),
+          )
+        ).orderBy(
+          path(RepositoryEntity::lastUpdatedAt).desc()
+        )
+      }
+    }.toList().filterNotNull()
   }
 
   suspend fun findById(corrId: String, repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
     val sub = withContext(Dispatchers.IO) {
-      repositoryDAO.findByIdWithSources(repositoryId) ?: throw NotFoundException("Repository $repositoryId not found ($corrId)")
+      repositoryDAO.findByIdWithSources(repositoryId)
+        ?: throw NotFoundException("Repository $repositoryId not found ($corrId)")
     }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
 //      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
-        sub
+      sub
 //      } else {
 //        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
 //          sub
@@ -452,6 +538,15 @@ class RepositoryService {
   }
 
   fun getRepoTitleForFeedlessOpsNotifications(): String = "feedlessOpsNotifications"
+
+  suspend fun updatePullsFromAnalytics(corrId: String, repositoryId: UUID, pulls: Int) {
+    withContext(Dispatchers.IO) {
+      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      repository.pullsPerMonth = pulls
+      repository.lastPullSync = LocalDateTime.now()
+      repositoryDAO.save(repository)
+    }
+  }
 }
 
 private fun Visibility.fromDto(): EntityVisibility {

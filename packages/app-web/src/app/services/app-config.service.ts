@@ -58,18 +58,6 @@ export class AppConfigService {
       ],
     },
     {
-      id: 'feedDump',
-      routes: [
-        {
-          path: '',
-          loadChildren: () =>
-            import('../products/feed-dump/feed-dump-product.module').then(
-              (m) => m.FeedDumpProductModule,
-            ),
-        },
-      ],
-    },
-    {
       id: 'pageChangeTracker',
       routes: [
         {

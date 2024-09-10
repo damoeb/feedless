@@ -12,6 +12,8 @@ import {
   GqlDeleteRepositoryMutationVariables,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
+  GqlListPublicRepositoriesQuery,
+  GqlListPublicRepositoriesQueryVariables,
   GqlRepositoriesCreateInput,
   GqlRepositoriesInput,
   GqlRepositoryByIdQuery,
@@ -21,11 +23,12 @@ import {
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
   ListRepositories,
+  ListPublicRepositories,
   RepositoryById,
   UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { Repository, RepositoryFull } from '../graphql/types';
+import { PublicRepository, Repository, RepositoryFull } from '../graphql/types';
 import { ServerConfigService } from './server-config.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
@@ -100,6 +103,24 @@ export class RepositoryService {
     return this.apollo
       .query<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>({
         query: ListRepositories,
+        variables: {
+          data,
+        },
+        fetchPolicy,
+      })
+      .then((response) => response.data.repositories);
+  }
+
+  listPublicRepositories(
+    data: GqlRepositoriesInput,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<PublicRepository[]> {
+    return this.apollo
+      .query<
+        GqlListPublicRepositoriesQuery,
+        GqlListPublicRepositoriesQueryVariables
+      >({
+        query: ListPublicRepositories,
         variables: {
           data,
         },

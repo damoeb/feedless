@@ -1,10 +1,10 @@
 import {
   GqlAuthentication,
-  GqlCreateRepositoriesMutation,
   GqlCreateUserSecretMutation,
   GqlFeatureGroupsQuery,
   GqlListPluginsQuery,
   GqlListProductsQuery,
+  GqlListPublicRepositoriesQuery,
   GqlListRepositoriesQuery,
   GqlPreviewFeedQuery,
   GqlRemoteNativeFeedQuery,
@@ -22,6 +22,9 @@ export type RepositorySource = GetElementType<
 >;
 export type Repository = GetElementType<
   GqlListRepositoriesQuery['repositories']
+>;
+export type PublicRepository = GetElementType<
+  GqlListPublicRepositoriesQuery['repositories']
 >;
 export type RepositoryFull = GqlRepositoryByIdQuery['repository'];
 export type Product = GetElementType<GqlListProductsQuery['products']>;

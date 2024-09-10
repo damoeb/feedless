@@ -9,7 +9,9 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
+import org.dataloader.DataLoader
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.generated.DgsConstants
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import java.time.LocalDateTime
 import java.util.*
 
+
 @DgsComponent
 @Profile("${AppProfiles.database} & ${AppProfiles.api} & ${AppProfiles.saas}")
 @Transactional
@@ -41,9 +44,6 @@ class OrderResolver {
 
   @Autowired
   lateinit var orderService: OrderService
-
-  @Autowired
-  lateinit var productDAO: ProductDAO
 
   @Autowired
   lateinit var userDAO: UserDAO
@@ -74,7 +74,8 @@ class OrderResolver {
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
   suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
     val order: Order = dfe.getRoot()
-    productDAO.findById(UUID.fromString(order.productId)).orElseThrow().toDTO()
+    val dataLoader: DataLoader<String, Product> = dfe.getDataLoader("product")
+    dataLoader.load(order.productId).await()
   }
 
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)

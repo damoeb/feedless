@@ -29,7 +29,6 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.toMillis
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.WebToFeedTransformer
@@ -48,7 +47,6 @@ import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service

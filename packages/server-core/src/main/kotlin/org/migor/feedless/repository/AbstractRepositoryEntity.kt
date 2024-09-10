@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
@@ -61,6 +62,7 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
 import org.springframework.context.annotation.Lazy
+import java.sql.Types
 import java.time.LocalDateTime
 import java.util.*
 
@@ -89,6 +91,10 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Size(max = 1024)
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
+
+  @JdbcTypeCode(Types.ARRAY)
+  @Column(name = "tags", columnDefinition = "text[]", nullable = false)
+  open var tags: Array<String> = emptyArray()
 
   @Column(name = StandardJpaFields.visibility, nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
@@ -140,6 +146,12 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(nullable = false, name = "schema_version")
   open var schemaVersion: Int = 0
 
+  @Column(nullable = false, name = "pulls_per_month")
+  open var pullsPerMonth: Int = 0
+
+  @Column(name = "last_pull_sync")
+  open var lastPullSync: LocalDateTime? = null
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Lazy
   @Column(nullable = false, name = "plugins")
@@ -179,9 +191,24 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_repository__to__segmentation")
   )
   open var segmentation: SegmentationEntity? = null
+
+  @PrePersist
+  fun prePersist() {
+    tags = extractHashTags(description).toTypedArray()
+  }
 }
 
-fun RepositoryEntity.toDto(): Repository {
+fun extractHashTags(text: String): List<String> {
+  val hashtagRegex = Regex("#\\S+")
+
+  return hashtagRegex.findAll(text)
+    .map { it.value.substring(1) }
+    .toList()
+    .distinct()
+}
+
+
+fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
   return Repository(
     id = id.toString(),
     ownerId = ownerId.toString(),
@@ -194,7 +221,11 @@ fun RepositoryEntity.toDto(): Repository {
       maxCapacity = retentionMaxCapacity,
       maxAgeDays = retentionMaxAgeDays
     ),
-    shareKey = shareKey,
+    shareKey = if (currentUserIsOwner) {
+      shareKey
+    } else {
+      ""
+    },
     visibility = visibility.toDto(),
     createdAt = createdAt.toMillis(),
     lastUpdatedAt = lastUpdatedAt.toMillis(),
@@ -204,10 +235,11 @@ fun RepositoryEntity.toDto(): Repository {
     segmented = segmentation?.toDto(),
     refreshCron = sourcesSyncCron,
     documentCount = 0,
-    tags = emptyList(),
+    tags = tags.asList(),
     harvests = emptyList(),
     hasDisabledSources = false,
-    cronRuns = emptyList()
+    currentUserIsOwner = currentUserIsOwner,
+    pullsPerMonth = pullsPerMonth
   )
 }
 

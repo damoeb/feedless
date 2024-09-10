@@ -87,7 +87,7 @@ class RepositoryResolver {
 
     val userId = sessionService.userId()
     repositoryService.findAll(pageNumber, pageSize, data.where, userId)
-      .map { it.toDto() }
+      .map { it.toDto(it.ownerId == sessionService.userId()) }
   }
 
   @Throttled
@@ -107,7 +107,8 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] repository $data")
-    repositoryService.findById(corrId, UUID.fromString(data.where.id)).toDto()
+    val repository = repositoryService.findById(corrId, UUID.fromString(data.where.id))
+    repository.toDto(repository.ownerId == sessionService.userId())
   }
 
   @Throttled
@@ -129,7 +130,7 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Repository = withContext(useRequestContext(currentCoroutineContext())) {
     log.debug("[$corrId] updateRepository $data")
-    repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto()
+    repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto(true)
   }
 
   @Throttled
@@ -151,10 +152,14 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<ScrapeRequest> = coroutineScope {
     val repository: Repository = dfe.getSource()
-    val sources = withContext(Dispatchers.IO) {
-      sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id)).map { it.toScrapeRequest(corrId) }
+    if (repository.currentUserIsOwner) {
+      val sources = withContext(Dispatchers.IO) {
+        sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id)).map { it.toScrapeRequest(corrId) }
+      }
+      sources
+    } else {
+      emptyList()
     }
-    sources
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
@@ -163,11 +168,15 @@ class RepositoryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Harvest> = coroutineScope {
     val repository: Repository = dfe.getSource()
-    val harvests = withContext(Dispatchers.IO) {
-      val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
-      harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
+    if (repository.currentUserIsOwner) {
+      val harvests = withContext(Dispatchers.IO) {
+        val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+        harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
+      }
+      harvests
+    } else {
+      emptyList()
     }
-    harvests
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.HasDisabledSources)
@@ -181,16 +190,7 @@ class RepositoryResolver {
     errornous
   }
 
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.CronRuns)
-  suspend fun cronRuns(
-    dfe: DgsDataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<CronRun> = withContext(Dispatchers.IO) {
-    val source: Repository = dfe.getSource()
-    sourcePipelineJobDAO.findAllByRepositoryId(UUID.fromString(source.id)).map { it.toDto() }
-  }
-
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = withContext(Dispatchers.IO) {
     val source: Repository = dfe.getSource()
     sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id))

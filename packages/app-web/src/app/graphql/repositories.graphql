@@ -17,6 +17,26 @@ query listRepositories($data: RepositoriesInput!) {
     }
   }
 }
+query listPublicRepositories($data: RepositoriesInput!) {
+  repositories(data: $data) {
+    id
+    ownerId
+    title
+    description
+    product
+    visibility
+    tags
+    createdAt
+    lastUpdatedAt
+    nextUpdateAt
+    refreshCron
+    hasDisabledSources
+    pullsPerMonth
+    disabledFrom
+    archived
+    documentCount
+  }
+}
 
 query countRepositories($data: CountRepositoriesInput!) {
   countRepositories(data: $data)
