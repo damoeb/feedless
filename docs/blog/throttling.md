@@ -1,8 +1,9 @@
 # Protecting your services - Throttling is hard
 
-What situation am I trying to avoid?
-What resource needs protection cause it is limited?
+# Problem
+- What resource needs protection cause it is limited?
 
+# Solutions
 Other strategies? Caching
 
 throttling is similar to a semaphore, but more just
@@ -17,3 +18,5 @@ identify user by IP, what if it is a NAT/VPN?
 
 
 IP + user agent
+
+# Conclusion
