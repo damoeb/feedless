@@ -48,6 +48,7 @@ import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.net.ConnectException
 import java.net.UnknownHostException
 import java.time.Duration
 import java.time.Instant
@@ -219,7 +220,7 @@ class RepositoryHarvester internal constructor() {
   }
 
   private suspend fun handleScrapeException(corrId: String, e: Throwable?, source: SourceEntity) {
-    if (e !is ResumableHarvestException && e !is UnknownHostException) {
+    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
       log.info("[$corrId] disabling source ${source.id} with '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
