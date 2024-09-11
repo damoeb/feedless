@@ -2,6 +2,7 @@ package org.migor.feedless.source
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.ClickPositionActionEntity
@@ -17,7 +18,7 @@ import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.repository.RepositoryHarvester
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +29,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.source} & ${AppLayer.service}")
 class SourceService {
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)

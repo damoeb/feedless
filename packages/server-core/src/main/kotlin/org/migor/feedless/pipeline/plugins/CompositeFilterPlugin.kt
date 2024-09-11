@@ -1,6 +1,8 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.filter.generated.FilterByExpression
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -12,12 +14,14 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.FilterEntityPlugin
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class CompositeFilterPlugin : FilterEntityPlugin {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
@@ -30,11 +34,11 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun name(): String = "Filter"
 
   override fun filterEntity(
-    corrId: String,
-    item: JsonItem,
-    params: PluginExecutionParamsInput,
-    index: Int,
-    logCollector: LogCollector,
+      corrId: String,
+      item: JsonItem,
+      params: PluginExecutionParamsInput,
+      index: Int,
+      logCollector: LogCollector,
   ): Boolean {
     logCollector.log("applying filters to item #$index url=${item.url}")
     val keep = params.org_feedless_filter?.let { plugins ->

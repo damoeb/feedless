@@ -583,7 +583,7 @@ type ScrapeAction {
   execute: PluginExecution
   click: DOMElement
   type: DOMActionType
-  wait: WaitAction
+  waitFor: WaitForAction
   select: DOMActionSelect
   header: RequestHeader
   purge: DOMElementByXPath
@@ -597,7 +597,7 @@ input ScrapeActionInput {
   execute: PluginExecutionInput
   purge: DOMElementByXPathInput
   type: DOMActionTypeInput
-  wait: WaitActionInput
+  waitFor: WaitForActionInput
   select: DOMActionSelectInput
   header: RequestHeaderInput
 }
@@ -665,10 +665,10 @@ type XYPosition {
   y: Int!
 }
 
-type WaitAction {
+type WaitForAction {
   element: DOMElementByNameOrXPath!
 }
-input WaitActionInput {
+input WaitForActionInput {
   element: DOMElementByNameOrXPathInput!
 }
 
@@ -1392,7 +1392,7 @@ type ScrapeActionResponse {
   extract: ScrapeExtractResponse
 #  click: DOMElement
 #  type: DOMActionType
-#  wait: WaitAction
+#  waitFor: WaitForAction
 #  select: DOMActionSelect
 #  header: RequestHeader
 #  purge: DOMElementByXPath
@@ -1404,7 +1404,7 @@ input ScrapeActionResponseInput {
 #  execute: PluginExecutionResponseInput
 #  click: DOMElement
 #  type: DOMActionType
-#  wait: WaitAction
+#  waitFor: WaitForAction
 #  select: DOMActionSelect
 #  header: RequestHeader
 #  purge: DOMElementByXPath

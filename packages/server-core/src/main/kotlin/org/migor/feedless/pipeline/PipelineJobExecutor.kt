@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.document.DocumentDAO
@@ -26,7 +27,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile("${AppProfiles.database} & ${AppProfiles.cron}")
+@Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 @Transactional(propagation = Propagation.NEVER)
 class PipelineJobExecutor internal constructor() {
 

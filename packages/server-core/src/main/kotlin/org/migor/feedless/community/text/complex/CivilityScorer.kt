@@ -1,6 +1,7 @@
 package org.migor.feedless.community.text.complex
 
 import jakarta.annotation.PostConstruct
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.LanguageService
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service
 data class CivilityWeights(val sentiment: Double, val attacks: Double, val politeness: Double)
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class CivilityScorer {
 
   private val log = LoggerFactory.getLogger(VocabularyScorer::class.simpleName)

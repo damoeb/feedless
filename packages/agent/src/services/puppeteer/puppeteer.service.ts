@@ -563,8 +563,8 @@ export class PuppeteerService {
         createLogger('fetch'),
       );
     }
-    if (action.wait) {
-      return this.executeWaitAction(action.wait, page, createLogger('wait'));
+    if (action.waitFor) {
+      return this.executeWaitAction(action.waitFor, page, createLogger('wait'));
     }
     if (action.type) {
       return this.executeTypeAction(action.type, page, createLogger('type'));

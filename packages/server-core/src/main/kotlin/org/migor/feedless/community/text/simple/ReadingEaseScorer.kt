@@ -1,5 +1,6 @@
 package org.migor.feedless.community.text.simple
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.TokenizerService
 import org.migor.feedless.community.text.hyphenation.HyphenationPattern
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class ReadingEaseScorer {
 
   private val log = LoggerFactory.getLogger(ReadingEaseScorer::class.simpleName)

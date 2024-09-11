@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
-@Profile("${AppProfiles.database} & ${AppProfiles.api}")
+@Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 @Transactional
 class ProductResolver {
 

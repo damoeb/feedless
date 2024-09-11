@@ -9,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -29,7 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
-@Profile("${AppProfiles.agent} & ${AppProfiles.api}")
+@Profile("${AppProfiles.agent} & ${AppLayer.api}")
 class AgentResolver {
 
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)

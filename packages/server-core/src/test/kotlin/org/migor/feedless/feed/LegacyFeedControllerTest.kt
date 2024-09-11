@@ -1,7 +1,6 @@
 package org.migor.feedless.feed
 
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -10,26 +9,22 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.license.LicenseService
-import org.migor.feedless.mail.MailProviderService
-import org.migor.feedless.plan.ProductDataLoader
-import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.anyOrNull
-import org.migor.feedless.session.SessionService
-import org.migor.feedless.user.UserService
 import org.mockito.Mockito.`when`
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -40,7 +35,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.socket.WebSocketHandler
 import java.time.LocalDateTime
-import java.util.*
 
 const val feedId = "feed-id"
 
@@ -49,20 +43,21 @@ const val feedId = "feed-id"
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @MockBeans(
-  value = [
-    MockBean(UserService::class),
-    MockBean(LicenseService::class),
-    MockBean(MailProviderService::class),
-    MockBean(DocumentService::class),
-    MockBean(AgentService::class),
-    MockBean(SessionService::class),
-    MockBean(LegacyFeedService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-    MockBean(ProductDataLoader::class),
+    MockBean(ServerConfigResolver::class),
     MockBean(WebSocketHandler::class),
-  ]
+    MockBean(FeedParserService::class),
 )
-@ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.legacyFeeds])
+@ActiveProfiles(
+  "test",
+  AppLayer.api,
+  AppLayer.service,
+  AppProfiles.properties,
+  AppProfiles.legacyFeeds,
+)
+@Import(
+  DisableDatabaseConfiguration::class,
+  DisableSecurityConfiguration::class,
+)
 class LegacyFeedControllerTest {
 
   lateinit var baseEndpoint: String
@@ -70,7 +65,7 @@ class LegacyFeedControllerTest {
   @LocalServerPort
   var port = 0
 
-  @Autowired
+  @MockBean
   lateinit var legacyFeedService: LegacyFeedService
 
   lateinit var mockFeed: JsonFeed

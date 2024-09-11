@@ -3,6 +3,7 @@ package org.migor.feedless.community
 import jakarta.annotation.PostConstruct
 import opennlp.tools.postag.POSModel
 import opennlp.tools.postag.POSTaggerME
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -12,7 +13,7 @@ import java.util.*
 
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class PartOfSpeechService {
 
   private lateinit var modelEn: POSModel

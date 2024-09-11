@@ -14,12 +14,12 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feed.LegacyFeedService
-import org.migor.feedless.plan.FeatureGroupDAO
-import org.migor.feedless.plan.FeatureGroupEntity
-import org.migor.feedless.plan.FeatureName
-import org.migor.feedless.plan.FeatureService
-import org.migor.feedless.plan.FeatureValueEntity
-import org.migor.feedless.plan.FeatureValueType
+import org.migor.feedless.feature.FeatureGroupDAO
+import org.migor.feedless.feature.FeatureGroupEntity
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.feature.FeatureValueEntity
+import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.PricedProductEntity
 import org.migor.feedless.plan.ProductDAO
@@ -46,7 +46,7 @@ import java.time.LocalDateTime
 
 @Service
 @Order(1)
-@Profile("${AppProfiles.seed} & ${AppProfiles.database}")
+@Profile(AppProfiles.seed)
 class Seeder {
 
   private val log = LoggerFactory.getLogger(Seeder::class.simpleName)
@@ -463,9 +463,9 @@ class Seeder {
   }
 
   private suspend fun resolveFeatureGroup(
-    name: String,
-    parentFeatureGroup: FeatureGroupEntity?,
-    features: Map<FeatureName, FeatureValueEntity>
+      name: String,
+      parentFeatureGroup: FeatureGroupEntity?,
+      features: Map<FeatureName, FeatureValueEntity>
   ): FeatureGroupEntity {
     val group = withContext(Dispatchers.IO) {
       featureGroupDAO.findByName(name) ?: run {
@@ -500,14 +500,14 @@ class Seeder {
   }
 
   private suspend fun createProduct(
-    name: String,
-    description: String,
-    group: ProductCategory? = null,
-    prices: List<PricedProductEntity>,
-    parentFeatureGroup: FeatureGroupEntity? = null,
-    features: Map<FeatureName, FeatureValueEntity>? = null,
-    isCloud: Boolean = false,
-    isBaseProduct: Boolean = false
+      name: String,
+      description: String,
+      group: ProductCategory? = null,
+      prices: List<PricedProductEntity>,
+      parentFeatureGroup: FeatureGroupEntity? = null,
+      features: Map<FeatureName, FeatureValueEntity>? = null,
+      isCloud: Boolean = false,
+      isBaseProduct: Boolean = false
   ): ProductEntity {
 
     return withContext(Dispatchers.IO) {

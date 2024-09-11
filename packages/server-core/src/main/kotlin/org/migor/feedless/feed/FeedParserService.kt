@@ -2,6 +2,7 @@ package org.migor.feedless.feed
 
 import org.apache.commons.lang3.StringUtils
 import org.locationtech.jts.geom.Point
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -24,10 +25,10 @@ import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeActionOutput
-import org.migor.feedless.service.ScrapeOutput
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeActionOutput
+import org.migor.feedless.scrape.ScrapeOutput
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
@@ -44,7 +45,7 @@ private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
 }
 
 @Service
-@Profile(AppProfiles.scrape)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedParserService {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)

@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
@@ -10,18 +11,18 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.scrape} & ${AppLayer.repository}")
 interface SourcePipelineJobDAO : JpaRepository<SourcePipelineJobEntity, UUID> {
 
-  @Query(
-    """
-    select K from SourcePipelineJobEntity K
-    inner join SourceEntity S on S.id = K.sourceId
-    where S.repositoryId = :id
-    ORDER BY K.createdAt DESC
-  """
-  )
-  fun findAllByRepositoryId(@Param("id") id: UUID): List<SourcePipelineJobEntity>
+//  @Query(
+//    """
+//    select K from SourcePipelineJobEntity K
+//    inner join SourceEntity S on S.id = K.sourceId
+//    where S.repositoryId = :id
+//    ORDER BY K.createdAt DESC
+//  """
+//  )
+//  fun findAllByRepositoryId(@Param("id") id: UUID): List<SourcePipelineJobEntity>
 
   @Query(
     nativeQuery = true,

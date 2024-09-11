@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
@@ -12,8 +13,8 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.plan.FeatureName
-import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.MaxAgeDaysDateField
@@ -30,7 +31,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.user} & ${AppLayer.service}")
 @Transactional
 class UserService {
 

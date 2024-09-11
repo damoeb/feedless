@@ -14,9 +14,9 @@ import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.repository.any
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.web.Selectors
-import org.migor.feedless.web.WebToFeedTransformer
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.Selectors
+import org.migor.feedless.scrape.WebToFeedTransformer
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
@@ -27,9 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import java.net.URI
-import java.net.URL
 import java.time.LocalDateTime
-import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)

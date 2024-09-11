@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
@@ -15,12 +16,12 @@ import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeService
-import org.migor.feedless.service.needsPrerendering
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.web.WebToArticleTransformer
+import org.migor.feedless.scrape.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -30,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 
 @Service
-@Profile(AppProfiles.scrape)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 @Transactional
 class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
@@ -106,14 +107,14 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   }
 
   override suspend fun transformFragment(
-    corrId: String,
-    action: ExecuteActionEntity,
-    data: HttpResponse,
-    logger: LogCollector,
+      corrId: String,
+      action: ExecuteActionEntity,
+      data: HttpResponse,
+      logger: LogCollector,
   ): FragmentOutput {
     val markup = data.responseBody.toString(StandardCharsets.UTF_8)
     return FragmentOutput(
-      fragmentName = "",
+      fragmentName = "fulltext",
       items = listOf(
         webToArticleTransformer.fromHtml(markup, data.url)
       ),

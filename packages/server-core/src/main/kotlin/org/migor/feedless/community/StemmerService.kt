@@ -1,5 +1,6 @@
 package org.migor.feedless.community
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -10,7 +11,7 @@ import java.util.*
 
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class StemmerService {
 
   fun stem(words: List<String>, locale: Locale): List<String> {

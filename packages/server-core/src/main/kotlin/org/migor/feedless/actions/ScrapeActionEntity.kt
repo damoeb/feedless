@@ -31,7 +31,7 @@ import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.generated.types.XYPosition
 import org.migor.feedless.repository.toDto
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.web.PuppeteerWaitUntil
+import org.migor.feedless.scrape.PuppeteerWaitUntil
 import java.util.*
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 

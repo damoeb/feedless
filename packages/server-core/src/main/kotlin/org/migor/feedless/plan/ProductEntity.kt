@@ -18,6 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.toDto
+import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.generated.types.Product
 import java.util.*
 

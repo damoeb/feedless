@@ -4,7 +4,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.web.WebToArticleTransformer
+import org.migor.feedless.common.PdfService
+import org.migor.feedless.scrape.WebToArticleTransformer
 import org.springframework.util.ResourceUtils
 import java.io.File
 

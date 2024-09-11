@@ -4,6 +4,7 @@ import io.github.bucket4j.Bucket
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.HostOverloadingException
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 @Service
-@Profile("!${AppProfiles.nothrottle} && ${AppProfiles.database}")
+@Profile("${AppProfiles.throttle} && ${AppLayer.api}")
 class InMemoryRequestThrottleService : RequestThrottleService() {
   private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
 

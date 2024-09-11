@@ -3,11 +3,15 @@ package org.migor.feedless.feed.discovery
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.util.FeedUtil
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URL
 
 @Service
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class NativeFeedLocator {
   suspend fun locateInDocument(corrId: String, document: Document, url: String): List<RemoteNativeFeedRef> {
     return document.select("link[rel=alternate][type], link[rel=feed][type]")

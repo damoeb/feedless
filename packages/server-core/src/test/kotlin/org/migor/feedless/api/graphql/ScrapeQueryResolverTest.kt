@@ -1,29 +1,32 @@
 package org.migor.feedless.api.graphql
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
-import org.migor.feedless.agent.AgentSyncExecutor
+import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.HttpFetchInput
+import org.migor.feedless.generated.types.HttpGetRequestInput
+import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.ScrapeActionInput
+import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.license.LicenseService
-import org.migor.feedless.plan.ProductDataLoader
-import org.migor.feedless.plan.ProductService
-import org.migor.feedless.session.SessionService
-import org.migor.feedless.user.UserService
-import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
@@ -33,32 +36,32 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
-import org.springframework.web.socket.WebSocketHandler
 import java.nio.file.Files
 
 @SpringBootTest
-@ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.scrape])
 @MockBeans(
-  value = [
+    MockBean(ServerConfigResolver::class),
     MockBean(AgentService::class),
-    MockBean(AgentSyncExecutor::class),
-    MockBean(UserService::class),
-    MockBean(DocumentService::class),
-    MockBean(SessionService::class),
-    MockBean(LicenseService::class),
-    MockBean(ProductService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-    MockBean(ProductDataLoader::class),
-    MockBean(WebSocketHandler::class),
-  ]
+    MockBean(AttachmentDAO::class),
+)
+@ActiveProfiles(
+  "test",
+  AppProfiles.properties,
+  AppLayer.api,
+  AppLayer.service,
+  AppProfiles.scrape,
+)
+@Import(
+  DisableDatabaseConfiguration::class,
+  DisableWebSocketsConfiguration::class
 )
 class ScrapeQueryResolverTest {
-
 
   @Autowired
   lateinit var dgsQueryExecutor: DgsQueryExecutor
@@ -74,9 +77,7 @@ class ScrapeQueryResolverTest {
   }
 
   @Test
-  @Disabled
   fun `scrape native feed`() = runTest {
-
 
     // given
     val url = "http://www.foo.bar/feed.xml"
@@ -93,7 +94,6 @@ class ScrapeQueryResolverTest {
   }
 
   @Test
-  @Disabled
   fun `scrape generic feed`() = runTest {
     // given
     val feed = Files.readString(ResourceUtils.getFile("classpath:raw-websites/06-jon-bo-posts.input.html").toPath())
@@ -121,57 +121,62 @@ class ScrapeQueryResolverTest {
   }
 
   private fun scrapeFeed(params: PluginExecutionParamsInput): ScrapeResponse {
-    return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
-      """
-        query (${'$'}pluginId: ID!, ${'$'}params: PluginExecutionParamsInput!) {
-        scrape(data: {
-          title: ""
-          flow: {
-            sequence: [
-              {
-                fetch: {get: {url: {literal: "$url"}}}
-              }
-              {
-                execute: {
-                  pluginId: ${'$'}pluginId
-                  params: ${'$'}params
-                }
-              }
-            ]
-          }
+    val graphQLQuery = DgsClient.buildQuery {
+      scrape(data = SourceInput(
+        title = "",
+        flow = ScrapeFlowInput(
+          sequence = listOf(
+            ScrapeActionInput(
+              fetch = HttpFetchInput(
+                get = HttpGetRequestInput(
+                  url = StringLiteralOrVariableInput(
+                    literal = url
+                  )
+                )
+              )
+            ),
+            ScrapeActionInput(
+              execute = PluginExecutionInput(
+                pluginId = FeedlessPlugins.org_feedless_feed.name,
+                params = params
+              )
+            )
+          )
+        )
+      )
+      ) {
+        failed
+        logs {
+          time
+          message
         }
-        ) {
-          failed
-          logs
-          outputs {
-            index
-            response {
-              extract {
-                items {
-                  publishedAt
-                  publishedAt
-                  url
-                  createdAt
-                  id
-                }
+        outputs {
+          index
+          response {
+            extract {
+              fragmentName
+              items {
+                publishedAt
+                url
+                createdAt
+                id
               }
             }
           }
         }
       }
-        """.trimIndent(),
+    }
+
+    return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
+      graphQLQuery,
       "data.scrape",
-      mapOf(
-        "pluginId" to FeedlessPlugins.org_feedless_feed.name,
-        "params" to JsonUtil.gson.fromJson(JsonUtil.gson.toJson(params), Map::class.java)
-      ),
       ScrapeResponse::class.java,
     )
   }
 
   private fun executeFeedAssertions(scrapeResponse: ScrapeResponse) {
-//    val actualFeed = scrapeResponse.outputs.find { it.response.extract?.pluginId == FeedlessPlugins.org_feedless_feed.name }!!.response.execute!!.data.org_feedless_feed
-//    Assertions.assertThat(actualFeed!!.items.size).isGreaterThan(0)
+    val items = scrapeResponse.outputs.find { it.response.extract != null }!!.response.extract!!.items!!
+    assertThat(items.size).isGreaterThan(0)
   }
 
   private fun mockSecurityContext() {

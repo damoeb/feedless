@@ -5,6 +5,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.reactor.ReactorContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.user.UserDAO
@@ -57,7 +58,7 @@ class RequestContextElement : AbstractCoroutineContextElement(RequestContextElem
 }
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.session} & ${AppLayer.service}")
 @Transactional
 class SessionService {
 

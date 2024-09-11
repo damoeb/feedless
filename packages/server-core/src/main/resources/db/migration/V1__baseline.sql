@@ -1,5 +1,5 @@
 --
--- Name: map_plan_to_feature; Type: TABLE; Schema: public; Owner: postgres
+-- Name: map_plan_to_feature; Type: TABLE;
 --
 
 CREATE TABLE  map_plan_to_feature (
@@ -8,10 +8,8 @@ CREATE TABLE  map_plan_to_feature (
 );
 
 
-ALTER TABLE  map_plan_to_feature OWNER TO postgres;
-
 --
--- Name: t_article; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_article; Type: TABLE;
 --
 
 CREATE TABLE  t_article (
@@ -27,10 +25,8 @@ CREATE TABLE  t_article (
 );
 
 
-ALTER TABLE  t_article OWNER TO postgres;
-
 --
--- Name: t_bucket; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_bucket; Type: TABLE;
 --
 
 CREATE TABLE  t_bucket (
@@ -49,10 +45,8 @@ CREATE TABLE  t_bucket (
 );
 
 
-ALTER TABLE  t_bucket OWNER TO postgres;
-
 --
--- Name: t_feature; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_feature; Type: TABLE;
 --
 
 CREATE TABLE  t_feature (
@@ -67,10 +61,8 @@ CREATE TABLE  t_feature (
 );
 
 
-ALTER TABLE  t_feature OWNER TO postgres;
-
 --
--- Name: t_feed_generic; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_feed_generic; Type: TABLE;
 --
 
 CREATE TABLE  t_feed_generic (
@@ -82,10 +74,8 @@ CREATE TABLE  t_feed_generic (
 );
 
 
-ALTER TABLE  t_feed_generic OWNER TO postgres;
-
 --
--- Name: t_feed_native; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_feed_native; Type: TABLE;
 --
 
 CREATE TABLE  t_feed_native (
@@ -118,10 +108,8 @@ CREATE TABLE  t_feed_native (
 );
 
 
-ALTER TABLE  t_feed_native OWNER TO postgres;
-
 --
--- Name: t_hyperlink; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_hyperlink; Type: TABLE;
 --
 
 CREATE TABLE  t_hyperlink (
@@ -134,10 +122,8 @@ CREATE TABLE  t_hyperlink (
 );
 
 
-ALTER TABLE  t_hyperlink OWNER TO postgres;
-
 --
--- Name: t_importer; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_importer; Type: TABLE;
 --
 
 CREATE TABLE  t_importer (
@@ -162,10 +148,8 @@ CREATE TABLE  t_importer (
 );
 
 
-ALTER TABLE  t_importer OWNER TO postgres;
-
 --
--- Name: t_otp; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_otp; Type: TABLE;
 --
 
 CREATE TABLE  t_otp (
@@ -177,10 +161,8 @@ CREATE TABLE  t_otp (
 );
 
 
-ALTER TABLE  t_otp OWNER TO postgres;
-
 --
--- Name: t_plan; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_plan; Type: TABLE;
 --
 
 CREATE TABLE  t_plan (
@@ -193,10 +175,8 @@ CREATE TABLE  t_plan (
 );
 
 
-ALTER TABLE  t_plan OWNER TO postgres;
-
 --
--- Name: t_stream; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_stream; Type: TABLE;
 --
 
 CREATE TABLE  t_stream (
@@ -205,10 +185,8 @@ CREATE TABLE  t_stream (
 );
 
 
-ALTER TABLE  t_stream OWNER TO postgres;
-
 --
--- Name: t_user; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_user; Type: TABLE;
 --
 
 CREATE TABLE  t_user (
@@ -227,10 +205,8 @@ CREATE TABLE  t_user (
 );
 
 
-ALTER TABLE  t_user OWNER TO postgres;
-
 --
--- Name: t_user_plan_subscription; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_user_plan_subscription; Type: TABLE;
 --
 
 CREATE TABLE  t_user_plan_subscription (
@@ -244,10 +220,8 @@ CREATE TABLE  t_user_plan_subscription (
 );
 
 
-ALTER TABLE  t_user_plan_subscription OWNER TO postgres;
-
 --
--- Name: t_user_secret; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_user_secret; Type: TABLE;
 --
 
 CREATE TABLE  t_user_secret (
@@ -261,10 +235,8 @@ CREATE TABLE  t_user_secret (
 );
 
 
-ALTER TABLE  t_user_secret OWNER TO postgres;
-
 --
--- Name: t_web_document; Type: TABLE; Schema: public; Owner: postgres
+-- Name: t_web_document; Type: TABLE;
 --
 
 CREATE TABLE  t_web_document (
@@ -293,10 +265,8 @@ CREATE TABLE  t_web_document (
 );
 
 
-ALTER TABLE  t_web_document OWNER TO postgres;
-
 --
--- Data for Name: t_feature; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: t_feature; Type: TABLE DATA;
 --
 
 COPY  t_feature (id, createdat, name, plan_id, state, valueboolean, valueint, valuetype) FROM stdin;
@@ -345,7 +315,7 @@ b713c468-72d6-4e1a-bfb5-efbce4a4f2a9	2023-05-09 20:21:12.011	itemEmailForward	ef
 \.
 
 --
--- Data for Name: t_plan; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: t_plan; Type: TABLE DATA;
 --
 
 COPY  t_plan (id, createdat, availability, costs, name, is_primary) FROM stdin;
@@ -355,7 +325,7 @@ ef6c4b90-b6a6-4a43-b745-966e9da00159	2023-05-09 20:21:12.002	by_request	9.99	bas
 
 
 --
--- Name: t_article t_article_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_article t_article_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_article
@@ -363,7 +333,7 @@ ALTER TABLE ONLY  t_article
 
 
 --
--- Name: t_bucket t_bucket_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_bucket t_bucket_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_bucket
@@ -371,7 +341,7 @@ ALTER TABLE ONLY  t_bucket
 
 
 --
--- Name: t_feature t_feature_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feature t_feature_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feature
@@ -379,7 +349,7 @@ ALTER TABLE ONLY  t_feature
 
 
 --
--- Name: t_feed_generic t_feed_generic_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_generic t_feed_generic_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_generic
@@ -387,7 +357,7 @@ ALTER TABLE ONLY  t_feed_generic
 
 
 --
--- Name: t_feed_native t_feed_native_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native t_feed_native_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -395,7 +365,7 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: t_hyperlink t_hyperlink_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_hyperlink t_hyperlink_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_hyperlink
@@ -403,7 +373,7 @@ ALTER TABLE ONLY  t_hyperlink
 
 
 --
--- Name: t_importer t_importer_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_importer t_importer_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_importer
@@ -411,7 +381,7 @@ ALTER TABLE ONLY  t_importer
 
 
 --
--- Name: t_otp t_otp_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_otp t_otp_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_otp
@@ -419,7 +389,7 @@ ALTER TABLE ONLY  t_otp
 
 
 --
--- Name: t_plan t_plan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_plan t_plan_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_plan
@@ -427,7 +397,7 @@ ALTER TABLE ONLY  t_plan
 
 
 --
--- Name: t_stream t_stream_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_stream t_stream_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_stream
@@ -435,7 +405,7 @@ ALTER TABLE ONLY  t_stream
 
 
 --
--- Name: t_user t_user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user t_user_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user
@@ -443,7 +413,7 @@ ALTER TABLE ONLY  t_user
 
 
 --
--- Name: t_user_plan_subscription t_user_plan_subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user_plan_subscription t_user_plan_subscription_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user_plan_subscription
@@ -451,7 +421,7 @@ ALTER TABLE ONLY  t_user_plan_subscription
 
 
 --
--- Name: t_user_secret t_user_secret_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user_secret t_user_secret_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user_secret
@@ -459,7 +429,7 @@ ALTER TABLE ONLY  t_user_secret
 
 
 --
--- Name: t_web_document t_web_document_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_web_document t_web_document_pkey; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_web_document
@@ -467,7 +437,7 @@ ALTER TABLE ONLY  t_web_document
 
 
 --
--- Name: t_feed_native uk_6v95mi2ep5qw29314u15vwsj3; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native uk_6v95mi2ep5qw29314u15vwsj3; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -475,7 +445,7 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: t_plan uk_hslenih4o8iw4gbho72545mf3; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_plan uk_hslenih4o8iw4gbho72545mf3; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_plan
@@ -483,7 +453,7 @@ ALTER TABLE ONLY  t_plan
 
 
 --
--- Name: t_user uk_i6qjjoe560mee5ajdg7v1o6mi; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user uk_i6qjjoe560mee5ajdg7v1o6mi; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user
@@ -491,7 +461,7 @@ ALTER TABLE ONLY  t_user
 
 
 --
--- Name: t_importer ukknq9ceicvfc210mced7ncsuie; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_importer ukknq9ceicvfc210mced7ncsuie; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_importer
@@ -499,7 +469,7 @@ ALTER TABLE ONLY  t_importer
 
 
 --
--- Name: t_feed_native uniqueownerandfeed; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native uniqueownerandfeed; Type: CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -507,21 +477,21 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: idx_hyperlink_url; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_hyperlink_url; Type: INDEX;
 --
 
 CREATE INDEX idx_hyperlink_url ON  t_hyperlink USING btree (fromid);
 
 
 --
--- Name: idx_web_document_url; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_web_document_url; Type: INDEX;
 --
 
 CREATE INDEX idx_web_document_url ON  t_web_document USING btree (url);
 
 
 --
--- Name: t_bucket fk157cu4wjd97imxmg4ns0x3x85; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_bucket fk157cu4wjd97imxmg4ns0x3x85; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_bucket
@@ -529,7 +499,7 @@ ALTER TABLE ONLY  t_bucket
 
 
 --
--- Name: t_feed_generic fk2ft85wtvm6ivw0vxhteihm0rw; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_generic fk2ft85wtvm6ivw0vxhteihm0rw; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_generic
@@ -537,7 +507,7 @@ ALTER TABLE ONLY  t_feed_generic
 
 
 --
--- Name: t_otp fk36b6qk1g90ucc651dole1w4et; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_otp fk36b6qk1g90ucc651dole1w4et; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_otp
@@ -545,7 +515,7 @@ ALTER TABLE ONLY  t_otp
 
 
 --
--- Name: t_user_secret fk4evcslbhw4nofy5xsl2yyqxjk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user_secret fk4evcslbhw4nofy5xsl2yyqxjk; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user_secret
@@ -553,7 +523,7 @@ ALTER TABLE ONLY  t_user_secret
 
 
 --
--- Name: t_importer fk4u7buardohn32sp7yocqn59ke; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_importer fk4u7buardohn32sp7yocqn59ke; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_importer
@@ -561,7 +531,7 @@ ALTER TABLE ONLY  t_importer
 
 
 --
--- Name: t_article fk5a2eyi09un1yg3xls70asf5va; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_article fk5a2eyi09un1yg3xls70asf5va; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_article
@@ -569,7 +539,7 @@ ALTER TABLE ONLY  t_article
 
 
 --
--- Name: t_user fk5t89sip0n4g578g4yxaugjc1h; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user fk5t89sip0n4g578g4yxaugjc1h; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user
@@ -577,7 +547,7 @@ ALTER TABLE ONLY  t_user
 
 
 --
--- Name: t_user_plan_subscription fk8ncewprxstppim67lx6e7ysn4; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user_plan_subscription fk8ncewprxstppim67lx6e7ysn4; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user_plan_subscription
@@ -585,7 +555,7 @@ ALTER TABLE ONLY  t_user_plan_subscription
 
 
 --
--- Name: t_user_plan_subscription fk9fe7lce4xahbf06k9eiwgy02h; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user_plan_subscription fk9fe7lce4xahbf06k9eiwgy02h; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user_plan_subscription
@@ -593,7 +563,7 @@ ALTER TABLE ONLY  t_user_plan_subscription
 
 
 --
--- Name: map_plan_to_feature fkavs1bn9cp7ur1t2xqguf12b1t; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: map_plan_to_feature fkavs1bn9cp7ur1t2xqguf12b1t; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  map_plan_to_feature
@@ -601,7 +571,7 @@ ALTER TABLE ONLY  map_plan_to_feature
 
 
 --
--- Name: t_user fkciy9noxqwbr96ybkp5fv2c2ty; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_user fkciy9noxqwbr96ybkp5fv2c2ty; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_user
@@ -609,7 +579,7 @@ ALTER TABLE ONLY  t_user
 
 
 --
--- Name: t_article fkdh0dxm4bk8ahvk23dnfc40u8y; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_article fkdh0dxm4bk8ahvk23dnfc40u8y; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_article
@@ -617,7 +587,7 @@ ALTER TABLE ONLY  t_article
 
 
 --
--- Name: t_importer fkdunmc6oa4jocbgv4q4jyh4xny; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_importer fkdunmc6oa4jocbgv4q4jyh4xny; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_importer
@@ -625,7 +595,7 @@ ALTER TABLE ONLY  t_importer
 
 
 --
--- Name: t_article fkdxiy9chl8ghd9848def9b8o4o; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_article fkdxiy9chl8ghd9848def9b8o4o; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_article
@@ -633,7 +603,7 @@ ALTER TABLE ONLY  t_article
 
 
 --
--- Name: t_hyperlink fkgd7hbkkhrefq82vngp00so06d; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_hyperlink fkgd7hbkkhrefq82vngp00so06d; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_hyperlink
@@ -641,7 +611,7 @@ ALTER TABLE ONLY  t_hyperlink
 
 
 --
--- Name: t_bucket fkhr17e39pk9333v21m3ha23ggl; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_bucket fkhr17e39pk9333v21m3ha23ggl; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_bucket
@@ -649,7 +619,7 @@ ALTER TABLE ONLY  t_bucket
 
 
 --
--- Name: t_hyperlink fkixc22j33g4ov6eskdww7884ci; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_hyperlink fkixc22j33g4ov6eskdww7884ci; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_hyperlink
@@ -657,7 +627,7 @@ ALTER TABLE ONLY  t_hyperlink
 
 
 --
--- Name: t_feature fkj9etkvylxqaj7ee5e840nphcc; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feature fkj9etkvylxqaj7ee5e840nphcc; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feature
@@ -665,7 +635,7 @@ ALTER TABLE ONLY  t_feature
 
 
 --
--- Name: t_importer fkmfgv3wp5008are0gbk2il2blp; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_importer fkmfgv3wp5008are0gbk2il2blp; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_importer
@@ -673,7 +643,7 @@ ALTER TABLE ONLY  t_importer
 
 
 --
--- Name: t_feed_native fkn9kfg8o3jfarh3kqa960w7t3q; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native fkn9kfg8o3jfarh3kqa960w7t3q; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -681,7 +651,7 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: t_feed_native fknwf9rwa6eoqe5p08mo6uxkgwn; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native fknwf9rwa6eoqe5p08mo6uxkgwn; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -689,7 +659,7 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: t_feed_native fkpadc1pn1ghj7c1qfnsau0b1ml; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_feed_native fkpadc1pn1ghj7c1qfnsau0b1ml; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_feed_native
@@ -697,7 +667,7 @@ ALTER TABLE ONLY  t_feed_native
 
 
 --
--- Name: t_article fkq3lxplias2mkt5aqmxc1d9kiv; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: t_article fkq3lxplias2mkt5aqmxc1d9kiv; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  t_article
@@ -705,7 +675,7 @@ ALTER TABLE ONLY  t_article
 
 
 --
--- Name: map_plan_to_feature fksc26dpu29xdimt1d0ejr4n3oa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: map_plan_to_feature fksc26dpu29xdimt1d0ejr4n3oa; Type: FK CONSTRAINT;
 --
 
 ALTER TABLE ONLY  map_plan_to_feature

@@ -37,6 +37,7 @@ services:
 #    ports:
 #      - "8081:80"
 
+# /usr/share/postgresql/15/extension/postgis.control
   # https://github.com/postgis/docker-postgis
   postgis:
     image: postgis/postgis:15-3.4-alpine

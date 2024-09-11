@@ -19,7 +19,6 @@ import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDateTime
 import java.util.*
 
@@ -27,17 +26,17 @@ import java.util.*
 @Table(name = "t_user_secret")
 open class UserSecretEntity : EntityWithUUID() {
 
-  @Column(nullable = false, length = 400)
+  @Column(name="value", nullable = false, length = 400)
   open lateinit var value: String
 
-  @Column(nullable = false)
+  @Column(name = "valid_until", nullable = false)
   open lateinit var validUntil: LocalDateTime
 
-  @Column(nullable = false, length = 50)
+  @Column(name = "type", nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var type: UserSecretType
 
-  @Column
+  @Column(name = "last_used_at")
   open var lastUsedAt: LocalDateTime? = null
 
   @Column(name = StandardJpaFields.ownerId, nullable = false)
@@ -60,9 +59,9 @@ open class UserSecretEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    val encoder = BCryptPasswordEncoder()
-    val encoded = encoder.encode(value)
-    println(encoded)
+//    val encoder = BCryptPasswordEncoder()
+//    val encoded = encoder.encode(value)
+//    println(encoded)
   }
 }
 

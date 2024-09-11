@@ -12,6 +12,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
 import org.dataloader.DataLoader
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.generated.DgsConstants
@@ -36,7 +37,7 @@ import java.util.*
 
 
 @DgsComponent
-@Profile("${AppProfiles.database} & ${AppProfiles.api} & ${AppProfiles.saas}")
+@Profile("${AppProfiles.plan} & ${AppLayer.api}")
 @Transactional
 class OrderResolver {
 

@@ -1,5 +1,6 @@
 package org.migor.feedless.agent
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -9,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Profile("${AppProfiles.database} & ${AppProfiles.agent} & ${AppProfiles.cron}")
+@Profile("${AppProfiles.agent} & ${AppLayer.scheduler}")
 class AgentSyncExecutor {
 
   @Autowired

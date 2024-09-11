@@ -1,23 +1,25 @@
 package org.migor.feedless.config
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.document.DocumentService
-import org.migor.feedless.license.LicenseService
-import org.migor.feedless.mail.MailProviderService
-import org.migor.feedless.plan.ProductDataLoader
+import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.api.graphql.ServerConfigResolver
+import org.migor.feedless.document.DocumentController
+import org.migor.feedless.session.SessionResolver
+import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -25,7 +27,6 @@ import org.springframework.web.socket.WebSocketHandler
 
 
 const val actuatorPassword = "password"
-const val feedId = "feed-id"
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(
@@ -33,17 +34,23 @@ const val feedId = "feed-id"
   properties = ["app.actuatorPassword=$actuatorPassword"],
 )
 @MockBeans(
-  value = [
+    MockBean(ServerConfigResolver::class),
+    MockBean(UserDAO::class),
     MockBean(UserService::class),
-    MockBean(LicenseService::class),
-    MockBean(DocumentService::class),
-    MockBean(MailProviderService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-    MockBean(ProductDataLoader::class),
-    MockBean(WebSocketHandler::class),
-  ]
+    MockBean(SessionResolver::class),
+    MockBean(DocumentController::class),
 )
-@ActiveProfiles(profiles = ["test", AppProfiles.api, AppProfiles.feed, "metrics"])
+@ActiveProfiles(
+  "test",
+  AppLayer.api,
+  AppLayer.service,
+  AppProfiles.properties,
+  AppLayer.security,
+  AppProfiles.session,
+  AppProfiles.feed,
+  "metrics"
+)
+@Import(DisableDatabaseConfiguration::class)
 class SecurityConfigTest {
 
   lateinit var baseEndpoint: String

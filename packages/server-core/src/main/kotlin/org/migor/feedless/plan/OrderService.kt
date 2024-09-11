@@ -3,6 +3,7 @@ package org.migor.feedless.plan
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.Order
@@ -30,7 +31,7 @@ import java.util.*
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
 @Service
-@Profile(AppProfiles.saas)
+@Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class OrderService {
 
   private val log = LoggerFactory.getLogger(OrderService::class.simpleName)

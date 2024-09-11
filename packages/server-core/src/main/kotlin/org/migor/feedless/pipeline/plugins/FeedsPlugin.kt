@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.jsoup.nodes.Document
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.api.toDto
@@ -13,9 +14,9 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.web.GenericFeedParserOptions
+import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 
 @Service
-@Profile(AppProfiles.scrape)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedsPlugin : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedsPlugin::class.simpleName)
@@ -42,10 +43,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun listed() = false
   override suspend fun transformFragment(
-    corrId: String,
-    action: ExecuteActionEntity,
-    data: HttpResponse,
-    logger: LogCollector,
+      corrId: String,
+      action: ExecuteActionEntity,
+      data: HttpResponse,
+      logger: LogCollector,
   ): FragmentOutput {
     log.debug("[$corrId] transformFragment")
 
@@ -65,7 +66,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
       logger.log("Parsing native feed")
       val jsonFeed = feedParserService.parseFeed(corrId, data)
       FragmentOutput(
-        fragmentName = "",
+        fragmentName = "native",
         feeds = ScrapedFeeds(
           genericFeeds = emptyList(),
           nativeFeeds = listOf(jsonFeed.asRemoteNativeFeed())
@@ -81,7 +82,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
         logger.log("unsupported mimeType")
         log.warn("[$corrId] unsupported mimeType $mimeType")
         FragmentOutput(
-          fragmentName = "",
+          fragmentName = "generic",
           feeds = ScrapedFeeds(
             genericFeeds = emptyList(),
             nativeFeeds = emptyList()
@@ -94,10 +95,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun name(): String = "Feeds"
 
   private suspend fun extractFeeds(
-    corrId: String,
-    document: Document,
-    url: String,
-    logger: LogCollector,
+      corrId: String,
+      document: Document,
+      url: String,
+      logger: LogCollector,
   ): FragmentOutput {
     val parserOptions = GenericFeedParserOptions()
     val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)
@@ -107,7 +108,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     log.info("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
     return FragmentOutput(
-      fragmentName = "",
+      fragmentName = "feeds",
       feeds = ScrapedFeeds(
         genericFeeds = genericFeeds.map { it.toDto() },
         nativeFeeds = nativeFeeds.map { it.toDto() }

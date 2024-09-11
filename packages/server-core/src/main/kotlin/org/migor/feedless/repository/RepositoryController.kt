@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 @Controller
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.repository} & ${AppLayer.api}")
 class RepositoryController {
 
   private lateinit var feedXsl: String

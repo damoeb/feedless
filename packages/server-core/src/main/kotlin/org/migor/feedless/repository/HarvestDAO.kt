@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
   fun findAllByRepositoryId(id: UUID, pageable: PageRequest): List<HarvestEntity>
 

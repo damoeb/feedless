@@ -1,5 +1,6 @@
 package org.migor.feedless.community.text.complex
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service
 data class RelevanceWeights(val context: Double)
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class RelevanceScorer {
 
   private val log = LoggerFactory.getLogger(RelevanceScorer::class.simpleName)

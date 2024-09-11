@@ -1,44 +1,50 @@
 package org.migor.feedless.pipeline.plugins
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.PropertiesConfiguration
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.license.LicenseService
 import org.migor.feedless.repository.any
-import org.migor.feedless.secrets.UserSecretService
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.web.ExtendContext
-import org.migor.feedless.web.GenericFeedParserOptions
-import org.migor.feedless.web.GenericFeedRule
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedParserOptions
+import org.migor.feedless.scrape.GenericFeedRule
+import org.migor.feedless.scrape.LogCollector
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
-import java.util.*
 
 @SpringBootTest
-@ActiveProfiles(profiles = ["test", AppProfiles.scrape])
+@ActiveProfiles(
+  "test",
+  AppProfiles.properties,
+  AppProfiles.scrape,
+  AppLayer.service,
+)
 @MockBeans(
-  value = [
-    MockBean(UserSecretService::class),
+    MockBean(AttachmentDAO::class),
     MockBean(AgentService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-    MockBean(LicenseService::class),
-  ]
+)
+@Import(
+  PropertiesConfiguration::class,
+  DisableDatabaseConfiguration::class
 )
 class FeedsPluginTest {
 

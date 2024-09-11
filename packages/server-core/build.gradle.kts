@@ -13,6 +13,7 @@ plugins {
 
   id("com.adarshr.test-logger") version "3.2.0"
   id("org.ajoberstar.grgit")
+  id("jacoco")
   id("org.javacc.javacc") version "3.0.2"
 //  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.9.20"
@@ -33,6 +34,29 @@ sourceSets.getByName("main") {
   java.srcDir("src/generated/java")
 //  java.srcDir("src/main/kotlin")
   resources.srcDir("src/main/resources")
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
+  reports {
+//    xml.required.set(true)
+//    csv.required.set(false)
+    html.required.set(true)
+  }
+}
+
+tasks.jacocoTestCoverageVerification {
+  violationRules {
+    rule {
+      limit {
+        minimum = "0.80".toBigDecimal() // Minimum 80% coverage required
+      }
+    }
+  }
+}
+
+tasks.check {
+  dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
 kotlin {
@@ -157,9 +181,12 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.testcontainers:postgresql:1.19.0")
-  testImplementation("org.testcontainers:testcontainers:1.19.0")
+  testImplementation("org.testcontainers:postgresql:1.20.0")
+  testImplementation("org.testcontainers:testcontainers:1.20.0")
   testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+//  testImplementation("io.kotest:kotest-runner-junit5:5.0.0")
+//  testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.3")
+
 //  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
 //  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
 
@@ -181,7 +208,11 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
   )
   packageName = "org.migor.feedless.generated"
   generateInterfaces = false
+  generateClient = true
+  generateDataTypes = true
   language = "kotlin"
+//  generateKotlinNullableClasses = true
+  generateKotlinClosureProjections = true
 }
 
 val codegen = tasks.register("codegen") {
@@ -205,6 +236,7 @@ tasks.withType<Test> {
     println("Excluding tests with tags [${tags.joinToString(", ")}]")
     excludeTags(*tags)
   }
+  finalizedBy(tasks.getByName("jacocoTestReport"))
 }
 
 //val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {

@@ -21,9 +21,9 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.util.toMillis
-import org.migor.feedless.web.ExtendContext
-import org.migor.feedless.web.GenericFeedRule
-import org.migor.feedless.web.GenericFeedSelectors
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedRule
+import org.migor.feedless.scrape.GenericFeedSelectors
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
@@ -157,7 +157,7 @@ fun SourceInput.fromDto(): SourceEntity {
   val source = SourceEntity()
   source.title = title
   source.actions = flow.sequence.mapNotNull {
-    it.fetch?.let { toFetchAction(it) } ?: it.wait?.let { toWaitAction(it) } ?: it.header?.let { toHeaderAction(it) }
+    it.fetch?.let { toFetchAction(it) } ?: it.waitFor?.let { toWaitAction(it) } ?: it.header?.let { toHeaderAction(it) }
     ?: it.purge?.let { toDomAction(DomEventType.purge, it.value) } ?: it.type?.let {
       toDomAction(
         DomEventType.type,
@@ -221,7 +221,7 @@ fun toHeaderAction(it: RequestHeaderInput): HeaderActionEntity {
   return e
 }
 
-fun toWaitAction(it: WaitActionInput): WaitActionEntity {
+fun toWaitAction(it: WaitForActionInput): WaitActionEntity {
   val e = WaitActionEntity()
   e.xpath = it.element.xpath!!.value
   return e

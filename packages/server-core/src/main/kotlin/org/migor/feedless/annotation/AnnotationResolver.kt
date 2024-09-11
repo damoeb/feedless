@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
-@Profile("${AppProfiles.agent} & ${AppProfiles.api}")
+@Profile("${AppProfiles.annotation} & ${AppLayer.api}")
 class AnnotationResolver {
 
   private val log = LoggerFactory.getLogger(AnnotationResolver::class.simpleName)

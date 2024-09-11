@@ -1,39 +1,47 @@
 package org.migor.feedless.plan
 
+import PostgreSQLExtension
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.license.LicenseService
-import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.secrets.UserSecretService
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.feature.FeatureDAO
+import org.migor.feedless.feature.FeatureEntity
+import org.migor.feedless.feature.FeatureGroupDAO
+import org.migor.feedless.feature.FeatureGroupEntity
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.feature.FeatureValueDAO
+import org.migor.feedless.feature.FeatureValueEntity
+import org.migor.feedless.feature.FeatureValueType
+import org.migor.feedless.session.SessionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.util.*
 
 @SpringBootTest
-@ActiveProfiles(profiles = ["test", AppProfiles.database])
-@MockBeans(
-  value = [
-    MockBean(PluginService::class),
-    MockBean(LicenseService::class),
-    MockBean(UserSecretService::class),
-    MockBean(ProductService::class),
-    MockBean(SourceService::class),
-  ]
+@ExtendWith(PostgreSQLExtension::class)
+@DirtiesContext
+@ActiveProfiles(
+  "test",
+  AppProfiles.features,
+  AppProfiles.properties,
+  AppLayer.repository,
+  AppLayer.service,
 )
-@Testcontainers
+@MockBeans(
+  MockBean(SessionService::class),
+  MockBean(ProductDAO::class),
+)
 class FeatureServiceTest {
 
   private lateinit var childFeatureGroup: FeatureGroupEntity
@@ -153,23 +161,4 @@ class FeatureServiceTest {
     feature.name = featureName.name
     return featureDAO.findByName(featureName.name) ?: featureDAO.save(feature)
   }
-
-
-  companion object {
-
-    @Container
-    private val postgres = PostgreSQLContainer("postgres:15")
-      .withDatabaseName("feedless-test")
-      .withUsername("postgres")
-      .withPassword("admin")
-
-    @JvmStatic
-    @DynamicPropertySource
-    fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-      registry.add("spring.datasource.url") { "jdbc:tc:postgresql:15://localhost:${postgres.firstMappedPort}/${postgres.databaseName}?TC_REUSABLE=false" }
-      registry.add("spring.datasource.username", postgres::getUsername)
-      registry.add("spring.datasource.password", postgres::getPassword)
-    }
-  }
-
 }

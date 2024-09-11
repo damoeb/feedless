@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.analytics.toFullUrlString
@@ -33,7 +34,7 @@ import kotlin.time.toDuration
  * To support old versions of rss-proxy
  */
 @Controller
-@Profile("${AppProfiles.feed} & ${AppProfiles.api} & ${AppProfiles.legacyFeeds}")
+@Profile("${AppLayer.api} & ${AppProfiles.legacyFeeds}")
 class LegacyFeedController {
 
   @Autowired

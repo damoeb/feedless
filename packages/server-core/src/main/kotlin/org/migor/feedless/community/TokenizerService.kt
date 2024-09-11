@@ -3,6 +3,7 @@ package org.migor.feedless.community
 import jakarta.annotation.PostConstruct
 import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -11,7 +12,7 @@ import java.util.*
 
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class TokenizerService {
 
   private lateinit var modelEn: TokenizerModel

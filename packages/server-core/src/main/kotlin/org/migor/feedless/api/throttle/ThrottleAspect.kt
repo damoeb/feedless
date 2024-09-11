@@ -1,6 +1,7 @@
 package org.migor.feedless.api.throttle
 
 import org.aspectj.lang.annotation.Aspect
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service
 
 @Aspect
 @Service
-@Profile("!${AppProfiles.nothrottle} && ${AppProfiles.database}")
+@Profile("${AppProfiles.throttle} && ${AppLayer.api}")
 class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)
 

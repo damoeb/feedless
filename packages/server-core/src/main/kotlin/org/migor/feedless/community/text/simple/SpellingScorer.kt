@@ -2,6 +2,7 @@ package org.migor.feedless.community.text.simple
 
 import org.languagetool.JLanguageTool
 import org.languagetool.Languages
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.TokenizerService
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class SpellingScorer {
 
   private val log = LoggerFactory.getLogger(SpellingScorer::class.simpleName)

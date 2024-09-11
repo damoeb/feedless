@@ -1,5 +1,6 @@
 package org.migor.feedless.plan
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
@@ -8,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 interface PricedProductDAO : JpaRepository<PricedProductEntity, UUID> {
   fun findAllByProductId(id: UUID): List<PricedProductEntity>
 

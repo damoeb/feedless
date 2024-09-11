@@ -7,6 +7,7 @@ import org.ehcache.config.builders.ResourcePoolsBuilder
 import org.ehcache.config.units.MemoryUnit
 import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.agent.AgentResponse
 import org.migor.feedless.common.HttpResponse
@@ -42,7 +43,7 @@ class AgentResponseCacheKeyGenerator : KeyGenerator {
 
 @Configuration
 @EnableCaching
-@Profile("${AppProfiles.cache} & !${AppProfiles.dev}")
+@Profile("${AppProfiles.cache} & ${AppLayer.api} & !${AppProfiles.dev}")
 class ProdCacheConfig {
 
   @Bean
@@ -143,7 +144,7 @@ class ProdCacheConfig {
 
 @Configuration
 @EnableCaching
-@Profile("${AppProfiles.cache} & ${AppProfiles.dev}")
+@Profile("${AppProfiles.cache} & ${AppLayer.api} & ${AppProfiles.dev}")
 class DevCacheConfig {
 
   @Bean

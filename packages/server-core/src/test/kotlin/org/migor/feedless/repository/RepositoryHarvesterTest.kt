@@ -9,8 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.mockito.InjectMocks

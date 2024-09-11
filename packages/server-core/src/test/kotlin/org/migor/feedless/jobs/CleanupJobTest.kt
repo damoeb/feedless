@@ -2,11 +2,12 @@ package org.migor.feedless.jobs
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.common.CleanupExecutor
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.repository.HarvestDAO
 import org.migor.feedless.repository.any
-import org.migor.feedless.secrets.OneTimePasswordDAO
+import org.migor.feedless.mail.OneTimePasswordDAO
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -15,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import java.time.LocalDateTime
-import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)

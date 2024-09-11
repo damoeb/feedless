@@ -1,6 +1,5 @@
 package org.migor.feedless.service
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -8,7 +7,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.actions.ClickPositionActionEntity
 import org.migor.feedless.actions.DomActionEntity
 import org.migor.feedless.actions.DomEventType
@@ -19,12 +20,15 @@ import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.mockito.ArgumentMatchers.anyMap
@@ -36,18 +40,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
-@ActiveProfiles(profiles = ["test", AppProfiles.scrape])
-@MockBeans(
-  value = [
-    MockBean(UserSecretService::class),
-    MockBean(AgentService::class),
-    MockBean(LicenseService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-  ]
+@ActiveProfiles(
+  "test",
+  AppProfiles.scrape,
+  AppLayer.service,
 )
+@MockBeans(
+    MockBean(PropertyService::class),
+    MockBean(AgentService::class),
+    MockBean(AttachmentDAO::class),
+)
+@Import(DisableDatabaseConfiguration::class)
 class ScrapeServiceTest {
 
   private val corrId: String = newCorrId()

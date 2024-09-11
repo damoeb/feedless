@@ -1,14 +1,18 @@
 package org.migor.feedless.feed.discovery
 
 import org.jsoup.nodes.Document
-import org.migor.feedless.web.GenericFeedParserOptions
-import org.migor.feedless.web.GenericFeedRule
-import org.migor.feedless.web.WebToFeedTransformer
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.scrape.GenericFeedParserOptions
+import org.migor.feedless.scrape.GenericFeedRule
+import org.migor.feedless.scrape.WebToFeedTransformer
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URI
 
 @Service
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class GenericFeedLocator {
   @Autowired
   private lateinit var webToFeedTransformer: WebToFeedTransformer

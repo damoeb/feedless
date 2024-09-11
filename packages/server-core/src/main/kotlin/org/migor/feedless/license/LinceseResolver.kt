@@ -9,6 +9,7 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.data.jpa.enums.toDto
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
-@Profile("${AppProfiles.database} & ${AppProfiles.api}")
+@Profile("${AppProfiles.license} & ${AppLayer.api}")
 class LinceseResolver {
 
   private val log = LoggerFactory.getLogger(LinceseResolver::class.simpleName)

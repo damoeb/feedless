@@ -1,33 +1,35 @@
 package org.migor.feedless.document
 
-import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.DisableWebSocketsConfiguration
+import org.migor.feedless.common.HttpService
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.license.LicenseService
-import org.migor.feedless.plan.ProductDataLoader
-import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.eq
+import org.migor.feedless.session.AuthService
+import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserService
-import org.mockito.Mockito
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.http.HttpEntity
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.web.socket.WebSocketHandler
 import java.util.*
 
 
@@ -36,65 +38,68 @@ import java.util.*
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @MockBeans(
-  value = [
+    MockBean(DocumentResolver::class),
+    MockBean(HttpService::class),
+    MockBean(AuthService::class),
     MockBean(UserService::class),
-    MockBean(LicenseService::class),
-    MockBean(DocumentService::class),
-    MockBean(ProductDataLoader::class),
-    MockBean(WebSocketHandler::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
-  ]
+    MockBean(PropertyService::class),
+    MockBean(TokenProvider::class),
+    MockBean(CookieProvider::class),
 )
-@ActiveProfiles(profiles = ["test", AppProfiles.api])
+@ActiveProfiles(
+  "test",
+  AppLayer.api,
+  AppProfiles.document,
+  AppLayer.security,
+)
+@Import(
+  DisableDatabaseConfiguration::class,
+  DisableWebSocketsConfiguration::class
+)
 class DocumentControllerTest {
 
-  private lateinit var mockDocument: DocumentEntity
-  private lateinit var endpointUrl: String
-  private var documentUrl: String = "https://some-document-url.test"
+  private lateinit var document: DocumentEntity
+  private var actualDocumentUrl: String = "https://some-document-url.test"
 
-  private var documentId: UUID = UUID.randomUUID()
-
-  @Autowired
+  @MockBean
   lateinit var documentService: DocumentService
 
-  @LocalServerPort
-  var port = 0
+  @Autowired
+  private lateinit var template: TestRestTemplate
 
   @BeforeEach
-  fun setUp() {
-    runBlocking {
-      endpointUrl = "http://localhost:$port/article/$documentId"
-
-      mockDocument = DocumentEntity()
-      mockDocument.url = documentUrl
-      mockDocument.contentText = "foo"
-      mockDocument.repositoryId = UUID.randomUUID()
-      mockDocument.status = ReleaseStatus.released
-
-      Mockito.`when`(
-        documentService.findById(
-          any(UUID::class.java),
-        )
-      ).thenReturn(mockDocument)
-    }
+  fun setUp() = runTest {
+    document = DocumentEntity()
+    document.url = actualDocumentUrl
+    document.contentText = "foo"
+    document.repositoryId = UUID.randomUUID()
+    document.status = ReleaseStatus.released
   }
 
   @Test
-  fun `redirect with source param`() {
+  fun `returns 404 if document does not exist`() = runTest {
+    val response = template.getForEntity("/article/${document.id}", String::class.java)
+    verify(documentService).findById(eq(document.id))
+    assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+  }
+
+  @Test
+  fun `redirect with source param`() = runTest {
+    `when`(documentService.findById(any(UUID::class.java))).thenReturn(document)
+
     val params = mapOf(
       "source" to "https://heise.de/some-feed.xml",
     )
-    val restTemplate = TestRestTemplate()
-    val response = restTemplate.exchange(endpointUrl, HttpMethod.GET, HttpEntity.EMPTY, String::class.java, params)
+    val response = template.getForEntity("/article/${document.id}", String::class.java, params)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
-    assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(documentUrl)
+    assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(actualDocumentUrl)
   }
 
   @Test
-  fun `redirect without source param`() {
-    val restTemplate = TestRestTemplate()
-    val response = restTemplate.exchange(endpointUrl, HttpMethod.GET, HttpEntity.EMPTY, String::class.java)
+  fun `redirect without source param`() = runTest {
+    `when`(documentService.findById(any(UUID::class.java))).thenReturn(document)
+    val response = template.getForEntity("/article/${document.id}", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
-    assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(documentUrl)
+    assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(actualDocumentUrl)
   }
 }

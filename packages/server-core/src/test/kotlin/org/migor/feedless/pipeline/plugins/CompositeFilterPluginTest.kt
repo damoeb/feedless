@@ -15,7 +15,7 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.mockito.Mockito.mock
 
 class CompositeFilterPluginTest {

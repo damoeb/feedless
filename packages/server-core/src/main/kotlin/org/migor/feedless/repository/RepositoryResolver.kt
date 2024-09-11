@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -18,7 +18,6 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
-import org.migor.feedless.generated.types.CronRun
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.Harvest
 import org.migor.feedless.generated.types.RepositoriesCreateInput
@@ -28,13 +27,9 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.pipeline.PipelineJobStatus
-import org.migor.feedless.pipeline.SourcePipelineJobDAO
-import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.source.SourceDAO
-import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -53,7 +48,7 @@ fun handleCursor(cursor: Cursor): Pair<Int,Int> {
 
 
 @DgsComponent
-@Profile("${AppProfiles.database} & ${AppProfiles.api}")
+@Profile("${AppProfiles.repository} & ${AppLayer.api}")
 @Transactional
 class RepositoryResolver {
 
@@ -70,9 +65,6 @@ class RepositoryResolver {
 
   @Autowired
   private lateinit var harvestDAO: HarvestDAO
-
-  @Autowired
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
 
   @Throttled
@@ -198,14 +190,6 @@ class RepositoryResolver {
       .flatten()
       .distinct()
   }
-}
-
-private fun SourcePipelineJobEntity.toDto(): CronRun {
-  return CronRun(
-    isSuccessful = this.status === PipelineJobStatus.SUCCEEDED,
-    message = StringUtils.trimToEmpty(this.logs),
-    executedAt = this.terminatedAt!!.toMillis()
-  )
 }
 
 private fun handlePageNumber(page: Int?): Int =

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
@@ -32,15 +33,15 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.plugins.images
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeOutput
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeOutput
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toLocalDateTime
-import org.migor.feedless.web.WebExtractService.Companion.MIME_URL
+import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -59,7 +60,7 @@ import java.util.*
 
 
 @Service
-@Profile("${AppProfiles.database} & ${AppProfiles.scrape}")
+@Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryHarvester internal constructor() {
 
   @Autowired
@@ -239,11 +240,11 @@ class RepositoryHarvester internal constructor() {
   }
 
   private suspend fun importElement(
-    corrId: String,
-    output: ScrapeOutput,
-    repositoryId: UUID,
-    source: SourceEntity,
-    logCollector: LogCollector
+      corrId: String,
+      output: ScrapeOutput,
+      repositoryId: UUID,
+      source: SourceEntity,
+      logCollector: LogCollector
   ): Int {
     log.debug("[$corrId] importElement")
     return if(output.outputs.isEmpty()) {

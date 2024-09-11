@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -23,7 +24,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 
 @Component
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.session} & ${AppLayer.api}")
 class JwtRequestFilter : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 

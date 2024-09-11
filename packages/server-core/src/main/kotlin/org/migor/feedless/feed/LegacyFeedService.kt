@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.ResumableHarvestException
@@ -19,19 +20,19 @@ import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
-import org.migor.feedless.plan.FeatureName
-import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.web.ExtendContext
-import org.migor.feedless.web.GenericFeedSelectors
-import org.migor.feedless.web.WebToFeedTransformer
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
+import org.migor.feedless.scrape.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -50,7 +51,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile(AppProfiles.legacyFeeds)
+@Profile("${AppProfiles.legacyFeeds} & ${AppLayer.service}")
 class LegacyFeedService {
 
   private val log = LoggerFactory.getLogger(LegacyFeedService::class.simpleName)

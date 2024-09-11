@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
@@ -49,7 +50,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @PropertySource("classpath:application.properties")
-@Profile(AppProfiles.api)
+@Profile(AppLayer.security)
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
@@ -130,7 +131,7 @@ class SecurityConfig {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       urls.add("/login/oauth2/**")
     }
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.mail))) {
       urls.add("/api/auth/magic-mail/**")
     }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {

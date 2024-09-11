@@ -5,6 +5,7 @@ import opennlp.tools.langdetect.Language
 import opennlp.tools.langdetect.LanguageDetector
 import opennlp.tools.langdetect.LanguageDetectorME
 import opennlp.tools.langdetect.LanguageDetectorModel
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -13,7 +14,7 @@ import java.util.*
 
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class LanguageService {
 
   private lateinit var languageDetector: LanguageDetector

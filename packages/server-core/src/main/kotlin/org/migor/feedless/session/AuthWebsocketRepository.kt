@@ -1,12 +1,16 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.InMemorySinkRepository
 import org.migor.feedless.generated.types.AuthenticationEvent
-import org.migor.feedless.secrets.OneTimePasswordEntity
+import org.migor.feedless.mail.OneTimePasswordEntity
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.FluxSink
 
 @Service
+@Profile("${AppProfiles.session} & ${AppLayer.repository}")
 class AuthWebsocketRepository : InMemorySinkRepository<String, AuthenticationEvent>() {
   fun pop(otp: OneTimePasswordEntity): FluxSink<AuthenticationEvent> {
     return super.pop(otp.id.toString())

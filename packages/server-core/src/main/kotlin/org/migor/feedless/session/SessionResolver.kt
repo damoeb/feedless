@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
@@ -35,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
-@Profile("${AppProfiles.api} & ${AppProfiles.database}")
+@Profile("${AppProfiles.session} & ${AppLayer.api}")
 class SessionResolver {
 
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)

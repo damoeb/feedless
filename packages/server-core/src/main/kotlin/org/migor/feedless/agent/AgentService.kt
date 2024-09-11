@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
@@ -43,7 +44,7 @@ class AgentResponse(private val scrapeResponse: String) : Serializable {
 }
 
 @Service
-@Profile(AppProfiles.agent)
+@Profile("${AppProfiles.agent} & ${AppLayer.service}")
 class AgentService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()

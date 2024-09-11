@@ -2,12 +2,16 @@ package org.migor.feedless.plan
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.feature.FeatureGroupDAO
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureValueDAO
+import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.subscription.PlanDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -22,7 +26,7 @@ import java.util.*
 
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.plan} & ${AppLayer.service}")
 @Transactional
 class PlanConstraintsService {
 

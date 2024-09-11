@@ -9,7 +9,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
-import org.migor.feedless.web.PuppeteerWaitUntil
+import org.migor.feedless.scrape.PuppeteerWaitUntil
 
 @Entity
 @Table(name = "t_action_fetch")

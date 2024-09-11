@@ -2,6 +2,7 @@ package org.migor.feedless.mail
 
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.migor.feedless.util.HttpUtil.createCorrId
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import java.util.*
 
 @Controller
-@Profile("${AppProfiles.database} & ${AppProfiles.mail}")
+@Profile("${AppProfiles.mail} & ${AppLayer.api}")
 class MailController {
 
   private val log = LoggerFactory.getLogger(MailController::class.simpleName)

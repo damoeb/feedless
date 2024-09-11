@@ -1,5 +1,6 @@
 package org.migor.feedless.community.text.simple
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class CitationScorer {
 
   private val log = LoggerFactory.getLogger(KeywordIntersectionScorer::class.simpleName)

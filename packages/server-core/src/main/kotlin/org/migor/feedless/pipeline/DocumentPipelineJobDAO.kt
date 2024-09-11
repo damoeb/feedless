@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
@@ -10,7 +11,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.scrape} & ${AppLayer.repository}")
 interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID> {
   @Query(
     nativeQuery = true,

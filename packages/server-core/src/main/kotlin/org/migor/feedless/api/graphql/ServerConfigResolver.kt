@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.config.CacheNames
@@ -14,7 +15,7 @@ import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.plan.FeatureService
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.session.useRequestContext
 import org.slf4j.LoggerFactory
@@ -22,9 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.env.Environment
+import org.springframework.context.annotation.Profile
 
 @DgsComponent
-@org.springframework.context.annotation.Profile(AppProfiles.database)
+@Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class ServerConfigResolver {
 
   private val log = LoggerFactory.getLogger(ServerConfigResolver::class.simpleName)
@@ -75,7 +77,7 @@ class ServerConfigResolver {
       ),
       profiles = environment.activeProfiles.map {
         when (it) {
-          AppProfiles.authMail -> ProfileName.authMail
+          AppProfiles.mail -> ProfileName.authMail
           AppProfiles.authSSO -> ProfileName.authSSO
           AppProfiles.selfHosted -> ProfileName.selfHosted
           AppProfiles.dev -> ProfileName.dev

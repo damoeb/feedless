@@ -2,6 +2,7 @@ package org.migor.feedless.plan
 
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.session.useRequestContext
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 
 @Controller
-@Profile("${AppProfiles.saas} & ${AppProfiles.api}")
+@Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class PaymentController {
 
   private val log = LoggerFactory.getLogger(PaymentController::class.simpleName)

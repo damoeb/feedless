@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
@@ -30,7 +31,7 @@ import kotlin.time.toDuration
 
 
 @Service
-@Profile(AppProfiles.api)
+@Profile("${AppProfiles.session} & ${AppLayer.service}")
 class TokenProvider {
   private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
 

@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.attachment.createAttachmentUrl
@@ -15,7 +16,7 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,7 +32,7 @@ import java.util.*
 import javax.imageio.ImageIO
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class PrivacyPlugin : MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(PrivacyPlugin::class.simpleName)

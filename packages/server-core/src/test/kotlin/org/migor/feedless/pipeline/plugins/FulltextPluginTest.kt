@@ -20,9 +20,9 @@ import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
-import org.migor.feedless.service.LogCollector
-import org.migor.feedless.service.ScrapeOutput
-import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeOutput
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceEntity
 import org.mockito.InjectMocks
 import org.mockito.Mock

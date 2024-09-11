@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -12,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.annotation.EnableTransactionManagement
 
 
-@Profile(AppProfiles.database)
+@Profile(AppLayer.repository)
 @Configuration
 @EnableScheduling
 @EnableTransactionManagement

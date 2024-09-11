@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.fromDto
@@ -34,7 +35,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
-@Profile("${AppProfiles.scrape} & ${AppProfiles.api}")
+@Profile("${AppProfiles.scrape} & ${AppLayer.api}")
 class FeedQueryResolver {
 
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)

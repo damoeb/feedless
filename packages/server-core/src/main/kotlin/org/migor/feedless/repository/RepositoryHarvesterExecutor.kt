@@ -6,6 +6,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Profile("${AppProfiles.database} & ${AppProfiles.cron}")
+@Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
 class RepositoryHarvesterExecutor internal constructor() {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)

@@ -12,6 +12,7 @@ import org.asynchttpclient.AsyncHandler
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.HttpResponseStatus
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -38,7 +39,7 @@ fun toFullUrlString(request: HttpServletRequest): String {
 
 @Aspect
 @Service
-@Profile(AppProfiles.analytics)
+@Profile("${AppProfiles.analytics} & ${AppLayer.service}")
 @ConfigurationProperties("app.analytics")
 class AnalyticsService {
 

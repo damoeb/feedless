@@ -17,10 +17,15 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.ServiceUnavailableException
 import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.TemporaryServerException
+import org.migor.feedless.attachment.AttachmentController
 import org.migor.feedless.config.CacheNames
+import org.migor.feedless.feed.FeedParserService
+import org.migor.feedless.pipeline.plugins.PrivacyPlugin
+import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.security.web.util.UrlUtils

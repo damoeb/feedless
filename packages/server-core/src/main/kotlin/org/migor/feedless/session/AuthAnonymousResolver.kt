@@ -8,6 +8,7 @@ import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
@@ -22,7 +23,7 @@ import org.springframework.web.context.request.ServletWebRequest
 import org.migor.feedless.generated.types.Authentication as AuthenticationDto
 
 @DgsComponent
-@Profile(AppProfiles.api)
+@Profile("${AppProfiles.session} & ${AppLayer.api}")
 class AuthAnonymousResolver {
 
   private val log = LoggerFactory.getLogger(AuthAnonymousResolver::class.simpleName)

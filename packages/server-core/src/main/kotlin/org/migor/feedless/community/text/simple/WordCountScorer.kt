@@ -2,6 +2,7 @@ package org.migor.feedless.community.text.simple
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.TokenizerService
 import org.slf4j.LoggerFactory
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class WordCountScorer {
 
   private val log = LoggerFactory.getLogger(WordCountScorer::class.simpleName)

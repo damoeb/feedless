@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.HarvestAbortedException
 import org.migor.feedless.attachment.AttachmentDAO
@@ -14,7 +15,7 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,7 +36,7 @@ data class MediaItem(
 )
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class DetectMediaPlugin : MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(DetectMediaPlugin::class.simpleName)

@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.user.UserDAO
@@ -30,7 +31,7 @@ import kotlin.time.toDuration
 
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.session} & ${AppLayer.service}")
 class AuthService : IAuthService {
   private lateinit var whitelistedIps: List<String>
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)

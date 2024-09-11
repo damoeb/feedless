@@ -1,7 +1,10 @@
 package org.migor.feedless.mail
 
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer
 import java.io.ByteArrayOutputStream
@@ -57,7 +60,7 @@ class MailTrackerAuthorizedTemplate(override val params: Unit = Unit) : FtlTempl
 class DocumentUpdateMailTemplate(override val params: Unit = Unit) :
   FtlTemplate<Unit>("mail-web-document-update")
 
-@Service
+@Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class TemplateService {
 
   private val log = LoggerFactory.getLogger(TemplateService::class.simpleName)

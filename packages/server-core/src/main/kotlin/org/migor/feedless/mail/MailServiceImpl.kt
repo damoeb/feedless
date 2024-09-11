@@ -3,12 +3,12 @@ package org.migor.feedless.mail
 import jakarta.mail.internet.MimeMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.pipeline.plugins.MailAttachment
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile("${AppProfiles.database} & ${AppProfiles.mail}")
+@Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class MailServiceImpl : MailService {
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
 

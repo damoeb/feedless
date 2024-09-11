@@ -2,14 +2,18 @@ package org.migor.feedless.common
 
 import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.Assert
 import java.net.URL
 import java.util.*
 
 @Service
+@Profile("${AppProfiles.properties} & ${AppLayer.service}")
 @ConfigurationProperties("app")
 class PropertyService {
 
@@ -27,7 +31,6 @@ class PropertyService {
   lateinit var defaultLocale: String
   lateinit var jwtSecret: String
   lateinit var rootEmail: String
-  var schemaVersion: Int = 0
   lateinit var rootSecretKey: String
 
   @PostConstruct

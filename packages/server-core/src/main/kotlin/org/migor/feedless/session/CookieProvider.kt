@@ -1,6 +1,7 @@
 package org.migor.feedless.session
 
 import jakarta.servlet.http.Cookie
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.slf4j.LoggerFactory
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service
 
 
 @Service
-@Profile(AppProfiles.api)
+@Profile("${AppProfiles.session} & ${AppLayer.service}")
 class CookieProvider {
   private val log = LoggerFactory.getLogger(CookieProvider::class.simpleName)
 

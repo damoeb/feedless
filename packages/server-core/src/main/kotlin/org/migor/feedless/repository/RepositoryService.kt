@@ -4,6 +4,7 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
@@ -68,7 +69,7 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
 
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.repository} & ${AppLayer.service}")
 @Transactional
 class RepositoryService {
 
@@ -77,8 +78,8 @@ class RepositoryService {
   @Autowired
   private lateinit var sourceDAO: SourceDAO
 
-  @Autowired
-  private lateinit var mailForwardDAO: MailForwardDAO
+//  @Autowired
+//  private lateinit var mailForwardDAO: MailForwardDAO
 
   @Autowired
   private lateinit var userDAO: UserDAO
@@ -180,30 +181,30 @@ class RepositoryService {
       val owner = withContext(Dispatchers.IO) {
         userDAO.findById(ownerId).orElseThrow()
       }
-      repo.mailForwards = sink.mapNotNull { it.email }
-        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
-        .toMutableList()
+//      repo.mailForwards = sink.mapNotNull { it.email }
+//        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
+//        .toMutableList()
     }
 
     return saved
   }
 
-  private suspend fun createMailForwarder(
-    corrId: String,
-    email: String,
-    sub: RepositoryEntity,
-    owner: UserEntity,
-    product: ProductCategory
-  ): MailForwardEntity {
-    val forward = MailForwardEntity()
-    forward.email = email
-    forward.authorized = email == owner.email
-    forward.repositoryId = sub.id
-
-    return withContext(Dispatchers.IO) {
-      mailForwardDAO.save(forward)
-    }
-  }
+//  private suspend fun createMailForwarder(
+//    corrId: String,
+//    email: String,
+//    sub: RepositoryEntity,
+//    owner: UserEntity,
+//    product: ProductCategory
+//  ): MailForwardEntity {
+//    val forward = MailForwardEntity()
+//    forward.email = email
+//    forward.authorized = email == owner.email
+//    forward.repositoryId = sub.id
+//
+//    return withContext(Dispatchers.IO) {
+//      mailForwardDAO.save(forward)
+//    }
+//  }
 
   private suspend fun createScrapeSource(
     corrId: String,

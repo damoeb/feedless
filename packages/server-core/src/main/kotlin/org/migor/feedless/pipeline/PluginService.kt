@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.mail.MailProviderService
@@ -17,7 +18,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile(AppProfiles.scrape)
+@Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class PluginService {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
@@ -32,8 +33,8 @@ class PluginService {
   @Autowired
   lateinit var plugins: List<FeedlessPlugin>
 
-  @Autowired
-  private lateinit var defaultMailFormatterService: MailProviderService
+//  @Autowired
+//  private lateinit var defaultMailFormatterService: MailProviderService
 
   @PostConstruct
   fun postConstruct() {
@@ -59,8 +60,8 @@ class PluginService {
       .firstOrNull()
   }
 
-  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
-    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
-      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput())
-  }
+//  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
+//    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
+//      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput())
+//  }
 }

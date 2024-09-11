@@ -3,8 +3,10 @@ package org.migor.feedless.document
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
@@ -18,12 +20,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-@Controller
-@Profile(AppProfiles.api)
+@RestController
+@Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentController {
 
   private val log = LoggerFactory.getLogger(DocumentController::class.simpleName)
@@ -36,13 +39,14 @@ class DocumentController {
 
   @Tracked
   @GetMapping(
-    "/article/{documentId}",
-    "/a/{documentId}",
+    "article/{documentId}",
+    "a/{documentId}",
   )
   suspend fun documentById(
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
-  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): ResponseEntity<String> = coroutineScope {
+    log.info("here")
     documentService.findById(UUID.fromString(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(

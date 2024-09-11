@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
@@ -35,7 +36,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.service.LogCollector
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -55,7 +56,7 @@ import kotlin.jvm.optionals.getOrNull
 
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.document} & ${AppLayer.service}")
 @Transactional
 class DocumentService {
 
@@ -82,11 +83,11 @@ class DocumentService {
   @Autowired
   private lateinit var pluginService: PluginService
 
-  @Autowired
-  private lateinit var mailService: MailService
-
-  @Autowired
-  private lateinit var mailForwardDAO: MailForwardDAO
+//  @Autowired
+//  private lateinit var mailService: MailService
+//
+//  @Autowired
+//  private lateinit var mailForwardDAO: MailForwardDAO
 
 
   suspend fun findById(id: UUID): DocumentEntity? {
@@ -106,11 +107,6 @@ class DocumentService {
     ignoreVisibility: Boolean = false
   ): Page<DocumentEntity?> {
     return withContext(Dispatchers.IO) {
-//      val repo = repositoryDAO.findById(repositoryId).orElseThrow()
-
-//      if (!ignoreVisibility && repo.visibility !== EntityVisibility.isPublic && repo.ownerId != sessionService.userId() && repo.shareKey != shareKey) {
-//        throw IllegalArgumentException("repo is not public")
-//      }
       documentDAO.findPage(pageable) {
         val whereStatements = prepareWhereStatements(where)
 
@@ -398,32 +394,32 @@ class DocumentService {
     }
   }
 
-  private suspend fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
-    val mailForwards = withContext(Dispatchers.IO) {
-      mailForwardDAO.findAllByRepositoryId(repository.id)
-    }
-    if (mailForwards.isNotEmpty()) {
-      val authorizedMailForwards =
-        mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
-      if (authorizedMailForwards.isEmpty()) {
-        log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
-      } else {
-        val (mailFormatter, params) = pluginService.resolveMailFormatter(repository)
-        log.debug("[$corrId] using formatter ${mailFormatter::class.java.name}")
-
-        val from = mailService.getNoReplyAddress(repository.product)
-        val to = authorizedMailForwards.toTypedArray()
-
-        log.debug("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
-        mailService.send(
-          corrId,
-          from,
-          to,
-          mailFormatter.provideDocumentMail(corrId, document, repository, params)
-        )
-      }
-    }
-  }
+//  private suspend fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
+//    val mailForwards = withContext(Dispatchers.IO) {
+//      mailForwardDAO.findAllByRepositoryId(repository.id)
+//    }
+//    if (mailForwards.isNotEmpty()) {
+//      val authorizedMailForwards =
+//        mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
+//      if (authorizedMailForwards.isEmpty()) {
+//        log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
+//      } else {
+//        val (mailFormatter, params) = pluginService.resolveMailFormatter(repository)
+//        log.debug("[$corrId] using formatter ${mailFormatter::class.java.name}")
+//
+//        val from = mailService.getNoReplyAddress(repository.product)
+//        val to = authorizedMailForwards.toTypedArray()
+//
+//        log.debug("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
+//        mailService.send(
+//          corrId,
+//          from,
+//          to,
+//          mailFormatter.provideDocumentMail(corrId, document, repository, params)
+//        )
+//      }
+//    }
+//  }
 
 }
 

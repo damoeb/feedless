@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiParams
@@ -41,7 +42,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
-@Profile("${AppProfiles.database} & ${AppProfiles.api}")
+@Profile("${AppProfiles.document} & ${AppLayer.api}")
 @Transactional
 class DocumentResolver {
 

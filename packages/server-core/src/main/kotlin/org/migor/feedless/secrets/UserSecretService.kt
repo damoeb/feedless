@@ -2,6 +2,7 @@ package org.migor.feedless.secrets
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
@@ -13,7 +14,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.secrets} & ${AppLayer.service}")
 class UserSecretService {
 
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)

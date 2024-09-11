@@ -1,6 +1,7 @@
 package org.migor.feedless.repository
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -15,7 +16,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Repository
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlExecutor {
 
   @Query(

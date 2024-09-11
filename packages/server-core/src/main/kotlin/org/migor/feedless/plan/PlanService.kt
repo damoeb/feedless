@@ -4,7 +4,10 @@ import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.feature.FeatureGroupDAO
+import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.slf4j.LoggerFactory
@@ -16,7 +19,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class PlanService {
   private val log = LoggerFactory.getLogger(PlanService::class.simpleName)
 

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.common.HttpService
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.attachment} & ${AppLayer.api}")
 class AttachmentController {
 
   private val log = LoggerFactory.getLogger(AttachmentController::class.simpleName)

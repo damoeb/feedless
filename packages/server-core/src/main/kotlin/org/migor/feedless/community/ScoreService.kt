@@ -1,5 +1,6 @@
 package org.migor.feedless.community
 
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.text.complex.CivilityScorer
 import org.migor.feedless.community.text.complex.CivilityWeights
@@ -22,7 +23,7 @@ data class ScoreWeights(
 )
 
 @Service
-@Profile(AppProfiles.community)
+@Profile("${AppProfiles.community} & ${AppLayer.service}")
 class ScoreService {
 
   private val log = LoggerFactory.getLogger(ScoreService::class.simpleName)

@@ -1,4 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS postgis SCHEMA public;
+SELECT * FROM pg_extension;
 
 ALTER TABLE t_document ADD COLUMN IF NOT EXISTS lat_lon geometry;
 UPDATE t_document d SET lat_lon = ST_Point(d.lat, d.lon) WHERE lat IS NOT NULL AND lon IS NOT NULL;

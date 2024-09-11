@@ -2,13 +2,14 @@ package org.migor.feedless.plan
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
-import org.migor.feedless.subscription.PlanDAO
-import org.migor.feedless.subscription.PlanEntity
+import org.migor.feedless.plan.PlanDAO
+import org.migor.feedless.plan.PlanEntity
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +22,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Profile("!test")
+@Profile("${AppProfiles.plan} & ${AppLayer.service}")
 @Transactional
 class ProductService {
 
