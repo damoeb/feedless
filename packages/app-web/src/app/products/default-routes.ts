@@ -35,6 +35,14 @@ export const DefaultRoutes: Routes = [
           ),
       },
       {
+        path: 'connect-app',
+        canActivate: [AuthGuardService],
+        loadChildren: () =>
+          import('../pages/connect-app/connect-app.module').then(
+            (m) => m.LinkAppPageModule,
+          ),
+      },
+      {
         path: 'pricing',
         loadChildren: () =>
           import('../pages/pricing/pricing.module').then(

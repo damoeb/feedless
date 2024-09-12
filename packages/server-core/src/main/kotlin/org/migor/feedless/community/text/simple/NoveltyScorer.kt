@@ -18,7 +18,7 @@ class NoveltyScorer {
   private var spline: PolynomialSplineFunction = createSplineInterpolator()
 
   fun score(comment: CommentEntity): Double {
-    return spline.value(getHyperLinks(comment.contentText).size.toDouble())
+    return spline.value(getHyperLinks(comment.text).size.toDouble())
   }
 
   private fun createSplineInterpolator(): PolynomialSplineFunction {

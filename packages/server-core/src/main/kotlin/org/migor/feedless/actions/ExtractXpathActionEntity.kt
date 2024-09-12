@@ -5,8 +5,10 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.migor.feedless.generated.types.ScrapeEmit
 import java.sql.Types
@@ -24,6 +26,8 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
   @Column(name = "fragment_name", nullable = false)
   open lateinit var fragmentName: String
 
+  @XPathConstraint
+  @Size(min = 1, max = 100)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 
@@ -31,6 +35,7 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
   @JdbcTypeCode(Types.ARRAY)
   @Column(name = "emit", nullable = false, columnDefinition = "text[]")
   open var emit: Array<ExtractEmit> = emptyArray()
+
 }
 
 enum class ExtractEmit {

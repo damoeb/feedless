@@ -3,8 +3,10 @@ package org.migor.feedless.actions
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 
 @Entity
@@ -19,9 +21,11 @@ open class ClickPositionActionEntity : ScrapeActionEntity() {
 
   @Column(name = "x", nullable = false)
   @Min(0)
+  @Max(10000)
   open var x: Int = 0
 
   @Column(name = "y", nullable = false)
   @Min(0)
+  @Max(10000)
   open var y: Int = 0
 }

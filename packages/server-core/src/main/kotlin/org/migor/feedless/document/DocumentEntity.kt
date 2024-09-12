@@ -74,14 +74,14 @@ open class DocumentEntity : EntityWithUUID() {
 
   @Size(max = LEN_STR_DEFAULT)
   @Column(length = LEN_STR_DEFAULT, name = "content_title")
-  open var contentTitle: String? = null
+  open var title: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
     }
 
   @Size(max = LEN_50)
   @Column(length = LEN_50, name = "content_raw_mime")
-  open var contentRawMime: String? = null
+  open var rawMimeType: String? = null
 
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
   open var latLon: Point? = null
@@ -92,15 +92,15 @@ open class DocumentEntity : EntityWithUUID() {
 
   @Lazy
   @Column(columnDefinition = "bytea", name = "content_raw")
-  open var contentRaw: ByteArray? = null
+  open var raw: ByteArray? = null
 
   @JdbcTypeCode(Types.LONGVARCHAR)
   @Column(name = "content_text", nullable = false)
-  open lateinit var contentText: String
+  open lateinit var text: String
 
   @JdbcTypeCode(Types.LONGVARCHAR)
   @Column(name = "content_html")
-  open var contentHtml: String? = null
+  open var html: String? = null
 
   @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "image_url")
@@ -209,11 +209,11 @@ open class DocumentEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    if (contentRaw != null) {
+    if (raw != null) {
       val tika = Tika()
-      val mime = tika.detect(contentRaw)
+      val mime = tika.detect(raw)
 //      log.info("webDocument $id with raw-data '$mime'")
-      this.contentRawMime = mime
+      this.rawMimeType = mime
     }
   }
 
@@ -223,12 +223,12 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
   val contentHtmlParam: String?
   var contentRawBase64Param: String? = null
   var contentRawMimeParam: String? = null
-  if (StringUtils.isBlank(contentHtml) && isHtml(contentRawMime)) {
-    contentHtmlParam = contentRaw?.toString(StandardCharsets.UTF_8)
+  if (StringUtils.isBlank(html) && isHtml(rawMimeType)) {
+    contentHtmlParam = raw?.toString(StandardCharsets.UTF_8)
   } else {
-    contentHtmlParam = contentHtml
-    contentRawBase64Param = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
-    contentRawMimeParam = contentRawMime
+    contentHtmlParam = html
+    contentRawBase64Param = raw?.let { Base64.getEncoder().encodeToString(raw) }
+    contentRawMimeParam = rawMimeType
   }
 
   return WebDocument(
@@ -238,8 +238,8 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     contentHtml = contentHtmlParam,
     contentRawBase64 = contentRawBase64Param,
     contentRawMime = contentRawMimeParam,
-    contentTitle = contentTitle,
-    contentText = contentText,
+    contentTitle = title,
+    contentText = text,
     createdAt = createdAt.toMillis(),
     localized = latLon?.let {
       GeoPoint(
@@ -248,7 +248,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
       )
     },
     tags = (tags?.asList() ?: emptyList()).plus(
-      addListenableTag(attachments.filter { it.contentType.startsWith("audio/") && it.duration != null }
+      addListenableTag(attachments.filter { it.mimeType.startsWith("audio/") && it.duration != null }
         .map { classifyDuration(it.duration!!) }.distinct()
       )
     ),
@@ -256,13 +256,14 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     enclosures = (attachments.map {
       Enclosure(
         url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
-        type = it.contentType,
+        type = it.mimeType,
         duration = it.duration,
         size = it.size,
       )
     }),
     publishedAt = publishedAt.toMillis(),
     startingAt = startingAt?.toMillis(),
+    attachments = emptyList()
   )
 }
 

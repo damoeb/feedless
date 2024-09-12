@@ -93,9 +93,7 @@
         </ion-col>
       </ion-row>
       <ion-list>
-        <ion-row>
-          <ion-col size="12"> Free </ion-col>
-        </ion-row>
+        <ion-item> Free Plan </ion-item>
 
         <!--      <ion-list-header> General</ion-list-header>-->
         <!--      <ion-item>-->
@@ -154,6 +152,27 @@
         <!--        <ion-label> Export OPML </ion-label>-->
         <!--      </ion-item>-->
       </ion-list>
+
+      <ion-row class="ion-margin-top">
+        <ion-col size="8">
+          <h1 class="ion-no-margin">Connected Apps</h1>
+        </ion-col>
+      </ion-row>
+      <ion-list>
+        <ion-item *ngIf="connectedApps.length === 0">
+          You can connect to Telegram or Github
+        </ion-item>
+        <ion-item *ngFor="let connectedApp of connectedApps">
+          <ion-label>
+            {{ connectedApp.app }}
+            <!--            <ion-note class="ion-margin-start">Used to login</ion-note>-->
+          </ion-label>
+          <ion-button color="danger" (click)="disconnectApp(connectedApp.id)">
+            Disconnect
+          </ion-button>
+        </ion-item>
+      </ion-list>
+
       <div style="color: var(--ion-color-danger)">
         <ion-row style="margin-top: 100px">
           <ion-col size="8">

@@ -65,7 +65,7 @@ class SessionResolver {
   @DgsQuery
   @Transactional
   suspend fun session(dfe: DataFetchingEnvironment): Session =
-    withContext(useRequestContext(currentCoroutineContext())) {
+    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       unsetSessionCookie(dfe)
       val defaultSession = Session(
         isLoggedIn = false,
@@ -96,10 +96,10 @@ class SessionResolver {
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.AuthUser)
   suspend fun authUser(
-    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     dfe: DataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     @InputArgument data: AuthUserInput,
-  ): Authentication = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Authentication = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.debug("[$corrId] authUser")
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {

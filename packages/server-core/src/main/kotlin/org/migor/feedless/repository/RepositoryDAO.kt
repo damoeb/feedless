@@ -57,4 +57,11 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
     pageable: PageRequest
   ): List<RepositoryEntity>
 
+  @Query(
+    """SELECT r FROM RepositoryEntity r
+    INNER JOIN UserEntity u ON r.ownerId = u.id
+    WHERE u.id = :id AND r.id = u.inboxRepositoryId"""
+  )
+  fun findInboxRepositoryByUserId(@Param("id") userId: UUID)
+
 }

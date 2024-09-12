@@ -14,9 +14,9 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
+import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -43,10 +43,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun listed() = false
   override suspend fun transformFragment(
-      corrId: String,
-      action: ExecuteActionEntity,
-      data: HttpResponse,
-      logger: LogCollector,
+    corrId: String,
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+    logger: LogCollector,
   ): FragmentOutput {
     log.debug("[$corrId] transformFragment")
 
@@ -95,10 +95,10 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun name(): String = "Feeds"
 
   private suspend fun extractFeeds(
-      corrId: String,
-      document: Document,
-      url: String,
-      logger: LogCollector,
+    corrId: String,
+    document: Document,
+    url: String,
+    logger: LogCollector,
   ): FragmentOutput {
     val parserOptions = GenericFeedParserOptions()
     val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)

@@ -6,7 +6,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.StringFilter
@@ -31,28 +30,8 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DocumentServiceTest {
 
-  @Mock
-  private lateinit var documentDAO: DocumentDAO
-
-  @Mock
-  private lateinit var transactionManager: PlatformTransactionManager
-
-  @Mock
-  private lateinit var entityManager: EntityManager
-
-  @Mock
   private lateinit var repositoryDAO: RepositoryDAO
 
-  @Mock
-  private lateinit var planConstraintsService: PlanConstraintsService
-
-  @Mock
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-
-  @Mock
-  private lateinit var pluginService: PluginService
-
-  @InjectMocks
   private lateinit var documentService: DocumentService
 
   private var corrId = "test"
@@ -63,17 +42,29 @@ class DocumentServiceTest {
   fun setUp() {
     currentUser = mock(UserEntity::class.java)
     `when`(currentUser.id).thenReturn(UUID.randomUUID())
+
+    repositoryDAO = mock(RepositoryDAO::class.java)
+
+    documentService = DocumentService(
+      mock(DocumentDAO::class.java),
+      mock(PlatformTransactionManager::class.java),
+      mock(EntityManager::class.java),
+      repositoryDAO,
+      mock(PlanConstraintsService::class.java),
+      mock(DocumentPipelineJobDAO::class.java),
+      mock(PluginService::class.java)
+    )
   }
 
-  @Test
-  fun `applyRetentionStrategy by capacity is skipped if plan returns null or 0`() {
-    TODO()
-  }
-
-  @Test
-  fun `applyRetentionStrategy by age is skipped if plan returns null`() {
-    TODO()
-  }
+//  @Test
+//  fun `applyRetentionStrategy by capacity is skipped if plan returns null or 0`() {
+//    TODO()
+//  }
+//
+//  @Test
+//  fun `applyRetentionStrategy by age is skipped if plan returns null`() {
+//    TODO()
+//  }
 
   @Test
   fun `given deleteDocuments is executed not by the owner, it fails`() = runTest {

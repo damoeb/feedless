@@ -98,7 +98,7 @@ internal class MarkupSimplifierTest {
 
   private fun resolveRef(ref: String): Element? {
     val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), JsonItem::class.java)
-    return parse(expected.contentHtml!!)
+    return parse(expected.html!!)
   }
 
   private fun parse(markup: String): Element? {

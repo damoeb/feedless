@@ -21,12 +21,12 @@ class CitationScorer {
   private val quotePattern = Regex("\"([^\"]+)\"")
 
   suspend fun score(comment: CommentEntity): Double {
-    val blockCitations = comment.contentText.split("\n").filter { it.startsWith(">") }
+    val blockCitations = comment.text.split("\n").filter { it.startsWith(">") }
       .map { it.replace(Regex("^[> ]+"), "") }
     val inlineCitations = getInlineCitations(comment)
 
     return commentGraphService.getParent(comment)?.let {
-      val parentText = it.contentText
+      val parentText = it.text
       if (blockCitations.plus(inlineCitations).any { quote -> parentText.contains(quote) }) {
         1.0
       } else {
@@ -36,7 +36,7 @@ class CitationScorer {
   }
 
   private fun getInlineCitations(comment: CommentEntity): List<String> {
-    val text = comment.contentText
+    val text = comment.text
 
     return quotePattern.findAll(text).map { it.value }.toList()
   }

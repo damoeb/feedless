@@ -5,11 +5,16 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.PositiveOrZero
+import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.URL
 import org.migor.feedless.scrape.PuppeteerWaitUntil
+import java.net.URI
 
 @Entity
 @Table(name = "t_action_fetch")
@@ -21,12 +26,15 @@ import org.migor.feedless.scrape.PuppeteerWaitUntil
 )
 open class FetchActionEntity : ScrapeActionEntity() {
 
+  @PositiveOrZero
   @Column(name = "timeout")
   open var timeout: Int? = null
 
+  @URL
   @Column(name = "url", nullable = false, length = 900)
   open lateinit var url: String
 
+  @Size(min = 1, max = 30)
   @Column(name = "language")
   open var language: String? = null
 
@@ -56,6 +64,7 @@ open class FetchActionEntity : ScrapeActionEntity() {
   @Column(name = "wait_until")
   open var waitUntil: PuppeteerWaitUntil? = null
 
+  @Max(10)
   @Column(name = "additional_wait_sec")
   open var additionalWaitSec: Int? = null
 }

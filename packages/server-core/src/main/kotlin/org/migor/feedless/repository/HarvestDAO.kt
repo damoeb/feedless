@@ -16,7 +16,8 @@ interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
   fun findAllByRepositoryId(id: UUID, pageable: PageRequest): List<HarvestEntity>
 
   @Modifying
-  @Query("""
+  @Query(
+    """
     WITH ranked_entities AS (
     SELECT
         id,
@@ -29,6 +30,7 @@ DELETE FROM t_harvest WHERE EXISTS(
     SELECT 1 FROM ranked_entities
     where row_num > 4 and t_harvest.id = ranked_entities.id
 )
-  """, nativeQuery = true)
+  """, nativeQuery = true
+  )
   fun deleteAllTailingByRepositoryId()
 }

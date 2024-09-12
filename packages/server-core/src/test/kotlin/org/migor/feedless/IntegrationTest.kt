@@ -142,7 +142,7 @@ class IntegrationTest {
   ) {
     val d = DocumentEntity()
     d.url = "http://localhost:8080"
-    d.contentText = ""
+    d.text = ""
     d.repositoryId = repository.id
     d.status = status
     d.publishedAt = publishedAt

@@ -46,10 +46,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
-class LogCollector() {
+class LogCollector {
   val logs = mutableListOf<LogStatement>()
   fun log(message: String) {
-    logs.add(LogStatement(message=message, time = LocalDateTime.now().toMillis()))
+    logs.add(LogStatement(message = message, time = LocalDateTime.now().toMillis()))
 //    log?.debug("[$corrId] $message")
   }
 }
@@ -291,7 +291,12 @@ class ScrapeService {
 //        log.info("[$corrId] outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
-      context.logCollector.logs.addAll(response.logs.map { LogStatement(time = it.time, message = "[agent] ${it.message}") })
+      context.logCollector.logs.addAll(response.logs.map {
+        LogStatement(
+          time = it.time,
+          message = "[agent] ${it.message}"
+        )
+      })
       context.log("[$corrId] received -> ${response.outputs.size} outputs")
     } else {
       context.log("[$corrId] render static")

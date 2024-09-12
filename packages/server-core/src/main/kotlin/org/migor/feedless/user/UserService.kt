@@ -10,16 +10,19 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.springframework.context.annotation.Lazy
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -29,7 +32,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
@@ -59,6 +61,16 @@ class UserService {
   @Autowired
   private lateinit var productService: ProductService
 
+  @Autowired
+  private lateinit var githubConnectionDAO: GithubConnectionDAO
+
+  @Autowired
+  private lateinit var connectedAppDAO: ConnectedAppDAO
+
+  @Lazy
+  @Autowired(required = false)
+  private lateinit var telegramBotService: TelegramBotService
+
   suspend fun createUser(
     corrId: String,
     email: String?,
@@ -80,15 +92,15 @@ class UserService {
         }
       }
       if (StringUtils.isNotBlank(githubId)) {
-        if (userDAO.existsByGithubId(githubId!!)) {
+        if (githubConnectionDAO.existsByGithubId(githubId!!)) {
           throw BadRequestException("user already exists")
         }
+
       }
       meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-      log.info("[$corrId] create user $email")
+      log.debug("[$corrId] create user")
       val user = UserEntity()
       user.email = email ?: fallbackEmail(user)
-      user.githubId = githubId
       user.root = false
       user.anonymous = false
       user.hasAcceptedTerms = isSelfHosted()
@@ -103,26 +115,43 @@ class UserService {
       userDAO.save(user)
     }
 
-    createNotificationsRepository(savedUser).id
+    if (githubId != null) {
+      linkGithubAccount(savedUser, githubId)
+    }
+
+    createInboxRepository(savedUser).id
 
     return savedUser
   }
 
-  suspend fun createNotificationsRepository(user: UserEntity): RepositoryEntity {
+  private suspend fun linkGithubAccount(user: UserEntity, githubId: String) {
+    val githubLink = GithubConnectionEntity()
+    githubLink.userId = user.id
+    githubLink.githubId = githubId
+    githubLink.authorized = true
+    githubLink.authorizedAt = LocalDateTime.now()
+
+    withContext(Dispatchers.IO) {
+      githubConnectionDAO.save(githubLink)
+    }
+  }
+
+  suspend fun createInboxRepository(user: UserEntity): RepositoryEntity {
     val r = RepositoryEntity()
     r.title = "Notifications"
     r.description = ""
     r.sourcesSyncCron = ""
     r.product = ProductCategory.all
     r.ownerId = user.id
-    r.retentionMaxAgeDays = 7
+    r.retentionMaxCapacity = 1000
+    r.retentionMaxAgeDays = null
     r.visibility = EntityVisibility.isPrivate
     r.retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
 
     return withContext(Dispatchers.IO) {
       val savedRepository = repositoryDAO.save(r)
 
-      user.notificationRepositoryId = r.id
+      user.inboxRepositoryId = r.id
       userDAO.save(user)
 
       savedRepository
@@ -219,9 +248,15 @@ class UserService {
 
   suspend fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
     log.info("[$corrId] update legacy user githubId=$githubId")
-    if (user.githubId == null) {
-      user.githubId = githubId
+
+    val isGithubAccountLinked = withContext(Dispatchers.IO) {
+      githubConnectionDAO.existsByUserId(user.id)
     }
+
+    if (!isGithubAccountLinked) {
+      linkGithubAccount(user, githubId)
+    }
+
     if (user.email.trim().endsWith("github.com")) {
       user.email = fallbackEmail(user)
     }
@@ -236,5 +271,53 @@ class UserService {
     return withContext(Dispatchers.IO) {
       userDAO.findById(userId)
     }
+  }
+
+  suspend fun getConnectedAppByUserAndId(corrId: String, userId: UUID, id: String): ConnectedAppEntity {
+    return withContext(Dispatchers.IO) {
+      connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
+    }
+  }
+
+  suspend fun updateConnectedApp(corrId: String, userId: UUID, id: String, authorize: Boolean) {
+    withContext(Dispatchers.IO) {
+      val app =
+        connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
+      app.userId?.let {
+        if (userId != it) {
+          throw PermissionDeniedException("error")
+        }
+      }
+
+      app.authorized = authorize
+      app.authorizedAt = LocalDateTime.now()
+      app.userId = userId
+
+      connectedAppDAO.save(app)
+      if (app is TelegramConnectionEntity) {
+        telegramBotService.showOptionsForKnownUser(app.chatId)
+      }
+    }
+
+  }
+
+  suspend fun deleteConnectedApp(corrId: String, userId: UUID, id: String) {
+    withContext(Dispatchers.IO) {
+      val app =
+        connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
+      app.userId?.let {
+        if (userId != it) {
+          throw PermissionDeniedException("error")
+        }
+      }
+
+      if (app is TelegramConnectionEntity) {
+        telegramBotService.sendMessage(app.chatId, "Disconnected")
+      }
+
+
+      connectedAppDAO.save(app)
+    }
+
   }
 }

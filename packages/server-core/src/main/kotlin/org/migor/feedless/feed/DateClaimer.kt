@@ -101,7 +101,12 @@ class DateClaimer {
 //      }.firstOrNull()
 //  }
 
-  suspend fun claimDatesFromString(corrId: String, dateTimeStrParam: String, locale: Locale, logger: LogCollector): LocalDateTime? {
+  suspend fun claimDatesFromString(
+    corrId: String,
+    dateTimeStrParam: String,
+    locale: Locale,
+    logger: LogCollector
+  ): LocalDateTime? {
     logger.log(" parsing '$dateTimeStrParam' locale=$locale")
 
     runCatching {
@@ -168,7 +173,10 @@ class DateClaimer {
    * @return The matching SimpleDateFormat pattern, or null if format is unknown.
    * @see SimpleDateFormat
    */
-  private suspend fun guessDateFormats(dateString: String, logger: LogCollector): List<Triple<String, String, Boolean>> {
+  private suspend fun guessDateFormats(
+    dateString: String,
+    logger: LogCollector
+  ): List<Triple<String, String, Boolean>> {
     logger.log("guessDateFormat for '$dateString'")
     return dateFormatToRegexp
       .sortedByDescending { it.second.length }

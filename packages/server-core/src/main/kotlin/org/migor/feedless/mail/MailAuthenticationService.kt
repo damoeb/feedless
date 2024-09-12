@@ -9,12 +9,12 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.feature.FeatureName
-import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO

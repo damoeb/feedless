@@ -52,10 +52,10 @@ export class LoginPage implements OnInit, OnDestroy {
       this.showNoSignupBanner = true;
     }
 
-    // const redirectUrl = this.activatedRoute.snapshot.queryParams.redirectUrl;
-    // if (redirectUrl) {
-    //   this.authService.rememberRedirectUrl(redirectUrl)
-    // }
+    const redirectUrl = this.activatedRoute.snapshot.queryParams.redirectUrl;
+    if (redirectUrl) {
+      this.authService.rememberRedirectUrl(redirectUrl);
+    }
 
     this.subscriptions.push(
       this.authService

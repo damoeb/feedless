@@ -124,10 +124,10 @@ class SyndAtomFeedExporter {
 
   private fun toSyndContentPlain(article: JsonItem): SyndContent {
     val plain = SyndContentImpl()
-    plain.value = if (StringUtils.isBlank(article.contentText)) {
-      article.contentRawMime
+    plain.value = if (StringUtils.isBlank(article.text)) {
+      article.rawMimeType
     } else {
-      article.contentText
+      article.text
     }
     plain.type = "text/plain"
     return plain
@@ -148,9 +148,9 @@ class SyndAtomFeedExporter {
 
   private fun toSyndContents(it: JsonItem): List<SyndContent> {
     val contents = mutableListOf<SyndContent>()
-    if (StringUtils.isNoneBlank(it.contentHtml)) {
+    if (StringUtils.isNoneBlank(it.html)) {
       val htmlContent = SyndContentImpl()
-      htmlContent.value = it.contentHtml
+      htmlContent.value = it.html
       htmlContent.type = "text/html"
       htmlContent.mode = "encoded"
       contents.add(htmlContent)

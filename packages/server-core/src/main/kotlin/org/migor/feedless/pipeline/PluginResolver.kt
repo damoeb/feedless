@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -30,8 +31,9 @@ class PluginResolver {
   @DgsQuery
   @Transactional
   suspend fun plugins(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Plugin> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): List<Plugin> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] plugins")
     pluginsService.findAll().map { it.toDto() }
   }

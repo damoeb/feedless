@@ -13,13 +13,13 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.feed.LegacyFeedService
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.feature.FeatureValueType
+import org.migor.feedless.feed.LegacyFeedService
 import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.PricedProductEntity
 import org.migor.feedless.plan.ProductDAO
@@ -138,16 +138,16 @@ class Seeder {
       val title = "Important Note: feedless 1 is online!"
       val repositoryId = feedlessOpsNotificationRepo.id
 
-      val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
+      val notification = documentDAO.findByTitleAndRepositoryId(title, repositoryId) ?: run {
         val n = DocumentEntity()
         n.repositoryId = repositoryId
         n
       }
 
       notification.url = propertyService.appHost
-      notification.contentTitle = title
+      notification.title = title
       notification.status = ReleaseStatus.released
-      notification.contentText =
+      notification.text =
         "Hi, I released a new version of feedless, that gives you a lot of new features."
       notification.updatedAt = LocalDateTime.now()
 
@@ -162,7 +162,7 @@ class Seeder {
       val title = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
       val repositoryId = legacyNotificationRepo.id
 
-      val notification = documentDAO.findByContentTitleAndRepositoryId(title, repositoryId) ?: run {
+      val notification = documentDAO.findByTitleAndRepositoryId(title, repositoryId) ?: run {
         val d = DocumentEntity()
         d.repositoryId = repositoryId
         d
@@ -170,11 +170,11 @@ class Seeder {
 
       notification.url =
         "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
-      notification.contentTitle = title
+      notification.title = title
       notification.status = ReleaseStatus.released
-      notification.contentText =
+      notification.text =
         "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at https://feedless.org, where you can import your RSS-proxy feeds."
-      notification.contentHtml =
+      notification.html =
         "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at <a href-\"https://feedless.org\">feedless.org</a>, where you can import your RSS-proxy feeds."
       notification.publishedAt = LocalDateTime.now() // force to top on most readers
       notification.updatedAt = LocalDateTime.now()
@@ -463,9 +463,9 @@ class Seeder {
   }
 
   private suspend fun resolveFeatureGroup(
-      name: String,
-      parentFeatureGroup: FeatureGroupEntity?,
-      features: Map<FeatureName, FeatureValueEntity>
+    name: String,
+    parentFeatureGroup: FeatureGroupEntity?,
+    features: Map<FeatureName, FeatureValueEntity>
   ): FeatureGroupEntity {
     val group = withContext(Dispatchers.IO) {
       featureGroupDAO.findByName(name) ?: run {
@@ -500,14 +500,14 @@ class Seeder {
   }
 
   private suspend fun createProduct(
-      name: String,
-      description: String,
-      group: ProductCategory? = null,
-      prices: List<PricedProductEntity>,
-      parentFeatureGroup: FeatureGroupEntity? = null,
-      features: Map<FeatureName, FeatureValueEntity>? = null,
-      isCloud: Boolean = false,
-      isBaseProduct: Boolean = false
+    name: String,
+    description: String,
+    group: ProductCategory? = null,
+    prices: List<PricedProductEntity>,
+    parentFeatureGroup: FeatureGroupEntity? = null,
+    features: Map<FeatureName, FeatureValueEntity>? = null,
+    isCloud: Boolean = false,
+    isBaseProduct: Boolean = false
   ): ProductEntity {
 
     return withContext(Dispatchers.IO) {

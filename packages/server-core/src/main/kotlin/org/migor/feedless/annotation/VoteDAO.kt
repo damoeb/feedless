@@ -9,7 +9,7 @@ import java.util.*
 
 @Repository
 @Profile("${AppProfiles.annotation} & ${AppLayer.repository}")
-interface VoteDAO: JpaRepository<VoteEntity, UUID> {
+interface VoteDAO : JpaRepository<VoteEntity, UUID> {
 
   fun existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
     flag: Boolean,

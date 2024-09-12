@@ -3,6 +3,7 @@ package org.migor.feedless.feed
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
@@ -48,9 +49,10 @@ class FeedQueryResolver {
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun remoteNativeFeed(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: RemoteNativeFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext())) {
+  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] remoteNativeFeed $data")
     feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
   }
@@ -61,9 +63,10 @@ class FeedQueryResolver {
   @Transactional(propagation = Propagation.NEVER)
   @Deprecated("replace with scrape")
   suspend fun previewFeed(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: PreviewFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): FeedPreview = withContext(useRequestContext(currentCoroutineContext())) {
+  ): FeedPreview = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] previewFeed $data")
     runCatching {
       feedParserService.parseFeedFromRequest(corrId, data.sources
@@ -92,22 +95,22 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
       var contentHtml: String? = null
       var contentRawBase64: String? = null
       var contentRawMime: String? = null
-      if (isHtml(it.contentRawMime)) {
+      if (isHtml(it.rawMimeType)) {
         try {
-          contentHtml = Base64.getDecoder().decode(it.contentRawBase64).toString(StandardCharsets.UTF_8)
+          contentHtml = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
         } catch (e: Exception) {
-          contentHtml = it.contentRawBase64
+          contentHtml = it.rawBase64
         }
       } else {
-        contentRawBase64 = it.contentRawBase64
-        contentRawMime = it.contentRawMime
+        contentRawBase64 = it.rawBase64
+        contentRawMime = it.rawMimeType
       }
 
       WebDocument(
         id = it.url,
         tags = it.tags,
         contentTitle = it.title,
-        contentText = it.contentText,
+        contentText = it.text,
         publishedAt = it.publishedAt.toMillis(),
         startingAt = it.startingAt?.toMillis(),
         localized = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },

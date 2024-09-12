@@ -18,11 +18,11 @@ import org.migor.feedless.agent.AgentEntity
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.plan.OrderEntity
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.mail.OneTimePasswordEntity
-import org.migor.feedless.secrets.UserSecretEntity
+import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.PlanEntity
+import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.util.toMillis
 import java.time.LocalDateTime
 import java.util.*
@@ -54,9 +54,6 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "country")
   @Size(max = 150)
   open var country: String? = null
-
-  @Column(name = "githubid")
-  open var githubId: String? = null
 
   @Column(nullable = false, name = "has_validated_email")
   open var hasValidatedEmail: Boolean = false
@@ -114,16 +111,16 @@ open class UserEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(
-    name = "notification_repository_id",
+    name = "inbox_repository_id",
     referencedColumnName = "id",
     insertable = false,
     updatable = false,
-    foreignKey = ForeignKey(name = "fk_user__to__notifications_repository")
+    foreignKey = ForeignKey(name = "fk_user__to__inbox_repository")
   )
-  open var notificationRepository: RepositoryEntity? = null
+  open var inboxRepository: RepositoryEntity? = null
 
-  @Column(name = "notification_repository_id")
-  open var notificationRepositoryId: UUID? = null
+  @Column(name = "inbox_repository_id")
+  open var inboxRepositoryId: UUID? = null
 
   @Column(name = "notifications_last_viewed_at")
   open var notificationsLastViewedAt: LocalDateTime? = null
@@ -162,8 +159,9 @@ fun UserEntity.toDTO(): User =
     firstName = StringUtils.trimToEmpty(firstName),
     lastName = StringUtils.trimToEmpty(lastName),
     country = StringUtils.trimToEmpty(country),
-    notificationRepositoryId = notificationRepositoryId?.toString(),
-    secrets = emptyList()
+    notificationRepositoryId = inboxRepositoryId?.toString(),
+    secrets = emptyList(),
+    connectedApps = emptyList()
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
   )

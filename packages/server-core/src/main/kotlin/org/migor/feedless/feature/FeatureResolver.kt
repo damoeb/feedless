@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -41,12 +42,13 @@ class FeatureResolver {
 //  @PreAuthorize("hasAuthority('USER')")
   @Transactional
   suspend fun featureGroups(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument inherit: Boolean,
     @InputArgument where: FeatureGroupWhereInput,
 
     ): List<FeatureGroup> =
-    withContext(useRequestContext(currentCoroutineContext())) {
+    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       log.debug("[$corrId] featureGroups inherit=$inherit where=$where")
 //      if (!sessionService.user(corrId).root) {
 //        throw IllegalArgumentException("user must be root")
@@ -65,10 +67,11 @@ class FeatureResolver {
   @DgsMutation(field = DgsConstants.MUTATION.UpdateFeatureValue)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateFeatureValue(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpdateFeatureValueInput
   ): Boolean =
-    withContext(useRequestContext(currentCoroutineContext())) {
+    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       log.debug("[$corrId] updateFeature $data")
       featureService.updateFeatureValue(corrId, UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
       true

@@ -116,7 +116,6 @@ class LegacyFeedControllerTest {
   }
 
   @Test
-  @Tag("unstable")
   fun `calling w2f returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 

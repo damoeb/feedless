@@ -39,6 +39,6 @@ fun withUrls(urlCount: Int): CommentEntity {
     words.add("https://foo.bar")
   }
   val comment = mock(CommentEntity::class.java)
-  Mockito.`when`(comment.contentText).thenReturn(words.joinToString(" "))
+  Mockito.`when`(comment.text).thenReturn(words.joinToString(" "))
   return comment
 }

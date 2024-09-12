@@ -133,6 +133,9 @@ type Mutation {
   createAnnotation(data: CreateAnnotationInput!): Annotation!
   deleteAnnotation(data: DeleteAnnotationInput!): Boolean!
 
+  updateConnectedApp(id: String!, authorize: Boolean!): Boolean
+  deleteConnectedApp(id: String!): Boolean
+
   authUser(data: AuthUserInput!): Authentication!
   createUserSecret: UserSecret!
   deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
@@ -331,6 +334,7 @@ input RepositoryUpdateDataInput {
   description: NullableStringUpdateOperationsInput
   refreshCron: NullableStringUpdateOperationsInput
   title: StringUpdateOperationsInput
+  pushNotificationsMuted: BoolUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
   retention: RetentionUpdateInput
 #  location: LatLonLocationInput
@@ -457,6 +461,7 @@ type Session {
 type Query {
   agents: [Agent!]!
   plugins: [Plugin!]!
+  connectedApp(id: String!): ConnectedApp!
 
   repository(data: RepositoryWhereInput!): Repository!
   repositories(data: RepositoriesInput!): [Repository!]!
@@ -479,6 +484,13 @@ type Query {
 
   products(data: ProductsWhereInput!): [Product!]!
   orders(data: OrdersInput!): [Order!]!
+}
+
+type ConnectedApp {
+  id: ID!
+  authorized: Boolean!
+  authorizedAt: Long
+  app: String!
 }
 
 type FeedPreview {
@@ -946,6 +958,7 @@ type User {
   purgeScheduledFor: Long
   notificationRepositoryId: ID
   notificationsLastViewedAt: Long
+  connectedApps: [ConnectedApp]!
   secrets: [UserSecret!]!
   plan(product: ProductCategory!): Plan
 }
@@ -982,6 +995,12 @@ type WebDocument {
   localized: GeoPoint
   updatedAt: Long
   url: String!
+  attachments: [Attachment!]!
+}
+
+type Attachment {
+  id: ID!
+
 }
 
 type ScrapedElementMeta {
@@ -1194,6 +1213,7 @@ input SinkOptionsInput {
   retention: RetentionInput
   refreshCron: String
   withShareKey: Boolean!
+  pushNotificationsMuted: Boolean
   agents: [AgentByGroup!]
   sunset: SunSetPolicyInput
 #  location: LatLonLocationInput

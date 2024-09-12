@@ -66,7 +66,12 @@ class PlanConstraintsService {
     return product ?: sessionService.activeProductFromRequest()!!
   }
 
-  suspend fun coerceMinScheduledNextAt(lastDate: LocalDateTime, nextDate: LocalDateTime, userId: UUID, product: ProductCategory): LocalDateTime {
+  suspend fun coerceMinScheduledNextAt(
+    lastDate: LocalDateTime,
+    nextDate: LocalDateTime,
+    userId: UUID,
+    product: ProductCategory
+  ): LocalDateTime {
     val minRefreshRateInMinutes =
       (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
     val minNextDate = lastDate.plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
@@ -147,9 +152,10 @@ class PlanConstraintsService {
             featureName.name
           )
         } else {
-          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())?.let {
-            featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
-          } ?: throw IllegalArgumentException("user has no subscription")
+          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
+            ?.let {
+              featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
+            } ?: throw IllegalArgumentException("user has no subscription")
         }
       }
     } catch (e: Exception) {

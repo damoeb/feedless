@@ -4,7 +4,6 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketConfigurationProperties
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketHandler
 import org.migor.feedless.AppLayer
-import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.AuthenticationHttpSessionHandshakeInterceptor
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean

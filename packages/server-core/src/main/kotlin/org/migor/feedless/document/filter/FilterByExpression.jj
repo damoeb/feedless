@@ -33,18 +33,18 @@ public class FilterByExpression {
 
   private String strField(String fieldName, JsonItem data) {
     switch (fieldName) {
-      case "content": return data.getContentText();
+      case "content": return data.getText();
       case "title": return data.getTitle();
-      case "raw": return data.getContentHtml();
+      case "raw": return data.getHtml();
       case "url": return data.getUrl();
-      case "any": return data.getContentText() + " " + data.getTitle() + " " + data.getContentHtml() + " " + data.getUrl();
+      case "any": return data.getText() + " " + data.getTitle() + " " + data.getHtml() + " " + data.getUrl();
     }
     throw new RuntimeException("Field '" + fieldName + "' is not supported");
   }
 
   private double numField(String fieldName, JsonItem data) {
     switch (fieldName) {
-      case "linkCount": return (double) this.linkCount(data.getContentHtml());
+      case "linkCount": return (double) this.linkCount(data.getHtml());
 //      case "score": return entry.getScore();
     }
     throw new RuntimeException("Field '" + fieldName + "' is not supported");

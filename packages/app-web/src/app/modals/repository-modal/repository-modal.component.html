@@ -319,6 +319,36 @@
       </ion-list>
     </ion-accordion>
 
+    <ion-accordion value="notifications" toggleIconSlot="start">
+      <ion-item slot="header">
+        <ion-label>
+          Notifications
+          <!--          <ion-note>-->
+          <!--            Harvest artefacts (images, pdfs,...), rewrite urls and unwinds tracking urls-->
+          <!--          </ion-note>-->
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-item>
+          <ion-checkbox
+            style="flex: 3"
+            class="ion-margin-end"
+            aria-label=""
+            justify="end"
+            aria-labelledby="enablePushNotifications__label"
+            [formControl]="formFg.controls.applyPrivacyPlugin"
+          ></ion-checkbox>
+          <ion-label
+            style="flex: 9"
+            id="enablePushNotifications__label"
+            class="ion-text-left"
+          >
+            Enable Push to Telegram
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+
     <ion-accordion value="robustness" toggleIconSlot="start">
       <ion-item slot="header">
         <ion-label>

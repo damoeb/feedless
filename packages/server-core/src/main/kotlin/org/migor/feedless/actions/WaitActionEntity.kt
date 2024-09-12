@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
 
 @Entity
 @Table(name = "t_action_wait")
@@ -16,6 +17,8 @@ import jakarta.persistence.Table
 )
 open class WaitActionEntity : ScrapeActionEntity() {
 
+  @XPathConstraint
+  @Size(min = 1)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 }

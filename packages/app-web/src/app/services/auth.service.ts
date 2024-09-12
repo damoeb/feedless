@@ -30,6 +30,7 @@ import {
 import jwt_decode from 'jwt-decode';
 import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 interface RichAuthToken {
   authorities: string[];
@@ -50,7 +51,10 @@ export interface Authentication {
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
 
-  constructor(private readonly apollo: ApolloClient<any>) {
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly router: Router,
+  ) {
     this.authStatus = new BehaviorSubject(null);
   }
 
@@ -139,6 +143,13 @@ export class AuthService {
 
   changeAuthStatus(loggedIn: boolean) {
     console.log('changeAuthStatus', loggedIn);
+    if (loggedIn) {
+      const redirectUrl = localStorage.getItem('redirectUrl');
+      if (redirectUrl) {
+        this.router.navigateByUrl(redirectUrl);
+        localStorage.removeItem('redirectUrl');
+      }
+    }
     this.authStatus.next({ loggedIn });
   }
 
@@ -148,5 +159,10 @@ export class AuthService {
         mutation: AuthAnonymous,
       })
       .then((response) => response.data.authAnonymous);
+  }
+
+  rememberRedirectUrl(redirectUrl: string) {
+    console.log('remeber', redirectUrl);
+    localStorage.setItem('redirectUrl', redirectUrl);
   }
 }

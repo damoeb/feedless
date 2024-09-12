@@ -61,7 +61,7 @@ Grammar and Spelling: Let G be a measure of grammar and spelling correctness (e.
 Q= wL*L + wE*E + wR*R + wG*G
      */
 
-    val text = comment.contentText
+    val text = comment.text
     val locale = languageService.bestLocale(text)
     return arrayOf(
       w.wordCount * wordCountScorer.score(text, locale),

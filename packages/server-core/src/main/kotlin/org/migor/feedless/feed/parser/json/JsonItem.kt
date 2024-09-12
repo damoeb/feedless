@@ -3,6 +3,7 @@ package org.migor.feedless.feed.parser.json
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.time.LocalDateTime
+import java.util.*
 
 open class JsonItem : Serializable {
 
@@ -14,6 +15,12 @@ open class JsonItem : Serializable {
     const val LAT_LNG = "latlng"
     const val PUBLISHED_AT = "date_published"
   }
+
+  @Transient
+  var repositoryId: UUID? = null
+
+  @Transient
+  var repositoryName: String? = null
 
   @SerializedName(ID)
   lateinit var id: String
@@ -28,16 +35,16 @@ open class JsonItem : Serializable {
   var tags: List<String>? = null
 
   @SerializedName("content_text")
-  var contentText: String? = null
+  var text: String? = null
 
   @SerializedName("content_raw")
-  var contentRawBase64: String? = null
+  var rawBase64: String? = null
 
   @SerializedName("content_raw_mime")
-  var contentRawMime: String? = null
+  var rawMimeType: String? = null
 
   @SerializedName("content_html")
-  var contentHtml: String? = null
+  var html: String? = null
 
 //  @SerializedName("summary")
 //  var summary: String? = null

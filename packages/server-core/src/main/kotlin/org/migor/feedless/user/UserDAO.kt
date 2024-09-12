@@ -4,6 +4,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -16,6 +18,13 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
   fun findFirstByRootIsTrue(): UserEntity?
 
   fun findByAnonymousIsTrue(): UserEntity
-  fun findByGithubId(githubId: String): UserEntity?
-  fun existsByGithubId(githubId: String): Boolean
+
+  @Query(
+    """
+    SELECT u from UserEntity u
+    inner join GithubConnectionEntity c on c.userId=u.id
+    where c.githubId = :githubId
+  """
+  )
+  fun findByGithubId(@Param("githubId") githubId: String): UserEntity?
 }

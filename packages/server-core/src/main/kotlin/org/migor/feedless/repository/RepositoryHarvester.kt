@@ -26,22 +26,26 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
+import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
+import org.migor.feedless.transport.TelegramBotService
+import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toLocalDateTime
-import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -88,7 +92,13 @@ class RepositoryHarvester internal constructor() {
   private lateinit var meterRegistry: MeterRegistry
 
   @Autowired
+  private lateinit var telegramConnectionDAO: TelegramConnectionDAO
+
+  @Autowired
   private lateinit var sourceDAO: SourceDAO
+
+  @Autowired
+  private lateinit var messageService: MessageService
 
   @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
@@ -155,7 +165,11 @@ class RepositoryHarvester internal constructor() {
         repositoryDAO.save(repository)
 
         harvest.finishedAt = LocalDateTime.now()
-        harvest.logs = StringUtils.abbreviate(logCollector.logs.map { "${it.time.toLocalDateTime().format(iso8601DateFormat)}  ${it.message}" }
+        harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
+          "${
+            it.time.toLocalDateTime().format(iso8601DateFormat)
+          }  ${it.message}"
+        }
           .joinToString("\n"), "...", 5000)
         harvestDAO.save(harvest)
       }
@@ -240,14 +254,14 @@ class RepositoryHarvester internal constructor() {
   }
 
   private suspend fun importElement(
-      corrId: String,
-      output: ScrapeOutput,
-      repositoryId: UUID,
-      source: SourceEntity,
-      logCollector: LogCollector
+    corrId: String,
+    output: ScrapeOutput,
+    repositoryId: UUID,
+    source: SourceEntity,
+    logCollector: LogCollector
   ): Int {
     log.debug("[$corrId] importElement")
-    return if(output.outputs.isEmpty()) {
+    return if (output.outputs.isEmpty()) {
       0
     } else {
       val lastAction = output.outputs.last()
@@ -338,7 +352,7 @@ class RepositoryHarvester internal constructor() {
           try {
             val existing = documentDAO.findFirstByUrlAndRepositoryId(it.url, repositoryId)
             val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
-            updated.imageUrl = detectMainImageUrl(corrId, updated.contentHtml)
+            updated.imageUrl = detectMainImageUrl(corrId, updated.html)
             createOrUpdate(corrId, updated, existing, repository, logCollector)
           } catch (e: Exception) {
             logCollector.log("[$corrId] importItems failed: ${e.message}")
@@ -348,7 +362,7 @@ class RepositoryHarvester internal constructor() {
         }
 
       val validator = Validation.buildDefaultValidatorFactory().validator
-      documentDAO.saveAll(documents
+      val validDocuments = documents
         .filter { document ->
           validator.validate(document).let { validation ->
             if (validation.isEmpty()) {
@@ -358,8 +372,17 @@ class RepositoryHarvester internal constructor() {
               false
             }
           }
+        }.map { (_, document) -> document }
+      documentDAO.saveAll(validDocuments)
+
+      if (repository.pushNotificationsMuted) {
+        telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
+          validDocuments
+            .filter { it.status == ReleaseStatus.released }
+            .forEach { messageService.publishMessage(TelegramBotService.toTopic(tgLink.chatId), it.asJsonItem(repository)) }
         }
-        .map { (_, document) -> document })
+      }
+
       documentPipelineJobDAO.saveAll(
         documents
           .filter { (new, _) -> new }
@@ -428,7 +451,7 @@ class RepositoryHarvester internal constructor() {
     return try {
       existing
         ?.let {
-          existing.contentTitle = document.contentTitle
+          existing.title = document.title
           existing.latLon = document.latLon
           existing.tags = document.tags
           existing.startingAt = document.startingAt
@@ -503,25 +526,25 @@ inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstanc
 
 private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
   val d = DocumentEntity()
-  d.contentTitle = title
+  d.title = title
   d.sourceId = source.id
   d.repositoryId = repositoryId
-  if (StringUtils.isNotBlank(contentRawBase64)) {
+  if (StringUtils.isNotBlank(rawBase64)) {
     val tika = Tika()
-    val contentRawBytes = contentRawBase64!!.toByteArray()
+    val contentRawBytes = rawBase64!!.toByteArray()
     val mime = tika.detect(contentRawBytes)
-    d.contentRaw = if (mime.startsWith("text/")) {
+    d.raw = if (mime.startsWith("text/")) {
       contentRawBytes
     } else {
-      Base64.getDecoder().decode(contentRawBase64)
+      Base64.getDecoder().decode(rawBase64)
     }
-    d.contentRawMime = mime
+    d.rawMimeType = mime
   }
   d.tags = source.tags
   d.latLon = source.latLon ?: this.latLng?.toPoint()
-  d.contentHtml = contentHtml
+  d.html = html
   d.imageUrl = ""
-  d.contentText = StringUtils.trimToEmpty(contentText)
+  d.text = StringUtils.trimToEmpty(text)
   d.status = status
   d.attachments = attachments.map { it.toAttachment(d) }.toMutableList()
   d.publishedAt = publishedAt
@@ -539,7 +562,7 @@ private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source:
 
 private fun JsonAttachment.toAttachment(document: DocumentEntity): AttachmentEntity {
   val a = AttachmentEntity()
-  a.contentType = type
+  a.mimeType = type
   a.remoteDataUrl = url
   a.originalUrl = url
   a.size = length

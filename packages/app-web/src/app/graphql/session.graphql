@@ -16,6 +16,12 @@ fragment UserFragment on User {
   createdAt
   notificationRepositoryId
   purgeScheduledFor
+  connectedApps {
+    id
+    authorized
+    authorizedAt
+    app
+  }
   secrets {
     ...SecretFragment
   }

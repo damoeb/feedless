@@ -30,7 +30,7 @@ class CompositeFilterPluginTest {
     service.propertyService = mock(PropertyService::class.java)
     item = JsonItem()
     item.title = " foo is the perfect title"
-    item.contentText = "bar is the payload"
+    item.text = "bar is the payload"
     item.url = ""
   }
 

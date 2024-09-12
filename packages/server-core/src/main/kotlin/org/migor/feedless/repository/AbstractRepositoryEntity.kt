@@ -33,7 +33,6 @@ import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
-import org.migor.feedless.generated.types.Annotations
 import org.migor.feedless.generated.types.CompareBy
 import org.migor.feedless.generated.types.CompareByInput
 import org.migor.feedless.generated.types.CompositeFieldFilterParams
@@ -107,6 +106,9 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Column(name = "retention_max_items")
   open var retentionMaxCapacity: Int? = null
+
+  @Column(name = "push_notifications_muted", nullable = false)
+  open var pushNotificationsMuted: Boolean = true
 
   @Column(name = "retention_max_age_days")
   open var retentionMaxAgeDays: Int? = null

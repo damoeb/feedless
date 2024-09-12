@@ -14,25 +14,25 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
-import org.migor.feedless.feature.FeatureName
-import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.scrape.ExtendContext
-import org.migor.feedless.scrape.GenericFeedSelectors
-import org.migor.feedless.scrape.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -269,7 +269,7 @@ class LegacyFeedService {
     val preregistrationLink = "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
     article.title = "SERVICE ANNOUNCEMENT: RSS-Proxy Urls have reached End-of-life"
-    article.contentHtml = """Dear User,
+    article.html = """Dear User,
 
 I hope this message finds you well. As of now, RSS-Proxy urls are no longer supported.
 
@@ -293,7 +293,7 @@ Markus
     val article = JsonItem()
     article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
     article.title = "ALERT: Potential Issue with Feed"
-    article.contentText = """Dear User,
+    article.text = """Dear User,
 an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.
 If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.
 
@@ -302,7 +302,7 @@ Feed URL: $feedUrl
 corrId: $corrId
 ${StringUtils.truncate(t.stackTraceToString(), 800)}
 """.trimIndent()
-    article.contentHtml = """<p>Dear User,</p>
+    article.html = """<p>Dear User,</p>
 <p>an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.</p>
 
 <p>If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.<p>

@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.future.await
@@ -49,10 +50,11 @@ class OrderResolver {
 
   @DgsQuery
   suspend fun orders(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: OrdersInput
   ): List<Order> =
-    withContext(useRequestContext(currentCoroutineContext())) {
+    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       log.debug("[$corrId] orders $data")
       orderService.findAll(corrId, data).map { it.toDTO() }
     }
@@ -84,5 +86,11 @@ class OrderResolver {
 
 private fun LicenseEntity.toDTO(): License {
   // todo decode license and fill
-  return License(name = "", email = "", scope = ProductCategory.feedless, createdAt = LocalDateTime.now().toMillis(), version = 0)
+  return License(
+    name = "",
+    email = "",
+    scope = ProductCategory.feedless,
+    createdAt = LocalDateTime.now().toMillis(),
+    version = 0
+  )
 }

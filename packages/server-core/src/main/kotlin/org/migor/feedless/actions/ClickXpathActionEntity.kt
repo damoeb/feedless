@@ -3,8 +3,10 @@ package org.migor.feedless.actions
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
 
 @Entity
 @Table(name = "t_action_click_xpath")
@@ -16,6 +18,8 @@ import jakarta.persistence.Table
 )
 open class ClickXpathActionEntity : ScrapeActionEntity() {
 
+  @XPathConstraint
+  @Size(min = 1, max = 100)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 }

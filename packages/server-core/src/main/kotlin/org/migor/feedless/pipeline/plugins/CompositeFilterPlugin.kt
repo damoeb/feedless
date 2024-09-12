@@ -34,11 +34,11 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun name(): String = "Filter"
 
   override fun filterEntity(
-      corrId: String,
-      item: JsonItem,
-      params: PluginExecutionParamsInput,
-      index: Int,
-      logCollector: LogCollector,
+    corrId: String,
+    item: JsonItem,
+    params: PluginExecutionParamsInput,
+    index: Int,
+    logCollector: LogCollector,
   ): Boolean {
     logCollector.log("applying filters to item #$index url=${item.url}")
     val keep = params.org_feedless_filter?.let { plugins ->
@@ -103,7 +103,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     index: Int
   ): Boolean {
     return arrayOf(
-      filterParams.content?.let { applyStringOperation(StringUtils.trimToEmpty(item.contentText), it) },
+      filterParams.content?.let { applyStringOperation(StringUtils.trimToEmpty(item.text), it) },
       filterParams.title?.let { applyStringOperation(StringUtils.trimToEmpty(item.title), it) },
       filterParams.link?.let { applyStringOperation(item.url, it) },
       filterParams.index?.let { applyNumberOperation(index, it) },

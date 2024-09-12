@@ -1,8 +1,10 @@
 package org.migor.feedless.repository
 
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -33,20 +35,16 @@ import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.Visibility
-import org.migor.feedless.mail.MailForwardDAO
-import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.dao.EmptyResultDataAccessException
@@ -71,42 +69,26 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 @Transactional
-class RepositoryService {
+class RepositoryService(
+  private val sourceDAO: SourceDAO,
+//  private var userDAO: UserDAO,
+  private var repositoryDAO: RepositoryDAO,
+  private var sessionService: SessionService,
+  private var userService: UserService,
+  private var planConstraintsService: PlanConstraintsService,
+  private var documentService: DocumentService,
+  private var propertyService: PropertyService,
+  private var scrapeActionDAO: ScrapeActionDAO
+) {
 
   private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
-
-  @Autowired
-  private lateinit var sourceDAO: SourceDAO
 
 //  @Autowired
 //  private lateinit var mailForwardDAO: MailForwardDAO
 
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
-  private lateinit var userService: UserService
-
-  @Autowired
-  private lateinit var planConstraintsService: PlanConstraintsService
-
-  @Autowired
-  private lateinit var documentService: DocumentService
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
 //  @Autowired
 //  private lateinit var analyticsService: AnalyticsService
 
-  @Autowired
-  private lateinit var scrapeActionDAO: ScrapeActionDAO
 
   suspend fun create(corrId: String, data: RepositoriesCreateInput): List<Repository> {
     log.info("[$corrId] create repository with ${data.repositories.size} sources")
@@ -159,6 +141,8 @@ class RepositoryService {
 //      ""
 //    }
 
+    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.sinkOptions.pushNotificationsMuted)
+
     repo.sourcesSyncCron = repoInput.sinkOptions.refreshCron?.let {
       planConstraintsService.auditCronExpression(repoInput.sinkOptions.refreshCron)
     } ?: ""
@@ -175,12 +159,12 @@ class RepositoryService {
       repositoryDAO.save(repo)
     }
 
-    repo.sources = repoInput.sources.map { createScrapeSource(corrId, ownerId, it, repo) }.toMutableList()
+    repo.sources = repoInput.sources.map { createSource(corrId, ownerId, it, repo) }.toMutableList()
 
     repoInput.additionalSinks?.let { sink ->
-      val owner = withContext(Dispatchers.IO) {
-        userDAO.findById(ownerId).orElseThrow()
-      }
+//      val owner = withContext(Dispatchers.IO) {
+//        userDAO.findById(ownerId).orElseThrow()
+//      }
 //      repo.mailForwards = sink.mapNotNull { it.email }
 //        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
 //        .toMutableList()
@@ -206,25 +190,39 @@ class RepositoryService {
 //    }
 //  }
 
-  private suspend fun createScrapeSource(
+  private suspend fun createSource(
     corrId: String,
     ownerId: UUID,
-    req: SourceInput,
+    sourceInput: SourceInput,
     repository: RepositoryEntity
   ): SourceEntity {
     val entity = SourceEntity()
     log.info("[$corrId] create source")
-    val source = req.fromDto()
+    val source = sourceInput.fromDto()
     planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
 //    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.tags = source.tags
-    entity.title = req.title
+    entity.title = sourceInput.title
     entity.repositoryId = repository.id
-    req.localized?.let {
+    sourceInput.localized?.let {
       entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
     } ?: run {
       entity.latLon = null
     }
+
+    if (source.actions.isEmpty()) {
+      throw IllegalArgumentException("flow must not be empty")
+    }
+    val validator = Validation.buildDefaultValidatorFactory().validator
+    val invalidActions = source.actions.filter { validator.validate(it).isNotEmpty() }
+    if (invalidActions.isNotEmpty()) {
+      throw IllegalArgumentException("invalid actions $invalidActions")
+    }
+
+    if (validator.validate(entity).isNotEmpty()) {
+      throw IllegalArgumentException("invalid source")
+    }
+
 
     val saved = withContext(Dispatchers.IO) {
       sourceDAO.save(entity)
@@ -462,6 +460,11 @@ class RepositoryService {
         )
       }
     }
+
+    data.pushNotificationsMuted?.let {
+      repository.pushNotificationsMuted = it.set
+    }
+
     data.visibility?.set?.let { repository.visibility = planConstraintsService.coerceVisibility(corrId, it.fromDto()) }
     data.plugins?.let { plugins ->
       val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
@@ -496,7 +499,7 @@ class RepositoryService {
     return withContext(Dispatchers.IO) {
       data.sources?.let {
         it.add?.let {
-          repository.sources.addAll(it.map { createScrapeSource(corrId, repository.ownerId, it, repository) })
+          repository.sources.addAll(it.map { createSource(corrId, repository.ownerId, it, repository) })
         }
         it.update?.let {
           val sources: List<SourceEntity> = it.mapNotNull { sourceUpdate ->
@@ -574,24 +577,24 @@ fun DocumentEntity.toJsonItem(
     point.y = it.y
     article.latLng = point
   }
-  article.title = StringUtils.trimToEmpty(contentTitle)
+  article.title = StringUtils.trimToEmpty(title)
   article.attachments = attachments.map {
     JsonAttachment(
       url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
-      type = it.contentType,
+      type = it.mimeType,
       length = it.size,
       duration = it.duration
     )
   }
   if (visibility === EntityVisibility.isPublic) {
     article.url = createDocumentUrl(propertyService, id)
-    article.contentText = StringUtils.abbreviate(contentText, "...", 160)
+    article.text = StringUtils.abbreviate(text, "...", 160)
   } else {
     article.url = url
-    article.contentText = StringUtils.trimToEmpty(contentText)
-    article.contentRawBase64 = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
-    article.contentRawMime = contentRawMime
-    article.contentHtml = contentHtml
+    article.text = StringUtils.trimToEmpty(text)
+    article.rawBase64 = raw?.let { Base64.getEncoder().encodeToString(raw) }
+    article.rawMimeType = rawMimeType
+    article.html = html
   }
   requestURI?.let {
     article.url += "?source=${URLEncoder.encode(requestURI, StandardCharsets.UTF_8)}"

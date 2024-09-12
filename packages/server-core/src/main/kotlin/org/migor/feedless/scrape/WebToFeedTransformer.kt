@@ -228,7 +228,7 @@ class WebToFeedTransformer(
           Pair(it, it.map {
             ed.apply(toAbsoluteUrl(URI(url), it.element.attr("href")).toURL().toString(), url)
           }.average())
-        } catch(e: Exception) {
+        } catch (e: Exception) {
           null
         }
       }
@@ -379,9 +379,9 @@ class WebToFeedTransformer(
       fragment.extracts?.find { it.fragmentName == JsonItem.URL }?.fragments?.find { it.data?.mimeType == WebExtractService.MIME_URL }?.data?.data
     item.url = url ?: ""
 
-    item.contentText = webToTextTransformer.extractText(element)
-    item.contentRawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
-    item.contentRawMime = "text/html"
+    item.text = webToTextTransformer.extractText(element)
+    item.rawBase64 = withAbsUrls(element, baseUrl).selectFirst("body")!!.html()
+    item.rawMimeType = "text/html"
     item.publishedAt = LocalDateTime.now()
 
     val tryExtractDate =
@@ -812,6 +812,7 @@ class WebToFeedTransformer(
     fun toAbsoluteUrl(base: URI, maybeRelativeLink: String): URI {
       return toAbsoluteUrl(base, URI.create(maybeRelativeLink))
     }
+
     private fun toAbsoluteUrl(uri: URI, maybeRelativeLink: URI): URI {
       return if (maybeRelativeLink.isAbsolute) {
         maybeRelativeLink
@@ -823,11 +824,12 @@ class WebToFeedTransformer(
     fun withAbsUrls(element: Element, url: URI): Element {
       element.select("a[href]")
         .filter { link -> !link.attr("href").startsWith("javascript") }
-        .forEach { link -> try {
-          link.attr("href", toAbsoluteUrl(url, link.attr("href")).toURL().toString())
-        } catch (_: Exception) {
+        .forEach { link ->
+          try {
+            link.attr("href", toAbsoluteUrl(url, link.attr("href")).toURL().toString())
+          } catch (_: Exception) {
 
-        }
+          }
         }
       element.select("img[src]")
         .filter { img -> !img.attr("src").startsWith("data:") }

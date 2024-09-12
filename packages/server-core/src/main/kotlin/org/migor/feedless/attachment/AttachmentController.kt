@@ -1,7 +1,9 @@
 package org.migor.feedless.attachment
 
+import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -39,7 +41,7 @@ class AttachmentController {
   suspend fun attachmentById(
     request: HttpServletRequest,
     @PathVariable("attachmentId") attachmentId: String,
-  ): ResponseEntity<ByteArray> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): ResponseEntity<ByteArray> = coroutineScope {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET attachmentId id=$attachmentId")
     val attachment = withContext(Dispatchers.IO) {
@@ -49,7 +51,7 @@ class AttachmentController {
     if (attachment.isPresent) {
       val a = attachment.get()
       ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_TYPE, a.contentType)
+        .header(HttpHeaders.CONTENT_TYPE, a.mimeType)
         .body(a.data)
     } else {
       ResponseEntity.notFound().build()
@@ -62,7 +64,7 @@ class AttachmentController {
   suspend fun attachmentProxy(
     request: HttpServletRequest,
     @RequestParam("url") url: String,
-  ): ResponseEntity<ByteArray> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): ResponseEntity<ByteArray> = coroutineScope {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET proxy attachment url=$url")
     val attachment = httpService.httpGet(corrId, url, 200)

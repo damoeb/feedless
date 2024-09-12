@@ -1,5 +1,7 @@
 package org.migor.feedless.plan
 
+import graphql.schema.DataFetchingEnvironment
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -34,7 +36,7 @@ class PaymentController {
   )
   suspend fun paymentCallback(
     @PathVariable("billingId") billingId: String,
-  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): ResponseEntity<String> = coroutineScope {
     val corrId = newCorrId()
     log.info("[$corrId] paymentCallback $billingId")
     val headers = HttpHeaders()

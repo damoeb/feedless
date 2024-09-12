@@ -21,11 +21,8 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class WebExtractService {
+class WebExtractService(private val dateClaimer: DateClaimer) {
   private val log = LoggerFactory.getLogger(WebExtractService::class.simpleName)
-
-  @Autowired
-  private lateinit var dateClaimer: DateClaimer
 
   companion object {
     const val MIME_DATE = "text/x-date"
@@ -36,7 +33,14 @@ class WebExtractService {
     return xpath.value.replaceFirst("/html/body", "/").replaceFirst("./", "//")
   }
 
-  suspend fun extract(corrId: String, extract: DOMExtract, element: Element, locale: Locale, logger: LogCollector, level: Int = 0): ScrapeExtractResponse {
+  suspend fun extract(
+    corrId: String,
+    extract: DOMExtract,
+    element: Element,
+    locale: Locale,
+    logger: LogCollector,
+    level: Int = 0
+  ): ScrapeExtractResponse {
     val fragments = if (extract.xpath.value == "./") {
       listOf(element)
     } else {
@@ -49,7 +53,7 @@ class WebExtractService {
       fragmentName = extract.fragmentName,
       fragments = fragments.map { fragment ->
         ScrapeExtractFragment(
-          extracts = extract.extract?.map { extract(corrId, it, fragment, locale, logger, level+1) },
+          extracts = extract.extract?.map { extract(corrId, it, fragment, locale, logger, level + 1) },
           html = if (extract.emit.contains(ScrapeEmit.html)) {
             TextData(fragment.html())
           } else {

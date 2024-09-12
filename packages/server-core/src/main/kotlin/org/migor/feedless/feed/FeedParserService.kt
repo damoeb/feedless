@@ -144,7 +144,13 @@ class FeedParserService {
         )
       }
       .map {
-        conditionalTagPlugin.mapEntity(corrId, it.asEntity(dummyRepository), dummyRepository, conditionalTagsParams, logCollector)
+        conditionalTagPlugin.mapEntity(
+          corrId,
+          it.asEntity(dummyRepository),
+          dummyRepository,
+          conditionalTagsParams,
+          logCollector
+        )
           .toDto(propertyService)
       }
 
@@ -172,14 +178,14 @@ private fun <E : ItemFilterParamsInput> List<E>.toPluginExecutionParamsInput(): 
 
 private fun JsonItem.asEntity(repository: RepositoryEntity): DocumentEntity {
   val e = DocumentEntity()
-  e.contentTitle = title
+  e.title = title
 //  if (StringUtils.isNotBlank(contentRawBase64)) {
 //    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
 //    e.contentRawMime = contentRawMime
 //  }
   e.repositoryId = repository.id
   e.latLon = this.latLng?.toPoint()
-  e.contentText = StringUtils.trimToEmpty(contentText)
+  e.text = StringUtils.trimToEmpty(text)
   e.status = ReleaseStatus.released
   e.publishedAt = publishedAt
   startingAt?.let {

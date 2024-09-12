@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.exporter
 
 import kotlinx.coroutines.test.runTest
-import org.apache.commons.lang3.time.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -13,7 +12,6 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.JsonUtil
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 class FeedGeneratorTest {
 
@@ -45,10 +43,10 @@ class FeedGeneratorTest {
     item.url = "http://item-url"
     item.tags = emptyList()
 //    item.authors = emptyList()
-    item.contentText = "contentText"
-    item.contentRawBase64 = "base64-image-data"
-    item.contentRawMime = "image/png"
-    item.contentHtml = "<div>foo</div>"
+    item.text = "contentText"
+    item.rawBase64 = "base64-image-data"
+    item.rawMimeType = "image/png"
+    item.html = "<div>foo</div>"
 //    item.imageUrl = "imageUrl"
 //    item.bannerImage = "bannerImage"
 //    item.language = "language"

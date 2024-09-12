@@ -1,10 +1,10 @@
 package org.migor.feedless.common
 
 import org.migor.feedless.AppLayer
+import org.migor.feedless.mail.OneTimePasswordDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.repository.HarvestDAO
-import org.migor.feedless.mail.OneTimePasswordDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -17,28 +17,21 @@ import java.time.LocalDateTime
 @Service
 @Profile(AppLayer.scheduler)
 @Transactional(propagation = Propagation.NEVER)
-class CleanupExecutor internal constructor() {
+class CleanupExecutor(
+  private val oneTimePasswordDAO: OneTimePasswordDAO?,
+  private val sourcePipelineJobDAO: SourcePipelineJobDAO,
+  private val harvestDAO: HarvestDAO,
+  private val documentPipelineJobDAO: DocumentPipelineJobDAO
+) {
 
   private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
-
-  @Autowired
-  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
-
-  @Autowired
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-
-  @Autowired
-  private lateinit var harvestDAO: HarvestDAO
-
-  @Autowired
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
   @Scheduled(cron = "0 0 0 * * *")
   @Transactional
   fun executeCleanup() {
     val now = LocalDateTime.now()
     harvestDAO.deleteAllTailingByRepositoryId()
-    oneTimePasswordDAO.deleteAllByValidUntilBefore(now)
+    oneTimePasswordDAO?.deleteAllByValidUntilBefore(now)
     sourcePipelineJobDAO.deleteAllByCreatedAtBefore(now.minusDays(3))
     documentPipelineJobDAO.deleteAllByCreatedAtBefore(now.minusDays(3))
   }

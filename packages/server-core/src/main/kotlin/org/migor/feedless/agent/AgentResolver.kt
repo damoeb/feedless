@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
@@ -63,9 +64,11 @@ class AgentResolver {
 
   @Throttled
   @DgsQuery
-  suspend fun agents(@RequestHeader(ApiParams.corrId) corrId: String): List<Agent> {
+  suspend fun agents(
+    dfe: DataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId) corrId: String): List<Agent> {
     log.debug("[$corrId] agents")
-    return withContext(useRequestContext(currentCoroutineContext())) {
+    return withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       agentService.findAllByUserId(sessionService.userId()).map { it.toDto() }
     }
   }

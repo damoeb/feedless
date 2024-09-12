@@ -67,7 +67,7 @@ class DetectMediaPlugin : MapEntityPlugin {
 
       ytdl(corrId, url, mediaItems)
 
-      document.contentHtml?.let {
+      document.html?.let {
         Jsoup.parse(it).select("iframe[src]").toList()
           .firstOrNull { it.attr("src").startsWith("https://www.youtube.com") }?.let {
             ytdl(corrId, it.attr("src"), mediaItems)
@@ -122,7 +122,7 @@ private fun MediaItem.toEntity(id: UUID): AttachmentEntity {
   val a = AttachmentEntity()
   a.documentId = id
   a.hasData = true
-  a.contentType = this.format!!
+  a.mimeType = this.format!!
   a.remoteDataUrl = this.url
   return a
 }

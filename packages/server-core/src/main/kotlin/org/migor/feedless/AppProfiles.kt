@@ -3,7 +3,7 @@ package org.migor.feedless
 object AppProfiles {
   const val dev = "dev"
   const val secrets = "secrets"
-  const val pipeline = "pipeline"
+  const val telegram = "telegram"
   const val properties = "properties"
   const val license = "license"
   const val security = "security"

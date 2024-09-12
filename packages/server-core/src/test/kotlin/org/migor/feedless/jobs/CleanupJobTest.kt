@@ -1,16 +1,16 @@
 package org.migor.feedless.jobs
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.common.CleanupExecutor
+import org.migor.feedless.mail.OneTimePasswordDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.repository.HarvestDAO
 import org.migor.feedless.repository.any
-import org.migor.feedless.mail.OneTimePasswordDAO
-import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
@@ -21,20 +21,27 @@ import java.time.LocalDateTime
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CleanupJobTest {
 
-  @Mock
-  lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
+  private lateinit var harvestDAO: HarvestDAO
+  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
-  @Mock
-  lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
+  private lateinit var cleanupExecutor: CleanupExecutor
 
-  @Mock
-  lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+  @BeforeEach
+  fun setUp() {
 
-  @Mock
-  lateinit var harvestDAO: HarvestDAO
-
-  @InjectMocks
-  lateinit var cleanupExecutor: CleanupExecutor
+    oneTimePasswordDAO = mock(OneTimePasswordDAO::class.java)
+    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
+    harvestDAO = mock(HarvestDAO::class.java)
+    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
+    cleanupExecutor = CleanupExecutor(
+      oneTimePasswordDAO,
+      sourcePipelineJobDAO,
+      harvestDAO,
+      documentPipelineJobDAO
+    )
+  }
 
   @Test
   fun `executeCleanup removes trailing harvests`() {

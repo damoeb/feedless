@@ -17,13 +17,13 @@ import org.migor.feedless.actions.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedRule
+import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.util.toMillis
-import org.migor.feedless.scrape.ExtendContext
-import org.migor.feedless.scrape.GenericFeedRule
-import org.migor.feedless.scrape.GenericFeedSelectors
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 

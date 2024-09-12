@@ -11,6 +11,8 @@ import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
+import { ConnectedAppService } from '../../services/connected-app.service';
+import { Session } from '../../graphql/types';
 
 @Component({
   selector: 'app-profile-page',
@@ -37,10 +39,12 @@ export class ProfilePage implements OnInit, OnDestroy {
       Validators.maxLength(50),
     ]),
   });
+  protected connectedApps: Session['user']['connectedApps'] = [];
 
   constructor(
     private readonly toastCtrl: ToastController,
     protected readonly sessionService: SessionService,
+    protected readonly connectedAppService: ConnectedAppService,
     private readonly titleService: Title,
     protected readonly serverConfig: ServerConfigService,
   ) {}
@@ -65,6 +69,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
         if (session.isLoggedIn) {
+          this.connectedApps = session.user.connectedApps;
           this.formFg.patchValue({
             email: session.user.email,
             firstName: session.user.firstName,
@@ -118,5 +123,9 @@ export class ProfilePage implements OnInit, OnDestroy {
 
       await toast.present();
     }
+  }
+
+  async disconnectApp(id: string) {
+    await this.connectedAppService.deleteConnectedApp(id);
   }
 }

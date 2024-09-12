@@ -14,7 +14,7 @@ class SpamScorer {
   private val log = LoggerFactory.getLogger(KeywordIntersectionScorer::class.simpleName)
 
   fun score(comment: CommentEntity): Double {
-    return if (getHyperLinks(comment.contentText).size > 2) {
+    return if (getHyperLinks(comment.text).size > 2) {
       1.0
     } else {
       0.0

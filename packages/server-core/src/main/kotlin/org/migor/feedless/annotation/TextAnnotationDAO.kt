@@ -9,7 +9,7 @@ import java.util.*
 
 @Repository
 @Profile("${AppProfiles.annotation} & ${AppLayer.repository}")
-interface TextAnnotationDAO: JpaRepository<TextAnnotationEntity, UUID> {
+interface TextAnnotationDAO : JpaRepository<TextAnnotationEntity, UUID> {
   fun existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(
     fromChar: Int,
     toChar: Int,

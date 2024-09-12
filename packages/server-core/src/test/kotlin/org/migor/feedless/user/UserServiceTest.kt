@@ -12,6 +12,7 @@ import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.argThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -32,6 +33,9 @@ class UserServiceTest {
   @Mock
   lateinit var userDAO: UserDAO
 
+  @Mock
+  lateinit var githubConnectionDAO: GithubConnectionDAO
+
   @InjectMocks
   lateinit var userService: UserService
 
@@ -45,19 +49,22 @@ class UserServiceTest {
     githubId = "123678"
     userId = UUID.randomUUID()
     `when`(user.id).thenReturn(userId)
-    `when`(user.githubId).thenReturn(githubId)
+//    `when`(user.githubId).thenReturn(githubId)
     `when`(user.email).thenReturn("$githubId@github.com ")
     `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(user))
   }
 
   @Test
   fun `updateLegacyUser updates email address`() = runTest {
+    // given
+    `when`(githubConnectionDAO.existsByUserId(any(UUID::class.java))).thenReturn(true)
+
     // when
     userService.updateLegacyUser(corrId, user, githubId)
 
     // then
     verify(user).email = "$userId@feedless.org"
-    verify(user, times(0)).githubId = any(String::class.java)
+    verify(githubConnectionDAO, times(0)).save(argThat { it.githubId == githubId })
 
     verify(userDAO).save(eq(user))
   }
@@ -155,7 +162,7 @@ class UserServiceTest {
 
     userService.updateLegacyUser(corrId, user, githubId)
 
-    verify(user).githubId = githubId
+    verify(githubConnectionDAO, times(1)).save(argThat { it.githubId == githubId })
     verify(user, times(0)).email = any(String::class.java)
 
     verify(userDAO).save(eq(user))

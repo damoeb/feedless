@@ -34,7 +34,7 @@ open class AttachmentEntity : EntityWithUUID() {
 
   @Size(max = LEN_STR_DEFAULT)
   @Column(nullable = false, length = LEN_STR_DEFAULT, name = "content_type")
-  open lateinit var contentType: String
+  open lateinit var mimeType: String
 
   @Size(max = LEN_URL)
   @Column(length = LEN_URL, name = "original_url")

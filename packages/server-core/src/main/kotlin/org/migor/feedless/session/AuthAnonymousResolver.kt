@@ -37,9 +37,9 @@ class AuthAnonymousResolver {
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.AuthAnonymous)
   suspend fun authAnonymous(
-    @RequestHeader(ApiParams.corrId, required = false) cid: String,
     dfe: DataFetchingEnvironment,
-  ): AuthenticationDto = withContext(useRequestContext(currentCoroutineContext())) {
+    @RequestHeader(ApiParams.corrId, required = false) cid: String,
+  ): AuthenticationDto = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     val corrId = handleCorrId(cid)
     log.debug("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()

@@ -48,7 +48,7 @@ open class SourceEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.repositoryId, nullable = false)
   open lateinit var repositoryId: UUID
 
-  @Column(nullable = false, name = "erroneous")
+  @Column(nullable = false, name = "is_disabled")
   open var disabled: Boolean = false
 
   @Column(nullable = false, name = "errors_in_succession")

@@ -52,7 +52,9 @@ class RepositoryHarvesterExecutor internal constructor() {
 
       LocalDateTime.now().minusDays(1)
       val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
-      val repos = repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(EntityVisibility.isPublic, LocalDateTime.now(), pageable).map { it.id }
+      val repos =
+        repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(EntityVisibility.isPublic, LocalDateTime.now(), pageable)
+          .map { it.id }
 
       if (analyticsService.canPullEvents()) {
 
@@ -86,7 +88,8 @@ class RepositoryHarvesterExecutor internal constructor() {
   fun refreshSubscriptions() {
     if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
       val corrId = newCorrId()
-      val reposDue = repositoryDAO.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50)).map { it.id }
+      val reposDue =
+        repositoryDAO.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50)).map { it.id }
       log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
       if (reposDue.isNotEmpty()) {
         val semaphore = Semaphore(10)

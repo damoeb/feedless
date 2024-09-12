@@ -50,10 +50,10 @@ class KeywordIntersectionScorerTest {
   fun `given parent and child share keywords`(expectedIntersection: Double, expectedScore: Double, childText: String) =
     runTest {
       val parent = mock(CommentEntity::class.java)
-      Mockito.`when`(parent.contentText).thenReturn(parentText)
+      Mockito.`when`(parent.text).thenReturn(parentText)
 
       val child = mock(CommentEntity::class.java)
-      Mockito.`when`(child.contentText).thenReturn(childText)
+      Mockito.`when`(child.text).thenReturn(childText)
 
       assertThat(scorer.calculateKeywordIntersection(parent, child)).isCloseTo(expectedIntersection, within(0.01))
       assertThat(scorer.score(parent, child)).isCloseTo(expectedScore, within(0.01))

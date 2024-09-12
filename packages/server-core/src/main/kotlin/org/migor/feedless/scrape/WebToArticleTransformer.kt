@@ -30,7 +30,7 @@ class WebToArticleTransformer {
     val item = JsonItem()
     item.url = url
     item.publishedAt = LocalDateTime.now()
-    item.contentRawMime = "text/html"
+    item.rawMimeType = "text/html"
     item.url = url
     return extractContent(item, url, doc)
   }
@@ -39,8 +39,8 @@ class WebToArticleTransformer {
     val parser = Readability4JExtended(url, doc.html())
     val article = parser.parse()
 
-    item.contentHtml = article.content
-    item.contentText = article.textContent
+    item.html = article.content
+    item.text = article.textContent
     item.title = StringUtils.trimToEmpty(article.title)
 //    extracted.contentMime = doc.title
 //    extracted.dir = article.dir

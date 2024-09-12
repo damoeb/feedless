@@ -57,7 +57,7 @@ class GithubService {
     val headers = HttpHeaders().apply {
       set("Authorization", "Bearer $token")
       set("Accept", "application/vnd.github.v3+json")
-      }
+    }
     val entity = HttpEntity<String>(headers)
     return entity
   }

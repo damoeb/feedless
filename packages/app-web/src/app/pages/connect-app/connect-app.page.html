@@ -1,0 +1,42 @@
+<ion-content>
+  <div
+    class="flex__column"
+    style="justify-content: center; align-items: center; margin-top: 200px"
+  >
+    <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+    <div style="width: 500px" *ngIf="!loading">
+      <div class="ion-margin-top">
+        <div>
+          <h1 class="ion-margin-start">Connect Telegram</h1>
+
+          <ion-card class="ion-margin-top">
+            <ion-card-content>
+              <p>
+                Telegram want to connect to feedless, so you can receive live
+                updates.
+              </p>
+
+              <ion-buttons class="ion-margin-top">
+                <ion-button
+                  fill="outline"
+                  style="flex: 1"
+                  (click)="cancelAttempt()"
+                >
+                  Cancel
+                </ion-button>
+                <ion-button
+                  color="success"
+                  fill="solid"
+                  style="flex: 1"
+                  (click)="authorizeApp()"
+                >
+                  Authorize
+                </ion-button>
+              </ion-buttons>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

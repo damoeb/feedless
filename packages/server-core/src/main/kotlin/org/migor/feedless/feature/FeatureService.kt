@@ -106,8 +106,8 @@ class FeatureService {
   }
 
   suspend fun assignFeatureValues(
-      featureGroup: FeatureGroupEntity,
-      features: Map<FeatureName, FeatureValueEntity>
+    featureGroup: FeatureGroupEntity,
+    features: Map<FeatureName, FeatureValueEntity>
   ) {
     features.forEach { (featureName, nextFeatureValue) ->
       withContext(Dispatchers.IO) {

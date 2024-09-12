@@ -76,7 +76,7 @@ class ScoreServiceTest {
   fun score() = runTest {
     assertThat(scoreService).isNotNull
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.contentText).thenReturn("Du erzählst nur scheisse")
+    Mockito.`when`(comment.text).thenReturn("Du erzählst nur scheisse")
 
     val neutral = 1.0
     val weights = ScoreWeights(
@@ -218,7 +218,7 @@ class ScoreServiceTest {
     var sum = 0
     for (comments in commentsGroups) {
       val parent = mock(CommentEntity::class.java)
-      Mockito.`when`(parent.contentText).thenReturn(patchCommentValue(comments[0]!!))
+      Mockito.`when`(parent.text).thenReturn(patchCommentValue(comments[0]!!))
       val commentGraphService = mock(CommentGraphService::class.java)
       Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
       Mockito.`when`(commentGraphService.getReplyCount(any(CommentEntity::class.java))).thenReturn(0)
@@ -245,7 +245,7 @@ class ScoreServiceTest {
     val order = comments.filterKeys { it != 0 }
       .map {
         val comment = mock(CommentEntity::class.java)
-        Mockito.`when`(comment.contentText).thenReturn(it.value)
+        Mockito.`when`(comment.text).thenReturn(it.value)
 
         scoreService.score(comment, weights)
       }

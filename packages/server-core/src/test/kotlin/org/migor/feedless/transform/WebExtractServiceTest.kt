@@ -3,6 +3,7 @@ package org.migor.feedless.transform
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jsoup.Jsoup
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.feed.DateClaimer
@@ -14,6 +15,7 @@ import org.migor.feedless.scrape.WebExtractService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
@@ -23,15 +25,11 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class WebExtractServiceTest {
 
-  @Mock
-  lateinit var dateClaimer: DateClaimer
+  private lateinit var webExtractService: WebExtractService
 
-  @InjectMocks
-  lateinit var webExtractService: WebExtractService
+  private val logCollector = LogCollector()
 
-  val logCollector = LogCollector()
-
-  val html = """
+  private val html = """
   <html><body>
   <div>
     <a href="https://foo.bar">foo-text</a>
@@ -39,6 +37,10 @@ class WebExtractServiceTest {
   </body></html>
       """
 
+  @BeforeEach
+  fun setUp() {
+    webExtractService = WebExtractService(mock(DateClaimer::class.java))
+  }
 
   @Test
   fun `given a html, the text can be extracted`() {

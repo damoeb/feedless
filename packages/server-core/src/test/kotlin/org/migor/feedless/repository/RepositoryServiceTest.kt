@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -10,16 +11,31 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.actions.ScrapeActionDAO
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.document.DocumentService
+import org.migor.feedless.generated.types.HttpFetchInput
+import org.migor.feedless.generated.types.HttpGetRequestInput
 import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
+import org.migor.feedless.generated.types.RetentionInput
+import org.migor.feedless.generated.types.ScrapeActionInput
+import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SinkOptionsInput
+import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserService
+import org.mockito.ArgumentMatcher
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -37,34 +53,45 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryServiceTest {
 
+  private lateinit var sourceDAO: SourceDAO
   private val corrId = "test"
 
-  @Mock
-  lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var repositoryDAO: RepositoryDAO
 
-  @Mock
-  lateinit var sessionService: SessionService
+  private lateinit var sessionService: SessionService
 
-  @Mock
-  lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var planConstraintsService: PlanConstraintsService
 
-  @InjectMocks
-  lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryService: RepositoryService
 
   private lateinit var userId: UUID
 
   @BeforeEach
-  fun beforeEach() {
-    runBlocking {
-      userId = UUID.randomUUID()
-      val user = mock(UserEntity::class.java)
-      `when`(user.id).thenReturn(userId)
-      `when`(sessionService.userId()).thenReturn(userId)
-      `when`(sessionService.user(any(String::class.java))).thenReturn(user)
-      `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
-      `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
-        .thenAnswer { it.getArgument(0) }
-    }
+  fun beforeEach() = runTest{
+    repositoryDAO = mock(RepositoryDAO::class.java)
+    sessionService =mock(SessionService::class.java)
+    planConstraintsService = mock(PlanConstraintsService::class.java)
+    sourceDAO = mock(SourceDAO::class.java)
+    repositoryService = RepositoryService(
+      sourceDAO,
+//      mock(UserDAO::class.java),
+      repositoryDAO,
+      sessionService,
+      mock(UserService::class.java),
+      planConstraintsService,
+      mock(DocumentService::class.java),
+      mock(PropertyService::class.java),
+      mock(ScrapeActionDAO::class.java)
+    )
+
+    userId = UUID.randomUUID()
+    val user = mock(UserEntity::class.java)
+    `when`(user.id).thenReturn(userId)
+    `when`(sessionService.userId()).thenReturn(userId)
+    `when`(sessionService.user(any(String::class.java))).thenReturn(user)
+    `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
+    `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
+      .thenAnswer { it.getArgument(0) }
   }
 
   @Test
@@ -81,6 +108,44 @@ class RepositoryServiceTest {
         )
       }
     }
+  }
+
+  @Test
+  fun `create repos`() = runTest {
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UUID::class.java)))
+      .thenReturn(false)
+    `when`(planConstraintsService.coerceVisibility(any(String::class.java), eq(null)))
+      .thenReturn(EntityVisibility.isPrivate)
+    `when`(sourceDAO.save(any(SourceEntity::class.java)))
+      .thenAnswer { it.arguments[0] }
+
+    repositoryService.create(
+      "-", RepositoriesCreateInput(
+        repositories = listOf(
+          RepositoryCreateInput(
+            product = ProductCategory.rssProxy,
+            sources = listOf(SourceInput(
+              title = "",
+              flow = ScrapeFlowInput(
+                sequence = listOf(
+                  ScrapeActionInput(
+                    fetch = HttpFetchInput(get= HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
+                  )
+                )
+              ),
+
+              )),
+            sinkOptions = SinkOptionsInput(
+              title ="",
+              description ="",
+              refreshCron="",
+              withShareKey=true
+            ),
+          )
+        )
+      )
+    )
+
   }
 
   @Test
@@ -141,9 +206,6 @@ class RepositoryServiceTest {
     }
   }
 
-  // todo add test for updating a source
-
-
   @Test
   fun `given user is not owner, deleting repository fails`() = runTest {
     val ssId = UUID.randomUUID()
@@ -182,7 +244,7 @@ class RepositoryServiceTest {
     val from = nextCronDate(cron, now)
     val to = nextCronDate(cron, from)
     val diff = Duration.between(from, to)
-    val diffInUnit = when(chronoUnit) {
+    val diffInUnit = when (chronoUnit) {
       ChronoUnit.MINUTES -> diff.toMinutes().toDouble()
       ChronoUnit.HOURS -> diff.toHours().toDouble()
       ChronoUnit.DAYS -> diff.toDays().toDouble()
@@ -196,5 +258,6 @@ class RepositoryServiceTest {
 
 fun <T> anyList(): List<T> = Mockito.anyList<T>()
 fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
+fun <T> argThat(matcher: ArgumentMatcher<T>): T = Mockito.argThat<T>(matcher)
 fun <T> anyOrNull(type: Class<T>): T? = Mockito.any<T?>(type)
 fun <T> eq(type: T): T = Mockito.eq<T>(type) ?: type

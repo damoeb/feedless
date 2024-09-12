@@ -18,10 +18,10 @@ import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.WebToArticleTransformer
 import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.scrape.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -79,12 +79,12 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       if (params.org_feedless_fulltext.readability) {
         logCollector.log("[$corrId] convert to readability")
         val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""))
-        document.contentHtml = readability.contentHtml
-        document.contentText = readability.contentText!!
-        document.contentTitle = readability.title
+        document.html = readability.html
+        document.text = readability.text!!
+        document.title = readability.title
       } else {
-        document.contentHtml = html
-        document.contentTitle = HtmlUtil.parseHtml(html, document.url).title()
+        document.html = html
+        document.title = HtmlUtil.parseHtml(html, document.url).title()
       }
     }
     return document
@@ -107,10 +107,10 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   }
 
   override suspend fun transformFragment(
-      corrId: String,
-      action: ExecuteActionEntity,
-      data: HttpResponse,
-      logger: LogCollector,
+    corrId: String,
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+    logger: LogCollector,
   ): FragmentOutput {
     val markup = data.responseBody.toString(StandardCharsets.UTF_8)
     return FragmentOutput(

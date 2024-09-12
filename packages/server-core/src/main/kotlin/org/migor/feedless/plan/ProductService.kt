@@ -8,8 +8,6 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
-import org.migor.feedless.plan.PlanDAO
-import org.migor.feedless.plan.PlanEntity
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

@@ -21,9 +21,6 @@ import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.WebDocumentDateField
 import org.migor.feedless.generated.types.WebDocumentOrderByInput
 import org.migor.feedless.generated.types.WebDocumentsWhereInput
-import org.migor.feedless.mail.MailForwardDAO
-import org.migor.feedless.mail.MailForwardEntity
-import org.migor.feedless.mail.MailService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -40,7 +37,6 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -58,30 +54,18 @@ import kotlin.jvm.optionals.getOrNull
 @Service
 @Profile("${AppProfiles.document} & ${AppLayer.service}")
 @Transactional
-class DocumentService {
+class DocumentService(
+  private val documentDAO: DocumentDAO,
+  private val transactionManager: PlatformTransactionManager,
+  private val entityManager: EntityManager,
+  private val repositoryDAO: RepositoryDAO,
+  private val planConstraintsService: PlanConstraintsService,
+  private val documentPipelineJobDAO: DocumentPipelineJobDAO,
+  private val pluginService: PluginService
+) {
 
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
-  @Autowired
-  private lateinit var documentDAO: DocumentDAO
-
-  @Autowired
-  private lateinit var transactionManager: PlatformTransactionManager
-
-  @Autowired
-  private lateinit var entityManager: EntityManager
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var planConstraintsService: PlanConstraintsService
-
-  @Autowired
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-
-  @Autowired
-  private lateinit var pluginService: PluginService
 
 //  @Autowired
 //  private lateinit var mailService: MailService
@@ -227,7 +211,7 @@ class DocumentService {
     }
 
     withContext(Dispatchers.IO) {
-    val transactionTemplate = TransactionTemplate(transactionManager)
+      val transactionTemplate = TransactionTemplate(transactionManager)
       transactionTemplate.executeWithoutResult {
         runBlocking {
           if (documentIds.`in` != null) {

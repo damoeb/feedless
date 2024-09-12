@@ -28,7 +28,7 @@ class AnnotationService {
     return data.annotation.flag?.let { boolAnnotation(corrId, data.where, flag = it.set, user = user) }
       ?: data.annotation.text?.let { textAnnotation(corrId, data.where, it, user) }
       ?: data.annotation.upVote?.let { boolAnnotation(corrId, data.where, upvote = it.set, user = user) }
-      ?: data.annotation.downVote?.let { boolAnnotation(corrId, data.where, downvote = it.set, user = user)}
+      ?: data.annotation.downVote?.let { boolAnnotation(corrId, data.where, downvote = it.set, user = user) }
       ?: throw IllegalArgumentException("Insufficient data for annotation")
   }
 
@@ -53,7 +53,15 @@ class AnnotationService {
     val (documentId, repositoyId) = resolveReferences(where)
     linkDocumentOrRepository(v, documentId, repositoyId)
 
-    if (voteDAO.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(flag, upvote, downvote, user.id, documentId, repositoyId)) {
+    if (voteDAO.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
+        flag,
+        upvote,
+        downvote,
+        user.id,
+        documentId,
+        repositoyId
+      )
+    ) {
       throw IllegalArgumentException("duplicate")
     }
 
@@ -75,7 +83,14 @@ class AnnotationService {
     val (documentId, repositoyId) = resolveReferences(where)
     linkDocumentOrRepository(t, documentId, repositoyId)
 
-    if (textAnnotationDAO.existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(i.fromChar, i.toChar, user.id, documentId, repositoyId)) {
+    if (textAnnotationDAO.existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(
+        i.fromChar,
+        i.toChar,
+        user.id,
+        documentId,
+        repositoyId
+      )
+    ) {
       throw IllegalArgumentException("duplicate")
     }
 

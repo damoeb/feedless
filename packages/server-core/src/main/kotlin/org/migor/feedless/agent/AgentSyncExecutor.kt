@@ -35,7 +35,7 @@ class AgentSyncExecutor {
   @Transactional
   fun executeCleanup() {
     agentDAO.deleteAllByLastSyncedAtBefore(
-        LocalDateTime.now().minusMinutes(2)
+      LocalDateTime.now().minusMinutes(2)
     )
   }
 }

@@ -1,0 +1,14 @@
+query connectedAppById($id: String!) {
+  connectedApp(id: $id) {
+    authorized
+    authorizedAt
+  }
+}
+
+mutation updateConnectedApp($id: String!, $authorize: Boolean!) {
+  updateConnectedApp(id: $id, authorize: $authorize)
+}
+
+mutation deleteConnectedApp($id: String!) {
+  deleteConnectedApp(id: $id)
+}

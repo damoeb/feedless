@@ -1,12 +1,14 @@
 package org.migor.feedless.session
 
+import com.netflix.graphql.dgs.context.DgsContext
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.reactor.ReactorContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.config.CustomContext
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -22,9 +24,11 @@ import java.util.*
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-fun useRequestContext(currentCoroutineContext: CoroutineContext): RequestContextElement {
-  val rctx = currentCoroutineContext[ReactorContext]
-  return currentCoroutineContext[RequestContextElement] ?: createRequestContext()
+fun useRequestContext(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContextElement {
+//  val rctx = currentCoroutineContext[ReactorContext]
+  val requestContext = currentCoroutineContext[RequestContextElement] ?: createRequestContext()
+  DgsContext.getCustomContext<CustomContext>(dfe).userId = requestContext.userId
+  return requestContext
 }
 
 fun createRequestContext(): RequestContextElement {

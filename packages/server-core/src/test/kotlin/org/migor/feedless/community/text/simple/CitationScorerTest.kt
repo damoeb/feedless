@@ -32,7 +32,7 @@ class CitationScorerTest {
       scorer.commentGraphService = commentGraphService
 
       val parent = mock(CommentEntity::class.java)
-      Mockito.`when`(parent.contentText)
+      Mockito.`when`(parent.text)
         .thenReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
       Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
     }
@@ -42,7 +42,7 @@ class CitationScorerTest {
   fun score_block_quote() = runTest {
 
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.contentText).thenReturn(
+    Mockito.`when`(comment.text).thenReturn(
       """
 > Ut enim ad minim veniam, quis nostrud exercitation
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
@@ -55,7 +55,7 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
   @Test
   fun score_inline_quote() = runTest {
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(comment.contentText).thenReturn(
+    Mockito.`when`(comment.text).thenReturn(
       """
 Duis aute irure dolor "quis nostrud exercitation" in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
     """.trimIndent()

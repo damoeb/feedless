@@ -3,6 +3,7 @@ package org.migor.feedless.annotation
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -43,9 +44,10 @@ class AnnotationResolver {
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createAnnotation(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrIdParam: String,
     @InputArgument data: CreateAnnotationInput
-  ): Annotation = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Annotation = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     val corrId = handleCorrId(corrIdParam)
     log.debug("[$corrId] createAnnotation $data")
     annotationService.createAnnotation(corrId, data, sessionService.user(corrId)).toDto()
@@ -56,9 +58,10 @@ class AnnotationResolver {
   @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteAnnotation(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrIdParam: String,
-    @InputArgument data: DeleteAnnotationInput
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
+    @InputArgument data: DeleteAnnotationInput,
+  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     val corrId = handleCorrId(corrIdParam)
     log.debug("[$corrId] deleteAnnotation $data")
     annotationService.deleteAnnotation(corrId, data, sessionService.user(corrId))
@@ -72,17 +75,24 @@ private fun AnnotationEntity.toDto(): Annotation {
       text = TextAnnotation(
         fromChar = fromChar,
         toChar = toChar,
-      ))
+      )
+    )
   } else {
     if (this is VoteEntity) {
-      val toBoolAnnotation = { value: Boolean -> if(value) {BoolAnnotation(value)} else {null} }
+      val toBoolAnnotation = { value: Boolean ->
+        if (value) {
+          BoolAnnotation(value)
+        } else {
+          null
+        }
+      }
 
       Annotation(
         id = id.toString(),
         flag = toBoolAnnotation(flag),
         upVote = toBoolAnnotation(upVote),
         downVote = toBoolAnnotation(downVote),
-        )
+      )
     } else {
       Annotation(id = id.toString())
     }

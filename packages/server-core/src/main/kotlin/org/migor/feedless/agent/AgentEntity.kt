@@ -26,13 +26,13 @@ open class AgentEntity : EntityWithUUID() {
   @Column(nullable = false, name = "version")
   open lateinit var version: String
 
-  @Column(name="open_instance", nullable = false)
+  @Column(name = "open_instance", nullable = false)
   open var openInstance: Boolean = false
 
   @Column(name = "name", nullable = false)
   open lateinit var name: String
 
-  @Column(name="last_synced_at", nullable = false)
+  @Column(name = "last_synced_at", nullable = false)
   open lateinit var lastSyncedAt: LocalDateTime
 
   @Column(name = "secret_id", nullable = false)

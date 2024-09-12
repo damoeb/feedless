@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
@@ -47,8 +48,9 @@ class SecretsResolver {
   @DgsMutation(field = DgsConstants.MUTATION.CreateUserSecret)
   @PreAuthorize("hasAuthority('USER')")
   suspend fun createUserSecret(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): UserSecret = withContext(useRequestContext(currentCoroutineContext())) {
+  ): UserSecret = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     userSecretService.createUserSecret(corrId, sessionService.user(corrId)).toDto(false)
   }
 
@@ -57,9 +59,10 @@ class SecretsResolver {
   @DgsMutation(field = DgsConstants.MUTATION.DeleteUserSecrets)
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteUserSecrets(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: DeleteUserSecretsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     userSecretService.deleteUserSecrets(
       corrId,
       sessionService.user(corrId),

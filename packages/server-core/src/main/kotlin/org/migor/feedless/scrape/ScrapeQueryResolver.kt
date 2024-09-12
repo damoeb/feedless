@@ -3,6 +3,7 @@ package org.migor.feedless.scrape
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -47,20 +48,21 @@ class ScrapeQueryResolver {
   @PreAuthorize("hasAnyAuthority('ANONYMOUS', 'READ', 'WRITE')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun scrape(
-      @InputArgument data: SourceInput,
-      @RequestHeader(ApiParams.corrId, required = false) cid: String,
-  ): ScrapeResponse = withContext(useRequestContext(currentCoroutineContext())) {
-      val corrId = CryptUtil.handleCorrId(cid)
-      log.debug("[$corrId] scrape $data")
-      val scrapeRequest = data.fromDto()
-      val logCollector = LogCollector()
-      val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest, logCollector)
-      ScrapeResponse(
-          failed = false,
-          logs = logCollector.logs,
-          errorMessage = null,
-          outputs = scrapeOutput.outputs.map { it.toDto() }
-      )
+    dfe: DataFetchingEnvironment,
+    @InputArgument data: SourceInput,
+    @RequestHeader(ApiParams.corrId, required = false) cid: String,
+  ): ScrapeResponse = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+    val corrId = CryptUtil.handleCorrId(cid)
+    log.debug("[$corrId] scrape $data")
+    val scrapeRequest = data.fromDto()
+    val logCollector = LogCollector()
+    val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest, logCollector)
+    ScrapeResponse(
+      failed = false,
+      logs = logCollector.logs,
+      errorMessage = null,
+      outputs = scrapeOutput.outputs.map { it.toDto() }
+    )
   }
 }
 
@@ -86,10 +88,10 @@ private fun ScrapeActionOutput.toDto(): ScrapeOutputResponse {
 }
 
 private fun JsonItem.toDto() = WebDocument(
-  contentRawBase64 = contentRawBase64,
-  contentRawMime = contentRawMime,
-  contentHtml = contentHtml,
-  contentText = contentText,
+  contentRawBase64 = rawBase64,
+  contentRawMime = rawMimeType,
+  contentHtml = html,
+  contentText = text,
   contentTitle = title,
   url = url,
   tags = tags,

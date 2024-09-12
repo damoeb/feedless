@@ -84,7 +84,7 @@ class RepositoryController {
     @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
     @RequestParam(ApiParams.tag, required = false) tag: String?
-  ): ResponseEntity<String> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): ResponseEntity<String> = coroutineScope {
     val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(

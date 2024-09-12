@@ -8,6 +8,7 @@ import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.PrePersist
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -30,8 +31,8 @@ import org.migor.feedless.generated.types.StringLiteralOrVariable
 import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.generated.types.XYPosition
 import org.migor.feedless.repository.toDto
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.scrape.PuppeteerWaitUntil
+import org.migor.feedless.source.SourceEntity
 import java.util.*
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 

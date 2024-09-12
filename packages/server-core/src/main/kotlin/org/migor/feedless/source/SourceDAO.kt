@@ -23,7 +23,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
 
   @Modifying
   @Query(
-      """
+    """
       update SourceEntity C
         set C.disabled = :erroneous,
             C.lastErrorMessage = :errorMessage

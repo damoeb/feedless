@@ -72,9 +72,9 @@ class PrivacyPlugin : MapEntityPlugin {
     }
 
 //    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
-    document.contentHtml?.let {
+    document.html?.let {
       val (html, attachments) = extractAttachments(corrId, document.id, HtmlUtil.parseHtml(it, document.url))
-      document.contentHtml = html
+      document.html = html
       document.attachments = attachments.toMutableList()
     } ?: log.debug("[$corrId] no html content present ${document.id}")
 //    }
@@ -166,7 +166,7 @@ class PrivacyPlugin : MapEntityPlugin {
     documentId: UUID
   ): AttachmentEntity {
     val attachment = AttachmentEntity()
-    attachment.contentType = response.contentType
+    attachment.mimeType = response.contentType
     attachment.originalUrl = response.url
     attachment.data = response.responseBody
     attachment.documentId = documentId

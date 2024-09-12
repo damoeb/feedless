@@ -53,7 +53,7 @@ class ConditionalTagPlugin : MapEntityPlugin {
   }
 }
 
-fun DocumentEntity.asJsonItem(): JsonItem {
+fun DocumentEntity.asJsonItem(repository: RepositoryEntity? = null): JsonItem {
   val item = JsonItem()
   item.id = id.toString()
   latLon?.let {
@@ -62,20 +62,23 @@ fun DocumentEntity.asJsonItem(): JsonItem {
     point.y = it.y
     item.latLng = point
   }
-  item.title = StringUtils.trimToEmpty(contentTitle)
+  item.title = StringUtils.trimToEmpty(title)
   item.attachments = attachments.map {
     JsonAttachment(
       url = StringUtils.trimToEmpty(it.remoteDataUrl),
-      type = it.contentType,
+      type = it.mimeType,
       length = it.size,
       duration = it.duration
     )
   }
   item.url = url
-  item.contentText = StringUtils.trimToEmpty(contentText)
-  item.contentRawBase64 = contentRaw?.let { Base64.getEncoder().encodeToString(contentRaw) }
-  item.contentRawMime = contentRawMime
-  item.contentHtml = contentHtml
+  item.repositoryId = repositoryId
+  item.repositoryName = repository?.title
+  item.url = url
+  item.text = StringUtils.trimToEmpty(text)
+  item.rawBase64 = raw?.let { Base64.getEncoder().encodeToString(raw) }
+  item.rawMimeType = rawMimeType
+  item.html = html
   item.publishedAt = publishedAt
   item.modifiedAt = updatedAt
   item.tags = (tags?.asList() ?: emptyList())

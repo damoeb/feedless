@@ -11,14 +11,14 @@ import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
-import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.Selectors
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class FeedPlugin : FragmentTransformerPlugin {
+class FeedPlugin() : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedPlugin::class.simpleName)
 
@@ -44,10 +44,10 @@ class FeedPlugin : FragmentTransformerPlugin {
   override fun listed() = true
 
   override suspend fun transformFragment(
-      corrId: String,
-      action: ExecuteActionEntity,
-      data: HttpResponse,
-      logger: LogCollector,
+    corrId: String,
+    action: ExecuteActionEntity,
+    data: HttpResponse,
+    logger: LogCollector,
   ): FragmentOutput {
     val executorParams = action.executorParams!!
     logger.log("transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")

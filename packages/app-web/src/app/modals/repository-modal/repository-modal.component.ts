@@ -75,6 +75,7 @@ export class RepositoryModalComponent
     transformToReadability: new FormControl<boolean>(true),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
+    enablePushNotifications: new FormControl<boolean>(false),
     applyConditionalTagsPlugin: new FormControl<boolean>(false),
   });
   // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];

@@ -127,7 +127,7 @@ internal class PrivacyPluginTest {
     val (markup, attachments) = plugin.extractAttachments("", UUID.randomUUID(), document)
     assertThat(attachments.size).isEqualTo(1)
     val attachment = attachments[0]
-    assertThat(attachment.contentType).isEqualTo("application/pdf")
+    assertThat(attachment.mimeType).isEqualTo("application/pdf")
 
     assertThat(markup).doesNotContain(pdfUrl)
     assertThat(markup).containsSequence(attachment.id.toString())

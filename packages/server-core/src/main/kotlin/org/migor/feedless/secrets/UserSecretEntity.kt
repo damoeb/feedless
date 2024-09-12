@@ -26,7 +26,7 @@ import java.util.*
 @Table(name = "t_user_secret")
 open class UserSecretEntity : EntityWithUUID() {
 
-  @Column(name="value", nullable = false, length = 400)
+  @Column(name = "value", nullable = false, length = 400)
   open lateinit var value: String
 
   @Column(name = "valid_until", nullable = false)

@@ -144,6 +144,7 @@ dependencies {
   // reactor
   // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
   implementation("io.projectreactor:reactor-core:3.5.0")
+  implementation("io.projectreactor:reactor-test:3.5.0")
 
   // database
   implementation("org.postgresql:postgresql:42.7.4")
@@ -184,14 +185,15 @@ dependencies {
   testImplementation("org.testcontainers:postgresql:1.20.0")
   testImplementation("org.testcontainers:testcontainers:1.20.0")
   testImplementation("org.testcontainers:junit-jupiter:1.19.0")
-//  testImplementation("io.kotest:kotest-runner-junit5:5.0.0")
+//  testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+//  testImplementation("io.kotest:kotest-extensions-spring:4.4.3")
 //  testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.3")
 
 //  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
 //  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
 
 
-//  implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4")
+  implementation("org.telegram:telegrambots-spring-boot-starter:6.1.0")
 
   // payments
   implementation("com.stripe:stripe-java:25.0.0")

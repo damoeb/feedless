@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
-import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.session.AuthTokenType

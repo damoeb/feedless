@@ -41,10 +41,10 @@ class LinceseResolver {
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateLicense)
   suspend fun updateLicense(
-    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     dfe: DataFetchingEnvironment,
+    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     @InputArgument data: UpdateLicenseInput,
-  ): LocalizedLicense = withContext(useRequestContext(currentCoroutineContext())) {
+  ): LocalizedLicense = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     val corrId = CryptUtil.handleCorrId(corrIdParam)
     log.debug("[$corrId] updateLicense")
 

@@ -6,7 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.Dispatchers
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
@@ -63,9 +63,10 @@ class DocumentResolver {
   @Throttled
   @DgsQuery
   suspend fun webDocument(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: WebDocumentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): WebDocument = withContext(useRequestContext(currentCoroutineContext())) {
+  ): WebDocument = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] webDocument $data")
     val document =
       documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
@@ -76,9 +77,10 @@ class DocumentResolver {
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.WebDocuments)
   suspend fun webDocuments(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: WebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<WebDocument> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): List<WebDocument> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] webDocuments $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
@@ -100,9 +102,10 @@ class DocumentResolver {
   @DgsMutation(field = DgsConstants.MUTATION.DeleteWebDocuments)
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteWebDocuments(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: DeleteWebDocumentsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     documentService.deleteDocuments(
       corrId,
       sessionService.user(corrId),

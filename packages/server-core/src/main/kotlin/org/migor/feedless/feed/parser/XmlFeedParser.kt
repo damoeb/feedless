@@ -157,8 +157,8 @@ class XmlFeedParser : FeedBodyParser {
         article.latLng = JsonUtil.gson.fromJson(it, JsonPoint::class.java)
       }
       article.startingAt = feedlessModule.getStartingAt()?.toLocalDateTime()
-      article.contentRawBase64 = feedlessModule.getData()
-      article.contentRawMime = feedlessModule.getDataType()
+      article.rawBase64 = feedlessModule.getData()
+      article.rawMimeType = feedlessModule.getDataType()
     }
 
     geoModule?.let {
@@ -179,16 +179,16 @@ class XmlFeedParser : FeedBodyParser {
 
     val assignHtmlContent = {
 //      article.contentRawMime = "text/html"
-      article.contentHtml = contentHtml!!.value
+      article.html = contentHtml!!.value
     }
     val assignOtherContent = {
       entry.contents.firstOrNull { !it.type.lowercase().contains("html") }?.let {
-        article.contentRawMime = it.type
-        article.contentRawBase64 = it.value
+        article.rawMimeType = it.type
+        article.rawBase64 = it.value
       }
     }
     val assignTextContent = { text: String ->
-      article.contentText = text
+      article.text = text
     }
 
     // content

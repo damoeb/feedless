@@ -71,7 +71,7 @@ class DocumentControllerTest {
   fun setUp() = runTest {
     document = DocumentEntity()
     document.url = actualDocumentUrl
-    document.contentText = "foo"
+    document.text = "foo"
     document.repositoryId = UUID.randomUUID()
     document.status = ReleaseStatus.released
   }

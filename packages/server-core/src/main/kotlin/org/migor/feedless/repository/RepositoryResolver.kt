@@ -7,8 +7,7 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
-import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
-import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
+import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -21,6 +20,7 @@ import org.migor.feedless.annotation.VoteEntity
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.CustomContext
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Annotation
@@ -46,7 +46,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
@@ -57,18 +56,6 @@ fun handleCursor(cursor: Cursor): Pair<Int, Int> {
   val pageSize = handlePageSize(cursor.pageSize)
   return Pair(pageNumber, pageSize)
 }
-
-@Component
-class CustomContextBuilder : DgsCustomContextBuilder<CustomContext> {
-  override fun build(): CustomContext {
-    return CustomContext()
-  }
-}
-
-class CustomContext {
-  var repositoryId: String? = null
-}
-
 
 @DgsComponent
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
@@ -96,9 +83,10 @@ class RepositoryResolver {
   @Throttled
   @DgsQuery
   suspend fun repositories(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoriesInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] repositories $data")
 
     val (pageNumber, pageSize) = handleCursor(data.cursor)
@@ -111,9 +99,10 @@ class RepositoryResolver {
   @Throttled
   @DgsQuery
   suspend fun countRepositories(
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: CountRepositoriesInput,
-  ): Int = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Int = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] countRepositories")
     repositoryService.countAll(sessionService.userId(), data.product.fromDto())
   }
@@ -121,9 +110,10 @@ class RepositoryResolver {
   @Throttled
   @DgsQuery
   suspend fun repository(
+    dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoryWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Repository = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Repository = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] repository $data")
     val repository = repositoryService.findById(corrId, UUID.fromString(data.where.id))
     repository.toDto(repository.ownerId == sessionService.userId())
@@ -133,9 +123,10 @@ class RepositoryResolver {
   @DgsMutation(field = DgsConstants.MUTATION.CreateRepositories)
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   suspend fun createRepositories(
+    dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoriesCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext())) {
+  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] createRepositories $data")
     repositoryService.create(corrId, data)
   }
@@ -144,9 +135,10 @@ class RepositoryResolver {
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRepository)
   @PreAuthorize("hasAuthority('USER')")
   suspend fun updateRepository(
+    dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoryUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Repository = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Repository = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] updateRepository $data")
     repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto(true)
   }
@@ -155,9 +147,10 @@ class RepositoryResolver {
   @DgsMutation(field = DgsConstants.MUTATION.DeleteRepository)
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteRepository(
+    dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoryUniqueWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
+  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.debug("[$corrId] deleteRepository $data")
     repositoryService.delete(corrId, UUID.fromString(data.id))
     true
@@ -232,11 +225,15 @@ class RepositoryResolver {
     @InputArgument where: UserWhereUniqueInput,
     dfe: DgsDataFetchingEnvironment
   ): List<Annotation> = coroutineScope {
-    val repositoryId = UUID.fromString(DgsContext.getCustomContext<CustomContext>(dfe).repositoryId)
+    val context = DgsContext.getCustomContext<CustomContext>(dfe)
+    val repositoryId = UUID.fromString(context.repositoryId)
+    val userId = context.userId
     if (StringUtils.isBlank(where.id)) {
       emptyList()
     } else {
-      annotationService.findAllVotesByUserIdAndRepositoryId(UUID.fromString(where.id), repositoryId).map { it.toDto() }
+      userId?.let {
+        annotationService.findAllVotesByUserIdAndRepositoryId(UUID.fromString(userId), repositoryId).map { it.toDto() }
+      } ?: emptyList()
     }
   }
 }

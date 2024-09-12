@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
 
 @Entity
 @Table(name = "t_action_dom")
@@ -18,10 +19,12 @@ import jakarta.persistence.Table
 )
 open class DomActionEntity : ScrapeActionEntity() {
 
-  @Column(name = "xpath")
+  @XPathConstraint
+  @Size(min = 1, max = 100)
+  @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 
-  @Column(length = 50, name = "event")
+  @Column(length = 50, name = "event", nullable = false)
   @Enumerated(EnumType.STRING)
   open lateinit var event: DomEventType
 
