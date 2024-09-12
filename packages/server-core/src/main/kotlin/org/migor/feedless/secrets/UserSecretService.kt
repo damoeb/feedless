@@ -66,4 +66,10 @@ class UserSecretService {
     }
   }
 
+  suspend fun findAllByOwnerId(userId: UUID): List<UserSecretEntity> {
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.findAllByOwnerId(userId)
+    }
+  }
+
 }

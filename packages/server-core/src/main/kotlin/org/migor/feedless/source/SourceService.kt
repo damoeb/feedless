@@ -110,6 +110,18 @@ class SourceService {
     return newSource
   }
 
+  suspend fun findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId: UUID): List<SourceEntity> {
+    return withContext(Dispatchers.IO) {
+      sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
+    }
+  }
+
+  suspend fun existsByRepositoryIdAndDisabledTrue(repositoryId: UUID): Boolean {
+    return withContext(Dispatchers.IO) {
+      sourceDAO.existsByRepositoryIdAndDisabledTrue(repositoryId)
+    }
+  }
+
 }
 
 

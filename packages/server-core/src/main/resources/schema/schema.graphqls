@@ -94,6 +94,7 @@ type Repository {
   lastUpdatedAt: Long!
   nextUpdateAt: Long
   documentCount: Long!
+  annotations: Annotations
 #  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
@@ -264,12 +265,21 @@ input FeatureIntValueInput {
 }
 
 input DeleteAnnotationInput {
-  where: WebDocumentUniqueWhereInput!
+  where: AnnotationWhereUniqueInput!
+}
+
+input AnnotationWhereUniqueInput {
+  id: String!
 }
 
 input CreateAnnotationInput {
-  where: WebDocumentUniqueWhereInput!
+  where: AnnotationWhereInput!
   annotation: OneOfAnnotationInput!
+}
+
+input AnnotationWhereInput {
+  document: WebDocumentUniqueWhereInput
+  repository: RepositoryUniqueWhereInput
 }
 
 input OneOfAnnotationInput {
@@ -285,10 +295,27 @@ input TextAnnotationInput {
   document: CreateWebDocumentInput!
 }
 
+type Annotations {
+  upVotes: Int!
+  downVotes: Int!
+  votes(where: UserWhereUniqueInput!): [Annotation]
+}
+
 type Annotation {
-  upVote: Boolean!
-  downVote: Boolean!
-  flag: Boolean!
+  id: ID!
+  text: TextAnnotation
+  upVote: BoolAnnotation
+  downVote: BoolAnnotation
+  flag: BoolAnnotation
+}
+
+type BoolAnnotation {
+  value: Boolean!
+}
+
+type TextAnnotation {
+  fromChar: Int!
+  toChar: Int!
 }
 
 input UpdateLicenseInput {

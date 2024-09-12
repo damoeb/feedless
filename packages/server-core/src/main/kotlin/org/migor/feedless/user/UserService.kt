@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
@@ -231,4 +232,9 @@ class UserService {
   }
 
   private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"
+  suspend fun findById(userId: UUID): Optional<UserEntity> {
+    return withContext(Dispatchers.IO) {
+      userDAO.findById(userId)
+    }
+  }
 }

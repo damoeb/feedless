@@ -31,19 +31,15 @@ import java.util.*
 class SecretsResolver {
 
   @Autowired
-  private lateinit var userSecretDAO: UserSecretDAO
-
-  @Autowired
   private lateinit var userSecretService: UserSecretService
 
   @Autowired
   private lateinit var sessionService: SessionService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
-  @Transactional
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
     val user: User = dfe.getSource()!!
-    userSecretDAO.findAllByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
+    userSecretService.findAllByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
   }
 
 

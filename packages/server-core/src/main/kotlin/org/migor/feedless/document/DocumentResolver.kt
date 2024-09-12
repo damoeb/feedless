@@ -60,9 +60,6 @@ class DocumentResolver {
   @Autowired
   private lateinit var documentService: DocumentService
 
-  @Autowired
-  private lateinit var documentDAO: DocumentDAO
-
   @Throttled
   @DgsQuery
   suspend fun webDocument(
@@ -97,9 +94,7 @@ class DocumentResolver {
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
     val repository: Repository = dfe.getSource()!!
-    withContext(Dispatchers.IO) {
-      documentDAO.countByRepositoryId(UUID.fromString(repository.id))
-    }
+    documentService.countByRepositoryId(UUID.fromString(repository.id))
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.DeleteWebDocuments)

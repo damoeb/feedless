@@ -41,9 +41,6 @@ class UserResolver {
   @Autowired
   private lateinit var sessionService: SessionService
 
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateCurrentUser)
   @PreAuthorize("hasAuthority('USER')")
@@ -59,14 +56,12 @@ class UserResolver {
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
   suspend fun userForSession(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val session: Session = dfe.getSource()!!
-    session.userId?.let { userDAO.findById(UUID.fromString(it)).orElseThrow().toDTO() }
+    session.userId?.let { userService.findById(UUID.fromString(it)).orElseThrow().toDTO() }
   }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)
   suspend fun userForOrder(dfe: DgsDataFetchingEnvironment): User = coroutineScope {
     val order: Order = dfe.getSource()!!
-    withContext(Dispatchers.IO) {
-      userDAO.findById(UUID.fromString(order.userId)).orElseThrow().toDTO()
-    }
+    userService.findById(UUID.fromString(order.userId)).orElseThrow().toDTO()
   }
 }

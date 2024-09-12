@@ -33,6 +33,7 @@ import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
+import org.migor.feedless.generated.types.Annotations
 import org.migor.feedless.generated.types.CompareBy
 import org.migor.feedless.generated.types.CompareByInput
 import org.migor.feedless.generated.types.CompositeFieldFilterParams
@@ -229,6 +230,7 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     visibility = visibility.toDto(),
     createdAt = createdAt.toMillis(),
     lastUpdatedAt = lastUpdatedAt.toMillis(),
+
     nextUpdateAt = triggerScheduledNextAt?.toMillis(),
     description = description,
     title = title,
@@ -239,7 +241,8 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     harvests = emptyList(),
     hasDisabledSources = false,
     currentUserIsOwner = currentUserIsOwner,
-    pullsPerMonth = pullsPerMonth
+    pullsPerMonth = pullsPerMonth,
+    annotations = null
   )
 }
 

@@ -7,17 +7,13 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  FieldWrapper,
   GqlFeedlessPlugins,
   GqlHarvest,
   GqlProductCategory,
-  GqlScrapeRequest,
   GqlVisibility,
   GqlWebDocumentField,
-  Scalars,
 } from '../../../generated/graphql';
 import {
-  FeedlessPlugin,
   RepositoryFull,
   RepositorySource,
   WebDocument,
@@ -35,13 +31,11 @@ import {
 } from '@ionic/angular';
 import {
   FeedOrRepository,
-  Source,
   tagsToString,
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
-import { PluginService } from '../../services/plugin.service';
 import { Router } from '@angular/router';
 import {
   dateFormat,
@@ -51,12 +45,12 @@ import {
 import { DocumentService } from '../../services/document.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { uniq, without } from 'lodash-es';
-import { distinct, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
-import { stringifyLogStatement } from '../console-button/console-button.component';
 import dayjs from 'dayjs';
+import { AnnotationService } from '../../services/annotation.service';
 
 export type WebDocumentWithFornmControl = WebDocument & {
   fc: FormControl<boolean>;
@@ -96,7 +90,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   currentPage: number;
   fromNow = relativeTimeOrElse;
 
-  protected readonly dateTimeFormat = dateTimeFormat;
   protected loading: boolean;
   protected isOwner: boolean;
   protected selectAllFc = new FormControl<boolean>(false);
@@ -118,7 +111,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly modalService: ModalService,
     private readonly alertCtrl: AlertController,
-    private readonly pluginService: PluginService,
+    private readonly annotationService: AnnotationService,
     private readonly popoverCtrl: PopoverController,
     private readonly documentService: DocumentService,
     private readonly toastCtrl: ToastController,
@@ -137,6 +130,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.repository = await this.repositoryService.getRepositoryById(
       this.repositoryId,
+      this.sessionService.getUserId(),
     );
     if (this.repository.product === GqlProductCategory.VisualDiff) {
       this.viewModeFc.setValue('diff');
@@ -193,10 +187,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   hasErrors(): boolean {
-    return (
-      this.repository?.sources?.length === 0 ||
-      this.repository?.sources?.some((s) => s.disabled)
-    );
+    return this.repository?.sources?.some((s) => s.disabled);
   }
 
   dismissModal() {
@@ -538,9 +529,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   //   });
   // }
 
-  toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
-    return new Date(date);
-  }
+  // toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
+  //   return new Date(date);
+  // }
 
   openLogsModal(
     harvest: Pick<
@@ -585,5 +576,41 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   diffInSeconds(a: number, b: number) {
     return dayjs(a).diff(b, 'seconds');
+  }
+
+  starRepository() {
+    return this.annotationService.createAnnotation({
+      where: {
+        repository: {
+          id: this.repositoryId,
+        },
+      },
+      annotation: {
+        upVote: {
+          set: true,
+        },
+      },
+    });
+  }
+
+  unstarRepository() {
+    return this.annotationService.deleteAnnotation({
+      where: {
+        id: '',
+      },
+    });
+  }
+
+  getStartCount(): string | number {
+    const upVotes = this.repository?.annotations?.upVotes || 0;
+    if (upVotes >= 1000) {
+      return (upVotes / 1000.0).toFixed(1) + 'k';
+    } else {
+      return upVotes;
+    }
+  }
+
+  hasCurrentUserStarred(): boolean {
+    return this.repository.annotations?.votes?.some((v) => v.upVote);
   }
 }

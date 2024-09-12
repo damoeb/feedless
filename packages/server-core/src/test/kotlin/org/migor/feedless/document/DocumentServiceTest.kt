@@ -67,12 +67,12 @@ class DocumentServiceTest {
 
   @Test
   fun `applyRetentionStrategy by capacity is skipped if plan returns null or 0`() {
-
+    TODO()
   }
 
   @Test
   fun `applyRetentionStrategy by age is skipped if plan returns null`() {
-
+    TODO()
   }
 
   @Test

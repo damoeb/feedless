@@ -159,6 +159,7 @@ export class RepositoryService {
 
   async getRepositoryById(
     id: string,
+    currentUserId: string,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<RepositoryFull> {
     return this.apollo
@@ -166,10 +167,13 @@ export class RepositoryService {
         query: RepositoryById,
         fetchPolicy,
         variables: {
-          data: {
+          repository: {
             where: {
               id,
             },
+          },
+          user: {
+            id,
           },
         },
       })

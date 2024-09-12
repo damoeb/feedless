@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import { dateFormat } from '../../services/session.service';
+import { dateFormat, SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
@@ -35,6 +35,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly sessionService: SessionService,
     private readonly titleService: Title,
     private readonly serverConfig: ServerConfigService,
     private readonly repositoryService: RepositoryService,
@@ -64,6 +65,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     try {
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
+        this.sessionService.getUserId(),
       );
       this.titleService.setTitle(this.repository.title);
       this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;

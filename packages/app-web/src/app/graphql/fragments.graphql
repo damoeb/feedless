@@ -117,6 +117,10 @@ fragment RepositoryFragment on Repository {
     sortAsc
     sortBy
   }
+  annotations {
+    downVotes
+    upVotes
+  }
   refreshCron
   hasDisabledSources
   shareKey

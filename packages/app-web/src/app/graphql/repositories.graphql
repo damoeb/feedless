@@ -60,9 +60,26 @@ fragment RepositoryFull on Repository {
   }
 }
 
-query repositoryById($data: RepositoryWhereInput!) {
-  repository(data: $data) {
+query repositoryById(
+  $repository: RepositoryWhereInput!
+  $user: UserWhereUniqueInput!
+) {
+  repository(data: $repository) {
     ...RepositoryFull
+    annotations {
+      votes(where: $user) {
+        id
+        flag {
+          value
+        }
+        upVote {
+          value
+        }
+        downVote {
+          value
+        }
+      }
+    }
   }
 }
 

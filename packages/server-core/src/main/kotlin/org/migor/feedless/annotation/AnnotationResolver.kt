@@ -10,8 +10,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.Annotation
+import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
+import org.migor.feedless.generated.types.TextAnnotation
+import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
@@ -31,6 +35,9 @@ class AnnotationResolver {
   @Autowired
   private lateinit var annotationService: AnnotationService
 
+  @Autowired
+  private lateinit var sessionService: SessionService
+
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateAnnotation)
   @PreAuthorize("hasAuthority('USER')")
@@ -41,7 +48,7 @@ class AnnotationResolver {
   ): Annotation = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = handleCorrId(corrIdParam)
     log.debug("[$corrId] createAnnotation $data")
-    annotationService.createAnnotation(corrId, data).toDto()
+    annotationService.createAnnotation(corrId, data, sessionService.user(corrId)).toDto()
   }
 
   @Throttled
@@ -54,10 +61,30 @@ class AnnotationResolver {
   ): Boolean = withContext(useRequestContext(currentCoroutineContext())) {
     val corrId = handleCorrId(corrIdParam)
     log.debug("[$corrId] deleteAnnotation $data")
-    annotationService.deleteAnnotation(corrId, data)
+    annotationService.deleteAnnotation(corrId, data, sessionService.user(corrId))
   }
 }
 
 private fun AnnotationEntity.toDto(): Annotation {
-  TODO("Not yet implemented")
+  return if (this is TextAnnotationEntity) {
+    Annotation(
+      id = id.toString(),
+      text = TextAnnotation(
+        fromChar = fromChar,
+        toChar = toChar,
+      ))
+  } else {
+    if (this is VoteEntity) {
+      val toBoolAnnotation = { value: Boolean -> if(value) {BoolAnnotation(value)} else {null} }
+
+      Annotation(
+        id = id.toString(),
+        flag = toBoolAnnotation(flag),
+        upVote = toBoolAnnotation(upVote),
+        downVote = toBoolAnnotation(downVote),
+        )
+    } else {
+      Annotation(id = id.toString())
+    }
+  }
 }

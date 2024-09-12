@@ -6,17 +6,26 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import com.netflix.graphql.dgs.context.DgsContext
+import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
+import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.annotation.AnnotationService
+import org.migor.feedless.annotation.VoteEntity
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.Annotation
+import org.migor.feedless.generated.types.Annotations
+import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.Harvest
@@ -27,23 +36,37 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.UserWhereUniqueInput
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
-import org.migor.feedless.source.SourceDAO
+import org.migor.feedless.source.SourceService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
-fun handleCursor(cursor: Cursor): Pair<Int,Int> {
+
+fun handleCursor(cursor: Cursor): Pair<Int, Int> {
   val pageNumber = handlePageNumber(cursor.page).coerceAtLeast(0)
   val pageSize = handlePageSize(cursor.pageSize)
   return Pair(pageNumber, pageSize)
+}
+
+@Component
+class CustomContextBuilder : DgsCustomContextBuilder<CustomContext> {
+  override fun build(): CustomContext {
+    return CustomContext()
+  }
+}
+
+class CustomContext {
+  var repositoryId: String? = null
 }
 
 
@@ -61,7 +84,10 @@ class RepositoryResolver {
   private lateinit var sessionService: SessionService
 
   @Autowired
-  private lateinit var sourceDAO: SourceDAO
+  private lateinit var sourceService: SourceService
+
+  @Autowired
+  private lateinit var annotationService: AnnotationService
 
   @Autowired
   private lateinit var harvestDAO: HarvestDAO
@@ -145,10 +171,8 @@ class RepositoryResolver {
   ): List<ScrapeRequest> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      val sources = withContext(Dispatchers.IO) {
-        sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id)).map { it.toScrapeRequest(corrId) }
-      }
-      sources
+      sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))
+        .map { it.toScrapeRequest(corrId) }
     } else {
       emptyList()
     }
@@ -176,20 +200,61 @@ class RepositoryResolver {
     dfe: DgsDataFetchingEnvironment,
   ): Boolean = coroutineScope {
     val repository: Repository = dfe.getSource()
-    val errornous = withContext(Dispatchers.IO) {
-      sourceDAO.existsByRepositoryIdAndDisabledTrue(UUID.fromString(repository.id))
-    }
-    errornous
+    sourceService.existsByRepositoryIdAndDisabledTrue(UUID.fromString(repository.id))
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = withContext(Dispatchers.IO) {
-    val source: Repository = dfe.getSource()
-    sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(source.id))
+    val repository: Repository = dfe.getSource()
+    sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))
       .mapNotNull { it.tags?.asList() }
       .flatten()
       .distinct()
   }
+
+
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
+  suspend fun annotations(
+    dfe: DgsDataFetchingEnvironment
+  ): Annotations = coroutineScope {
+    val repository: Repository = dfe.getSource()
+
+    DgsContext.getCustomContext<CustomContext>(dfe).repositoryId = repository.id
+    val repositoryId = UUID.fromString(repository.id)
+    Annotations(
+      upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
+      downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
+    )
+  }
+
+  @DgsData(parentType = DgsConstants.ANNOTATIONS.TYPE_NAME, field = DgsConstants.ANNOTATIONS.Votes)
+  suspend fun votes(
+    @InputArgument where: UserWhereUniqueInput,
+    dfe: DgsDataFetchingEnvironment
+  ): List<Annotation> = coroutineScope {
+    val repositoryId = UUID.fromString(DgsContext.getCustomContext<CustomContext>(dfe).repositoryId)
+    if (StringUtils.isBlank(where.id)) {
+      emptyList()
+    } else {
+      annotationService.findAllVotesByUserIdAndRepositoryId(UUID.fromString(where.id), repositoryId).map { it.toDto() }
+    }
+  }
+}
+
+private fun VoteEntity.toDto(): Annotation {
+  val annotateBool = { value: Boolean ->
+    if (value) {
+      BoolAnnotation(value)
+    } else {
+      null
+    }
+  }
+  return Annotation(
+    id = id.toString(),
+    downVote = annotateBool(downVote),
+    flag = annotateBool(flag),
+    upVote = annotateBool(upVote)
+  )
 }
 
 private fun handlePageNumber(page: Int?): Int =

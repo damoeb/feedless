@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.future.await
@@ -22,10 +21,9 @@ import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.UpsertOrderInput
-import org.migor.feedless.license.LicenseDAO
 import org.migor.feedless.license.LicenseEntity
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.useRequestContext
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,10 +45,7 @@ class OrderResolver {
   lateinit var orderService: OrderService
 
   @Autowired
-  lateinit var userDAO: UserDAO
-
-  @Autowired
-  lateinit var licenseDAO: LicenseDAO
+  lateinit var licenseService: LicenseService
 
   @DgsQuery
   suspend fun orders(
@@ -82,9 +77,7 @@ class OrderResolver {
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
   suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
     val order: Order = dfe.getRoot()
-    withContext(Dispatchers.IO) {
-      licenseDAO.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
-    }
+    licenseService.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
   }
 
 }

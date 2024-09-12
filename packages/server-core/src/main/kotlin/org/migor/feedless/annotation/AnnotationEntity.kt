@@ -16,6 +16,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.user.UserEntity
 import java.util.*
 
@@ -28,11 +29,25 @@ import java.util.*
 )
 open class AnnotationEntity : EntityWithUUID() {
 
+  @Column(name = "repository_id", nullable = false)
+  open lateinit var repositoryId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.SET_NULL)
+  @JoinColumn(
+    name = "repository_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_annotation__to__repository")
+  )
+  open var repository: RepositoryEntity? = null
+
   @Column(name = "document_id", nullable = false)
   open lateinit var documentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.CASCADE)
+  @OnDelete(action = OnDeleteAction.SET_NULL)
   @JoinColumn(
     name = "document_id",
     referencedColumnName = "id",

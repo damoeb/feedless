@@ -29,17 +29,14 @@ class PlanResolver {
   private val log = LoggerFactory.getLogger(PlanResolver::class.simpleName)
 
   @Autowired
-  private lateinit var planDAO: PlanDAO
-
+  private lateinit var planService: PlanService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Plan)
   @Transactional
   suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
-      val user: User = dfe.getSource()!!
-      withContext(Dispatchers.IO) {
-          planDAO.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()), LocalDateTime.now())
-              ?.toDto()
-      }
+    val user: User = dfe.getSource()!!
+      planService.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))
+          ?.toDto()
   }
 }
 

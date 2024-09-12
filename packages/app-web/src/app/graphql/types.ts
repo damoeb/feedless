@@ -1,4 +1,5 @@
 import {
+  GqlAnnotation,
   GqlAuthentication,
   GqlCreateUserSecretMutation,
   GqlFeatureGroupsQuery,
@@ -59,3 +60,5 @@ export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
 export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;
 export type LocalizedLicense =
   GqlServerSettingsQuery['serverSettings']['license'];
+
+export type Annotation = Pick<GqlAnnotation, 'id'>;

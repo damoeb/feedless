@@ -394,6 +394,11 @@ class DocumentService {
     }
   }
 
+  suspend fun countByRepositoryId(repositoryId: UUID): Long {
+    return withContext(Dispatchers.IO) {
+      documentDAO.countByRepositoryId(repositoryId)
+    }
+  }
 //  private suspend fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
 //    val mailForwards = withContext(Dispatchers.IO) {
 //      mailForwardDAO.findAllByRepositoryId(repository.id)

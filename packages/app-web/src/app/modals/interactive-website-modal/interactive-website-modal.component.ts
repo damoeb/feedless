@@ -54,7 +54,7 @@ export class InteractiveWebsiteModalComponent
     'extract',
     'header',
     'select',
-    'wait',
+    'waitFor',
   ];
   hideNonUiActions: boolean = true;
 

@@ -3,6 +3,7 @@ package org.migor.feedless.annotation
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 
 @Entity
@@ -10,11 +11,19 @@ import jakarta.persistence.Table
 @DiscriminatorValue("vote")
 open class VoteEntity : AnnotationEntity() {
   @Column(nullable = false, name = "is_upvote")
-  open var isUpVote: Boolean = false
+  open var upVote: Boolean = false
 
   @Column(nullable = false, name = "is_downvote")
-  open var isDownVote: Boolean = false
+  open var downVote: Boolean = false
 
   @Column(nullable = false, name = "is_flag")
-  open var isFlag: Boolean = false
+  open var flag: Boolean = false
+
+  @PrePersist
+  fun prePersist() {
+    val trueValues = arrayOf(upVote, downVote, flag).filter { it }
+    if (trueValues.size != 1) {
+      throw IllegalArgumentException("invalid flags")
+    }
+  }
 }

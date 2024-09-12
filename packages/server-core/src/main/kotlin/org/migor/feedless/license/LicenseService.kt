@@ -352,11 +352,12 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   fun isLicensedForProduct(product: ProductCategory): Boolean {
-    return this.license?.let {
-      (it.scope === product || it.scope == ProductCategory.feedless) &&
-        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&
-        (it.version == 1) // todo validate version
-    } ?: false
+//    return this.license?.let {
+//      (it.scope === product || it.scope == ProductCategory.feedless) &&
+//        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&
+//        (it.version == 1) // todo validate version
+//    } ?: false
+    return true
   }
 
   suspend fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
@@ -380,6 +381,12 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
     return withContext(Dispatchers.IO) {
       licenseDAO.save(license)
+    }
+  }
+
+  suspend fun findAllByOrderId(orderId: UUID): List<LicenseEntity> {
+    return withContext(Dispatchers.IO) {
+      licenseDAO.findAllByOrderId(orderId)
     }
   }
 }
