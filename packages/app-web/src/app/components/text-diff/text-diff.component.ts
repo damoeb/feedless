@@ -6,9 +6,9 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { WebDocument } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
-import { GqlWebDocumentField } from '../../../generated/graphql';
+import { GqlRecordField } from '../../../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { CodeEditorComponent } from '../../elements/code-editor/code-editor.component';
 
@@ -20,13 +20,13 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
 })
 export class TextDiffComponent implements OnInit {
   @Input({ required: true })
-  before: WebDocument;
+  before: Record;
 
   @Input()
-  after: WebDocument;
+  after: Record;
 
   @Input()
-  compareBy: GqlWebDocumentField = GqlWebDocumentField.Markup;
+  compareBy: GqlRecordField = GqlRecordField.Markup;
 
   @ViewChild('diffEditor')
   diffEditorComponent: CodeEditorComponent;
@@ -35,8 +35,8 @@ export class TextDiffComponent implements OnInit {
   protected textAfter: string;
   protected readonly dateFormat = dateFormat;
   protected highlightedLines: number[];
-  compareByText = GqlWebDocumentField.Text;
-  compareByMarkup = GqlWebDocumentField.Markup;
+  compareByText = GqlRecordField.Text;
+  compareByMarkup = GqlRecordField.Markup;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -60,12 +60,12 @@ export class TextDiffComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
-  private getText(document: WebDocument): string {
+  private getText(document: Record): string {
     switch (this.compareBy) {
-      case GqlWebDocumentField.Markup:
-        return this.formatHtml(document.contentHtml);
-      case GqlWebDocumentField.Text:
-        return document.contentText;
+      case GqlRecordField.Markup:
+        return this.formatHtml(document.html);
+      case GqlRecordField.Text:
+        return document.text;
     }
     throw Error();
   }

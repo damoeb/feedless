@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { GetElementType, WebDocument } from '../../graphql/types';
+import { GetElementType, Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
 
-type Enclosure = GetElementType<WebDocument['enclosures']>;
+type Enclosure = GetElementType<Record['attachments']>;
 
 @Component({
   selector: 'app-player',
@@ -12,7 +12,7 @@ type Enclosure = GetElementType<WebDocument['enclosures']>;
 })
 export class PlayerComponent {
   @Input({ required: true })
-  document: WebDocument;
+  document: Record;
 
   @Input()
   isPlaying: boolean;
@@ -22,24 +22,24 @@ export class PlayerComponent {
 
   constructor(private readonly domSanitizer: DomSanitizer) {}
 
-  hasAudioStream(document: WebDocument): boolean {
-    return document.enclosures?.some((e) => e.type.startsWith('audio/'));
+  hasAudioStream(document: Record): boolean {
+    return document.attachments?.some((e) => e.type.startsWith('audio/'));
   }
 
-  firstAudioStream(document: WebDocument): SafeResourceUrl {
+  firstAudioStream(document: Record): SafeResourceUrl {
     const audioStream = this.firstAudioEnclosure(document);
     if (audioStream) {
       return this.domSanitizer.bypassSecurityTrustResourceUrl(audioStream.url);
     }
   }
 
-  private firstAudioEnclosure(document: WebDocument): Enclosure {
+  private firstAudioEnclosure(document: Record): Enclosure {
     return first(
-      document.enclosures.filter((e) => e.type.startsWith('audio/')),
+      document.attachments.filter((e) => e.type.startsWith('audio/')),
     );
   }
 
-  firstAudioLength(document: WebDocument): string {
+  firstAudioLength(document: Record): string {
     const audioStream = this.firstAudioEnclosure(document);
     if (audioStream) {
       if (audioStream.duration <= 60) {

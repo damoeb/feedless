@@ -16,7 +16,7 @@ import {
   GqlScrapeActionInput,
   GqlScrapeEmit,
   GqlSourceInput,
-  GqlWebDocumentField,
+  GqlRecordField,
   GqlXyPosition,
 } from '../../../generated/graphql';
 import { isEqual, isNull, isUndefined } from 'lodash-es';
@@ -75,8 +75,8 @@ export class TrackerEditPage implements OnInit, OnDestroy {
         Validators.minLength(3),
         Validators.maxLength(255),
       ]),
-      compareType: new FormControl<GqlWebDocumentField>(
-        GqlWebDocumentField.Pixel,
+      compareType: new FormControl<GqlRecordField>(
+        GqlRecordField.Pixel,
         [Validators.required],
       ),
       areaBoundingBox: new FormControl<BoundingBox>(
@@ -90,7 +90,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     { updateOn: 'change' },
   );
   actions = new FormArray<FormGroup<BrowserAction>>([]);
-  protected readonly GqlWebDocumentField = GqlWebDocumentField;
+  protected readonly GqlRecordField = GqlRecordField;
   private subscriptions: Subscription[] = [];
   // errorMessage: null;
   private source: GqlSourceInput;
@@ -293,30 +293,28 @@ export class TrackerEditPage implements OnInit, OnDestroy {
               email: this.form.value.email,
             },
           ],
-          sinkOptions: {
-            title: this.form.value.subject,
-            description: 'Visual Diff',
-            withShareKey: false,
-            refreshCron: this.form.value.fetchFrequency,
-            retention: {
-              maxCapacity: 2,
-            },
-            plugins: [
-              {
-                pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
-                params: {
-                  [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
-                    inlineDiffImage: true,
-                    inlineLatestImage: true,
-                    compareBy: {
-                      field: this.form.value.compareType,
-                    },
-                    nextItemMinIncrement: this.form.value.sinkCondition,
+          title: this.form.value.subject,
+          description: 'Visual Diff',
+          withShareKey: false,
+          refreshCron: this.form.value.fetchFrequency,
+          retention: {
+            maxCapacity: 2,
+          },
+          plugins: [
+            {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
+              params: {
+                [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
+                  inlineDiffImage: true,
+                  inlineLatestImage: true,
+                  compareBy: {
+                    field: this.form.value.compareType,
                   },
+                  nextItemMinIncrement: this.form.value.sinkCondition,
                 },
               },
-            ],
-          },
+            },
+          ],
         },
       ],
     });

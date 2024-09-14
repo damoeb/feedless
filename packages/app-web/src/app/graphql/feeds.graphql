@@ -6,7 +6,7 @@ fragment RemoteNativeFeedFragment on RemoteNativeFeed {
   feedUrl
   nextPageUrls
   items {
-    ...WebDocumentFragment
+    ...RecordFragment
   }
 }
 

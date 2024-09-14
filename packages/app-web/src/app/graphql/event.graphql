@@ -1,5 +1,5 @@
-query findEvents($where: WebDocumentsWhereInput!) {
-  webDocumentsFrequency(where: $where, groupBy: startingAt) {
+query findEvents($where: RecordsWhereInput!) {
+  recordsFrequency(where: $where, groupBy: startingAt) {
     count
     group
   }

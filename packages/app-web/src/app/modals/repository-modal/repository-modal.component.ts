@@ -16,7 +16,7 @@ import {
   GqlPluginExecutionInput,
   GqlSourceInput,
   GqlVisibility,
-  GqlWebDocumentDateField,
+  GqlRecordDateField,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -64,8 +64,8 @@ export class RepositoryModalComponent
     description: new FormControl<string>('', [Validators.maxLength(500)]),
     maxCapacity: new FormControl<number>(null, [Validators.min(2)]),
     maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
-    ageReferenceField: new FormControl<GqlWebDocumentDateField>(
-      GqlWebDocumentDateField.PublishedAt,
+    ageReferenceField: new FormControl<GqlRecordDateField>(
+      GqlRecordDateField.PublishedAt,
     ),
     fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, {
       nonNullable: true,
@@ -88,7 +88,7 @@ export class RepositoryModalComponent
   isLoggedIn: boolean;
 
   protected readonly dateFormat = dateFormat;
-  protected readonly GqlWebDocumentDateField = GqlWebDocumentDateField;
+  protected readonly GqlRecordDateField = GqlRecordDateField;
   @Input()
   openAccordions: GenerateFeedAccordion[] = [];
   accordionPrivacy: GenerateFeedAccordion = 'privacy';
@@ -260,16 +260,14 @@ export class RepositoryModalComponent
             {
               product: environment.product,
               sources: this.repository.sources as GqlSourceInput[],
-              sinkOptions: {
-                title: this.formFg.value.title,
-                refreshCron: this.formFg.value.fetchFrequency,
-                withShareKey: true,
-                description: this.formFg.value.description,
-                visibility: this.formFg.value.isPublic
-                  ? GqlVisibility.IsPublic
-                  : GqlVisibility.IsPrivate,
-                plugins,
-              },
+              title: this.formFg.value.title,
+              refreshCron: this.formFg.value.fetchFrequency,
+              withShareKey: true,
+              description: this.formFg.value.description,
+              visibility: this.formFg.value.isPublic
+                ? GqlVisibility.IsPublic
+                : GqlVisibility.IsPrivate,
+              plugins,
             },
           ],
         });
@@ -370,6 +368,5 @@ export class RepositoryModalComponent
 
   handleFilterChange(filterParams: GqlItemFilterParamsInput[]) {
     this.filterParams = filterParams;
-    // this.loadFeedPreview()
   }
 }

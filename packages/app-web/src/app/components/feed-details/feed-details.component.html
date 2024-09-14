@@ -82,7 +82,7 @@
 
                         <ion-button
                           fill="clear"
-                          [color]="source.localized ? 'medium' : 'primary'"
+                          [color]="source.latLng ? 'medium' : 'primary'"
                           (click)="editLocalization(source)"
                           >{{ stringifyLocalization(source) }}
                         </ion-button>
@@ -430,7 +430,7 @@
                       <!--                      https://www.openstreetmap.org/#map=14/-->
                       <ion-icon
                         name="location-outline"
-                        *ngIf="document.localized"
+                        *ngIf="document.latLng"
                       ></ion-icon>
                     </ion-note>
                     <ion-note *ngIf="document.tags.length > 0">
@@ -445,11 +445,11 @@
                     target="_blank"
                     referrerpolicy="no-referrer"
                   >
-                    {{ document.contentTitle }}
+                    {{ document.title }}
                   </a>
                 </h2>
 
-                <p class="content">{{ document.contentText }}</p>
+                <p class="content">{{ document.text }}</p>
 
                 <app-player
                   [document]="document"

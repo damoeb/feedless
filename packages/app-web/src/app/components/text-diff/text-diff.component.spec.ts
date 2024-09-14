@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TextDiffComponent } from './text-diff.component';
 import { AppTestModule } from '../../app-test.module';
 import { TextDiffModule } from './text-diff.module';
-import { WebDocument } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 
 describe('TextDiffComponent', () => {
   let component: TextDiffComponent;
@@ -16,15 +16,15 @@ describe('TextDiffComponent', () => {
     fixture = TestBed.createComponent(TextDiffComponent);
     component = fixture.componentInstance;
     component.before = {
-      contentHtml: '',
-      contentText: '',
-      contentRawBase64: '',
-    } as WebDocument;
+      html: '',
+      text: '',
+      rawBase64: '',
+    } as Record;
     component.after = {
-      contentHtml: '',
-      contentText: '',
-      contentRawBase64: '',
-    } as WebDocument;
+      html: '',
+      text: '',
+      rawBase64: '',
+    } as Record;
     fixture.detectChanges();
   }));
 

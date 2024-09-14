@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ImageDiffComponent } from './image-diff.component';
 import { AppTestModule } from '../../app-test.module';
 import { ImageDiffModule } from './image-diff.module';
-import { WebDocument } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 
 describe('ImageDiffComponent', () => {
   let component: ImageDiffComponent;
@@ -15,7 +15,7 @@ describe('ImageDiffComponent', () => {
 
     fixture = TestBed.createComponent(ImageDiffComponent);
     component = fixture.componentInstance;
-    component.before = {} as WebDocument;
+    component.before = {} as Record;
     fixture.detectChanges();
   }));
 

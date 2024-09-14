@@ -61,7 +61,7 @@ open class HarvestEntity : EntityWithUUID() {
 
 fun HarvestEntity.toDto(): Harvest {
   return Harvest(
-    errornous = errornous,
+    ok = !errornous,
     itemsAdded = itemsAdded,
     itemsIgnored = itemsIgnored,
     logs = logs,

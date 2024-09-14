@@ -16,11 +16,11 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.DatesWhereInput
-import org.migor.feedless.generated.types.DocumentFrequency
+import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.StringFilter
-import org.migor.feedless.generated.types.WebDocumentDateField
-import org.migor.feedless.generated.types.WebDocumentOrderByInput
-import org.migor.feedless.generated.types.WebDocumentsWhereInput
+import org.migor.feedless.generated.types.RecordDateField
+import org.migor.feedless.generated.types.RecordOrderByInput
+import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -82,8 +82,8 @@ class DocumentService(
 
   suspend fun findAllByRepositoryId(
     repositoryId: UUID,
-    where: WebDocumentsWhereInput? = null,
-    orderBy: WebDocumentOrderByInput? = null,
+    where: RecordsWhereInput? = null,
+    orderBy: RecordOrderByInput? = null,
     status: ReleaseStatus = ReleaseStatus.released,
     tag: String? = null,
     pageable: Pageable,
@@ -113,7 +113,7 @@ class DocumentService(
     }
   }
 
-  private fun prepareWhereStatements(where: WebDocumentsWhereInput?): MutableList<Predicatable> {
+  private fun prepareWhereStatements(where: RecordsWhereInput?): MutableList<Predicatable> {
     val whereStatements = mutableListOf<Predicatable>()
     jpql {
       val addDateConstraint = { it: DatesWhereInput, field: Path<LocalDateTime> ->
@@ -129,7 +129,7 @@ class DocumentService(
         it.startedAt?.let { addDateConstraint(it, path(DocumentEntity::startingAt)) }
         it.createdAt?.let { addDateConstraint(it, path(DocumentEntity::createdAt)) }
         it.publishedAt?.let { addDateConstraint(it, path(DocumentEntity::publishedAt)) }
-        it.localized?.let {
+        it.latLng?.let {
           // https://postgis.net/docs/ST_Distance.html
           whereStatements.add(path(DocumentEntity::latLon).isNotNull())
           whereStatements.add(
@@ -228,18 +228,18 @@ class DocumentService(
     }
   }
 
-  suspend fun getDocumentFrequency(
-    where: WebDocumentsWhereInput,
-    groupBy: WebDocumentDateField,
-  ): List<DocumentFrequency> {
+  suspend fun getRecordFrequency(
+    where: RecordsWhereInput,
+    groupBy: RecordDateField,
+  ): List<RecordFrequency> {
     val query = jpql {
       val whereStatements = prepareWhereStatements(where)
       val dateGroup = expression<Long>("day")
 
       val groupByEntity = when (groupBy) {
-        WebDocumentDateField.createdAt -> path(DocumentEntity::createdAt)
-        WebDocumentDateField.publishedAt -> path(DocumentEntity::publishedAt)
-        WebDocumentDateField.startingAt -> path(DocumentEntity::startingAt)
+        RecordDateField.createdAt -> path(DocumentEntity::createdAt)
+        RecordDateField.publishedAt -> path(DocumentEntity::publishedAt)
+        RecordDateField.startingAt -> path(DocumentEntity::startingAt)
       }
 
       selectNew<Pair<Long, Long>>(
@@ -260,7 +260,7 @@ class DocumentService(
     val context = JpqlRenderContext()
     return withContext(Dispatchers.IO) {
       val q = entityManager.createQuery(query, context)
-      q.resultList.map { pair -> DocumentFrequency(pair.first.toInt(), pair.second) }
+      q.resultList.map { pair -> RecordFrequency(pair.first.toInt(), pair.second) }
     }
   }
 

@@ -56,7 +56,7 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.generated.types.WebDocumentDateField
+import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
@@ -332,11 +332,11 @@ private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
   )
 }
 
-fun WebDocumentDateField.fromDto(): MaxAgeDaysDateField {
+fun RecordDateField.fromDto(): MaxAgeDaysDateField {
   return when (this) {
-    WebDocumentDateField.createdAt -> MaxAgeDaysDateField.createdAt
-    WebDocumentDateField.startingAt -> MaxAgeDaysDateField.startingAt
-    WebDocumentDateField.publishedAt -> MaxAgeDaysDateField.publishedAt
+    RecordDateField.createdAt -> MaxAgeDaysDateField.createdAt
+    RecordDateField.startingAt -> MaxAgeDaysDateField.startingAt
+    RecordDateField.publishedAt -> MaxAgeDaysDateField.publishedAt
   }
 }
 

@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -25,8 +24,8 @@ import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
-import org.migor.feedless.generated.types.WebDocumentDateField
-import org.migor.feedless.generated.types.WebDocumentDateFieldUpdateOperationsInput
+import org.migor.feedless.generated.types.RecordDateField
+import org.migor.feedless.generated.types.RecordDateFieldUpdateOperationsInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
@@ -82,8 +81,8 @@ class RepositoryUpdateTest {
       retention = RetentionUpdateInput(
         maxCapacity = NullableIntUpdateOperationsInput(),
         maxAgeDays = NullableIntUpdateOperationsInput(),
-        ageReferenceField = WebDocumentDateFieldUpdateOperationsInput(
-          set = WebDocumentDateField.createdAt
+        ageReferenceField = RecordDateFieldUpdateOperationsInput(
+          set = RecordDateField.createdAt
         )
       ),
       plugins = listOf(),

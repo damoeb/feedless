@@ -1,11 +1,11 @@
 package org.migor.feedless.repository
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -22,22 +22,18 @@ import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.RetentionInput
 import org.migor.feedless.generated.types.ScrapeActionInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
-import org.migor.feedless.generated.types.SinkOptionsInput
 import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatcher
-import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -135,17 +131,14 @@ class RepositoryServiceTest {
               ),
 
               )),
-            sinkOptions = SinkOptionsInput(
-              title ="",
-              description ="",
-              refreshCron="",
-              withShareKey=true
-            ),
+            title ="",
+            description ="",
+            refreshCron="",
+            withShareKey=true
           )
         )
       )
     )
-
   }
 
   @Test
@@ -159,11 +152,9 @@ class RepositoryServiceTest {
       RepositoryCreateInput(
         sources = emptyList(),
         product = ProductCategory.rssProxy,
-        sinkOptions = SinkOptionsInput(
-          title = "",
-          description = "",
-          withShareKey = false
-        )
+        title = "",
+        description = "",
+        withShareKey = false
       )
     )
     val createdRepositories = repositoryService.create(
@@ -174,6 +165,23 @@ class RepositoryServiceTest {
 
     assertThat(createdRepositories.size).isEqualTo(repositories.size)
   }
+
+  @Test
+  @Disabled("legacy feeds demand disabled authority checks")
+  fun `requesting private repository is restricted to owner`() = runTest {
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UUID::class.java)))
+      .thenReturn(false)
+    `when`(planConstraintsService.coerceVisibility(Mockito.anyString(), Mockito.any()))
+      .thenReturn(EntityVisibility.isPublic)
+    `when`(sessionService.userId())
+      .thenReturn(UUID.randomUUID())
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runBlocking {
+        repositoryService.findById(corrId, UUID.randomUUID())
+      }
+    }
+   }
 
   @Test
   fun `given user is owner, updating repository works`() = runTest {

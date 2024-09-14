@@ -167,19 +167,19 @@
                   class="ion-hide-md-down"
                 >
                   <ion-radio
-                    [value]="GqlWebDocumentField.Pixel"
+                    [value]="GqlRecordField.Pixel"
                     labelPlacement="end"
                   >
                     Visual
                   </ion-radio>
                   <ion-radio
-                    [value]="GqlWebDocumentField.Text"
+                    [value]="GqlRecordField.Text"
                     labelPlacement="end"
                   >
                     Text</ion-radio
                   >
                   <ion-radio
-                    [value]="GqlWebDocumentField.Markup"
+                    [value]="GqlRecordField.Markup"
                     labelPlacement="end"
                   >
                     Element
@@ -192,13 +192,13 @@
                   interface="popover"
                   placeholder="Compare Type"
                 >
-                  <ion-select-option [value]="GqlWebDocumentField.Pixel"
+                  <ion-select-option [value]="GqlRecordField.Pixel"
                     >Visual</ion-select-option
                   >
-                  <ion-select-option [value]="GqlWebDocumentField.Text"
+                  <ion-select-option [value]="GqlRecordField.Text"
                     >Text</ion-select-option
                   >
-                  <ion-select-option [value]="GqlWebDocumentField.Markup"
+                  <ion-select-option [value]="GqlRecordField.Markup"
                     >Markup</ion-select-option
                   >
                 </ion-select>
@@ -211,7 +211,7 @@
                 <ion-select
                   [formControl]="form.controls.screen"
                   fill="outline"
-                  *ngIf="form.value.compareType === GqlWebDocumentField.Pixel"
+                  *ngIf="form.value.compareType === GqlRecordField.Pixel"
                   interface="popover"
                   placeholder="Screen"
                 >
@@ -228,7 +228,7 @@
 
                 <ion-button
                   (click)="pickXPath()"
-                  *ngIf="form.value.compareType !== GqlWebDocumentField.Pixel || form.value.screen === screenElement"
+                  *ngIf="form.value.compareType !== GqlRecordField.Pixel || form.value.screen === screenElement"
                   class="ion-margin-end"
                   [color]="form.controls.elementXpath.invalid ? 'primary' : 'light'"
                 >

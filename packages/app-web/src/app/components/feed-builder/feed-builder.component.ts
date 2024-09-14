@@ -235,7 +235,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     // console.log('this.location', this.geoLocation);
     if (this.geoLocation) {
       this.sourceBuilder.patch({
-        localized: {
+        latLng: {
           lat: parseFloat(this.geoLocation.lat),
           lon: parseFloat(this.geoLocation.lon),
         },

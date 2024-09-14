@@ -19,7 +19,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.ScrapeFlow
-import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.Source
 import org.migor.feedless.repository.RepositoryEntity
 import java.sql.Types
 import java.util.*
@@ -69,14 +69,14 @@ open class SourceEntity : EntityWithUUID() {
   open var repository: RepositoryEntity? = null
 }
 
-fun SourceEntity.toDto(corrId: String): ScrapeRequest {
-  return ScrapeRequest(
+fun SourceEntity.toDto(corrId: String): Source {
+  return Source(
     id = id.toString(),
     corrId = corrId,
     disabled = disabled,
     lastErrorMessage = lastErrorMessage,
     tags = tags?.asList() ?: emptyList(),
-    localized = latLon?.let {
+    latLng = latLon?.let {
       GeoPoint(
         lat = it.x,
         lon = it.y,

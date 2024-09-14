@@ -53,15 +53,15 @@ package org.migor.feedless.pipeline.plugins
 //      when (compareBy.field!!) {
 //        WebDocumentField.text -> compareByText(
 //          corrId,
-//          document.contentText,
-//          previous.contentText,
+//          document.text,
+//          previous.text,
 //          increment
 //        )
 //
 //        WebDocumentField.markup -> compareByText(
 //          corrId,
-//          document.contentHtml!!,
-//          previous.contentHtml!!,
+//          document.html!!,
+//          previous.html!!,
 //          increment
 //        )
 //
@@ -123,7 +123,7 @@ package org.migor.feedless.pipeline.plugins
 //      Triple(
 //        config.inlineLatestImage,
 //        "latest-$latestDateString",
-//        document.contentRaw!!
+//        document.raw!!
 //      )
 //    )
 //
@@ -136,7 +136,7 @@ package org.migor.feedless.pipeline.plugins
 //        Triple(
 //          config.inlinePreviousImage,
 //          "previous-${sdf.format(lastWebDocument.createdAt)}",
-//          lastWebDocument.contentRaw!!
+//          lastWebDocument.raw!!
 //        )
 //      )
 //      images.add(
@@ -173,8 +173,8 @@ package org.migor.feedless.pipeline.plugins
 //    return mailData
 //  }
 //
-//  private fun toImage(webDocument: DocumentEntity): BufferedImage {
-//    return ImageIO.read(ByteArrayInputStream(webDocument.contentRaw))
+//  private fun toImage(record: DocumentEntity): BufferedImage {
+//    return ImageIO.read(ByteArrayInputStream(record.raw))
 //  }
 //
 //  private fun compareByPixel(

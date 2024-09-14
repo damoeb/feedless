@@ -36,12 +36,12 @@ fragment CompositeFilterParamsFragment on CompositeFilterParams {
   }
 }
 
-fragment ConditionalTagFragment on ConditionalTag {
-  tag
-  filter {
-    ...CompositeFieldFilterParamsFragment
-  }
-}
+#fragment ConditionalTagFragment on ConditionalTag {
+#  tag
+#  filter {
+#    ...CompositeFieldFilterParamsFragment
+#  }
+#}
 
 fragment DiffEmailForwardParamsFragment on DiffEmailForwardParams {
   inlineDiffImage
@@ -73,17 +73,17 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
     readability
     inheritParams
   }
-  org_feedless_conditional_tag {
-    ...ConditionalTagFragment
-  }
+#  org_feedless_conditional_tag {
+#    ...ConditionalTagFragment
+#  }
   jsonData
 }
 
-fragment SourceFragment on ScrapeRequest {
+fragment SourceFragment on Source {
   id
   disabled
   tags
-  localized {
+  latLng {
     lat
     lon
   }
@@ -231,7 +231,7 @@ fragment ScrapeFlowFragment on ScrapeFlow {
   }
 }
 
-fragment ScrapeOptionsFragment on ScrapeRequest {
+fragment ScrapeOptionsFragment on Source {
   flow {
     ...ScrapeFlowFragment
   }
@@ -258,30 +258,30 @@ fragment PaginationFragment on Pagination {
   isEmpty
 }
 
-fragment WebDocumentFragment on WebDocument {
+fragment RecordFragment on Record {
   id
   tags
-  contentTitle
-  contentRawMime
-  contentRawBase64
-  contentHtml
-  contentText
+  title
+  rawMimeType
+  rawBase64
+  html
+  text
   url
   imageUrl
   createdAt
   publishedAt
   startingAt
   tags
-  localized {
+  latLng {
     lat
     lon
   }
-  enclosures {
-    ...EnclosureFragment
+  attachments {
+    ...AttachmentFragment
   }
 }
 
-fragment EnclosureFragment on Enclosure {
+fragment AttachmentFragment on Attachment {
   size
   duration
   type

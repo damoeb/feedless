@@ -179,9 +179,9 @@ private fun <E : ItemFilterParamsInput> List<E>.toPluginExecutionParamsInput(): 
 private fun JsonItem.asEntity(repository: RepositoryEntity): DocumentEntity {
   val e = DocumentEntity()
   e.title = title
-//  if (StringUtils.isNotBlank(contentRawBase64)) {
-//    e.contentRaw = Base64.getDecoder().decode(contentRawBase64)
-//    e.contentRawMime = contentRawMime
+//  if (StringUtils.isNotBlank(rawBase64)) {
+//    e.raw = Base64.getDecoder().decode(rawBase64)
+//    e.rawMimeType = rawMimeType
 //  }
   e.repositoryId = repository.id
   e.latLon = this.latLng?.toPoint()

@@ -1,16 +1,16 @@
-query webDocumentById($data: WebDocumentWhereInput!) {
-  webDocument(data: $data) {
-    ...WebDocumentFragment
+query recordById($data: RecordWhereInput!) {
+  record(data: $data) {
+    ...RecordFragment
   }
 }
 
-query webDocumentByIds($data: WebDocumentsInput!) {
-  webDocuments(data: $data) {
-    ...WebDocumentFragment
+query recordByIds($data: RecordsInput!) {
+  records(data: $data) {
+    ...RecordFragment
 
   }
 }
 
-mutation deleteWebDocumentsById($data: DeleteWebDocumentsInput!) {
-  deleteWebDocuments(data: $data)
+mutation deleteRecordsById($data: DeleteRecordsInput!) {
+  deleteRecords(data: $data)
 }

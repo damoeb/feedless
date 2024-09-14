@@ -24,7 +24,7 @@ import {
   unionBy,
 } from 'lodash-es';
 import { DocumentService } from '../../services/document.service';
-import { GetElementType, WebDocument } from '../../graphql/types';
+import { GetElementType, Record } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 import {
   OpenStreetMapService,
@@ -56,10 +56,10 @@ type Years = {
   [year: number]: Months;
 };
 
-type Distance2Events = { [distance: string]: WebDocument[] };
+type Distance2Events = { [distance: string]: Record[] };
 type EventsByDistance = {
   distance: string;
-  events: WebDocument[];
+  events: Record[];
 };
 
 type PlaceByDistance = {
@@ -69,11 +69,11 @@ type PlaceByDistance = {
 
 type EventsAtPlace = {
   place: string;
-  events: WebDocument[];
+  events: Record[];
 };
 
 type LocalizedEvent = GetElementType<
-  GqlFindEventsQuery['webDocumentsFrequency']
+  GqlFindEventsQuery['recordsFrequency']
 >;
 
 type UrlFragments = {
@@ -305,7 +305,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  private fetchEventOfDay(day: Dayjs): Promise<WebDocument[]> {
+  private fetchEventOfDay(day: Dayjs): Promise<Record[]> {
     if (!this.currentLatLon) {
       return Promise.resolve([]);
     }
@@ -318,7 +318,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         repository: {
           id: this.repositoryId,
         },
-        localized: {
+        latLng: {
           near: {
             lat: this.currentLatLon[0],
             lon: this.currentLatLon[1],
@@ -354,7 +354,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
             repository: {
               id: this.repositoryId,
             },
-            localized: {
+            latLng: {
               near: {
                 lat: this.currentLatLon[0],
                 lon: this.currentLatLon[1],
@@ -369,7 +369,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         },
       })
       .then((response) => {
-        return response.data.webDocumentsFrequency;
+        return response.data.recordsFrequency;
       });
     this.changeRef.detectChanges();
   }
@@ -396,10 +396,10 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     return days.filter((day) => day.isFirstWeek);
   }
 
-  private getGeoDistance(event: WebDocument): number {
+  private getGeoDistance(event: Record): number {
     return this.getDistanceFromLatLonInKm(
-      event.localized.lat,
-      event.localized.lon,
+      event.latLng.lat,
+      event.latLng.lon,
       this.currentLatLon[0],
       this.currentLatLon[1],
     );
@@ -453,7 +453,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       const events = await this.fetchEventOfDay(day.clone());
       const places = await Promise.all(
         unionBy(
-          events.map((e) => e.localized),
+          events.map((e) => e.latLng),
           (e) => `${e.lat},${e.lon}`,
         ).map((latLon) =>
           this.openStreetMapService
@@ -485,7 +485,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         (event) => parseInt(event.distance),
       ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
         const latLonGroups = groupBy(eventGroup.events, (e) =>
-          JSON.stringify(e.localized),
+          JSON.stringify(e.latLng),
         );
         groupedPlaces.push({
           distance: eventGroup.distance,
@@ -493,7 +493,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
             return {
               events: latLonGroups[latLonGroup],
               place: places.find((place) =>
-                isEqual(place.latLon, latLonGroups[latLonGroup][0].localized),
+                isEqual(place.latLon, latLonGroups[latLonGroup][0].latLng),
               ).place,
             };
           }),

@@ -36,7 +36,7 @@ fun EntityVisibility.toDto(): Visibility = when (this) {
 
 fun ScrapeResponseInput.fromDto(): ScrapeResponse = ScrapeResponse(
   errorMessage = errorMessage,
-  failed = failed,
+  ok = ok,
   logs = logs.map { it.fromDto() },
   outputs = outputs.map { it.fromDto() }
 )
@@ -291,4 +291,4 @@ private fun ExtendContext.toDto(): ExtendContentOptions {
   }
 }
 
-fun isHtml(contentRawMime: String?): Boolean = contentRawMime?.lowercase()?.startsWith("text/html") == true
+fun isHtml(rawMimeType: String?): Boolean = rawMimeType?.lowercase()?.startsWith("text/html") == true

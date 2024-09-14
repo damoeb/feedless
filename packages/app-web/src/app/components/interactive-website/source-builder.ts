@@ -7,7 +7,7 @@ import {
   GqlScrapeActionInput,
   GqlScrapeEmit,
   GqlScrapeFlowInput,
-  GqlScrapeRequest,
+  GqlSource,
   GqlSourceInput,
 } from '../../../generated/graphql';
 import {
@@ -69,7 +69,7 @@ export class SourceBuilder {
   meta = new FormGroup({
     title: new FormControl<string>(''),
     tags: new FormControl<string[]>([]),
-    localized: new FormControl<GqlSourceInput['localized']>(null),
+    latLng: new FormControl<GqlSourceInput['latLng']>(null),
   });
 
   static fromSource(
@@ -105,7 +105,7 @@ export class SourceBuilder {
     private scrapeService: ScrapeService,
     source: GqlSourceInput,
   ) {
-    this.patch(pick(source, ['localized', 'tags', 'title']));
+    this.patch(pick(source, ['latLng', 'tags', 'title']));
     this.flow = cloneDeep(source.flow.sequence);
     this.validateFlow();
   }
@@ -129,15 +129,15 @@ export class SourceBuilder {
     return this;
   }
 
-  patch(param: Partial<Pick<GqlSourceInput, 'tags' | 'localized' | 'title'>>) {
+  patch(param: Partial<Pick<GqlSourceInput, 'tags' | 'latLng' | 'title'>>) {
     this.meta.patchValue(param);
     this.events.stateChange.next('DIRTY');
   }
 
-  build(append: Array<GqlScrapeActionInput> = null): GqlScrapeRequest {
+  build(append: Array<GqlScrapeActionInput> = null): GqlSource {
     return this.toSource({
       sequence: [...this.flow, ...(append ? append : [])],
-    }) as GqlScrapeRequest;
+    }) as GqlSource;
   }
 
   removePluginById(pluginId: GqlFeedlessPlugins) {
@@ -244,7 +244,7 @@ export class SourceBuilder {
       corrId: '',
       id: '',
       title: title || this.meta.value.title,
-      localized: this.meta.value.localized,
+      latLng: this.meta.value.latLng,
       tags: this.meta.value.tags,
       flow,
     };

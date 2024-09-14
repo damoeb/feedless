@@ -18,15 +18,15 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.DatesWhereInput
-import org.migor.feedless.generated.types.DeleteWebDocumentsInput
-import org.migor.feedless.generated.types.DocumentFrequency
+import org.migor.feedless.generated.types.DeleteRecordsInput
+import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.generated.types.WebDocumentDateField
-import org.migor.feedless.generated.types.WebDocumentWhereInput
-import org.migor.feedless.generated.types.WebDocumentsInput
-import org.migor.feedless.generated.types.WebDocumentsWhereInput
+import org.migor.feedless.generated.types.Record
+import org.migor.feedless.generated.types.RecordDateField
+import org.migor.feedless.generated.types.RecordWhereInput
+import org.migor.feedless.generated.types.RecordsInput
+import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
@@ -62,26 +62,26 @@ class DocumentResolver {
 
   @Throttled
   @DgsQuery
-  suspend fun webDocument(
+  suspend fun record(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: WebDocumentWhereInput,
+    @InputArgument data: RecordWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): WebDocument = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] webDocument $data")
+  ): Record = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+    log.debug("[$corrId] record $data")
     val document =
-      documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("webDocument not found")
+      documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("record not found")
     repositoryService.findById(corrId, document.repositoryId)
     document.toDto(propertyService)
   }
 
   @Throttled
-  @DgsQuery(field = DgsConstants.QUERY.WebDocuments)
-  suspend fun webDocuments(
+  @DgsQuery(field = DgsConstants.QUERY.Records)
+  suspend fun records(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: WebDocumentsInput,
+    @InputArgument data: RecordsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<WebDocument> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] webDocuments $data")
+  ): List<Record> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+    log.debug("[$corrId] records $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
     val repository = repositoryService.findById(corrId, repositoryId)
@@ -99,11 +99,11 @@ class DocumentResolver {
     documentService.countByRepositoryId(UUID.fromString(repository.id))
   }
 
-  @DgsMutation(field = DgsConstants.MUTATION.DeleteWebDocuments)
+  @DgsMutation(field = DgsConstants.MUTATION.DeleteRecords)
   @PreAuthorize("hasAuthority('USER')")
-  suspend fun deleteWebDocuments(
+  suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: DeleteWebDocumentsInput,
+    @InputArgument data: DeleteRecordsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     documentService.deleteDocuments(
@@ -115,26 +115,26 @@ class DocumentResolver {
     true
   }
 
-  @DgsQuery(field = DgsConstants.QUERY.WebDocumentsFrequency)
-  suspend fun webDocumentsFrequency(
-    @InputArgument where: WebDocumentsWhereInput,
-    @InputArgument groupBy: WebDocumentDateField,
-  ): List<DocumentFrequency> = coroutineScope {
-    documentService.getDocumentFrequency(where, groupBy)
+  @DgsQuery(field = DgsConstants.QUERY.RecordsFrequency)
+  suspend fun recordsFrequency(
+    @InputArgument where: RecordsWhereInput,
+    @InputArgument groupBy: RecordDateField,
+  ): List<RecordFrequency> = coroutineScope {
+    documentService.getRecordFrequency(where, groupBy)
   }
 
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Frequency)
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
-  ): List<DocumentFrequency> = coroutineScope {
+  ): List<RecordFrequency> = coroutineScope {
     val repository: Repository = dfe.getSource()!!
-    documentService.getDocumentFrequency(
-      WebDocumentsWhereInput(
+    documentService.getRecordFrequency(
+      RecordsWhereInput(
         repository = RepositoryUniqueWhereInput(id = repository.id),
         createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1).toMillis())
       ),
-      WebDocumentDateField.createdAt
+      RecordDateField.createdAt
     )
   }
 

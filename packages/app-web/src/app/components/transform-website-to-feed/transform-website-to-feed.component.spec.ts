@@ -19,8 +19,8 @@ import { ScrapeService } from '../../services/scrape.service';
 //     {
 //       contentRaw:
 //         '\u003cp\u003e\u003ca href\u003d"https://www.heise.de/news/China-kann-noch-keine-5-Nanometer-Chips-produzieren-9588363.html?wt_mc\u003drss.red.ho.ho.rdf.beitrag.beitrag"\u003e\u003cimg src\u003d"https://www.heise.de/scale/geometry/450/q80//imgs/18/4/5/2/1/3/5/0/qingyun-l540-light_1-19020858315504cf.jpeg" class\u003d"webfeedsFeaturedVisual" alt\u003d"" /\u003e\u003c/a\u003e\u003c/p\u003e\u003cp\u003eEnde 2023 stellte Huawei ein Notebook mit eigenem 5-nm-Prozessor vor. Der stammt von TSMC aus Taiwan, wie ein Teardown beweist.\u003c/p\u003e',
-//       contentRawMime: 'html',
-//       contentText:
+//       rawMimeType: 'html',
+//       text:
 //         'Ende 2023 stellte Huawei ein Notebook mit eigenem 5-nm-Prozessor vor. Der stammt von TSMC aus Taiwan, wie ein Teardown beweist.',
 //       createdAt: 1704459090234,
 //       description:
@@ -43,7 +43,7 @@ import { ScrapeService } from '../../services/scrape.service';
 // };
 
 const feedResponse: ScrapeResponse = {
-  failed: false,
+  ok: true,
   logs: [],
   outputs: [
     {

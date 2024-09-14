@@ -1,3 +1,6 @@
+directive @url on INPUT_FIELD_DEFINITION
+directive @xpath on INPUT_FIELD_DEFINITION
+
 schema {
   query: Query
   mutation: Mutation
@@ -20,7 +23,7 @@ type AgentEvent {
   callbackId: ID
   corrId: ID
   authentication: AgentAuthentication
-  scrape: ScrapeRequest # todo rename to source
+  scrape: Source # todo rename to source
 }
 
 type Authentication {
@@ -38,7 +41,7 @@ type ConfirmCode {
   otpId: ID!
 }
 
-type Enclosure {
+type Attachment {
   duration: Long
   size: Long
   type: String!
@@ -72,7 +75,7 @@ type FeatureValue {
   numVal: FeatureIntValue
 }
 
-type DocumentFrequency {
+type RecordFrequency {
   count: Int!
   group: Long!
 }
@@ -101,15 +104,15 @@ type Repository {
   pullsPerMonth: Int!
   currentUserIsOwner: Boolean!
   hasDisabledSources: Boolean!
-  frequency(groupBy: WebDocumentDateField!): [DocumentFrequency!]
+  frequency(groupBy: RecordDateField!): [RecordFrequency!]
   plugins: [PluginExecution!]
   segmented: Segment
   retention: Retention!
-  sources: [ScrapeRequest!]
+  sources: [Source!]
 }
 
 type Harvest {
-  errornous: Boolean!
+  ok: Boolean!
   itemsAdded: Int!
   itemsIgnored: Int!
   logs: String!
@@ -149,9 +152,9 @@ type Mutation {
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
   updateLicense(data: UpdateLicenseInput!): LocalizedLicense!
 
-  createWebDocuments(data: [CreateWebDocumentInput!]!): [WebDocument!]!
-  updateWebDocument(data: UpdateWebDocumentInput!): Boolean!
-  deleteWebDocuments(data: DeleteWebDocumentsInput!): Boolean!
+  createRecords(data: [CreateRecordInput!]!): [Record!]!
+  updateRecord(data: UpdateRecordInput!): Boolean!
+  deleteRecords(data: DeleteRecordsInput!): Boolean!
 
   deleteFeatureValue(data: DeleteFeatureValueInput!): Boolean!
   updateFeatureValue(data: UpdateFeatureValueInput!): Boolean!
@@ -178,7 +181,7 @@ input OrderCreateInput {
   paymentMethod: PaymentMethod!
   targetGroup: ProductTargetGroup!
   invoiceRecipientName: String!
-  callbackUrl: String!
+  callbackUrl: String! @url
   invoiceRecipientEmail: String!
   user: UserCreateOrConnectInput!
 }
@@ -281,7 +284,7 @@ input CreateAnnotationInput {
 }
 
 input AnnotationWhereInput {
-  document: WebDocumentUniqueWhereInput
+  document: RecordUniqueWhereInput
   repository: RepositoryUniqueWhereInput
 }
 
@@ -295,7 +298,7 @@ input OneOfAnnotationInput {
 input TextAnnotationInput {
   fromChar: Int!
   toChar: Int!
-  document: CreateWebDocumentInput!
+  document: CreateRecordInput!
 }
 
 type Annotations {
@@ -352,35 +355,35 @@ input SourcesUpdateInput {
 input RetentionUpdateInput {
   maxCapacity: NullableIntUpdateOperationsInput
   maxAgeDays: NullableIntUpdateOperationsInput
-  ageReferenceField: WebDocumentDateFieldUpdateOperationsInput
+  ageReferenceField: RecordDateFieldUpdateOperationsInput
 }
 
-input CreateWebDocumentInput {
-  contentRawBase64: String
-  contentRawMime: String
-  contentText: String
+input CreateRecordInput {
+  rawBase64: String
+  rawMimeType: String
+  text: String
   tags: [String!]
   contentTitle: String!
   publishedAt: Long!
-  url: String!
+  url: String! @url
   repositoryId: RepositoryUniqueWhereInput!
-  parent: WebDocumentUniqueWhereInput
+  parent: RecordUniqueWhereInput
 }
 
-input DeleteWebDocumentsInput {
-  where: WebDocumentsWhereInput!
+input DeleteRecordsInput {
+  where: RecordsWhereInput!
 }
 
-input UpdateWebDocumentInput {
-  where: WebDocumentUniqueWhereInput!
-  data: WebDocumentUpdateInput!
+input UpdateRecordInput {
+  where: RecordUniqueWhereInput!
+  data: RecordUpdateInput!
 }
 
-input WebDocumentUpdateInput {
-  contentRawBase64: NullableStringUpdateOperationsInput
-  contentRawMime: NullableStringUpdateOperationsInput
-  contentText: StringUpdateOperationsInput
-  contentTitle: StringUpdateOperationsInput
+input RecordUpdateInput {
+  rawBase64: NullableStringUpdateOperationsInput
+  rawMimeType: NullableStringUpdateOperationsInput
+  text: StringUpdateOperationsInput
+  title: StringUpdateOperationsInput
   tags: StringArrayUpdateOperationsInput
   url: StringUpdateOperationsInput
 }
@@ -476,9 +479,9 @@ type Query {
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 #  license: License!
 
-  webDocument(data: WebDocumentWhereInput!): WebDocument!
-  webDocuments(data: WebDocumentsInput!): [WebDocument!]!
-  webDocumentsFrequency(where: WebDocumentsWhereInput!, groupBy: WebDocumentDateField!): [DocumentFrequency!]
+  record(data: RecordWhereInput!): Record!
+  records(data: RecordsInput!): [Record!]!
+  recordsFrequency(where: RecordsWhereInput!, groupBy: RecordDateField!): [RecordFrequency!]
 
   featureGroups(inherit: Boolean!, where: FeatureGroupWhereInput!): [FeatureGroup!]!
 
@@ -551,20 +554,20 @@ input PreviewFeedInput {
   tags: [ConditionalTagInput!]!
 }
 
-input WebDocumentsInput {
+input RecordsInput {
   cursor: Cursor!
-  where: WebDocumentsWhereInput!
-  orderBy: WebDocumentOrderByInput
+  where: RecordsWhereInput!
+  orderBy: RecordOrderByInput
 }
 
-input WebDocumentsWhereInput {
+input RecordsWhereInput {
   id: StringFilter
   repository: RepositoryUniqueWhereInput!
 #  updatedAt: DatesWhereInput
   startedAt: DatesWhereInput
   createdAt: DatesWhereInput
   publishedAt: DatesWhereInput
-  localized: GeoPointWhereInput
+  latLng: GeoPointWhereInput
   tags: StringFilter
 }
 
@@ -595,7 +598,7 @@ type RemoteNativeFeed {
   title: String!
   author: String
   description: String
-  items: [WebDocument!]!
+  items: [Record!]!
   language: String
   websiteUrl: String
   nextPageUrls: [String!]
@@ -752,7 +755,7 @@ type DOMElementByXPath {
   value: String!
 }
 input DOMElementByXPathInput {
-  value: String!
+  value: String! @xpath
 }
 
 type DOMElementByName {
@@ -779,7 +782,7 @@ type HttpGetRequest {
 
 input HttpGetRequestInput {
   timeout: Int
-  url: StringLiteralOrVariableInput!
+  url: StringLiteralOrVariableInput! @url
   viewport: ViewPortInput
   forcePrerender: Boolean
   language: String
@@ -823,7 +826,7 @@ type FetchActionDebugResponse {
 input FetchActionDebugResponseInput {
   corrId: String!
   screenshot: String
-  url: String!
+  url: String! @url
   prerendered: Boolean!
   console: [String!]!
   network: [NetworkRequestInput!]!
@@ -845,7 +848,7 @@ type NetworkRequest {
 }
 
 input NetworkRequestInput {
-  url: String
+  url: String @url
   requestHeaders: String
   requestPostData: String
   responseHeaders: String
@@ -979,28 +982,22 @@ type UserSecret {
   valueMasked: Boolean!
 }
 
-type WebDocument {
-  contentRawBase64: String
-  contentRawMime: String
-  contentHtml: String
-  contentText: String
-  contentTitle: String
+type Record {
+  rawBase64: String
+  rawMimeType: String
+  html: String
+  text: String
+  title: String
   tags: [String!]
   createdAt: Long!
-  enclosures: [Enclosure!]
+  attachments: [Attachment!]
   id: ID!
   imageUrl: String
   publishedAt: Long!
   startingAt: Long
-  localized: GeoPoint
+  latLng: GeoPoint
   updatedAt: Long
   url: String!
-  attachments: [Attachment!]!
-}
-
-type Attachment {
-  id: ID!
-
 }
 
 type ScrapedElementMeta {
@@ -1105,9 +1102,9 @@ input BoolUpdateOperationsInput {
 input RetentionInput {
   maxCapacity: Int
   maxAgeDays: Int
-  ageReferenceField: WebDocumentDateField
+  ageReferenceField: RecordDateField
 }
-enum WebDocumentDateField {
+enum RecordDateField {
   createdAt,
   startingAt,
   publishedAt
@@ -1116,7 +1113,7 @@ enum WebDocumentDateField {
 type Retention {
   maxCapacity: Int
   maxAgeDays: Int
-  ageReferenceField: WebDocumentDateField
+  ageReferenceField: RecordDateField
 }
 
 input WebhookCreateOrConnectInput {
@@ -1125,7 +1122,7 @@ input WebhookCreateOrConnectInput {
 }
 
 input WebhookCreateInput {
-  url: String!
+  url: String! @url
 }
 
 input WebhookOrEmailInput {
@@ -1139,7 +1136,7 @@ input WebhookUniqueWhereInput {
 
 input RepositoriesInput {
   cursor: Cursor!
-  orderBy: WebDocumentOrderByInput
+  orderBy: RecordOrderByInput
   where: RepositoriesWhereInput
 }
 
@@ -1202,11 +1199,6 @@ input RepositoriesCreateInput {
 input RepositoryCreateInput {
   product: ProductCategory!
   sources: [SourceInput!]!
-  sinkOptions: SinkOptionsInput!
-  additionalSinks: [WebhookOrEmailInput!]
-}
-
-input SinkOptionsInput {
   segmented: SegmentInput
   title: String!
   description: String!
@@ -1216,9 +1208,10 @@ input SinkOptionsInput {
   pushNotificationsMuted: Boolean
   agents: [AgentByGroup!]
   sunset: SunSetPolicyInput
-#  location: LatLonLocationInput
+  #  location: LatLonLocationInput
   visibility: Visibility
   plugins: [PluginExecutionInput!]
+  additionalSinks: [WebhookOrEmailInput!]
 }
 
 #input LatLonLocationInput {
@@ -1262,8 +1255,8 @@ input NullableIntUpdateOperationsInput {
   set: Int
 }
 
-input WebDocumentDateFieldUpdateOperationsInput {
-  set: WebDocumentDateField!
+input RecordDateFieldUpdateOperationsInput {
+  set: RecordDateField!
 }
 
 input NullableLongUpdateOperationsInput {
@@ -1286,7 +1279,7 @@ input NullableUpdateOperationsInput {
   assignNull: Boolean!
 }
 
-input WebDocumentOrderByInput {
+input RecordOrderByInput {
   startedAt: SortOrder
 }
 
@@ -1304,7 +1297,7 @@ input OsInfo {
 }
 
 input RemoteNativeFeedInput {
-  nativeFeedUrl: String!
+  nativeFeedUrl: String! @url
 }
 
 input ScheduledRefreshRate {
@@ -1403,16 +1396,16 @@ input VisibilityUpdateOperationsInput {
   set: Visibility!
 }
 
-input WebDocumentUniqueWhereInput {
+input RecordUniqueWhereInput {
   id: ID!
 }
 
-input WebDocumentWhereInput {
-  where: WebDocumentUniqueWhereInput!
+input RecordWhereInput {
+  where: RecordUniqueWhereInput!
 }
 
 type ScrapeResponse {
-  failed: Boolean!
+  ok: Boolean!
   errorMessage: String
   logs: [LogStatement!]!
   outputs: [ScrapeOutputResponse!]!
@@ -1470,7 +1463,7 @@ input HttpFetchResponseInput {
 type ScrapeExtractResponse {
   fragmentName: String!
   fragments: [ScrapeExtractFragment!]
-  items: [WebDocument!]
+  items: [Record!]
   feeds: ScrapedFeeds
 }
 
@@ -1515,7 +1508,7 @@ input SourceUpdateInput {
 input SourceUpdateDataInput {
   tags: StringArrayUpdateOperationsInput
   title: StringUpdateOperationsInput
-  localized: NullableUpdateGeoPointInput
+  latLng: NullableUpdateGeoPointInput
   disabled: BoolUpdateOperationsInput
 }
 
@@ -1532,8 +1525,8 @@ input SourceInput {
   id: ID
   title: String!
   flow: ScrapeFlowInput!
-  errornous: Boolean
-  localized: GeoPointInput
+  ok: Boolean
+  latLng: GeoPointInput
   tags: [String!]
   lastErrorMessage: String
 }
@@ -1600,7 +1593,7 @@ input DiffEmailForwardParamsInput {
 
 input CompareByInput {
   fragmentNameRef: String
-  field: WebDocumentField!
+  field: RecordField!
 }
 
 input FulltextPluginParamsInput {
@@ -1619,19 +1612,19 @@ enum FeedlessPlugins {
   org_feedless_diff_email_forward
 }
 
-enum WebDocumentField {
+enum RecordField {
   pixel
   text
   markup
 }
 
-type ScrapeRequest {
+type Source {
   corrId: ID!
   id: ID!
   title: String!
   flow: ScrapeFlow!
   disabled: Boolean
-  localized: GeoPoint
+  latLng: GeoPoint
   tags: [String!]
   lastErrorMessage: String
 }
@@ -1656,17 +1649,17 @@ type PluginExecutionParams {
   org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
-  org_feedless_conditional_tag: [ConditionalTag!]
+#  org_feedless_conditional_tag: [ConditionalTag!]
 }
 
 type FeedParams {
   generic: Selectors
 }
 
-type ConditionalTag {
-  tag: String!
-  filter: CompositeFieldFilterParams!
-}
+#type ConditionalTag {
+#  tag: String!
+#  filter: CompositeFieldFilterParams!
+#}
 
 
 type ItemFilterParams {
@@ -1706,7 +1699,7 @@ type DiffEmailForwardParams {
 
 type CompareBy {
   fragmentNameRef: String
-  field: WebDocumentField!
+  field: RecordField!
 }
 
 type FulltextPluginParams {
@@ -1715,7 +1708,7 @@ type FulltextPluginParams {
 }
 
 input ScrapeResponseInput {
-  failed: Boolean!
+  ok: Boolean!
   errorMessage: String
   logs: [LogStatementInput!]!
   outputs: [ScrapeOutputResponseInput!]!

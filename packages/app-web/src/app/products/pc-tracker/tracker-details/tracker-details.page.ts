@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { Repository, WebDocument } from '../../../graphql/types';
+import { Repository, Record } from '../../../graphql/types';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -18,7 +18,7 @@ import { ModalController } from '@ionic/angular';
 })
 export class TrackerDetailsPage implements OnInit, OnDestroy {
   busy = false;
-  documents: WebDocument[];
+  documents: Record[];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
   repository: Repository;

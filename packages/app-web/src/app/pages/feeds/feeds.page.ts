@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Repository, WebDocument } from '../../graphql/types';
+import { Repository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
@@ -25,7 +25,7 @@ export class FeedsPage implements OnInit, OnDestroy {
   loading = false;
   currentPage: number = 0;
   private subscriptions: Subscription[] = [];
-  documents: WebDocument[];
+  documents: Record[];
   repositories: Repository[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;

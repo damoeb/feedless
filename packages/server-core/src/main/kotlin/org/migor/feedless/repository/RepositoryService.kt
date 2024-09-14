@@ -121,35 +121,35 @@ class RepositoryService(
     val repo = RepositoryEntity()
 
     repo.shareKey = newCorrId(10)
-    repo.title = repoInput.sinkOptions.title
-    repo.description = repoInput.sinkOptions.description
-    repo.visibility = planConstraintsService.coerceVisibility(corrId, repoInput.sinkOptions.visibility?.fromDto())
+    repo.title = repoInput.title
+    repo.description = repoInput.description
+    repo.visibility = planConstraintsService.coerceVisibility(corrId, repoInput.visibility?.fromDto())
     val product = sessionService.activeProductFromRequest()!!
 
     planConstraintsService.auditSourcesMaxCountPerRepository(repoInput.sources.size, ownerId, product)
     repo.ownerId = ownerId
-    repoInput.sinkOptions.plugins?.let {
+    repoInput.plugins?.let {
       if (it.size > 5) {
         throw BadRequestException("Too many plugins ${it.size}, limit 5")
       }
       repo.plugins = it.map { plugin -> plugin.fromDto() }
     }
     repo.shareKey = newCorrId(10)
-//    if (subInput.sinkOptions.withShareKey) {
+//    if (subInput.withShareKey) {
 //      newCorrId(10)
 //    } else {
 //      ""
 //    }
 
-    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.sinkOptions.pushNotificationsMuted)
+    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
 
-    repo.sourcesSyncCron = repoInput.sinkOptions.refreshCron?.let {
-      planConstraintsService.auditCronExpression(repoInput.sinkOptions.refreshCron)
+    repo.sourcesSyncCron = repoInput.refreshCron?.let {
+      planConstraintsService.auditCronExpression(repoInput.refreshCron)
     } ?: ""
     repo.retentionMaxCapacity =
-      planConstraintsService.coerceRetentionMaxCapacity(repoInput.sinkOptions.retention?.maxCapacity, ownerId, product)
+      planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, ownerId, product)
     repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
-      repoInput.sinkOptions.retention?.maxAgeDays,
+      repoInput.retention?.maxAgeDays,
       ownerId,
       product
     )
@@ -204,7 +204,7 @@ class RepositoryService(
     entity.tags = source.tags
     entity.title = sourceInput.title
     entity.repositoryId = repository.id
-    sourceInput.localized?.let {
+    sourceInput.latLng?.let {
       entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
     } ?: run {
       entity.latLon = null
@@ -508,7 +508,7 @@ class RepositoryService(
               sourceUpdate.data.tags?.let {
                 source?.tags = sourceUpdate.data.tags.set.toTypedArray()
               }
-              sourceUpdate.data.localized?.let { point ->
+              sourceUpdate.data.latLng?.let { point ->
                 point.set?.let {
                   source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
                 } ?: run { source?.latLon = null }

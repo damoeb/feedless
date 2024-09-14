@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { GqlDocumentFrequency } from '../../../generated/graphql';
+import { GqlRecordFrequency } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
 import { scaleLinear } from 'd3-scale';
@@ -11,7 +11,7 @@ import { scaleLinear } from 'd3-scale';
 })
 export class HistogramComponent implements OnInit {
   @Input({ required: true })
-  data: GqlDocumentFrequency[];
+  data: GqlRecordFrequency[];
   path: string;
   rate: number;
 

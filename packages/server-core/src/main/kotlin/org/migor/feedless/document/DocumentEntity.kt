@@ -32,9 +32,9 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.GeoPoint
-import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.generated.types.Record
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.addListenableTag
@@ -212,36 +212,36 @@ open class DocumentEntity : EntityWithUUID() {
     if (raw != null) {
       val tika = Tika()
       val mime = tika.detect(raw)
-//      log.info("webDocument $id with raw-data '$mime'")
+//      log.info("record $id with raw-data '$mime'")
       this.rawMimeType = mime
     }
   }
 
 }
 
-fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
-  val contentHtmlParam: String?
-  var contentRawBase64Param: String? = null
-  var contentRawMimeParam: String? = null
+fun DocumentEntity.toDto(propertyService: PropertyService): Record {
+  val htmlParam: String?
+  var rawBase64Param: String? = null
+  var rawMimeTypeParam: String? = null
   if (StringUtils.isBlank(html) && isHtml(rawMimeType)) {
-    contentHtmlParam = raw?.toString(StandardCharsets.UTF_8)
+    htmlParam = raw?.toString(StandardCharsets.UTF_8)
   } else {
-    contentHtmlParam = html
-    contentRawBase64Param = raw?.let { Base64.getEncoder().encodeToString(raw) }
-    contentRawMimeParam = rawMimeType
+    htmlParam = html
+    rawBase64Param = raw?.let { Base64.getEncoder().encodeToString(raw) }
+    rawMimeTypeParam = rawMimeType
   }
 
-  return WebDocument(
+  return Record(
     id = id.toString(),
     imageUrl = imageUrl,
     url = url,
-    contentHtml = contentHtmlParam,
-    contentRawBase64 = contentRawBase64Param,
-    contentRawMime = contentRawMimeParam,
-    contentTitle = title,
-    contentText = text,
+    html = htmlParam,
+    rawBase64 = rawBase64Param,
+    rawMimeType = rawMimeTypeParam,
+    title = title,
+    text = text,
     createdAt = createdAt.toMillis(),
-    localized = latLon?.let {
+    latLng = latLon?.let {
       GeoPoint(
         lat = it.x,
         lon = it.y,
@@ -253,8 +253,8 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
       )
     ),
 
-    enclosures = (attachments.map {
-      Enclosure(
+    attachments = (attachments.map {
+      Attachment(
         url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
         type = it.mimeType,
         duration = it.duration,
@@ -263,7 +263,6 @@ fun DocumentEntity.toDto(propertyService: PropertyService): WebDocument {
     }),
     publishedAt = publishedAt.toMillis(),
     startingAt = startingAt?.toMillis(),
-    attachments = emptyList()
   )
 }
 

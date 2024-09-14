@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import {
-  DeleteWebDocumentsById,
-  GqlDeleteWebDocumentsByIdMutation,
-  GqlDeleteWebDocumentsByIdMutationVariables,
-  GqlDeleteWebDocumentsInput,
-  GqlWebDocumentByIdsQuery,
-  GqlWebDocumentByIdsQueryVariables,
-  GqlWebDocumentsInput,
-  WebDocumentByIds,
+  DeleteRecordsById,
+  GqlDeleteRecordsByIdMutation,
+  GqlDeleteRecordsByIdMutationVariables,
+  GqlDeleteRecordsInput,
+  GqlRecordByIdsQuery,
+  GqlRecordByIdsQueryVariables,
+  GqlRecordsInput,
+  RecordByIds,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { WebDocument } from '../graphql/types';
+import { Record } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -19,35 +19,35 @@ export class DocumentService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByRepositoryId(
-    data: GqlWebDocumentsInput,
+    data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<WebDocument[]> {
+  ): Promise<Record[]> {
     return this.apollo
-      .query<GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables>({
-        query: WebDocumentByIds,
+      .query<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>({
+        query: RecordByIds,
         variables: {
           data,
         },
         fetchPolicy,
       })
       .then((response) => {
-        return response.data.webDocuments;
+        return response.data.records;
       });
   }
 
-  removeById(data: GqlDeleteWebDocumentsInput) {
+  removeById(data: GqlDeleteRecordsInput) {
     return this.apollo
       .mutate<
-        GqlDeleteWebDocumentsByIdMutation,
-        GqlDeleteWebDocumentsByIdMutationVariables
+        GqlDeleteRecordsByIdMutation,
+        GqlDeleteRecordsByIdMutationVariables
       >({
-        mutation: DeleteWebDocumentsById,
+        mutation: DeleteRecordsById,
         variables: {
           data,
         },
       })
       .then((response) => {
-        return response.data.deleteWebDocuments;
+        return response.data.deleteRecords;
       });
   }
 }

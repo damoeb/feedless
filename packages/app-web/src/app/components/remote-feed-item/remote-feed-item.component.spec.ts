@@ -24,8 +24,8 @@ describe('RemoteFeedItemComponent', () => {
       id: '1',
       publishedAt: 0,
       createdAt: 0,
-      contentTitle: '',
-      contentText: '',
+      title: '',
+      text: '',
     };
     component.feedItemIndex = 1;
 

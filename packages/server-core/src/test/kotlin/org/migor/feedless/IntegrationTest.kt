@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
+import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
@@ -62,6 +63,7 @@ import java.time.LocalDateTime
   MockBean(ProductService::class),
   MockBean(PropertyService::class),
   MockBean(RepositoryHarvester::class),
+  MockBean(AttachmentDAO::class),
 )
 @Testcontainers
 class IntegrationTest {

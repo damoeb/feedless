@@ -29,7 +29,7 @@ import {
   ScrapeExtract,
   ScrapeExtractResponseInput,
   ScrapeOutputResponseInput,
-  ScrapeRequest,
+  Source,
   ScrapeResponseInput,
 } from '../../generated/graphql';
 
@@ -62,7 +62,7 @@ export class PuppeteerService {
   // private readonly imageQuality = 100;
   private readonly imageType = 'png';
   private readonly queue: {
-    job: ScrapeRequest;
+    job: Source;
     queuedAt: number;
     resolve: (response: ScrapeResponseInput) => void;
     reject: (reason: string) => void;
@@ -92,7 +92,7 @@ export class PuppeteerService {
     }
   }
 
-  public async submit(job: ScrapeRequest): Promise<ScrapeResponseInput> {
+  public async submit(job: Source): Promise<ScrapeResponseInput> {
     return new Promise<ScrapeResponseInput>((resolve, reject) => {
       this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
@@ -101,14 +101,14 @@ export class PuppeteerService {
     });
   }
 
-  private async newBrowser(scrapeRequest: ScrapeRequest): Promise<Browser> {
-    const viewport: Viewport = this.resolveViewport(scrapeRequest);
+  private async newBrowser(source: Source): Promise<Browser> {
+    const viewport: Viewport = this.resolveViewport(source);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
       devtools: false,
       defaultViewport: viewport,
       executablePath: '/usr/bin/chromium-browser',
-      timeout: getHttpGet(scrapeRequest).timeout || 30000,
+      timeout: getHttpGet(source).timeout || 30000,
       dumpio: this.isDebug,
       args: [
         `--window-size=${viewport.width},${viewport.height}`,
@@ -146,7 +146,7 @@ export class PuppeteerService {
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async executeRequest(
-    request: ScrapeRequest,
+    request: Source,
     browser: Browser,
   ): Promise<ScrapeResponseInput> {
     const corrId = request.corrId;
@@ -229,13 +229,13 @@ export class PuppeteerService {
       return {
         outputs,
         logs,
-        failed: false,
+        ok: true,
       };
     } catch (e) {
       appendLog(e.message);
       this.log.error(`[${corrId}] ${e.message}`);
       return {
-        failed: true,
+        ok: false,
         logs,
         errorMessage: e.message,
         outputs: outputs || [],
@@ -399,7 +399,7 @@ export class PuppeteerService {
     };
   }
 
-  private async newPage(browser: Browser, request: ScrapeRequest) {
+  private async newPage(browser: Browser, request: Source) {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
@@ -696,7 +696,7 @@ export class PuppeteerService {
     return `::-p-xpath(${element.value})`;
   }
 
-  private resolveViewport(request: ScrapeRequest): Viewport {
+  private resolveViewport(request: Source): Viewport {
     if (getHttpGet(request).viewport) {
       return pick(getHttpGet(request).viewport, [
         'height',
@@ -746,6 +746,6 @@ export class PuppeteerService {
   }
 }
 
-export function getHttpGet(scrapeRequest: ScrapeRequest): HttpGetRequest {
-  return scrapeRequest.flow.sequence.find((a) => a.fetch).fetch.get;
+export function getHttpGet(source: Source): HttpGetRequest {
+  return source.flow.sequence.find((a) => a.fetch).fetch.get;
 }

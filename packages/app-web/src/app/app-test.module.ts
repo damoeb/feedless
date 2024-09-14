@@ -35,8 +35,8 @@ import {
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
   GqlVisibility,
-  GqlWebDocumentByIdsQuery,
-  GqlWebDocumentByIdsQueryVariables,
+  GqlRecordByIdsQuery,
+  GqlRecordByIdsQueryVariables,
   ListPlugins,
   ListProducts,
   ListRepositories,
@@ -44,7 +44,7 @@ import {
   RepositoryById,
   Scrape,
   ServerSettings,
-  WebDocumentByIds,
+  RecordByIds,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -259,13 +259,13 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
 export function mockDocuments(apolloMockController: ApolloMockController) {
   return apolloMockController
     .mockQuery<
-      GqlWebDocumentByIdsQuery,
-      GqlWebDocumentByIdsQueryVariables
-    >(WebDocumentByIds)
+      GqlRecordByIdsQuery,
+      GqlRecordByIdsQueryVariables
+    >(RecordByIds)
     .and.resolveOnce(async () => {
       return {
         data: {
-          webDocuments: [],
+          records: [],
         },
       };
     });
@@ -301,7 +301,7 @@ export const mocks: Mocks = {
   },
   scrapeResponse: {
     outputs: [],
-    failed: false,
+    ok: true,
     errorMessage: '',
     logs: [],
   },
@@ -366,7 +366,7 @@ export function mockEvents(apolloMockController: ApolloMockController) {
     .and.resolveOnce(async () => {
       return {
         data: {
-          webDocumentsFrequency: [],
+          recordsFrequency: [],
         },
       };
     });

@@ -186,10 +186,10 @@ class AgentService {
   suspend fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
-      if (scrapeResponse.failed) {
-        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
-      } else {
+      if (scrapeResponse.ok) {
         it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
+      } else {
+        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
       }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")

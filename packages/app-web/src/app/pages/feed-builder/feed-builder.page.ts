@@ -130,14 +130,12 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           {
             product: environment.product,
             sources: [source] as GqlSourceInput[],
-            sinkOptions: {
-              title,
-              refreshCron: DEFAULT_FETCH_CRON,
-              withShareKey: true,
-              description,
-              visibility: GqlVisibility.IsPrivate,
-              plugins: [],
-            },
+            title,
+            refreshCron: DEFAULT_FETCH_CRON,
+            withShareKey: true,
+            description,
+            visibility: GqlVisibility.IsPrivate,
+            plugins: [],
           },
         ],
       });

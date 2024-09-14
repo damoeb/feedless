@@ -14,7 +14,7 @@ import {
   GqlSelectors,
   GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlWebDocumentByIdQuery,
+  GqlRecordByIdQuery,
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
@@ -30,7 +30,7 @@ export type PublicRepository = GetElementType<
 export type RepositoryFull = GqlRepositoryByIdQuery['repository'];
 export type Product = GetElementType<GqlListProductsQuery['products']>;
 
-export type WebDocument = GqlWebDocumentByIdQuery['webDocument'];
+export type Record = GqlRecordByIdQuery['record'];
 
 export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
@@ -44,7 +44,7 @@ export type Selectors = Pick<
   | 'dateIsStartOfEvent'
 >;
 
-export type ScrapedReadability = WebDocument;
+export type ScrapedReadability = Record;
 export type User = Session['user'];
 // export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];

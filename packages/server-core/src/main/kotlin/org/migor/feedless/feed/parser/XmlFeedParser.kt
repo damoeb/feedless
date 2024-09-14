@@ -139,8 +139,8 @@ class XmlFeedParser : FeedBodyParser {
   }
 
   private fun fromSyndEntry(entry: SyndEntry): JsonItem {
-    val contentHtml = entry.contents.firstOrNull { it.type.lowercase().contains("html") }
-    val contentText = Optional.ofNullable(entry.description?.value)
+    val html = entry.contents.firstOrNull { it.type.lowercase().contains("html") }
+    val text = Optional.ofNullable(entry.description?.value)
       .orElse("").trimMargin()
 
     val entryInformationModule = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
@@ -178,8 +178,8 @@ class XmlFeedParser : FeedBodyParser {
     article.tags = tags
 
     val assignHtmlContent = {
-//      article.contentRawMime = "text/html"
-      article.html = contentHtml!!.value
+//      article.rawMimeType = "text/html"
+      article.html = html!!.value
     }
     val assignOtherContent = {
       entry.contents.firstOrNull { !it.type.lowercase().contains("html") }?.let {
@@ -192,19 +192,19 @@ class XmlFeedParser : FeedBodyParser {
     }
 
     // content
-    val hasText = StringUtils.isNotBlank(contentText)
-    val hasHtml = contentHtml != null
+    val hasText = StringUtils.isNotBlank(text)
+    val hasHtml = html != null
     if (hasText || hasHtml) {
       if (hasText && hasHtml) {
-        assignTextContent(contentText)
+        assignTextContent(text)
         assignHtmlContent()
       } else {
         if (hasText) {
-          assignTextContent(contentText)
+          assignTextContent(text)
         } else {
           assignHtmlContent()
           try {
-            val body = HtmlUtil.parseHtml(contentText, "").body()
+            val body = HtmlUtil.parseHtml(text, "").body()
             assignTextContent(body.text())
           } catch (e: Exception) {
             // ignore

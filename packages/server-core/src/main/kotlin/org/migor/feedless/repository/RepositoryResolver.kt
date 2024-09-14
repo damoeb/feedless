@@ -35,7 +35,7 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
-import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.Source
 import org.migor.feedless.generated.types.UserWhereUniqueInput
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.useRequestContext
@@ -161,7 +161,7 @@ class RepositoryResolver {
   suspend fun sources(
     dfe: DgsDataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<ScrapeRequest> = coroutineScope {
+  ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
       sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))

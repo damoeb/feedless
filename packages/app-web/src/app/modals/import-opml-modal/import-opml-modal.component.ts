@@ -105,14 +105,12 @@ export class ImportOpmlModalComponent
                 },
               },
             ],
-            sinkOptions: {
-              title: fc.title,
-              withShareKey: true,
-              refreshCron: '0 0 0 * * *',
-              description: `${fc.text} ${fc.htmlUrl}`.trim(),
-              visibility: GqlVisibility.IsPrivate,
-              plugins,
-            },
+            title: fc.title,
+            withShareKey: true,
+            refreshCron: '0 0 0 * * *',
+            description: `${fc.text} ${fc.htmlUrl}`.trim(),
+            visibility: GqlVisibility.IsPrivate,
+            plugins,
           };
         }),
     });

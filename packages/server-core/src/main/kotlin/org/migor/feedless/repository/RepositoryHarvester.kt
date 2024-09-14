@@ -25,7 +25,7 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.Source
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
@@ -137,7 +137,9 @@ class RepositoryHarvester internal constructor() {
       withContext(Dispatchers.IO) {
         repositoryDAO.findById(repositoryId).ifPresent {
           it.triggerScheduledNextAt?.let {
-            harvestOffsetTimer.record(Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it)))
+            val diffInMillis = Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it))
+            logCollector.log("harvest offset is ${diffInMillis.toMillis()} min")
+            harvestOffsetTimer.record(diffInMillis)
           }
         }
       }
@@ -187,7 +189,7 @@ class RepositoryHarvester internal constructor() {
       sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
     }.distinctBy { it.id }
 
-    log.debug("[$corrId] queueing ${sources.size} sources")
+    logCollector.log("[$corrId] queueing ${sources.size} sources")
     return sources
       .fold(0) { agg, source ->
         try {
@@ -205,7 +207,7 @@ class RepositoryHarvester internal constructor() {
 
           agg + appended
         } catch (e: Throwable) {
-          handleScrapeException(corrId, e, source)
+          handleScrapeException(corrId, e, source, logCollector)
           agg
         }
       }
@@ -224,7 +226,7 @@ class RepositoryHarvester internal constructor() {
 //      Sort.Order.desc(segmentSortField)
 //    }
 //    val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
-//    val articles = webDocumentDAO.findAllThrottled(
+//    val articles = recordDAO.findAllThrottled(
 //      importer.feedId,
 //      importer.triggerScheduledLastAt ?: defaultScheduledLastAt,
 //      pageable
@@ -234,17 +236,29 @@ class RepositoryHarvester internal constructor() {
 
   }
 
-  private suspend fun handleScrapeException(corrId: String, e: Throwable?, source: SourceEntity) {
+  private suspend fun handleScrapeException(
+    corrId: String,
+    e: Throwable?,
+    source: SourceEntity,
+    logCollector: LogCollector
+  ) {
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
-      log.info("[$corrId] disabling source ${source.id} with '${e?.message}'")
+      logCollector.log("[$corrId] scrape error '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
+      val maxErrorCount = 3
       withContext(Dispatchers.IO) {
         source.errorsInSuccession += 1
-        source.disabled = source.errorsInSuccession >= 3
+        logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
+        source.disabled = source.errorsInSuccession >= maxErrorCount
+        if (source.disabled) {
+          logCollector.log("[$corrId] disabled source")
+        }
         source.lastErrorMessage = e?.message
         sourceDAO.save(source)
       }
+    } else {
+      logCollector.log("delaying due to ${e::class.simpleName}")
     }
   }
 
@@ -419,9 +433,9 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  fun detectMainImageUrl(corrId: String, contentHtml: String?): String? {
-    return contentHtml?.let {
-      Jsoup.parse(contentHtml).images()
+  fun detectMainImageUrl(corrId: String, html: String?): String? {
+    return html?.let {
+      Jsoup.parse(html).images()
         .sortedByDescending { calculateSize(corrId, it) }
         .map { it.attr("src") }
         .firstOrNull()
@@ -504,12 +518,12 @@ class RepositoryHarvester internal constructor() {
 //    if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
 //      log.info("[$corrId] create item $id")
 //      TODO("not implemented")
-////      webDocumentDAO.save(entity)
+////      recordDAO.save(entity)
 //    }
 //  }
 }
 
-fun SourceEntity.toScrapeRequest(corrId: String): ScrapeRequest {
+fun SourceEntity.toScrapeRequest(corrId: String): Source {
   return toDto(corrId)
 }
 
@@ -531,10 +545,10 @@ private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source:
   d.repositoryId = repositoryId
   if (StringUtils.isNotBlank(rawBase64)) {
     val tika = Tika()
-    val contentRawBytes = rawBase64!!.toByteArray()
-    val mime = tika.detect(contentRawBytes)
+    val rawBytes = rawBase64!!.toByteArray()
+    val mime = tika.detect(rawBytes)
     d.raw = if (mime.startsWith("text/")) {
-      contentRawBytes
+      rawBytes
     } else {
       Base64.getDecoder().decode(rawBase64)
     }

@@ -51,7 +51,7 @@ export class AgentService implements OnModuleInit {
             this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
 
             const errorResponse: ScrapeResponseInput = {
-              failed: true,
+              ok: false,
               errorMessage: e?.message,
               // url: getHttpGet(event.scrape).url || 'unknown',
               outputs: [],

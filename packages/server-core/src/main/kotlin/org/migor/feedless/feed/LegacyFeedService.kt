@@ -283,7 +283,7 @@ Regards,
 Markus
 
     """.trimIndent()
-//    article.contentText = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
+//    article.text = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
     article.url = preregistrationLink
     article.publishedAt = LocalDateTime.now()
     return article

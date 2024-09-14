@@ -156,8 +156,8 @@ class TelegramBotServiceTest {
 
     telegramBotService.onInit()
 
-    verify(messageService).subscribe(argThat { it == "${TelegramBotService.TOPIC_PREFIX}567" })
-    verify(messageService).subscribe(argThat { it == "${TelegramBotService.TOPIC_PREFIX}123" })
+    verify(messageService).subscribe(argThat { it == TelegramBotService.toTopic(567) })
+    verify(messageService).subscribe(argThat { it == TelegramBotService.toTopic(123) })
     verifyNoMoreInteractions(messageService)
   }
 
@@ -169,7 +169,7 @@ class TelegramBotServiceTest {
       .map { mock(JsonItem::class.java) }
       .delayElements(Duration.ofMillis(833))
 
-    `when`(messageService.subscribe(eq("${TelegramBotService.TOPIC_PREFIX}496"))).thenReturn(messages)
+    `when`(messageService.subscribe(eq(TelegramBotService.toTopic(496)))).thenReturn(messages)
 
     val throttledMessagedPerChat = telegramBotService.subscribeToChats(listOf(newTelegramConnection(496)))
 

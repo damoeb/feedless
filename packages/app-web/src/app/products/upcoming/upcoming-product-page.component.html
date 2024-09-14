@@ -191,9 +191,9 @@
                   title="Show on map"
                   [href]="
                     'https://www.openstreetmap.org/#map=14/' +
-                    place.events[0].localized.lat +
+                    place.events[0].latLng.lat +
                     '/' +
-                    place.events[0].localized.lon
+                    place.events[0].latLng.lon
                   "
                   target="_blank"
                 >
@@ -206,10 +206,10 @@
                 class="ion-margin-bottom ion-margin-start"
               >
                 <!--                <h5>-->
-                <a [href]="event.url">{{ event.contentTitle }}</a>
+                <a [href]="event.url">{{ event.title }}</a>
                 <!--                </h5>-->
                 <!--                <p style="opacity: 0.8">-->
-                <!--                  {{ event.contentText }}-->
+                <!--                  {{ event.text }}-->
                 <!--                </p>-->
               </li>
             </ng-container>

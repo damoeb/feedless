@@ -15,13 +15,13 @@ import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.FeedPreview
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
-import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.generated.types.Record
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -92,42 +92,42 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     nextPageUrls = links,
     expired = BooleanUtils.isTrue(expired),
     items = items.map {
-      var contentHtml: String? = null
-      var contentRawBase64: String? = null
-      var contentRawMime: String? = null
+      var html: String? = null
+      var rawBase64: String? = null
+      var rawMimeType: String? = null
       if (isHtml(it.rawMimeType)) {
         try {
-          contentHtml = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
+          html = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
         } catch (e: Exception) {
-          contentHtml = it.rawBase64
+          html = it.rawBase64
         }
       } else {
-        contentRawBase64 = it.rawBase64
-        contentRawMime = it.rawMimeType
+        rawBase64 = it.rawBase64
+        rawMimeType = it.rawMimeType
       }
 
-      WebDocument(
-        id = it.url,
-        tags = it.tags,
-        contentTitle = it.title,
-        contentText = it.text,
-        publishedAt = it.publishedAt.toMillis(),
-        startingAt = it.startingAt?.toMillis(),
-        localized = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
-        createdAt = LocalDateTime.now().toMillis(),
-        url = it.url,
-        enclosures = it.attachments.map { it.toEnclosure() },
-        imageUrl = it.imageUrl,
-        contentHtml = contentHtml,
-        contentRawMime = contentRawMime,
-        contentRawBase64 = contentRawBase64
+      Record(
+          id = it.url,
+          tags = it.tags,
+          title = it.title,
+          text = it.text,
+          publishedAt = it.publishedAt.toMillis(),
+          startingAt = it.startingAt?.toMillis(),
+          latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
+          createdAt = LocalDateTime.now().toMillis(),
+          url = it.url,
+          attachments = it.attachments.map { it.toDto() },
+          imageUrl = it.imageUrl,
+          html = html,
+          rawMimeType = rawMimeType,
+          rawBase64 = rawBase64,
       )
     }
   )
 
 }
 
-private fun JsonAttachment.toEnclosure(): Enclosure = Enclosure(
+private fun JsonAttachment.toDto(): Attachment = Attachment(
   url = url,
   type = type,
   size = length,

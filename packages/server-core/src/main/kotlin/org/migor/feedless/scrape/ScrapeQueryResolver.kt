@@ -21,7 +21,7 @@ import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.generated.types.Record
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toMillis
@@ -58,7 +58,7 @@ class ScrapeQueryResolver {
     val logCollector = LogCollector()
     val scrapeOutput = scrapeService.scrape(corrId, scrapeRequest, logCollector)
     ScrapeResponse(
-      failed = false,
+      ok = true,
       logs = logCollector.logs,
       errorMessage = null,
       outputs = scrapeOutput.outputs.map { it.toDto() }
@@ -87,21 +87,21 @@ private fun ScrapeActionOutput.toDto(): ScrapeOutputResponse {
   )
 }
 
-private fun JsonItem.toDto() = WebDocument(
-  contentRawBase64 = rawBase64,
-  contentRawMime = rawMimeType,
-  contentHtml = html,
-  contentText = text,
-  contentTitle = title,
+private fun JsonItem.toDto() = Record(
+  rawBase64 = rawBase64,
+  rawMimeType = rawMimeType,
+  html = html,
+  text = text,
+  title = title,
   url = url,
   tags = tags,
   createdAt = publishedAt.toMillis(),
-  enclosures = attachments.map { it.toDto() },
+  attachments = attachments.map { it.toDto() },
   id = id,
   imageUrl = imageUrl,
   publishedAt = publishedAt.toMillis(),
   startingAt = startingAt?.toMillis(),
-  localized = latLng?.toGeoPoint(),
+  latLng = latLng?.toGeoPoint(),
 )
 
 private fun JsonPoint.toGeoPoint() = GeoPoint(
@@ -109,7 +109,7 @@ private fun JsonPoint.toGeoPoint() = GeoPoint(
   lon = y
 )
 
-private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Enclosure(
+private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Attachment(
   duration = duration,
   size = length,
   type = type,

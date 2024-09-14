@@ -15,7 +15,7 @@ describe('PlayerComponent', () => {
 
     fixture = TestBed.createComponent(PlayerComponent);
     component = fixture.componentInstance;
-    component.document = { enclosures: [] } as any;
+    component.document = { attachments: [] } as any;
     fixture.detectChanges();
   }));
 

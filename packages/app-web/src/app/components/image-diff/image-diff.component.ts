@@ -7,7 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import pixelmatch from 'pixelmatch';
-import { WebDocument } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { dateFormat, dateTimeFormat } from '../../services/session.service';
 
@@ -24,10 +24,10 @@ type ImageSize = {
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {
   @Input({ required: true })
-  before: WebDocument;
+  before: Record;
 
   @Input()
-  after: WebDocument;
+  after: Record;
 
   safeDiffImageUrl: SafeResourceUrl;
   private diffImageUrl: string;
@@ -44,8 +44,8 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     if (this.after) {
       this.diffImageUrl = await this.createImageDiff(
-        this.before.contentRawBase64,
-        this.after.contentRawBase64,
+        this.before.rawBase64,
+        this.after.rawBase64,
       );
       this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
         this.diffImageUrl,

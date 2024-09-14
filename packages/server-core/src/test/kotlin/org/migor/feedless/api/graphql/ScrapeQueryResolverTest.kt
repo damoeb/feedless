@@ -145,7 +145,7 @@ class ScrapeQueryResolverTest {
         )
       )
       ) {
-        failed
+        ok
         logs {
           time
           message

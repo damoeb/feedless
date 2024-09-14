@@ -1,10 +1,10 @@
 <ion-item class="cy-feed-item">
   <div class="ion-margin-end">{{ feedItemIndex }}.</div>
   <ion-label>
-    <h2 *ngIf="feedItem.contentTitle" class="cy-remote-feed__title">
-      {{ feedItem.contentTitle }}
+    <h2 *ngIf="feedItem.title" class="cy-remote-feed__title">
+      {{ feedItem.title }}
     </h2>
-    <h2 *ngIf="!feedItem.contentTitle" class="cy-remote-feed__title">
+    <h2 *ngIf="!feedItem.title" class="cy-remote-feed__title">
       <del>Empty Title</del>
     </h2>
     <p>
@@ -28,7 +28,7 @@
       {{ toDate(feedItem.startingAt) | date: dateFormat }}
     </p>
     <p class="cy-remote-feed__body ion-text-wrap">
-      {{ feedItem.contentText }}
+      {{ feedItem.text }}
     </p>
 
     <app-player [document]="feedItem"></app-player>

@@ -178,7 +178,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     this.logs = scrapeResponse.logs;
-    if (scrapeResponse.failed) {
+    if (!scrapeResponse.ok) {
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
       const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)

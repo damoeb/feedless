@@ -15,7 +15,7 @@ import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlRemoteNativeFeed,
-  GqlScrapeRequest,
+  GqlSource,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { FeedPreview, Selectors } from '../../graphql/types';

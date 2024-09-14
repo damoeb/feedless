@@ -4,7 +4,7 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { PublicRepository, Repository, WebDocument } from '../../graphql/types';
+import { PublicRepository, Repository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
@@ -23,7 +23,7 @@ type ViewMode = 'list' | 'grid';
 export class DirectoryPage implements OnInit {
   loading = false;
   currentPage: number = 0;
-  documents: WebDocument[];
+  documents: Record[];
   repositories: PublicRepository[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;

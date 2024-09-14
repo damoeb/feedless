@@ -11,12 +11,12 @@ import {
   GqlHarvest,
   GqlProductCategory,
   GqlVisibility,
-  GqlWebDocumentField,
+  GqlRecordField,
 } from '../../../generated/graphql';
 import {
   RepositoryFull,
   RepositorySource,
-  WebDocument,
+  Record,
 } from '../../graphql/types';
 import {
   GenerateFeedAccordion,
@@ -52,7 +52,7 @@ import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/co
 import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
 
-export type WebDocumentWithFornmControl = WebDocument & {
+export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
 };
 
@@ -78,13 +78,13 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input()
   track: boolean;
 
-  protected documents: WebDocumentWithFornmControl[] = [];
+  protected documents: RecordWithFornmControl[] = [];
   protected feedUrl: string;
 
   protected readonly GqlVisibility = GqlVisibility;
   protected readonly dateFormat = dateFormat;
   showFullDescription: boolean = false;
-  protected playDocument: WebDocument;
+  protected playDocument: Record;
   private userId: string;
   private subscriptions: Subscription[] = [];
   currentPage: number;
@@ -98,10 +98,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   viewModeList: ViewMode = 'list';
   viewModeHistogram: ViewMode = 'histogram';
   viewModeDiff: ViewMode = 'diff';
-  protected compareByField: GqlWebDocumentField | undefined;
+  protected compareByField: GqlRecordField | undefined;
   protected readonly GqlProductName = GqlProductCategory;
-  protected readonly compareByPixel: GqlWebDocumentField =
-    GqlWebDocumentField.Pixel;
+  protected readonly compareByPixel: GqlRecordField =
+    GqlRecordField.Pixel;
 
   private seed = Math.random();
   sourcesModalId: string = `open-sources-modal-${this.seed}`;
@@ -315,9 +315,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
-    const { localized } = source;
-    return localized
-      ? `(${localized.lat},${localized.lon})`
+    const { latLng } = source;
+    return latLng
+      ? `(${latLng.lat},${latLng.lon})`
       : 'Localize Source';
   }
 
@@ -371,7 +371,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
                   id: source.id,
                 },
                 data: {
-                  localized: geoTag
+                  latLng: geoTag
                     ? {
                         set: {
                           lat: parseFloat(`${geoTag.lat}`),
@@ -417,7 +417,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  getTags(document: WebDocument) {
+  getTags(document: Record) {
     return tagsToString(document.tags);
   }
 
@@ -448,11 +448,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  playAudio(document: WebDocument): void {
+  playAudio(document: Record): void {
     this.playDocument = document;
   }
 
-  getDocumentUrl(document: WebDocument): string {
+  getDocumentUrl(document: Record): string {
     if (this.track) {
       return `${this.serverConfig.gatewayUrl}/article/${document.id}`;
     } else {
@@ -484,7 +484,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getDocumentPairs() {
-    const pairs: Pair<WebDocument, WebDocument>[] = [];
+    const pairs: Pair<Record, Record>[] = [];
     for (let i = 0; i < this.documents.length - 1; i++) {
       pairs.push({
         a: this.documents[i + 1],

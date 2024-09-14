@@ -56,10 +56,10 @@ class InboxService {
 //
 //        val notification = DocumentEntity()
 //        notification.url = "${propertyService.appHost}/article/${notification.id}"
-//        notification.contentTitle = title
-//        notification.contentText = message
-//        notification.contentRaw = JsonUtil.gson.toJson(payload).toByteArray()
-//        notification.contentRawMime = "application/json"
+//        notification.title = title
+//        notification.text = message
+//        notification.raw = JsonUtil.gson.toJson(payload).toByteArray()
+//        notification.rawMimeType = "application/json"
 //        notification.status = ReleaseStatus.released
 //        notification.repositoryId = user.inboxRepositoryId ?: userService.createInboxRepository(user).id
 //
