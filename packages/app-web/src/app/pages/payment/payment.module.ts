@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { PaymentPageRoutingModule } from './payment-routing.module';
 
 import { PaymentPage } from './payment.page';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { PaymentPage } from './payment.page';
     IonicModule,
     PaymentPageRoutingModule,
     ReactiveFormsModule,
+    FeedlessHeaderModule,
   ],
   declarations: [PaymentPage],
 })

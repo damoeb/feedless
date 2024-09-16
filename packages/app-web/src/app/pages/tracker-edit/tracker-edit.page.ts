@@ -75,10 +75,9 @@ export class TrackerEditPage implements OnInit, OnDestroy {
         Validators.minLength(3),
         Validators.maxLength(255),
       ]),
-      compareType: new FormControl<GqlRecordField>(
-        GqlRecordField.Pixel,
-        [Validators.required],
-      ),
+      compareType: new FormControl<GqlRecordField>(GqlRecordField.Pixel, [
+        Validators.required,
+      ]),
       areaBoundingBox: new FormControl<BoundingBox>(
         { disabled: true, value: null },
         [Validators.required],

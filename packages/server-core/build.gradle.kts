@@ -208,6 +208,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
   schemaPaths = mutableListOf(
     "$projectDir/src/main/resources/schema/schema.graphqls"
   )
+  typeMapping = mutableMapOf("Upload" to "org.springframework.web.multipart.MultipartFile")
   packageName = "org.migor.feedless.generated"
   generateInterfaces = false
   generateClient = true

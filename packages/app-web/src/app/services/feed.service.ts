@@ -24,7 +24,9 @@ export class FeedService {
     return this.remoteFeed(data).then((response) => response.items);
   }
 
-  private async remoteFeed(data: GqlRemoteNativeFeedInput): Promise<RemoteFeed> {
+  private async remoteFeed(
+    data: GqlRemoteNativeFeedInput,
+  ): Promise<RemoteFeed> {
     return this.apollo
       .query<GqlRemoteNativeFeedQuery, GqlRemoteNativeFeedQueryVariables>({
         query: RemoteNativeFeed,

@@ -1,15 +1,21 @@
+"An RFC-3339 compliant DateTime Scalar"
+scalar DateTime
+"A JSON scalar"
+scalar JSON
+"A 64-bit signed integer"
+scalar Long
+scalar Upload
+
 directive @url on INPUT_FIELD_DEFINITION
 directive @xpath on INPUT_FIELD_DEFINITION
+#directive @extends on OBJECT | INTERFACE
+#directive @external on FIELD_DEFINITION
 
 schema {
   query: Query
   mutation: Mutation
   subscription: Subscription
 }
-
-directive @extends on OBJECT | INTERFACE
-
-directive @external on FIELD_DEFINITION
 
 interface Paginated {
   pagination: Pagination!
@@ -152,7 +158,7 @@ type Mutation {
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
   updateLicense(data: UpdateLicenseInput!): LocalizedLicense!
 
-  createRecords(data: [CreateRecordInput!]!): [Record!]!
+  createRecords(records: [CreateRecordInput!], upload: Upload): [Record!]!
   updateRecord(data: UpdateRecordInput!): Boolean!
   deleteRecords(data: DeleteRecordsInput!): Boolean!
 
@@ -1080,15 +1086,6 @@ enum Visibility {
   isPrivate
   isPublic
 }
-
-"An RFC-3339 compliant DateTime Scalar"
-scalar DateTime
-
-"A JSON scalar"
-scalar JSON
-
-"A 64-bit signed integer"
-scalar Long
 
 input AuthUserInput {
   email: String!

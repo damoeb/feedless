@@ -4,7 +4,7 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { Notebook, NotebookService } from '../services/notebook.service';
+import { Notebook, NotebookService } from '../../../services/notebook.service';
 
 @Component({
   selector: 'app-untold-notes-menu',

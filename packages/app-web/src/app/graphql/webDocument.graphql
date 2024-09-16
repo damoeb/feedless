@@ -7,7 +7,6 @@ query recordById($data: RecordWhereInput!) {
 query recordByIds($data: RecordsInput!) {
   records(data: $data) {
     ...RecordFragment
-
   }
 }
 

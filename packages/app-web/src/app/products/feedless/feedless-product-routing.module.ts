@@ -32,6 +32,14 @@ const routes: Routes = [
               ),
           },
           {
+            path: 'notebook-builder',
+            // canActivate: [AuthGuardService],
+            loadChildren: () =>
+              import(
+                '../../pages/notebook-builder/notebook-builder.module'
+              ).then((m) => m.NotebookBuilderPageModule),
+          },
+          {
             path: 'workflow-builder',
             loadChildren: () =>
               import(

@@ -13,7 +13,5 @@ export class RemoteFeedPreviewComponent {
   @Input()
   noMetaColumn: boolean = false;
 
-  constructor(
-  ) {}
-
+  constructor() {}
 }

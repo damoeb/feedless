@@ -23,7 +23,7 @@ import {
   times,
   unionBy,
 } from 'lodash-es';
-import { DocumentService } from '../../services/document.service';
+import { RecordService } from '../../services/record.service';
 import { GetElementType, Record } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 import {
@@ -72,9 +72,7 @@ type EventsAtPlace = {
   events: Record[];
 };
 
-type LocalizedEvent = GetElementType<
-  GqlFindEventsQuery['recordsFrequency']
->;
+type LocalizedEvent = GetElementType<GqlFindEventsQuery['recordsFrequency']>;
 
 type UrlFragments = {
   state?: string;
@@ -120,8 +118,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly documentService: DocumentService,
-    private readonly repositoryService: RepositoryService,
+    private readonly recordService: RecordService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly location: Location,
@@ -309,7 +306,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     if (!this.currentLatLon) {
       return Promise.resolve([]);
     }
-    return this.documentService.findAllByRepositoryId({
+    return this.recordService.findAllByRepositoryId({
       cursor: {
         page: 0,
         pageSize: 30,

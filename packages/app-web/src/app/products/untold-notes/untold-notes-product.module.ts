@@ -9,7 +9,6 @@ import { UntoldNotesProductPage } from './untold-notes-product.page';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { UntoldNotesMenuModule } from './untold-notes-menu/untold-notes-menu.module';
-import { NotebookService } from './services/notebook.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { OfflineModule } from '../../offline.module';
@@ -27,7 +26,7 @@ import { OfflineModule } from '../../offline.module';
     SearchbarModule,
     OfflineModule,
   ],
-  providers: [NotebookService],
+  // providers: [NotebookService],
   declarations: [UntoldNotesProductPage],
 })
 export class UntoldNotesProductModule {}

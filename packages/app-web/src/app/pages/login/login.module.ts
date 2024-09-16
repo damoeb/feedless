@@ -8,6 +8,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { EmailLoginModule } from '../../components/email-login/email-login.module';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { EmailLoginModule } from '../../components/email-login/email-login.modul
     IonicModule,
     LoginPageRoutingModule,
     EmailLoginModule,
+    FeedlessHeaderModule,
   ],
   declarations: [LoginPage],
 })

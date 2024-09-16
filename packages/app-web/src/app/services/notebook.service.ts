@@ -134,7 +134,9 @@ type IndexDocument = {
   action?: AppAction;
 };
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class NotebookService {
   private actions: AppAction[] = [
     {
@@ -317,6 +319,7 @@ export class NotebookService {
 
       await alert.present();
     }
+    return localNotebook;
   }
 
   private propagateRecentNotes() {

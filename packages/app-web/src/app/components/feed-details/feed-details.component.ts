@@ -13,11 +13,7 @@ import {
   GqlVisibility,
   GqlRecordField,
 } from '../../../generated/graphql';
-import {
-  RepositoryFull,
-  RepositorySource,
-  Record,
-} from '../../graphql/types';
+import { RepositoryFull, RepositorySource, Record } from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
@@ -42,7 +38,7 @@ import {
   dateTimeFormat,
   SessionService,
 } from '../../services/session.service';
-import { DocumentService } from '../../services/document.service';
+import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { uniq, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
@@ -100,8 +96,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   viewModeDiff: ViewMode = 'diff';
   protected compareByField: GqlRecordField | undefined;
   protected readonly GqlProductName = GqlProductCategory;
-  protected readonly compareByPixel: GqlRecordField =
-    GqlRecordField.Pixel;
+  protected readonly compareByPixel: GqlRecordField = GqlRecordField.Pixel;
 
   private seed = Math.random();
   sourcesModalId: string = `open-sources-modal-${this.seed}`;
@@ -113,7 +108,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly alertCtrl: AlertController,
     private readonly annotationService: AnnotationService,
     private readonly popoverCtrl: PopoverController,
-    private readonly documentService: DocumentService,
+    private readonly recordService: RecordService,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
     protected readonly serverConfig: ServerConfigService,
@@ -209,7 +204,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.selectAllFc.setValue(false);
     this.loading = true;
     this.changeRef.detectChanges();
-    const documents = await this.documentService.findAllByRepositoryId(
+    const documents = await this.recordService.findAllByRepositoryId(
       {
         cursor: {
           page,
@@ -316,9 +311,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
     const { latLng } = source;
-    return latLng
-      ? `(${latLng.lat},${latLng.lon})`
-      : 'Localize Source';
+    return latLng ? `(${latLng.lat},${latLng.lon})` : 'Localize Source';
   }
 
   async deleteSource(source: RepositorySource) {
@@ -467,7 +460,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async deleteAllSelected() {
     const selected = this.documents.filter((document) => document.fc.value);
-    await this.documentService.removeById({
+    await this.recordService.removeById({
       where: {
         repository: {
           id: this.repository.id,

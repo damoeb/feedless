@@ -7,7 +7,7 @@ import {
   ViewPlugin,
   ViewUpdate,
 } from '@codemirror/view';
-import { NotebookService } from '../services/notebook.service';
+import { NotebookService } from '../../services/notebook.service';
 
 export function createNoteReferenceMarker(notebookService: NotebookService) {
   const noteDecorator = new MatchDecorator({

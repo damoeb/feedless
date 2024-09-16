@@ -24,13 +24,6 @@ const routes: Routes = [
       },
     ],
   },
-  {
-    path: 'notebook',
-    loadChildren: () =>
-      import('./notebook-details/notebook-details.module').then(
-        (m) => m.NotebookDetailsPageModule,
-      ),
-  },
   ...DefaultRoutes,
   {
     path: '**',

@@ -13,6 +13,9 @@ open class VoteEntity : AnnotationEntity() {
   @Column(nullable = false, name = "is_upvote")
   open var upVote: Boolean = false
 
+//  @Column(nullable = false, name = "is_pinned")
+//  open var pinned: Boolean = false
+
   @Column(nullable = false, name = "is_downvote")
   open var downVote: Boolean = false
 
@@ -21,6 +24,7 @@ open class VoteEntity : AnnotationEntity() {
 
   @PrePersist
   fun prePersist() {
+//    val trueValues = arrayOf(upVote, downVote, flag, pinned).filter { it }
     val trueValues = arrayOf(upVote, downVote, flag).filter { it }
     if (trueValues.size != 1) {
       throw IllegalArgumentException("invalid flags")

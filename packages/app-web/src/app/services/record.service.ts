@@ -15,7 +15,7 @@ import { Record } from '../graphql/types';
 @Injectable({
   providedIn: 'root',
 })
-export class DocumentService {
+export class RecordService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByRepositoryId(
@@ -49,5 +49,13 @@ export class DocumentService {
       .then((response) => {
         return response.data.deleteRecords;
       });
+  }
+
+  createRecordFromUpload(caption: string, file: File, dataUrl: URL) {
+    return Promise.resolve(undefined);
+  }
+
+  createRecord(caption: string, data: string) {
+    return Promise.resolve(undefined);
   }
 }

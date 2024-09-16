@@ -5,7 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Notebook, NotebookService } from '../services/notebook.service';
+import { Notebook, NotebookService } from '../../../services/notebook.service';
 
 @Component({
   selector: 'app-about-untold-notes',

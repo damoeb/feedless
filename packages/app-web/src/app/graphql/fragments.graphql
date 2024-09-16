@@ -73,9 +73,9 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
     readability
     inheritParams
   }
-#  org_feedless_conditional_tag {
-#    ...ConditionalTagFragment
-#  }
+  #  org_feedless_conditional_tag {
+  #    ...ConditionalTagFragment
+  #  }
   jsonData
 }
 

@@ -9,6 +9,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
 import { HistogramModule } from '../../components/histogram/histogram.module';
 import { ImportButtonModule } from '../../components/import-button/import-button.module';
 import { PaginationModule } from '../../components/pagination/pagination.module';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { PaginationModule } from '../../components/pagination/pagination.module'
     HistogramModule,
     ImportButtonModule,
     PaginationModule,
+    FeedlessHeaderModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],

@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ConnectAppPageRoutingModule } from './connect-app-routing.module';
 
 import { ConnectAppPage } from './connect-app.page';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { ConnectAppPage } from './connect-app.page';
     FormsModule,
     IonicModule,
     ConnectAppPageRoutingModule,
+    FeedlessHeaderModule,
   ],
   declarations: [ConnectAppPage],
 })

@@ -17,6 +17,7 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.DeleteRecordsInput
 import org.migor.feedless.generated.types.RecordFrequency
@@ -113,6 +114,16 @@ class DocumentResolver {
       data.where.id!!
     )
     true
+  }
+
+  @DgsMutation(field = DgsConstants.MUTATION.CreateRecords)
+  @PreAuthorize("hasAuthority('USER')")
+  suspend fun createRecords(
+    dfe: DataFetchingEnvironment,
+    @InputArgument records: List<CreateRecordInput>?,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<Record> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+    emptyList()
   }
 
   @DgsQuery(field = DgsConstants.QUERY.RecordsFrequency)

@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TrackerEditRoutingModule } from './tracker-edit-routing.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { InteractiveWebsiteModule } from '../../components/interactive-website/interactive-website.module';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { InteractiveWebsiteModule } from '../../components/interactive-website/i
     TrackerEditRoutingModule,
     SearchbarModule,
     InteractiveWebsiteModule,
+    FeedlessHeaderModule,
   ],
   declarations: [TrackerEditPage],
 })

@@ -258,10 +258,7 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
 }
 export function mockDocuments(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlRecordByIdsQuery,
-      GqlRecordByIdsQueryVariables
-    >(RecordByIds)
+    .mockQuery<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>(RecordByIds)
     .and.resolveOnce(async () => {
       return {
         data: {

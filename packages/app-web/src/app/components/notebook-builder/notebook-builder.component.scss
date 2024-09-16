@@ -1,0 +1,17 @@
+p,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--app-foreground-rgb), 0.7);
+  //text-align: justify;
+}
+
+.notebooks {
+  ion-item {
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+}

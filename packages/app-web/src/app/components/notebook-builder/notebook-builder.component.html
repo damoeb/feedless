@@ -1,0 +1,58 @@
+<app-product-header productTitle="Notes">
+  <p>
+    Minimalistic, Searchable and Linkable markdown notes to facilitate
+    <a
+      href="https://en.wikipedia.org/wiki/Zettelkasten"
+      target="_blank"
+      referrerpolicy="no-referrer"
+      >Luhmann's Zettelkasten</a
+    >
+    approach in the tradition of
+    <a
+      href="https://en.wikipedia.org/wiki/Notational_Velocity"
+      target="_blank"
+      referrerpolicy="no-referrer"
+      >Notational Velocity</a
+    >
+    and
+    <a
+      href="https://zettelkasten.de/the-archive/"
+      target="_blank"
+      referrerpolicy="no-referrer"
+      >The Archive</a
+    >. Untold Notes follows it's unopinionated approach and lifts it to an open
+    web platform.
+  </p>
+
+  <app-searchbar
+    (querySubmit)="createNotebook($event)"
+    buttonText="Create Notebook"
+    color="primary"
+    [loading]="busy"
+    placeholder="Name your new Notebook"
+  ></app-searchbar>
+
+  <ion-list
+    *ngIf="notebooks?.length > 0"
+    class="ion-margin-top notebooks"
+    style="background: transparent"
+  >
+    <ion-list-header class="ion-no-padding">
+      <ion-label color="medium"> Existing Repositories </ion-label>
+    </ion-list-header>
+    <ion-item
+      *ngFor="let notebook of notebooks"
+      [routerLink]="'/notebook/' + notebook.id"
+    >
+      <ion-label>{{ notebook.name }}</ion-label>
+      <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+    </ion-item>
+  </ion-list>
+
+  <!--    <div style="margin-top: 150px">-->
+  <!--      <h2>About</h2>-->
+  <!--      <p>-->
+  <!--        For maximum independence you can self-host. Import and export data using common formats.-->
+  <!--      </p>-->
+  <!--    </div>-->
+</app-product-header>

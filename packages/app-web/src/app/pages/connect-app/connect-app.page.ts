@@ -58,13 +58,13 @@ export class ConnectAppPage implements OnInit {
     );
 
     await this.showToast('Authorized');
-    await this.router.navigateByUrl('/')
+    await this.router.navigateByUrl('/');
   }
 
   async cancelAttempt() {
     await this.connectedAppService.deleteConnectedApp(this.appConnectionId);
     await this.showToast('Request Canceled');
-    await this.router.navigateByUrl('/')
+    await this.router.navigateByUrl('/');
   }
 
   private async showToast(message: string) {

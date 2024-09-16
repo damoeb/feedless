@@ -8,6 +8,7 @@ import { BillingsRoutingModule } from './billings-routing.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { HistogramModule } from '../../components/histogram/histogram.module';
 import { ImportButtonModule } from '../../components/import-button/import-button.module';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { ImportButtonModule } from '../../components/import-button/import-button
     BubbleModule,
     HistogramModule,
     ImportButtonModule,
+    FeedlessHeaderModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [BillingsPage],

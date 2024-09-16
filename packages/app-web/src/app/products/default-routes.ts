@@ -24,6 +24,13 @@ export const DefaultRoutes: Routes = [
       ),
   },
   {
+    path: 'notebook',
+    loadChildren: () =>
+      import('../pages/notebook-details/notebook-details.module').then(
+        (m) => m.NotebookDetailsPageModule,
+      ),
+  },
+  {
     path: '',
     canActivate: [SaasGuardService],
     children: [

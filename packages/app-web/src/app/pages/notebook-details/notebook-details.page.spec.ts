@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NotebookDetailsPage } from './notebook-details.page';
-import { AppTestModule } from '../../../app-test.module';
+import { AppTestModule } from '../../app-test.module';
 import { NotebookDetailsPageModule } from './notebook-details.module';
-import { UntoldNotesProductModule } from '../untold-notes-product.module';
+import { UntoldNotesProductModule } from '../../products/untold-notes/untold-notes-product.module';
 
 describe('NotebookDetailsDetailsPage', () => {
   let component: NotebookDetailsPage;

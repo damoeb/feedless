@@ -8,6 +8,7 @@ import { SettingsPageRoutingModule } from './settings-routing.module';
 
 import { SettingsPage } from './settings.page';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
+import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { PlanColumnModule } from '../../components/plan-column/plan-column.modul
     SettingsPageRoutingModule,
     PlanColumnModule,
     ReactiveFormsModule,
+    FeedlessHeaderModule,
   ],
   declarations: [SettingsPage],
 })

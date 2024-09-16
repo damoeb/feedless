@@ -8,7 +8,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { NotebookService } from '../services/notebook.service';
+import { NotebookService } from '../../services/notebook.service';
 
 export function createNoteReferenceWidget(notebookService: NotebookService) {
   class NoteLinkWidget extends WidgetType {

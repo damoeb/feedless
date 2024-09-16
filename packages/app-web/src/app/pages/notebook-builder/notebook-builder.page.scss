@@ -1,0 +1,10 @@
+app-workflow-builder {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
