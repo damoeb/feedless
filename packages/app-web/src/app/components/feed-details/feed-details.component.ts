@@ -13,7 +13,7 @@ import {
   GqlVisibility,
   GqlRecordField,
 } from '../../../generated/graphql';
-import { RepositoryFull, RepositorySource, Record } from '../../graphql/types';
+import { RepositoryFull, RepositorySource, Record, Annotation } from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
@@ -40,13 +40,16 @@ import {
 } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { uniq, without } from 'lodash-es';
+import { isUndefined, uniq, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
+import { AuthService } from '../../services/auth.service';
+import { AuthGuardService } from '../../guards/auth-guard.service';
+import { FetchPolicy } from '@apollo/client/core';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -81,7 +84,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected readonly dateFormat = dateFormat;
   showFullDescription: boolean = false;
   protected playDocument: Record;
-  private userId: string;
+  private currentUserId: string;
   private subscriptions: Subscription[] = [];
   currentPage: number;
   fromNow = relativeTimeOrElse;
@@ -105,6 +108,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly modalService: ModalService,
+    private readonly authGuard: AuthGuardService,
     private readonly alertCtrl: AlertController,
     private readonly annotationService: AnnotationService,
     private readonly popoverCtrl: PopoverController,
@@ -123,29 +127,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.repository = await this.repositoryService.getRepositoryById(
-      this.repositoryId,
-      this.sessionService.getUserId(),
-    );
-    if (this.repository.product === GqlProductCategory.VisualDiff) {
-      this.viewModeFc.setValue('diff');
-    }
-    this.compareByField = this.repository.plugins.find(
-      (plugin) =>
-        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
-    )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
-
-    if (
-      this.repository.visibility === GqlVisibility.IsPrivate &&
-      this.repository.shareKey?.length > 0
-    ) {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
-    } else {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
-    }
+    await this.fetchRepository();
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
-        this.userId = session.user?.id;
+        this.currentUserId = session.user?.id;
         this.assessIsOwner();
       }),
       this.selectAllFc.valueChanges.subscribe((isChecked) => {
@@ -161,6 +146,31 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       }),
     );
     await this.fetchPage();
+    this.changeRef.detectChanges();
+  }
+
+  private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
+    this.repository = await this.repositoryService.getRepositoryById(
+      this.repositoryId,
+      this.sessionService.getUserId(),
+      fetchPolicy
+    );
+    if (this.repository.product === GqlProductCategory.VisualDiff) {
+      this.viewModeFc.setValue('diff');
+    }
+    this.compareByField = this.repository.plugins.find(
+      (plugin) =>
+        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward
+    )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
+
+    if (
+      this.repository.visibility === GqlVisibility.IsPrivate &&
+      this.repository.shareKey?.length > 0
+    ) {
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
+    } else {
+      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
+    }
     this.changeRef.detectChanges();
   }
 
@@ -349,7 +359,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  async editLocalization(source: ArrayElement<RepositoryFull['sources']>) {
+  async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
     const geoTag = await this.modalService.openSearchAddressModal();
     if (geoTag) {
       this.repository = await this.repositoryService.updateRepository({
@@ -454,7 +464,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   private assessIsOwner() {
-    this.isOwner = this.repository?.ownerId === this.userId;
+    this.isOwner = this.repository?.ownerId === this.currentUserId;
     this.changeRef.detectChanges();
   }
 
@@ -571,8 +581,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return dayjs(a).diff(b, 'seconds');
   }
 
-  starRepository() {
-    return this.annotationService.createAnnotation({
+  async starRepository() {
+    await this.authGuard.assertLoggedIn()
+    await this.annotationService.createAnnotation({
       where: {
         repository: {
           id: this.repositoryId,
@@ -584,14 +595,16 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
+    await this.fetchRepository('network-only');
   }
 
-  unstarRepository() {
-    return this.annotationService.deleteAnnotation({
+  async unstarRepository() {
+    await this.annotationService.deleteAnnotation({
       where: {
-        id: '',
+        id: this.getUpvoteAnnotation().id,
       },
     });
+    await this.fetchRepository('network-only');
   }
 
   getStartCount(): string | number {
@@ -604,6 +617,18 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   hasCurrentUserStarred(): boolean {
-    return this.repository.annotations?.votes?.some((v) => v.upVote);
+    return !isUndefined(this.getUpvoteAnnotation());
+  }
+
+  private getUpvoteAnnotation(): Annotation | undefined {
+    return this.repository.annotations?.votes?.find((v) => v.upVote);
+  }
+
+  getText(document: Record) {
+    if (this.currentUserId) {
+      return document.text;
+    } else {
+      return document.text.substring(0, 150);
+    }
   }
 }

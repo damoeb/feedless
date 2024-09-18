@@ -4,39 +4,42 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
 import org.migor.feedless.user.UserEntity
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 @Profile("${AppProfiles.annotation} & ${AppLayer.service}")
-class AnnotationService {
-
-  @Autowired
-  lateinit var voteDAO: VoteDAO
-
-  @Autowired
-  lateinit var textAnnotationDAO: TextAnnotationDAO
+class AnnotationService(val annotationDAO: AnnotationDAO,
+                        val voteDAO: VoteDAO,
+                        val textAnnotationDAO: TextAnnotationDAO) {
 
   suspend fun createAnnotation(corrId: String, data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
-    return data.annotation.flag?.let { boolAnnotation(corrId, data.where, flag = it.set, user = user) }
-      ?: data.annotation.text?.let { textAnnotation(corrId, data.where, it, user) }
-      ?: data.annotation.upVote?.let { boolAnnotation(corrId, data.where, upvote = it.set, user = user) }
-      ?: data.annotation.downVote?.let { boolAnnotation(corrId, data.where, downvote = it.set, user = user) }
+    return data.annotation.flag?.let { createBoolAnnotation(corrId, data.where, flag = it.set, user = user) }
+      ?: data.annotation.text?.let { createTextAnnotation(corrId, data.where, it, user) }
+      ?: data.annotation.upVote?.let { createBoolAnnotation(corrId, data.where, upvote = it.set, user = user) }
+      ?: data.annotation.downVote?.let { createBoolAnnotation(corrId, data.where, downvote = it.set, user = user) }
       ?: throw IllegalArgumentException("Insufficient data for annotation")
   }
 
-  suspend fun deleteAnnotation(corrId: String, data: DeleteAnnotationInput, user: UserEntity): Boolean {
-    TODO("Not yet implemented")
+  suspend fun deleteAnnotation(corrId: String, data: DeleteAnnotationInput, currentUser: UserEntity) {
+    withContext(Dispatchers.IO) {
+      val vote = annotationDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
+      if (currentUser.root || currentUser.id == vote.ownerId) {
+        annotationDAO.delete(vote)
+      } else {
+        throw PermissionDeniedException("Must be owner")
+      }
+    }
   }
 
-  private fun boolAnnotation(
+  private fun createBoolAnnotation(
     corrId: String,
     where: AnnotationWhereInput,
     flag: Boolean = false,
@@ -68,7 +71,7 @@ class AnnotationService {
     return voteDAO.save(v)
   }
 
-  private fun textAnnotation(
+  private fun createTextAnnotation(
     corrId: String,
     where: AnnotationWhereInput,
     i: TextAnnotationInput,
@@ -115,7 +118,7 @@ class AnnotationService {
   private fun resolveReferences(
     where: AnnotationWhereInput,
   ): Pair<UUID?, UUID?> {
-    return Pair(where.document?.id?.let { UUID.fromString(it) }, where.repository?.id.let { UUID.fromString(it) })
+    return Pair(where.document?.id?.let { UUID.fromString(it) }, where.repository?.id?.let { UUID.fromString(it) })
   }
 
   suspend fun countUpVotesByRepositoryId(repositoryId: UUID): Int {

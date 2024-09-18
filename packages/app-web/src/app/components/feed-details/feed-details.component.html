@@ -83,7 +83,7 @@
                         <ion-button
                           fill="clear"
                           [color]="source.latLng ? 'medium' : 'primary'"
-                          (click)="editLocalization(source)"
+                          (click)="editLatLon(source)"
                           >{{ stringifyLocalization(source) }}
                         </ion-button>
                       </p>
@@ -192,7 +192,7 @@
         </ion-badge>
       </ion-button>
       <ion-button *ngIf="hasCurrentUserStarred()" (click)="unstarRepository()">
-        <ion-icon name="star" color="warning" slot="start"></ion-icon>
+        <ion-icon name="star" slot="start"></ion-icon>
         Starred
         <ion-badge style="margin-left: 5px" color="light">{{
           getStartCount()
@@ -449,7 +449,7 @@
                   </a>
                 </h2>
 
-                <p class="content">{{ document.text }}</p>
+                <p class="content">{{ getText(document) }}</p>
 
                 <app-player
                   [document]="document"

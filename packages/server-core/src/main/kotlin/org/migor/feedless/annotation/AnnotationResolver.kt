@@ -65,6 +65,7 @@ class AnnotationResolver {
     val corrId = handleCorrId(corrIdParam)
     log.debug("[$corrId] deleteAnnotation $data")
     annotationService.deleteAnnotation(corrId, data, sessionService.user(corrId))
+    true
   }
 }
 
