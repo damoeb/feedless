@@ -5,7 +5,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.ForeignKey
-import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Max
@@ -14,7 +13,6 @@ import jakarta.validation.constraints.PositiveOrZero
 import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.URL
 import org.migor.feedless.scrape.PuppeteerWaitUntil
-import java.net.URI
 
 @Entity
 @Table(name = "t_action_fetch")

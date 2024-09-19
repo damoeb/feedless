@@ -27,7 +27,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
-import org.telegram.telegrambots.meta.api.objects.Document
 import org.telegram.telegrambots.meta.api.objects.Update
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -96,35 +95,38 @@ class TelegramBotService(
           .window(Duration.ofMinutes(1)) // 1-minute windows
           .flatMap { window -> window.take(20) }
           .map { message -> Pair(it.chatId, message) }
-          .subscribe (sink::next, sink::error, sink::complete )
+          .subscribe(sink::next, sink::error, sink::complete)
       }
     }
   }
 
-  @Scheduled(fixedDelay = 3000)
+  @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
-    val url = "https://api.telegram.org/bot$botToken/getUpdates"
-    val uri = URI.create(url)
+    try {
+      val url = "https://api.telegram.org/bot$botToken/getUpdates"
+      val uri = URI.create(url)
 
-    val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
+      val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
 
-    response?.result?.let {
-      runBlocking {
-        coroutineScope {
-          response.result.filter { it.updateId > lastUpdateId }
-            .forEach { update ->
-              handleUpdate(update)
-            }
+      response?.result?.let {
+        runBlocking {
+          coroutineScope {
+            response.result.filter { it.updateId > lastUpdateId }
+              .forEach { update ->
+                handleUpdate(update)
+              }
+          }
+        }
+
+        response.result.lastOrNull()?.let {
+          lastUpdateId = it.updateId
+          lastUpdateSettings.valueInt = it.updateId
+          systemSettingsDAO.save(lastUpdateSettings)
         }
       }
-
-      response.result.lastOrNull()?.let {
-        lastUpdateId = it.updateId
-        lastUpdateSettings.valueInt = it.updateId
-        systemSettingsDAO.save(lastUpdateSettings)
-      }
+    } catch (e: Exception) {
+      log.warn("telegram ${e.message}")
     }
-
   }
 
   private suspend fun handleUpdate(update: Update) {
@@ -176,7 +178,8 @@ class TelegramBotService(
 
   fun showOptionsForKnownUser(chatId: Long) {
     sendMessage(
-      chatId, """Perfect! From now on you will receive all updates, unless a repository is muted (default). Note that telegrams applies throttling, which may result in data loss. """.trimIndent()
+      chatId,
+      """Perfect! From now on you will receive all updates, unless a repository is muted (default). Note that telegrams applies throttling, which may result in data loss. """.trimIndent()
     )
   }
 
@@ -226,7 +229,8 @@ class TelegramBotService(
     val getFileUrl = "https://api.telegram.org/bot$botToken/getFile?file_id=${fileId}"
     val getFile = restTemplate.getForObject<TelegramGetFileResponse>(URI.create(getFileUrl))
     return if (getFile.ok) {
-      val response = restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot$botToken/${getFile.result.file_path}"))
+      val response =
+        restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot$botToken/${getFile.result.file_path}"))
       val a = AttachmentEntity()
       a.size = getFile.result.file_size
       a.mimeType = mimeType
@@ -259,10 +263,11 @@ data class TelegramUpdatesResponse(
 
 data class GetFileData(
   val file_id: String,
-  val file_unique_id:String,
+  val file_unique_id: String,
   val file_size: Long,
   val file_path: String,
 )
+
 data class TelegramGetFileResponse(
   val ok: Boolean,
   val result: GetFileData

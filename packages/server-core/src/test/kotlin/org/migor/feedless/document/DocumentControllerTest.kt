@@ -38,13 +38,13 @@ import java.util.*
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @MockBeans(
-    MockBean(DocumentResolver::class),
-    MockBean(HttpService::class),
-    MockBean(AuthService::class),
-    MockBean(UserService::class),
-    MockBean(PropertyService::class),
-    MockBean(TokenProvider::class),
-    MockBean(CookieProvider::class),
+  MockBean(DocumentResolver::class),
+  MockBean(HttpService::class),
+  MockBean(AuthService::class),
+  MockBean(UserService::class),
+  MockBean(PropertyService::class),
+  MockBean(TokenProvider::class),
+  MockBean(CookieProvider::class),
 )
 @ActiveProfiles(
   "test",

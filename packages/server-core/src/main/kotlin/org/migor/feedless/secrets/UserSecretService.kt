@@ -4,10 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -15,25 +15,12 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.secrets} & ${AppLayer.service}")
-class UserSecretService {
+class UserSecretService(
+  private val userSecretDAO: UserSecretDAO,
+  private val tokenProvider: TokenProvider
+) {
 
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
-
-  @Autowired
-  private lateinit var userSecretDAO: UserSecretDAO
-
-  @Autowired
-  private lateinit var tokenProvider: TokenProvider
-
-//  fun createSecretKey(secretKey: String, expiresIn: Duration, user: UserEntity): UserSecretEntity {
-//    val k = UserSecretEntity()
-//    k.ownerId = user.id
-//    k.value = secretKey
-//    k.type = UserSecretType.SecretKey
-//    k.validUntil = Date.from(LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toInstant())
-//
-//    return userSecretDAO.save(k)
-//  }
 
   suspend fun createUserSecret(corrId: String, user: UserEntity): UserSecretEntity {
     val token = tokenProvider.createJwtForApi(user)
@@ -48,9 +35,14 @@ class UserSecretService {
     }
   }
 
-  suspend fun deleteUserSecrets(corrId: String, user: UserEntity, uuids: List<UUID>) {
+  suspend fun deleteUserSecret(corrId: String, user: UserEntity, uuid: UUID) {
     withContext(Dispatchers.IO) {
-      userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
+      val secret = userSecretDAO.findById(uuid).orElseThrow()
+      if (secret.ownerId == user.id) {
+        userSecretDAO.delete(secret)
+      } else {
+        throw PermissionDeniedException("User does not have an owner")
+      }
     }
   }
 

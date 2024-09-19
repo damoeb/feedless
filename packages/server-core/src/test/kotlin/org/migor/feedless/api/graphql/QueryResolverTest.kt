@@ -33,11 +33,11 @@ import org.springframework.test.context.ActiveProfiles
   AppProfiles.properties,
 )
 @MockBeans(
-    MockBean(HttpService::class),
-    MockBean(UserService::class),
-    MockBean(UserDAO::class),
-    MockBean(ServerConfigResolver::class),
-    MockBean(UserSecretService::class),
+  MockBean(HttpService::class),
+  MockBean(UserService::class),
+  MockBean(UserDAO::class),
+  MockBean(ServerConfigResolver::class),
+  MockBean(UserSecretService::class),
 )
 @Import(
   DisableDatabaseConfiguration::class,

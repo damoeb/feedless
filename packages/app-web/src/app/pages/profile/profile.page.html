@@ -53,11 +53,11 @@
       <ion-row *ngIf="serverConfig.isSaas()">
         <ion-col push="3" size="9">
           <ion-label color="warning" *ngIf="!formFg.value.emailVerified"
-            >Email not verified</ion-label
-          >
+            >Email not verified
+          </ion-label>
           <ion-label color="success" *ngIf="formFg.value.emailVerified"
-            >Email verified</ion-label
-          >
+            >Email verified
+          </ion-label>
         </ion-col>
       </ion-row>
       <ion-row *ngIf="serverConfig.isSaas()">
@@ -81,8 +81,8 @@
           <ion-button
             (click)="saveProfile()"
             [disabled]="!(formFg.valid && formFg.dirty)"
-            >Save</ion-button
-          >
+            >Save
+          </ion-button>
         </ion-col>
       </ion-row>
     </ion-list>
@@ -94,7 +94,7 @@
         </ion-col>
       </ion-row>
       <ion-list>
-        <ion-item> Free Plan </ion-item>
+        <ion-item> Free Plan</ion-item>
 
         <!--      <ion-list-header> General</ion-list-header>-->
         <!--      <ion-item>-->
@@ -153,43 +153,125 @@
         <!--        <ion-label> Export OPML </ion-label>-->
         <!--      </ion-item>-->
       </ion-list>
+    </ng-container>
 
-      <ion-row class="ion-margin-top">
-        <ion-col size="8">
-          <h1 class="ion-no-margin">Connected Apps</h1>
+    <ion-row class="ion-margin-top">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Connected Apps</h1>
+      </ion-col>
+    </ion-row>
+    <ion-list>
+      <!--      <ion-item *ngIf="connectedApps.length === 0">-->
+      <!--        You can connect to Telegram or Github-->
+      <!--      </ion-item>-->
+      <ion-item>
+        <ion-label>
+          Github
+          <ion-note class="ion-margin-start">Used to login</ion-note>
+        </ion-label>
+
+        <ion-button color="danger" *ngIf="hasConnectedApp('github')">
+          Connected
+        </ion-button>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          Telegram
+          <ion-note class="ion-margin-start"
+            >Used for push notifications</ion-note
+          >
+        </ion-label>
+
+        <ion-button routerLink="/docs/telegram" color="dark" size="small"
+          >Setup Instructions</ion-button
+        >
+
+        <ion-button
+          color="danger"
+          *ngIf="hasConnectedApp('Telegram')"
+          (click)="disconnectApp('Telegram')"
+        >
+          Disconnect
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <ion-row class="ion-margin-top">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Secrets</h1>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button
+          (click)="createUserSecret()"
+          class="ion-float-end"
+          fill="solid"
+          color="light"
+          size="small"
+          >Create Secret
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-list>
+      <ion-row *ngIf="secrets?.length > 0">
+        <ion-col size="6"></ion-col>
+        <ion-col size="2">Last Used</ion-col>
+        <ion-col size="2">Valid Until</ion-col>
+      </ion-row>
+      <ion-row *ngIf="secrets?.length === 0">
+        <ion-col class="ion-padding-start" size="12">
+          <ion-note><em>No User Secrets defined</em></ion-note>
         </ion-col>
       </ion-row>
-      <ion-list>
-        <ion-item *ngIf="connectedApps.length === 0">
-          You can connect to Telegram or Github
-        </ion-item>
-        <ion-item *ngFor="let connectedApp of connectedApps">
-          <ion-label>
-            {{ connectedApp.app }}
-            <!--            <ion-note class="ion-margin-start">Used to login</ion-note>-->
-          </ion-label>
-          <ion-button color="danger" (click)="disconnectApp(connectedApp.id)">
-            Disconnect
-          </ion-button>
-        </ion-item>
-      </ion-list>
-
-      <div style="color: var(--ion-color-danger)">
-        <ion-row style="margin-top: 100px">
-          <ion-col size="8">
-            <h1 class="ion-no-margin">Danger Zone</h1>
+      <ng-container *ngFor="let secret of secrets">
+        <ion-row *ngIf="secret.valueMasked">
+          <ion-col class="ion-padding-start" size="6"
+            >{{ secret.value }}</ion-col
+          >
+          <ion-col size="2">{{ secret.lastUsed || 'never' }}</ion-col>
+          <ion-col size="2"
+            >{{ secret.validUntil | date: dateTimeFormat }}
+          </ion-col>
+          <ion-col class="ion-text-right" size="2">
+            <ion-button
+              (click)="deleteSecret(secret)"
+              color="danger"
+              fill="clear"
+              size="small"
+              >Delete
+            </ion-button>
           </ion-col>
         </ion-row>
-        <ion-list style="border: 1px solid var(--ion-color-danger)">
-          <ion-item
-            (click)="deleteAccount()"
-            [button]="true"
-            style="--color: var(--ion-color-danger)"
-          >
-            Delete Account
-          </ion-item>
-        </ion-list>
-      </div>
-    </ng-container>
+        <ion-row *ngIf="!secret.valueMasked">
+          <ion-col class="ion-padding-start" size="8">
+            <ion-input [readonly]="true" [value]="secret.value"></ion-input>
+          </ion-col>
+          <ion-col size="2"
+            >{{ secret.validUntil | date: dateTimeFormat }}
+          </ion-col>
+          <ion-col class="ion-text-right" size="2">
+            <ion-button color="success" fill="outline" size="small"
+              >Copy
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ng-container>
+    </ion-list>
+
+    <div style="color: var(--ion-color-danger)">
+      <ion-row style="margin-top: 100px">
+        <ion-col size="8">
+          <h1 class="ion-no-margin">Danger Zone</h1>
+        </ion-col>
+      </ion-row>
+      <ion-list style="border: 1px solid var(--ion-color-danger)">
+        <ion-item
+          (click)="deleteAccount()"
+          [button]="true"
+          style="--color: var(--ion-color-danger)"
+        >
+          Delete Account
+        </ion-item>
+      </ion-list>
+    </div>
   </div>
 </ion-content>

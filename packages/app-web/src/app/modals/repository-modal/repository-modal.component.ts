@@ -54,13 +54,11 @@ export class RepositoryModalComponent
   implements GenerateFeedModalComponentProps, OnInit
 {
   formFg = new FormGroup({
-    title: new FormControl<string>('', {
-      validators: [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(255),
-      ],
-    }),
+    title: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(255),
+    ]),
     description: new FormControl<string>('', [Validators.maxLength(500)]),
     maxCapacity: new FormControl<number>(null, [Validators.min(2)]),
     maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),

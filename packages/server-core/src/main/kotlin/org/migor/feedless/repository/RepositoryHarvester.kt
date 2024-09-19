@@ -393,7 +393,12 @@ class RepositoryHarvester internal constructor() {
         telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
           validDocuments
             .filter { it.status == ReleaseStatus.released }
-            .forEach { messageService.publishMessage(TelegramBotService.toTopic(tgLink.chatId), it.asJsonItem(repository)) }
+            .forEach {
+              messageService.publishMessage(
+                TelegramBotService.toTopic(tgLink.chatId),
+                it.asJsonItem(repository)
+              )
+            }
         }
       }
 

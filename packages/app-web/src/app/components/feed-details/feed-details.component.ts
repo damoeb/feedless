@@ -13,7 +13,12 @@ import {
   GqlVisibility,
   GqlRecordField,
 } from '../../../generated/graphql';
-import { RepositoryFull, RepositorySource, Record, Annotation } from '../../graphql/types';
+import {
+  RepositoryFull,
+  RepositorySource,
+  Record,
+  Annotation,
+} from '../../graphql/types';
 import {
   GenerateFeedAccordion,
   GenerateFeedModalComponentProps,
@@ -153,14 +158,14 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.repository = await this.repositoryService.getRepositoryById(
       this.repositoryId,
       this.sessionService.getUserId(),
-      fetchPolicy
+      fetchPolicy,
     );
     if (this.repository.product === GqlProductCategory.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
     this.compareByField = this.repository.plugins.find(
       (plugin) =>
-        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward
+        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
     if (
@@ -582,7 +587,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async starRepository() {
-    await this.authGuard.assertLoggedIn()
+    await this.authGuard.assertLoggedIn();
     await this.annotationService.createAnnotation({
       where: {
         repository: {

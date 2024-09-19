@@ -12,7 +12,6 @@ import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.jwt.JwsHeader
@@ -32,20 +31,15 @@ import kotlin.time.toDuration
 
 @Service
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-class TokenProvider {
-  private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var meterRegistry: MeterRegistry
-
+class TokenProvider(
+  val propertyService: PropertyService,
+  val meterRegistry: MeterRegistry,
   @Value("\${auth.token.anonymous.validForDays}")
-  lateinit var tokenAnonymousValidForDays: String
-
+  val tokenAnonymousValidForDays: String,
   @Value("\${default.auth.token.anonymous.validForDays}")
-  lateinit var defaultTokenAnonymousValidForDays: String
+  val defaultTokenAnonymousValidForDays: String
+) {
+  private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
 

@@ -48,10 +48,10 @@ import kotlin.math.pow
 @SpringBootTest
 @ActiveProfiles("test", AppProfiles.community)
 @MockBeans(
-    MockBean(UserSecretService::class),
-    MockBean(LicenseService::class),
-    MockBean(ProductService::class),
-    MockBean(KotlinJdslJpqlExecutor::class),
+  MockBean(UserSecretService::class),
+  MockBean(LicenseService::class),
+  MockBean(ProductService::class),
+  MockBean(KotlinJdslJpqlExecutor::class),
 )
 @Tag("nlp")
 class ScoreServiceTest {

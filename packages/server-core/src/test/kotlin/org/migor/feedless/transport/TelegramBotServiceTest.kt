@@ -221,7 +221,11 @@ class TelegramBotServiceTest {
     assertThat(jsonItem.toTelegramMessage(isSaas)).isEqualTo(exptected)
   }
 
-  private fun newTelegramConnection(chatId: Long, authorized: Boolean = true, userId: UUID? = null): TelegramConnectionEntity {
+  private fun newTelegramConnection(
+    chatId: Long,
+    authorized: Boolean = true,
+    userId: UUID? = null
+  ): TelegramConnectionEntity {
     val connection = TelegramConnectionEntity()
     connection.chatId = chatId
     connection.authorized = authorized
@@ -256,7 +260,7 @@ class TelegramBotServiceTest {
 
     `when`(telegramLinkDAO.findByChatId(eq(chatId)))
       .thenReturn(
-          newTelegramConnection(chatId, true, UUID.randomUUID()),
+        newTelegramConnection(chatId, true, UUID.randomUUID()),
       )
     telegramBotService.onInit()
     telegramBotService.pollUpdates()

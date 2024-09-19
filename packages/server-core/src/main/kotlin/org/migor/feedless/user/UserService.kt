@@ -16,7 +16,6 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.springframework.context.annotation.Lazy
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.MaxAgeDaysDateField
@@ -25,6 +24,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -273,16 +273,18 @@ class UserService {
     }
   }
 
-  suspend fun getConnectedAppByUserAndId(corrId: String, userId: UUID, id: String): ConnectedAppEntity {
+  suspend fun getConnectedAppByUserAndId(corrId: String, userId: UUID, connectedAppId: UUID): ConnectedAppEntity {
     return withContext(Dispatchers.IO) {
-      connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
+      connectedAppDAO.findByIdAndUserIdEquals(connectedAppId, userId)
+        ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+        ?: throw IllegalArgumentException("not found")
     }
   }
 
-  suspend fun updateConnectedApp(corrId: String, userId: UUID, id: String, authorize: Boolean) {
+  suspend fun updateConnectedApp(corrId: String, userId: UUID, connectedAppId: UUID, authorize: Boolean) {
     withContext(Dispatchers.IO) {
       val app =
-        connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
+        getConnectedAppByUserAndId(corrId, userId, connectedAppId)
       app.userId?.let {
         if (userId != it) {
           throw PermissionDeniedException("error")
@@ -301,22 +303,24 @@ class UserService {
 
   }
 
-  suspend fun deleteConnectedApp(corrId: String, userId: UUID, id: String) {
+  suspend fun deleteConnectedApp(corrId: String, currentUserId: UserEntity, connectedAppId: UUID) {
     withContext(Dispatchers.IO) {
       val app =
-        connectedAppDAO.findByIdAndAuthorizedFalse(UUID.fromString(id)) ?: throw IllegalArgumentException("not found")
-      app.userId?.let {
-        if (userId != it) {
-          throw PermissionDeniedException("error")
-        }
+        connectedAppDAO.findByIdAndAuthorizedEquals(connectedAppId, true) ?: throw IllegalArgumentException("not found")
+//      app.userId?.let {
+      if (currentUserId.id != app.userId) {
+        throw PermissionDeniedException("error")
       }
+//      }
 
       if (app is TelegramConnectionEntity) {
         telegramBotService.sendMessage(app.chatId, "Disconnected")
+      } else {
+        throw IllegalArgumentException("github connection cannot be removed")
       }
 
 
-      connectedAppDAO.save(app)
+      connectedAppDAO.delete(app)
     }
 
   }

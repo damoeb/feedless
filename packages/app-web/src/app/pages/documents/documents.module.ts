@@ -4,19 +4,20 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { TermsPageRoutingModule } from './terms-routing.module';
+import { DocumentsPageRoutingModule } from './documents-routing.module';
 
-import { TermsPage } from './terms.page';
+import { DocumentsPage } from './documents.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+import { TermsPage } from './terms.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    TermsPageRoutingModule,
+    DocumentsPageRoutingModule,
     FeedlessHeaderModule,
   ],
-  declarations: [TermsPage],
+  declarations: [DocumentsPage, TermsPage],
 })
-export class TermsPageModule {}
+export class DocumentsPageModule {}

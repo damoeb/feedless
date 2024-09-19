@@ -33,20 +33,19 @@ import org.springframework.web.reactive.function.client.WebClient
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @ActiveProfiles(
-    "test",
-    AppLayer.api,
-    AppLayer.service,
-    AppProfiles.properties,
-    AppLayer.security,
-    AppProfiles.authRoot,
-    AppProfiles.session,
+  "test",
+  AppLayer.api,
+  AppLayer.service,
+  AppProfiles.properties,
+  AppLayer.security,
+  AppProfiles.authRoot,
+  AppProfiles.session,
 )
 @MockBeans(
-    MockBean(ServerConfigResolver::class),
-    MockBean(UserDAO::class),
+  MockBean(ServerConfigResolver::class),
+  MockBean(UserDAO::class),
 )
 @Import(DisableDatabaseConfiguration::class)
-//@Testcontainers
 class AuthenticationTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient

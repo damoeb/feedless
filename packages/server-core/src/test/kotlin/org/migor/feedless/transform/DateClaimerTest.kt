@@ -48,11 +48,16 @@ internal class DateClaimerTest {
   fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) = runTest {
     val actual =
       dateClaimer.claimDatesFromString(
-          corrId,
-          "${newCorrId()} $dateStringInput ${newCorrId()}",
-          Locale.of(lang),
-          logCollector
+        corrId,
+        "${newCorrId()} $dateStringInput ${newCorrId()}",
+        Locale.of(lang),
+        logCollector
       )
-    assertThat(actual!!.toMillis()).isEqualTo(LocalDateTime.parse(expectedOuput, DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm:ss' 'z")).toMillis())
+    assertThat(actual!!.toMillis()).isEqualTo(
+      LocalDateTime.parse(
+        expectedOuput,
+        DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm:ss' 'z")
+      ).toMillis()
+    )
   }
 }

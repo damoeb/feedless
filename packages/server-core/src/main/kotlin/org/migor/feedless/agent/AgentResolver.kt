@@ -66,7 +66,8 @@ class AgentResolver {
   @DgsQuery
   suspend fun agents(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String): List<Agent> {
+    @RequestHeader(ApiParams.corrId) corrId: String
+  ): List<Agent> {
     log.debug("[$corrId] agents")
     return withContext(useRequestContext(currentCoroutineContext(), dfe)) {
       agentService.findAllByUserId(sessionService.userId()).map { it.toDto() }

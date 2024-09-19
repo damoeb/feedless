@@ -99,13 +99,6 @@ export const DefaultRoutes: Routes = [
           ),
       },
       {
-        path: 'secrets',
-        loadChildren: () =>
-          import('../pages/secrets/secrets.module').then(
-            (m) => m.SecretsPageModule,
-          ),
-      },
-      {
         path: 'settings',
         loadChildren: () =>
           import('../pages/settings/settings.module').then(
@@ -127,9 +120,11 @@ export const DefaultRoutes: Routes = [
     ],
   },
   {
-    path: 'terms',
+    path: 'docs',
     loadChildren: () =>
-      import('../pages/terms/terms.module').then((m) => m.TermsPageModule),
+      import('../pages/documents/documents.module').then(
+        (m) => m.DocumentsPageModule,
+      ),
   },
   {
     path: 'privacy',

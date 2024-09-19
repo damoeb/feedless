@@ -12,10 +12,12 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.socket.WebSocketHandler
 
 @TestConfiguration
-@EnableAutoConfiguration(exclude = [
-  DataSourceAutoConfiguration::class,
-  KotlinJdslAutoConfiguration::class,
-])
+@EnableAutoConfiguration(
+  exclude = [
+    DataSourceAutoConfiguration::class,
+    KotlinJdslAutoConfiguration::class,
+  ]
+)
 class DisableDatabaseConfiguration
 
 @TestConfiguration
@@ -33,8 +35,10 @@ class PropertiesConfiguration
 class DisableWebSocketsConfiguration
 
 @TestConfiguration
-@EnableAutoConfiguration(exclude = [
-  SecurityAutoConfiguration::class,
-  ManagementWebSecurityAutoConfiguration::class,
-])
+@EnableAutoConfiguration(
+  exclude = [
+    SecurityAutoConfiguration::class,
+    ManagementWebSecurityAutoConfiguration::class,
+  ]
+)
 class DisableSecurityConfiguration

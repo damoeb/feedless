@@ -50,9 +50,9 @@ import org.springframework.test.context.ActiveProfiles
   AppLayer.service,
 )
 @MockBeans(
-    MockBean(PropertyService::class),
-    MockBean(AgentService::class),
-    MockBean(AttachmentDAO::class),
+  MockBean(PropertyService::class),
+  MockBean(AgentService::class),
+  MockBean(AttachmentDAO::class),
 )
 @Import(DisableDatabaseConfiguration::class)
 class ScrapeServiceTest {
@@ -169,7 +169,8 @@ class ScrapeServiceTest {
     `when`(purgeAction.event).thenReturn(DomEventType.purge)
     `when`(purgeAction.xpath).thenReturn("//title")
 
-    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)), LogCollector())
+    val scrapeResponse =
+      scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val html = { v: String ->
@@ -203,7 +204,8 @@ class ScrapeServiceTest {
     `when`(extractAction.xpath).thenReturn("//title")
     `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
 
-    val scrapeResponse = scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())
+    val scrapeResponse =
+      scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val fragment = last.fragment!!.fragments!![0]

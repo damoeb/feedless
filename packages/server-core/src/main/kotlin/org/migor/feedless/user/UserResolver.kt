@@ -70,7 +70,7 @@ class UserResolver {
     @InputArgument authorize: Boolean,
   ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.info("[$corrId] updateConnectedApp ${sessionService.userId()}")
-    userService.updateConnectedApp(corrId, sessionService.userId()!!, id, authorize)
+    userService.updateConnectedApp(corrId, sessionService.userId()!!, UUID.fromString(id), authorize)
     true
   }
 
@@ -83,7 +83,7 @@ class UserResolver {
     @InputArgument id: String,
   ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.info("[$corrId] deleteConnectedApp ${sessionService.userId()}")
-    userService.deleteConnectedApp(corrId, sessionService.userId()!!, id)
+    userService.deleteConnectedApp(corrId, sessionService.user(corrId), UUID.fromString(id))
     true
   }
 
@@ -96,7 +96,7 @@ class UserResolver {
     @InputArgument id: String,
   ): ConnectedApp = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
     log.info("[$corrId] connectedApp ${sessionService.userId()} ")
-    userService.getConnectedAppByUserAndId(corrId, sessionService.userId()!!, id).toDto()
+    userService.getConnectedAppByUserAndId(corrId, sessionService.userId()!!, UUID.fromString(id)).toDto()
   }
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)

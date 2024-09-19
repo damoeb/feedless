@@ -32,9 +32,9 @@ export class AuthGuardService implements CanActivate {
   }
 
   async assertLoggedIn() {
-    const loggedIn = await firstValueFrom(this.canActivate())
+    const loggedIn = await firstValueFrom(this.canActivate());
     if (loggedIn !== true) {
-      await this.router.navigateByUrl(loggedIn as UrlTree)
+      await this.router.navigateByUrl(loggedIn as UrlTree);
     }
   }
 }

@@ -147,7 +147,7 @@ type Mutation {
 
   authUser(data: AuthUserInput!): Authentication!
   createUserSecret: UserSecret!
-  deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
+  deleteUserSecret(data: DeleteUserSecretInput!): Boolean!
 
   createRepositories(data: RepositoriesCreateInput!): [Repository!]!
   updateRepository(data: RepositoryUpdateInput!): Repository!
@@ -1163,7 +1163,7 @@ input DateFilter {
   lt: Long
 }
 
-input DeleteUserSecretsInput {
+input DeleteUserSecretInput {
   where: UserSecretWhereInput!
 }
 
@@ -1382,7 +1382,7 @@ input UserSecretCreateInput {
 }
 
 input UserSecretWhereInput {
-  in: [ID!]!
+  eq: ID!
 }
 
 input VisibilityOneOfInput {

@@ -61,6 +61,6 @@ mutation createUserSecret {
   }
 }
 
-mutation deleteUserSecrets($data: DeleteUserSecretsInput!) {
-  deleteUserSecrets(data: $data)
+mutation deleteUserSecret($data: DeleteUserSecretInput!) {
+  deleteUserSecret(data: $data)
 }

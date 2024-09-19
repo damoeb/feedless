@@ -10,6 +10,8 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 interface ConnectedAppDAO : JpaRepository<ConnectedAppEntity, UUID> {
-  fun findByIdAndAuthorizedFalse(id: UUID): ConnectedAppEntity?
+  fun findByIdAndAuthorizedEquals(id: UUID, isAuthorized: Boolean): ConnectedAppEntity?
   fun findAllByUserId(userId: UUID): List<ConnectedAppEntity>
+  fun findByIdAndAuthorizedEqualsAndUserIdIsNull(fromString: UUID, isAuthorized: Boolean): ConnectedAppEntity?
+  fun findByIdAndUserIdEquals(fromString: UUID, userId: UUID): ConnectedAppEntity?
 }

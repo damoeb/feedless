@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
   CreateUserSecret,
-  DeleteUserSecrets,
+  DeleteUserSecret,
   GqlCreateUserSecretMutation,
   GqlCreateUserSecretMutationVariables,
-  GqlDeleteUserSecretsInput,
-  GqlDeleteUserSecretsMutation,
-  GqlDeleteUserSecretsMutationVariables,
+  GqlDeleteUserSecretInput,
+  GqlDeleteUserSecretMutation,
+  GqlDeleteUserSecretMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
   GqlSessionQuery,
@@ -202,12 +202,12 @@ export class SessionService {
     return this.getUserId()?.length > 0;
   }
 
-  async deleteUserSecrets(data: GqlDeleteUserSecretsInput) {
+  async deleteUserSecret(data: GqlDeleteUserSecretInput) {
     await this.apollo.mutate<
-      GqlDeleteUserSecretsMutation,
-      GqlDeleteUserSecretsMutationVariables
+      GqlDeleteUserSecretMutation,
+      GqlDeleteUserSecretMutationVariables
     >({
-      mutation: DeleteUserSecrets,
+      mutation: DeleteUserSecret,
       variables: {
         data,
       },

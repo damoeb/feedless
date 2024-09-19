@@ -46,9 +46,9 @@ import java.nio.file.Files
 
 @SpringBootTest
 @MockBeans(
-    MockBean(ServerConfigResolver::class),
-    MockBean(AgentService::class),
-    MockBean(AttachmentDAO::class),
+  MockBean(ServerConfigResolver::class),
+  MockBean(AgentService::class),
+  MockBean(AttachmentDAO::class),
 )
 @ActiveProfiles(
   "test",
@@ -122,28 +122,29 @@ class ScrapeQueryResolverTest {
 
   private fun scrapeFeed(params: PluginExecutionParamsInput): ScrapeResponse {
     val graphQLQuery = DgsClient.buildQuery {
-      scrape(data = SourceInput(
-        title = "",
-        flow = ScrapeFlowInput(
-          sequence = listOf(
-            ScrapeActionInput(
-              fetch = HttpFetchInput(
-                get = HttpGetRequestInput(
-                  url = StringLiteralOrVariableInput(
-                    literal = url
+      scrape(
+        data = SourceInput(
+          title = "",
+          flow = ScrapeFlowInput(
+            sequence = listOf(
+              ScrapeActionInput(
+                fetch = HttpFetchInput(
+                  get = HttpGetRequestInput(
+                    url = StringLiteralOrVariableInput(
+                      literal = url
+                    )
                   )
                 )
-              )
-            ),
-            ScrapeActionInput(
-              execute = PluginExecutionInput(
-                pluginId = FeedlessPlugins.org_feedless_feed.name,
-                params = params
+              ),
+              ScrapeActionInput(
+                execute = PluginExecutionInput(
+                  pluginId = FeedlessPlugins.org_feedless_feed.name,
+                  params = params
+                )
               )
             )
           )
         )
-      )
       ) {
         ok
         logs {

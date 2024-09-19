@@ -4,15 +4,15 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { SessionService } from '../../services/session.service';
-import { ToastController } from '@ionic/angular';
+import { dateTimeFormat, SessionService } from '../../services/session.service';
+import { AlertController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
 import { ConnectedAppService } from '../../services/connected-app.service';
-import { Session } from '../../graphql/types';
+import { Session, UserSecret } from '../../graphql/types';
 
 @Component({
   selector: 'app-profile-page',
@@ -22,6 +22,7 @@ import { Session } from '../../graphql/types';
 })
 export class ProfilePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
+  protected secrets: UserSecret[] = [];
 
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
@@ -39,11 +40,12 @@ export class ProfilePage implements OnInit, OnDestroy {
       Validators.maxLength(50),
     ]),
   });
-  protected connectedApps: Session['user']['connectedApps'] = [];
+  private connectedApps: Session['user']['connectedApps'] = [];
 
   constructor(
     private readonly toastCtrl: ToastController,
     protected readonly sessionService: SessionService,
+    protected readonly alertCtrl: AlertController,
     protected readonly connectedAppService: ConnectedAppService,
     private readonly titleService: Title,
     protected readonly serverConfig: ServerConfigService,
@@ -70,6 +72,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.sessionService.getSession().subscribe((session) => {
         if (session.isLoggedIn) {
           this.connectedApps = session.user.connectedApps;
+          this.secrets = session.user.secrets;
           this.formFg.patchValue({
             email: session.user.email,
             firstName: session.user.firstName,
@@ -98,6 +101,44 @@ export class ProfilePage implements OnInit, OnDestroy {
   //   });
   // }
 
+  async createUserSecret() {
+    const promptName = await this.alertCtrl.create({
+      message: 'Set a name for the key',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          min: 3,
+          placeholder: 'Type name here',
+        },
+      ],
+      buttons: [
+        {
+          role: 'cancel',
+          text: 'Cancel',
+        },
+        {
+          text: 'Create Secret Key',
+          role: 'persist',
+        },
+      ],
+    });
+    await promptName.present();
+    const data = await promptName.onDidDismiss();
+    if (data.role === 'persist' && data.data.values.name) {
+      const apiToken = await this.sessionService.createUserSecret();
+      this.secrets.push(apiToken);
+    }
+  }
+
+  async deleteSecret(secret: UserSecret) {
+    await this.sessionService.deleteUserSecret({
+      where: {
+        eq: secret.id,
+      },
+    });
+  }
+
   async saveProfile() {
     if (this.formFg.valid && this.formFg.dirty) {
       await this.sessionService.updateCurrentUser({
@@ -125,7 +166,20 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
   }
 
-  async disconnectApp(id: string) {
-    await this.connectedAppService.deleteConnectedApp(id);
+  async disconnectApp(appName: string) {
+    await this.connectedAppService.deleteConnectedApp(
+      this.getConnectedAppByName(appName).id,
+    );
+    location.reload();
+  }
+
+  protected readonly dateTimeFormat = dateTimeFormat;
+
+  hasConnectedApp(appName: string) {
+    return !!this.getConnectedAppByName(appName);
+  }
+
+  private getConnectedAppByName(appName: string) {
+    return this.connectedApps?.find((it) => it.app == appName);
   }
 }

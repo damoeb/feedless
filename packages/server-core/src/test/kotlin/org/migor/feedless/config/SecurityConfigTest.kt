@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.web.socket.WebSocketHandler
 
 
 const val actuatorPassword = "password"
@@ -34,11 +33,11 @@ const val actuatorPassword = "password"
   properties = ["app.actuatorPassword=$actuatorPassword"],
 )
 @MockBeans(
-    MockBean(ServerConfigResolver::class),
-    MockBean(UserDAO::class),
-    MockBean(UserService::class),
-    MockBean(SessionResolver::class),
-    MockBean(DocumentController::class),
+  MockBean(ServerConfigResolver::class),
+  MockBean(UserDAO::class),
+  MockBean(UserService::class),
+  MockBean(SessionResolver::class),
+  MockBean(DocumentController::class),
 )
 @ActiveProfiles(
   "test",

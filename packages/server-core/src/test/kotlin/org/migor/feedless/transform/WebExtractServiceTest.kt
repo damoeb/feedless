@@ -13,8 +13,6 @@ import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.WebExtractService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
-import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings

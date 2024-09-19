@@ -1,13 +1,9 @@
 package org.migor.feedless.plan
 
-import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

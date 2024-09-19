@@ -16,12 +16,12 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.HttpFetchResponse
+import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.ScrapeActionResponse
 import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.Record
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toMillis

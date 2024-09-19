@@ -9,7 +9,6 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -57,12 +56,6 @@ open class UserSecretEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var agents: MutableList<AgentEntity> = mutableListOf()
 
-  @PrePersist
-  fun prePersist() {
-//    val encoder = BCryptPasswordEncoder()
-//    val encoded = encoder.encode(value)
-//    println(encoded)
-  }
 }
 
 fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {

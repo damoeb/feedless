@@ -5,8 +5,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.AnnotationWhereUniqueInput
@@ -16,7 +14,6 @@ import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.anyOrNull
 import org.migor.feedless.repository.argThat
@@ -94,7 +91,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.flag && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.flag && it.documentId == documentId })
   }
 
   @Test
@@ -111,7 +108,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.upVote && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.upVote && it.documentId == documentId })
   }
 
   @Test
@@ -128,7 +125,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.downVote && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.downVote && it.documentId == documentId })
   }
 
   @Test
@@ -145,7 +142,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.flag && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.flag && it.repositoryId == repositoryId })
   }
 
   @Test
@@ -162,7 +159,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.upVote && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.upVote && it.repositoryId == repositoryId })
   }
 
   @Test
@@ -179,7 +176,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat{ it.downVote && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.downVote && it.repositoryId == repositoryId })
   }
 
   @Test
@@ -192,9 +189,10 @@ class AnnotationServiceTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runBlocking {
-        annotationService.deleteAnnotation(corrId, DeleteAnnotationInput(
-          where = AnnotationWhereUniqueInput(annotationId.toString())
-        ), currentUser
+        annotationService.deleteAnnotation(
+          corrId, DeleteAnnotationInput(
+            where = AnnotationWhereUniqueInput(annotationId.toString())
+          ), currentUser
         )
       }
     }

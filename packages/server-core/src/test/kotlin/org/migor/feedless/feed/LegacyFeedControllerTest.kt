@@ -4,7 +4,6 @@ package org.migor.feedless.feed
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -43,9 +42,9 @@ const val feedId = "feed-id"
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @MockBeans(
-    MockBean(ServerConfigResolver::class),
-    MockBean(WebSocketHandler::class),
-    MockBean(FeedParserService::class),
+  MockBean(ServerConfigResolver::class),
+  MockBean(WebSocketHandler::class),
+  MockBean(FeedParserService::class),
 )
 @ActiveProfiles(
   "test",

@@ -67,7 +67,13 @@ class FulltextPluginTest {
       )
     )
 
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenReturn(
+    `when`(
+      scrapeService.scrape(
+        any(String::class.java),
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
       ScrapeOutput(
         outputs = emptyList(),
         time = 0,
@@ -75,10 +81,20 @@ class FulltextPluginTest {
     )
 
     val response =
-      fulltextPlugin.mapEntity(corrId = corrId, document = document, repository = repository, params = params, logCollector = LogCollector())
+      fulltextPlugin.mapEntity(
+        corrId = corrId,
+        document = document,
+        repository = repository,
+        params = params,
+        logCollector = LogCollector()
+      )
 
     assertThat(response).isNotNull
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
+    verify(scrapeService, times(1)).scrape(
+      any(String::class.java),
+      any(SourceEntity::class.java),
+      any(LogCollector::class.java)
+    )
   }
 
   @Test

@@ -25,7 +25,6 @@ import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeActionInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
@@ -63,9 +62,9 @@ class RepositoryServiceTest {
   private lateinit var userId: UUID
 
   @BeforeEach
-  fun beforeEach() = runTest{
+  fun beforeEach() = runTest {
     repositoryDAO = mock(RepositoryDAO::class.java)
-    sessionService =mock(SessionService::class.java)
+    sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     sourceDAO = mock(SourceDAO::class.java)
     repositoryService = RepositoryService(
@@ -120,21 +119,23 @@ class RepositoryServiceTest {
         repositories = listOf(
           RepositoryCreateInput(
             product = ProductCategory.rssProxy,
-            sources = listOf(SourceInput(
-              title = "",
-              flow = ScrapeFlowInput(
-                sequence = listOf(
-                  ScrapeActionInput(
-                    fetch = HttpFetchInput(get= HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
+            sources = listOf(
+              SourceInput(
+                title = "",
+                flow = ScrapeFlowInput(
+                  sequence = listOf(
+                    ScrapeActionInput(
+                      fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
+                    )
                   )
-                )
-              ),
+                ),
 
-              )),
-            title ="",
-            description ="",
-            refreshCron="",
-            withShareKey=true
+                )
+            ),
+            title = "",
+            description = "",
+            refreshCron = "",
+            withShareKey = true
           )
         )
       )
@@ -181,7 +182,7 @@ class RepositoryServiceTest {
         repositoryService.findById(corrId, UUID.randomUUID())
       }
     }
-   }
+  }
 
   @Test
   fun `given user is owner, updating repository works`() = runTest {

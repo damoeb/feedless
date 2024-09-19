@@ -185,9 +185,6 @@ dependencies {
   testImplementation("org.testcontainers:postgresql:1.20.0")
   testImplementation("org.testcontainers:testcontainers:1.20.0")
   testImplementation("org.testcontainers:junit-jupiter:1.19.0")
-//  testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
-//  testImplementation("io.kotest:kotest-extensions-spring:4.4.3")
-//  testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.3")
 
 //  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
 //  testImplementation("org.powermock:powermock-module-junit4:2.0.9")

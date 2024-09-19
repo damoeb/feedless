@@ -42,11 +42,4 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
 
   fun findAllByOwnerId(id: UUID): List<UserSecretEntity>
 
-  @Modifying
-  @Query(
-    """
-    delete from UserSecretEntity K where K.id in (:ids) and K.ownerId = :ownerId
-  """
-  )
-  fun deleteAllByIdAndOwnerId(ids: List<UUID>, ownerId: UUID)
 }

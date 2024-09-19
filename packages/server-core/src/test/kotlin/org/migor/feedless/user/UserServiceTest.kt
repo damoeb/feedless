@@ -1,15 +1,19 @@
 package org.migor.feedless.user
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
+import org.migor.feedless.transport.TelegramBotService
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.argThat
@@ -32,6 +36,12 @@ class UserServiceTest {
 
   @Mock
   lateinit var userDAO: UserDAO
+
+  @Mock
+  lateinit var connectedAppDAO: ConnectedAppDAO
+
+  @Mock
+  lateinit var telegramBotService: TelegramBotService
 
   @Mock
   lateinit var githubConnectionDAO: GithubConnectionDAO
@@ -166,6 +176,59 @@ class UserServiceTest {
     verify(user, times(0)).email = any(String::class.java)
 
     verify(userDAO).save(eq(user))
+  }
+
+
+  @Test
+  fun `deleting a connected app will fail if user is not authorized`() = runTest {
+    val connectedApp = mock(ConnectedAppEntity::class.java)
+    val connectedAppId = UUID.randomUUID()
+    `when`(connectedApp.userId).thenReturn(UUID.randomUUID())
+    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runBlocking {
+        userService.deleteConnectedApp(corrId, user, connectedAppId)
+      }
+    }
+  }
+
+  @Test
+  fun `deleting a connected app will fail if app-id is invalid`() = runTest {
+    val connectedAppId = UUID.randomUUID()
+
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runBlocking {
+        userService.deleteConnectedApp(corrId, user, connectedAppId)
+      }
+    }
+  }
+
+  @Test
+  fun `deleting a telegram connection will work`() = runTest {
+    val connectedApp = mock(TelegramConnectionEntity::class.java)
+    val connectedAppId = UUID.randomUUID()
+    `when`(connectedApp.userId).thenReturn(userId)
+    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
+
+    userService.deleteConnectedApp(corrId, user, connectedAppId)
+
+    verify(connectedAppDAO).delete(eq(connectedApp))
+    verify(telegramBotService).sendMessage(any(Long::class.java), any(String::class.java))
+  }
+
+  @Test
+  fun `deleting a github connection is defused`() = runTest {
+    val connectedApp = mock(GithubConnectionEntity::class.java)
+    val connectedAppId = UUID.randomUUID()
+    `when`(connectedApp.userId).thenReturn(userId)
+    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
+
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runBlocking {
+        userService.deleteConnectedApp(corrId, user, connectedAppId)
+      }
+    }
   }
 
 }

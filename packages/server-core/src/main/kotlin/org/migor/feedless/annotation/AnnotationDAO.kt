@@ -9,5 +9,4 @@ import java.util.*
 
 @Repository
 @Profile("${AppProfiles.annotation} & ${AppLayer.repository}")
-interface AnnotationDAO : JpaRepository<AnnotationEntity, UUID> {
-}
+interface AnnotationDAO : JpaRepository<AnnotationEntity, UUID>

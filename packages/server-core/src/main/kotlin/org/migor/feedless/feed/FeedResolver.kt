@@ -19,9 +19,9 @@ import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.FeedPreview
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.PreviewFeedInput
+import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
-import org.migor.feedless.generated.types.Record
 import org.migor.feedless.session.useRequestContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -107,20 +107,20 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
       }
 
       Record(
-          id = it.url,
-          tags = it.tags,
-          title = it.title,
-          text = it.text,
-          publishedAt = it.publishedAt.toMillis(),
-          startingAt = it.startingAt?.toMillis(),
-          latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
-          createdAt = LocalDateTime.now().toMillis(),
-          url = it.url,
-          attachments = it.attachments.map { it.toDto() },
-          imageUrl = it.imageUrl,
-          html = html,
-          rawMimeType = rawMimeType,
-          rawBase64 = rawBase64,
+        id = it.url,
+        tags = it.tags,
+        title = it.title,
+        text = it.text,
+        publishedAt = it.publishedAt.toMillis(),
+        startingAt = it.startingAt?.toMillis(),
+        latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
+        createdAt = LocalDateTime.now().toMillis(),
+        url = it.url,
+        attachments = it.attachments.map { it.toDto() },
+        imageUrl = it.imageUrl,
+        html = html,
+        rawMimeType = rawMimeType,
+        rawBase64 = rawBase64,
       )
     }
   )

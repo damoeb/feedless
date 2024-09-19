@@ -94,14 +94,24 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails will increment the error count`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
+    `when`(
+      scrapeService.scrape(
+        any(String::class.java),
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenThrow(
       IllegalArgumentException("this is off")
     )
     `when`(source.errorsInSuccession).thenReturn(0)
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
+    verify(scrapeService, times(1)).scrape(
+      any(String::class.java),
+      any(SourceEntity::class.java),
+      any(LogCollector::class.java)
+    )
 
     verify(source).disabled = false
     verify(source).errorsInSuccession = 1
@@ -111,14 +121,24 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
+    `when`(
+      scrapeService.scrape(
+        any(String::class.java),
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenThrow(
       IllegalArgumentException("this is off")
     )
     `when`(source.errorsInSuccession).thenReturn(4)
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
+    verify(scrapeService, times(1)).scrape(
+      any(String::class.java),
+      any(SourceEntity::class.java),
+      any(LogCollector::class.java)
+    )
 
     verify(source).disabled = true
     verify(source).errorsInSuccession = 5
@@ -128,13 +148,23 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails recoverable will not flag the source errornous`() = runTest {
-    `when`(scrapeService.scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))).thenThrow(
+    `when`(
+      scrapeService.scrape(
+        any(String::class.java),
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenThrow(
       ResumableHarvestException(corrId, "", Duration.ofMinutes(5))
     )
 
     repositoryHarvester.handleRepository(corrId, repository.id)
 
-    verify(scrapeService, times(1)).scrape(any(String::class.java), any(SourceEntity::class.java), any(LogCollector::class.java))
+    verify(scrapeService, times(1)).scrape(
+      any(String::class.java),
+      any(SourceEntity::class.java),
+      any(LogCollector::class.java)
+    )
     verify(sourceDAO, times(0)).save(source)
   }
 

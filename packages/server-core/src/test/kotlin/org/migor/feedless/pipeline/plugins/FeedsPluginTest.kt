@@ -39,8 +39,8 @@ import java.time.LocalDateTime
   AppLayer.service,
 )
 @MockBeans(
-    MockBean(AttachmentDAO::class),
-    MockBean(AgentService::class),
+  MockBean(AttachmentDAO::class),
+  MockBean(AgentService::class),
 )
 @Import(
   PropertiesConfiguration::class,

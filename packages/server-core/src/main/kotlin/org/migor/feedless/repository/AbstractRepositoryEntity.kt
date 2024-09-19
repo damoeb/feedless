@@ -52,11 +52,11 @@ import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity

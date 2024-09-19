@@ -82,7 +82,13 @@ class PlanConstraintsServiceImplTest {
 
     val mockPlan = mock(PlanEntity::class.java)
     `when`(mockPlan.product).thenReturn(mockProduct)
-    `when`(planDAO.findActiveByUserAndProductIn(any(UUID::class.java), anyList(), any(LocalDateTime::class.java))).thenReturn(mockPlan)
+    `when`(
+      planDAO.findActiveByUserAndProductIn(
+        any(UUID::class.java),
+        anyList(),
+        any(LocalDateTime::class.java)
+      )
+    ).thenReturn(mockPlan)
   }
 
   @Test

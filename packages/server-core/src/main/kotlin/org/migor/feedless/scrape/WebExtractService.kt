@@ -13,7 +13,6 @@ import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup

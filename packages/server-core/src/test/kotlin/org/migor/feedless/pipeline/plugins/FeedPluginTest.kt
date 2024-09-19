@@ -84,11 +84,11 @@ class FeedPluginTest {
     )
     `when`(
       webToFeedTransformer.getFeedBySelectors(
-          any(String::class.java),
-          any(Selectors::class.java),
-          any(Document::class.java),
-          any(URI::class.java),
-          any(LogCollector::class.java),
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URI::class.java),
+        any(LogCollector::class.java),
       )
     ).thenReturn(jsonFeed)
 
@@ -100,11 +100,11 @@ class FeedPluginTest {
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(1))
       .getFeedBySelectors(
-          any(String::class.java),
-          any(Selectors::class.java),
-          any(Document::class.java),
-          any(URI::class.java),
-          any(LogCollector::class.java)
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URI::class.java),
+        any(LogCollector::class.java)
       )
   }
 
@@ -122,11 +122,11 @@ class FeedPluginTest {
       .parseFeed(any(String::class.java), any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(0))
       .getFeedBySelectors(
-          any(String::class.java),
-          any(Selectors::class.java),
-          any(Document::class.java),
-          any(URI::class.java),
-          any(LogCollector::class.java)
+        any(String::class.java),
+        any(Selectors::class.java),
+        any(Document::class.java),
+        any(URI::class.java),
+        any(LogCollector::class.java)
       )
   }
 }

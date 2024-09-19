@@ -16,9 +16,11 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.annotation} & ${AppLayer.service}")
-class AnnotationService(val annotationDAO: AnnotationDAO,
-                        val voteDAO: VoteDAO,
-                        val textAnnotationDAO: TextAnnotationDAO) {
+class AnnotationService(
+  val annotationDAO: AnnotationDAO,
+  val voteDAO: VoteDAO,
+  val textAnnotationDAO: TextAnnotationDAO
+) {
 
   suspend fun createAnnotation(corrId: String, data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
     return data.annotation.flag?.let { createBoolAnnotation(corrId, data.where, flag = it.set, user = user) }

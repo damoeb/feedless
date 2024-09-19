@@ -1,4 +1,3 @@
-
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -24,13 +23,14 @@ class PostgreSQLExtension : BeforeAllCallback, AfterAllCallback {
     postgis.start()
 
     println(postgis.jdbcUrl)
-    val jdbcUrl = "jdbc:tc:postgis:$imageTag://localhost:${postgis.firstMappedPort}/${postgis.databaseName}?TC_REUSABLE=false"
+    val jdbcUrl =
+      "jdbc:tc:postgis:$imageTag://localhost:${postgis.firstMappedPort}/${postgis.databaseName}?TC_REUSABLE=false"
     System.setProperty("spring.datasource.url", jdbcUrl)
     System.setProperty("spring.datasource.username", postgis.username)
     System.setProperty("spring.datasource.password", postgis.password)
     System.setProperty("spring.flyway.baseline-on-migrate", "true")
     System.setProperty("spring.flyway.baseline-version", "1")
-    System.setProperty("spring.flyway.target", "53")
+    System.setProperty("spring.flyway.target", "59")
     System.setProperty("spring.flyway.enabled", "true")
   }
 

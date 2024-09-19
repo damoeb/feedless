@@ -200,6 +200,23 @@
         <!--              <ion-icon name="trash-outline"></ion-icon>-->
         <!--            </ion-button>-->
         <!--          </div>-->
+        <ion-item>
+          <ion-checkbox
+            style="flex: 3"
+            class="ion-margin-end"
+            aria-label=""
+            justify="end"
+            aria-labelledby="applyPrivacyPlugin__label"
+            [formControl]="formFg.controls.applyPrivacyPlugin"
+          ></ion-checkbox>
+          <ion-label
+            style="flex: 9"
+            id="applyPrivacyPlugin__label"
+            class="ion-text-left"
+          >
+            Inline Images
+          </ion-label>
+        </ion-item>
       </ion-list>
     </ion-accordion>
 
@@ -322,7 +339,7 @@
     <ion-accordion value="notifications" toggleIconSlot="start">
       <ion-item slot="header">
         <ion-label>
-          Notifications
+          Push Messages
           <!--          <ion-note>-->
           <!--            Harvest artefacts (images, pdfs,...), rewrite urls and unwinds tracking urls-->
           <!--          </ion-note>-->
@@ -336,46 +353,24 @@
             aria-label=""
             justify="end"
             aria-labelledby="enablePushNotifications__label"
-            [formControl]="formFg.controls.applyPrivacyPlugin"
+            [formControl]="formFg.controls.enablePushNotifications"
           ></ion-checkbox>
           <ion-label
             style="flex: 9"
             id="enablePushNotifications__label"
             class="ion-text-left"
           >
-            Enable Push to Telegram
+            <h3>Push to Telegram</h3>
           </ion-label>
+          <ion-button routerLink="/docs/telegram" target="_blank">
+            Setup Instructions
+          </ion-button>
         </ion-item>
-      </ion-list>
-    </ion-accordion>
-
-    <ion-accordion value="robustness" toggleIconSlot="start">
-      <ion-item slot="header">
-        <ion-label>
-          Anonymity & Robustness
-          <!--          <ion-note>-->
-          <!--            Harvest artefacts (images, pdfs,...), rewrite urls and unwinds tracking urls-->
-          <!--          </ion-note>-->
-        </ion-label>
-      </ion-item>
-      <ion-list slot="content">
-        <ion-item>
-          <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="applyPrivacyPlugin__label"
-            [formControl]="formFg.controls.applyPrivacyPlugin"
-          ></ion-checkbox>
-          <ion-label
-            style="flex: 9"
-            id="applyPrivacyPlugin__label"
-            class="ion-text-left"
-          >
-            Enable
-          </ion-label>
-        </ion-item>
+        <!--        <ion-row>-->
+        <!--          <ion-col push="3" size="8">-->
+        <!--            Webhooks, Email Forwards or WebSub are not yet fully implemented.-->
+        <!--          </ion-col>-->
+        <!--        </ion-row>-->
       </ion-list>
     </ion-accordion>
 

@@ -16,11 +16,11 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.DatesWhereInput
-import org.migor.feedless.generated.types.RecordFrequency
-import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.generated.types.RecordDateField
+import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.RecordOrderByInput
 import org.migor.feedless.generated.types.RecordsWhereInput
+import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin

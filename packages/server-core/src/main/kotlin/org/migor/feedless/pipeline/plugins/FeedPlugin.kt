@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class FeedPlugin() : FragmentTransformerPlugin {
+class FeedPlugin : FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FeedPlugin::class.simpleName)
 

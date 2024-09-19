@@ -20,8 +20,8 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.WebExtractService
 import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.scrape.WebToTextTransformer
 import org.migor.feedless.scrape.WebToFeedTransformer.Companion.toAbsoluteUrl
+import org.migor.feedless.scrape.WebToTextTransformer
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,8 +44,8 @@ import java.util.*
   AppProfiles.properties,
 )
 @MockBeans(
-    MockBean(AgentService::class),
-    MockBean(AttachmentDAO::class),
+  MockBean(AgentService::class),
+  MockBean(AttachmentDAO::class),
 )
 @Import(
   DisableDatabaseConfiguration::class,

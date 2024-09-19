@@ -14,7 +14,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.DeleteUserSecretsInput
+import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.session.SessionService
@@ -56,17 +56,18 @@ class SecretsResolver {
 
 
   @Throttled
-  @DgsMutation(field = DgsConstants.MUTATION.DeleteUserSecrets)
+  @DgsMutation(field = DgsConstants.MUTATION.DeleteUserSecret)
   @PreAuthorize("hasAuthority('USER')")
-  suspend fun deleteUserSecrets(
+  suspend fun deleteUserSecret(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: DeleteUserSecretsInput,
+    @InputArgument data: DeleteUserSecretInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    userSecretService.deleteUserSecrets(
+    userSecretService.deleteUserSecret(
       corrId,
       sessionService.user(corrId),
-      data.where.`in`.map { UUID.fromString(it) })
+      UUID.fromString(data.where.`eq`)
+    )
     true
   }
 }
