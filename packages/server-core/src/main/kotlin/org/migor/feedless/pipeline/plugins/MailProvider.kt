@@ -16,7 +16,6 @@ class MailData {
 interface MailProvider {
 
   fun provideDocumentMail(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput

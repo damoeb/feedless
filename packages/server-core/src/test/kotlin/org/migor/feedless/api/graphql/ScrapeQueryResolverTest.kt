@@ -83,7 +83,7 @@ class ScrapeQueryResolverTest {
     val url = "http://www.foo.bar/feed.xml"
     val feed = Files.readString(ResourceUtils.getFile("classpath:transform/medium-rss.in.xml").toPath())
     val httpResponse = HttpResponse("application/xml", url, 200, feed.toByteArray())
-    `when`(httpServiceMock.httpGetCaching(anyString(), anyString(), anyInt(), any<Map<String, String>>()))
+    `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
       .thenReturn(httpResponse)
 
     // when
@@ -98,7 +98,7 @@ class ScrapeQueryResolverTest {
     // given
     val feed = Files.readString(ResourceUtils.getFile("classpath:raw-websites/06-jon-bo-posts.input.html").toPath())
     val httpResponse = HttpResponse("text/html", url, 200, feed.toByteArray())
-    `when`(httpServiceMock.httpGetCaching(anyString(), anyString(), anyInt(), any<Map<String, String>>()))
+    `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
       .thenReturn(httpResponse)
     val params = PluginExecutionParamsInput(
       org_feedless_feed = FeedParamsInput(

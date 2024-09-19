@@ -17,10 +17,9 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.annotation.AnnotationService
 import org.migor.feedless.annotation.VoteEntity
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.config.CustomContext
+import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Annotation
@@ -38,8 +37,9 @@ import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.Source
 import org.migor.feedless.generated.types.UserWhereUniqueInput
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -47,7 +47,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 
@@ -85,26 +84,24 @@ class RepositoryResolver {
   suspend fun repositories(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoriesInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] repositories $data")
+  ): List<Repository> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("repositories $data")
 
     val (pageNumber, pageSize) = handleCursor(data.cursor)
 
-    val userId = sessionService.userId()
+    val userId = coroutineContext.userId()
     repositoryService.findAll(pageNumber, pageSize, data.where, userId)
-      .map { it.toDto(it.ownerId == sessionService.userId()) }
+      .map { it.toDto(it.ownerId == userId) }
   }
 
   @Throttled
   @DgsQuery
   suspend fun countRepositories(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: CountRepositoriesInput,
-  ): Int = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] countRepositories")
-    repositoryService.countAll(sessionService.userId(), data.product.fromDto())
+  ): Int = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("countRepositories")
+    repositoryService.countAll(coroutineContext.userId(), data.product.fromDto())
   }
 
   @Throttled
@@ -112,11 +109,10 @@ class RepositoryResolver {
   suspend fun repository(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoryWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Repository = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] repository $data")
-    val repository = repositoryService.findById(corrId, UUID.fromString(data.where.id))
-    repository.toDto(repository.ownerId == sessionService.userId())
+  ): Repository = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("repository $data")
+    val repository = repositoryService.findById(UUID.fromString(data.where.id))
+    repository.toDto(repository.ownerId == coroutineContext.userId())
   }
 
   @Throttled
@@ -125,10 +121,9 @@ class RepositoryResolver {
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoriesCreateInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Repository> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] createRepositories $data")
-    repositoryService.create(corrId, data)
+  ): List<Repository> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("createRepositories $data")
+    repositoryService.create(data)
   }
 
   @Throttled
@@ -137,10 +132,9 @@ class RepositoryResolver {
   suspend fun updateRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoryUpdateInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Repository = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] updateRepository $data")
-    repositoryService.update(corrId, UUID.fromString(data.where.id), data.data).toDto(true)
+  ): Repository = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("updateRepository $data")
+    repositoryService.update(UUID.fromString(data.where.id), data.data).toDto(true)
   }
 
   @Throttled
@@ -149,10 +143,9 @@ class RepositoryResolver {
   suspend fun deleteRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument("data") data: RepositoryUniqueWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] deleteRepository $data")
-    repositoryService.delete(corrId, UUID.fromString(data.id))
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("deleteRepository $data")
+    repositoryService.delete(UUID.fromString(data.id))
     true
   }
 
@@ -160,12 +153,11 @@ class RepositoryResolver {
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Sources)
   suspend fun sources(
     dfe: DgsDataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
       sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))
-        .map { it.toScrapeRequest(corrId) }
+        .map { it.toScrapeRequest() }
     } else {
       emptyList()
     }
@@ -174,7 +166,6 @@ class RepositoryResolver {
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
   suspend fun harvests(
     dfe: DgsDataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Harvest> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
@@ -212,7 +203,7 @@ class RepositoryResolver {
   ): Annotations = coroutineScope {
     val repository: Repository = dfe.getSource()
 
-    DgsContext.getCustomContext<CustomContext>(dfe).repositoryId = repository.id
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repository.id
     val repositoryId = UUID.fromString(repository.id)
     Annotations(
       upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
@@ -225,14 +216,14 @@ class RepositoryResolver {
     @InputArgument where: UserWhereUniqueInput,
     dfe: DgsDataFetchingEnvironment
   ): List<Annotation> = coroutineScope {
-    val context = DgsContext.getCustomContext<CustomContext>(dfe)
+    val context = DgsContext.getCustomContext<DgsCustomContext>(dfe)
     val repositoryId = UUID.fromString(context.repositoryId)
     val userId = context.userId
     if (StringUtils.isBlank(where.id)) {
       emptyList()
     } else {
       userId?.let {
-        annotationService.findAllVotesByUserIdAndRepositoryId(UUID.fromString(userId), repositoryId).map { it.toDto() }
+        annotationService.findAllVotesByUserIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
       } ?: emptyList()
     }
   }

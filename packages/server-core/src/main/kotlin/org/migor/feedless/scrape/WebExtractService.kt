@@ -33,7 +33,6 @@ class WebExtractService(private val dateClaimer: DateClaimer) {
   }
 
   suspend fun extract(
-    corrId: String,
     extract: DOMExtract,
     element: Element,
     locale: Locale,
@@ -52,7 +51,7 @@ class WebExtractService(private val dateClaimer: DateClaimer) {
       fragmentName = extract.fragmentName,
       fragments = fragments.map { fragment ->
         ScrapeExtractFragment(
-          extracts = extract.extract?.map { extract(corrId, it, fragment, locale, logger, level + 1) },
+          extracts = extract.extract?.map { extract(it, fragment, locale, logger, level + 1) },
           html = if (extract.emit.contains(ScrapeEmit.html)) {
             TextData(fragment.html())
           } else {
@@ -64,7 +63,7 @@ class WebExtractService(private val dateClaimer: DateClaimer) {
             null
           },
           data = if (extract.emit.contains(ScrapeEmit.date)) {
-            dateClaimer.claimDatesFromString(corrId, fragment.text(), locale, logger)?.let { date ->
+            dateClaimer.claimDatesFromString(fragment.text(), locale, logger)?.let { date ->
               MimeData(
                 mimeType = MIME_DATE,
                 data = date.toMillis().toString()

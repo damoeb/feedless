@@ -13,7 +13,6 @@ import org.migor.feedless.generated.types.FeatureIntValueInput
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,24 +22,15 @@ import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 @Service
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
 @Transactional
-class FeatureService {
+class FeatureService(
+  private val sessionService: SessionService,
+  private val productDAO: ProductDAO,
+  private val featureDAO: FeatureDAO,
+  private val featureGroupDAO: FeatureGroupDAO,
+  private val featureValueDAO: FeatureValueDAO
+) {
 
   private val log = LoggerFactory.getLogger(FeatureService::class.simpleName)
-
-  @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
-  private lateinit var productDAO: ProductDAO
-
-  @Autowired
-  private lateinit var featureDAO: FeatureDAO
-
-  @Autowired
-  private lateinit var featureGroupDAO: FeatureGroupDAO
-
-  @Autowired
-  private lateinit var featureValueDAO: FeatureValueDAO
 
   suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
     return withContext(Dispatchers.IO) {
@@ -78,13 +68,12 @@ class FeatureService {
   }
 
   suspend fun updateFeatureValue(
-    corrId: String,
     id: UUID,
     intValue: FeatureIntValueInput?,
     boolValue: FeatureBooleanValueInput?,
     productId: UUID? = null
   ) {
-    if (!sessionService.user(corrId).root) {
+    if (!sessionService.user().admin) {
       throw IllegalArgumentException("must be root")
     }
 
@@ -160,7 +149,7 @@ class FeatureService {
     return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
   }
 
-  private suspend fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
+  suspend fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
     return withContext(Dispatchers.IO) {
       toDTO(
         if (inherit) {

@@ -30,7 +30,7 @@ import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toMillis
@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import kotlin.coroutines.coroutineContext
 
 private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
   return this.outputs.last()
@@ -80,23 +81,23 @@ class FeedParserService {
     )
   }
 
-  suspend fun parseFeed(corrId: String, response: HttpResponse): JsonFeed {
+  suspend fun parseFeed(response: HttpResponse): JsonFeed {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] Parsing feed")
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
-      corrId, response
-    )
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response)
     log.debug("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
       bodyParser.canProcess(feedType)
     }
     return runCatching {
-      bodyParser.process(corrId, response)
+      bodyParser.process(response)
     }.onFailure {
       log.info("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
     }.getOrThrow()
   }
 
-  suspend fun parseFeedFromUrl(corrId: String, url: String): JsonFeed {
+  suspend fun parseFeedFromUrl(url: String): JsonFeed {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,
@@ -108,16 +109,14 @@ class FeedParserService {
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
 //    }
-    val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.debug("[$branchedCorrId] GET $url")
-    val response = httpService.executeRequest(branchedCorrId, request, 200)
-    return parseFeed(corrId, response)
+    log.debug("[$corrId] GET $url")
+    val response = httpService.executeRequest(request, 200)
+    return parseFeed(response)
   }
 
 
   @Deprecated("obsolete")
   suspend fun parseFeedFromRequest(
-    corrId: String,
     sources: List<SourceEntity>,
     filters: List<ItemFilterParamsInput>,
     tags: List<ConditionalTagInput>
@@ -132,11 +131,10 @@ class FeedParserService {
     val logCollector = LogCollector()
 
     val items = sources
-      .map { source -> scrapeService.scrape(corrId, source, logCollector) }
+      .map { source -> scrapeService.scrape(source, logCollector) }
       .flatMap { response -> response.lastOutput().fragment!!.items!! }
       .filterIndexed { index, item ->
         filterPlugin.filterEntity(
-          corrId,
           item,
           params,
           index,
@@ -145,7 +143,6 @@ class FeedParserService {
       }
       .map {
         conditionalTagPlugin.mapEntity(
-          corrId,
           it.asEntity(dummyRepository),
           dummyRepository,
           conditionalTagsParams,

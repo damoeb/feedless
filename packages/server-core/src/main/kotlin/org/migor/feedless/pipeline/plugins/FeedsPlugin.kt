@@ -16,6 +16,7 @@ import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -43,11 +45,11 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun listed() = false
   override suspend fun transformFragment(
-    corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
     logger: LogCollector,
   ): FragmentOutput {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] transformFragment")
 
     val feedMimeTypes = arrayOf(
@@ -64,7 +66,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     logger.log("Found mimeType=$mimeType")
     return if (feedMimeTypes.any { mimeType.startsWith(it) }) {
       logger.log("Parsing native feed")
-      val jsonFeed = feedParserService.parseFeed(corrId, data)
+      val jsonFeed = feedParserService.parseFeed(data)
       FragmentOutput(
         fragmentName = "native",
         feeds = ScrapedFeeds(
@@ -77,7 +79,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
         logger.log("extracting feeds")
         val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
         log.debug("[$corrId] extracting feeds")
-        extractFeeds(corrId, document, data.url, logger)
+        extractFeeds(document, data.url, logger)
       } else {
         logger.log("unsupported mimeType")
         log.warn("[$corrId] unsupported mimeType $mimeType")
@@ -95,17 +97,17 @@ class FeedsPlugin : FragmentTransformerPlugin {
   override fun name(): String = "Feeds"
 
   private suspend fun extractFeeds(
-    corrId: String,
     document: Document,
     url: String,
     logger: LogCollector,
   ): FragmentOutput {
     val parserOptions = GenericFeedParserOptions()
-    val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)
+    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
     logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
-    val genericFeeds = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
+    val genericFeeds = genericFeedLocator.locateInDocument(document, url, parserOptions)
     logger.log("found ${genericFeeds.size} generic feeds")
-    log.info("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
+    val corrId = coroutineContext.corrId()
+    log.debug("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
     return FragmentOutput(
       fragmentName = "feeds",

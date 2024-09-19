@@ -15,7 +15,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
@@ -32,7 +31,6 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
@@ -65,7 +63,7 @@ class SessionResolver {
   @DgsQuery
   @Transactional
   suspend fun session(dfe: DataFetchingEnvironment): Session =
-    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+    withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       unsetSessionCookie(dfe)
       val defaultSession = Session(
         isLoggedIn = false,
@@ -74,7 +72,7 @@ class SessionResolver {
 
       if (sessionService.isUser()) {
         runCatching {
-          val user = sessionService.user(CryptUtil.newCorrId())
+          val user = sessionService.user()
           Session(
             isLoggedIn = true,
             isAnonymous = false,
@@ -97,27 +95,25 @@ class SessionResolver {
   @DgsMutation(field = DgsConstants.MUTATION.AuthUser)
   suspend fun authUser(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     @InputArgument data: AuthUserInput,
-  ): Authentication = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    val corrId = CryptUtil.handleCorrId(corrIdParam)
-    log.debug("[$corrId] authUser")
+  ): Authentication = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("authUser")
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
-      log.debug("[$corrId] authRoot")
-      val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found ($corrId)")
-      if (!root.root) {
-        throw PermissionDeniedException("account is not root ($corrId)")
+      log.debug("authRoot")
+      val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found")
+      if (!root.admin) {
+        throw PermissionDeniedException("account is not root")
       }
       userSecretService.findBySecretKeyValue(data.secretKey, data.email)
-        ?: throw IllegalArgumentException("secretKey does not match ($corrId)")
+        ?: throw IllegalArgumentException("secretKey does not match")
       val jwt = tokenProvider.createJwtForUser(root)
-      addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
+      addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       Authentication(
         token = jwt.tokenValue,
         corrId = CryptUtil.newCorrId()
       )
     } else {
-      throw PermissionDeniedException("authRoot profile is not active ($corrId)")
+      throw PermissionDeniedException("authRoot profile is not active")
     }
   }
 
@@ -125,9 +121,8 @@ class SessionResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun logout(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.debug("[$corrId] logout")
+    log.debug("logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain

@@ -17,6 +17,7 @@ import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
 @Service
@@ -51,11 +53,11 @@ class OrderService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
-  suspend fun findAll(corrId: String, data: OrdersInput): List<OrderEntity> {
+  suspend fun findAll(data: OrdersInput): List<OrderEntity> {
     val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
-    val currentUser = sessionService.user(corrId)
+    val currentUser = sessionService.user()
     return withContext(Dispatchers.IO) {
-      if (currentUser.root) {
+      if (currentUser.admin) {
 //      data.where?.id?.let {
 //        orderDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
@@ -67,17 +69,17 @@ class OrderService {
   }
 
   suspend fun upsert(
-    corrId: String,
     where: OrderWhereUniqueInput?,
     create: OrderCreateInput?,
     update: OrderUpdateInput?
   ): OrderEntity {
     return where?.let {
-      update(corrId, where, update!!)
-    } ?: create(corrId, create!!)
+      update(where, update!!)
+    } ?: create(create!!)
   }
 
-  private suspend fun create(corrId: String, create: OrderCreateInput): OrderEntity {
+  private suspend fun create(create: OrderCreateInput): OrderEntity {
+    val corrId = coroutineContext.corrId()
     log.info("[$corrId] create $create]")
     val order = OrderEntity()
     order.isOffer = BooleanUtils.isTrue(create.isOffer)
@@ -99,14 +101,15 @@ class OrderService {
     create.user.connect?.let {
       order.userId = UUID.fromString(it.id)
     } ?: create.user.create?.let {
-      order.userId = createUser(corrId, create.user.create).id
+      order.userId = createUser(create.user.create).id
     } ?: throw IllegalArgumentException("Neither connect or create is present")
     return withContext(Dispatchers.IO) {
       orderDAO.save(order)
     }
   }
 
-  private suspend fun createUser(corrId: String, create: UserCreateInput): UserEntity {
+  private suspend fun createUser(create: UserCreateInput): UserEntity {
+    val corrId = coroutineContext.corrId()
     return withContext(Dispatchers.IO) {
       userDAO.findByEmail(create.email.trim()) ?: run {
         log.info("[$corrId] createUser $create]")
@@ -125,9 +128,10 @@ class OrderService {
     }
   }
 
-  private suspend fun update(corrId: String, where: OrderWhereUniqueInput, update: OrderUpdateInput): OrderEntity {
+  private suspend fun update(where: OrderWhereUniqueInput, update: OrderUpdateInput): OrderEntity {
+    val corrId = coroutineContext.corrId()
     log.info("[$corrId] update $update $where")
-    if (!sessionService.user(corrId).root) {
+    if (!sessionService.user().admin) {
       throw PermissionDeniedException("must be root ($corrId)")
     }
 
@@ -149,7 +153,7 @@ class OrderService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun handlePaymentCallback(corrId: String, orderId: String): OrderEntity {
+  suspend fun handlePaymentCallback(orderId: String): OrderEntity {
     return withContext(Dispatchers.IO) {
       val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
 
@@ -159,9 +163,9 @@ class OrderService {
 
       val product = order.product!!
       if (product.isCloudProduct) {
-        productService.enableCloudProduct(corrId, product, order.user!!, order)
+        productService.enableCloudProduct(product, order.user!!, order)
       } else {
-        order.licenses = mutableListOf(licenseService.createLicenseForProduct(corrId, product, order))
+        order.licenses = mutableListOf(licenseService.createLicenseForProduct(product, order))
         orderDAO.save(order)
       }
 

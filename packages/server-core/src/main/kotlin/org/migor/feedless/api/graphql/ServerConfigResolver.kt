@@ -18,7 +18,7 @@ import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -59,7 +59,7 @@ class ServerConfigResolver {
   suspend fun serverSettings(
     dfe: DataFetchingEnvironment,
     @InputArgument data: ServerSettingsContextInput,
-  ): ServerSettings = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+  ): ServerSettings = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("serverSettings $data")
     val product = data.product.fromDto()
 

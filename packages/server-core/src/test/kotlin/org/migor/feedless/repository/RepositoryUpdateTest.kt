@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
@@ -24,6 +23,7 @@ import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.user.UserService
@@ -36,15 +36,15 @@ import java.util.*
 
 class RepositoryUpdateTest {
 
-  lateinit var repositoryService: RepositoryService
-  lateinit var repositoryDAO: RepositoryDAO
-  lateinit var sessionService: SessionService
-  lateinit var planConstraintsService: PlanConstraintsService
-  val corrId = "test"
-  lateinit var repositoryId: UUID
-  lateinit var ownerId: UUID
-  lateinit var repository: RepositoryEntity
-  lateinit var data: RepositoryUpdateDataInput
+  private lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var sessionService: SessionService
+  private lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var repositoryId: UUID
+  private lateinit var ownerId: UUID
+  private lateinit var repository: RepositoryEntity
+  private lateinit var data: RepositoryUpdateDataInput
+  private val currentUserId = UUID.randomUUID()
 
   @BeforeEach
   fun setUp() {
@@ -96,28 +96,26 @@ class RepositoryUpdateTest {
   }
 
   @Test
-  fun `given repo does not exists, update will fail`() = runTest {
+  fun `given repo does not exists, update will fail`() {
     assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
-      runBlocking {
-        repositoryService.update(corrId, repositoryId, data)
+      runTest(context = RequestContext(userId = currentUserId)) {
+        repositoryService.update(repositoryId, data)
       }
     }
   }
 
   @Test
-  fun `given current user has insuffieient priveleges, update will fail`() = runTest {
+  fun `given current user has insuffieient priveleges, update will fail`() {
     `when`(repositoryDAO.findByIdWithSources(any(UUID::class.java))).thenReturn(repository)
-    `when`(sessionService.userId()).thenReturn(UUID.randomUUID())
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runBlocking {
-        repositoryService.update(corrId, repositoryId, data)
+      runTest(context = RequestContext(userId = UUID.randomUUID())) {
+        repositoryService.update(repositoryId, data)
       }
     }
   }
 
   @Test
-  fun `given all requirements are met, update will work`() = runTest {
-    `when`(sessionService.userId()).thenReturn(ownerId)
+  fun `given all requirements are met, update will work`() = runTest(context = RequestContext(userId = ownerId)) {
     `when`(planConstraintsService.auditCronExpression(any(String::class.java))).thenAnswer {
       it.arguments[0]
     }
@@ -133,7 +131,7 @@ class RepositoryUpdateTest {
     `when`(repositoryDAO.findByIdWithSources(any(UUID::class.java))).thenReturn(repository)
     `when`(repositoryDAO.save(any(RepositoryEntity::class.java))).thenAnswer { it.arguments[0] }
 
-    repositoryService.update(corrId, repositoryId, data)
+    repositoryService.update(repositoryId, data)
 
     verify(repository).title = "new-title"
     verify(repository).description = "new-description"

@@ -62,9 +62,8 @@ class AttachmentController {
     request: HttpServletRequest,
     @RequestParam("url") url: String,
   ): ResponseEntity<ByteArray> = coroutineScope {
-    val corrId = createCorrId(request)
-    log.info("[$corrId] GET proxy attachment url=$url")
-    val attachment = httpService.httpGet(corrId, url, 200)
+    log.debug("GET proxy attachment url=$url")
+    val attachment = httpService.httpGet(url, 200)
     ResponseEntity.ok()
       .header(HttpHeaders.CONTENT_TYPE, attachment.contentType)
       .body(attachment.responseBody)

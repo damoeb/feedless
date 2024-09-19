@@ -12,6 +12,8 @@ import org.migor.feedless.feature.FeatureValueDAO
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.user.corrId
+import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -94,16 +97,16 @@ class PlanConstraintsService {
     return cronString
   }
 
-  suspend fun coerceVisibility(corrId: String, visibility: EntityVisibility?): EntityVisibility {
+  suspend fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
-      sessionService.userId()!!
+      coroutineContext.userId()
     ) ?: false
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate
     } else {
       if (visibility !== EntityVisibility.isPublic) {
-        log.info("[$corrId] overwrite visibility to $visibility")
+        log.info("[${coroutineContext.corrId()}] overwrite visibility to $visibility")
       }
       EntityVisibility.isPrivate
     }

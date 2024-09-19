@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
+import java.util.*
 
 @Configuration
 @Profile(AppLayer.api)
@@ -29,16 +30,16 @@ class GraphqlConfig {
   }
 
   @Component
-  class CustomContextBuilder : DgsCustomContextBuilder<CustomContext> {
-    override fun build(): CustomContext {
-      return CustomContext()
+  class CustomContextBuilder : DgsCustomContextBuilder<DgsCustomContext> {
+    override fun build(): DgsCustomContext {
+      return DgsCustomContext()
     }
   }
 }
 
-class CustomContext {
+class DgsCustomContext {
   var repositoryId: String? = null
-  var userId: String? = null
+  var userId: UUID? = null
 }
 
 @Profile(AppLayer.api)

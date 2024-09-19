@@ -3,8 +3,8 @@ package org.migor.feedless.agent
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -19,9 +19,11 @@ import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -35,6 +37,7 @@ import java.io.Serializable
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 class AgentResponse(private val scrapeResponse: String) : Serializable {
 
@@ -62,9 +65,9 @@ class AgentService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
+  suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
-      CoroutineScope(Dispatchers.Default).launch {
+      CoroutineScope(RequestContext()).launch {
         userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
           ?.let { securityKey ->
             val now = LocalDateTime.now()
@@ -87,19 +90,19 @@ class AgentService {
 
               emitter.onDispose {
                 CoroutineScope(Dispatchers.Default).launch {
-                  removeAgent(corrId, agentRef)
+                  removeAgent(agentRef)
                 }
               }
               emitter.next(
                 AgentEvent(
-                  corrId = corrId,
+                  corrId = "corrId",
                   callbackId = "none",
                   authentication = AgentAuthentication(
                     token = tokenProvider.createJwtForAgent(securityKey).tokenValue
                   )
                 )
               )
-              addAgent(corrId, agentRef)
+              addAgent(agentRef)
             }
           }
           ?: run {
@@ -110,7 +113,8 @@ class AgentService {
     }
   }
 
-  private suspend fun addAgent(corrId: String, agentRef: AgentRef) {
+  private suspend fun addAgent(agentRef: AgentRef) {
+    val corrId = coroutineContext.corrId()
     agentRefs.add(agentRef)
 
     log.info("[$corrId] Added Agent $agentRef")
@@ -132,7 +136,8 @@ class AgentService {
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
-  private suspend fun removeAgent(corrId: String, agentRef: AgentRef) {
+  private suspend fun removeAgent(agentRef: AgentRef) {
+    val corrId = coroutineContext.corrId()
     agentRefs.remove(agentRef)
     log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
     withContext(Dispatchers.IO) {
@@ -144,23 +149,24 @@ class AgentService {
   fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
   //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
-  suspend fun prerender(corrId: String, source: SourceEntity): AgentResponse {
+  suspend fun prerender(source: SourceEntity): AgentResponse {
+    val corrId = coroutineContext.corrId()
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      runBlocking {
-        prerenderWithAgent(corrId, source, agentRef).block()!!
-      }
+      prerenderWithAgent(source, agentRef)
+        .toFuture()
+        .await()
     } else {
       log.warn("[$corrId] no agents present")
-      throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
+      throw ResumableHarvestException(corrId!!, "No agents available", Duration.ofMinutes(10))
     }
   }
 
   private suspend fun prerenderWithAgent(
-    corrId: String,
     source: SourceEntity,
     agentRef: AgentRef
   ): Mono<AgentResponse> {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] preparing")
     return Flux.create { emitter ->
       try {
@@ -169,7 +175,7 @@ class AgentService {
           AgentEvent(
             callbackId = harvestJobId,
             corrId = corrId,
-            scrape = source.toDto(corrId)
+            scrape = source.toDto()
           )
         )
         log.debug("[$corrId] submitted agent job $harvestJobId")
@@ -183,7 +189,8 @@ class AgentService {
       .next()
   }
 
-  suspend fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+  suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+    val corrId = coroutineContext.corrId()
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.ok) {

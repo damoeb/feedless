@@ -15,10 +15,12 @@ import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -33,13 +35,13 @@ class CompositeFilterPlugin : FilterEntityPlugin {
   override fun listed() = true
   override fun name(): String = "Filter"
 
-  override fun filterEntity(
-    corrId: String,
+  override suspend fun filterEntity(
     item: JsonItem,
     params: PluginExecutionParamsInput,
     index: Int,
     logCollector: LogCollector,
   ): Boolean {
+    val corrId = coroutineContext.corrId()
     logCollector.log("applying filters to item #$index url=${item.url}")
     val keep = params.org_feedless_filter?.let { plugins ->
       plugins.all { plugin ->
@@ -48,7 +50,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
             && it.include?.let { matches(item, it, index) } ?: true
         } ?: true
           &&
-          matchesExpression(corrId, plugin.expression, item)
+          matchesExpression(plugin.expression, item)
 
       }
     } ?: true
@@ -62,9 +64,10 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     return keep
   }
 
-  private fun matchesExpression(corrId: String, expression: String?, item: JsonItem): Boolean {
+  private suspend fun matchesExpression(expression: String?, item: JsonItem): Boolean {
+    val corrId = coroutineContext.corrId()
     return expression?.let {
-      val q = tryConvertFromLegacy(corrId, it)
+      val q = tryConvertFromLegacy(it)
       try {
         log.debug("[$corrId] expression '${q}'")
         FilterByExpression(q.reader()).matches(item)
@@ -75,7 +78,8 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     } ?: true
   }
 
-  private fun tryConvertFromLegacy(corrId: String, legacyExpression: String): String {
+  private suspend fun tryConvertFromLegacy(legacyExpression: String): String {
+    val corrId = coroutineContext.corrId()
     val fields = mapOf(
       "#body" to "content",
       "#title" to "title",

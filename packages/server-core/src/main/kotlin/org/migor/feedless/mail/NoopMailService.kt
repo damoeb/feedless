@@ -15,34 +15,34 @@ import java.util.*
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
 @ConditionalOnBean(MailService::class)
 class NoopMailService : MailService {
-  override fun sendWelcomeWaitListMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomeWaitListMail(user: UserEntity) {
   }
 
-  override fun sendWelcomePaidMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomePaidMail(user: UserEntity) {
   }
 
-  override fun sendWelcomeFreeMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomeFreeMail(user: UserEntity) {
   }
 
-  override fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
+  override suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String) {
   }
 
-  override fun getNoReplyAddress(product: ProductCategory): String {
+  override suspend fun getNoReplyAddress(product: ProductCategory): String {
     return "no-reply@example"
   }
 
   @Deprecated("")
-  override fun send(corrId: String, mimeMessage: MimeMessage) {
+  override suspend fun send(mimeMessage: MimeMessage) {
   }
 
-  override fun createMimeMessage(): MimeMessage {
+  override suspend fun createMimeMessage(): MimeMessage {
     throw IllegalArgumentException("not implemented")
   }
 
   override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
   }
 
-  override fun send(corrId: String, from: String, to: Array<String>, mailData: MailData) {
+  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {
   }
 
 }

@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthViaMailInput
@@ -23,7 +22,6 @@ import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
@@ -43,7 +41,7 @@ class MailAuthResolver {
     val corrId = CryptUtil.newCorrId()
     log.debug("[$corrId] authViaMail ${data.product}")
     authService.decodeToken(data.token)
-    mailAuthenticationService.authenticateUsingMail(corrId, data)
+    mailAuthenticationService.authenticateUsingMail(data)
   }
 
   @Throttled
@@ -51,10 +49,9 @@ class MailAuthResolver {
   suspend fun authConfirmCode(
     @InputArgument data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.debug("[$corrId] authConfirmCode")
-    mailAuthenticationService.confirmAuthCode(corrId, data, resolveHttpResponse(dfe))
+    log.debug("authConfirmCode")
+    mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
     true
   }
 

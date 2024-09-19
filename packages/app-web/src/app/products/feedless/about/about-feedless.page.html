@@ -10,12 +10,13 @@
 <ion-content>
   <app-product-header productTitle="RSS Feed Builder on steroids">
     <p class="ion-padding-vertical">
-      <em>feedless</em> is a set of tools for web scraping, web automation and
-      workflows, like structuring a website to a feed. Take back ownership,
-      privacy and get ahead in the signal over noise battle.<br />
-      I like to innovate things that the mainstream does not care about. Due to
-      its complexity in relation to my available time, I started to shape
-      concrete Use-Cases as products that you can already use and run locally.
+      With <em>feedless</em>, you can create RSS feeds from most websites, or refine existing feeds.
+      Feeds are created in an interactive builder, and may be improved using elaborate filters
+      and plugins. Integration to 2rd parties like telegram is build-in.
+
+      Its highly customizable and even JavaScript based websites are supported. There
+      is zero-risk, cause all sources are available on github and you can host it
+      yourself.
     </p>
 
     <ion-list class="ion-margin-bottom" style="background: transparent">
@@ -34,15 +35,42 @@
       <ion-item
         style="border-radius: 8px"
         lines="full"
-        color="medium"
+        color="dark"
         routerLink="/tracker-builder"
         [button]="true"
       >
         <ion-icon name="eye-outline" slot="start"></ion-icon>
-        Create Page Tracker
-        <ion-badge slot="end" color="light">Coming Soon</ion-badge>
+        Create a Page Tracker
+        <ion-badge slot="end" color="light">Beta</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
+
+<!--      <ion-item-->
+<!--        style="border-radius: 8px"-->
+<!--        lines="full"-->
+<!--        color="dark"-->
+<!--        routerLink="/feed-builder"-->
+<!--        [queryParams]="{pushNotificationsMuted: false}"-->
+<!--        [button]="true"-->
+<!--      >-->
+<!--        <ion-icon name="eye-outline" slot="start"></ion-icon>-->
+<!--        Forward Feed Items to Telegram-->
+<!--        <ion-badge slot="end" color="light">Beta</ion-badge>-->
+<!--        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>-->
+<!--      </ion-item>-->
+<!--      <ion-item-->
+<!--        style="border-radius: 8px"-->
+<!--        lines="full"-->
+<!--        color="medium"-->
+<!--        routerLink="/notebook-builder"-->
+<!--        [button]="true"-->
+<!--      >-->
+<!--        <ion-icon name="git-network-outline" slot="start"></ion-icon>-->
+<!--        Create a Notebook-->
+<!--        <em class="ion-margin-start">Opiniated Zettelkasten</em>-->
+<!--        <ion-badge slot="end" color="light">Coming Soon</ion-badge>-->
+<!--        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>-->
+<!--      </ion-item>-->
 
       <ion-list-header class="ion-margin-top">General Use Case</ion-list-header>
       <ion-item
@@ -58,19 +86,6 @@
         <ion-badge slot="end" color="light">Coming Soon</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
-      <!--      <ion-item-->
-      <!--        style="border-radius: 8px"-->
-      <!--        lines="full"-->
-      <!--        color="medium"-->
-      <!--        routerLink="/notebook-builder"-->
-      <!--        [button]="true"-->
-      <!--      >-->
-      <!--        <ion-icon name="git-network-outline" slot="start"></ion-icon>-->
-      <!--        Create a Notebook-->
-      <!--        <em class="ion-margin-start">Opiniated Zettelkasten</em>-->
-      <!--        <ion-badge slot="end" color="light">Coming Soon</ion-badge>-->
-      <!--        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>-->
-      <!--      </ion-item>-->
     </ion-list>
 
     <div class="flex__row" style="column-gap: 10px">

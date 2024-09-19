@@ -193,7 +193,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
-    await this.patchUrl();
+    await this.patchUrlInAddressBar();
     await this.detectLegacyRssProxy();
 
     try {
@@ -216,7 +216,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         );
       }
 
-      await this.sourceBuilder.fetchFeedsFromStatic();
+      await this.sourceBuilder.fetchFeedsUsingStatic();
     } catch (e) {
       this.errorMessage = e.message;
     }
@@ -378,7 +378,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
-  private async patchUrl() {
+  private async patchUrlInAddressBar() {
     const url = this.router
       .createUrlTree(this.activatedRoute.snapshot.url, {
         queryParams: { url: this.url },

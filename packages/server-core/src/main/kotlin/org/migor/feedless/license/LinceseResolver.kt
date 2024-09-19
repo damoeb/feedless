@@ -11,21 +11,18 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.LocalizedLicense
 import org.migor.feedless.generated.types.UpdateLicenseInput
-import org.migor.feedless.session.useRequestContext
-import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 
 @DgsComponent
 @Profile("${AppProfiles.license} & ${AppLayer.api}")
@@ -42,13 +39,11 @@ class LinceseResolver {
   @DgsMutation(field = DgsConstants.MUTATION.UpdateLicense)
   suspend fun updateLicense(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
     @InputArgument data: UpdateLicenseInput,
-  ): LocalizedLicense = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    val corrId = CryptUtil.handleCorrId(corrIdParam)
-    log.debug("[$corrId] updateLicense")
+  ): LocalizedLicense = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("updateLicense")
 
-    licenseService.updateLicense(corrId, data.licenseRaw)
+    licenseService.updateLicense(data.licenseRaw)
     getLicense()
   }
 

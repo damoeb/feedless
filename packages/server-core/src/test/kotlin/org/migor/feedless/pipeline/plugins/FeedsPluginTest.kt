@@ -57,7 +57,6 @@ class FeedsPluginTest {
   @MockBean
   lateinit var genericFeedLocator: GenericFeedLocator
 
-  val corrId = "test"
   val logCollector = LogCollector()
 
   @ParameterizedTest
@@ -87,11 +86,11 @@ class FeedsPluginTest {
     mockFeed.publishedAt = LocalDateTime.now()
     mockFeed.items = emptyList()
 
-    `when`(feedParserService.parseFeed(any(String::class.java), any(HttpResponse::class.java)))
+    `when`(feedParserService.parseFeed(any(HttpResponse::class.java)))
       .thenReturn(mockFeed)
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
+    val result = feedsPlugin.transformFragment(ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(1)
@@ -125,7 +124,7 @@ class FeedsPluginTest {
     )
     `when`(
       genericFeedLocator.locateInDocument(
-        any(String::class.java), any(Document::class.java), any(String::class.java), any(
+        any(Document::class.java), any(String::class.java), any(
           GenericFeedParserOptions::class.java
         )
       )
@@ -133,7 +132,7 @@ class FeedsPluginTest {
       .thenReturn(listOf(mockGenericFeed))
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
+    val result = feedsPlugin.transformFragment(ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)
@@ -150,7 +149,7 @@ class FeedsPluginTest {
     )
 
     // when
-    val result = feedsPlugin.transformFragment(corrId, ExecuteActionEntity(), data, logCollector)
+    val result = feedsPlugin.transformFragment(ExecuteActionEntity(), data, logCollector)
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(0)

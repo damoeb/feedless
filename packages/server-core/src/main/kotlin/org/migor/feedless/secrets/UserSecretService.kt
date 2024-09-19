@@ -22,7 +22,7 @@ class UserSecretService(
 
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
 
-  suspend fun createUserSecret(corrId: String, user: UserEntity): UserSecretEntity {
+  suspend fun createUserSecret(user: UserEntity): UserSecretEntity {
     val token = tokenProvider.createJwtForApi(user)
     val k = UserSecretEntity()
     k.ownerId = user.id
@@ -35,7 +35,7 @@ class UserSecretService(
     }
   }
 
-  suspend fun deleteUserSecret(corrId: String, user: UserEntity, uuid: UUID) {
+  suspend fun deleteUserSecret(user: UserEntity, uuid: UUID) {
     withContext(Dispatchers.IO) {
       val secret = userSecretDAO.findById(uuid).orElseThrow()
       if (secret.ownerId == user.id) {

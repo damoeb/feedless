@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class SyndAtomFeedExporter {
-  fun toAtom(corrId: String, r: JsonFeed): String {
+  fun toAtom(r: JsonFeed): String {
     val output = SyndFeedOutput()
     val feed = output.outputString(toSyndFeed(r))
     val endOfHead = feed.indexOf("<feed")

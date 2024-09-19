@@ -93,6 +93,7 @@ ion-button.active {
 
 .all-notes-wrapper {
   flex: 1;
+  justify-content: center;
   display: flex;
   flex-direction: row;
   column-gap: 5px;
@@ -102,7 +103,7 @@ ion-button.active {
     overflow-x: auto;
   }
   .note {
-    flex: 1;
+    flex: 0 1 600px;
     overflow-y: auto;
     //scrollbar-width: thin;
     //background: var(--app-background);
@@ -120,6 +121,15 @@ ion-button.active {
     &:not(.opened) {
       --app-border-color: transparent;
       opacity: 0.7;
+    }
+  }
+
+  .code-editor-wrapper {
+    max-height: 80vh;
+    overflow: auto;
+    border: 2px solid transparent;
+    &.focussed {
+      border-color: var(--ion-color-primary);
     }
   }
   //.all-notes {

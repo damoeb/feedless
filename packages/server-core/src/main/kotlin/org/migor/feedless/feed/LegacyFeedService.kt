@@ -31,6 +31,7 @@ import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserDAO
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -49,6 +50,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.legacyFeeds} & ${AppLayer.service}")
@@ -92,7 +94,7 @@ class LegacyFeedService {
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
-  suspend fun getFeed(corrId: String, feedId: String, feedUrl: String): JsonFeed {
+  suspend fun getFeed(feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       val sourceId = UUID.fromString(feedId)
       val feed = withContext(Dispatchers.IO) {
@@ -103,7 +105,7 @@ class LegacyFeedService {
         f
       }
 
-      appendNotifications(corrId, feed)
+      appendNotifications(feed)
     } else {
       createEolFeed(feedUrl)
     }
@@ -111,7 +113,6 @@ class LegacyFeedService {
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
   suspend fun webToFeed(
-    corrId: String,
     url: String,
     linkXPath: String,
     extendContext: String,
@@ -121,6 +122,7 @@ class LegacyFeedService {
     filter: String?,
     feedUrl: String
   ): JsonFeed {
+    val corrId = coroutineContext.corrId()
     return if (legacySupport()) {
       val source = SourceEntity()
       source.title = "Feed from $url"
@@ -131,7 +133,7 @@ class LegacyFeedService {
       fetch.isVariable = false
       source.actions.add(fetch)
 
-      val scrapeOutput = scrapeService.scrape(corrId, source, LogCollector())
+      val scrapeOutput = scrapeService.scrape(source, LogCollector())
 
       val selectors = GenericFeedSelectors(
         linkXPath = linkXPath,
@@ -146,7 +148,6 @@ class LegacyFeedService {
       )
 
       val feed = webToFeedTransformer.getFeedBySelectors(
-        corrId,
         selectors,
         HtmlUtil.parseHtml(
           scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
@@ -169,7 +170,6 @@ class LegacyFeedService {
           )
           feed.items = feed.items.filterIndexed { index, jsonItem ->
             filterPlugin.filterEntity(
-              corrId,
               jsonItem,
               params,
               index,
@@ -181,18 +181,17 @@ class LegacyFeedService {
         log.warn("[$corrId] webToFeed failed: ${e.message}", e)
       }
 
-      appendNotifications(corrId, feed)
+      appendNotifications(feed)
     } else {
       createEolFeed(url)
     }
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
-  suspend fun transformFeed(corrId: String, nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
+  suspend fun transformFeed(nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       appendNotifications(
-        corrId,
-        feedParserService.parseFeedFromUrl(corrId, nativeFeedUrl)
+        feedParserService.parseFeedFromUrl(nativeFeedUrl)
       )
     } else {
       createEolFeed(feedUrl)
@@ -207,9 +206,10 @@ class LegacyFeedService {
 
   // --
 
-  private suspend fun appendNotifications(corrId: String, feed: JsonFeed): JsonFeed {
+  private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
+    val corrId = coroutineContext.corrId()
     val root = withContext(Dispatchers.IO) {
-      userDAO.findFirstByRootIsTrue()
+      userDAO.findFirstByAdminIsTrue()
     }
     withContext(Dispatchers.IO) {
       repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)
@@ -247,7 +247,7 @@ class LegacyFeedService {
     return feed
   }
 
-  fun createErrorFeed(corrId: String, feedUrl: String, t: Throwable): JsonFeed {
+  suspend fun createErrorFeed(feedUrl: String, t: Throwable): JsonFeed {
     val feed = JsonFeed()
     feed.id = "rss-proxy:2"
     feed.title = "Feed"
@@ -258,7 +258,7 @@ class LegacyFeedService {
     feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
       emptyList()
     } else {
-      listOf(createErrorArticle(corrId, t, feedUrl))
+      listOf(createErrorArticle(t, feedUrl))
     }
 
     return feed
@@ -289,7 +289,8 @@ Markus
     return article
   }
 
-  private fun createErrorArticle(corrId: String, t: Throwable, feedUrl: String): JsonItem {
+  private suspend fun createErrorArticle(t: Throwable, feedUrl: String): JsonItem {
+    val corrId = coroutineContext.corrId()
     val article = JsonItem()
     article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
     article.title = "ALERT: Potential Issue with Feed"

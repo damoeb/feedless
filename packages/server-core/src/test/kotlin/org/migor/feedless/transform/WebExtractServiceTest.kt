@@ -41,36 +41,32 @@ class WebExtractServiceTest {
   }
 
   @Test
-  fun `given a html, the text can be extracted`() {
-    runTest {
-      val corrId = ""
-      val extract = DOMExtract(
-        fragmentName = "foo",
-        xpath = DOMElementByXPath(value = "./"),
-        emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
-      )
-      val element = Jsoup.parse(html.trimIndent())
+  fun `given a html, the text can be extracted`() = runTest {
+    val extract = DOMExtract(
+      fragmentName = "foo",
+      xpath = DOMElementByXPath(value = "./"),
+      emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+    )
+    val element = Jsoup.parse(html.trimIndent())
 
-      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN, logCollector)
-      assertThat(response.fragments!!.first().text!!.data).isEqualTo("foo-text")
-    }
+    val response = webExtractService.extract(extract, element, Locale.GERMAN, logCollector)
+    assertThat(response.fragments!!.first().text!!.data).isEqualTo("foo-text")
   }
+
 
   @Test
-  fun `given a html, the url can be extracted`() {
-    runTest {
-      val corrId = ""
-      val extract = DOMExtract(
-        fragmentName = "foo",
-        xpath = DOMElementByXPath(value = "//a"),
-        emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
-      )
-      val element = Jsoup.parse(html.trimIndent())
+  fun `given a html, the url can be extracted`() = runTest {
+    val extract = DOMExtract(
+      fragmentName = "foo",
+      xpath = DOMElementByXPath(value = "//a"),
+      emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+    )
+    val element = Jsoup.parse(html.trimIndent())
 
-      val response = webExtractService.extract(corrId, extract, element, Locale.GERMAN, logCollector)
-      val data = response.fragments!!.first().data!!
-      assertThat(data.data).isEqualTo("https://foo.bar")
-      assertThat(data.mimeType).isEqualTo(MIME_URL)
-    }
+    val response = webExtractService.extract(extract, element, Locale.GERMAN, logCollector)
+    val data = response.fragments!!.first().data!!
+    assertThat(data.data).isEqualTo("https://foo.bar")
+    assertThat(data.mimeType).isEqualTo(MIME_URL)
   }
+
 }

@@ -187,12 +187,12 @@ export class SourceBuilder {
     return this;
   }
 
-  async fetchFeedsFromStatic() {
-    return this.fetchFeeds('fetchFeedsFromStatic');
+  async fetchFeedsUsingStatic() {
+    return this.fetchFeeds('fetchFeedsFromStatic', []);
   }
 
-  async fetchFeedsFromBrowser() {
-    return this.fetchFeeds('fetchFeedsFromBrowser', {
+  async fetchFeedsUsingBrowser() {
+    return this.fetchFeeds('fetchFeedsFromBrowser', [{
       extract: {
         fragmentName: 'full-page',
         selectorBased: {
@@ -203,10 +203,36 @@ export class SourceBuilder {
           emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text, GqlScrapeEmit.Pixel],
         },
       },
-    });
+    }]);
   }
 
-  private async fetchFeeds(title: string, action: GqlScrapeActionInput = null) {
+  // async fetchUsingBrowser() {
+  //   return this.fetchFeeds('fetchFeedsFromBrowser', [{
+  //     extract: {
+  //       fragmentName: 'full-page',
+  //       selectorBased: {
+  //         fragmentName: '',
+  //         xpath: {
+  //           value: '/',
+  //         },
+  //         emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text, GqlScrapeEmit.Pixel],
+  //       },
+  //     },
+  //   }]);
+  // }
+
+  private async fetchFeeds(title: string, actions: GqlScrapeActionInput[]) {
+    return this.fetch(title, [
+      ...actions,
+      {
+        execute: {
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
+          params: {},
+        },
+      }
+    ])
+  }
+  private async fetch(title: string, actions: GqlScrapeActionInput[]) {
     console.log(
       'fetchFeeds',
       this.flow,
@@ -220,13 +246,7 @@ export class SourceBuilder {
         {
           sequence: [
             ...this.flow.filter((a) => !isDefined(a.execute)),
-            ...(action ? [action] : []),
-            {
-              execute: {
-                pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
-                params: {},
-              },
-            },
+            ...actions,
           ],
         },
         title,
@@ -241,7 +261,6 @@ export class SourceBuilder {
     title: string = null,
   ): GqlSourceInput {
     return {
-      corrId: '',
       id: '',
       title: title || this.meta.value.title,
       latLng: this.meta.value.latLng,

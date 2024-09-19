@@ -16,8 +16,8 @@ class JsonFeedExporter {
     .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
     .create()
 
-  fun toJson(corrId: String, feed: JsonFeed): String {
-    log.debug("[${corrId}] to json")
+  fun toJson(feed: JsonFeed): String {
+    log.debug("to json")
 
 //    feed.selfPage?.let {
 //      if (feed.items.isNotEmpty()) {

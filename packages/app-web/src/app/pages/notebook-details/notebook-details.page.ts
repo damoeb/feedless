@@ -8,7 +8,7 @@ import {
   OnInit,
   QueryList,
   ViewChild,
-  ViewChildren,
+  ViewChildren
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Repository } from '../../graphql/types';
@@ -39,6 +39,7 @@ type SearchResult = {
 
 interface OpenNote extends Note {
   formControl: FormControl<string>;
+  subscriptions: Subscription[]
 }
 
 type NoteReferences = {
@@ -93,7 +94,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     private readonly activatedRoute: ActivatedRoute,
   ) {
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
-    this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 200);
+    this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 400);
   }
 
   ngOnInit() {
@@ -296,19 +297,17 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.currentNote = inTabs;
       this.scrollTo(inTabs);
     } else {
-      // if (this.currentNote?.id === note.id) {
-      //   return;
-      // }
       const formControl = new FormControl(note.text);
-
-      formControl.valueChanges.subscribe(async (text) => {
-        await this.notebookService.updateNote({ ...openNote, text });
-        formControl.markAsPristine();
-      });
 
       const openNote: OpenNote = {
         ...note,
         formControl,
+        subscriptions: [
+          formControl.valueChanges.subscribe(async (text) => {
+            await this.notebookService.updateNote({ ...openNote, text });
+            formControl.markAsPristine();
+          })
+        ]
       };
       this.notebookService.findAllAsync(note.namedId);
       // await this.refreshReferences(openNote);
@@ -317,6 +316,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
       this.openNotes.push(openNote);
       this.scrollTo(openNote);
+      await this.toggleSearchMode(false)
       this.currentNote = openNote;
       this.searchMode = false;
       this.changeRef.detectChanges();
@@ -328,12 +328,12 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async toggleSearchMode(searchMode: boolean | null = null) {
-    console.log('toggleSearchMode');
     if (isNull(searchMode)) {
       this.searchMode = !this.searchMode;
     } else {
       this.searchMode = searchMode;
     }
+    console.log('toggleSearchMode', this.searchMode);
     if (this.searchMode) {
       await this.focusSearchElement();
     } else {
@@ -341,7 +341,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         (note) => note.id === this.currentNote?.id,
       );
       if (index > -1) {
-        console.log('focus editor');
         this.codeEditorComponents.get(index).setFocus();
       }
     }
@@ -415,5 +414,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     await this.focusSearchElement();
   }
 
-  closeNote(openNote: OpenNote) {}
+  closeNote(openNote: OpenNote) {
+    openNote.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.openNotes = this.openNotes.filter(note => note.id != openNote.id)
+  }
 }

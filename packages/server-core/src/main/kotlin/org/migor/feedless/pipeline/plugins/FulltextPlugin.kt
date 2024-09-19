@@ -21,6 +21,7 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToArticleTransformer
 import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,6 +30,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -49,12 +51,12 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   override fun listed() = true
 
   override suspend fun mapEntity(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ): DocumentEntity {
+    val corrId = coroutineContext.corrId()
     logCollector.log("[$corrId] mapEntity ${document.url}")
 
     val request = SourceEntity()
@@ -71,7 +73,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       request.actions = mutableListOf(fetchAction)
     }
 
-    val scrapeOutput = scrapeService.scrape(corrId, request, logCollector)
+    val scrapeOutput = scrapeService.scrape(request, logCollector)
 
     if (scrapeOutput.outputs.isNotEmpty()) {
       val lastOutput = scrapeOutput.outputs.last()
@@ -107,7 +109,6 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   }
 
   override suspend fun transformFragment(
-    corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
     logger: LogCollector,

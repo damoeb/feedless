@@ -270,7 +270,7 @@ class TelegramBotServiceTest {
     telegramBotService.pollUpdates()
 
     // then
-    verify(inboxService).appendMessage(any(String::class.java), any(UUID::class.java), any(DocumentEntity::class.java))
+    verify(inboxService).appendMessage(any(UUID::class.java), any(DocumentEntity::class.java))
   }
 
 }

@@ -15,8 +15,6 @@ import java.time.temporal.ChronoUnit
 
 class FeedGeneratorTest {
 
-  val corrId = "test"
-
   @Test
   @Disabled
   fun `generated feed and parsed feed is identical`() = runTest {
@@ -66,9 +64,9 @@ class FeedGeneratorTest {
 
     val exporter = SyndAtomFeedExporter()
 //    exporter.commit = "foo-commit-id"
-    val atom = exporter.toAtom(corrId, feed)
+    val atom = exporter.toAtom(feed)
     val actualFeed = XmlFeedParser().process(
-      corrId, HttpResponse(
+      HttpResponse(
         contentType = "application/xml",
         url = url,
         statusCode = 200,

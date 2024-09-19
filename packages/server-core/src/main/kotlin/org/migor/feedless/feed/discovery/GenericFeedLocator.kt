@@ -18,11 +18,10 @@ class GenericFeedLocator {
   private lateinit var webToFeedTransformer: WebToFeedTransformer
 
   suspend fun locateInDocument(
-    corrId: String,
     document: Document,
     url: String,
     parserOptions: GenericFeedParserOptions
   ): List<GenericFeedRule> {
-    return webToFeedTransformer.parseFeedRules(corrId, document, URI(url), parserOptions)
+    return webToFeedTransformer.parseFeedRules(document, URI(url), parserOptions)
   }
 }

@@ -25,6 +25,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.ProductEntity
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -51,6 +52,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 
 data class LicensePayload(
@@ -144,7 +146,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
           }
         }
         licenseRaw?.let {
-          license = parseLicense("boot", it)
+          license = parseLicense(it)
         }
       } catch (e: Exception) {
         log.error("initialize failed: ${e.message}", e)
@@ -199,15 +201,15 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
   }
 
-  fun parseLicense(corrId: String, licenseWithHeader: String): LicensePayload? {
+  fun parseLicense(licenseWithHeader: String): LicensePayload? {
     return try {
-      log.info("[$corrId] Parsing license")
+      log.info("Parsing license")
       val payload = gson()
         .fromJson(
           String(JWSObject.parse(licenseWithHeader.removeHeaders()).payload.toBytes()),
           LicensePayload::class.java
         )
-      log.info("[$corrId] $payload")
+      log.info("$payload")
       if (verifyTokenAgainstPubKey(licenseWithHeader, feedlessPublicKey!!)) {
         payload
       } else {
@@ -215,7 +217,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       }
 
     } catch (e: Exception) {
-      log.error("[$corrId] Invalid license: ${e.message}", e)
+      log.error("Invalid license: ${e.message}", e)
       null
     }
   }
@@ -299,11 +301,11 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return getTrialUntil() > LocalDateTime.now().toMillis()
   }
 
-  fun updateLicense(corrId: String, licenseRaw: String) {
-    log.info("[${corrId}] Updating license at ${getLicenseFile()}")
-    log.debug("[$corrId] using pK $feedlessPublicKey")
+  fun updateLicense(licenseRaw: String) {
+    log.info("Updating license at ${getLicenseFile()}")
+    log.debug("using pK $feedlessPublicKey")
     if (verifyTokenAgainstPubKey(licenseRaw, feedlessPublicKey!!)) {
-      license = parseLicense(corrId, licenseRaw)
+      license = parseLicense(licenseRaw)
       writeLicenseKeyToFile(licenseRaw)
     } else {
       throw IllegalArgumentException("license does not match with public key")
@@ -319,7 +321,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       .generate()
   }
 
-  suspend fun createLicense(corrId: String, payload: LicensePayload, rsaJWK: RSAKey): String {
+  suspend fun createLicense(payload: LicensePayload, rsaJWK: RSAKey): String {
     val signer: JWSSigner = RSASSASigner(rsaJWK)
     val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
     jwsObject.sign(signer)
@@ -360,7 +362,8 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return true
   }
 
-  suspend fun createLicenseForProduct(corrId: String, product: ProductEntity, billing: OrderEntity): LicenseEntity {
+  suspend fun createLicenseForProduct(product: ProductEntity, billing: OrderEntity): LicenseEntity {
+    val corrId = coroutineContext.corrId()
     log.info("[$corrId] createLicenseForProduct ${product.name}")
     if (product.isCloudProduct) {
       throw IllegalArgumentException("cloud product cannot be licenced")
@@ -375,7 +378,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       email = billing.invoiceRecipientEmail
     )
 
-    val singedAndEncoded = createLicense(corrId, payload, feedlessPrivateKey!!)
+    val singedAndEncoded = createLicense(payload, feedlessPrivateKey!!)
     license.payload = singedAndEncoded
     license.orderId = billing.id
 

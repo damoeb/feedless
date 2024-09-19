@@ -15,7 +15,7 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
   fun findByEmail(name: String): UserEntity?
   fun existsByEmail(email: String): Boolean
 
-  fun findFirstByRootIsTrue(): UserEntity?
+  fun findFirstByAdminIsTrue(): UserEntity?
 
   fun findByAnonymousIsTrue(): UserEntity
 

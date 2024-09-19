@@ -69,10 +69,9 @@ open class SourceEntity : EntityWithUUID() {
   open var repository: RepositoryEntity? = null
 }
 
-fun SourceEntity.toDto(corrId: String): Source {
+fun SourceEntity.toDto(): Source {
   return Source(
     id = id.toString(),
-    corrId = corrId,
     disabled = disabled,
     lastErrorMessage = lastErrorMessage,
     tags = tags?.asList() ?: emptyList(),

@@ -35,6 +35,7 @@ import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -48,6 +49,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -151,7 +153,7 @@ class DocumentService(
     return whereStatements
   }
 
-  suspend fun applyRetentionStrategy(corrId: String, repositoryId: UUID) {
+  suspend fun applyRetentionStrategy(repositoryId: UUID) {
     val repository = withContext(Dispatchers.IO) {
       repositoryDAO.findById(repositoryId).orElseThrow()
     }
@@ -162,6 +164,7 @@ class DocumentService(
         repository.product
       )
 
+    val corrId = coroutineContext.corrId()
     if (retentionSize != null && retentionSize > 0) {
       log.debug("[$corrId] applying retention with maxItems=$retentionSize")
       withContext(Dispatchers.IO) {
@@ -203,11 +206,11 @@ class DocumentService(
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
-  suspend fun deleteDocuments(corrId: String, user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
-    log.info("[$corrId] deleteDocuments $documentIds")
+  suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+    log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
     val repository = withContext(Dispatchers.IO) { repositoryDAO.findById(repositoryId).orElseThrow() }
     if (repository.ownerId != user.id) {
-      throw PermissionDeniedException("current user ist not owner ($corrId)")
+      throw PermissionDeniedException("current user ist not owner")
     }
 
     withContext(Dispatchers.IO) {
@@ -265,7 +268,8 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  suspend fun processDocumentPlugins(corrId: String, documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+  suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
     val logCollector = LogCollector()
@@ -285,7 +289,6 @@ class DocumentService(
 
             when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
               is FilterEntityPlugin -> if (!plugin.filterEntity(
-                  corrId,
                   document.asJsonItem(),
                   job.executorParams,
                   0,
@@ -295,7 +298,7 @@ class DocumentService(
                 throw FilterMismatchException()
               }
 
-              is MapEntityPlugin -> plugin.mapEntity(corrId, document, repository, job.executorParams, logCollector)
+              is MapEntityPlugin -> plugin.mapEntity(document, repository, job.executorParams, logCollector)
               else -> throw IllegalArgumentException("Invalid executorId ${job.executorId}")
             }
 
@@ -309,24 +312,24 @@ class DocumentService(
           } catch (e: Exception) {
             withError = true
             if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-              delayJob(corrId, job, e, document)
+              delayJob(job, e, document)
             } else {
               if (e !is FilterMismatchException) {
-                log.warn("[${corrId}] ${e.message}")
+                log.warn("[$corrId] ${e.message}")
               }
-              deleteDocument(corrId, document)
+              deleteDocument(document)
             }
             false
           }
         }
 
         if (!withError) {
-          releaseDocument(corrId, document, repository)
+          releaseDocument(document, repository)
         }
 
       } catch (throwable: Throwable) {
         log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
-        deleteDocument(corrId, document)
+        deleteDocument(document)
       }
     } ?: withContext(Dispatchers.IO) {
       log.warn("[$corrId] delete remainging jobs")
@@ -336,33 +339,31 @@ class DocumentService(
   }
 
   private suspend fun DocumentService.releaseDocument(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity
   ) {
 //    forwardToMail(corrId, document, repository)
     document.status = ReleaseStatus.released
-    log.debug("[$corrId] releasing document")
+    log.debug("[${coroutineContext.corrId()}] releasing document")
     withContext(Dispatchers.IO) {
       documentDAO.save(document)
     }
-    applyRetentionStrategy(corrId, repository.id)
+    applyRetentionStrategy(repository.id)
   }
 
-  private suspend fun deleteDocument(corrId: String, document: DocumentEntity) {
-    log.debug("[$corrId] delete document ${document.id}")
+  private suspend fun deleteDocument(document: DocumentEntity) {
+    log.debug("[${coroutineContext.corrId()}] delete document ${document.id}")
     withContext(Dispatchers.IO) {
       documentDAO.delete(document)
     }
   }
 
   private suspend fun delayJob(
-    corrId: String,
     job: DocumentPipelineJobEntity,
     e: Exception,
     document: DocumentEntity,
   ) {
-    log.debug("[$corrId] delaying (${job.executorId}): ${e.message}")
+    log.debug("[${coroutineContext.corrId()}] delaying (${job.executorId}): ${e.message}")
 
     val coolDownUntil = if (e is ResumableHarvestException) {
       LocalDateTime.now().plus(e.nextRetryAfter)
@@ -383,7 +384,7 @@ class DocumentService(
       documentDAO.countByRepositoryId(repositoryId)
     }
   }
-//  private suspend fun forwardToMail(corrId: String, document: DocumentEntity, repository: RepositoryEntity) {
+//  private suspend fun forwardToMail(document: DocumentEntity, repository: RepositoryEntity) {
 //    val mailForwards = withContext(Dispatchers.IO) {
 //      mailForwardDAO.findAllByRepositoryId(repository.id)
 //    }

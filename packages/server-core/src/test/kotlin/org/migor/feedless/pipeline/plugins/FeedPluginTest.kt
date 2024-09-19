@@ -33,7 +33,6 @@ import java.time.LocalDateTime
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FeedPluginTest {
 
-  private val corrId = "test"
   private lateinit var httpResponse: HttpResponse
   private lateinit var jsonFeed: JsonFeed
 
@@ -84,7 +83,6 @@ class FeedPluginTest {
     )
     `when`(
       webToFeedTransformer.getFeedBySelectors(
-        any(String::class.java),
         any(Selectors::class.java),
         any(Document::class.java),
         any(URI::class.java),
@@ -93,14 +91,13 @@ class FeedPluginTest {
     ).thenReturn(jsonFeed)
 
     // when
-    feedPlugin.transformFragment(corrId, action, httpResponse, logCollector)
+    feedPlugin.transformFragment(action, httpResponse, logCollector)
 
     // then
     verify(feedParserService, times(0))
-      .parseFeed(any(String::class.java), any(HttpResponse::class.java))
+      .parseFeed(any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(1))
       .getFeedBySelectors(
-        any(String::class.java),
         any(Selectors::class.java),
         any(Document::class.java),
         any(URI::class.java),
@@ -112,17 +109,16 @@ class FeedPluginTest {
   fun `extracts native feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(PluginExecutionParamsInput(org_feedless_feed = FeedParamsInput()))
-    `when`(feedParserService.parseFeed(any(String::class.java), any(HttpResponse::class.java))).thenReturn(jsonFeed)
+    `when`(feedParserService.parseFeed(any(HttpResponse::class.java))).thenReturn(jsonFeed)
 
     // when
-    feedPlugin.transformFragment(corrId, action, httpResponse, logCollector)
+    feedPlugin.transformFragment(action, httpResponse, logCollector)
 
     // then
     verify(feedParserService, times(1))
-      .parseFeed(any(String::class.java), any(HttpResponse::class.java))
+      .parseFeed(any(HttpResponse::class.java))
     verify(webToFeedTransformer, times(0))
       .getFeedBySelectors(
-        any(String::class.java),
         any(Selectors::class.java),
         any(Document::class.java),
         any(URI::class.java),

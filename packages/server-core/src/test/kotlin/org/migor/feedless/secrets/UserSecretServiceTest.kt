@@ -1,6 +1,5 @@
 package org.migor.feedless.secrets
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +16,6 @@ import java.util.*
 
 class UserSecretServiceTest {
 
-  private val corrId = "test"
   private lateinit var userSecretDAO: UserSecretDAO
   private lateinit var tokenProvider: TokenProvider
   private lateinit var userSecretService: UserSecretService
@@ -44,29 +42,29 @@ class UserSecretServiceTest {
 
   @Test
   fun `can create encrypted secret`() = runTest {
-    userSecretService.createUserSecret(corrId, currentUser)
+    userSecretService.createUserSecret(currentUser)
 
     verify(userSecretDAO).save(any(UserSecretEntity::class.java))
   }
 
   @Test
   fun `can create unencrypted secret`() = runTest {
-    userSecretService.createUserSecret(corrId, currentUser)
+    userSecretService.createUserSecret(currentUser)
 
     verify(userSecretDAO).save(any(UserSecretEntity::class.java))
   }
 
 
   @Test
-  fun `others cannot delete his secret`() = runTest {
+  fun `others cannot delete his secret`() {
     val secret = mock(UserSecretEntity::class.java)
     `when`(secret.ownerId).thenReturn(UUID.randomUUID())
     `when`(userSecretDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(secret))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runBlocking {
+      runTest {
         userSecretService.deleteUserSecret(
-          corrId, currentUser, UUID.randomUUID()
+          currentUser, UUID.randomUUID()
         )
       }
     }

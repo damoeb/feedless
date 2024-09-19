@@ -44,7 +44,6 @@ class FeedPlugin : FragmentTransformerPlugin {
   override fun listed() = true
 
   override suspend fun transformFragment(
-    corrId: String,
     action: ExecuteActionEntity,
     data: HttpResponse,
     logger: LogCollector,
@@ -57,11 +56,11 @@ class FeedPlugin : FragmentTransformerPlugin {
 
     val feed = (executorParams.org_feedless_feed?.generic?.let {
       webToFeedTransformer.getFeedBySelectors(
-        corrId, it.toSelectors(),
+        it.toSelectors(),
         document, URI(data.url),
         logger
       )
-    } ?: feedParserService.parseFeed(corrId, data))
+    } ?: feedParserService.parseFeed(data))
     logger.log("transformed to feed with ${feed.items.size} items")
 
     return FragmentOutput(

@@ -5,6 +5,11 @@ ion-header {
   -webkit-box-shadow: none;
 }
 
+ion-content {
+  --app-border-radius: 8px;
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.5);
+}
+
 .pitch {
   margin-top: 50px;
   margin-bottom: 50px;
@@ -105,11 +110,10 @@ ion-select {
   --border-style: solid;
 }
 
-//ion-button:not(:last-child) {
-//  padding-right: 10px;
-//}
-
 .actions {
+  .action__raw {
+    display: none;
+  }
   ion-input {
     --padding-start: 10px;
   }
@@ -172,10 +176,14 @@ ion-radio {
 }
 
 ion-accordion {
-  &:first-child {
-    border-top-left-radius: var(--app-border-radius);
-    border-top-right-radius: var(--app-border-radius);
+  &.accordion-expanded {
+    --app-border-radius: 1rem;
+    border-radius: var(--app-border-radius);
   }
+  //&:first-child {
+  //  border-top-left-radius: var(--app-border-radius);
+  //  border-top-right-radius: var(--app-border-radius);
+  //}
   ion-item:first-child {
     font-weight: bold;
   }

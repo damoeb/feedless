@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { firstValueFrom, Observable, of, switchMap } from 'rxjs';
 import { CanActivate, Router, UrlTree } from '@angular/router';
-import { isBoolean } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root',

@@ -1,6 +1,5 @@
 package org.migor.feedless.annotation
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +17,7 @@ import org.migor.feedless.repository.any
 import org.migor.feedless.repository.anyOrNull
 import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -26,7 +26,6 @@ import java.util.*
 
 class AnnotationServiceTest {
 
-  private val corrId = "test"
   private lateinit var voteDAO: VoteDAO
   private lateinit var textAnnotationDAO: TextAnnotationDAO
   private lateinit var annotationDAO: AnnotationDAO
@@ -49,7 +48,7 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `given identical annotation exists, creating the same will be rejected`() = runTest {
+  fun `given identical annotation exists, creating the same will be rejected`() {
     `when`(
       voteDAO.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
         any(Boolean::class.java),
@@ -62,9 +61,9 @@ class AnnotationServiceTest {
     ).thenReturn(true)
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runBlocking {
+      runTest(context = RequestContext(userId = currentUserId)) {
         annotationService.createAnnotation(
-          corrId, CreateAnnotationInput(
+          CreateAnnotationInput(
             where = AnnotationWhereInput(
               document = RecordUniqueWhereInput(UUID.randomUUID().toString())
             ),
@@ -78,10 +77,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `flag a document`() = runTest {
+  fun `flag a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.toString())
         ),
@@ -95,10 +94,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `upVote a document`() = runTest {
+  fun `upVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.toString()),
         ),
@@ -112,10 +111,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `downVote a document`() = runTest {
+  fun `downVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.toString()),
         ),
@@ -129,10 +128,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `flag a repository`() = runTest {
+  fun `flag a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.toString()),
         ),
@@ -146,10 +145,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `upVote a repository`() = runTest {
+  fun `upVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.toString()),
         ),
@@ -163,10 +162,10 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `downVote a repository`() = runTest {
+  fun `downVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists()
     annotationService.createAnnotation(
-      corrId, CreateAnnotationInput(
+      CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.toString()),
         ),
@@ -180,7 +179,7 @@ class AnnotationServiceTest {
   }
 
   @Test
-  fun `others cannot delete his annotation`() = runTest {
+  fun `others cannot delete his annotation`() {
     val annotationId = UUID.randomUUID()
     val annotation = mock(AnnotationEntity::class.java)
     `when`(annotation.id).thenReturn(annotationId)
@@ -188,9 +187,9 @@ class AnnotationServiceTest {
     `when`(annotationDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(annotation))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runBlocking {
+      runTest(context = RequestContext(userId = currentUserId)) {
         annotationService.deleteAnnotation(
-          corrId, DeleteAnnotationInput(
+          DeleteAnnotationInput(
             where = AnnotationWhereUniqueInput(annotationId.toString())
           ), currentUser
         )

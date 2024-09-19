@@ -13,7 +13,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
@@ -31,14 +30,13 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.time.LocalDateTime
 import java.util.*
 
@@ -66,12 +64,11 @@ class DocumentResolver {
   suspend fun record(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RecordWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Record = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] record $data")
+  ): Record = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("record $data")
     val document =
       documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("record not found")
-    repositoryService.findById(corrId, document.repositoryId)
+    repositoryService.findById(document.repositoryId)
     document.toDto(propertyService)
   }
 
@@ -80,12 +77,11 @@ class DocumentResolver {
   suspend fun records(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RecordsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Record> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] records $data")
+  ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("records $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
-    val repository = repositoryService.findById(corrId, repositoryId)
+    val repository = repositoryService.findById(repositoryId)
     val pageable = toPageRequest(data.cursor.page, data.cursor.pageSize ?: 10)
     documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).mapNotNull {
       it?.toDto(
@@ -105,11 +101,9 @@ class DocumentResolver {
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument data: DeleteRecordsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     documentService.deleteDocuments(
-      corrId,
-      sessionService.user(corrId),
+      sessionService.user(),
       UUID.fromString(data.where.repository.id),
       data.where.id!!
     )
@@ -121,8 +115,7 @@ class DocumentResolver {
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument records: List<CreateRecordInput>?,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Record> = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
+  ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     emptyList()
   }
 

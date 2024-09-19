@@ -8,10 +8,12 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.config.CustomContext
+import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.userIdOptional
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
@@ -23,20 +25,21 @@ import org.springframework.web.context.request.RequestContextHolder
 import java.util.*
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
-fun useRequestContext(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContextElement {
-//  val rctx = currentCoroutineContext[ReactorContext]
-  val requestContext = currentCoroutineContext[RequestContextElement] ?: createRequestContext()
-  DgsContext.getCustomContext<CustomContext>(dfe).userId = requestContext.userId
+fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContext {
+  val requestContext = currentCoroutineContext[RequestContext] ?: createRequestContext()
+  DgsContext.getCustomContext<DgsCustomContext>(dfe).userId = requestContext.userId
   return requestContext
 }
 
-fun createRequestContext(): RequestContextElement {
-  val context = RequestContextElement()
+fun createRequestContext(): RequestContext {
+  val context = RequestContext(corrId = newCorrId())
 
   runCatching {
     context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
       StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String)
+        ?.let { UUID.fromString(it) }
     } else {
       null
     }
@@ -54,11 +57,12 @@ fun createRequestContext(): RequestContextElement {
   return context
 }
 
-class RequestContextElement : AbstractCoroutineContextElement(RequestContextElement) {
-  companion object Key : CoroutineContext.Key<RequestContextElement>
-
-  var product: ProductCategory? = null
-  var userId: String? = null
+class RequestContext(
+  var product: ProductCategory? = null,
+  val corrId: String? = newCorrId(),
+  var userId: UUID? = null
+) : AbstractCoroutineContextElement(RequestContext) {
+  companion object Key : CoroutineContext.Key<RequestContext>
 }
 
 @Service
@@ -69,21 +73,19 @@ class SessionService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
-  suspend fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
+  suspend fun isUser(): Boolean = StringUtils.isNotBlank(coroutineContext[RequestContext]!!.userId?.toString())
 
-  suspend fun user(corrId: String): UserEntity {
-    val notFoundException = IllegalArgumentException("user not found ($corrId)")
-    return userId()?.let { withContext(Dispatchers.IO) { userDAO.findById(it).orElseThrow { notFoundException } } }
+  suspend fun user(): UserEntity {
+    val notFoundException = IllegalArgumentException("user not found")
+    return coroutineContext.userIdOptional()
+      ?.let { withContext(Dispatchers.IO) { userDAO.findById(it).orElseThrow { notFoundException } } }
       ?: throw notFoundException
   }
 
   suspend fun activeProductFromRequest(): ProductCategory? {
-    return currentCoroutineContext()[RequestContextElement]?.product
+    return currentCoroutineContext()[RequestContext]?.product
   }
 
-  suspend fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }
-
-  private suspend fun attr(param: String): String? {
-    return currentCoroutineContext()[RequestContextElement]?.userId
-  }
+  @Deprecated("")
+  suspend fun userId(): UUID? = currentCoroutineContext()[RequestContext]?.userId
 }

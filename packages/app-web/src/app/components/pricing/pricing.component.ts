@@ -23,7 +23,7 @@ import {
 import { FeatureService } from '../../services/feature.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
-type ServiceFlavor = 'self' | 'cloud';
+type ServiceFlavor = 'selfHosting' | 'saas';
 
 type ProductWithFeatureGroups = Product & {
   stringifiedFeatureGroups: StringFeatureGroup[];
@@ -38,9 +38,9 @@ type ProductWithFeatureGroups = Product & {
 })
 export class PricingComponent implements OnInit {
   targetGroupFc = new FormControl<TargetGroup>('individual');
-  serviceFlavorFc = new FormControl<ServiceFlavor>('self');
-  serviceFlavorSelf: ServiceFlavor = 'self';
-  serviceFlavorCloud: ServiceFlavor = 'cloud';
+  serviceFlavorFc = new FormControl<ServiceFlavor>('saas');
+  serviceFlavorSelf: ServiceFlavor = 'selfHosting';
+  serviceFlavorCloud: ServiceFlavor = 'saas';
   targetGroupOrganization: TargetGroup = 'organization';
   targetGroupIndividual: TargetGroup = 'individual';
   targetGroupOther: TargetGroup = 'other';
@@ -98,7 +98,7 @@ export class PricingComponent implements OnInit {
       return [];
     }
     return filter(this.products, {
-      isCloud: this.serviceFlavorFc.value === 'cloud',
+      isCloud: this.serviceFlavorFc.value === 'saas',
     }).filter(
       (product) =>
         filter<GqlPricedProduct>(product.prices, this.filterParams()).length >
@@ -107,7 +107,7 @@ export class PricingComponent implements OnInit {
   }
 
   private filterParams() {
-    if (this.serviceFlavorFc.value === 'cloud') {
+    if (this.serviceFlavorFc.value === 'saas') {
       return {};
     }
     if (this.targetGroupFc.value === 'individual') {
@@ -171,5 +171,9 @@ export class PricingComponent implements OnInit {
     } else {
       return 'Buy';
     }
+  }
+
+  formatPrice(price: number) {
+    return price.toFixed(2);
   }
 }

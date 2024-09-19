@@ -11,7 +11,6 @@ import java.io.File
 
 class PdfServiceTest {
 
-  private val corrId = "test"
   private lateinit var service: PdfService
   private lateinit var pdf: File
 
@@ -24,7 +23,7 @@ class PdfServiceTest {
 
   @Test
   fun toHTML() = runTest {
-    val html = service.toHTML(corrId, pdf)
+    val html = service.toHTML(pdf)
     "<body> dive into mark".split(" ").forEach {
       Assertions.assertTrue(html.contains(it))
     }
@@ -32,7 +31,7 @@ class PdfServiceTest {
 
   @Test
   fun toArticle() = runTest {
-    val html = service.toHTML(corrId, pdf)
+    val html = service.toHTML(pdf)
     val w2a = WebToArticleTransformer()
     val article = w2a.fromHtml(html, "http://example.org")
     Assertions.assertNotNull(article)

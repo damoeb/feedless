@@ -10,23 +10,23 @@ data class Email(val subject: String, val text: String, val from: String)
 
 interface MailService {
 
-  fun sendWelcomeWaitListMail(corrId: String, user: UserEntity)
+  suspend fun sendWelcomeWaitListMail(user: UserEntity)
 
-  fun sendWelcomePaidMail(corrId: String, user: UserEntity)
+  suspend fun sendWelcomePaidMail(user: UserEntity)
 
-  fun sendWelcomeFreeMail(corrId: String, user: UserEntity)
+  suspend fun sendWelcomeFreeMail(user: UserEntity)
 
 
-  fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String)
+  suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String)
 
-  fun getNoReplyAddress(product: ProductCategory): String
+  suspend fun getNoReplyAddress(product: ProductCategory): String
 
   @Deprecated("")
-  fun send(corrId: String, mimeMessage: MimeMessage)
+  suspend fun send(mimeMessage: MimeMessage)
 
-  fun createMimeMessage(): MimeMessage
+  suspend fun createMimeMessage(): MimeMessage
 
   suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean)
 
-  fun send(corrId: String, from: String, to: Array<String>, mailData: MailData)
+  suspend fun send(from: String, to: Array<String>, mailData: MailData)
 }

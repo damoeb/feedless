@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.throttle.Throttled
@@ -22,7 +21,7 @@ import org.migor.feedless.generated.types.PreviewFeedInput
 import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +29,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
@@ -51,10 +49,9 @@ class FeedQueryResolver {
   suspend fun remoteNativeFeed(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RemoteNativeFeedInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] remoteNativeFeed $data")
-    feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
+  ): RemoteNativeFeed = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("remoteNativeFeed $data")
+    feedParserService.parseFeedFromUrl(data.nativeFeedUrl).asRemoteNativeFeed()
   }
 
   @Throttled
@@ -65,16 +62,13 @@ class FeedQueryResolver {
   suspend fun previewFeed(
     dfe: DataFetchingEnvironment,
     @InputArgument data: PreviewFeedInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): FeedPreview = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.debug("[$corrId] previewFeed $data")
+  ): FeedPreview = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.debug("previewFeed $data")
     runCatching {
-      feedParserService.parseFeedFromRequest(corrId, data.sources
+      feedParserService.parseFeedFromRequest(data.sources
         .filterIndexed { index, _ -> index < 5 }
         .map { it.fromDto() }, data.filters, data.tags
       )
-    }.onFailure {
-      log.warn("[$corrId]", it)
     }.getOrThrow()
   }
 }

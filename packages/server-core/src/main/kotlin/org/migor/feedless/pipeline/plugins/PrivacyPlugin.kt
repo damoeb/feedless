@@ -17,6 +17,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -58,32 +60,30 @@ class PrivacyPlugin : MapEntityPlugin {
   override fun listed() = true
 
   override suspend fun mapEntity(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ): DocumentEntity {
-    log.debug("[$corrId] mapEntity ${document.url}")
-    val response = httpService.httpGetCaching(corrId, document.url, 200)
+    log.debug("mapEntity ${document.url}")
+    val response = httpService.httpGetCaching(document.url, 200)
     if (document.url != response.url) {
-      log.debug("[$corrId] Unwind url shortened urls ${document.url} -> ${response.url}")
+      log.debug("Unwind url shortened urls ${document.url} -> ${response.url}")
       document.url = response.url
     }
 
 //    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
     document.html?.let {
-      val (html, attachments) = extractAttachments(corrId, document.id, HtmlUtil.parseHtml(it, document.url))
+      val (html, attachments) = extractAttachments(document.id, HtmlUtil.parseHtml(it, document.url))
       document.html = html
       document.attachments = attachments.toMutableList()
-    } ?: log.debug("[$corrId] no html content present ${document.id}")
+    } ?: log.debug("no html content present ${document.id}")
 //    }
 
     return document
   }
 
   suspend fun extractAttachments(
-    corrId: String,
     documentId: UUID,
     document: Document
   ): Pair<String, List<AttachmentEntity>> {
@@ -91,11 +91,11 @@ class PrivacyPlugin : MapEntityPlugin {
       .plus(
         filterBlacklisted(document.links())
           .filterIndexed { index, _ -> index < 10 }
-          .mapNotNull { handleLinkedData(corrId, it, documentId) })
+          .mapNotNull { handleLinkedData(it, documentId) })
 //      .plus(document.images()
 //        .filterIndexed { index, _ -> index < 10 }
 //        .mapNotNull {
-//          handleImage(corrId, it, documentId)
+//          handleImage(it, documentId)
 //        })
 
     return Pair(document.body().html(), attachments)
@@ -106,16 +106,16 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   private suspend fun handleImage(
-    corrId: String,
     imageElement: Element,
     documentId: UUID
   ): AttachmentEntity? {
+    val corrId = coroutineContext.corrId()
     return try {
       val url = imageElement.attr("src")
-      val response = fetch(corrId, url, arrayOf("image/jpeg", "image/png", "image/webp"))
+      val response = fetch(url, arrayOf("image/jpeg", "image/png", "image/webp"))
 
       val encoder = Base64.getEncoder()
-      val (isResized, resizedImage, origFormat) = resizeImage(corrId, response.responseBody)
+      val (isResized, resizedImage, origFormat) = resizeImage(response.responseBody)
       val inlineImage = "data:${response.contentType};base64, " + encoder.encodeToString(resizedImage)
       imageElement.attr("src", inlineImage)
       imageElement.removeAttr("width")
@@ -152,8 +152,8 @@ class PrivacyPlugin : MapEntityPlugin {
     }
   }
 
-  private suspend fun fetch(corrId: String, url: String, contentTypes: Array<String>): HttpResponse {
-    val response = httpService.httpGet(corrId, url, 200, null)
+  private suspend fun fetch(url: String, contentTypes: Array<String>): HttpResponse {
+    val response = httpService.httpGet(url, 200, null)
 
     if (contentTypes.none { response.contentType.lowercase().startsWith(it) }) {
       throw IllegalArgumentException("Ignoring ContentType ${response.contentType}")
@@ -174,12 +174,12 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   private suspend fun handleLinkedData(
-    corrId: String,
     linkElement: Element,
     documentId: UUID
   ): AttachmentEntity? {
+    val corrId = coroutineContext.corrId()
     return try {
-      val response = fetch(corrId, linkElement.attr("href"), arrayOf("application/pdf"))
+      val response = fetch(linkElement.attr("href"), arrayOf("application/pdf"))
       val attachment = toAttachment(response, documentId)
       linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
       attachment
@@ -190,7 +190,7 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   @Throws(IOException::class)
-  private fun resizeImage(corrId: String, rawData: ByteArray): Triple<Boolean, ByteArray, String?> {
+  private fun resizeImage(rawData: ByteArray): Triple<Boolean, ByteArray, String?> {
     val bais = ByteArrayInputStream(rawData)
     val image = ImageIO.read(bais)
     val maxWidth = 600
@@ -203,7 +203,7 @@ class PrivacyPlugin : MapEntityPlugin {
       val ratio = (maxWidth / width.toDouble()).coerceAtMost(maxHeight / height.toDouble())
       val targetWidth = (width * ratio).toInt()
       val targetHeight = (height * ratio).toInt()
-      log.info("[$corrId] resizing from ${width}x$height to ${targetWidth}x$targetHeight")
+      log.debug("resizing from ${width}x$height to ${targetWidth}x$targetHeight")
       val scaledImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
       scaledImage.graphics.drawImage(
         image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT),

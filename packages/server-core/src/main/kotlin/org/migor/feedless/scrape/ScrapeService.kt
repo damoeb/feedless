@@ -36,6 +36,7 @@ import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import kotlin.coroutines.coroutineContext
 
 class LogCollector {
   val logs = mutableListOf<LogStatement>()
@@ -74,8 +76,9 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun scrape(corrId: String, source: SourceEntity, logCollector: LogCollector): ScrapeOutput {
+  suspend fun scrape(source: SourceEntity, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
+      val corrId = kotlin.coroutines.coroutineContext.corrId()
       try {
         val scrapeContext = ScrapeContext(logCollector)
 
@@ -100,13 +103,13 @@ class ScrapeService {
             run {
               if (!context.hasOutputAt(index)) {
                 when (action) {
-                  is FetchActionEntity -> handleFetch(corrId, source, index, action, context)
-                  is HeaderActionEntity -> handleHeader(corrId, action, context)
-                  is DomActionEntity -> handleDomAction(corrId, index, action, context)
-                  is ClickXpathActionEntity -> handleClickXpathAction(corrId, action, context)
-                  is ExtractXpathActionEntity -> handleExtract(corrId, index, action, context)
-                  is ExecuteActionEntity -> handlePluginExecution(corrId, index, action, context)
-                  else -> noopAction(corrId, action)
+                  is FetchActionEntity -> handleFetch(source, index, action, context)
+                  is HeaderActionEntity -> handleHeader(action, context)
+                  is DomActionEntity -> handleDomAction(index, action, context)
+                  is ClickXpathActionEntity -> handleClickXpathAction(action, context)
+                  is ExtractXpathActionEntity -> handleExtract(index, action, context)
+                  is ExecuteActionEntity -> handlePluginExecution(index, action, context)
+                  else -> noopAction(action)
                 }
               }
               context
@@ -128,21 +131,21 @@ class ScrapeService {
     }
   }
 
-  private fun noopAction(corrId: String, action: ScrapeActionEntity) {
-    log.info("[$corrId] noop action $action")
+  private fun noopAction(action: ScrapeActionEntity) {
+    log.info("noop action $action")
   }
 
-  private fun handleClickXpathAction(corrId: String, action: ClickXpathActionEntity, context: ScrapeContext) {
-    context.log("[$corrId] handleClickXpathAction $action")
+  private fun handleClickXpathAction(action: ClickXpathActionEntity, context: ScrapeContext) {
+    context.log("handleClickXpathAction $action")
 
   }
 
   private suspend fun handlePluginExecution(
-    corrId: String,
     index: Int,
     action: ExecuteActionEntity,
     context: ScrapeContext
   ) {
+    val corrId = coroutineContext.corrId()
     context.log("[$corrId] handlePluginExecution ${action.pluginId}")
 
     val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
@@ -160,7 +163,7 @@ class ScrapeService {
           context.setOutputAt(
             index, ScrapeActionOutput(
               index = index,
-              fragment = plugin.transformFragment(corrId, action, data, context.logCollector),
+              fragment = plugin.transformFragment(action, data, context.logCollector),
             )
           )
         }
@@ -169,7 +172,7 @@ class ScrapeService {
           val output = context.lastOutput()
 
           if (output.fragment?.items == null) {
-            throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items ($corrId)")
+            throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items")
           }
 
           context.log("""filter params: ${action.executorParams}""")
@@ -178,7 +181,6 @@ class ScrapeService {
               fragmentName = "filter",
               items = output.fragment.items.filterIndexed { i, item ->
                 plugin.filterEntity(
-                  corrId,
                   item,
                   action.executorParams!!,
                   i,
@@ -199,29 +201,29 @@ class ScrapeService {
     }
   }
 
-  private fun handleDomAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
-    context.log("[$corrId] handleDomAction $action")
+  private suspend fun handleDomAction(index: Int, action: DomActionEntity, context: ScrapeContext) {
+    context.log("handleDomAction $action")
     when (action.event) {
-      DomEventType.purge -> handlePurgeAction(corrId, index, action, context)
-      else -> log.warn("[$corrId] cannot handle dom-action ${action.event}")
+      DomEventType.purge -> handlePurgeAction(index, action, context)
+      else -> log.warn("cannot handle dom-action ${action.event}")
     }
   }
 
-  private fun handlePurgeAction(corrId: String, index: Int, action: DomActionEntity, context: ScrapeContext) {
-    purgeOrExtract(corrId, index, action.xpath, true, emptyArray(), context)
+  private fun handlePurgeAction(index: Int, action: DomActionEntity, context: ScrapeContext) {
+    purgeOrExtract(index, action.xpath, true, emptyArray(), context)
   }
 
-  private fun handleExtract(corrId: String, index: Int, action: ExtractXpathActionEntity, context: ScrapeContext) {
+  private fun handleExtract(index: Int, action: ExtractXpathActionEntity, context: ScrapeContext) {
     if (action.emit.contains(ExtractEmit.pixel)) {
-      this.noopAction(corrId, action)
+      this.noopAction(action)
     } else {
-      context.log("[$corrId] handleExtract $action")
-      purgeOrExtract(corrId, index, action.xpath, false, action.emit, context)
+      context.log("handleExtract $action")
+      purgeOrExtract(index, action.xpath, false, action.emit, context)
     }
   }
 
   private fun purgeOrExtract(
-    corrId: String,
+
     index: Int,
     xpath: String,
     purge: Boolean,
@@ -234,7 +236,7 @@ class ScrapeService {
     HtmlUtil.withAbsoluteUrls(document)
     val elements = document.selectXpath(xpath)
     val fragments = if (purge) {
-      context.log("[$corrId] purge xpath '${xpath}' -> ${elements.size} elements")
+      context.log("purge xpath '${xpath}' -> ${elements.size} elements")
       elements.remove()
       listOf(
         ScrapeExtractFragment(
@@ -242,7 +244,7 @@ class ScrapeService {
         )
       )
     } else {
-      context.log("[$corrId] extract xpath '${xpath}' -> ${elements.size} elements")
+      context.log("extract xpath '${xpath}' -> ${elements.size} elements")
       elements.map {
         ScrapeExtractFragment(
           html = if (emit.contains(ExtractEmit.html)) {
@@ -270,23 +272,23 @@ class ScrapeService {
   }
 
 
-  private fun handleHeader(corrId: String, action: HeaderActionEntity, context: ScrapeContext) {
-    context.log("[$corrId] handleHeader $action")
+  private suspend fun handleHeader(action: HeaderActionEntity, context: ScrapeContext) {
+    context.log("[${coroutineContext.corrId()}] handleHeader $action")
     context.headers[action.name] = action.value
   }
 
   private suspend fun handleFetch(
-    corrId: String,
     source: SourceEntity,
     index: Int,
     action: FetchActionEntity,
     context: ScrapeContext
   ) {
+    val corrId = coroutineContext.corrId()
     context.log("[$corrId] handleFetch $action")
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("[$corrId] send to agent")
-      val response = agentService.prerender(corrId, source).get()
+      val response = agentService.prerender(source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("[$corrId] outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
@@ -309,9 +311,9 @@ class ScrapeService {
 //        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
 //      )
 
-      val staticResponse = httpService.httpGetCaching(corrId, url, 200, context.headers)
+      val staticResponse = httpService.httpGetCaching(url, 200, context.headers)
       val debug = FetchActionDebugResponse(
-        corrId = corrId,
+        corrId = "",
         statusCode = staticResponse.statusCode,
         contentType = staticResponse.contentType,
         prerendered = false,

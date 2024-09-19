@@ -1,46 +1,24 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { debounce, interval, merge, Subscription } from 'rxjs';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../../components/embedded-image/embedded-image.component';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeActionInput,
-  GqlScrapeEmit,
-  GqlSourceInput,
-  GqlRecordField,
-  GqlXyPosition,
-} from '../../../generated/graphql';
-import { isEqual, isNull, isUndefined } from 'lodash-es';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { debounce, interval, merge } from 'rxjs';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Location } from '@angular/common';
+import { BoundingBox, XyPosition } from '../../components/embedded-image/embedded-image.component';
+import { GqlRecordField, GqlScrapeActionInput, GqlScrapeEmit, GqlSourceInput } from '../../../generated/graphql';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { RepositoryService } from '../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
-import { environment } from '../../../environments/environment';
 import { ServerConfigService } from '../../services/server-config.service';
 import { createEmailFormControl } from '../../form-controls';
-import { SourceBuilder } from '../../components/interactive-website/source-builder';
 import { Title } from '@angular/platform-browser';
 import { DEFAULT_FETCH_CRON } from '../feed-builder/feed-builder.page';
+import { ScrapeService } from '../../services/scrape.service';
+import { BrowserAction, InteractiveWebsiteController } from '../../modals/interactive-website-modal/interactive-website-controller';
 
 type Email = string;
 
 type Screen = 'area' | 'page' | 'element';
-type BrowserActionType = keyof GqlScrapeActionInput;
-
-interface BrowserAction {
-  type: FormControl<BrowserActionType>;
-  clickParams: FormControl<GqlXyPosition>;
-}
 
 @Component({
   selector: 'app-tracker-edit-page',
@@ -48,18 +26,19 @@ interface BrowserAction {
   styleUrls: ['./tracker-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TrackerEditPage implements OnInit, OnDestroy {
-  // pickPositionDelegate: (position: GqlXyPosition | null) => void;
-  // pickXPathDelegate: (xpath: string | null) => void;
-  // pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
-  additionalWait = new FormControl<number>(0, [
-    Validators.required,
-    Validators.min(0),
-    Validators.max(10),
-  ]);
+export class TrackerEditPage extends InteractiveWebsiteController implements OnInit, OnDestroy {
+  // additionalWait = new FormControl<number>(0, [
+  //   Validators.required,
+  //   Validators.min(0),
+  //   Validators.max(10),
+  // ]);
   form = new FormGroup(
     {
-      url: new FormControl<string>('', [Validators.required]),
+      url: new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(10),
+        Validators.pattern(new RegExp('https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'))
+      ]),
       sinkCondition: new FormControl<number>(0, [
         Validators.required,
         Validators.min(0),
@@ -88,61 +67,58 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     },
     { updateOn: 'change' },
   );
-  actions = new FormArray<FormGroup<BrowserAction>>([]);
   protected readonly GqlRecordField = GqlRecordField;
-  private subscriptions: Subscription[] = [];
   // errorMessage: null;
-  private source: GqlSourceInput;
   showErrors: boolean;
   isThrottled: boolean;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
   screenElement: Screen = 'element';
-  protected scrapeController: SourceBuilder;
   protected isLoading: boolean = false;
+  protected hasUrl: boolean = false;
+  source: GqlSourceInput;
 
   constructor(
-    private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly location: Location,
     private readonly sessionService: SessionService,
     private readonly titleService: Title,
-    private readonly serverConfig: ServerConfigService,
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
-  ) {}
+    public readonly changeRef: ChangeDetectorRef,
+    public readonly scrapeService: ScrapeService,
+    public readonly serverConfig: ServerConfigService,
+  ) {
+    super()
+  }
 
   ngOnInit() {
     this.titleService.setTitle('Tracker Builder');
     this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
-      this.actions.valueChanges
+      this.actionsFg.valueChanges
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
-          if (this.actions.valid) {
-            this.scrapeController.overwriteFlow(
+          if (this.actionsFg.valid) {
+            this.sourceBuilder.overwriteFlow(
               this.getActionsRequestFragment(),
             );
-            this.scrapeController.events.actionsChanges.emit();
+            this.sourceBuilder.events.actionsChanges.next();
           }
         }),
 
-      merge(
-        this.form.controls.url.valueChanges,
-        this.actions.valueChanges,
-        this.additionalWait.valueChanges,
-      )
-        .pipe(debounce(() => interval(800)))
-        .subscribe(() => {
+      this.form.controls.url.valueChanges
+        .subscribe((url) => {
           if (this.form.controls.url.valid) {
-            return this.scrape();
+            return this.initialize(url);
           }
         }),
-      this.activatedRoute.queryParams.subscribe((queryParams) => {
-        if (queryParams.url && queryParams.url != this.form.value.url) {
-          this.form.controls.url.setValue(queryParams.url);
-        }
-      }),
+      // this.activatedRoute.queryParams.subscribe((queryParams) => {
+      //   if (queryParams.url && queryParams.url != this.form.value.url) {
+      //     this.form.controls.url.setValue(queryParams.url);
+      //   }
+      // }),
       this.form.controls.screen.valueChanges.subscribe((screen) => {
         if (screen === 'area') {
           this.form.controls.areaBoundingBox.enable();
@@ -170,27 +146,24 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async scrape() {
-    let url = this.form.value.url;
-    console.log('scrape', url);
-    if (!isValidUrl(url)) {
-      url = fixUrl(url);
-      this.form.controls.url.setValue(fixUrl(url), { emitEvent: false });
-    }
+  private async initialize(url: string) {
+    console.log('initialize scrape '+ url);
 
-    if (this.form.controls.url.invalid) {
+    if (url.trim().length < 10) {
       return;
     }
 
-    await this.router.navigate(['.'], {
-      queryParams: {
-        url,
-      },
-      relativeTo: this.activatedRoute,
-      skipLocationChange: true,
-    });
+    this.hasUrl = true;
 
-    const newSource: GqlSourceInput = {
+    // await this.router.navigate(['.'], {
+    //   queryParams: {
+    //     url,
+    //   },
+    //   relativeTo: this.activatedRoute,
+    //   skipLocationChange: true,
+    // });
+
+    this.source = {
       title: `From ${url}`,
       flow: {
         sequence: [
@@ -204,43 +177,15 @@ export class TrackerEditPage implements OnInit, OnDestroy {
               },
             },
           },
-          ...this.getActionsRequestFragment(),
+          // ...this.getActionsRequestFragment(),
           this.getEmit(),
         ],
       },
     };
 
-    if (isEqual(newSource, this.source)) {
-      console.log('source is unchanged');
-    } else {
-      this.source = newSource;
+    this.initializeController();
 
-      // const scrapeResponse = await this.scrapeService.scrape(
-      //   this.scrapeRequest,
-      // );
-
-      // this.scrapeController = new ScrapeController(this.scrapeRequest);
-
-      // const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
-      //   .response.fetch;
-      // const extractAction = scrapeResponse.outputs.find(
-      //   (o) => o.response.extract,
-      // ).response.extract;
-    }
     this.changeRef.detectChanges();
-  }
-
-  addAction() {
-    if (this.actions.valid) {
-      this.actions.push(
-        new FormGroup<BrowserAction>({
-          type: new FormControl<BrowserActionType>('click'),
-          clickParams: new FormControl<GqlXyPosition>(null, [
-            Validators.required,
-          ]),
-        }),
-      );
-    }
   }
 
   handleReorderActions(ev: CustomEvent<ItemReorderEventDetail>) {
@@ -261,101 +206,90 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     if (this.form.invalid) {
       return;
     }
-    const sub = await this.repositoryService.createRepositories({
-      repositories: [
-        {
-          sources: [
-            {
-              title: `From ${this.form.value.url}`,
-              tags: [],
-              flow: {
-                sequence: [
-                  {
-                    fetch: {
-                      get: {
-                        url: {
-                          literal: this.form.value.url,
-                        },
-                        additionalWaitSec: this.additionalWait.value,
-                      },
-                    },
-                  },
-                  ...this.getActionsRequestFragment(),
-                  this.getEmit(),
-                ],
-              },
-            },
-          ],
-          product: environment.product,
-          additionalSinks: [
-            {
-              email: this.form.value.email,
-            },
-          ],
-          title: this.form.value.subject,
-          description: 'Visual Diff',
-          withShareKey: false,
-          refreshCron: this.form.value.fetchFrequency,
-          retention: {
-            maxCapacity: 2,
-          },
-          plugins: [
-            {
-              pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
-              params: {
-                [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
-                  inlineDiffImage: true,
-                  inlineLatestImage: true,
-                  compareBy: {
-                    field: this.form.value.compareType,
-                  },
-                  nextItemMinIncrement: this.form.value.sinkCondition,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!this.sessionService.isAuthenticated()) {
-      await this.showAnonymousSuccessAlert();
-    }
-    await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
+    throw new Error('not implemented')
+    // const sub = await this.repositoryService.createRepositories({
+    //   repositories: [
+    //     {
+    //       sources: [
+    //         {
+    //           title: `From ${this.form.value.url}`,
+    //           tags: [],
+    //           flow: {
+    //             sequence: [
+    //               {
+    //                 fetch: {
+    //                   get: {
+    //                     url: {
+    //                       literal: this.form.value.url,
+    //                     },
+    //                     additionalWaitSec: this.additionalWait.value,
+    //                   },
+    //                 },
+    //               },
+    //               ...this.getActionsRequestFragment(),
+    //               this.getEmit(),
+    //             ],
+    //           },
+    //         },
+    //       ],
+    //       product: environment.product,
+    //       additionalSinks: [
+    //         {
+    //           email: this.form.value.email,
+    //         },
+    //       ],
+    //       title: this.form.value.subject,
+    //       description: 'Visual Diff',
+    //       withShareKey: false,
+    //       refreshCron: this.form.value.fetchFrequency,
+    //       retention: {
+    //         maxCapacity: 2,
+    //       },
+    //       plugins: [
+    //         {
+    //           pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
+    //           params: {
+    //             [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
+    //               inlineDiffImage: true,
+    //               inlineLatestImage: true,
+    //               compareBy: {
+    //                 field: this.form.value.compareType,
+    //               },
+    //               nextItemMinIncrement: this.form.value.sinkCondition,
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // });
+    //
+    // if (!this.sessionService.isAuthenticated()) {
+    //   await this.showAnonymousSuccessAlert();
+    // }
+    // await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
 
-  getActions(): FormGroup<BrowserAction>[] {
-    const actions: FormGroup<BrowserAction>[] = [];
-    for (let i = 0; i < this.actions.length; i++) {
-      actions.push(this.actions.at(i));
-    }
-
-    return actions;
-  }
-
-  pickBoundingBox() {
-    this.scrapeController.events.pickArea.emit((boundingBox: BoundingBox) => {
+  pickArea() {
+    this.sourceBuilder.events.pickArea.next((boundingBox: BoundingBox) => {
       this.form.controls.areaBoundingBox.patchValue(boundingBox);
       this.changeRef.detectChanges();
     });
   }
 
-  pickPosition(action: FormGroup<BrowserAction>) {
-    this.scrapeController.events.pickPoint.emit((position: XyPosition) => {
+  pickPoint(action: FormGroup<BrowserAction>) {
+    console.log('pickPoint')
+    this.sourceBuilder.events.pickPoint.next((position: XyPosition) => {
       action.controls.clickParams.patchValue(position);
       this.changeRef.detectChanges();
     });
   }
 
   pickXPath() {
-    this.scrapeController.events.pickElement.emit((xpath: string) => {
+    this.sourceBuilder.events.pickElement.next((xpath: string) => {
       this.form.controls.elementXpath.setValue(xpath);
       this.changeRef.detectChanges();
     });
-  }
-
-  removeAction(index: number) {
-    this.actions.removeAt(index);
   }
 
   getPositionLabel(action: FormGroup<BrowserAction>) {
@@ -376,15 +310,21 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     }
   }
 
-  protected isDefined(v: any | undefined): boolean {
-    return !isNull(v) && !isUndefined(v);
+  private async patchUrlInAddressBar() {
+    const url = this.router
+      .createUrlTree(this.activatedRoute.snapshot.url, {
+        queryParams: {  },
+        relativeTo: this.activatedRoute,
+      })
+      .toString();
+    this.location.replaceState(url);
   }
 
   private getEmit(): GqlScrapeActionInput {
     if (this.form.value.screen === 'area') {
       return {
         extract: {
-          fragmentName: 'element',
+          fragmentName: 'element from bounding box',
           imageBased: {
             boundingBox: this.form.value.areaBoundingBox,
           },
@@ -393,7 +333,7 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     } else {
       return {
         extract: {
-          fragmentName: 'element',
+          fragmentName: 'element from xpath',
           selectorBased: {
             fragmentName: '',
             xpath: {
@@ -408,35 +348,27 @@ export class TrackerEditPage implements OnInit, OnDestroy {
     }
   }
 
-  private getActionsRequestFragment(): GqlScrapeActionInput[] {
-    return this.getActions()
-      .filter((action) => action.valid)
-      .map((action) => {
-        return {
-          click: {
-            position: {
-              x: action.value.clickParams.x,
-              y: action.value.clickParams.y,
-            },
-          },
-        };
-      });
+  handleQuery(url: string) {
+    if (this.form.value.url !== url) {
+      if (isValidUrl(url)) {
+        this.form.controls.url.setValue(url);
+      } else {
+        const fixedUrl = fixUrl(url);
+        this.form.controls.url.setValue(fixedUrl);
+      }
+    }
   }
 
-  handleQuery(query: string) {
-    this.form.controls.url.setValue(query);
-  }
-
-  private async showAnonymousSuccessAlert() {
-    const alert = await this.alertCtrl.create({
-      header: 'Tracker created',
-      cssClass: 'success-alert',
-      message: `You should have received an email, you may continue from there.`,
-      buttons: ['Ok'],
-    });
-
-    await alert.present();
-  }
+  // private async showAnonymousSuccessAlert() {
+  //   const alert = await this.alertCtrl.create({
+  //     header: 'Tracker created',
+  //     cssClass: 'success-alert',
+  //     message: `You should have received an email, you may continue from there.`,
+  //     buttons: ['Ok'],
+  //   });
+  //
+  //   await alert.present();
+  // }
 
   getXPathLabel(formControl: FormControl<string | null>) {
     if (formControl.valid) {

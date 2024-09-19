@@ -43,12 +43,12 @@ class XmlFeedParser : FeedBodyParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
-  override suspend fun process(corrId: String, response: HttpResponse): JsonFeed {
+  override suspend fun process(response: HttpResponse): JsonFeed {
     // parse rss/atom/rdf/opml
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response)
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
-      else -> throw IllegalArgumentException("Not implemented ($corrId)")
+      else -> throw IllegalArgumentException("Not supported")
     }
   }
 

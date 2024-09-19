@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -12,7 +13,9 @@ import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Title } from '@angular/platform-browser';
 import { ConnectedAppService } from '../../services/connected-app.service';
-import { Session, UserSecret } from '../../graphql/types';
+import { Product, Session, UserSecret } from '../../graphql/types';
+import { ProductService } from '../../services/product.service';
+import { first } from 'lodash-es';
 
 @Component({
   selector: 'app-profile-page',
@@ -41,10 +44,13 @@ export class ProfilePage implements OnInit, OnDestroy {
     ]),
   });
   private connectedApps: Session['user']['connectedApps'] = [];
+  protected product: Product;
 
   constructor(
     private readonly toastCtrl: ToastController,
     protected readonly sessionService: SessionService,
+    protected readonly changeRef: ChangeDetectorRef,
+    protected readonly productService: ProductService,
     protected readonly alertCtrl: AlertController,
     protected readonly connectedAppService: ConnectedAppService,
     private readonly titleService: Title,
@@ -68,17 +74,26 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.titleService.setTitle('Profile');
+
     this.subscriptions.push(
-      this.sessionService.getSession().subscribe((session) => {
+      this.sessionService.getSession().subscribe(async (session) => {
         if (session.isLoggedIn) {
           this.connectedApps = session.user.connectedApps;
           this.secrets = session.user.secrets;
+
+          this.product = first(
+            await this.productService.listProducts({
+              id: { equals: session.user.plan.productId },
+            }),
+          );
+
           this.formFg.patchValue({
             email: session.user.email,
             firstName: session.user.firstName,
             lastName: session.user.lastName,
             emailVerified: session.user.emailValidated,
           });
+          this.changeRef.detectChanges();
         }
       }),
     );

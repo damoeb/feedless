@@ -1,11 +1,13 @@
 package org.migor.feedless.annotation
 
 import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -13,6 +15,13 @@ import org.migor.feedless.document.DocumentEntity
 import java.util.*
 
 @Entity(name = "t_annotation_text")
+@DiscriminatorValue("text")
+@PrimaryKeyJoinColumn(
+  foreignKey = ForeignKey(
+    name = "fk_annotation_entity",
+    foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES t_annotation(id) ON DELETE CASCADE"
+  )
+)
 open class TextAnnotationEntity : AnnotationEntity() {
   @Column(name = "from_char")
   open var fromChar: Int = 0

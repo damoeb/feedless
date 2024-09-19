@@ -13,17 +13,17 @@ import java.net.URL
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class NativeFeedLocator {
-  suspend fun locateInDocument(corrId: String, document: Document, url: String): List<RemoteNativeFeedRef> {
+  suspend fun locateInDocument(document: Document, url: String): List<RemoteNativeFeedRef> {
     return document.select("link[rel=alternate][type], link[rel=feed][type]")
-      .mapIndexedNotNull { index, element -> toFeedReference(corrId, index, element, url) }
+      .mapIndexedNotNull { index, element -> toFeedReference(index, element, url) }
       .distinctBy { it.url }
   }
 
-  private suspend fun toFeedReference(corrId: String, index: Int, element: Element, url: String): RemoteNativeFeedRef? {
+  private suspend fun toFeedReference(index: Int, element: Element, url: String): RemoteNativeFeedRef? {
     return try {
       RemoteNativeFeedRef(
         absUrl(url, element.attr("href")),
-        FeedUtil.detectFeedType(corrId, element.attr("type")),
+        FeedUtil.detectFeedType(element.attr("type")),
         StringUtils.trimToNull(element.attr("title")) ?: "Native Feed #${index + 1}"
       )
     } catch (e: Exception) {

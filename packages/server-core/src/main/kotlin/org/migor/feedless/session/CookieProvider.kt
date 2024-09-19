@@ -22,8 +22,8 @@ class CookieProvider {
   @Autowired
   private lateinit var tokenProvider: TokenProvider
 
-  fun createTokenCookie(corrId: String, authToken: Jwt): Cookie {
-    log.debug("[$corrId] creating token cookie")
+  suspend fun createTokenCookie(authToken: Jwt): Cookie {
+    log.debug("creating token cookie")
     val cookie = Cookie("TOKEN", authToken.tokenValue)
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain

@@ -2,8 +2,6 @@ package org.migor.feedless.feed
 
 import org.junit.jupiter.api.BeforeEach
 
-val corrId = "test"
-
 class LegacyFeedServiceTest {
 
   lateinit var service: LegacyFeedService

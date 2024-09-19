@@ -35,7 +35,6 @@ describe('InteractiveWebsiteComponent', () => {
   ): GqlSourceInput {
     return {
       id: '',
-      corrId: '',
       title: '',
       flow: {
         sequence: actions,

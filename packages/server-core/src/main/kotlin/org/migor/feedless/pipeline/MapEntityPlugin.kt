@@ -8,7 +8,6 @@ import org.migor.feedless.scrape.LogCollector
 interface MapEntityPlugin : FeedlessPlugin {
 
   suspend fun mapEntity(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput,

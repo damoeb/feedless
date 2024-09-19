@@ -18,6 +18,7 @@ import org.migor.feedless.ServiceUnavailableException
 import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,7 @@ import java.net.URL
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -74,39 +76,37 @@ class HttpService {
     }
   }
 
-  suspend fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
-    return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
+  suspend fun executeRequest(request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
+    return toHttpResponse(this.execute(request, expectedStatusCode))
   }
 
   @Cacheable(value = [CacheNames.HTTP_RESPONSE], key = "#url")
   suspend fun httpGetCaching(
-    corrId: String,
     url: String,
     expectedHttpStatus: Int,
     headers: Map<String, String>? = null
   ): HttpResponse {
     log.debug("cache miss $url")
-    return this.httpGet(corrId, url, expectedHttpStatus, headers)
+    return this.httpGet(url, expectedHttpStatus, headers)
   }
 
   suspend fun httpGet(
-    corrId: String,
     url: String,
     expectedHttpStatus: Int,
     headers: Map<String, String>? = null
   ): HttpResponse {
-    protectFromOverloading(corrId, url)
-    log.debug("[$corrId] GET $url")
+    protectFromOverloading(url)
+    log.debug("[${coroutineContext.corrId()}] GET $url")
     val request = prepareGet(url)
     headers?.let {
       headers.forEach {
         request.addHeader(it.key, it.value)
       }
     }
-    return toHttpResponse(execute(corrId, request, expectedHttpStatus))
+    return toHttpResponse(execute(request, expectedHttpStatus))
   }
 
-  private suspend fun protectFromOverloading(corrId: String, url: String) {
+  private suspend fun protectFromOverloading(url: String) {
     val actualUrl = URL(url)
     if (actualUrl.host != gatewayHost) {
       val probes =
@@ -117,7 +117,7 @@ class HttpService {
           delay(waitFor.toMillis())
         } else {
           throw HostOverloadingException(
-            corrId,
+            coroutineContext.corrId()!!,
             "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
             Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
           )
@@ -151,7 +151,8 @@ class HttpService {
     statusCode = response.statusCode
   )
 
-  private suspend fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
+  private suspend fun execute(request: BoundRequestBuilder, expectedStatusCode: Int): Response {
+    val corrId = coroutineContext.corrId()!!
     return try {
       val response = withContext(Dispatchers.IO) {
         request.execute().get(30, TimeUnit.SECONDS)

@@ -12,7 +12,7 @@ import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SourceBuilder } from './source-builder';
-import { debounce, interval, map, merge, Subscription } from 'rxjs';
+import { map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
@@ -154,7 +154,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     try {
-      const scrapeResponse = await this.sourceBuilder.fetchFeedsFromBrowser();
+      const scrapeResponse = await this.sourceBuilder.fetchFeedsUsingBrowser();
 
       this.handleScrapeResponse(scrapeResponse);
     } catch (e) {

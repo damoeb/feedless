@@ -11,10 +11,12 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.session.RequestContext
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.springframework.util.ResourceUtils
 import java.util.*
 
@@ -59,7 +61,7 @@ internal class PrivacyPluginTest {
   fun setUp() {
     plugin = PrivacyPlugin()
     val mockPropertyService = mock(PropertyService::class.java)
-    Mockito.`when`(mockPropertyService.apiGatewayUrl).thenReturn("https://localhost:8080/")
+    `when`(mockPropertyService.apiGatewayUrl).thenReturn("https://localhost:8080/")
     plugin.propertyService = mockPropertyService
     mockHttpService = mock(HttpService::class.java)
     plugin.httpService = mockHttpService
@@ -82,10 +84,10 @@ internal class PrivacyPluginTest {
       responseBody = ResourceUtils.getFile("classpath:images//sample.$inputImageType").readBytes(),
     )
 
-    Mockito.`when`(mockHttpService.httpGet(anyString(), anyString(), anyInt(), Mockito.isNull()))
+    `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull()))
       .thenAnswer { mockHttpResponse }
 
-    val (markup, _) = plugin.extractAttachments("", UUID.randomUUID(), document)
+    val (markup, _) = plugin.extractAttachments(UUID.randomUUID(), document)
     val images = Jsoup.parse(markup).select("img[src]")
     Assertions.assertTrue(images.isNotEmpty())
     val src = images.first()!!.attr("src")
@@ -99,7 +101,7 @@ internal class PrivacyPluginTest {
       "pdf",
     ]
   )
-  fun attachPdf(inputFileType: String) = runTest {
+  fun attachPdf(inputFileType: String) = runTest(context = RequestContext()) {
     val mockPdfResponse = HttpResponse(
       contentType = "application/$inputFileType",
       url = "",
@@ -114,17 +116,15 @@ internal class PrivacyPluginTest {
       responseBody = "".toByteArray(),
     )
 
-    Mockito.`when`(mockHttpService.httpGet(anyString(), anyString(), anyInt(), Mockito.isNull())).thenAnswer { input ->
-      run {
-        if (input.arguments[1] == pdfUrl) {
-          mockPdfResponse
-        } else {
-          mockHtmlResponse
-        }
+    `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull())).thenAnswer { input ->
+      if (input.arguments[0] == pdfUrl) {
+        mockPdfResponse
+      } else {
+        mockHtmlResponse
       }
     }
 
-    val (markup, attachments) = plugin.extractAttachments("", UUID.randomUUID(), document)
+    val (markup, attachments) = plugin.extractAttachments(UUID.randomUUID(), document)
     assertThat(attachments.size).isEqualTo(1)
     val attachment = attachments[0]
     assertThat(attachment.mimeType).isEqualTo("application/pdf")

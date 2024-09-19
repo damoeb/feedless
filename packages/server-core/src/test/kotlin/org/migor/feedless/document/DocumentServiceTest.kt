@@ -1,7 +1,6 @@
 package org.migor.feedless.document
 
 import jakarta.persistence.EntityManager
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
@@ -31,8 +30,6 @@ class DocumentServiceTest {
   private lateinit var repositoryDAO: RepositoryDAO
 
   private lateinit var documentService: DocumentService
-
-  private var corrId = "test"
 
   private lateinit var currentUser: UserEntity
 
@@ -65,7 +62,7 @@ class DocumentServiceTest {
 //  }
 
   @Test
-  fun `given deleteDocuments is executed not by the owner, it fails`() = runTest {
+  fun `given deleteDocuments is executed not by the owner, it fails`() {
     val repository = mock(RepositoryEntity::class.java)
     val repositoryId = UUID.randomUUID()
     `when`(repository.id).thenReturn(repositoryId)
@@ -74,8 +71,8 @@ class DocumentServiceTest {
     `when`(repositoryDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(repository))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runBlocking {
-        documentService.deleteDocuments(corrId, currentUser, repositoryId, StringFilter())
+      runTest {
+        documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
       }
     }
   }

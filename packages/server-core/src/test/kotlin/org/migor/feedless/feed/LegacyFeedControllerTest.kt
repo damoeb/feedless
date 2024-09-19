@@ -88,7 +88,6 @@ class LegacyFeedControllerTest {
     `when`(
       legacyFeedService.transformFeed(
         any(String::class.java),
-        any(String::class.java),
         anyOrNull(String::class.java),
         any(String::class.java),
       )
@@ -120,7 +119,6 @@ class LegacyFeedControllerTest {
 
     `when`(
       legacyFeedService.webToFeed(
-        any(String::class.java),
         any(String::class.java),
         any(String::class.java),
         any(String::class.java),
@@ -169,7 +167,6 @@ class LegacyFeedControllerTest {
 
     `when`(
       legacyFeedService.getFeed(
-        any(String::class.java),
         any(String::class.java),
         any(String::class.java),
       )

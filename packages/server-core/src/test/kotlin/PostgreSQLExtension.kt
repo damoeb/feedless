@@ -30,7 +30,7 @@ class PostgreSQLExtension : BeforeAllCallback, AfterAllCallback {
     System.setProperty("spring.datasource.password", postgis.password)
     System.setProperty("spring.flyway.baseline-on-migrate", "true")
     System.setProperty("spring.flyway.baseline-version", "1")
-    System.setProperty("spring.flyway.target", "59")
+    System.setProperty("spring.flyway.target", "61")
     System.setProperty("spring.flyway.enabled", "true")
   }
 

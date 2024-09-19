@@ -4,10 +4,10 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { PublicRepository, Repository, Record } from '../../graphql/types';
+import { PublicRepository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
-import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
+import { GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { Title } from '@angular/platform-browser';
 import { FormControl } from '@angular/forms';

@@ -65,7 +65,7 @@ open class UserEntity : EntityWithUUID() {
   open var usageTotalMb: Double = 0.0
 
   @Column(nullable = false, name = "is_root")
-  open var root: Boolean = false
+  open var admin: Boolean = false
 
   @Column(nullable = false, name = "is_anonymous")
   open var anonymous: Boolean = false
@@ -161,7 +161,8 @@ fun UserEntity.toDTO(): User =
     country = StringUtils.trimToEmpty(country),
     notificationRepositoryId = inboxRepositoryId?.toString(),
     secrets = emptyList(),
-    connectedApps = emptyList()
+    connectedApps = emptyList(),
+    groups = emptyList()
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
   )

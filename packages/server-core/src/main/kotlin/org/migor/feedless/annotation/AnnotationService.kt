@@ -22,18 +22,18 @@ class AnnotationService(
   val textAnnotationDAO: TextAnnotationDAO
 ) {
 
-  suspend fun createAnnotation(corrId: String, data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
-    return data.annotation.flag?.let { createBoolAnnotation(corrId, data.where, flag = it.set, user = user) }
-      ?: data.annotation.text?.let { createTextAnnotation(corrId, data.where, it, user) }
-      ?: data.annotation.upVote?.let { createBoolAnnotation(corrId, data.where, upvote = it.set, user = user) }
-      ?: data.annotation.downVote?.let { createBoolAnnotation(corrId, data.where, downvote = it.set, user = user) }
+  suspend fun createAnnotation(data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
+    return data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set, user = user) }
+      ?: data.annotation.text?.let { createTextAnnotation(data.where, it, user) }
+      ?: data.annotation.upVote?.let { createBoolAnnotation(data.where, upvote = it.set, user = user) }
+      ?: data.annotation.downVote?.let { createBoolAnnotation(data.where, downvote = it.set, user = user) }
       ?: throw IllegalArgumentException("Insufficient data for annotation")
   }
 
-  suspend fun deleteAnnotation(corrId: String, data: DeleteAnnotationInput, currentUser: UserEntity) {
+  suspend fun deleteAnnotation(data: DeleteAnnotationInput, currentUser: UserEntity) {
     withContext(Dispatchers.IO) {
       val vote = annotationDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
-      if (currentUser.root || currentUser.id == vote.ownerId) {
+      if (currentUser.admin || currentUser.id == vote.ownerId) {
         annotationDAO.delete(vote)
       } else {
         throw PermissionDeniedException("Must be owner")
@@ -42,7 +42,6 @@ class AnnotationService(
   }
 
   private fun createBoolAnnotation(
-    corrId: String,
     where: AnnotationWhereInput,
     flag: Boolean = false,
     upvote: Boolean = false,
@@ -74,7 +73,6 @@ class AnnotationService(
   }
 
   private fun createTextAnnotation(
-    corrId: String,
     where: AnnotationWhereInput,
     i: TextAnnotationInput,
     user: UserEntity

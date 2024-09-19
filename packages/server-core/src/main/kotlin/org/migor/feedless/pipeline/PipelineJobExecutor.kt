@@ -13,8 +13,11 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
@@ -45,6 +49,9 @@ class PipelineJobExecutor internal constructor() {
   private lateinit var documentDAO: DocumentDAO
 
   @Autowired
+  private lateinit var repositoryDAO: RepositoryDAO
+
+  @Autowired
   private lateinit var documentService: DocumentService
 
   @Autowired
@@ -62,12 +69,12 @@ class PipelineJobExecutor internal constructor() {
       runBlocking {
         runCatching {
           coroutineScope {
-            groupedDocuments.map {
-              async(Dispatchers.Unconfined) {
+            groupedDocuments.map { groupedDocuments ->
+              async(RequestContext(userId = getOwnerIdForDocumentId(groupedDocuments.key))) {
                 semaphore.acquire()
                 delay(2000)
                 try {
-                  processDocumentPlugins(newCorrId(3, corrId), it.key, it.value)
+                  processDocumentPlugins(groupedDocuments.key, groupedDocuments.value)
                 } finally {
                   semaphore.release()
                 }
@@ -95,11 +102,11 @@ class PipelineJobExecutor internal constructor() {
       runBlocking {
         runCatching {
           coroutineScope {
-            groupedSources.map {
-              async(Dispatchers.Unconfined) {
+            groupedSources.map { groupedSources ->
+              async(RequestContext(userId = getOwnerIdForSourceId(groupedSources.key))) {
                 semaphore.acquire()
                 try {
-                  processSourcePipeline(newCorrId(3, corrId), it.key, it.value)
+                  processSourcePipeline(groupedSources.key, groupedSources.value)
                 } finally {
                   semaphore.release()
                 }
@@ -114,9 +121,24 @@ class PipelineJobExecutor internal constructor() {
     }
   }
 
-  private suspend fun processSourcePipeline(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+  private suspend fun getOwnerIdForDocumentId(documentId: UUID): UUID {
+    val repo = withContext(Dispatchers.IO) {
+      repositoryDAO.findByDocumentId(documentId) ?: throw IllegalArgumentException("repo not found by documentId")
+    }
+    return repo.ownerId
+  }
+
+  private suspend fun getOwnerIdForSourceId(sourceId: UUID): UUID {
+    val repo = withContext(Dispatchers.IO) {
+      repositoryDAO.findBySourceId(sourceId) ?: throw IllegalArgumentException("repo not found by sourceId")
+    }
+    return repo.ownerId
+  }
+
+  private suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+    val corrId = coroutineContext.corrId()
     try {
-      sourceService.processSourcePipeline(corrId, sourceId, jobs)
+      sourceService.processSourcePipeline(sourceId, jobs)
     } catch (t: Throwable) {
       if (t !is ResumableHarvestException) {
         log.error("[$corrId] processDocumentPlugins fatal failure", t)
@@ -127,10 +149,11 @@ class PipelineJobExecutor internal constructor() {
     }
   }
 
-  private suspend fun processDocumentPlugins(corrId: String, documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+  private suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
     try {
-      documentService.processDocumentPlugins(corrId, documentId, jobs)
+      documentService.processDocumentPlugins(documentId, jobs)
     } catch (t: Throwable) {
+      val corrId = coroutineContext.corrId()
       log.error("[$corrId] processDocumentPlugins fatal failure", t)
       withContext(Dispatchers.IO) {
         documentDAO.deleteById(documentId)

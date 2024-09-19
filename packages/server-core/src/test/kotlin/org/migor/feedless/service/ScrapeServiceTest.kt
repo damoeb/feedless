@@ -123,7 +123,6 @@ class ScrapeServiceTest {
       `when`(
         httpService.httpGetCaching(
           any(String::class.java),
-          any(String::class.java),
           any(Int::class.java),
           anyMap()
         )
@@ -136,10 +135,9 @@ class ScrapeServiceTest {
 
   @Test
   fun `fetch action calls httpService`() = runTest {
-    scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction)), LogCollector())
+    scrapeService.scrape(sourceWithActions(listOf(fetchAction)), LogCollector())
 
     verify(httpService, times(1)).httpGetCaching(
-      any(String::class.java),
       any(String::class.java),
       any(Int::class.java),
       anyMap()
@@ -153,10 +151,9 @@ class ScrapeServiceTest {
     val headerValue = "application/json"
     `when`(headerAction.name).thenReturn(headerName)
     `when`(headerAction.value).thenReturn(headerValue)
-    scrapeService.scrape(corrId, sourceWithActions(listOf(headerAction, fetchAction)), LogCollector())
+    scrapeService.scrape(sourceWithActions(listOf(headerAction, fetchAction)), LogCollector())
 
     verify(httpService, times(1)).httpGetCaching(
-      any(String::class.java),
       any(String::class.java),
       any(Int::class.java),
       eq(mapOf(headerName to headerValue))
@@ -170,7 +167,7 @@ class ScrapeServiceTest {
     `when`(purgeAction.xpath).thenReturn("//title")
 
     val scrapeResponse =
-      scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, purgeAction)), LogCollector())
+      scrapeService.scrape(sourceWithActions(listOf(fetchAction, purgeAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val html = { v: String ->
@@ -205,7 +202,7 @@ class ScrapeServiceTest {
     `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
 
     val scrapeResponse =
-      scrapeService.scrape(corrId, sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())
+      scrapeService.scrape(sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())
     val last = scrapeResponse.outputs.last()
 
     val fragment = last.fragment!!.fragments!![0]

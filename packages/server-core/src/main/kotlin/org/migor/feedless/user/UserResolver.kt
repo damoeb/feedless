@@ -12,7 +12,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.ConnectedApp
@@ -21,14 +20,13 @@ import org.migor.feedless.generated.types.Session
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
@@ -52,11 +50,10 @@ class UserResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun updateCurrentUser(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpdateCurrentUserInput,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.info("[$corrId] updateCurrentUser ${sessionService.userId()} $data")
-    userService.updateUser(corrId, sessionService.userId()!!, data)
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.info("updateCurrentUser ${coroutineContext.userId()} $data")
+    userService.updateUser(coroutineContext.userId(), data)
     true
   }
 
@@ -65,12 +62,11 @@ class UserResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun updateConnectedApp(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument id: String,
     @InputArgument authorize: Boolean,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.info("[$corrId] updateConnectedApp ${sessionService.userId()}")
-    userService.updateConnectedApp(corrId, sessionService.userId()!!, UUID.fromString(id), authorize)
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.info("updateConnectedApp ${coroutineContext.userId()}")
+    userService.updateConnectedApp(coroutineContext.userId(), UUID.fromString(id), authorize)
     true
   }
 
@@ -79,11 +75,10 @@ class UserResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteConnectedApp(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument id: String,
-  ): Boolean = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.info("[$corrId] deleteConnectedApp ${sessionService.userId()}")
-    userService.deleteConnectedApp(corrId, sessionService.user(corrId), UUID.fromString(id))
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.info("deleteConnectedApp ${coroutineContext.userId()}")
+    userService.deleteConnectedApp(coroutineContext.userId(), UUID.fromString(id))
     true
   }
 
@@ -92,11 +87,10 @@ class UserResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun connectedApp(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument id: String,
-  ): ConnectedApp = withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-    log.info("[$corrId] connectedApp ${sessionService.userId()} ")
-    userService.getConnectedAppByUserAndId(corrId, sessionService.userId()!!, UUID.fromString(id)).toDto()
+  ): ConnectedApp = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    log.info("connectedApp ${coroutineContext.userId()} ")
+    userService.getConnectedAppByUserAndId(coroutineContext.userId(), UUID.fromString(id)).toDto()
   }
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)

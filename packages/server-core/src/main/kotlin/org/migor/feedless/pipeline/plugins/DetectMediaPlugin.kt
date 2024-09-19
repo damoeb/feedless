@@ -16,6 +16,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.ResourceUtils
 import java.io.IOException
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @JsonIgnoreProperties
 data class MediaItem(
@@ -51,13 +53,13 @@ class DetectMediaPlugin : MapEntityPlugin {
 
   @Transactional(propagation = Propagation.REQUIRED)
   override suspend fun mapEntity(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ): DocumentEntity {
     val url = document.url
+    val corrId = coroutineContext.corrId()!!
     log.debug("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
       throw HarvestAbortedException(corrId, "illegal url $url")

@@ -88,7 +88,7 @@ class AuthenticationTest {
   fun `authUser works`() = runTest {
     // given
     val mockUser = UserEntity()
-    mockUser.root = true
+    mockUser.admin = true
     Mockito.`when`(userService.findByEmail(anyString())).thenReturn(mockUser)
     val mockSecretKey = UserSecretEntity()
     Mockito.`when`(userSecretService.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)

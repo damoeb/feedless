@@ -18,7 +18,7 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override suspend fun process(corrId: String, response: HttpResponse): JsonFeed {
+  override suspend fun process(response: HttpResponse): JsonFeed {
     val gson = GsonBuilder()
       .setDateFormat(FORMAT_RFC3339)
       .create()

@@ -9,50 +9,39 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.UpdateFeatureValueInput
-import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.useRequestContext
+import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.features} & ${AppLayer.api}")
-class FeatureResolver {
+class FeatureResolver(
+  private val featureService: FeatureService
+) {
 
   private val log = LoggerFactory.getLogger(FeatureResolver::class.simpleName)
 
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
+//  @Autowired
+//  private lateinit var sessionService: SessionService
 
   @Throttled
   @DgsQuery
-//  @PreAuthorize("hasAuthority('USER')")
   @Transactional
   suspend fun featureGroups(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument inherit: Boolean,
     @InputArgument where: FeatureGroupWhereInput,
-
-    ): List<FeatureGroup> =
-    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-      log.debug("[$corrId] featureGroups inherit=$inherit where=$where")
-//      if (!sessionService.user(corrId).root) {
-//        throw IllegalArgumentException("user must be root")
-//      }
+  ): List<FeatureGroup> =
+    withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+      log.debug("featureGroups inherit=$inherit where=$where")
       featureService.findAllGroups(inherit, where)
     }
 
@@ -68,12 +57,11 @@ class FeatureResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateFeatureValue(
     dfe: DataFetchingEnvironment,
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: UpdateFeatureValueInput
   ): Boolean =
-    withContext(useRequestContext(currentCoroutineContext(), dfe)) {
-      log.debug("[$corrId] updateFeature $data")
-      featureService.updateFeatureValue(corrId, UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
+    withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+      log.debug("updateFeature $data")
+      featureService.updateFeatureValue(UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
       true
     }
 }

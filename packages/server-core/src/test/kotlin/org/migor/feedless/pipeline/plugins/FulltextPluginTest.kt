@@ -38,8 +38,6 @@ import org.mockito.quality.Strictness
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FulltextPluginTest {
 
-  val corrId = "test"
-
   @Mock
   lateinit var scrapeService: ScrapeService
 
@@ -69,7 +67,6 @@ class FulltextPluginTest {
 
     `when`(
       scrapeService.scrape(
-        any(String::class.java),
         any(SourceEntity::class.java),
         any(LogCollector::class.java)
       )
@@ -82,7 +79,6 @@ class FulltextPluginTest {
 
     val response =
       fulltextPlugin.mapEntity(
-        corrId = corrId,
         document = document,
         repository = repository,
         params = params,
@@ -91,7 +87,6 @@ class FulltextPluginTest {
 
     assertThat(response).isNotNull
     verify(scrapeService, times(1)).scrape(
-      any(String::class.java),
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )

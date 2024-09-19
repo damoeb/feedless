@@ -1,7 +1,6 @@
 package org.migor.feedless.license
 
 import com.nimbusds.jose.jwk.RSAKey
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.lang3.time.DateUtils
 import org.assertj.core.api.Assertions.assertThat
@@ -41,7 +40,6 @@ class LicenseServiceTest {
 
   lateinit var service: LicenseService
 
-  private val corrId = "test"
   private val keyID = "test"
 
   @BeforeEach
@@ -71,13 +69,13 @@ class LicenseServiceTest {
   fun `given a valid license string, it can be parsed`() = runTest {
     mockPublicKey(thisKeyPair.toRSAPublicKey())
 
-    val parsedLicense = service.parseLicense(corrId, createLicenseString())
+    val parsedLicense = service.parseLicense(createLicenseString())
     assertThat(parsedLicense).isNotNull
     assertThat(parsedLicense).isEqualTo(licensePayload)
   }
 
   private suspend fun createLicenseString(): String {
-    val licenseStr = service.createLicense(corrId, licensePayload, thisKeyPair)
+    val licenseStr = service.createLicense(licensePayload, thisKeyPair)
     assertThat(licenseStr.trim()).isNotBlank()
     assertThat(service.verifyTokenAgainstPubKey(licenseStr, thisKeyPair.toRSAPublicKey())).isTrue()
     return licenseStr
@@ -141,7 +139,7 @@ class LicenseServiceTest {
   @Test
   fun `given a valid license, updateLicense validates license`() = runTest {
     service.feedlessPublicKey = thisKeyPair.toRSAPublicKey()
-    service.updateLicense(corrId, createLicenseString())
+    service.updateLicense(createLicenseString())
   }
 
   @Test
@@ -154,17 +152,17 @@ class LicenseServiceTest {
 
     // check no ket present
     assertThatExceptionOfType(NullPointerException::class.java).isThrownBy {
-      service.updateLicense(corrId, licenseToken)
+      service.updateLicense(licenseToken)
     }
     mockPublicKey(publicKey)
-    service.updateLicense(corrId, licenseToken)
+    service.updateLicense(licenseToken)
   }
 
   @Test
   fun `given valid license and outside trial period, hasValidLicenseOrLicenseNotNeeded returns true`() = runTest {
     mockAfterTrial()
     mockPublicKey(thisKeyPair.toRSAPublicKey())
-    service.updateLicense(corrId, createLicenseString())
+    service.updateLicense(createLicenseString())
 
     assertThat(service.isTrial()).isFalse()
     assertThat(service.hasValidLicenseOrLicenseNotNeeded()).isTrue()
@@ -175,8 +173,8 @@ class LicenseServiceTest {
     mockPublicKey(otherKeyPair.toRSAPublicKey())
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runBlocking {
-        service.updateLicense(corrId, createLicenseString())
+      runTest {
+        service.updateLicense(createLicenseString())
       }
     }
   }

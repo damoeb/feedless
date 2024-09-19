@@ -30,8 +30,6 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryHarvesterTest {
 
-  private val corrId = "test"
-
   @Mock
   lateinit var sourceDAO: SourceDAO
 
@@ -96,7 +94,6 @@ class RepositoryHarvesterTest {
   fun `given scrape fails will increment the error count`() = runTest {
     `when`(
       scrapeService.scrape(
-        any(String::class.java),
         any(SourceEntity::class.java),
         any(LogCollector::class.java)
       )
@@ -105,10 +102,9 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(0)
 
-    repositoryHarvester.handleRepository(corrId, repository.id)
+    repositoryHarvester.handleRepository(repository.id)
 
     verify(scrapeService, times(1)).scrape(
-      any(String::class.java),
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )
@@ -123,7 +119,6 @@ class RepositoryHarvesterTest {
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
     `when`(
       scrapeService.scrape(
-        any(String::class.java),
         any(SourceEntity::class.java),
         any(LogCollector::class.java)
       )
@@ -132,10 +127,9 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(4)
 
-    repositoryHarvester.handleRepository(corrId, repository.id)
+    repositoryHarvester.handleRepository(repository.id)
 
     verify(scrapeService, times(1)).scrape(
-      any(String::class.java),
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )
@@ -150,18 +144,16 @@ class RepositoryHarvesterTest {
   fun `given scrape fails recoverable will not flag the source errornous`() = runTest {
     `when`(
       scrapeService.scrape(
-        any(String::class.java),
         any(SourceEntity::class.java),
         any(LogCollector::class.java)
       )
     ).thenThrow(
-      ResumableHarvestException(corrId, "", Duration.ofMinutes(5))
+      ResumableHarvestException("", "", Duration.ofMinutes(5))
     )
 
-    repositoryHarvester.handleRepository(corrId, repository.id)
+    repositoryHarvester.handleRepository(repository.id)
 
     verify(scrapeService, times(1)).scrape(
-      any(String::class.java),
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )

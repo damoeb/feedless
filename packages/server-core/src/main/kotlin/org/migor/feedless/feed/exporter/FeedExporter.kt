@@ -22,7 +22,6 @@ class FeedExporter {
   private lateinit var atomFeedExporter: SyndAtomFeedExporter
 
   fun resolveResponseType(
-    corrId: String,
     responseType: String?
   ): Pair<String, (JsonFeed, HttpStatus, Duration?) -> ResponseEntity<String>> {
     return when (responseType?.lowercase()) {
@@ -31,7 +30,7 @@ class FeedExporter {
           status,
           "application/xml; charset=utf-8",
           maxAge,
-          atomFeedExporter.toAtom(corrId, feed)
+          atomFeedExporter.toAtom(feed)
         )
       }
 
@@ -40,20 +39,19 @@ class FeedExporter {
           status,
           "application/json; charset=utf-8",
           maxAge,
-          jsonFeedExporter.toJson(corrId, feed)
+          jsonFeedExporter.toJson(feed)
         )
       }
     }
   }
 
   fun to(
-    corrId: String,
     status: HttpStatus,
     responseType: String?,
     feed: JsonFeed,
     maxAge: Duration? = null
   ): ResponseEntity<String> {
-    return resolveResponseType(corrId, responseType).second(feed, status, maxAge)
+    return resolveResponseType(responseType).second(feed, status, maxAge)
   }
 
   private fun fallbackCacheControl(retryAfter: Duration?): String =

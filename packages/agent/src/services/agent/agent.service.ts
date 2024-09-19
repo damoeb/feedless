@@ -34,9 +34,8 @@ export class AgentService implements OnModuleInit {
       async (event) => {
         this.log.log('incoming event');
         if (event.scrape) {
-          const startTime = Date.now();
           this.log.log(
-            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event)}`,
+            `harvestRequest ${JSON.stringify(event)}`,
           );
           try {
             const scrapeResponse = await this.puppeteerService.submit(
@@ -48,7 +47,7 @@ export class AgentService implements OnModuleInit {
               scrapeResponse,
             });
           } catch (e) {
-            this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
+            this.log.error(e?.message);
 
             const errorResponse: ScrapeResponseInput = {
               ok: false,

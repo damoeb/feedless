@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Timer
 import jakarta.annotation.PostConstruct
 import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
@@ -44,7 +45,7 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.TelegramConnectionDAO
-import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -61,6 +62,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -118,7 +120,8 @@ class RepositoryHarvester internal constructor() {
 
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun handleRepository(corrId: String, repositoryId: UUID) {
+  suspend fun handleRepository(repositoryId: UUID) {
+    val corrId = coroutineContext.corrId()
     runCatching {
       log.debug("[${corrId}] handleRepository $repositoryId")
 
@@ -144,7 +147,7 @@ class RepositoryHarvester internal constructor() {
         }
       }
 
-      val appendCount = scrapeSources(corrId, repositoryId, logCollector)
+      val appendCount = scrapeSources(repositoryId, logCollector)
 
       if (appendCount > 0) {
         harvest.itemsAdded = appendCount
@@ -152,7 +155,7 @@ class RepositoryHarvester internal constructor() {
         log.info(message)
         logCollector.log(message)
       }
-      documentService.applyRetentionStrategy(corrId, repositoryId)
+      documentService.applyRetentionStrategy(repositoryId)
       withContext(Dispatchers.IO) {
         val repository = repositoryDAO.findById(repositoryId).orElseThrow()
         val scheduledNextAt = repositoryService.calculateScheduledNextAt(
@@ -181,10 +184,10 @@ class RepositoryHarvester internal constructor() {
   }
 
   private suspend fun scrapeSources(
-    corrId: String,
     repositoryId: UUID,
     logCollector: LogCollector
   ): Int {
+    val corrId = coroutineContext.corrId()
     val sources = withContext(Dispatchers.IO) {
       sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
     }.distinctBy { it.id }
@@ -193,8 +196,7 @@ class RepositoryHarvester internal constructor() {
     return sources
       .fold(0) { agg, source ->
         try {
-          val subCorrId = newCorrId(parentCorrId = corrId)
-          val appended = scrapeSource(subCorrId, source, logCollector)
+          val appended = scrapeSource(source, logCollector)
 
           if (source.errorsInSuccession > 0) {
             source.errorsInSuccession = 0
@@ -207,7 +209,7 @@ class RepositoryHarvester internal constructor() {
 
           agg + appended
         } catch (e: Throwable) {
-          handleScrapeException(corrId, e, source, logCollector)
+          handleScrapeException(e, source, logCollector)
           agg
         }
       }
@@ -237,11 +239,11 @@ class RepositoryHarvester internal constructor() {
   }
 
   private suspend fun handleScrapeException(
-    corrId: String,
     e: Throwable?,
     source: SourceEntity,
     logCollector: LogCollector
   ) {
+    val corrId = coroutineContext.corrId()
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
       logCollector.log("[$corrId] scrape error '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
@@ -262,18 +264,18 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  suspend fun scrapeSource(corrId: String, source: SourceEntity, logCollector: LogCollector): Int {
-    val output = scrapeService.scrape(corrId, source, logCollector)
-    return importElement(corrId, output, source.repositoryId, source, logCollector)
+  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Int {
+    val output = scrapeService.scrape(source, logCollector)
+    return importElement(output, source.repositoryId, source, logCollector)
   }
 
   private suspend fun importElement(
-    corrId: String,
     output: ScrapeOutput,
     repositoryId: UUID,
     source: SourceEntity,
     logCollector: LogCollector
   ): Int {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] importElement")
     return if (output.outputs.isEmpty()) {
       0
@@ -282,7 +284,6 @@ class RepositoryHarvester internal constructor() {
       return lastAction.fragment?.let { fragment ->
         fragment.items?.let {
           importItems(
-            corrId,
             repositoryId,
             it,
             fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data },
@@ -343,13 +344,13 @@ class RepositoryHarvester internal constructor() {
 //  }
 
   private suspend fun importItems(
-    corrId: String,
     repositoryId: UUID,
     items: List<JsonItem>,
     next: List<String>?,
     source: SourceEntity,
     logCollector: LogCollector
   ): Int {
+    val corrId = coroutineContext.corrId()!!
     return withContext(Dispatchers.IO) {
       val repository = repositoryDAO.findById(repositoryId).orElseThrow()
       if (repository.plugins.isEmpty()) {
@@ -366,8 +367,8 @@ class RepositoryHarvester internal constructor() {
           try {
             val existing = documentDAO.findFirstByUrlAndRepositoryId(it.url, repositoryId)
             val updated = it.asEntity(repository.id, ReleaseStatus.released, source)
-            updated.imageUrl = detectMainImageUrl(corrId, updated.html)
-            createOrUpdate(corrId, updated, existing, repository, logCollector)
+            updated.imageUrl = detectMainImageUrl(updated.html)
+            createOrUpdate(updated, existing, repository, logCollector)
           } catch (e: Exception) {
             logCollector.log("[$corrId] importItems failed: ${e.message}")
             log.error("[$corrId] importItems failed: ${e.message}", e)
@@ -438,20 +439,25 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  fun detectMainImageUrl(corrId: String, html: String?): String? {
+  suspend fun detectMainImageUrl(html: String?): String? {
     return html?.let {
       Jsoup.parse(html).images()
-        .sortedByDescending { calculateSize(corrId, it) }
+        .sortedByDescending {
+          runBlocking {
+            calculateSize(it)
+          }
+        }
         .map { it.attr("src") }
         .firstOrNull()
     }
   }
 
-  private fun calculateSize(corrId: String, el: Element): Int {
+  private suspend fun calculateSize(el: Element): Int {
     return if (el.hasAttr("width") && el.hasAttr("height")) {
       try {
         el.attr("width").toInt() * el.attr("height").toInt()
       } catch (e: Exception) {
+        val corrId = coroutineContext.corrId()
         log.debug("[$corrId] during detectMainImageUrl: ${e.message}")
         400
       }
@@ -460,13 +466,13 @@ class RepositoryHarvester internal constructor() {
     }
   }
 
-  private fun createOrUpdate(
-    corrId: String,
+  private suspend fun createOrUpdate(
     document: DocumentEntity,
     existing: DocumentEntity?,
     repository: RepositoryEntity,
     logCollector: LogCollector
   ): Pair<Boolean, DocumentEntity>? {
+    val corrId = coroutineContext.corrId()
     return try {
       existing
         ?.let {
@@ -528,8 +534,8 @@ class RepositoryHarvester internal constructor() {
 //  }
 }
 
-fun SourceEntity.toScrapeRequest(corrId: String): Source {
-  return toDto(corrId)
+fun SourceEntity.toScrapeRequest(): Source {
+  return toDto()
 }
 
 inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {

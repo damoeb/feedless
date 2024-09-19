@@ -64,4 +64,18 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   )
   fun findInboxRepositoryByUserId(@Param("id") userId: UUID)
 
+  @Query(
+    """SELECT r FROM RepositoryEntity r
+    INNER JOIN SourceEntity s ON s.repositoryId = r.id
+    WHERE s.id = :sourceId"""
+  )
+  fun findBySourceId(@Param("sourceId") sourceId: UUID): RepositoryEntity?
+
+  @Query(
+    """SELECT r FROM RepositoryEntity r
+    INNER JOIN DocumentEntity d ON d.repositoryId = r.id
+    WHERE d.id = :documentId"""
+  )
+  fun findByDocumentId(@Param("documentId") documentId: UUID): RepositoryEntity?
+
 }

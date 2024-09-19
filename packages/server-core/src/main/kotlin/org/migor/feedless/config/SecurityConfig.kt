@@ -15,7 +15,6 @@ import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -154,7 +153,6 @@ class SecurityConfig {
         .successHandler { _, response, authentication ->
           runBlocking {
             coroutineScope {
-              val corrId = newCorrId()
               val authenticationToken = authentication as OAuth2AuthenticationToken
               val user = when (authenticationToken.authorizedClientRegistrationId) {
                 "github" -> handleGithubAuthResponse(authenticationToken)
@@ -163,7 +161,7 @@ class SecurityConfig {
               }
               log.info("jwt from user ${user.id}")
               val jwt = tokenProvider.createJwtForUser(user)
-              response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
+              response.addCookie(cookieProvider.createTokenCookie(jwt))
               response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 
               if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
@@ -186,10 +184,8 @@ class SecurityConfig {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
-    val corrId = newCorrId()
-    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(corrId, it, githubId) }
+    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(it, githubId) }
       ?: userService.createUser(
-        corrId,
         email = email,
         githubId = githubId,
       )

@@ -21,6 +21,7 @@ import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +33,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
@@ -72,7 +75,6 @@ class UserService {
   private lateinit var telegramBotService: TelegramBotService
 
   suspend fun createUser(
-    corrId: String,
     email: String?,
     githubId: String? = null,
   ): UserEntity {
@@ -98,10 +100,10 @@ class UserService {
 
       }
       meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-      log.debug("[$corrId] create user")
+      log.debug("[${coroutineContext.corrId()}] create user")
       val user = UserEntity()
       user.email = email ?: fallbackEmail(user)
-      user.root = false
+      user.admin = false
       user.anonymous = false
       user.hasAcceptedTerms = isSelfHosted()
 //    if (!user.anonymous && !user.root) {
@@ -170,12 +172,13 @@ class UserService {
     }
   }
 
-  suspend fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
+  suspend fun updateUser(userId: UUID, data: UpdateCurrentUserInput) {
     val user = withContext(Dispatchers.IO) {
       userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
     }
     var changed = false
 
+    val corrId = coroutineContext.corrId()
     data.email?.let {
       log.info("[$corrId] changing email from ${user.email} to ${it.set}")
       user.email = it.set
@@ -201,7 +204,6 @@ class UserService {
     data.plan?.let {
       val product = withContext(Dispatchers.IO) { productDAO.findById(UUID.fromString(it.set)).orElseThrow() }
       productService.enableCloudProduct(
-        corrId,
         product,
         user
       )
@@ -246,8 +248,8 @@ class UserService {
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
-  suspend fun updateLegacyUser(corrId: String, user: UserEntity, githubId: String) {
-    log.info("[$corrId] update legacy user githubId=$githubId")
+  suspend fun updateLegacyUser(user: UserEntity, githubId: String) {
+    log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
 
     val isGithubAccountLinked = withContext(Dispatchers.IO) {
       githubConnectionDAO.existsByUserId(user.id)
@@ -273,7 +275,7 @@ class UserService {
     }
   }
 
-  suspend fun getConnectedAppByUserAndId(corrId: String, userId: UUID, connectedAppId: UUID): ConnectedAppEntity {
+  suspend fun getConnectedAppByUserAndId(userId: UUID, connectedAppId: UUID): ConnectedAppEntity {
     return withContext(Dispatchers.IO) {
       connectedAppDAO.findByIdAndUserIdEquals(connectedAppId, userId)
         ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
@@ -281,10 +283,10 @@ class UserService {
     }
   }
 
-  suspend fun updateConnectedApp(corrId: String, userId: UUID, connectedAppId: UUID, authorize: Boolean) {
+  suspend fun updateConnectedApp(userId: UUID, connectedAppId: UUID, authorize: Boolean) {
     withContext(Dispatchers.IO) {
       val app =
-        getConnectedAppByUserAndId(corrId, userId, connectedAppId)
+        getConnectedAppByUserAndId(userId, connectedAppId)
       app.userId?.let {
         if (userId != it) {
           throw PermissionDeniedException("error")
@@ -303,12 +305,12 @@ class UserService {
 
   }
 
-  suspend fun deleteConnectedApp(corrId: String, currentUserId: UserEntity, connectedAppId: UUID) {
+  suspend fun deleteConnectedApp(currentUserId: UUID, connectedAppId: UUID) {
     withContext(Dispatchers.IO) {
       val app =
         connectedAppDAO.findByIdAndAuthorizedEquals(connectedAppId, true) ?: throw IllegalArgumentException("not found")
 //      app.userId?.let {
-      if (currentUserId.id != app.userId) {
+      if (currentUserId != app.userId) {
         throw PermissionDeniedException("error")
       }
 //      }
@@ -324,4 +326,16 @@ class UserService {
     }
 
   }
+}
+
+fun CoroutineContext.corrId(): String? {
+  return this[RequestContext]?.corrId
+}
+
+fun CoroutineContext.userIdOptional(): UUID? {
+  return this[RequestContext]?.userId
+}
+
+fun CoroutineContext.userId(): UUID {
+  return this.userIdOptional()!!
 }

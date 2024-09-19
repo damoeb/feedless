@@ -6,8 +6,7 @@ import org.migor.feedless.scrape.LogCollector
 
 interface FilterEntityPlugin : FeedlessPlugin {
 
-  fun filterEntity(
-    corrId: String,
+  suspend fun filterEntity(
     item: JsonItem,
     params: PluginExecutionParamsInput,
     index: Int,

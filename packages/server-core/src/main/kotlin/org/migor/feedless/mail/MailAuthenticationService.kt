@@ -20,6 +20,7 @@ import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
+import org.migor.feedless.user.corrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +31,7 @@ import reactor.core.publisher.Mono
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.mail} & ${AppProfiles.session} & ${AppLayer.service}")
@@ -57,9 +59,10 @@ class MailAuthenticationService {
   @Autowired
   private lateinit var oneTimePasswordService: OneTimePasswordService
 
-  suspend fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
+  suspend fun authenticateUsingMail(data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email
-    log.info("[${corrId}] init user session for $email")
+    log.debug("init user session for $email")
+    val corrId = coroutineContext.corrId()
     return Flux.create { emitter ->
       CoroutineScope(Dispatchers.Default).launch {
         try {
@@ -67,12 +70,12 @@ class MailAuthenticationService {
             throw UnavailableException("login is deactivated by feature flag")
           }
 
-          val user = resolveUserByMail(corrId, data)
+          val user = resolveUserByMail(data)
 
           val otp = if (user == null) {
             oneTimePasswordService.createOTP()
           } else {
-            oneTimePasswordService.createOTP(corrId, user, data.osInfo)
+            oneTimePasswordService.createOTP(user, data.osInfo)
           }
 
           Mono.delay(Duration.ofSeconds(2)).subscribe {
@@ -96,19 +99,20 @@ class MailAuthenticationService {
     }
   }
 
-  private suspend fun resolveUserByMail(corrId: String, data: AuthViaMailInput): UserEntity? {
+  private suspend fun resolveUserByMail(data: AuthViaMailInput): UserEntity? {
     return withContext(Dispatchers.IO) { userDAO.findByEmail(data.email) } ?: if (data.allowCreate) {
-      createUser(corrId, data.email)
+      createUser(data.email)
     } else {
       null
     }
   }
 
-  private suspend fun createUser(corrId: String, email: String): UserEntity {
-    return userService.createUser(corrId, email)
+  private suspend fun createUser(email: String): UserEntity {
+    return userService.createUser(email)
   }
 
-  suspend fun confirmAuthCode(corrId: String, codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
+  suspend fun confirmAuthCode(codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
+    val corrId = coroutineContext.corrId()
     val otpId = UUID.fromString(codeInput.otpId)
     val otp = withContext(Dispatchers.IO) {
       oneTimePasswordDAO.findById(otpId).orElseThrow()
@@ -127,7 +131,7 @@ class MailAuthenticationService {
 
     val jwt = tokenProvider.createJwtForUser(otp.user!!)
 
-    response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
+    response.addCookie(cookieProvider.createTokenCookie(jwt))
   }
 
   private fun isOtpExpired(otp: OneTimePasswordEntity) =

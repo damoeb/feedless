@@ -94,7 +94,13 @@
         </ion-col>
       </ion-row>
       <ion-list>
-        <ion-item> Free Plan</ion-item>
+        <ion-item *ngIf="product">
+          <ion-label>
+            <h3>{{product.name }}</h3>
+            <p>{{product.description }}</p>
+          </ion-label>
+          <ion-button> Upgrade </ion-button>
+        </ion-item>
 
         <!--      <ion-list-header> General</ion-list-header>-->
         <!--      <ion-item>-->

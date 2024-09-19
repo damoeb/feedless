@@ -37,8 +37,7 @@
       <ion-searchbar
         #searchbar
         [formControl]="queryFc"
-        (ionFocus)="toggleSearchModeDebounced(true)"
-        (ionBlur)="toggleSearchModeDebounced(false)"
+        (ionFocus)="currentNote = null"
         [showClearButton]="true"
         placeholder="Search your Notebook"
       ></ion-searchbar>
@@ -55,6 +54,7 @@
             style="--background: transparent"
             [button]="!searchResult.isGroup"
             lines="none"
+            tabindex="-1"
             (mouseenter)="focussedMatchIndex = i"
             (click)="searchResult.onClick()"
             [ngClass]="{
@@ -169,7 +169,7 @@
             <ion-text color="medium" class="ion-margin-horizontal">
               {{ note.namedId }}
             </ion-text>
-            <ion-buttons slot="end">
+            <ion-buttons slot="end" tabindex="-1">
               <ion-button size="small" (click)="deleteCurrentNote()">
                 <ion-icon
                   slot="icon-only"
@@ -189,12 +189,13 @@
             </ion-buttons>
           </ion-toolbar>
           <!--          <div class="flex__column">-->
-          <div style="max-height: 80vh; overflow: auto">
+          <div class="code-editor-wrapper" [ngClass]="{'focussed': currentNote?.id == note?.id}">
             <app-code-editor
               [autoSuggestionsProvider]="loadAutoSuggestions"
               [formControl]="note.formControl"
               (triggerQuery)="handleQuery($event)"
               (focus)="openNote(note)"
+              (blur)="currentNote = null"
               [extensions]="extensions"
             ></app-code-editor>
           </div>

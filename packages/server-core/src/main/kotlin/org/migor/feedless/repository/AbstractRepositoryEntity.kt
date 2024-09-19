@@ -57,6 +57,7 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.group.GroupEntity
 import org.migor.feedless.mail.MailForwardEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
@@ -173,6 +174,23 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_repository__to__user")
   )
   open var owner: UserEntity? = null
+
+  @Column(name = StandardJpaFields.groupId)
+  open var groupId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+    name = StandardJpaFields.groupId,
+    referencedColumnName = StandardJpaFields.id,
+    insertable = false,
+    updatable = false,
+    nullable = true,
+    foreignKey = ForeignKey(
+      name = "fk_repository__to__group",
+      foreignKeyDefinition = "FOREIGN KEY (group_id) REFERENCES t_group(id) ON DELETE SET NULL"
+    )
+  )
+  open var group: GroupEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId", cascade = [CascadeType.ALL])
   open var sources: MutableList<SourceEntity> = mutableListOf()

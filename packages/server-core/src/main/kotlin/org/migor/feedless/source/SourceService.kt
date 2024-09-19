@@ -19,6 +19,7 @@ import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,9 +28,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.source} & ${AppLayer.service}")
+@Transactional
 class SourceService {
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)
@@ -44,8 +47,8 @@ class SourceService {
   private lateinit var repositoryHarvester: RepositoryHarvester
 
 
-  @Transactional
-  suspend fun processSourcePipeline(corrId: String, sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+  suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+    val corrId = coroutineContext.corrId()
     log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
 
     val job = jobs.first()
@@ -62,7 +65,7 @@ class SourceService {
       }
 
       try {
-        repositoryHarvester.scrapeSource(corrId, patchRequestUrl(source, job.url), LogCollector())
+        repositoryHarvester.scrapeSource(patchRequestUrl(source, job.url), LogCollector())
         job.status = PipelineJobStatus.SUCCEEDED
         job.updateStatus()
         log.info("[$corrId] job ${job.id} done")

@@ -4,7 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -33,11 +33,11 @@ class PaymentController {
   suspend fun paymentCallback(
     @PathVariable("billingId") billingId: String,
   ): ResponseEntity<String> = coroutineScope {
-    val corrId = newCorrId()
+    val corrId = kotlin.coroutines.coroutineContext.corrId()
     log.info("[$corrId] paymentCallback $billingId")
     val headers = HttpHeaders()
     val queryParams = try {
-      orderService.handlePaymentCallback(corrId, billingId)
+      orderService.handlePaymentCallback(billingId)
       "success=true"
     } catch (ex: Exception) {
       log.error("Payment callback failed with ${ex.message}", ex)

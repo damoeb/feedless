@@ -28,14 +28,14 @@ class OneTimePasswordService {
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
-  suspend fun createOTP(corrId: String, user: UserEntity, description: String): OneTimePasswordEntity {
+  suspend fun createOTP(user: UserEntity, description: String): OneTimePasswordEntity {
     val otp = createOTP()
     otp.userId = user.id
     withContext(Dispatchers.IO) {
       oneTimePasswordDAO.save(otp)
     }
-    log.debug("[${corrId}] sending otp '${otp.password}'")
-    mailService.sendAuthCode(corrId, user, otp, description)
+    log.debug("sending otp '${otp.password}'")
+    mailService.sendAuthCode(user, otp, description)
     return otp
   }
 

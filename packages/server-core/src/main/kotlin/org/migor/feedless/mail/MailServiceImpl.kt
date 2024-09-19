@@ -48,19 +48,19 @@ class MailServiceImpl : MailService {
     javaMailSender.send(mailMessage)
   }
 
-  override fun sendWelcomeWaitListMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomeWaitListMail(user: UserEntity) {
 //    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
-  override fun sendWelcomePaidMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomePaidMail(user: UserEntity) {
 //    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
-  override fun sendWelcomeFreeMail(corrId: String, user: UserEntity) {
+  override suspend fun sendWelcomeFreeMail(user: UserEntity) {
 //    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
   }
 
-  override fun sendAuthCode(corrId: String, user: UserEntity, otp: OneTimePasswordEntity, description: String) {
+  override suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String) {
 //    if (StringUtils.isBlank(user.email)) {
 //      throw IllegalArgumentException("Email is not defined")
 //    }
@@ -86,17 +86,17 @@ class MailServiceImpl : MailService {
 //    send(corrId, from, to = arrayOf(user.email), mailData)
   }
 
-  override fun getNoReplyAddress(product: ProductCategory): String {
+  override suspend fun getNoReplyAddress(product: ProductCategory): String {
     return "no-reply@${productService.getDomain(product)}"
   }
 
   @Deprecated("")
-  override fun send(corrId: String, mimeMessage: MimeMessage) {
-    log.info("[$corrId] sending mail $mimeMessage")
+  override suspend fun send(mimeMessage: MimeMessage) {
+    log.debug("sending mail $mimeMessage")
     javaMailSender.send(mimeMessage)
   }
 
-  override fun createMimeMessage(): MimeMessage {
+  override suspend fun createMimeMessage(): MimeMessage {
     return javaMailSender.createMimeMessage()
   }
 
@@ -110,7 +110,7 @@ class MailServiceImpl : MailService {
     }
   }
 
-  override fun send(corrId: String, from: String, to: Array<String>, mailData: MailData) {
+  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {
     val mimeMessage = createMimeMessage()
     val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
     message.setFrom(from)

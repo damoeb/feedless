@@ -9,6 +9,7 @@ import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
@@ -97,7 +99,7 @@ class ProductService {
     }
   }
 
-  suspend fun enableCloudProduct(corrId: String, product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
+  suspend fun enableCloudProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
     val prices = withContext(Dispatchers.IO) {
       pricedProductDAO.findAllByProductId(product.id)
@@ -114,7 +116,7 @@ class ProductService {
       }
 
       existingPlan?.let {
-        log.info("[$corrId] terminate existing plan")
+        log.info("[${coroutineContext.corrId()}] terminate existing plan")
         it.terminatedAt = now
         planDAO.save(it)
       }

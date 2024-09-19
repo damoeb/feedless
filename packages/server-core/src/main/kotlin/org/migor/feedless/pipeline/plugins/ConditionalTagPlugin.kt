@@ -12,11 +12,13 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -33,12 +35,12 @@ class ConditionalTagPlugin : MapEntityPlugin {
 
   override fun listed() = true
   override suspend fun mapEntity(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ): DocumentEntity {
+    val corrId = coroutineContext.corrId()
     log.debug("[$corrId] mapEntity ${document.url}")
     val newTags = params.org_feedless_conditional_tag!!.filter {
       filterPlugin.matches(document.asJsonItem(), it.filter, 0)

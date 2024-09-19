@@ -11,11 +11,13 @@ import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
+import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
@@ -71,7 +73,6 @@ class InboxService {
 //  }
 
   suspend fun appendMessage(
-    corrId: String,
     ownerId: UUID,
     document: DocumentEntity,
   ) {
@@ -91,6 +92,7 @@ class InboxService {
         })
       }
     } catch (e: Exception) {
+      val corrId = coroutineContext.corrId()
       log.error("[$corrId] Failed to append message: ${e.message}", e)
     }
   }

@@ -148,12 +148,12 @@ internal class WebToFeedTransformerTest {
     val document = Jsoup.parse(html)
 
     val parserOptions = GenericFeedParserOptions()
-    val rules = parser.parseFeedRules("-", document, url, parserOptions)
+    val rules = parser.parseFeedRules(document, url, parserOptions)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }
     val bestRule = rules[0]
-    return parser.getArticlesBySelectors("-", bestRule, document, url)
+    return parser.getArticlesBySelectors(bestRule, document, url)
   }
 
   private fun readFile(filename: String): String {

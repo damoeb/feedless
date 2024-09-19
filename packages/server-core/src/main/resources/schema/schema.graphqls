@@ -532,6 +532,7 @@ type Product {
   isCloud: Boolean!
   partOf: ProductCategory
   featureGroupId: ID
+#  featureGroup: FeatureGroup
   prices: [PricedProduct!]!
 }
 
@@ -969,7 +970,20 @@ type User {
   notificationsLastViewedAt: Long
   connectedApps: [ConnectedApp]!
   secrets: [UserSecret!]!
+  groups: [GroupAssignment!]!
   plan(product: ProductCategory!): Plan
+}
+
+type GroupAssignment {
+  id: ID!
+  role: Role!
+  name: String!
+}
+
+enum Role {
+  owner
+  viewer
+  editor
 }
 
 type Plan {
@@ -1518,7 +1532,6 @@ input SourceUniqueWhereInput {
 }
 
 input SourceInput {
-  corrId: ID
   id: ID
   title: String!
   flow: ScrapeFlowInput!
@@ -1616,7 +1629,6 @@ enum RecordField {
 }
 
 type Source {
-  corrId: ID!
   id: ID!
   title: String!
   flow: ScrapeFlow!

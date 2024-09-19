@@ -40,7 +40,7 @@ class TestingEndpoint {
   @GetMapping("testing/create-token")
   suspend fun createTestToken(response: HttpServletResponse) = coroutineScope {
     val user = withContext(Dispatchers.IO) {
-      userDAO.findFirstByRootIsTrue() ?: throw IllegalArgumentException("root user not found")
+      userDAO.findFirstByAdminIsTrue() ?: throw IllegalArgumentException("root user not found")
     }
     if (!user.hasAcceptedTerms) {
       user.hasAcceptedTerms = true
@@ -49,7 +49,7 @@ class TestingEndpoint {
         userDAO.save(user)
       }
     }
-    response.addCookie(cookieProvider.createTokenCookie("-", tokenProvider.createJwtForUser(user)))
+    response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user)))
   }
 
   @GetMapping("/testing/file/{file}")

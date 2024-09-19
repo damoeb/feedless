@@ -16,7 +16,6 @@ import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.user.TelegramConnectionEntity
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -159,7 +158,7 @@ class TelegramBotService(
   }
 
   private suspend fun storeMessage(connection: TelegramConnectionEntity, update: Update) {
-    inboxService.appendMessage(newCorrId(), connection.userId!!, toDocument(update))
+    inboxService.appendMessage(connection.userId!!, toDocument(update))
   }
 
   private fun handleCommand(connection: TelegramConnectionEntity, update: Update) {

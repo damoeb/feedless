@@ -5,7 +5,7 @@ import { DirectoryPageModule } from './directory.module';
 import {
   GqlListPublicRepositoriesQuery,
   GqlListPublicRepositoriesQueryVariables,
-  ListPublicRepositories,
+  ListPublicRepositories
 } from '../../../generated/graphql';
 
 describe('DirectoryPage', () => {

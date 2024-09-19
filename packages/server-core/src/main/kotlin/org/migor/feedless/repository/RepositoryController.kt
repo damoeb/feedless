@@ -11,7 +11,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -51,19 +50,17 @@ class RepositoryController {
     @RequestParam("skey", required = false) shareKey: String? = null,
     @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> = coroutineScope {
-    val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
         Tag.of("type", "repository"),
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.debug("[$corrId] GET feed/atom id=$repositoryId page=$page")
+    log.debug("GET feed/atom id=$repositoryId page=$page")
     feedExporter.to(
-      corrId,
       HttpStatus.OK,
       "atom",
-      repositoryService.getFeedByRepositoryId(corrId, repositoryId, page, tag, shareKey)
+      repositoryService.getFeedByRepositoryId(repositoryId, page, tag, shareKey)
     )
   }
 
@@ -82,19 +79,17 @@ class RepositoryController {
     @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
     @RequestParam(ApiParams.tag, required = false) tag: String?
   ): ResponseEntity<String> = coroutineScope {
-    val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
         Tag.of("type", "repository"),
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.debug("[$corrId] GET feed/json id=$repositoryId page=$page tag=$tag")
+    log.debug("GET feed/json id=$repositoryId page=$page tag=$tag")
     feedExporter.to(
-      corrId,
       HttpStatus.OK,
       "json",
-      repositoryService.getFeedByRepositoryId(corrId, repositoryId, page, tag, shareKey)
+      repositoryService.getFeedByRepositoryId(repositoryId, page, tag, shareKey)
     )
   }
 

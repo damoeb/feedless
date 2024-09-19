@@ -68,11 +68,10 @@ class TemplateService {
   private lateinit var freemarkerConfigurer: FreeMarkerConfigurer
 
   fun <T> renderTemplate(
-    corrId: String,
     template: FtlTemplate<T>,
   ): String {
     val templateName = template.templateName
-    log.info("[$corrId] renderTemplate $templateName")
+    log.debug("renderTemplate $templateName")
     return ByteArrayOutputStream().use {
       freemarkerConfigurer.configuration.getTemplate("$templateName.ftl.html")
         .process(template.params, OutputStreamWriter(it))

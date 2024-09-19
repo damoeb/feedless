@@ -10,8 +10,6 @@ import java.nio.file.Files
 
 class XmlFeedParserTest {
 
-  private val corrId = "test"
-
   private fun readFile(ref: String): String {
     return Files.readString(ResourceUtils.getFile("classpath:transform/$ref").toPath())
   }
@@ -35,7 +33,7 @@ class XmlFeedParserTest {
       responseBody = ResourceUtils.getFile("classpath:transform/$feedFileName").readBytes(),
     )
 
-    val feed = parser.process(corrId, httpResponse)
+    val feed = parser.process(httpResponse)
     assertThat(feed).isNotNull()
   }
 

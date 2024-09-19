@@ -16,6 +16,7 @@ import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.group.GroupService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
@@ -64,6 +65,7 @@ import java.time.LocalDateTime
   MockBean(PropertyService::class),
   MockBean(RepositoryHarvester::class),
   MockBean(AttachmentDAO::class),
+  MockBean(GroupService::class),
 )
 @Testcontainers
 class IntegrationTest {

@@ -55,7 +55,7 @@ export class EmbeddedImageComponent
   @Input()
   strokeStyle: string = 'red';
 
-  @Input()
+  @Input({ required: true })
   sourceBuilder: SourceBuilder;
 
   pickedBoundingBox: EventEmitter<BoundingBox | null> =

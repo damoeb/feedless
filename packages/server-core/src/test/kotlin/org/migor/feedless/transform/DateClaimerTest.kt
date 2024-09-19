@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal class DateClaimerTest {
-  private val corrId = "test"
 
   private lateinit var dateClaimer: DateClaimer
   private lateinit var logCollector: LogCollector
@@ -48,7 +47,6 @@ internal class DateClaimerTest {
   fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) = runTest {
     val actual =
       dateClaimer.claimDatesFromString(
-        corrId,
         "${newCorrId()} $dateStringInput ${newCorrId()}",
         Locale.of(lang),
         logCollector

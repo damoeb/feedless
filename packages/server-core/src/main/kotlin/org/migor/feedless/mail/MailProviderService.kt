@@ -23,16 +23,15 @@ class MailProviderService : MailProvider {
   private lateinit var templateService: TemplateService
 
   override fun provideDocumentMail(
-    corrId: String,
     document: DocumentEntity,
     repository: RepositoryEntity,
     params: PluginExecutionParamsInput
   ): MailData {
-    log.info("[$corrId] prepare email")
+    log.debug("prepare email")
 
     val mailData = MailData()
     mailData.subject = "Change"
-    mailData.body = templateService.renderTemplate(corrId, DocumentUpdateMailTemplate())
+    mailData.body = templateService.renderTemplate(DocumentUpdateMailTemplate())
     return mailData
   }
 }

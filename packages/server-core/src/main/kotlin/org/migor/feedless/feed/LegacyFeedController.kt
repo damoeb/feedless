@@ -13,7 +13,6 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -72,11 +71,9 @@ class LegacyFeedController {
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
   ): ResponseEntity<String> = coroutineScope {
-    val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
-    val feed = resolveFeedCatching(corrId, feedUrl) {
+    val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.getFeed(
-        corrId,
         feedId,
         feedUrl
       )
@@ -89,13 +86,10 @@ class LegacyFeedController {
     "/api/feed",
   )
   suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
-    val corrId = newCorrId()
-
     val feedUrl = toFullUrlString(request)
-    val feed = resolveFeedCatching(corrId, feedUrl)
+    val feed = resolveFeedCatching(feedUrl)
     {
       legacyFeedService.webToFeed(
-        corrId,
         request.param("url"),
         request.param("pLink"),
         "",
@@ -114,11 +108,9 @@ class LegacyFeedController {
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
-    val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
-    val feed = resolveFeedCatching(corrId, feedUrl) {
+    val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.webToFeed(
-        corrId,
         request.param("url"),
         request.firstParam("link", "linkXPath"),
         request.firstParamOptional("x", "extendContext") ?: "",
@@ -140,11 +132,9 @@ class LegacyFeedController {
     ApiUrls.transformFeed
   )
   suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
-    val corrId = newCorrId()
     val feedUrl = toFullUrlString(request)
-    val feed = resolveFeedCatching(corrId, feedUrl) {
+    val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.transformFeed(
-        corrId,
         request.param("url"),
         request.paramOptional("q"),
         feedUrl
@@ -154,7 +144,6 @@ class LegacyFeedController {
   }
 
   private suspend fun resolveFeedCatching(
-    corrId: String,
     feedUrl: String,
     feedProvider: suspend () -> JsonFeed
   ): JsonFeed {
@@ -162,13 +151,13 @@ class LegacyFeedController {
       val f = feedProvider()
       f
     } catch (t: Throwable) {
-      legacyFeedService.createErrorFeed(corrId, feedUrl, t)
+      legacyFeedService.createErrorFeed(feedUrl, t)
     }
   }
 
 
   private fun JsonFeed.export(responseType: String?): ResponseEntity<String> {
-    val (_, convert) = feedExporter.resolveResponseType(newCorrId(), StringUtils.trimToNull(responseType) ?: "atom")
+    val (_, convert) = feedExporter.resolveResponseType(StringUtils.trimToNull(responseType) ?: "atom")
     return convert(
       this,
       HttpStatus.OK,

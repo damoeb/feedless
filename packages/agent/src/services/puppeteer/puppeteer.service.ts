@@ -149,7 +149,6 @@ export class PuppeteerService {
     request: Source,
     browser: Browser,
   ): Promise<ScrapeResponseInput> {
-    const corrId = request.corrId;
     const logs: LogStatementInput[] = [];
     const appendLog: LogAppender = (msg: string) => {
       logs.push({
@@ -158,7 +157,7 @@ export class PuppeteerService {
       });
       this.log.log(msg);
     };
-    appendLog(`Starting job id=${request.id} corrId=${request.corrId}`);
+    appendLog(`Starting job id=${request.id}`);
 
     const page = await this.newPage(browser, request);
     const outputs: ScrapeOutputResponseInput[] = [];
@@ -190,7 +189,6 @@ export class PuppeteerService {
             const writeLog = createLogAppender(`action#${currentIndex}`);
             try {
               const output = await this.executeAction(
-                corrId,
                 action,
                 page,
                 writeLog,
@@ -233,7 +231,7 @@ export class PuppeteerService {
       };
     } catch (e) {
       appendLog(e.message);
-      this.log.error(`[${corrId}] ${e.message}`);
+      this.log.error(e.message);
       return {
         ok: false,
         logs,
@@ -254,7 +252,6 @@ export class PuppeteerService {
   }
 
   private async getDebug(
-    corrId: string,
     url: string,
     logs: string[],
     networkDataHandle: () => Promise<NetworkRequest[]>,
@@ -272,7 +269,7 @@ export class PuppeteerService {
 
     const viewport = page.viewport();
     return {
-      corrId,
+      corrId: '',
       url,
       console: logs,
       network: await networkDataHandle(),
@@ -428,7 +425,7 @@ export class PuppeteerService {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
       const httpGet = getHttpGet(job);
       this.log.debug(
-        `worker #${workerId} consumes [${job.corrId}] ${httpGet.url}`,
+        `worker #${workerId} consumes ${httpGet.url}`,
       );
 
       const browser = await this.newBrowser(job);
@@ -446,7 +443,7 @@ export class PuppeteerService {
           await browser.close();
         }
         const totalTime = Date.now() - queuedAt;
-        this.log.log(`[${job.corrId}] prerendered within ${totalTime / 1000}s`);
+        this.log.log(`prerendered within ${totalTime / 1000}s`);
         // const { metrics } = response.debug;
         // response.debug.metrics.queue = totalTime - metrics.render;
 
@@ -456,7 +453,7 @@ export class PuppeteerService {
           await browser.close();
         }
         this.log.warn(
-          `[${job.corrId}] prerendered within ${
+          `prerendered within ${
             (Date.now() - queuedAt) / 1000
           }s ${e.message}`,
           e,
@@ -542,7 +539,6 @@ export class PuppeteerService {
   }
 
   private async executeAction(
-    corrId: string,
     action: FieldWrapper<ScrapeAction>,
     page: Page,
     appendLog: LogAppender,
@@ -557,7 +553,6 @@ export class PuppeteerService {
     }
     if (action.fetch) {
       return this.executeFetchAction(
-        corrId,
         action.fetch,
         page,
         createLogger('fetch'),
@@ -574,7 +569,6 @@ export class PuppeteerService {
     }
     if (action.extract) {
       return this.extractAction(
-        corrId,
         action.extract,
         page,
         createLogger('extract'),
@@ -593,7 +587,6 @@ export class PuppeteerService {
   }
 
   private async extractAction(
-    corrId: String,
     extract: ScrapeExtract,
     page: Page,
     appendLog: (msg: string) => void,
@@ -621,7 +614,7 @@ export class PuppeteerService {
           ),
         };
       } else {
-        throw new Error(`[${corrId}] Underspecified fragment`);
+        throw new Error(`Underspecified fragment`);
       }
     }
   }
@@ -710,7 +703,6 @@ export class PuppeteerService {
   }
 
   private async executeFetchAction(
-    corrId: string,
     httpGet: HttpFetch,
     page: Page,
     appendLog: (msg: string) => void,
@@ -734,7 +726,6 @@ export class PuppeteerService {
       fetch: {
         data: await page.evaluate(() => document.documentElement.outerHTML),
         debug: await this.getDebug(
-          corrId,
           url,
           logs,
           networkDataHandle,

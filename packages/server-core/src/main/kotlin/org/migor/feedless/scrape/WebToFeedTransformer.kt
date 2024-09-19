@@ -161,7 +161,6 @@ class WebToFeedTransformer(
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
   suspend fun parseFeedRules(
-    corrId: String,
     document: Document,
     uri: URI,
     parserOptions: GenericFeedParserOptions,
@@ -291,7 +290,6 @@ class WebToFeedTransformer(
     }
 
   suspend fun getFeedBySelectors(
-    corrId: String,
     selectors: Selectors,
     document: Document,
     uri: URI,
@@ -300,7 +298,6 @@ class WebToFeedTransformer(
     val locale = extractLocale(document, propertyService.locale)
     val element = withAbsUrls(normalizeTags(document.body()), uri)
     val response = webExtractService.extract(
-      corrId,
       selectors.toScrapeExtracts(),
       element,
       locale,
@@ -315,7 +312,6 @@ class WebToFeedTransformer(
       }
       logger.log("pagination xpath $xpath")
       webExtractService.extract(
-        corrId,
         DOMExtract(
           fragmentName = "next",
           xpath = DOMElementByXPath(value = xpath),
@@ -331,12 +327,11 @@ class WebToFeedTransformer(
   }
 
   suspend fun getArticlesBySelectors(
-    corrId: String,
     selectors: Selectors,
     document: Document,
     uri: URI,
   ): List<JsonItem> {
-    return getFeedBySelectors(corrId, selectors, document, uri, LogCollector()).items
+    return getFeedBySelectors(selectors, document, uri, LogCollector()).items
   }
 
   private suspend fun convertExtractsToJsonFeed(

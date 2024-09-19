@@ -284,7 +284,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   }
 
   async pickElementWithin(xpath: string, fc: FormControl<string>) {
-    this.sourceBuilder.events.extractElements.emit({
+    this.sourceBuilder.events.extractElements.next({
       xpath,
       callback: async (elements: HTMLElement[]) => {
         const componentProps: CodeEditorModalComponentProps = {

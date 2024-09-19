@@ -10,7 +10,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.PricedProduct
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.RequestHeader
 import java.util.*
 
 @DgsComponent
@@ -36,13 +34,18 @@ class ProductResolver {
   @Autowired
   lateinit var pricedProductDAO: PricedProductDAO
 
+//  @Autowired
+//  lateinit var featureGroupDAO: FeatureGroupDAO
+//
+//  @Autowired
+//  lateinit var featureService: FeatureService
+
   @Throttled
   @DgsQuery
   suspend fun products(
-    @RequestHeader(ApiParams.corrId) corrId: String,
     @InputArgument data: ProductsWhereInput
   ): List<Product> {
-    log.debug("[$corrId] products $data")
+    log.debug("products $data")
     return productService.findAll(data).map { it.toDTO() }
   }
 
@@ -60,4 +63,24 @@ class ProductResolver {
       pricedProductDAO.findAllByProductId(UUID.fromString(product.id)).map { it.toDto() }
     }
   }
+
+//  @DgsData(parentType = DgsConstants.PRODUCT.TYPE_NAME, field = DgsConstants.PRODUCT.FeatureGroup)
+//  suspend fun featureGroup(dfe: DgsDataFetchingEnvironment): FeatureGroup? = coroutineScope {
+//    val product: Product = dfe.getSource()!!
+//    product.featureGroupId?.let {
+//      withContext(Dispatchers.IO) {
+//        featureGroupDAO.findById(UUID.fromString(it)).getOrNull()?.toDto(emptyList())
+//      }
+//    }
+//  }
+//
+//  @DgsData(parentType = DgsConstants.FEATUREGROUP.TYPE_NAME, field = DgsConstants.FEATUREGROUP.Features)
+//  suspend fun features(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
+//    val featureGroup: FeatureGroup = dfe.getSource()!!
+//    featureGroup.id.let {
+//      withContext(Dispatchers.IO) {
+//        featureService.findAllByGroupId(UUID.fromString(it), true)
+//      }
+//    }
+//  }
 }
