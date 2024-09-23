@@ -4,7 +4,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { FeedlessProductPage } from './feedless-product.page';
 
 import { DefaultRoutes } from '../default-routes';
-import { FeedlessMenuComponent } from './feedless-menu/feedless-menu.component';
 import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 const routes: Routes = [

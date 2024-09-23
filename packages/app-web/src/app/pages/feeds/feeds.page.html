@@ -1,6 +1,6 @@
 <app-feedless-header></app-feedless-header>
 <ion-content>
-  <div class="limited-width-pane">
+  <div [ngClass]="{'limited-width-pane': viewMode === viewModeList}">
     <ion-breadcrumbs>
       <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
       <ion-breadcrumb>Feeds</ion-breadcrumb>
@@ -12,7 +12,19 @@
       </ion-col>
       <ion-col size="6" class="ion-align-self-center">
         <ion-buttons class="ion-justify-content-end">
-          <app-import-button></app-import-button>
+<!--          <ion-button title="table"-->
+<!--                      (click)="viewMode = viewModeTable"-->
+<!--                      [color]="viewMode === viewModeTable ? 'dark' : 'medium'">-->
+<!--            Table-->
+<!--          </ion-button>-->
+<!--          <ion-text color="medium">|</ion-text>-->
+<!--          <ion-button title="list"-->
+<!--                      (click)="viewMode = viewModeList"-->
+<!--                      [color]="viewMode === viewModeList ? 'dark' : 'medium'">-->
+<!--            List-->
+<!--          </ion-button>-->
+
+<!--          <app-import-button></app-import-button>-->
           <ion-button routerLink="/feed-builder" color="primary" fill="solid">
             Create Feed
           </ion-button>
@@ -20,34 +32,41 @@
       </ion-col>
     </ion-row>
 
-    <ion-list style="border-radius: 8px">
-      <ion-progress-bar
-        *ngIf="loading"
-        color="medium"
-        type="indeterminate"
-      ></ion-progress-bar>
+    <ion-progress-bar
+      *ngIf="loading"
+      color="medium"
+      type="indeterminate"
+    ></ion-progress-bar>
 
-      <ion-item *ngIf="!loading && repositories?.length === 0">
-        <p><em>Empty</em></p>
-      </ion-item>
-      <ion-item *ngFor="let feed of repositories" lines="inset">
-        <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
-        <ion-label>
-          <h2>
-            <a [routerLink]="'/feeds/' + feed.id"> {{ feed.title }} </a>
-            <ion-chip *ngIf="isPrivate(feed)">Private</ion-chip>
-          </h2>
-          <p>{{ feed.description }}</p>
-          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
-        </ion-label>
-        <div class="ion-margin-end" style="position: relative">
-          <app-histogram
-            [data]="feed.frequency"
-            class="ion-margin-end"
-          ></app-histogram>
-        </div>
-      </ion-item>
-    </ion-list>
+    <ng-container *ngIf="!loading">
+      <app-table *ngIf="viewMode === viewModeTable && repositories"
+                 [columns]="['title', 'lastUpdatedAt']"
+                 [rows]="repositories"></app-table>
+
+      <ion-list style="border-radius: 8px" *ngIf="viewMode === viewModeList">
+        <ion-item *ngIf="repositories?.length === 0">
+          <p><em>Empty</em></p>
+        </ion-item>
+        <ion-item *ngFor="let feed of repositories" lines="inset">
+          <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
+          <ion-label>
+            <h2>
+              <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge"> {{ feed.title }} </a>
+              <ion-chip *ngIf="isPrivate(feed)">Private</ion-chip>
+            </h2>
+            <p>{{ feed.description }}</p>
+            <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
+          </ion-label>
+          <div class="ion-margin-end" style="position: relative">
+            <app-histogram
+              [data]="feed.frequency"
+              class="ion-margin-end"
+            ></app-histogram>
+          </div>
+        </ion-item>
+      </ion-list>
+
+    </ng-container>
 
     <app-pagination
       [currentPage]="currentPage"

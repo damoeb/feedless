@@ -1,0 +1,10 @@
+<div class="table" [ngStyle]="{'--app-table-columns': getHeaders().length}">
+  <div class="table-header">
+    <div *ngFor="let header of getHeaders()">{{ header.name }}</div>
+  </div>
+  <div class="table-body">
+    <div *ngFor="let row of getRows()" class="table-row">
+      <div *ngFor="let cell of row">{{ cell.value }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+.table {
+  display: grid;
+  grid-template-columns: repeat(var(--app-table-columns, 2), minmax(100px, 1fr));
+  gap: 5px;
+  margin: 20px;
+}
+
+.table-header {
+  display: contents; /* This will allow grid items to behave like a single table row */
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.table-body {
+  display: contents; /* This allows the rows to be part of the same grid as the header */
+}
+
+.table-row {
+  display: contents; /* Makes each row align to the grid layout */
+}
+
+.table div {
+  //padding: 10px;
+  //text-align: center;
+  max-width: 100px; /* Each cell is responsive up to a maximum width of 100px */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

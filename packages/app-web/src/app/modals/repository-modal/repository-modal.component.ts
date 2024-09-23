@@ -26,9 +26,9 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 
-export interface GenerateFeedModalComponentProps {
+export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
-  openAccordions?: GenerateFeedAccordion[];
+  openAccordions?: RepositoryModalAccordion[];
 }
 
 // interface TagConditionData {
@@ -42,7 +42,7 @@ export interface GenerateFeedModalComponentProps {
 //   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
 // >;
 
-export type GenerateFeedAccordion = 'privacy' | 'storage';
+export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
 
 @Component({
   selector: 'app-repository-modal',
@@ -51,7 +51,7 @@ export type GenerateFeedAccordion = 'privacy' | 'storage';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RepositoryModalComponent
-  implements GenerateFeedModalComponentProps, OnInit
+  implements RepositoryModalComponentProps, OnInit
 {
   formFg = new FormGroup({
     title: new FormControl<string>('', [
@@ -88,9 +88,10 @@ export class RepositoryModalComponent
   protected readonly dateFormat = dateFormat;
   protected readonly GqlRecordDateField = GqlRecordDateField;
   @Input()
-  openAccordions: GenerateFeedAccordion[] = [];
-  accordionPrivacy: GenerateFeedAccordion = 'privacy';
-  accordionStorage: GenerateFeedAccordion = 'storage';
+  openAccordions: RepositoryModalAccordion[] = [];
+  accordionPrivacy: RepositoryModalAccordion = 'privacy';
+  accordionNotifications: RepositoryModalAccordion = 'notifications';
+  accordionStorage: RepositoryModalAccordion = 'storage';
 
   private filterParams: GqlItemFilterParamsInput[];
 

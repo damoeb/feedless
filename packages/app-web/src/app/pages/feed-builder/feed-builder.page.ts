@@ -10,7 +10,7 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import { GenerateFeedModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
+import { RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
 import {
   FeedWithRequest,
   NativeOrGenericFeed,
@@ -53,7 +53,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Feed Builder');
+    this.titleService.setTitle('RSS Feed Builder');
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()
@@ -115,7 +115,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     refine: boolean,
   ) {
     if (refine) {
-      const componentProps: GenerateFeedModalComponentProps = {
+      const componentProps: RepositoryModalComponentProps = {
         repository: {
           title,
           description,
@@ -123,7 +123,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           sources: [source],
         } as any,
       };
-      await this.modalService.openFeedMetaEditor(componentProps);
+      await this.modalService.openRepositoryEditor(componentProps);
     } else {
       const repositories = await this.repositoryService.createRepositories({
         repositories: [

@@ -1,48 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import {
-  GqlFeedlessPlugins,
-  GqlHarvest,
-  GqlProductCategory,
-  GqlVisibility,
-  GqlRecordField,
-} from '../../../generated/graphql';
-import {
-  RepositoryFull,
-  RepositorySource,
-  Record,
-  Annotation,
-} from '../../graphql/types';
-import {
-  GenerateFeedAccordion,
-  GenerateFeedModalComponentProps,
-} from '../../modals/repository-modal/repository-modal.component';
-import { ModalService } from '../../services/modal.service';
-import {
-  AlertController,
-  ModalController,
-  PopoverController,
-  ToastController,
-} from '@ionic/angular';
-import {
-  FeedOrRepository,
-  tagsToString,
-} from '../feed-builder/feed-builder.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { GqlFeedlessPlugins, GqlHarvest, GqlProductCategory, GqlRecordField, GqlVisibility } from '../../../generated/graphql';
+import { Annotation, Record, RepositoryFull, RepositorySource } from '../../graphql/types';
+import { RepositoryModalAccordion, RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
+import { ModalName, ModalService } from '../../services/modal.service';
+import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
+import { FeedOrRepository, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
-import { Router } from '@angular/router';
-import {
-  dateFormat,
-  dateTimeFormat,
-  SessionService,
-} from '../../services/session.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isUndefined, uniq, without } from 'lodash-es';
@@ -52,7 +19,6 @@ import { relativeTimeOrElse } from '../agents/agents.component';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
-import { AuthService } from '../../services/auth.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { FetchPolicy } from '@apollo/client/core';
 
@@ -118,6 +84,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly annotationService: AnnotationService,
     private readonly popoverCtrl: PopoverController,
     private readonly recordService: RecordService,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
     protected readonly serverConfig: ServerConfigService,
@@ -137,6 +104,13 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.sessionService.getSession().subscribe((session) => {
         this.currentUserId = session.user?.id;
         this.assessIsOwner();
+      }),
+      this.activatedRoute.queryParams.subscribe(queryParams => {
+        if (queryParams.modal) {
+          if (queryParams.modal === ModalName.editRepository) {
+            this.editRepository(queryParams.accordion ? [queryParams.accordion] : [])
+          }
+        }
       }),
       this.selectAllFc.valueChanges.subscribe((isChecked) => {
         this.documents.forEach((document) =>
@@ -187,12 +161,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async editRepository(accordions: GenerateFeedAccordion[] = []) {
-    const componentProps: GenerateFeedModalComponentProps = {
+  async editRepository(accordions: RepositoryModalAccordion[] = []) {
+    const componentProps: RepositoryModalComponentProps = {
       repository: this.repository,
       openAccordions: accordions,
     };
-    await this.modalService.openFeedMetaEditor(componentProps);
+    await this.modalService.openRepositoryEditor(componentProps);
     await this.popoverCtrl.dismiss();
   }
 

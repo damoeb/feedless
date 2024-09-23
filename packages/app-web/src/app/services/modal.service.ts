@@ -1,32 +1,26 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
-import {
-  FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps,
-} from '../modals/feed-builder-modal/feed-builder-modal.component';
-import {
-  FeedBuilderModalComponentExitRole,
-  FeedOrRepository,
-} from '../components/feed-builder/feed-builder.component';
-import {
-  GenerateFeedModalComponentProps,
-  RepositoryModalComponent,
-} from '../modals/repository-modal/repository-modal.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
+import { FeedBuilderModalComponentExitRole, FeedOrRepository } from '../components/feed-builder/feed-builder.component';
+import { RepositoryModalComponent, RepositoryModalComponentProps } from '../modals/repository-modal/repository-modal.component';
 import {
   TrackerEditModalComponent,
-  TrackerEditModalComponentProps,
+  TrackerEditModalComponentProps
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
-import {
-  TagsModalComponent,
-  TagsModalComponentProps,
-} from '../modals/tags-modal/tags-modal.component';
+import { TagsModalComponent, TagsModalComponentProps } from '../modals/tags-modal/tags-modal.component';
 import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
 import { OsmMatch } from './open-street-map.service';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
+
+export enum ModalName {
+  editRepository = 'EditRepository',
+  searchAddress = 'SearchAddress',
+  codeEditor = 'CodeEditor',
+  tagEditor = 'TagEditor',
+  feedBuilder = 'FeedBuilder',
+  editTracker = 'EditTracker'
+}
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +30,7 @@ export class ModalService {
 
   constructor(
     private readonly modalCtrl: ModalController,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
   ) {}
 
@@ -46,6 +41,7 @@ export class ModalService {
       role: String,
     ) => Promise<void> = null,
   ) {
+    await this.updateUrlParams(ModalName.feedBuilder);
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,
@@ -73,6 +69,7 @@ export class ModalService {
   async openTagModal(
     componentProps: TagsModalComponentProps,
   ): Promise<string[]> {
+    await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
       component: TagsModalComponent,
       componentProps,
@@ -88,6 +85,7 @@ export class ModalService {
   async openCodeEditorModal(
     componentProps: CodeEditorModalComponentProps,
   ): Promise<string[]> {
+    await this.updateUrlParams(ModalName.codeEditor);
     const modal = await this.modalCtrl.create({
       component: CodeEditorModalComponent,
       componentProps,
@@ -113,6 +111,7 @@ export class ModalService {
   // }
 
   async openSearchAddressModal(): Promise<OsmMatch> {
+    await this.updateUrlParams(ModalName.searchAddress);
     const modal = await this.modalCtrl.create({
       component: SearchAddressModalComponent,
       // cssClass: 'fullscreen-modal',
@@ -125,7 +124,8 @@ export class ModalService {
     return response.data;
   }
 
-  async openFeedMetaEditor(componentProps: GenerateFeedModalComponentProps) {
+  async openRepositoryEditor(componentProps: RepositoryModalComponentProps) {
+    await this.updateUrlParams(ModalName.editRepository);
     const modal = await this.modalCtrl.create({
       component: RepositoryModalComponent,
       componentProps,
@@ -135,6 +135,7 @@ export class ModalService {
   }
 
   async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {
+    await this.updateUrlParams(ModalName.editTracker);
     const modal = await this.modalCtrl.create({
       component: TrackerEditModalComponent,
       cssClass: 'fullscreen-modal',
@@ -142,5 +143,16 @@ export class ModalService {
     });
 
     await modal.present();
+  }
+
+  private async updateUrlParams(modal: ModalName) {
+    await this.router.navigate(this.activatedRoute.snapshot.url, {
+      queryParams: {
+        modal,
+      },
+      relativeTo: this.activatedRoute,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 }

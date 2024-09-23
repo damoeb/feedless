@@ -15,6 +15,8 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
 
+type ViewMode = 'list' | 'table'
+
 @Component({
   selector: 'app-feeds-page',
   templateUrl: './feeds.page.html',
@@ -29,6 +31,9 @@ export class FeedsPage implements OnInit, OnDestroy {
   repositories: Repository[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;
+  viewMode: ViewMode = 'list'
+  viewModeTable: ViewMode = 'table';
+  viewModeList: ViewMode = 'list';
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,

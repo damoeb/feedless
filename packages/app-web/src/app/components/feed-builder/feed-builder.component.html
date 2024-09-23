@@ -8,7 +8,7 @@
         (cancelReceived)="handleCancel()"
         buttonText="Go"
         [color]="url?.length > 0 ? undefined : 'primary'"
-        placeholder="Type a Url of a website"
+        placeholder="Enter Url of a website or RSS feed"
       ></app-searchbar>
       <ng-container *ngIf="errorMessage">
         <p style="color: var(--ion-color-danger)" class="ion-margin">

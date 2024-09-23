@@ -11,6 +11,7 @@ import {
   ProductConfig,
 } from '../../../services/app-config.service';
 import { IonPopover } from '@ionic/angular';
+import { ModalName } from '../../../services/modal.service';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -35,4 +36,6 @@ export class AboutFeedlessPage implements OnInit {
     // this.unstableProducts = allProducts.filter((p) => !p.listed);
     this.changeRef.detectChanges();
   }
+
+  protected readonly ModalName = ModalName;
 }
