@@ -11,6 +11,7 @@ import { ImportButtonModule } from '../../components/import-button/import-button
 import { PaginationModule } from '../../components/pagination/pagination.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { TableModule } from '../../components/table/table.module';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -22,7 +23,8 @@ import { TableModule } from '../../components/table/table.module';
     ImportButtonModule,
     PaginationModule,
     FeedlessHeaderModule,
-    TableModule
+    TableModule,
+    RemoveIfProdModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedsPage],

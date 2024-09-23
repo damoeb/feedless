@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { LoginButtonModule } from '../../components/login-button/login-button.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-
     FormsModule,
     LoginButtonModule,
     FeedlessHeaderModule,
+    RemoveIfProdModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [NotebookDetailsPage],

@@ -76,7 +76,7 @@ export class PricingComponent implements OnInit {
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
         const featureGroups = p.featureGroupId
           ? await this.featureService.findAll(
-              { id: { equals: p.featureGroupId } },
+              { id: { eq: p.featureGroupId } },
               true,
             )
           : [];

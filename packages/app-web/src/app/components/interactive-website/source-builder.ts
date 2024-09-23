@@ -192,18 +192,20 @@ export class SourceBuilder {
   }
 
   async fetchFeedsUsingBrowser() {
-    return this.fetchFeeds('fetchFeedsFromBrowser', [{
-      extract: {
-        fragmentName: 'full-page',
-        selectorBased: {
-          fragmentName: '',
-          xpath: {
-            value: '/',
+    return this.fetchFeeds('fetchFeedsFromBrowser', [
+      {
+        extract: {
+          fragmentName: 'full-page',
+          selectorBased: {
+            fragmentName: '',
+            xpath: {
+              value: '/',
+            },
+            emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text, GqlScrapeEmit.Pixel],
           },
-          emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text, GqlScrapeEmit.Pixel],
         },
       },
-    }]);
+    ]);
   }
 
   // async fetchUsingBrowser() {
@@ -229,9 +231,10 @@ export class SourceBuilder {
           pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
           params: {},
         },
-      }
-    ])
+      },
+    ]);
   }
+
   private async fetch(title: string, actions: GqlScrapeActionInput[]) {
     console.log(
       'fetchFeeds',

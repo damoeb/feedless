@@ -9,8 +9,8 @@
   </ion-toolbar>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="selectAll()"> Select All </ion-button>
-      <ion-button (click)="selectNone()"> Select None </ion-button>
+      <ion-button (click)="selectAll()"> Select All</ion-button>
+      <ion-button (click)="selectNone()"> Select None</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -19,10 +19,10 @@
     <ng-container *ngFor="let outlineRoot of fcOutlines">
       <ion-item slot="header">
         <ion-checkbox
-          slot="start"
-          aria-label="check"
-          [formControl]="outlineRoot.fc"
           *ngIf="outlineRoot.xmlUrl"
+          [formControl]="outlineRoot.fc"
+          aria-label="check"
+          slot="start"
         ></ion-checkbox>
         <ion-label>
           {{ outlineRoot.title }}
@@ -34,10 +34,10 @@
           class="ion-padding-start"
         >
           <ion-checkbox
-            slot="start"
-            label-placement="end"
-            [formControl]="outlineChild.fc"
             *ngIf="outlineChild.xmlUrl"
+            [formControl]="outlineChild.fc"
+            label-placement="end"
+            slot="start"
           >
             <p>{{ outlineChild.title }}</p>
             <p>{{ outlineChild.xmlUrl }}</p>
@@ -55,26 +55,26 @@
 
     <ion-item>
       <ion-checkbox
-        labelPlacement="end"
-        justify="start"
         [formControl]="formFg.controls.applyFulltextPlugin"
+        justify="start"
+        labelPlacement="end"
       >
         Fulltext
         <ion-note class="ion-padding-horizontal"
-          >Fetch Fulltext for every Item (static only)</ion-note
-        >
+          >Fetch Fulltext for every Item (static only)
+        </ion-note>
       </ion-checkbox>
     </ion-item>
     <ion-item>
       <ion-checkbox
-        labelPlacement="end"
-        justify="start"
         [formControl]="formFg.controls.applyPrivacyPlugin"
+        justify="start"
+        labelPlacement="end"
       >
         Privacy & Robustness
         <ion-note class="ion-padding-horizontal"
-          >Inlines images (base64) and unwinds tracking urls</ion-note
-        >
+          >Inlines images (base64) and unwinds tracking urls
+        </ion-note>
       </ion-checkbox>
     </ion-item>
   </ion-list>

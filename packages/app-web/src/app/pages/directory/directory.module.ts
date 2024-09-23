@@ -13,6 +13,7 @@ import { ProductHeaderModule } from '../../components/product-header/product-hea
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -27,6 +28,7 @@ import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-
     SearchbarModule,
     ReactiveFormsModule,
     FeedlessHeaderModule,
+    RemoveIfProdModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [DirectoryPage],

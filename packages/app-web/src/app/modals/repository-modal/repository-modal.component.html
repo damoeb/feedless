@@ -10,8 +10,8 @@
       <ion-button
         (click)="createOrUpdateFeed()"
         [disabled]="loading"
-        fill="solid"
         color="success"
+        fill="solid"
       >
         <ion-label *ngIf="isLoggedIn">
           <span *ngIf="isUpdate()">Update</span>
@@ -30,41 +30,41 @@
 <ion-content>
   <ion-list>
     <ion-row>
-      <ion-col size="3" class="ion-align-self-center ion-text-right">
+      <ion-col class="ion-align-self-center ion-text-right" size="3">
         Title
       </ion-col>
       <ion-col size="9">
         <ion-input
           [formControl]="formFg.controls.title"
+          aria-label="Title"
           fill="outline"
           placeholder="Type a title"
-          aria-label="Title"
         ></ion-input>
         <p
-          class="errors"
           *ngFor="let error of formFg.controls.title.errors | keyvalue"
+          class="errors"
         >
           {{ error.value | json }}
         </p>
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-col size="3" class="ion-align-self-center ion-text-right">
+      <ion-col class="ion-align-self-center ion-text-right" size="3">
         Description (optional)
       </ion-col>
       <ion-col size="9">
         <ion-textarea
           [autoGrow]="true"
-          rows="3"
-          fill="outline"
           [counter]="true"
-          placeholder="#tags, urls,..."
           [formControl]="formFg.controls.description"
           aria-label="Describe the feed with #tags and urls"
+          fill="outline"
+          placeholder="#tags, urls,..."
+          rows="3"
         ></ion-textarea>
         <p
-          class="errors"
           *ngFor="let error of formFg.controls.description.errors | keyvalue"
+          class="errors"
         >
           {{ error.value | json }}
         </p>
@@ -77,7 +77,7 @@
   </ion-list>
 
   <ion-accordion-group [multiple]="true" [value]="openAccordions">
-    <ion-accordion value="enrich" toggleIconSlot="start">
+    <ion-accordion toggleIconSlot="start" value="enrich">
       <ion-item slot="header">
         <ion-label>
           Fulltext
@@ -89,134 +89,147 @@
 
         <ion-item>
           <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="applyFulltextPlugin__label"
             [formControl]="formFg.controls.applyFulltextPlugin"
+            aria-label=""
+            aria-labelledby="applyFulltextPlugin__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
           ></ion-checkbox>
           <ion-label
-            style="flex: 9"
-            id="applyFulltextPlugin__label"
             class="ion-text-left"
+            id="applyFulltextPlugin__label"
+            style="flex: 9"
           >
             Fetch Fulltext for every item
           </ion-label>
         </ion-item>
         <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
           <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="readability__label"
             [formControl]="formFg.controls.transformToReadability"
+            aria-label=""
+            aria-labelledby="readability__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
           ></ion-checkbox>
           <ion-label
-            style="flex: 9"
-            id="readability__label"
             class="ion-text-left"
+            id="readability__label"
+            style="flex: 9"
           >
             Transform to readability
           </ion-label>
         </ion-item>
-
-        <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
-
-        <!--          <ion-row>-->
-        <!--            <ion-col size="3" style="align-content: center;" class="ion-text-right">-->
-        <!--              Conditional Tags-->
-        <!--            </ion-col>-->
-        <!--            <ion-col size="9">-->
-        <!--              <ion-button [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"-->
-        <!--                          (click)="addConditionalTag()"-->
-        <!--                          [disabled]="conditionalTags.length >= 4">-->
-        <!--                <ion-icon name="add-outline"-->
-        <!--                          slot="start"></ion-icon>-->
-        <!--                Add Tag-->
-        <!--              </ion-button>-->
-        <!--            </ion-col>-->
-        <!--          </ion-row>-->
-
-        <!--          <div-->
-        <!--            *ngFor="let conditionalTag of conditionalTags; let i = index"-->
-        <!--            class="flex ion-align-items-center"-->
-        <!--          >-->
-        <!--            <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>-->
-        <!--            <ion-input-->
-        <!--              [formControl]="conditionalTag.controls.tag"-->
-        <!--              placeholder="Tag"-->
-        <!--              fill="outline"-->
-        <!--            ></ion-input>-->
-        <!--            <ion-text class="ion-padding-horizontal">if</ion-text>-->
-        <!--            <ion-select-->
-        <!--              [formControl]="conditionalTag.controls.field"-->
-        <!--              fill="outline"-->
-        <!--              interface="popover"-->
-        <!--              [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"-->
-        <!--            >-->
-        <!--              <ion-select-option [value]="FilterFieldLink"-->
-        <!--                >link</ion-select-option-->
-        <!--              >-->
-        <!--              <ion-select-option [value]="FilterFieldTitle"-->
-        <!--                >title-->
-        <!--              </ion-select-option>-->
-        <!--              <ion-select-option [value]="FilterFieldContent"-->
-        <!--                >content-->
-        <!--              </ion-select-option>-->
-        <!--            </ion-select>-->
-        <!--            <ion-select-->
-        <!--              [formControl]="conditionalTag.controls.operator"-->
-        <!--              fill="outline"-->
-        <!--              class="ion-margin-horizontal"-->
-        <!--              interface="popover"-->
-        <!--              [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"-->
-        <!--            >-->
-        <!--              <ion-select-option [value]="GqlStringFilterOperator.Contains"-->
-        <!--                >contains-->
-        <!--              </ion-select-option>-->
-        <!--              <ion-select-option [value]="GqlStringFilterOperator.Matches"-->
-        <!--                >matches-->
-        <!--              </ion-select-option>-->
-        <!--              <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"-->
-        <!--                >starts with-->
-        <!--              </ion-select-option>-->
-        <!--              <ion-select-option [value]="GqlStringFilterOperator.EndsWith"-->
-        <!--                >ends with-->
-        <!--              </ion-select-option>-->
-        <!--            </ion-select>-->
-        <!--            <ion-input-->
-        <!--              [formControl]="conditionalTag.controls.value"-->
-        <!--              placeholder="Type a value"-->
-        <!--              fill="outline"-->
-        <!--            ></ion-input>-->
-
-        <!--            <ion-button-->
-        <!--              (click)="removeConditionalTag(i)"-->
-        <!--              color="medium"-->
-        <!--              fill="clear"-->
-        <!--            >-->
-        <!--              <ion-icon name="trash-outline"></ion-icon>-->
-        <!--            </ion-button>-->
-        <!--          </div>-->
         <ion-item>
           <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="applyPrivacyPlugin__label"
             [formControl]="formFg.controls.applyPrivacyPlugin"
+            aria-label=""
+            aria-labelledby="applyPrivacyPlugin__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
           ></ion-checkbox>
           <ion-label
-            style="flex: 9"
-            id="applyPrivacyPlugin__label"
             class="ion-text-left"
+            id="applyPrivacyPlugin__label"
+            style="flex: 9"
           >
             Inline Images
           </ion-label>
         </ion-item>
+      </ion-list>
+    </ion-accordion>
+
+    <ion-accordion toggleIconSlot="start" value="contentTags" appDev>
+      <ion-item slot="header">
+        <ion-label>
+          Content-based Tags
+<!--          <ion-note class="ion-margin-start">Improve feed items</ion-note>-->
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+
+        <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
+
+        <ion-row>
+          <ion-col size="3" style="align-content: center;" class="ion-text-right">
+            Conditional Tags
+          </ion-col>
+          <ion-col size="9">
+            <!--              <ion-button [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"-->
+            <!--                          (click)="addConditionalTag()"-->
+            <!--                          [disabled]="conditionalTags.length >= 4">-->
+            <!--                <ion-icon name="add-outline"-->
+            <!--                          slot="start"></ion-icon>-->
+            <!--                Add Tag-->
+            <!--              </ion-button>-->
+            <!--            </ion-col>-->
+            <!--          </ion-row>-->
+
+            <!--          <div-->
+            <!--            *ngFor="let conditionalTag of conditionalTags; let i = index"-->
+            <!--            class="flex ion-align-items-center"-->
+            <!--          >-->
+            <!--            <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>-->
+            <!--            <ion-input-->
+            <!--              [formControl]="conditionalTag.controls.tag"-->
+            <!--              placeholder="Tag"-->
+            <!--              fill="outline"-->
+            <!--            ></ion-input>-->
+            <!--            <ion-text class="ion-padding-horizontal">if</ion-text>-->
+            <!--            <ion-select-->
+            <!--              [formControl]="conditionalTag.controls.field"-->
+            <!--              fill="outline"-->
+            <!--              interface="popover"-->
+            <!--              [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"-->
+            <!--            >-->
+            <!--              <ion-select-option [value]="FilterFieldLink"-->
+            <!--                >link</ion-select-option-->
+            <!--              >-->
+            <!--              <ion-select-option [value]="FilterFieldTitle"-->
+            <!--                >title-->
+            <!--              </ion-select-option>-->
+            <!--              <ion-select-option [value]="FilterFieldContent"-->
+            <!--                >content-->
+            <!--              </ion-select-option>-->
+            <!--            </ion-select>-->
+            <!--            <ion-select-->
+            <!--              [formControl]="conditionalTag.controls.operator"-->
+            <!--              fill="outline"-->
+            <!--              class="ion-margin-horizontal"-->
+            <!--              interface="popover"-->
+            <!--              [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"-->
+            <!--            >-->
+            <!--              <ion-select-option [value]="GqlStringFilterOperator.Contains"-->
+            <!--                >contains-->
+            <!--              </ion-select-option>-->
+            <!--              <ion-select-option [value]="GqlStringFilterOperator.Matches"-->
+            <!--                >matches-->
+            <!--              </ion-select-option>-->
+            <!--              <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"-->
+            <!--                >starts with-->
+            <!--              </ion-select-option>-->
+            <!--              <ion-select-option [value]="GqlStringFilterOperator.EndsWith"-->
+            <!--                >ends with-->
+            <!--              </ion-select-option>-->
+            <!--            </ion-select>-->
+            <!--            <ion-input-->
+            <!--              [formControl]="conditionalTag.controls.value"-->
+            <!--              placeholder="Type a value"-->
+            <!--              fill="outline"-->
+            <!--            ></ion-input>-->
+
+            <!--            <ion-button-->
+            <!--              (click)="removeConditionalTag(i)"-->
+            <!--              color="medium"-->
+            <!--              fill="clear"-->
+            <!--            >-->
+            <!--              <ion-icon name="trash-outline"></ion-icon>-->
+            <!--            </ion-button>-->
+            <!--          </div>-->
+          </ion-col>
+        </ion-row>
       </ion-list>
     </ion-accordion>
 
@@ -229,27 +242,27 @@
       </ion-item>
       <ion-list slot="content">
         <ion-row>
-          <ion-col size="3" class="ion-align-self-center ion-text-right"
+          <ion-col class="ion-align-self-center ion-text-right" size="3"
             >Delete after days
           </ion-col>
           <ion-col size="9">
             <ion-input
+              [clearInput]="true"
+              [formControl]="formFg.controls.maxAgeDays"
               aria-label=""
               fill="outline"
-              [formControl]="formFg.controls.maxAgeDays"
-              [clearInput]="true"
               placeholder="<Auto>"
             ></ion-input>
             <p
-              class="errors"
               *ngFor="let error of formFg.controls.maxAgeDays.errors | keyvalue"
+              class="errors"
             >
               {{ error.value | json }}
             </p>
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="3" class="ion-align-self-center ion-text-right">
+          <ion-col class="ion-align-self-center ion-text-right" size="3">
             Date Field
           </ion-col>
           <ion-col size="9">
@@ -271,22 +284,22 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="3" class="ion-align-self-center ion-text-right"
+          <ion-col class="ion-align-self-center ion-text-right" size="3"
             >Capacity
           </ion-col>
           <ion-col size="9">
             <ion-input
+              [clearInput]="true"
+              [formControl]="formFg.controls.maxCapacity"
               aria-label=""
               fill="outline"
-              [formControl]="formFg.controls.maxCapacity"
-              [clearInput]="true"
               placeholder="<Auto>"
             ></ion-input>
             <p
-              class="errors"
               *ngFor="
                 let error of formFg.controls.maxCapacity.errors | keyvalue
               "
+              class="errors"
             >
               {{ error.value | json }}
             </p>
@@ -299,25 +312,25 @@
       <ion-item slot="header">
         <ion-label>
           Privacy
-          <ion-note class="ion-margin-start" *ngIf="formFg.value.isPublic"
+          <ion-note *ngIf="formFg.value.isPublic" class="ion-margin-start"
             >Visible to everyone
           </ion-note>
-          <ion-note class="ion-margin-start" *ngIf="!formFg.value.isPublic"
-            >Visible to you</ion-note
-          >
+          <ion-note *ngIf="!formFg.value.isPublic" class="ion-margin-start"
+            >Visible to you
+          </ion-note>
         </ion-label>
       </ion-item>
       <ion-list slot="content">
         <ion-item>
           <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="isPublic__label"
             [formControl]="formFg.controls.isPublic"
+            aria-label=""
+            aria-labelledby="isPublic__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
           ></ion-checkbox>
-          <ion-label style="flex: 9" id="isPublic__label" class="ion-text-left">
+          <ion-label class="ion-text-left" id="isPublic__label" style="flex: 9">
             Public Listing
             <ion-note> Others can find your feed.</ion-note>
             <ion-note *ngIf="formFg.value.isPublic">
@@ -348,17 +361,17 @@
       <ion-list slot="content">
         <ion-item>
           <ion-checkbox
-            style="flex: 3"
-            class="ion-margin-end"
-            aria-label=""
-            justify="end"
-            aria-labelledby="enablePushNotifications__label"
             [formControl]="formFg.controls.enablePushNotifications"
+            aria-label=""
+            aria-labelledby="enablePushNotifications__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
           ></ion-checkbox>
           <ion-label
-            style="flex: 9"
-            id="enablePushNotifications__label"
             class="ion-text-left"
+            id="enablePushNotifications__label"
+            style="flex: 9"
           >
             <h3>Push to Telegram</h3>
           </ion-label>
@@ -375,10 +388,10 @@
     </ion-accordion>
 
     <app-filter-feed-accordion
-      labelPrefix="Repository"
-      [hideIfEmpty]="true"
       (filterChange)="handleFilterChange($event)"
       [filterPlugin]="getFilterPlugin()"
+      [hideIfEmpty]="true"
+      labelPrefix="Repository"
     ></app-filter-feed-accordion>
   </ion-accordion-group>
 </ion-content>

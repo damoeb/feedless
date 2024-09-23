@@ -1,18 +1,18 @@
-<div class="ion-margin-top" *ngIf="hasAudioStream(document)">
+<div *ngIf="hasAudioStream(document)" class="ion-margin-top">
   <ion-button
-    shape="round"
-    fill="clear"
-    color="dark"
-    *ngIf="!isPlaying"
     (click)="playAudio()"
+    *ngIf="!isPlaying"
+    color="dark"
+    fill="clear"
+    shape="round"
   >
-    <ion-icon name="play-outline" color="primary" slot="start"></ion-icon>
+    <ion-icon color="primary" name="play-outline" slot="start"></ion-icon>
     Play
-    <ion-note class="ion-padding-start">{{
-      firstAudioLength(document)
-    }}</ion-note>
+    <ion-note class="ion-padding-start"
+      >{{ firstAudioLength(document) }}
+    </ion-note>
   </ion-button>
-  <audio controls autoplay style="width: 100%" *ngIf="isPlaying">
+  <audio *ngIf="isPlaying" autoplay controls style="width: 100%">
     <source [src]="firstAudioStream(document)" />
   </audio>
 </div>

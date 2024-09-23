@@ -17,10 +17,12 @@ describe('UpcomingProductPage', () => {
     TestBed.configureTestingModule({
       imports: [
         UpcomingProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
-          mockEvents(apolloMockController);
-          mockDocuments(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockScrape(apolloMockController);
+            mockEvents(apolloMockController);
+            mockDocuments(apolloMockController);
+          },
         }),
         RouterTestingModule.withRoutes([]),
       ],

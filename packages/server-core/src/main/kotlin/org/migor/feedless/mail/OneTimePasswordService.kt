@@ -7,7 +7,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -15,15 +14,12 @@ import java.time.LocalDateTime
 
 @Service
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
-class OneTimePasswordService {
+class OneTimePasswordService(
+  private val mailService: MailService,
+  private val oneTimePasswordDAO: OneTimePasswordDAO
+) {
 
   private val log = LoggerFactory.getLogger(OneTimePasswordService::class.simpleName)
-
-  @Autowired
-  private lateinit var mailService: MailService
-
-  @Autowired
-  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
 
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5

@@ -9,8 +9,8 @@ import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { Title } from '@angular/platform-browser';
 import { FormControl } from '@angular/forms';
+import { AppConfigService } from '../../services/app-config.service';
 
 type ViewMode = 'list' | 'grid';
 
@@ -33,13 +33,21 @@ export class DirectoryPage implements OnInit {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Directory');
+    this.appConfig.setPageTitle('Directory');
     await this.fetchFeeds(0);
+  }
+
+  getHealthColorForFeed(repository: PublicRepository): BubbleColor {
+    return repository.archived ? 'gray' : 'green';
+  }
+
+  isPrivate(repository: PublicRepository): boolean {
+    return repository.visibility === GqlVisibility.IsPrivate;
   }
 
   protected async fetchFeeds(page: number) {
@@ -70,13 +78,5 @@ export class DirectoryPage implements OnInit {
       this.loading = false;
     }
     this.changeRef.detectChanges();
-  }
-
-  getHealthColorForFeed(repository: PublicRepository): BubbleColor {
-    return repository.archived ? 'gray' : 'green';
-  }
-
-  isPrivate(repository: PublicRepository): boolean {
-    return repository.visibility === GqlVisibility.IsPrivate;
   }
 }

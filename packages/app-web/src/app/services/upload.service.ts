@@ -96,7 +96,8 @@ export class UploadService {
         mimeTypes: ['text/*'],
         handleData: async (file: File, data: string) => {
           const caption = await this.askForCaption(file);
-          return this.recordService.createRecord(caption, data);
+          throw new Error('not implemented');
+          // return this.recordService.createRecords(caption, data);
         },
         binaryContent: false,
       },

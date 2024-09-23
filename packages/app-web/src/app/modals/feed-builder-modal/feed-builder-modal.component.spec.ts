@@ -17,20 +17,22 @@ describe('FeedBuilderModalComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         FeedBuilderModalModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockRepositories(apolloMockController);
-          apolloMockController
-            .mockQuery<
-              GqlListPluginsQuery,
-              GqlListPluginsQueryVariables
-            >(ListPlugins)
-            .and.resolveOnce(async () => {
-              return {
-                data: {
-                  plugins: [],
-                },
-              };
-            });
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockRepositories(apolloMockController);
+            apolloMockController
+              .mockQuery<
+                GqlListPluginsQuery,
+                GqlListPluginsQueryVariables
+              >(ListPlugins)
+              .and.resolveOnce(async () => {
+                return {
+                  data: {
+                    plugins: [],
+                  },
+                };
+              });
+          },
         }),
       ],
     }).compileComponents();

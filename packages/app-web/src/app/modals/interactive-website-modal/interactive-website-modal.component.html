@@ -11,16 +11,16 @@
 <ion-content>
   <ion-row class="website flex_column">
     <app-interactive-website
-      style="flex: 1; display: flex"
       [sourceBuilder]="sourceBuilder"
+      style="flex: 1; display: flex"
     >
     </app-interactive-website>
   </ion-row>
 
   <ion-row class="actions">
     <ion-list
-      class="flex__column"
       [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }"
+      class="flex__column"
     >
       <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
       <ion-item
@@ -37,8 +37,8 @@
               placeholder="Action"
             >
               <ion-select-option
-                [value]="action"
                 *ngFor="let action of actionTypes"
+                [value]="action"
               >
                 {{ action }}
               </ion-select-option>
@@ -80,14 +80,14 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="hideNonUiActions = !hideNonUiActions">
-        <ion-label color="medium" *ngIf="hideNonUiActions"
-          >Debug Mode Off</ion-label
-        >
+        <ion-label *ngIf="hideNonUiActions" color="medium"
+          >Debug Mode Off
+        </ion-label>
         <span *ngIf="!hideNonUiActions">Debug Mode On</span>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button (click)="dismissModal()"> Cancel </ion-button>
+      <ion-button (click)="dismissModal()"> Cancel</ion-button>
       <ion-button
         (click)="applyChanges()"
         [disabled]="actionsFg.invalid"

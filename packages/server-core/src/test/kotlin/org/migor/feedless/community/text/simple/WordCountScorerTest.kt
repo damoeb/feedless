@@ -19,8 +19,7 @@ class WordCountScorerTest {
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    scorer = WordCountScorer()
-    scorer.tokenizerService = tokenizerService
+    scorer = WordCountScorer(tokenizerService)
   }
 
   @ParameterizedTest

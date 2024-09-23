@@ -13,10 +13,10 @@
         </ion-col>
         <ion-col size="9">
           <ion-input
-            aria-label="First Name"
-            placeholder="Your first name"
             [formControl]="formFg.controls.firstName"
+            aria-label="First Name"
             fill="outline"
+            placeholder="Your first name"
           ></ion-input>
           <!--              <ion-note color="danger">Enter your name</ion-note>-->
         </ion-col>
@@ -28,10 +28,10 @@
           </ion-col>
           <ion-col size="9">
             <ion-input
-              aria-label="Last Name"
-              placeholder="Your last name"
               [formControl]="formFg.controls.lastName"
+              aria-label="Last Name"
               fill="outline"
+              placeholder="Your last name"
             ></ion-input>
           </ion-col>
         </ion-row>
@@ -42,20 +42,20 @@
         </ion-col>
         <ion-col size="9">
           <ion-input
-            aria-label="Email"
-            [readonly]="serverConfig.isSelfHosted()"
-            fill="outline"
             [formControl]="formFg.controls.email"
+            [readonly]="serverConfig.isSelfHosted()"
+            aria-label="Email"
+            fill="outline"
             placeholder="Email Adress"
           ></ion-input>
         </ion-col>
       </ion-row>
       <ion-row *ngIf="serverConfig.isSaas()">
         <ion-col push="3" size="9">
-          <ion-label color="warning" *ngIf="!formFg.value.emailVerified"
+          <ion-label *ngIf="!formFg.value.emailVerified" color="warning"
             >Email not verified
           </ion-label>
-          <ion-label color="success" *ngIf="formFg.value.emailVerified"
+          <ion-label *ngIf="formFg.value.emailVerified" color="success"
             >Email verified
           </ion-label>
         </ion-col>
@@ -66,10 +66,10 @@
         </ion-col>
         <ion-col size="9">
           <ion-input
-            aria-label="Country"
-            placeholder="Your country of residence"
             [formControl]="formFg.controls.country"
+            aria-label="Country"
             fill="outline"
+            placeholder="Your country of residence"
           ></ion-input>
         </ion-col>
       </ion-row>
@@ -96,10 +96,10 @@
       <ion-list>
         <ion-item *ngIf="product">
           <ion-label>
-            <h3>{{product.name }}</h3>
-            <p>{{product.description }}</p>
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description }}</p>
           </ion-label>
-          <ion-button> Upgrade </ion-button>
+          <ion-button> Upgrade</ion-button>
         </ion-item>
 
         <!--      <ion-list-header> General</ion-list-header>-->
@@ -176,7 +176,7 @@
           <ion-note class="ion-margin-start">Used to login</ion-note>
         </ion-label>
 
-        <ion-button color="danger" *ngIf="hasConnectedApp('github')">
+        <ion-button *ngIf="hasConnectedApp('github')" color="danger">
           Connected
         </ion-button>
       </ion-item>
@@ -184,18 +184,18 @@
         <ion-label>
           Telegram
           <ion-note class="ion-margin-start"
-            >Used for push notifications</ion-note
-          >
+            >Used for push notifications
+          </ion-note>
         </ion-label>
 
-        <ion-button routerLink="/docs/telegram" color="dark" size="small"
-          >Setup Instructions</ion-button
-        >
+        <ion-button color="dark" routerLink="/docs/telegram" size="small"
+          >Setup Instructions
+        </ion-button>
 
         <ion-button
-          color="danger"
-          *ngIf="hasConnectedApp('Telegram')"
           (click)="disconnectApp('Telegram')"
+          *ngIf="hasConnectedApp('Telegram')"
+          color="danger"
         >
           Disconnect
         </ion-button>
@@ -210,8 +210,8 @@
         <ion-button
           (click)="createUserSecret()"
           class="ion-float-end"
-          fill="solid"
           color="light"
+          fill="solid"
           size="small"
           >Create Secret
         </ion-button>
@@ -231,8 +231,8 @@
       <ng-container *ngFor="let secret of secrets">
         <ion-row *ngIf="secret.valueMasked">
           <ion-col class="ion-padding-start" size="6"
-            >{{ secret.value }}</ion-col
-          >
+            >{{ secret.value }}
+          </ion-col>
           <ion-col size="2">{{ secret.lastUsed || 'never' }}</ion-col>
           <ion-col size="2"
             >{{ secret.validUntil | date: dateTimeFormat }}

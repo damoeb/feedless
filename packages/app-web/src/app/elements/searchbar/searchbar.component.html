@@ -4,17 +4,17 @@
       [formControl]="queryFc"
       [placeholder]="placeholder"
       class="cy-searchbar-input"
-      slot="secondary"
       fill="outline"
+      slot="secondary"
       style="--padding-start: 10px"
     ></ion-input>
 
     <ion-button
-      [color]="color ?? 'light'"
+      (click)="triggerUpdate()"
       *ngIf="!loading"
+      [color]="color ?? 'light'"
       class="cy-searchbar-button"
       type="submit"
-      (click)="triggerUpdate()"
     >
       <span style="white-space: nowrap">
         {{ buttonText }}
@@ -25,8 +25,8 @@
       ></ion-icon>
     </ion-button>
 
-    <ion-button color="danger" *ngIf="loading">
-      <ion-spinner name="crescent" class="ion-margin-end"></ion-spinner>
+    <ion-button *ngIf="loading" color="danger">
+      <ion-spinner class="ion-margin-end" name="crescent"></ion-spinner>
       Busy
     </ion-button>
   </form>

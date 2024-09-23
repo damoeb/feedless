@@ -14,8 +14,9 @@ describe('InteractiveWebsiteComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         InteractiveWebsiteModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
       ],
     }).compileComponents();

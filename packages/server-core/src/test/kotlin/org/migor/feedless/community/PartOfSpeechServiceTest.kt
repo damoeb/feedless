@@ -16,8 +16,7 @@ class PartOfSpeechServiceTest {
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    service = PartOfSpeechService()
-    service.tokenizerService = tokenizerService
+    service = PartOfSpeechService(tokenizerService)
     service.postConstruct()
   }
 

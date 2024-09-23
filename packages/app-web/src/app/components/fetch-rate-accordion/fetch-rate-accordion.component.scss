@@ -4,6 +4,7 @@ ion-input,
 ion-select {
   --border-radius: 8px;
   min-height: 45px;
+
   &::part(container) {
     width: 100%;
   }
@@ -11,6 +12,7 @@ ion-select {
   &::part(icon) {
     --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }
+
   &.has-focus,
   &.select-expanded {
     --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;

@@ -1,5 +1,5 @@
 <div class="flex__row">
-  <div class="flex__column" *ngIf="!noMetaColumn" style="max-width: 600px">
+  <div *ngIf="!noMetaColumn" class="flex__column" style="max-width: 600px">
     <ng-content></ng-content>
   </div>
   <div style="display: flex; flex-direction: column; flex: 1">
@@ -15,8 +15,8 @@
         </ion-item>
         <app-remote-feed-item
           *ngFor="let item of feed.items; let feedIndex = index"
-          [feedItem]="item"
           [feedItemIndex]="feedIndex + 1"
+          [feedItem]="item"
         ></app-remote-feed-item>
       </ion-list>
     </div>

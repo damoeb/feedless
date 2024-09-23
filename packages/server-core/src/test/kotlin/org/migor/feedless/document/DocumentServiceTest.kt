@@ -7,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.generated.types.CreateRecordInput
+import org.migor.feedless.generated.types.RecordUniqueWhereInput
+import org.migor.feedless.generated.types.RecordUpdateInput
+import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.PluginService
@@ -14,8 +18,13 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.eq
+import org.migor.feedless.session.PermissionService
+import org.migor.feedless.session.RequestContext
+import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
@@ -27,27 +36,34 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DocumentServiceTest {
 
+  private lateinit var documentDAO: DocumentDAO
   private lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var userDAO: UserDAO
 
   private lateinit var documentService: DocumentService
 
   private lateinit var currentUser: UserEntity
+  private lateinit var permissionService: PermissionService
+  private val currentUserId = UUID.randomUUID()
 
   @BeforeEach
   fun setUp() {
     currentUser = mock(UserEntity::class.java)
     `when`(currentUser.id).thenReturn(UUID.randomUUID())
 
+    userDAO = mock(UserDAO::class.java)
     repositoryDAO = mock(RepositoryDAO::class.java)
-
+    documentDAO = mock(DocumentDAO::class.java)
+    permissionService = PermissionService(userDAO, repositoryDAO)
     documentService = DocumentService(
-      mock(DocumentDAO::class.java),
+      documentDAO,
       mock(PlatformTransactionManager::class.java),
       mock(EntityManager::class.java),
       repositoryDAO,
       mock(PlanConstraintsService::class.java),
       mock(DocumentPipelineJobDAO::class.java),
-      mock(PluginService::class.java)
+      mock(PluginService::class.java),
+      permissionService,
     )
   }
 
@@ -60,6 +76,84 @@ class DocumentServiceTest {
 //  fun `applyRetentionStrategy by age is skipped if plan returns null`() {
 //    TODO()
 //  }
+
+  @Test
+  fun `create document without permissions fails`() {
+    val documentId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
+
+    mockUser(currentUserId)
+    mockDocument(documentId = documentId, repositoryId = repositoryId)
+    mockRepository(repositoryId, ownerId = UUID.randomUUID())
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runTest(context = RequestContext(userId = currentUserId)) {
+        val data = CreateRecordInput(
+          title = "foo",
+          publishedAt = Date().time,
+          url = "",
+          repositoryId = RepositoryUniqueWhereInput(id = repositoryId.toString()),
+        )
+        documentService.createDocument(data)
+      }
+    }
+  }
+
+  @Test
+  fun `create document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val repositoryId = UUID.randomUUID()
+
+    mockUser(currentUserId)
+    `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
+    mockRepository(repositoryId, ownerId = currentUserId)
+
+    val data = CreateRecordInput(
+      title = "foo",
+      publishedAt = Date().time,
+      url = "",
+      text = "",
+      repositoryId = RepositoryUniqueWhereInput(id = repositoryId.toString()),
+    )
+    documentService.createDocument(data)
+
+    verify(documentDAO).save(any(DocumentEntity::class.java))
+  }
+
+  @Test
+  fun `update document without permissions fails`() {
+    val documentId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
+
+    mockUser(currentUserId)
+    mockDocument(documentId = documentId, repositoryId = repositoryId)
+    mockRepository(repositoryId, ownerId = UUID.randomUUID())
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runTest(context = RequestContext(userId = currentUserId)) {
+        val data = RecordUpdateInput()
+        val where = RecordUniqueWhereInput(id = documentId.toString())
+        documentService.updateDocument(data, where)
+      }
+    }
+  }
+
+  @Test
+  fun `update document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val documentId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
+
+    mockUser(currentUserId)
+    val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
+    mockRepository(repositoryId, ownerId = currentUserId)
+    `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
+
+    val data = RecordUpdateInput()
+    val where = RecordUniqueWhereInput(id = documentId.toString())
+    documentService.updateDocument(data, where)
+
+    verify(documentDAO).save(eq(document))
+  }
+
 
   @Test
   fun `given deleteDocuments is executed not by the owner, it fails`() {
@@ -75,5 +169,27 @@ class DocumentServiceTest {
         documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
       }
     }
+  }
+
+  private fun mockUser(userId: UUID): UserEntity {
+    val user = mock(UserEntity::class.java)
+    `when`(user.id).thenReturn(userId)
+    `when`(userDAO.findById(eq(userId))).thenReturn(Optional.of(user))
+    return user
+  }
+
+  private fun mockDocument(documentId: UUID, repositoryId: UUID): DocumentEntity {
+    val document = mock(DocumentEntity::class.java)
+    `when`(document.id).thenReturn(documentId)
+    `when`(document.repositoryId).thenReturn(repositoryId)
+    `when`(documentDAO.findById(eq(documentId))).thenReturn(Optional.of(document))
+    return document
+  }
+
+  private fun mockRepository(repositoryId: UUID, ownerId: UUID) {
+    val repository = mock(RepositoryEntity::class.java)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.ownerId).thenReturn(ownerId)
+    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
   }
 }

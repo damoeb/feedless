@@ -14,7 +14,7 @@ import {
   GqlSelectors,
   GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlRecordByIdQuery,
+  GqlRecordByIdQuery, GqlFullRecordByIdsQuery
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
@@ -31,6 +31,7 @@ export type RepositoryFull = GqlRepositoryByIdQuery['repository'];
 export type Product = GetElementType<GqlListProductsQuery['products']>;
 
 export type Record = GqlRecordByIdQuery['record'];
+export type RecordFull = GetElementType<GqlFullRecordByIdsQuery['records']>;
 
 export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 

@@ -5,17 +5,18 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Repository, Record } from '../../graphql/types';
+import { Record, Repository, RepositoryFull } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
 import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
+import { AppConfigService } from '../../services/app-config.service';
+import dayjs from 'dayjs';
 
-type ViewMode = 'list' | 'table'
+type ViewMode = 'list' | 'table';
 
 @Component({
   selector: 'app-feeds-page',
@@ -26,25 +27,24 @@ type ViewMode = 'list' | 'table'
 export class FeedsPage implements OnInit, OnDestroy {
   loading = false;
   currentPage: number = 0;
-  private subscriptions: Subscription[] = [];
   documents: Record[];
   repositories: Repository[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;
-  viewMode: ViewMode = 'list'
+  viewMode: ViewMode = 'list';
   viewModeTable: ViewMode = 'table';
   viewModeList: ViewMode = 'list';
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly titleService: Title,
+    private readonly appConfigService: AppConfigService,
     private readonly repositoryService: RepositoryService,
   ) {}
 
   async ngOnInit() {
-    console.log('reload?', this.activatedRoute.snapshot.queryParams['reload']);
-    this.titleService.setTitle('Feeds');
+    this.appConfigService.setPageTitle('Feeds');
 
     this.subscriptions.push(
       this.activatedRoute.queryParams.subscribe(async (queryParams) => {
@@ -59,6 +59,18 @@ export class FeedsPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  getHealthColorForFeed(repository: Repository): BubbleColor {
+    if (repository.hasDisabledSources) {
+      return 'red';
+    } else {
+      return 'green';
+    }
+  }
+
+  isPrivate(repository: Repository): boolean {
+    return repository.visibility === GqlVisibility.IsPrivate;
   }
 
   protected async fetchFeeds(
@@ -79,7 +91,7 @@ export class FeedsPage implements OnInit, OnDestroy {
           },
           where: {
             product: {
-              in: [GqlProductCategory.RssProxy],
+              eq: GqlProductCategory.Feedless,
             },
           },
         },
@@ -93,15 +105,57 @@ export class FeedsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  getHealthColorForFeed(repository: Repository): BubbleColor {
-    if (repository.hasDisabledSources) {
-      return 'red';
-    } else {
-      return 'green';
-    }
+  async downloadRepositories() {
+    const rRepositories = await this.getAllRepositories()
+
+    var a = window.document.createElement('a');
+    a.href = window.URL.createObjectURL(new Blob([JSON.stringify(rRepositories, null, 2)], { type: 'application/json' }));
+    a.download = `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
   }
 
-  isPrivate(repository: Repository): boolean {
-    return repository.visibility === GqlVisibility.IsPrivate;
+  private async getAllRepositories(): Promise<RepositoryFull[]> {
+    const repositories: RepositoryFull[] = [];
+
+    let page = 0;
+    while (true) {
+      const repositoriesOnPage = await this.repositoryService.listRepositories(
+        {
+          cursor: {
+            page,
+          },
+          where: {
+            product: {
+              eq: GqlProductCategory.Feedless,
+            },
+          },
+        },
+      );
+      if (repositoriesOnPage.length === 0) {
+        break;
+      }
+      for (let index = 0; index < repositoriesOnPage.length; index++) {
+        repositories.push(await this.repositoryService.getRepositoryById(repositoriesOnPage[index].id));
+      }
+      page++;
+    }
+    return repositories;
+  }
+
+  uploadRepositories(uploadEvent: Event) {
+    const file = (uploadEvent.target as any).files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data: ArrayBuffer | string = (e.target as any).result;
+      const repositories: RepositoryFull[] = JSON.parse(String(data));
+
+      // TODO await this.repositoryService.createRepositories(repositories)
+
+    };
+    reader.readAsText(file);
   }
 }

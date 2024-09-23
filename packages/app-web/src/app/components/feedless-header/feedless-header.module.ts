@@ -9,6 +9,7 @@ import { IonicModule } from '@ionic/angular';
 import { LoginButtonModule } from '../login-button/login-button.module';
 import { RepositoriesButtonModule } from '../repositories-button/repositories-button.module';
 import { RouterLink } from '@angular/router';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   declarations: [FeedlessHeaderComponent],
@@ -23,6 +24,7 @@ import { RouterLink } from '@angular/router';
     LoginButtonModule,
     RepositoriesButtonModule,
     RouterLink,
-  ],
+    RemoveIfProdModule
+  ]
 })
 export class FeedlessHeaderModule {}

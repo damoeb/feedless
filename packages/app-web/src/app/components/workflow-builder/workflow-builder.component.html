@@ -20,12 +20,12 @@
               <ion-icon name="remove-outline"></ion-icon>
             </ion-button>
             <ion-range
+              [(ngModel)]="scaleFactor"
+              [label]="parseInt(scaleFactor * 100 + '') + '%'"
+              [max]="maxScaleFactor"
               [min]="minScaleFactor"
               [step]="0.05"
-              [label]="parseInt(scaleFactor * 100 + '') + '%'"
-              [(ngModel)]="scaleFactor"
               style="width: 100px"
-              [max]="maxScaleFactor"
             ></ion-range>
             <ion-button (click)="zoomOut()">
               <ion-icon name="add-outline"></ion-icon>
@@ -35,12 +35,12 @@
         <div style="height: 40vh; position: relative">
           <!--          <div style="position: absolute; width: 100%; height: 100%; background: rgba(var(&#45;&#45;app-background-rgb), 0.3); z-index: 100;"></div>-->
           <iframe
-            src="http://localhost:4200"
             [ngStyle]="{
               transform: 'scale(' + scaleFactor + ')',
               width: 100 / scaleFactor + '%',
               height: 100 / scaleFactor + '%',
             }"
+            src="http://localhost:4200"
             style="border: none; transform-origin: top left; position: absolute"
           ></iframe>
         </div>
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <div style="width: 300px" class="controls">
+    <div class="controls" style="width: 300px">
       <!--    <ion-button color="success" expand="full" class="ion-no-margin">-->
       <!--      <ion-icon name="play-outline" slot="start"></ion-icon>-->
       <!--      Run All-->
@@ -75,20 +75,20 @@
       <ion-accordion-group class="first-level">
         <ion-accordion value="trigger">
           <ion-item slot="header">
-            <ion-label> Trigger </ion-label>
+            <ion-label> Trigger</ion-label>
           </ion-item>
-          <ion-list slot="content" class="ion-no-padding">
+          <ion-list class="ion-no-padding" slot="content">
             <ion-item>
               <ion-input label="Webhook" labelPlacement="start"></ion-input>
             </ion-item>
-            <ion-item> Scheduled </ion-item>
+            <ion-item> Scheduled</ion-item>
           </ion-list>
         </ion-accordion>
         <ion-accordion value="sources">
           <ion-item slot="header">
-            <ion-label> Sources </ion-label>
+            <ion-label> Sources</ion-label>
           </ion-item>
-          <ion-accordion-group slot="content" class="second-level">
+          <ion-accordion-group class="second-level" slot="content">
             <ion-accordion value="trigger">
               <ion-item slot="header">
                 <ion-label>
@@ -96,7 +96,7 @@
                   <app-bubble color="red"></app-bubble>
                 </ion-label>
               </ion-item>
-              <ion-accordion-group slot="content" class="third-level">
+              <ion-accordion-group class="third-level" slot="content">
                 <!--            <ion-item>-->
                 <!--              <ion-button color="light" expand="block">-->
                 <!--                <ion-icon name="play-outline" color="success" slot="start"></ion-icon>-->
@@ -107,14 +107,14 @@
                 <!--                Delete-->
                 <!--              </ion-button>-->
                 <!--            </ion-item>-->
-                <ion-item> Tags </ion-item>
-                <ion-item> Localization </ion-item>
+                <ion-item> Tags</ion-item>
+                <ion-item> Localization</ion-item>
                 <ion-accordion value="actions">
                   <ion-item slot="header">
                     <ion-label>Actions</ion-label>
                     <ion-text class="helper-text helper-text--changed"
-                      >3 Clicks</ion-text
-                    >
+                      >3 Clicks
+                    </ion-text>
                   </ion-item>
                   <ion-list slot="content">
                     <ion-item [button]="true">
@@ -129,16 +129,16 @@
                 </ion-accordion>
                 <ion-accordion value="emit">
                   <ion-item slot="header">
-                    <ion-label> Emit </ion-label>
+                    <ion-label> Emit</ion-label>
                     <ion-text class="helper-text">None</ion-text>
                   </ion-item>
-                  <ion-list slot="content"> </ion-list>
+                  <ion-list slot="content"></ion-list>
                 </ion-accordion>
                 <ion-accordion value="distinct">
                   <ion-item slot="header">
-                    <ion-label> Distinct By </ion-label>
+                    <ion-label> Distinct By</ion-label>
                   </ion-item>
-                  <ion-list slot="content"> </ion-list>
+                  <ion-list slot="content"></ion-list>
                 </ion-accordion>
               </ion-accordion-group>
             </ion-accordion>
@@ -151,19 +151,19 @@
 
         <ion-accordion value="refine">
           <ion-item slot="header">
-            <ion-label> Refine </ion-label>
+            <ion-label> Refine</ion-label>
           </ion-item>
-          <ion-list slot="content" class="ion-no-padding">
-            <ion-item> Fulltext </ion-item>
-            <ion-item> Privacy </ion-item>
+          <ion-list class="ion-no-padding" slot="content">
+            <ion-item> Fulltext</ion-item>
+            <ion-item> Privacy</ion-item>
           </ion-list>
         </ion-accordion>
 
         <ion-accordion value="storage">
           <ion-item slot="header">
-            <ion-label> Storage </ion-label>
+            <ion-label> Storage</ion-label>
           </ion-item>
-          <ion-list slot="content" class="ion-no-padding">
+          <ion-list class="ion-no-padding" slot="content">
             <ion-item>
               <ion-input
                 label="Capacity"
@@ -171,8 +171,8 @@
                 placeholder="default"
               ></ion-input>
             </ion-item>
-            <ion-item> Retention </ion-item>
-            <ion-item> Forward </ion-item>
+            <ion-item> Retention</ion-item>
+            <ion-item> Forward</ion-item>
           </ion-list>
         </ion-accordion>
       </ion-accordion-group>

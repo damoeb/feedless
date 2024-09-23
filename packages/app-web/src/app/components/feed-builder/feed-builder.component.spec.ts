@@ -16,10 +16,12 @@ describe('FeedBuilderComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         FeedBuilderModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
-          mockDocuments(apolloMockController);
-          mockRepositories(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockScrape(apolloMockController);
+            mockDocuments(apolloMockController);
+            mockRepositories(apolloMockController);
+          },
         }),
       ],
     }).compileComponents();

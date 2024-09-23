@@ -2,21 +2,21 @@
   <div *ngIf="!hideSearchBar">
     <ion-toolbar style="padding: 10px">
       <app-searchbar
-        (querySubmit)="receiveUrl($event)"
-        [value]="url"
-        [loading]="loading"
         (cancelReceived)="handleCancel()"
-        buttonText="Go"
+        (querySubmit)="receiveUrl($event)"
         [color]="url?.length > 0 ? undefined : 'primary'"
+        [loading]="loading"
+        [value]="url"
+        buttonText="Go"
         placeholder="Enter Url of a website or RSS feed"
       ></app-searchbar>
       <ng-container *ngIf="errorMessage">
-        <p style="color: var(--ion-color-danger)" class="ion-margin">
+        <p class="ion-margin" style="color: var(--ion-color-danger)">
           We ran into a problem! {{ errorMessage }}.
         </p>
         <p class="ion-margin">
           Some errors can be resolved by
-          <a href="javascript:void(0)" (click)="showInteractiveWebsiteModal()"
+          <a (click)="showInteractiveWebsiteModal()" href="javascript:void(0)"
             >enabling JavaScript</a
           >
         </p>
@@ -37,9 +37,9 @@
       <p>Remix existing feeds</p>
       <ion-list>
         <ion-item
+          (click)="remix(r)"
           *ngFor="let r of repositories"
           [button]="true"
-          (click)="remix(r)"
         >
           {{ r.title }}
         </ion-item>
@@ -54,19 +54,19 @@
       [sourceBuilder]="sourceBuilder"
     >
       <ion-item
-        beforeFeedsSlot
         (click)="showInteractiveWebsiteModal()"
-        class="cy-enable-js-button"
         [button]="true"
+        beforeFeedsSlot
+        class="cy-enable-js-button"
       >
         Use JavaScript
-        <ion-icon name="logo-javascript" color="warning" slot="end"></ion-icon>
+        <ion-icon color="warning" name="logo-javascript" slot="end"></ion-icon>
       </ion-item>
-      <ion-accordion toggleIconSlot="start" value="meta" beforeFeedsSlot>
+      <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
         <ion-item slot="header">
-          <ion-label> Metadata </ion-label>
+          <ion-label> Metadata</ion-label>
         </ion-item>
-        <ion-list slot="content" class="ion-no-padding">
+        <ion-list class="ion-no-padding" slot="content">
           <ion-item (click)="showTagsModal()" [button]="true">
             <ion-label>
               Tags
@@ -79,20 +79,20 @@
 
               <ion-note *ngIf="!geoLocation">None</ion-note>
               <ion-note *ngIf="geoLocation"
-                >({{ geoLocation.lat }}/{{ geoLocation.lon }})</ion-note
-              >
+                >({{ geoLocation.lat }}/{{ geoLocation.lon }})
+              </ion-note>
             </ion-label>
           </ion-item>
         </ion-list>
       </ion-accordion>
 
       <app-filter-feed-accordion
-        afterFeedsSlot
-        labelPrefix=""
+        (filterChange)="onFilterChange($event)"
         [advanced]="false"
         [disabled]="!hasValidFeed"
         [filterPlugin]="getFilterPlugin()"
-        (filterChange)="onFilterChange($event)"
+        afterFeedsSlot
+        labelPrefix=""
       ></app-filter-feed-accordion>
       <!--      <app-fetch-rate-accordion afterFeedsSlot *ngIf="!hideCustomizeFeed"></app-fetch-rate-accordion>-->
 
@@ -115,18 +115,18 @@
         <ng-container *ngIf="!hideCustomizeFeed">
           <ion-item
             (click)="createOrRefineFeed(true)"
-            [disabled]="!hasValidFeed"
             [button]="true"
+            [disabled]="!hasValidFeed"
           >
-            <ion-label> Advanced Options </ion-label>
+            <ion-label> Advanced Options</ion-label>
             <ion-icon name="settings-outline" slot="end"></ion-icon>
           </ion-item>
         </ng-container>
         <ion-item
           (click)="createOrRefineFeed(false)"
-          color="primary"
-          [disabled]="!hasValidFeed"
           [button]="true"
+          [disabled]="!hasValidFeed"
+          color="primary"
         >
           <ion-label>
             {{ submitButtonText }}

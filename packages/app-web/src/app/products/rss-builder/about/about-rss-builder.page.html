@@ -66,8 +66,8 @@
         <p>Now, fastest way to get started is by importing an OPML file.</p>
         <app-import-button
           color="primary"
-          fill="solid"
           expand="block"
+          fill="solid"
         ></app-import-button>
       </div>
 
@@ -76,10 +76,10 @@
         <p>[video]</p>
       </div>
 
-      <div style="margin-top: 50px" *ngIf="license?.isLocated">
+      <div *ngIf="license?.isLocated" style="margin-top: 50px">
         <h2>License Prompt</h2>
-        <ion-item color="success" [button]="true" routerLink="/license">
-          Registered to {{license.data.name}}
+        <ion-item [button]="true" color="success" routerLink="/license">
+          Registered to {{ license.data.name }}
         </ion-item>
       </div>
 
@@ -130,7 +130,9 @@
       <div style="margin-top: 50px"></div>
       <div>
         <h2>Demo Video</h2>
-        <p><lite-youtube videoid="7weraU_FpUs"></lite-youtube></p>
+        <p>
+          <lite-youtube videoid="7weraU_FpUs"></lite-youtube>
+        </p>
       </div>
 
       <div>

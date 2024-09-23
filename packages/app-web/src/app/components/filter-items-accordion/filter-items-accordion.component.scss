@@ -25,12 +25,15 @@ ion-select {
 
 ion-select {
   min-height: 45px;
+
   &::part(container) {
     width: 100%;
   }
+
   &::part(label) {
     padding: 5px;
   }
+
   &::part(icon) {
     --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }

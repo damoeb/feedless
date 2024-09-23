@@ -1,7 +1,7 @@
 <ion-button
   (click)="sessionService.setColorScheme(!darkMode)"
-  [expand]="expand"
   [color]="color"
+  [expand]="expand"
 >
   <ng-container *ngIf="label">
     <ion-icon *ngIf="darkMode" name="sunny-outline" slot="start"></ion-icon>

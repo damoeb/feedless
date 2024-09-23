@@ -23,6 +23,7 @@ h1 {
 
 ion-segment-button {
   font-size: 1.4rem;
+
   &::part(native) {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -31,6 +32,7 @@ ion-segment-button {
 
 .offers {
   display: flex;
+
   app-plan-column {
     flex: 1;
     display: flex;

@@ -1,4 +1,4 @@
-mutation createRepositories($data: RepositoriesCreateInput!) {
+mutation createRepositories($data: [RepositoryCreateInput!]!) {
   createRepositories(data: $data) {
     ...RepositoryFragment
   }
@@ -62,12 +62,11 @@ fragment RepositoryFull on Repository {
 
 query repositoryById(
   $repository: RepositoryWhereInput!
-  $user: UserWhereUniqueInput!
 ) {
   repository(data: $repository) {
     ...RepositoryFull
     annotations {
-      votes(where: $user) {
+      votes {
         id
         flag {
           value

@@ -10,11 +10,11 @@
 </ion-header>
 <ion-content>
   <app-feed-builder
-    [hideSearchBar]="false"
-    [hideCustomizeFeed]="true"
-    [submitButtonText]="submitButtonText"
-    [source]="source"
-    (selectedRepositoryChanged)="handleRepository($event)"
     (selectedFeedChanged)="handleFeed($event)"
+    (selectedRepositoryChanged)="handleRepository($event)"
+    [hideCustomizeFeed]="true"
+    [hideSearchBar]="false"
+    [source]="source"
+    [submitButtonText]="submitButtonText"
   ></app-feed-builder>
 </ion-content>

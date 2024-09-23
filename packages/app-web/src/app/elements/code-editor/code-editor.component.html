@@ -1,9 +1,9 @@
 <div
-  (keydown.enter)="$event.stopPropagation()"
   (keydown)="handleCtrlDown($event)"
-  (keyup)="handleCtrlUp($event)"
   (keydown.arrowDown)="$event.stopPropagation()"
   (keydown.arrowUp)="$event.stopPropagation()"
+  (keydown.enter)="$event.stopPropagation()"
+  (keyup)="handleCtrlUp($event)"
   class="editor-wrapper"
 >
   <ng-content select="[controls]"></ng-content>
@@ -30,7 +30,7 @@
   </ion-toolbar>
   <div
     #editor
-    class="editor"
     [ngClass]="{ 'editor--ctrl-pressed': ctrlPressed }"
+    class="editor"
   ></div>
 </div>

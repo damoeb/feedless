@@ -10,27 +10,25 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import { Title } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-notebook-builder-page',
-  templateUrl: './notebook-builder.page.html',
-  styleUrls: ['./notebook-builder.page.scss'],
+  selector: 'app-notebook-page',
+  templateUrl: './notebooks.page.html',
+  styleUrls: ['./notebooks.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotebookBuilderPage implements OnInit, OnDestroy {
+export class NotebooksPage implements OnInit, OnDestroy {
   loading = false;
   productConfig: ProductConfig;
   private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly appConfigService: AppConfigService,
-    private readonly titleService: Title,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Workflow Builder');
+    this.appConfigService.setPageTitle('Notebooks');
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()

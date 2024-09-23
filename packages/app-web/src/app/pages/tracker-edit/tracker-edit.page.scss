@@ -32,12 +32,15 @@ app-interactive-website {
   display: flex;
   flex: 1;
   min-height: 550px;
+
   & > div {
     flex: 1;
   }
 }
+
 .controls {
   column-gap: 8px;
+
   & > * {
     flex: 1;
   }
@@ -106,6 +109,7 @@ ion-select {
   .action__raw {
     display: none;
   }
+
   ion-input {
     --padding-start: 10px;
   }
@@ -172,6 +176,7 @@ ion-accordion {
     --app-border-radius: 1rem;
     border-radius: var(--app-border-radius);
   }
+
   //&:first-child {
   //  border-top-left-radius: var(--app-border-radius);
   //  border-top-right-radius: var(--app-border-radius);

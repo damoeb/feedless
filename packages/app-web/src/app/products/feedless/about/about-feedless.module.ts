@@ -8,6 +8,7 @@ import { ProductHeadlineModule } from '../../../components/product-headline/prod
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { FeedlessHeaderModule } from '../../../components/feedless-header/feedless-header.module';
+import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { FeedlessHeaderModule } from '../../../components/feedless-header/feedle
     ProductHeaderModule,
     SearchbarModule,
     FeedlessHeaderModule,
+    RemoveIfProdModule
   ],
   declarations: [AboutFeedlessPage],
 })

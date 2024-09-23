@@ -18,15 +18,14 @@ class SpellingScorerTest {
 
   @BeforeEach
   fun setUp() {
-    scorer = SpellingScorer()
+
     val languageService = LanguageService()
     languageService.postConstruct()
 
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    scorer.languageService = languageService
-    scorer.tokenizerService = tokenizerService
+    scorer = SpellingScorer(tokenizerService, languageService)
   }
 
   @ParameterizedTest

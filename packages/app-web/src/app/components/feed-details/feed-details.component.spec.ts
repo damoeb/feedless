@@ -21,10 +21,12 @@ describe('FeedDetailsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         FeedDetailsModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockPlugins(apolloMockController);
-          mockDocuments(apolloMockController);
-          mockRepository(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockPlugins(apolloMockController);
+            mockDocuments(apolloMockController);
+            mockRepository(apolloMockController);
+          },
         }),
       ],
     }).compileComponents();

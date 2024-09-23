@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-payment-summary-page',
@@ -18,19 +18,19 @@ import { Title } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentSummaryPage implements OnInit, OnDestroy {
+  protected order: Order;
   private subscriptions: Subscription[] = [];
   private billingId: string;
-  protected order: Order;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly orderService: OrderService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Payment Summary');
+    this.appConfig.setPageTitle('Payment Summary');
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {
@@ -43,7 +43,7 @@ export class PaymentSummaryPage implements OnInit, OnDestroy {
               },
               where: {
                 id: {
-                  equals: this.billingId,
+                  eq: this.billingId,
                 },
               },
             })

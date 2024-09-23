@@ -21,7 +21,6 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.security.web.util.UrlUtils
@@ -35,12 +34,11 @@ import kotlin.coroutines.coroutineContext
 
 
 @Service
-class HttpService {
+class HttpService(
+  private val propertyService: PropertyService
+) {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
 
   private lateinit var gatewayHost: String
 

@@ -2,33 +2,30 @@ import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
 import { AlertController } from '@ionic/angular';
-import { debounce, DebouncedFunc, omit } from 'lodash-es';
+import { debounce, DebouncedFunc } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
-import dayjs from 'dayjs';
 import { Completion } from '@codemirror/autocomplete';
 import { notebookRepository } from './notebook-repository';
+import { RepositoryService } from './repository.service';
+import { AuthGuardService } from '../guards/auth-guard.service';
+import { GqlCreateRepositoriesMutation, GqlFullRecordByIdsQuery, GqlProductCategory, GqlVisibility } from '../../generated/graphql';
+import { ArrayElement } from '../types';
+import { RecordService } from './record.service';
+import dayjs from 'dayjs';
 
-export type Notebook = {
-  id: string;
-  name: string;
-  lastSyncAt: Date | null;
-  notesCount: number;
-};
-export type Note = {
-  id: string;
-  namedId: string;
-  title: string;
-  text: string;
+export type Notebook = ArrayElement<
+  GqlCreateRepositoriesMutation['createRepositories']
+> & { lastSyncedAt: Date };
+
+export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
   references: {
     hashtags: string[];
     links: string[];
   };
-  createdAt: Date;
-  updatedAt: Date;
-  metadata?: string;
-  fileType?: string;
-  notebookId: string;
+  repositoryId: string;
+  isUpVoted: boolean;
+  upVoteAnnotationId?: string;
 };
 
 export type AppAction = {
@@ -44,89 +41,90 @@ export type SearchResultGroup = {
   actions?: AppAction[];
 };
 
-const firstNoteBody = `
-First Note
-====
-
-## Headings
-# Heading level 1
-## Heading level 2
-### Heading level 3
-#### Heading level 4
-
-
-Heading level 1
-===============
-
-Heading level 2
----------------
-
-
-## Hashtag
-
-#stronly-typed
-
-## Urls
-https://example.org/foo/bar.html
-
-## Code
-At the command prompt, type \`nano\`.
-
-## Code Block
-\`\`\`
-  println('this')
-\`\`\`
-
-
-## Horizontal Rules
-***
-
----
-
-_________________
-
-## Bold
-I just love **bold text**.
-I just love __bold text__.
-Love**is**bold
-
-## Italic
-Italicized text is the *cat's meow*.
-Italicized text is the _cat's meow_.
-A*cat*meow
-
-## Blockquote
-> Dorothy followed her through many of the beautiful rooms in her castle.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
->> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-
-## Lists
-### Ordered Lists
-1. First item
-2. Second item
-3. Third item
-    1. Indented item
-    2. Indented item
-4. Fourth item
-
-### Unordered Lists
-- First item
-- Second item
-- Third item
-- Fourth item
-
-## Inline Image
-
-![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
-
-
-    `;
+const firstNoteBody = `# Start Typing here...`;
+// const firstNoteBody = `
+// First Note
+// ====
+//
+// ## Headings
+// # Heading level 1
+// ## Heading level 2
+// ### Heading level 3
+// #### Heading level 4
+//
+//
+// Heading level 1
+// ===============
+//
+// Heading level 2
+// ---------------
+//
+//
+// ## Hashtag
+//
+// #stronly-typed
+//
+// ## Urls
+// https://example.org/foo/bar.html
+//
+// ## Code
+// At the command prompt, type \`nano\`.
+//
+// ## Code Block
+// \`\`\`
+//   println('this')
+// \`\`\`
+//
+//
+// ## Horizontal Rules
+// ***
+//
+// ---
+//
+// _________________
+//
+// ## Bold
+// I just love **bold text**.
+// I just love __bold text__.
+// Love**is**bold
+//
+// ## Italic
+// Italicized text is the *cat's meow*.
+// Italicized text is the _cat's meow_.
+// A*cat*meow
+//
+// ## Blockquote
+// > Dorothy followed her through many of the beautiful rooms in her castle.
+//
+// > Dorothy followed her through many of the beautiful rooms in her castle.
+// >
+// > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+//
+// > Dorothy followed her through many of the beautiful rooms in her castle.
+// >
+// >> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+//
+// ## Lists
+// ### Ordered Lists
+// 1. First item
+// 2. Second item
+// 3. Third item
+//     1. Indented item
+//     2. Indented item
+// 4. Fourth item
+//
+// ### Unordered Lists
+// - First item
+// - Second item
+// - Third item
+// - Fourth item
+//
+// ## Inline Image
+//
+// ![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
+//
+//
+//     `;
 
 type IndexDocument = {
   id: string;
@@ -161,10 +159,13 @@ export class NotebookService {
   systemBusyChanges = new ReplaySubject<boolean>(1);
   private index: Flexsearch.Document<IndexDocument>;
   findAllAsync: DebouncedFunc<(query: string) => void>;
-  private currentNotebookId: string;
+  private currentRepositoryId: string;
 
   constructor(
     private readonly alertCtrl: AlertController,
+    private readonly repositoryService: RepositoryService,
+    private readonly recordService: RecordService,
+    private readonly authGuard: AuthGuardService,
     private readonly router: Router,
   ) {
     this.findAllAsync = debounce(this.findAllAsyncInternal, 200);
@@ -172,13 +173,22 @@ export class NotebookService {
   }
 
   async createNotebook(name: string) {
+    // await this.authGuard.assertLoggedIn();
     console.log('createNotebook');
-    const notebook: Notebook = {
-      id: uuidv4(),
-      name,
-      lastSyncAt: null,
-      notesCount: 0,
-    };
+
+    const repository = (
+      await this.repositoryService.createRepositories([
+        {
+          title: name,
+          description: '',
+          product: GqlProductCategory.UntoldNotes,
+          sources: [],
+          withShareKey: false,
+          visibility: GqlVisibility.IsPrivate,
+        },
+      ])
+    )[0];
+    const notebook: Notebook = { ...repository, lastSyncedAt: new Date() };
 
     notebookRepository.notebooks.add(notebook);
     this.notebooks.push(notebook);
@@ -193,7 +203,7 @@ export class NotebookService {
         return [
           {
             label: 'Resolve',
-            apply: () => console.log(query),
+            apply: () => this.findAllAsync(query),
           },
         ];
       default:
@@ -212,16 +222,11 @@ export class NotebookService {
     }
   }
 
-  findAll(query: string): SearchResultGroup[] {
+  findAll(query: string, index: string[] = ['text', 'id', 'references:links', 'references:hashtags']): SearchResultGroup[] {
     if (query.trim()) {
       const results = this.index.search({
         query,
-        index: [
-          'note:text',
-          'note:namedId',
-          'note:references:links',
-          'note:references:hashtags',
-        ],
+        index,
         limit: this.LIMIT,
       });
       return results.map((perField) => {
@@ -238,30 +243,36 @@ export class NotebookService {
     }
   }
 
-  createNote(
-    params: Partial<Pick<Note, 'title' | 'namedId' | 'text'>> = {},
+  async createNote(
+    params: Partial<Pick<Note, 'title' | 'id' | 'text'>> = {},
     triggerOpen: boolean = false,
   ) {
     console.log('create note', params, triggerOpen);
     const title = params.title ?? '';
+    const now = new Date();
     const note: Note = {
       id: uuidv4(),
-      namedId: params.namedId ?? this.createNoteId(),
       title: title,
       text: `# ${title}\n\n${params.text ?? ''}`.trim(),
       references: {
         hashtags: [],
         links: [],
       },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      notebookId: this.currentNotebookId,
+      url: '',
+      isUpVoted: false,
+      publishedAt: now,
+      updatedAt: now,
+      createdAt: now,
+      // updatedAt: new Date(),
+      repositoryId: this.currentRepositoryId,
     };
     notebookRepository.notes.add(note);
     this.index.add({
       id: note.id,
       note,
     });
+    await this.recordService.createRecords([this.covertNoteToRecord(note)]);
+
     this.findAllAsync(title);
     if (triggerOpen) {
       this.openNote(note);
@@ -269,30 +280,80 @@ export class NotebookService {
     return note;
   }
 
-  async openNotebook(notebookId: string) {
-    this.currentNotebookId = notebookId;
-    console.log('openNotebook', notebookId);
+  private covertNoteToRecord(note: Note) {
+    return {
+      id: note.id,
+      url: '',
+      title: note.title,
+      text: note.text,
+      publishedAt: dayjs(note.publishedAt).toDate().getTime(),
+      repositoryId: {
+        id: this.currentRepositoryId,
+      },
+    };
+  }
+
+  async openNotebook(repositoryId: string) {
+    this.currentRepositoryId = repositoryId;
+    console.log('openNotebook', repositoryId);
     this.systemBusyChanges.next(true);
 
-    const localNotebook: Notebook =
-      await notebookRepository.notebooks.get(notebookId);
+    const notebook: Notebook =
+      await notebookRepository.notebooks.get(repositoryId);
 
-    if (localNotebook) {
+    if (notebook) {
       this.createIndex();
 
       const notes = await notebookRepository.notes
-        .where({ notebookId })
+        .where({ repositoryId })
         .toArray();
-      notes.forEach((note) =>
-        this.index.add({
-          id: note.id,
-          note,
-        }),
-      );
 
-      if (notes.length === 0) {
-        this.createNote({ title: 'First Note', text: firstNoteBody });
+      notes.forEach((note) => this.index.add(note));
+
+      // sync up
+      const upSyncNew = notes.filter(
+        (note) => note.createdAt > notebook.lastSyncedAt,
+      );
+      await this.recordService.createRecords(
+        upSyncNew.map((note) => this.covertNoteToRecord(note)),
+      );
+      const upSyncChanged = notes.filter(
+        (note) => note.updatedAt > notebook.lastSyncedAt,
+      );
+      await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
+
+      // sync down
+      try {
+        let page = 0;
+        while (true) {
+          const records = await this.recordService.findAllFullByRepositoryId({
+            where: {
+              repository: {
+                id: notebook.id,
+              },
+              updatedAt: {
+                after: notebook.lastUpdatedAt,
+              },
+            },
+            cursor: {
+              page,
+            },
+          });
+          if (records.length == 0) {
+            break;
+          }
+          page++;
+        }
+      } catch (e) {
+        console.error(e.message);
       }
+
+      notebook.lastSyncedAt = new Date()
+      notebookRepository.notebooks.update(notebook.id, notebook);
+
+      // if (notes.length === 0) {
+      //   this.createNote({ title: 'First Note', text: firstNoteBody });
+      // }
 
       // if (remoteNotebook) {
       //   remoteNotebook.notes.push(...(await localNotebook?.notes()));
@@ -319,7 +380,7 @@ export class NotebookService {
 
       await alert.present();
     }
-    return localNotebook;
+    return notebook;
   }
 
   private propagateRecentNotes() {
@@ -328,8 +389,8 @@ export class NotebookService {
         name: 'Recent',
         notes: () =>
           notebookRepository.notes
-            .where('notebookId')
-            .equals(this.currentNotebookId)
+            .where('repositoryId')
+            .equals(this.currentRepositoryId)
             .limit(this.LIMIT)
             .sortBy('updatedAt'),
       },
@@ -348,10 +409,10 @@ export class NotebookService {
         index: [
           'id',
           'action:name',
-          'note:namedId',
-          'note:text',
-          'note:references:links',
-          'note:references:hashtags',
+          'text',
+          'isUpVoted',
+          'references:links',
+          'references:hashtags',
         ],
       },
     });
@@ -382,62 +443,30 @@ export class NotebookService {
       return matches;
     }
 
+    note.updatedAt = new Date();
     note.references = {
       hashtags: extractByRegExp(reHashtag),
       links: extractByRegExp(reLink),
     };
 
-    const cleanNote = omit(note, ['dirty', 'textChangeHandler']) as Note;
-    this.index.update(cleanNote);
-    notebookRepository.notes.update(note.id, cleanNote);
+    await this.recordService.updateRecord({
+      data: {
+        title: {
+          set: note.title,
+        },
+        text: {
+          set: note.text,
+        },
+      },
+      where: {
+        id: note.id,
+      },
+    });
+    this.index.update(note);
+    console.log('updateNote', note)
+    notebookRepository.notes.update(note.id, note);
     this.notesChanges.next();
   }
-
-  // private async loadRemoteNotebook(
-  //   notebookId: string,
-  //   lastSyncAt: Date,
-  // ): Promise<Notebook> {
-  //   if (this.profileService.isAuthenticated()) {
-  //     // sync or create
-  //     const sourceSubscription =
-  //       await this.sourceSubscriptionService.getSubscriptionById(notebookId);
-  //
-  //     return {
-  //       id: sourceSubscription.id,
-  //       name: sourceSubscription.title,
-  //       lastSyncAt: new Date(),
-  //       notes: () => this.loadRemoteNotes(notebookId, lastSyncAt),
-  //     };
-  //   }
-  // }
-
-  // private async loadRemoteNotes(
-  //   notebookId: string,
-  //   since: Date,
-  // ): Promise<Note[]> {
-  //   // this.recordService.findAllByStreamId()
-  //   return [];
-  // }
-
-  // private async persistRemoteNotebook(notebook: Notebook) {
-  //   if (this.profileService.isAuthenticated()) {
-  //     const sub = await this.sourceSubscriptionService.createSubscriptions({
-  //       subscriptions: [
-  //         {
-  //           sources: [],
-  //           product: environment.product,
-  //           sinkOptions: {
-  //             title: notebook.name,
-  //             description: '',
-  //             visibility: GqlVisibility.IsPrivate,
-  //           },
-  //         },
-  //       ],
-  //     }).then(response => response[0]);
-  //
-  //     // todo remove notebook by id
-  //   }
-  // }
 
   // private getHint(field: string, query: string, note: Note) {
   //   const fieldValue = note[field] as string;
@@ -461,7 +490,7 @@ export class NotebookService {
           return perField.result.map((id) =>
             notebookRepository.notes.get(id.toString()).then((note) => {
               return {
-                apply: `[${note.namedId}]`,
+                apply: `[${note.id}]`,
                 label: `${note.title}: ${note[perField.field]}`,
                 // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
               };
@@ -473,35 +502,58 @@ export class NotebookService {
       return [
         {
           label: 'New Note ID',
-          apply: `[${this.createNoteId()}]`,
+          apply: `[${uuidv4()}]`,
         },
       ];
     }
   }
 
-  private createNoteId(): string {
-    return `${dayjs().format('YYYY-MM')}/${uuidv4().split('-')[0]}`;
-  }
-
   private async init() {
     this.notebooks = await notebookRepository.notebooks.toArray();
+    await this.authGuard.assertLoggedIn();
+    const remoteNotebooks = await this.repositoryService.listRepositories({
+      where: {
+        product: {
+          eq: GqlProductCategory.UntoldNotes,
+        },
+      },
+      cursor: {
+        page: 0,
+      },
+    });
+    console.log('remoteNotebooks', remoteNotebooks);
+
+    const newRepositories = remoteNotebooks.filter(
+      (r) => !this.notebooks.some((notebook) => notebook.id == r.id),
+    );
+
+    if (newRepositories.length > 0) {
+      newRepositories.forEach((repository) =>
+        notebookRepository.notebooks.add({
+          ...repository,
+          lastSyncedAt: new Date(0),
+        }),
+      );
+      this.notebooks = await notebookRepository.notebooks.toArray();
+    }
+
     this.notebooksChanges.next(this.notebooks);
   }
 
-  existsByNamedId(noteId: string) {
+  existsById(noteId: string) {
     return (
       this.index.search({
         query: noteId,
-        index: ['note:namedId'],
+        index: ['id'],
         limit: 1,
       }).length > 0
     );
   }
 
-  async findByNamedId(noteId: string) {
+  async findById(noteId: string) {
     const note = this.index.search({
       query: noteId,
-      index: ['note:namedId'],
+      index: ['id'],
       limit: 1,
     });
 
@@ -514,8 +566,18 @@ export class NotebookService {
     this.openNoteChanges.next(note);
   }
 
-  deleteById(id: string) {
+  async deleteById(id: string) {
     this.index.remove(id);
+    await this.recordService.removeById({
+      where: {
+        id: {
+          eq: id,
+        },
+        repository: {
+          id: this.currentRepositoryId,
+        },
+      },
+    });
     notebookRepository.notes.delete(id);
     this.notesChanges.next();
   }

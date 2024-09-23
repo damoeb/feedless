@@ -20,7 +20,7 @@ export function createNoteReferenceMarker(notebookService: NotebookService) {
       match: RegExpExecArray,
       view: EditorView,
     ) => {
-      const note = notebookService.existsByNamedId(
+      const note = notebookService.existsById(
         view.state.sliceDoc(from + 1, to - 1),
       );
       if (note) {

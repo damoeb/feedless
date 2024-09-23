@@ -14,7 +14,7 @@ import { environment } from '../../../environments/environment';
 import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-license-page',
@@ -25,24 +25,23 @@ import { Title } from '@angular/platform-browser';
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;
   license: LocalizedLicense;
-  private subscriptions: Subscription[] = [];
-  protected readonly dateFormat = dateFormat;
-
-  constructor(
-    private readonly licenseService: LicenseService,
-    private readonly titleService: Title,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
-
   fromNow = relativeTimeOrElse;
   buyRssProxyUrl: string = `${
     environment.officialFeedlessUrl
   }/pricing/rss-proxy?callbackUrl=${encodeURIComponent(location.href)}`;
   licenseFc = new FormControl<string>('', [Validators.minLength(10)]);
+  protected readonly dateFormat = dateFormat;
+  private subscriptions: Subscription[] = [];
+
+  constructor(
+    private readonly licenseService: LicenseService,
+    private readonly appConfig: AppConfigService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly changeRef: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('License');
+    this.appConfig.setPageTitle('License');
     this.subscriptions.push(
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.licenseKey) {

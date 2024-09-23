@@ -69,5 +69,6 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
+
   protected readonly GqlProductName = GqlProductCategory;
 }

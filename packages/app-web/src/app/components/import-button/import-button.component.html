@@ -1,29 +1,29 @@
 <ion-button
-  id="open-import-modal"
-  [fill]="fill"
   [color]="color"
   [expand]="expand"
+  [fill]="fill"
+  id="open-import-modal"
 >
   <ion-label>Import</ion-label>
 </ion-button>
 
 <ion-popover
-  trigger="open-import-modal"
   [animated]="false"
   [showBackdrop]="true"
   alignment="start"
   side="bottom"
+  trigger="open-import-modal"
 >
   <ng-template>
     <ion-content>
       <ion-list>
         <input
-          type="file"
           #opmlPicker
           (change)="importOpml($event)"
           style="display: none"
+          type="file"
         />
-        <ion-item [button]="true" (click)="openOpmlPicker()">
+        <ion-item (click)="openOpmlPicker()" [button]="true">
           Import OPML
         </ion-item>
         <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->

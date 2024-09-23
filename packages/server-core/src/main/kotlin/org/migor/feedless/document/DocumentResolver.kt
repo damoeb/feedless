@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -15,6 +16,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.DatesWhereInput
@@ -27,13 +29,14 @@ import org.migor.feedless.generated.types.RecordsInput
 import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.generated.types.UpdateRecordInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
@@ -43,21 +46,15 @@ import java.util.*
 @DgsComponent
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 @Transactional
-class DocumentResolver {
+class DocumentResolver(
+  private val repositoryService: RepositoryService,
+  private val sessionService: SessionService,
+  private val propertyService: PropertyService,
+  private val documentService: DocumentService,
+  private val permissionService: PermissionService
+) {
 
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var repositoryService: RepositoryService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var documentService: DocumentService
 
   @Throttled
   @DgsQuery
@@ -66,9 +63,12 @@ class DocumentResolver {
     @InputArgument data: RecordWhereInput,
   ): Record = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("record $data")
+    permissionService.canReadDocument(UUID.fromString(data.where.id))
     val document =
       documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("record not found")
-    repositoryService.findById(document.repositoryId)
+
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = UUID.fromString(data.where.id)
+
     document.toDto(propertyService)
   }
 
@@ -114,9 +114,19 @@ class DocumentResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
-    @InputArgument records: List<CreateRecordInput>?,
+    @InputArgument records: List<CreateRecordInput>,
   ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-    emptyList()
+    records.map { documentService.createDocument(it).toDto(propertyService) }
+  }
+
+  @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
+  @PreAuthorize("hasAuthority('USER')")
+  suspend fun updateRecord(
+    dfe: DataFetchingEnvironment,
+    @InputArgument data: UpdateRecordInput,
+  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+    documentService.updateDocument(data.data, data.where).toDto(propertyService)
+    true
   }
 
   @DgsQuery(field = DgsConstants.QUERY.RecordsFrequency)

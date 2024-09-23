@@ -14,6 +14,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
   class NoteLinkWidget extends WidgetType {
     private readonly widgetLink: HTMLElement;
     private classNames: string[] = [];
+
     constructor(private readonly noteId: string) {
       super();
 
@@ -36,7 +37,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
     }
 
     private async init() {
-      const note = await notebookService.findByNamedId(this.noteId);
+      const note = await notebookService.findById(this.noteId);
       if (note) {
         this.classNames.push('note-link--valid');
         this.widgetLink.textContent = note.title.trim() || 'Open Note';
@@ -47,7 +48,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
         this.classNames.push('note-link--invalid');
         this.widgetLink.textContent = 'Create Note';
         this.widgetLink.addEventListener('click', () =>
-          notebookService.createNote({ namedId: this.noteId }, true),
+          notebookService.createNote({ id: this.noteId }, true),
         );
       }
       this.widgetLink.setAttribute('class', this.classNames.join(' '));

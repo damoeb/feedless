@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NotebookDetailsPage } from './notebook-details.page';
-import { AppTestModule } from '../../app-test.module';
+import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { NotebookDetailsPageModule } from './notebook-details.module';
 import { UntoldNotesProductModule } from '../../products/untold-notes/untold-notes-product.module';
 
@@ -13,7 +13,10 @@ describe('NotebookDetailsDetailsPage', () => {
       imports: [
         NotebookDetailsPageModule,
         UntoldNotesProductModule,
-        AppTestModule.withDefaults(),
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockRepositories(apolloMockController),
+        }),
       ],
     }).compileComponents();
 

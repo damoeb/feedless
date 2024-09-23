@@ -2,8 +2,8 @@
 <ion-content>
   <h2 class="ion-padding-horizontal">RSS Feed Builder</h2>
   <app-feed-builder
-    [hideSearchBar]="false"
     (selectedFeedChanged)="handleFeed($event)"
     (selectedRepositoryChanged)="handleRepository($event)"
+    [hideSearchBar]="false"
   ></app-feed-builder>
 </ion-content>

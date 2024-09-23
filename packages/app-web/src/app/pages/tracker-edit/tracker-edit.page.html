@@ -1,9 +1,13 @@
 <app-feedless-header></app-feedless-header>
 <ion-content>
-  <div class="viewport" [ngClass]="{'show-errors': showErrors}">
+  <div [ngClass]="{'show-errors': showErrors}" class="viewport">
     <h2 class="ion-padding-horizontal">Page Tracker Builder</h2>
-    <p class="ion-padding pitch" *ngIf="!form.value.url">
-      Feedless allows you to monitor changes on any website, whether it's a shift in pixels, markup or text. You can track changes to an entire webpage or just a specific section, and get notified as soon as something is updated. It’s a simple way to stay on top of updates without manually checking sites.
+    <p *ngIf="!form.value.url" class="ion-padding pitch">
+      Feedless allows you to monitor changes on any website, whether it's a
+      shift in pixels, markup or text. You can track changes to an entire
+      webpage or just a specific section, and get notified as soon as something
+      is updated. It’s a simple way to stay on top of updates without manually
+      checking sites.
     </p>
 
     <form>
@@ -13,17 +17,17 @@
             <ion-row>
               <ion-col size="12">
                 <app-searchbar
-                  [value]="form.value.url"
-                  placeholder="Enter a website: www.google.com"
-                  [color]="form.value.url.length > 0 ? undefined : 'primary'"
-                  buttonText="Go"
                   (querySubmit)="handleQuery($event)"
+                  [color]="form.value.url.length > 0 ? undefined : 'primary'"
+                  [value]="form.value.url"
+                  buttonText="Go"
+                  placeholder="Enter a website: www.google.com"
                 ></app-searchbar>
               </ion-col>
             </ion-row>
-            <div *ngIf="hasUrl"
-                 style="position: relative">
+            <div *ngIf="hasUrl" style="position: relative">
               <div
+                *ngIf="isLoading"
                 style="
                   position: absolute;
                   width: 100%;
@@ -31,15 +35,14 @@
                   cursor: progress;
                   z-index: 101;
                 "
-                *ngIf="isLoading"
               ></div>
               <ion-row>
                 <ion-col size="12">
                   <div class="website">
                     <app-interactive-website
+                      (loadingChange)="isLoading = $event"
                       *ngIf="sourceBuilder"
                       [showUrl]="false"
-                      (loadingChange)="isLoading = $event"
                       [sourceBuilder]="sourceBuilder"
                     ></app-interactive-website>
                   </div>
@@ -70,33 +73,33 @@
                                   placeholder="Action"
                                 >
                                   <ion-select-option value="click"
-                                    >Click</ion-select-option
-                                  >
+                                    >Click
+                                  </ion-select-option>
                                   <ion-select-option
+                                    [disabled]="true"
                                     value="header"
-                                    [disabled]="true"
-                                    >Header</ion-select-option
-                                  >
+                                    >Header
+                                  </ion-select-option>
                                   <ion-select-option
+                                    [disabled]="true"
                                     value="purge"
-                                    [disabled]="true"
-                                    >Purge</ion-select-option
-                                  >
+                                    >Purge
+                                  </ion-select-option>
                                   <ion-select-option
+                                    [disabled]="true"
                                     value="select"
-                                    [disabled]="true"
-                                    >Select</ion-select-option
-                                  >
+                                    >Select
+                                  </ion-select-option>
                                   <ion-select-option
+                                    [disabled]="true"
                                     value="type"
-                                    [disabled]="true"
-                                    >Type</ion-select-option
-                                  >
+                                    >Type
+                                  </ion-select-option>
                                   <ion-select-option
-                                    value="wait"
                                     [disabled]="true"
-                                    >Wait</ion-select-option
-                                  >
+                                    value="wait"
+                                    >Wait
+                                  </ion-select-option>
                                 </ion-select>
                               </div>
 
@@ -136,7 +139,7 @@
                 <ion-col size="5">
                   <ion-label class="ion-text-left">Compare type</ion-label>
                 </ion-col>
-                <ion-col size="7" class="ion-hide-md-down">
+                <ion-col class="ion-hide-md-down" size="7">
                   <ion-label class="ion-text-left">Compare by</ion-label>
                 </ion-col>
               </ion-row>
@@ -152,9 +155,12 @@
                     >
                       Visual
                     </ion-radio>
-                    <ion-radio [value]="GqlRecordField.Text" labelPlacement="end">
-                      Text</ion-radio
+                    <ion-radio
+                      [value]="GqlRecordField.Text"
+                      labelPlacement="end"
                     >
+                      Text
+                    </ion-radio>
                     <ion-radio
                       [value]="GqlRecordField.Markup"
                       labelPlacement="end"
@@ -170,14 +176,14 @@
                     placeholder="Compare Type"
                   >
                     <ion-select-option [value]="GqlRecordField.Pixel"
-                      >Visual</ion-select-option
-                    >
+                      >Visual
+                    </ion-select-option>
                     <ion-select-option [value]="GqlRecordField.Text"
-                      >Text</ion-select-option
-                    >
+                      >Text
+                    </ion-select-option>
                     <ion-select-option [value]="GqlRecordField.Markup"
-                      >Markup</ion-select-option
-                    >
+                      >Markup
+                    </ion-select-option>
                   </ion-select>
                 </ion-col>
                 <ion-col
@@ -186,30 +192,30 @@
                   style="align-items: end"
                 >
                   <ion-select
+                    *ngIf="form.value.compareType === GqlRecordField.Pixel"
                     [formControl]="form.controls.screen"
                     fill="outline"
-                    *ngIf="form.value.compareType === GqlRecordField.Pixel"
                     interface="popover"
                     placeholder="Screen"
                   >
                     <ion-select-option [value]="screenArea"
-                      >Area</ion-select-option
-                    >
+                      >Area
+                    </ion-select-option>
                     <ion-select-option [value]="screenPage"
-                      >All page</ion-select-option
-                    >
+                      >All page
+                    </ion-select-option>
                     <ion-select-option [value]="screenElement"
-                      >Element</ion-select-option
-                    >
+                      >Element
+                    </ion-select-option>
                   </ion-select>
 
                   <ion-button
                     (click)="pickXPath()"
                     *ngIf="form.value.compareType !== GqlRecordField.Pixel || form.value.screen === screenElement"
-                    class="ion-margin-end"
                     [color]="form.controls.elementXpath.invalid ? 'primary' : 'light'"
+                    class="ion-margin-end"
                   >
-                    {{getXPathLabel(form.controls.elementXpath)}}
+                    {{ getXPathLabel(form.controls.elementXpath) }}
                   </ion-button>
 
                   <ion-button
@@ -217,7 +223,7 @@
                     *ngIf="form.controls.areaBoundingBox.enabled"
                     [color]="form.controls.areaBoundingBox.invalid ? 'primary' : 'light'"
                   >
-                    {{getBoundingBoxLabel(form.controls.areaBoundingBox)}}
+                    {{ getBoundingBoxLabel(form.controls.areaBoundingBox) }}
                   </ion-button>
 
                   <ion-select
@@ -226,16 +232,19 @@
                     interface="popover"
                     placeholder="Trigger"
                   >
-                    <ion-select-option [value]="0">Any change</ion-select-option>
-                    <ion-select-option [value]="0.01">Tiny 1%</ion-select-option>
+                    <ion-select-option [value]="0"
+                      >Any change
+                    </ion-select-option>
+                    <ion-select-option [value]="0.01"
+                      >Tiny 1%
+                    </ion-select-option>
                     <ion-select-option [value]="0.1"
-                    >Medium 10%</ion-select-option
-                    >
+                      >Medium 10%
+                    </ion-select-option>
                     <ion-select-option [value]="0.25"
-                    >Major 25%</ion-select-option
-                    >
+                      >Major 25%
+                    </ion-select-option>
                   </ion-select>
-
                 </ion-col>
               </ion-row>
 
@@ -248,17 +257,17 @@
                 <ion-col size="12" size-md="6">
                   <ion-select
                     [formControl]="form.controls.screen"
-                    fill="outline"
                     [multiple]="true"
+                    fill="outline"
                     interface="popover"
                     placeholder="Screen"
                   >
                     <ion-select-option [value]="screenArea"
-                    >Area</ion-select-option
-                    >
+                      >Area
+                    </ion-select-option>
                     <ion-select-option [value]="screenPage"
-                    >All page</ion-select-option
-                    >
+                      >All page
+                    </ion-select-option>
                   </ion-select>
                 </ion-col>
                 <ion-col size="12" size-md="6">
@@ -271,71 +280,70 @@
                     <ion-select-option
                       [disabled]="isThrottled"
                       value="0 */15 * * * *"
-                    >Every 15 min
+                      >Every 15 min
                     </ion-select-option>
                     <ion-select-option
                       [disabled]="isThrottled"
                       value="0 */30 * * * *"
-                    >Every 30 min
+                      >Every 30 min
                     </ion-select-option>
                     <ion-select-option
                       [disabled]="isThrottled"
                       value="0 0 * * * *"
-                    >Every hour
+                      >Every hour
                     </ion-select-option>
                     <ion-select-option
                       [disabled]="isThrottled"
                       value="0 0 */8 * * *"
-                    >Every 6 hours
+                      >Every 6 hours
                     </ion-select-option>
                     <ion-select-option
                       [disabled]="isThrottled"
                       value="0 0 */12 * * *"
-                    >Every 12 hours
+                      >Every 12 hours
                     </ion-select-option>
                     <ion-select-option value="0 0 0 * * *"
-                    >Every Day</ion-select-option
-                    >
+                      >Every Day
+                    </ion-select-option>
                     <ion-select-option value="0 0 0 * * 0"
-                    >Every Week</ion-select-option
-                    >
+                      >Every Week
+                    </ion-select-option>
                   </ion-select>
                 </ion-col>
               </ion-row>
 
-
-<!--            <ion-row class="ion-margin-top">-->
-<!--              <ion-col>-->
-<!--                <ion-label> Send Notification</ion-label>-->
-<!--              </ion-col>-->
-<!--            </ion-row>-->
-<!--            <ion-row>-->
-<!--              <ion-col size="6">-->
-<!--                <ion-input-->
-<!--                  [formControl]="form.controls.email"-->
-<!--                  fill="outline"-->
-<!--                  class="cy-email-input"-->
-<!--                  placeholder="email@domain.com"-->
-<!--                  type="email"-->
-<!--                ></ion-input>-->
-<!--              </ion-col>-->
-<!--              <ion-col size="6">-->
-<!--                <ion-input-->
-<!--                  [formControl]="form.controls.subject"-->
-<!--                  fill="outline"-->
-<!--                  class="cy-subject-input"-->
-<!--                  placeholder="Subject"-->
-<!--                  type="text"-->
-<!--                ></ion-input>-->
-<!--              </ion-col>-->
-<!--            </ion-row>-->
+              <!--            <ion-row class="ion-margin-top">-->
+              <!--              <ion-col>-->
+              <!--                <ion-label> Send Notification</ion-label>-->
+              <!--              </ion-col>-->
+              <!--            </ion-row>-->
+              <!--            <ion-row>-->
+              <!--              <ion-col size="6">-->
+              <!--                <ion-input-->
+              <!--                  [formControl]="form.controls.email"-->
+              <!--                  fill="outline"-->
+              <!--                  class="cy-email-input"-->
+              <!--                  placeholder="email@domain.com"-->
+              <!--                  type="email"-->
+              <!--                ></ion-input>-->
+              <!--              </ion-col>-->
+              <!--              <ion-col size="6">-->
+              <!--                <ion-input-->
+              <!--                  [formControl]="form.controls.subject"-->
+              <!--                  fill="outline"-->
+              <!--                  class="cy-subject-input"-->
+              <!--                  placeholder="Subject"-->
+              <!--                  type="text"-->
+              <!--                ></ion-input>-->
+              <!--              </ion-col>-->
+              <!--            </ion-row>-->
               <ion-row>
                 <ion-col>
                   <ion-button
                     (click)="startMonitoring()"
-                    expand="block"
                     [disabled]="form.invalid"
                     class="cy-start-monitoring-button"
+                    expand="block"
                   >
                     Create Tracker
                   </ion-button>

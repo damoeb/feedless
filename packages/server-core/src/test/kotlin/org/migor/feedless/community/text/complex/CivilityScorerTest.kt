@@ -18,8 +18,7 @@ class CivilityScorerTest {
     val languageService = LanguageService()
     languageService.postConstruct()
 
-    civilityScorer = CivilityScorer()
-    civilityScorer.languageService = languageService
+    civilityScorer = CivilityScorer(languageService)
     civilityScorer.postConstruct()
 
 //        val inputStreamFactory: InputStreamFactory =

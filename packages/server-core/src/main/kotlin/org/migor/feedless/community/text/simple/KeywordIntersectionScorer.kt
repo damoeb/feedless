@@ -9,25 +9,19 @@ import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.PartOfSpeechService
 import org.migor.feedless.community.StemmerService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class KeywordIntersectionScorer {
+class KeywordIntersectionScorer(
+  private val partOfSpeechService: PartOfSpeechService,
+  private val languageService: LanguageService,
+  private val stemmerService: StemmerService
+) {
 
   private val log = LoggerFactory.getLogger(KeywordIntersectionScorer::class.simpleName)
-
-  @Autowired
-  lateinit var partOfSpeechService: PartOfSpeechService
-
-  @Autowired
-  lateinit var languageService: LanguageService
-
-  @Autowired
-  lateinit var stemmerService: StemmerService
 
   private var spline: PolynomialSplineFunction = createSplineInterpolator()
 

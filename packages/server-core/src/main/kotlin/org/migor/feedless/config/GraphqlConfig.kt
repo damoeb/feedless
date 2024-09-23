@@ -38,7 +38,8 @@ class GraphqlConfig {
 }
 
 class DgsCustomContext {
-  var repositoryId: String? = null
+  var repositoryId: UUID? = null
+  var documentId: UUID? = null
   var userId: UUID? = null
 }
 

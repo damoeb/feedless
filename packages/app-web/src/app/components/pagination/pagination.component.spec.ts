@@ -23,16 +23,17 @@ describe('PaginationComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         PaginationModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          apolloMockController
-            .mockQuery<GqlAgentsQuery, GqlAgentsQueryVariables>(Agents)
-            .and.resolveOnce(async () => {
-              return {
-                data: {
-                  agents: [],
-                },
-              };
-            });
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            apolloMockController
+              .mockQuery<GqlAgentsQuery, GqlAgentsQueryVariables>(Agents)
+              .and.resolveOnce(async () => {
+                return {
+                  data: {
+                    agents: [],
+                  },
+                };
+              }),
         }),
       ],
     }).compileComponents();

@@ -31,6 +31,7 @@ export class FeedBuilderModalComponent
   async handleFeed(feed: FeedWithRequest) {
     await this.modalCtrl.dismiss({ feed });
   }
+
   async handleRepository(repository: Repository) {
     await this.modalCtrl.dismiss({ repository });
   }

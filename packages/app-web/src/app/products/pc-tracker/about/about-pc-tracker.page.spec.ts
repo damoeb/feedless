@@ -18,8 +18,9 @@ describe('AboutPcTrackerPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         AboutPcTrackerModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockRepositories(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockRepositories(apolloMockController),
         }),
       ],
     }).compileComponents();

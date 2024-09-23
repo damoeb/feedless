@@ -11,7 +11,6 @@ import org.migor.feedless.community.text.complex.QualityWeights
 import org.migor.feedless.community.text.complex.RelevanceScorer
 import org.migor.feedless.community.text.complex.RelevanceWeights
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -24,21 +23,14 @@ data class ScoreWeights(
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class ScoreService {
+class ScoreService(
+  private val civilityScorer: CivilityScorer,
+  private val qualityScorer: QualityScorer,
+  private val relevanceScorer: RelevanceScorer,
+  private val originalityScorer: OriginalityScorer
+) {
 
   private val log = LoggerFactory.getLogger(ScoreService::class.simpleName)
-
-  @Autowired
-  private lateinit var civilityScorer: CivilityScorer
-
-  @Autowired
-  private lateinit var qualityScorer: QualityScorer
-
-  @Autowired
-  private lateinit var relevanceScorer: RelevanceScorer
-
-  @Autowired
-  private lateinit var originalityScorer: OriginalityScorer
 
   suspend fun score(comment: CommentEntity, weights: ScoreWeights): Double {
     return arrayOf(

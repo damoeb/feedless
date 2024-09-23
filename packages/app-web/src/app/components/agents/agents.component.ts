@@ -40,6 +40,7 @@ export class AgentsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
+
   fromNow = relativeTimeOrElse;
 }
 

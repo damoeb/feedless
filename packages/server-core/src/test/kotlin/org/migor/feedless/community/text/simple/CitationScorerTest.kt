@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
-import org.migor.feedless.community.TokenizerService
 import org.migor.feedless.repository.any
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -25,11 +24,7 @@ class CitationScorerTest {
 
       commentGraphService = mock(CommentGraphService::class.java)
 
-      val tokenizerService = TokenizerService()
-      tokenizerService.postConstruct()
-
-      scorer = CitationScorer()
-      scorer.commentGraphService = commentGraphService
+      scorer = CitationScorer(commentGraphService)
 
       val parent = mock(CommentEntity::class.java)
       Mockito.`when`(parent.text)

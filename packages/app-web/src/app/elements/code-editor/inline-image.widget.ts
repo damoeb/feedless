@@ -62,8 +62,9 @@ export const inlineImagePlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged)
+      if (update.docChanged || update.viewportChanged) {
         this.decorations = inlineImages(update.view);
+      }
     }
   },
   {

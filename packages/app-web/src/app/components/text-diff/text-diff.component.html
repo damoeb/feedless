@@ -1,16 +1,16 @@
 <div class="text-diff">
   <app-code-editor
-    [readOnly]="true"
-    [markdownControls]="false"
     [lineWrapping]="false"
+    [markdownControls]="false"
+    [readOnly]="true"
     [text]="textBefore"
   ></app-code-editor>
   <app-code-editor
-    [readOnly]="true"
     #diffEditor
-    [markdownControls]="false"
     [highlightedLines]="highlightedLines"
     [lineWrapping]="false"
+    [markdownControls]="false"
+    [readOnly]="true"
     [text]="textAfter"
   ></app-code-editor>
 </div>

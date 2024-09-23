@@ -35,7 +35,6 @@ import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -47,24 +46,15 @@ private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class FeedParserService {
+class FeedParserService(
+  private val propertyService: PropertyService,
+  private val filterPlugin: CompositeFilterPlugin,
+  private val conditionalTagPlugin: ConditionalTagPlugin,
+  private val httpService: HttpService,
+  private val scrapeService: ScrapeService
+) {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var filterPlugin: CompositeFilterPlugin
-
-  @Autowired
-  private lateinit var conditionalTagPlugin: ConditionalTagPlugin
-
-  @Autowired
-  private lateinit var httpService: HttpService
-
-  @Autowired
-  private lateinit var scrapeService: ScrapeService
 
   private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
     XmlFeedParser(),

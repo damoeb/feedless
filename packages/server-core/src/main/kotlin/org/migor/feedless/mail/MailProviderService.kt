@@ -8,19 +8,17 @@ import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.pipeline.plugins.MailProvider
 import org.migor.feedless.repository.RepositoryEntity
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 
 @Service
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
-class MailProviderService : MailProvider {
+class MailProviderService(
+  private val templateService: TemplateService
+) : MailProvider {
 
   private val log = LoggerFactory.getLogger(MailProviderService::class.simpleName)
-
-  @Autowired
-  private lateinit var templateService: TemplateService
 
   override fun provideDocumentMail(
     document: DocumentEntity,

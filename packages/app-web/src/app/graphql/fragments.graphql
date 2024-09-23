@@ -270,6 +270,7 @@ fragment RecordFragment on Record {
   imageUrl
   createdAt
   publishedAt
+  updatedAt
   startingAt
   tags
   latLng {

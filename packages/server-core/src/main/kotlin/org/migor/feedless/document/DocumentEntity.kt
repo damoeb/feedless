@@ -241,6 +241,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): Record {
     title = title,
     text = text,
     createdAt = createdAt.toMillis(),
+    updatedAt = updatedAt.toMillis(),
     latLng = latLon?.let {
       GeoPoint(
         lat = it.x,

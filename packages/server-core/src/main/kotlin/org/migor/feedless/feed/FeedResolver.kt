@@ -24,7 +24,6 @@ import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
@@ -35,12 +34,11 @@ import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.scrape} & ${AppLayer.api}")
-class FeedQueryResolver {
+class FeedQueryResolver(
+  private val feedParserService: FeedParserService
+) {
 
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var feedParserService: FeedParserService
 
   @Throttled
   @DgsQuery
@@ -106,6 +104,7 @@ fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         title = it.title,
         text = it.text,
         publishedAt = it.publishedAt.toMillis(),
+        updatedAt = it.publishedAt.toMillis(),
         startingAt = it.startingAt?.toMillis(),
         latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
         createdAt = LocalDateTime.now().toMillis(),

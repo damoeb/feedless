@@ -11,15 +11,15 @@
 
 <ion-content>
   <app-searchbar
-    placeholder="Enter address to search or lat/long point like `47.386740, 8.453995`"
     (querySubmit)="searchAddress($event)"
+    placeholder="Enter address to search or lat/long point like `47.386740, 8.453995`"
   ></app-searchbar>
   <ion-list>
     <ion-item
-      *ngIf="latLon"
-      color="primary"
       (click)="pickLatLon()"
+      *ngIf="latLon"
       [button]="true"
+      color="primary"
     >
       Use point {{ latLon.lat }}, {{ latLon.lon }}
     </ion-item>

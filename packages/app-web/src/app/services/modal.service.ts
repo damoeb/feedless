@@ -1,17 +1,32 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FeedBuilderModalComponent, FeedBuilderModalComponentProps } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { FeedBuilderModalComponentExitRole, FeedOrRepository } from '../components/feed-builder/feed-builder.component';
-import { RepositoryModalComponent, RepositoryModalComponentProps } from '../modals/repository-modal/repository-modal.component';
+import {
+  FeedBuilderModalComponent,
+  FeedBuilderModalComponentProps,
+} from '../modals/feed-builder-modal/feed-builder-modal.component';
+import {
+  FeedBuilderModalComponentExitRole,
+  FeedOrRepository,
+} from '../components/feed-builder/feed-builder.component';
+import {
+  RepositoryModalComponent,
+  RepositoryModalComponentProps,
+} from '../modals/repository-modal/repository-modal.component';
 import {
   TrackerEditModalComponent,
-  TrackerEditModalComponentProps
+  TrackerEditModalComponentProps,
 } from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
-import { TagsModalComponent, TagsModalComponentProps } from '../modals/tags-modal/tags-modal.component';
+import {
+  TagsModalComponent,
+  TagsModalComponentProps,
+} from '../modals/tags-modal/tags-modal.component';
 import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
 import { OsmMatch } from './open-street-map.service';
-import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../modals/code-editor-modal/code-editor-modal.component';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -19,7 +34,7 @@ export enum ModalName {
   codeEditor = 'CodeEditor',
   tagEditor = 'TagEditor',
   feedBuilder = 'FeedBuilder',
-  editTracker = 'EditTracker'
+  editTracker = 'EditTracker',
 }
 
 @Injectable({
@@ -51,6 +66,7 @@ export class ModalService {
     });
     await modal.present();
     const { data, role } = await modal.onDidDismiss<FeedOrRepository>();
+    await this.updateUrlParams();
 
     if (overwriteHandler) {
       await overwriteHandler(data, role);
@@ -79,6 +95,7 @@ export class ModalService {
     });
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
+    await this.updateUrlParams();
     return data;
   }
 
@@ -94,6 +111,7 @@ export class ModalService {
     });
     await modal.present();
     const { data } = await modal.onDidDismiss();
+    await this.updateUrlParams()
     return data;
   }
 
@@ -121,6 +139,7 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<OsmMatch>();
+    await this.updateUrlParams()
     return response.data;
   }
 
@@ -132,6 +151,8 @@ export class ModalService {
     });
 
     await modal.present();
+    await modal.onDidDismiss();
+    await this.updateUrlParams()
   }
 
   async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {
@@ -143,15 +164,17 @@ export class ModalService {
     });
 
     await modal.present();
+    await modal.onDidDismiss();
+    await this.updateUrlParams()
   }
 
-  private async updateUrlParams(modal: ModalName) {
+  private async updateUrlParams(modal: ModalName|undefined = undefined) {
     await this.router.navigate(this.activatedRoute.snapshot.url, {
-      queryParams: {
+      queryParams: modal ? {
         modal,
-      },
+      } : {},
       relativeTo: this.activatedRoute,
-      queryParamsHandling: 'merge',
+      queryParamsHandling: modal ? 'merge' : undefined,
       replaceUrl: true,
     });
   }

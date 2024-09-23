@@ -26,6 +26,7 @@ import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -66,6 +67,7 @@ import java.time.LocalDateTime
   MockBean(RepositoryHarvester::class),
   MockBean(AttachmentDAO::class),
   MockBean(GroupService::class),
+  MockBean(PermissionService::class),
 )
 @Testcontainers
 class IntegrationTest {

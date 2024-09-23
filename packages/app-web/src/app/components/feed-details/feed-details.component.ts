@@ -1,10 +1,39 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { GqlFeedlessPlugins, GqlHarvest, GqlProductCategory, GqlRecordField, GqlVisibility } from '../../../generated/graphql';
-import { Annotation, Record, RepositoryFull, RepositorySource } from '../../graphql/types';
-import { RepositoryModalAccordion, RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlFeedlessPlugins,
+  GqlHarvest,
+  GqlProductCategory,
+  GqlRecordField,
+  GqlVisibility,
+} from '../../../generated/graphql';
+import {
+  Annotation,
+  Record,
+  RepositoryFull,
+  RepositorySource,
+} from '../../graphql/types';
+import {
+  RepositoryModalAccordion,
+  RepositoryModalComponentProps,
+} from '../../modals/repository-modal/repository-modal.component';
 import { ModalName, ModalService } from '../../services/modal.service';
-import { AlertController, ModalController, PopoverController, ToastController } from '@ionic/angular';
-import { FeedOrRepository, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  AlertController,
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular';
+import {
+  FeedOrRepository,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
 import { BubbleColor } from '../bubble/bubble.component';
@@ -105,10 +134,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         this.currentUserId = session.user?.id;
         this.assessIsOwner();
       }),
-      this.activatedRoute.queryParams.subscribe(queryParams => {
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.modal) {
           if (queryParams.modal === ModalName.editRepository) {
-            this.editRepository(queryParams.accordion ? [queryParams.accordion] : [])
+            this.editRepository(
+              queryParams.accordion ? [queryParams.accordion] : [],
+            );
           }
         }
       }),
@@ -131,7 +162,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
     this.repository = await this.repositoryService.getRepositoryById(
       this.repositoryId,
-      this.sessionService.getUserId(),
       fetchPolicy,
     );
     if (this.repository.product === GqlProductCategory.VisualDiff) {

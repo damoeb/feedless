@@ -15,10 +15,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.RecordOrderByInput
+import org.migor.feedless.generated.types.RecordUniqueWhereInput
+import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
@@ -34,6 +37,7 @@ import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
@@ -63,7 +67,8 @@ class DocumentService(
   private val repositoryDAO: RepositoryDAO,
   private val planConstraintsService: PlanConstraintsService,
   private val documentPipelineJobDAO: DocumentPipelineJobDAO,
-  private val pluginService: PluginService
+  private val pluginService: PluginService,
+  private val permissionService: PermissionService
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
@@ -130,6 +135,7 @@ class DocumentService(
       where?.let {
         it.startedAt?.let { addDateConstraint(it, path(DocumentEntity::startingAt)) }
         it.createdAt?.let { addDateConstraint(it, path(DocumentEntity::createdAt)) }
+        it.updatedAt?.let { addDateConstraint(it, path(DocumentEntity::updatedAt)) }
         it.publishedAt?.let { addDateConstraint(it, path(DocumentEntity::publishedAt)) }
         it.latLng?.let {
           // https://postgis.net/docs/ST_Distance.html
@@ -220,8 +226,8 @@ class DocumentService(
           if (documentIds.`in` != null) {
             documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
           } else {
-            if (documentIds.equals != null) {
-              documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.equals))
+            if (documentIds.eq != null) {
+              documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.eq))
             } else {
               throw IllegalArgumentException("operation not supported")
             }
@@ -384,6 +390,46 @@ class DocumentService(
       documentDAO.countByRepositoryId(repositoryId)
     }
   }
+
+  suspend fun createDocument(data: CreateRecordInput): DocumentEntity {
+    val repositoryId = UUID.fromString(data.repositoryId.id)
+
+    val repository = withContext(Dispatchers.IO) {
+      repositoryDAO.findById(repositoryId).orElseThrow()
+    }
+    permissionService.canWrite(repository)
+
+    val document = DocumentEntity()
+    document.id = data.id?.let { UUID.fromString(data.id) } ?: UUID.randomUUID()
+    document.title = data.title
+    document.url = data.url
+    document.text = data.text!!
+    document.repositoryId = repositoryId
+    document.status = ReleaseStatus.released
+
+    return withContext(Dispatchers.IO) {
+      documentDAO.save(document)
+    }
+  }
+
+  suspend fun updateDocument(data: RecordUpdateInput, where: RecordUniqueWhereInput): DocumentEntity {
+    return withContext(Dispatchers.IO) {
+      val document = documentDAO.findById(UUID.fromString(where.id)).orElseThrow()
+      permissionService.canWrite(document)
+      data.url?.let {
+        document.url = it.set
+      }
+      data.text?.let {
+        document.text = it.set
+      }
+      data.title?.let {
+        document.title = it.set
+      }
+      document.updatedAt = LocalDateTime.now()
+      documentDAO.save(document)
+    }
+  }
+
 //  private suspend fun forwardToMail(document: DocumentEntity, repository: RepositoryEntity) {
 //    val mailForwards = withContext(Dispatchers.IO) {
 //      mailForwardDAO.findAllByRepositoryId(repository.id)

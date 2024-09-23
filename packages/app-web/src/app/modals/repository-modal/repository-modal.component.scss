@@ -44,6 +44,7 @@ ion-select {
 
 ion-select {
   min-height: 45px;
+
   &::part(container) {
     width: 100%;
   }
@@ -61,9 +62,9 @@ ion-select {
   ion-input {
     --padding-start: 10px;
   }
+
   .ion-invalid {
-    --border-color: var(--ion-color-danger) !important
-  ;
+    --border-color: var(--ion-color-danger) !important;
   }
 }
 

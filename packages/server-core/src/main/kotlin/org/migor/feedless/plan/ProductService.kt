@@ -78,7 +78,7 @@ class ProductService {
 
   suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
     return withContext(Dispatchers.IO) {
-      data.id?.equals?.let {
+      data.id?.eq?.let {
         listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
       } ?: productDAO.findAllByPartOfOrPartOfIsNull(data.category!!.fromDto())
     }

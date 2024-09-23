@@ -9,6 +9,7 @@ ion-content::part(scroll) {
     var(--app-background)
   );
   background: var(--background);
+
   ion-item {
     //--background: color-mix(in srgb, var(--app-foreground) 10%, var(--app-background));
   }
@@ -27,6 +28,7 @@ ion-content::part(scroll) {
 
     &:not(:has(ion-accordion.accordion-expanded)) {
       box-shadow: 0px 0px 2px 1px rgba(var(--app-foreground-rgb), 0.75);
+
       ion-item {
         --background: color-mix(
           in srgb,
@@ -35,8 +37,10 @@ ion-content::part(scroll) {
         );
       }
     }
+
     &:has(ion-accordion.accordion-expanded) {
       box-shadow: 0px 0px 2px 1px rgba(var(--app-foreground-rgb), 0.25);
+
       & > ion-item {
         --background: color-mix(
           in srgb,
@@ -59,6 +63,7 @@ ion-content::part(scroll) {
 
   ion-input {
     --color: var(--ion-color-medium);
+
     &.has-value {
       --color: var(--ion-color-dark);
     }
@@ -77,6 +82,7 @@ ion-content::part(scroll) {
 
 .helper-text {
   color: var(--ion-color-medium);
+
   &--changed {
     color: var(--ion-color-primary);
   }

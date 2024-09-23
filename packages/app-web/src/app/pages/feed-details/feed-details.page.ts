@@ -1,18 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import { dateFormat, SessionService } from '../../services/session.service';
+import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Title } from '@angular/platform-browser';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -22,21 +16,19 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = true;
+  repository: RepositoryFull;
+  feedUrl: string;
+  fromNow = relativeTimeOrElse;
+  protected readonly dateFormat = dateFormat;
+  protected errorMessage: string;
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  repository: RepositoryFull;
-
-  protected readonly dateFormat = dateFormat;
-  feedUrl: string;
   private repositoryId: string;
-
-  protected errorMessage: string;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly sessionService: SessionService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly serverConfig: ServerConfigService,
     private readonly repositoryService: RepositoryService,
   ) {}
@@ -65,9 +57,8 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     try {
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
-        this.sessionService.getUserId(),
       );
-      this.titleService.setTitle(this.repository.title);
+      this.appConfig.setPageTitle(this.repository.title);
       this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
     } catch (e) {
       this.errorMessage = e.message;
@@ -76,6 +67,4 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     this.busy = false;
     this.changeRef.detectChanges();
   }
-
-  fromNow = relativeTimeOrElse;
 }

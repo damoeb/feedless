@@ -11,8 +11,9 @@ describe('FeedBuilderPage', () => {
     TestBed.configureTestingModule({
       imports: [
         FeedBuilderPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockRepositories(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockRepositories(apolloMockController),
         }),
       ],
     }).compileComponents();

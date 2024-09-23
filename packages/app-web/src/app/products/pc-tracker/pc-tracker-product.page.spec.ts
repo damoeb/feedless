@@ -19,8 +19,9 @@ describe('PcTrackerProductPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         PcTrackerProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

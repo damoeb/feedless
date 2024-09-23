@@ -10,22 +10,42 @@
       <ion-col size="6">
         <h3>Feeds</h3>
       </ion-col>
-      <ion-col size="6" class="ion-align-self-center">
+      <ion-col class="ion-align-self-center" size="6">
         <ion-buttons class="ion-justify-content-end">
-<!--          <ion-button title="table"-->
-<!--                      (click)="viewMode = viewModeTable"-->
-<!--                      [color]="viewMode === viewModeTable ? 'dark' : 'medium'">-->
-<!--            Table-->
-<!--          </ion-button>-->
-<!--          <ion-text color="medium">|</ion-text>-->
-<!--          <ion-button title="list"-->
-<!--                      (click)="viewMode = viewModeList"-->
-<!--                      [color]="viewMode === viewModeList ? 'dark' : 'medium'">-->
-<!--            List-->
-<!--          </ion-button>-->
+          <!--          <ion-button title="table"-->
+          <!--                      (click)="viewMode = viewModeTable"-->
+          <!--                      [color]="viewMode === viewModeTable ? 'dark' : 'medium'">-->
+          <!--            Table-->
+          <!--          </ion-button>-->
+          <!--          <ion-text color="medium">|</ion-text>-->
+          <!--          <ion-button title="list"-->
+          <!--                      (click)="viewMode = viewModeList"-->
+          <!--                      [color]="viewMode === viewModeList ? 'dark' : 'medium'">-->
+          <!--            List-->
+          <!--          </ion-button>-->
 
-<!--          <app-import-button></app-import-button>-->
-          <ion-button routerLink="/feed-builder" color="primary" fill="solid">
+          <!--          <app-import-button></app-import-button>-->
+          <input
+            #filePicker
+            (change)="uploadRepositories($event)"
+            style="display: none"
+            accept="application/json"
+            type="file"
+          />
+          <ion-button (click)="filePicker.click()"
+                      appDev
+                      color="medium"
+                      title="Upload feeds">
+            <ion-icon name="cloud-upload-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button (click)="downloadRepositories()"
+                      color="medium"
+                      title="Download feeds">
+            <ion-icon name="cloud-download-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button color="primary"
+                      fill="solid"
+                      routerLink="/feed-builder">
             Create Feed
           </ion-button>
         </ion-buttons>
@@ -39,11 +59,13 @@
     ></ion-progress-bar>
 
     <ng-container *ngIf="!loading">
-      <app-table *ngIf="viewMode === viewModeTable && repositories"
-                 [columns]="['title', 'lastUpdatedAt']"
-                 [rows]="repositories"></app-table>
+      <app-table
+        *ngIf="viewMode === viewModeTable && repositories"
+        [columns]="['title', 'lastUpdatedAt']"
+        [rows]="repositories"
+      ></app-table>
 
-      <ion-list style="border-radius: 8px" *ngIf="viewMode === viewModeList">
+      <ion-list *ngIf="viewMode === viewModeList" style="border-radius: 8px">
         <ion-item *ngIf="repositories?.length === 0">
           <p><em>Empty</em></p>
         </ion-item>
@@ -51,7 +73,9 @@
           <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
           <ion-label>
             <h2>
-              <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge"> {{ feed.title }} </a>
+              <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge">
+                {{ feed.title }}
+              </a>
               <ion-chip *ngIf="isPrivate(feed)">Private</ion-chip>
             </h2>
             <p>{{ feed.description }}</p>
@@ -65,13 +89,12 @@
           </div>
         </ion-item>
       </ion-list>
-
     </ng-container>
 
     <app-pagination
+      (pageChange)="fetchFeeds($event)"
       [currentPage]="currentPage"
       [isLastPage]="isLastPage"
-      (pageChange)="fetchFeeds($event)"
     ></app-pagination>
   </div>
 </ion-content>

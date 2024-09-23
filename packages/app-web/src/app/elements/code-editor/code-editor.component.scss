@@ -22,6 +22,7 @@
   //border: 2px solid var(--app-border-color);
   position: relative;
   overflow-y: auto;
+  display: flex;
   flex: 1;
   background: var(--app-background);
 
@@ -35,10 +36,21 @@
 }
 
 .editor {
+  flex: 1;
+  display: flex;
+
   .cm-editor.cm-focused .cm-selectionBackground,
   .cm-editor .cm-selectionBackground,
   ::selection {
     background: var(--ion-color-primary) !important;
+  }
+
+  .cm-editor {
+    flex: 1;
+  }
+
+  .cm-scroller {
+    scrollbar-width: thin;
   }
 
   &--ctrl-pressed {
@@ -92,6 +104,7 @@ ion-toolbar {
 .cm-property-name {
   color: rgba(var(--ion-color-tertiary-rgb), 0.8);
 }
+
 .cm-attribute-name {
   color: rgba(var(--ion-color-danger-rgb), 0.8);
 }

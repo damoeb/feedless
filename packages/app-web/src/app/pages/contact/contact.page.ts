@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-contact',
@@ -7,7 +7,7 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./contact.page.scss'],
 })
 export class ContactPage {
-  constructor(titleService: Title) {
-    titleService.setTitle('Contact');
+  constructor(appConfig: AppConfigService) {
+    appConfig.setPageTitle('Contact');
   }
 }

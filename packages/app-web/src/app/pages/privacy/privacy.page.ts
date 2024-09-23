@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-privacy',
@@ -7,7 +7,7 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./privacy.page.scss'],
 })
 export class PrivacyPage {
-  constructor(titleService: Title) {
-    titleService.setTitle('Privacy');
+  constructor(appConfig: AppConfigService) {
+    appConfig.setPageTitle('Privacy');
   }
 }

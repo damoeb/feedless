@@ -9,7 +9,34 @@ query recordByIds($data: RecordsInput!) {
     ...RecordFragment
   }
 }
+query fullRecordByIds($data: RecordsInput!) {
+  records(data: $data) {
+    ...RecordFragment
+    annotations {
+      votes {
+        id
+        upVote {
+          value
+        }
+        text {
+          fromChar
+          toChar
+        }
+      }
+    }
+  }
+}
 
 mutation deleteRecordsById($data: DeleteRecordsInput!) {
   deleteRecords(data: $data)
+}
+
+mutation createRecords($records: [CreateRecordInput!], $upload: Upload) {
+  createRecords(records: $records, upload: $upload) {
+    ...RecordFragment
+  }
+}
+
+mutation updateRecord($data: UpdateRecordInput!) {
+  updateRecord(data: $data)
 }

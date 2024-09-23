@@ -8,7 +8,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-payment-page',
@@ -22,12 +22,12 @@ export class PaymentPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly serverConfig: ServerConfigService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Payment');
+    this.appConfig.setPageTitle('Payment');
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {

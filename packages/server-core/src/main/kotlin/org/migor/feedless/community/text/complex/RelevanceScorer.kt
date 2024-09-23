@@ -6,7 +6,6 @@ import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.text.simple.KeywordIntersectionScorer
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -14,16 +13,12 @@ data class RelevanceWeights(val context: Double)
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class RelevanceScorer {
+class RelevanceScorer(
+  private val keywordIntersectionScorer: KeywordIntersectionScorer,
+  private val commentGraphService: CommentGraphService
+) {
 
   private val log = LoggerFactory.getLogger(RelevanceScorer::class.simpleName)
-
-  @Autowired
-  private lateinit var keywordIntersectionScorer: KeywordIntersectionScorer
-
-  @Autowired
-  lateinit var commentGraphService: CommentGraphService
-
 
   suspend fun relevance(comment: CommentEntity, w: RelevanceWeights): Double {
     /*

@@ -12,8 +12,9 @@ describe('RssBuilderProductPage', () => {
     TestBed.configureTestingModule({
       imports: [
         UntoldNotesProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

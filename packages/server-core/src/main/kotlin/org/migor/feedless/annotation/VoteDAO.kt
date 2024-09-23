@@ -23,5 +23,5 @@ interface VoteDAO : JpaRepository<VoteEntity, UUID> {
   fun countUpVotesIsTrueByRepositoryId(repositoryId: UUID): Int
   fun countDownVoteIsTrueByRepositoryId(repositoryId: UUID): Int
   fun findAllByOwnerIdAndRepositoryId(userId: UUID, repositoryId: UUID): List<VoteEntity>
-  fun deleteByIdAndOwnerId(annotationId: UUID, ownerId: UUID)
+  fun findAllByOwnerIdAndDocumentId(userId: UUID, documentId: UUID): List<VoteEntity>
 }

@@ -1,10 +1,10 @@
 <ion-header style="box-shadow: none">
   <ion-toolbar style="--background: transparent">
     <ion-searchbar
-      search-icon="location-outline"
-      placeholder="Postleitzahl oder Ortschaft"
-      [formControl]="locationFc"
       (ionFocus)="isLocationFocussed = true"
+      [formControl]="locationFc"
+      placeholder="Postleitzahl oder Ortschaft"
+      search-icon="location-outline"
       style="
         max-width: 700px;
         margin-left: auto;
@@ -28,8 +28,9 @@
 </ion-header>
 
 <ion-content>
-  <ion-spinner name="dots" *ngIf="loadingCalendar"></ion-spinner>
+  <ion-spinner *ngIf="loadingCalendar" name="dots"></ion-spinner>
   <div
+    *ngIf="!loadingCalendar"
     style="
       width: 700px;
       margin-left: auto;
@@ -37,26 +38,25 @@
       display: flex;
       flex-direction: column;
     "
-    *ngIf="!loadingCalendar"
   >
     <ion-list *ngIf="isLocationFocussed" class="ion-margin-bottom">
       <ion-item
-        [button]="true"
-        *ngIf="!locationNotAvailable"
         (click)="getCurrentLocation()"
+        *ngIf="!locationNotAvailable"
+        [button]="true"
       >
-        <ion-icon name="locate-outline" class="ion-margin-end"></ion-icon>
+        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>
         Your Location
       </ion-item>
       <ion-item *ngIf="locationSuggestions.length === 0">
         Tippe deine PLZ oder Ortschaft
       </ion-item>
       <ion-item
-        *ngFor="let location of locationSuggestions"
         (click)="setLocation(location)"
+        *ngFor="let location of locationSuggestions"
         [button]="true"
       >
-        <ion-icon name="location-outline" class="ion-margin-end"></ion-icon>
+        <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>
         {{ getDisplayName(location) }}
       </ion-item>
     </ion-list>
@@ -64,10 +64,10 @@
     <ion-list>
       <ion-item>
         <ion-select
+          [formControl]="perimeterFc"
+          interface="popover"
           label="Umkreis"
           labelPlacement="start"
-          interface="popover"
-          [formControl]="perimeterFc"
         >
           <ion-select-option [value]="5">+5 Km</ion-select-option>
           <ion-select-option [value]="10">+10 Km</ion-select-option>
@@ -109,13 +109,13 @@
             {{ currentDateRef.format("YYYY") }}
 
             <ion-button
-              class="ion-margin-start"
-              size="small"
-              color="dark"
-              *ngIf="!isSame(currentDateRef, now, ['month'])"
               (click)="changeMonth(now)"
-              >Heute</ion-button
-            >
+              *ngIf="!isSame(currentDateRef, now, ['month'])"
+              class="ion-margin-start"
+              color="dark"
+              size="small"
+              >Heute
+            </ion-button>
           </div>
         </ion-title>
 
@@ -126,17 +126,16 @@
         </ion-buttons>
       </ion-toolbar>
 
-      <div class="calendar__body" *ngFor="let year of years | keyvalue">
+      <div *ngFor="let year of years | keyvalue" class="calendar__body">
         <ng-container *ngFor="let month of year.value | keyvalue">
           <div
-            class="day day--no-header no-background ion-text-center ion-text-uppercase"
             *ngFor="let day of filterFirstWeek(month.value)"
+            class="day day--no-header no-background ion-text-center ion-text-uppercase"
           >
             {{ day.day.format("ddd") }}
           </div>
           <div
             *ngFor="let day of month.value"
-            class="day"
             [ngClass]="{
               'day--today': day.today,
               'day--other': day.otherMonth,
@@ -148,8 +147,9 @@
               ]),
               'day--past': day.past,
             }"
+            class="day"
           >
-            <a href="javascript:void(0)" (click)="setCurrentDate(day.day)">
+            <a (click)="setCurrentDate(day.day)" href="javascript:void(0)">
               <div>
                 <h4 class="ion-text-center">
                   <span *ngIf="day.printMonth">
@@ -188,7 +188,6 @@
               <h3 class="ion-padding-top">
                 {{ place.place }}
                 <a
-                  title="Show on map"
                   [href]="
                     'https://www.openstreetmap.org/#map=14/' +
                     place.events[0].latLng.lat +
@@ -196,10 +195,11 @@
                     place.events[0].latLng.lon
                   "
                   target="_blank"
+                  title="Show on map"
                 >
                   <ion-icon name="location-outline"></ion-icon>
                 </a>
-                <ion-note> {{ placesGroup.distance }} Km entfernt </ion-note>
+                <ion-note> {{ placesGroup.distance }} Km entfernt</ion-note>
               </h3>
               <li
                 *ngFor="let event of place.events"

@@ -6,16 +6,15 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.WebToFeedTransformer
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URI
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class GenericFeedLocator {
-  @Autowired
-  private lateinit var webToFeedTransformer: WebToFeedTransformer
+class GenericFeedLocator(
+  private val webToFeedTransformer: WebToFeedTransformer
+) {
 
   suspend fun locateInDocument(
     document: Document,

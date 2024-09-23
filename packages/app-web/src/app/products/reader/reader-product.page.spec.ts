@@ -12,8 +12,9 @@ describe('ReaderProductPage', () => {
     TestBed.configureTestingModule({
       imports: [
         ReaderProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

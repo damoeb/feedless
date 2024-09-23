@@ -4,7 +4,7 @@
     <div class="flex__column">
       <h1>Checkout</h1>
 
-      <ion-spinner name="dots" *ngIf="!currentStep"></ion-spinner>
+      <ion-spinner *ngIf="!currentStep" name="dots"></ion-spinner>
 
       <ion-list class="ion-padding">
         <ng-container *ngIf="currentStep === 'email'">
@@ -15,14 +15,14 @@
             <ion-row class="ion-padding-horizontal">
               <ion-col size="11">
                 <ion-input
+                  [formControl]="formFg.controls.email"
                   aria-label=""
                   fill="outline"
-                  [formControl]="formFg.controls.email"
                   placeholder="Email address"
                 ></ion-input>
               </ion-col>
               <ion-col size="1">
-                <ion-button color="primary" expand="block" (click)="next()"
+                <ion-button (click)="next()" color="primary" expand="block"
                   >Next
                 </ion-button>
               </ion-col>
@@ -43,18 +43,18 @@
           </ion-list-header>
           <ion-row *ngFor="let product of products">
             <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
-            <ion-col push="4" size="4" class="ion-text-center"
-              >${{ getPrice(product) }}</ion-col
-            >
+            <ion-col class="ion-text-center" push="4" size="4"
+              >${{ getPrice(product) }}
+            </ion-col>
           </ion-row>
           <ion-row class="ion-margin-top">
             <ion-col push="4" size="4">
               <strong>Total incl. VAT</strong>
             </ion-col>
             <ion-col
+              class="ion-padding-vertical ion-text-center"
               push="4"
               size="4"
-              class="ion-padding-vertical ion-text-center"
               style="border-top: 1px solid var(--app-foreground)"
             >
               <strong>${{ getTotalPrice() }} </strong>
@@ -70,10 +70,10 @@
             </ion-col>
             <ion-col size="8">
               <ion-input
-                aria-label="First Name"
-                placeholder="Your first name"
                 [formControl]="formFg.controls.firstName"
+                aria-label="First Name"
                 fill="outline"
+                placeholder="Your first name"
               ></ion-input>
               <!--              <ion-note color="danger">Enter your name</ion-note>-->
             </ion-col>
@@ -84,10 +84,10 @@
             </ion-col>
             <ion-col size="8">
               <ion-input
-                aria-label="Last Name"
-                placeholder="Your last name"
                 [formControl]="formFg.controls.lastName"
+                aria-label="Last Name"
                 fill="outline"
+                placeholder="Your last name"
               ></ion-input>
             </ion-col>
           </ion-row>
@@ -97,9 +97,9 @@
             </ion-col>
             <ion-col size="8">
               <ion-input
+                [formControl]="formFg.controls.email"
                 aria-label="Email"
                 fill="outline"
-                [formControl]="formFg.controls.email"
                 placeholder="Email Adress"
               ></ion-input>
               <ion-note>Licenses will be send to this address</ion-note>
@@ -111,9 +111,9 @@
             </ion-col>
             <ion-col size="8">
               <ion-select
+                [formControl]="formFg.controls.country"
                 [multiple]="false"
                 fill="outline"
-                [formControl]="formFg.controls.country"
                 label="Your country of residence"
                 labelPlacement="start"
               >
@@ -131,15 +131,15 @@
             <h3>Payment Methods</h3>
           </ion-list-header>
           <ion-row>
-            <ion-col size="8" push="4">
+            <ion-col push="4" size="8">
               <div
-                class="payment-options"
                 [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}"
+                class="payment-options"
               >
                 <div
+                  (click)="formFg.controls.paymentMethod.setValue(option.method)"
                   *ngFor="let option of paymentOptions"
                   [ngClass]="{active: formFg.value.paymentMethod === option.method }"
-                  (click)="formFg.controls.paymentMethod.setValue(option.method)"
                 >
                   <h3>{{ option.title }}</h3>
                 </div>
@@ -148,10 +148,10 @@
           </ion-row>
 
           <ion-row class="ion-margin-top">
-            <ion-col size="8" push="4">
+            <ion-col push="4" size="8">
               <ion-checkbox
-                labelPlacement="end"
                 [formControl]="formFg.controls.acceptedTerms"
+                labelPlacement="end"
               >
                 I have read and agree to the terms and conditions
               </ion-checkbox>
@@ -161,9 +161,9 @@
           <ion-row class="ion-margin-top">
             <ion-col size="12">
               <ion-button
-                expand="block"
-                [disabled]="loading"
                 (click)="createBilling()"
+                [disabled]="loading"
+                expand="block"
               >
                 Buy
               </ion-button>

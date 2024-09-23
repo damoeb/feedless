@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { GqlSourceInput } from '../../../generated/graphql';
 import { ModalController } from '@ionic/angular';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -15,7 +22,8 @@ export type InteractiveWebsiteModalComponentProps = {
   styleUrls: ['./interactive-website-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InteractiveWebsiteModalComponent extends InteractiveWebsiteController
+export class InteractiveWebsiteModalComponent
+  extends InteractiveWebsiteController
   implements OnInit, OnDestroy, InteractiveWebsiteModalComponentProps
 {
   @Input({ required: true })
@@ -29,15 +37,15 @@ export class InteractiveWebsiteModalComponent extends InteractiveWebsiteControll
     public readonly scrapeService: ScrapeService,
     public readonly serverConfig: ServerConfigService,
   ) {
-    super()
+    super();
   }
 
   ngOnInit(): void {
-    this.initializeController()
+    this.initializeController();
   }
 
   ngOnDestroy(): void {
-    this.destroyController()
+    this.destroyController();
   }
 
   dismissModal() {
@@ -47,5 +55,4 @@ export class InteractiveWebsiteModalComponent extends InteractiveWebsiteControll
   applyChanges() {
     return this.modalCtrl.dismiss(this.sourceBuilder);
   }
-
 }

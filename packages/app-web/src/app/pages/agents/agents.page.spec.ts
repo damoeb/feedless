@@ -7,7 +7,6 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '../../app-test.module';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -17,11 +16,8 @@ describe('AgentsPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AgentsPageModule,
-        AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+      imports: [AgentsPageModule, AppTestModule.withDefaults()],
+      providers: [],
     }).compileComponents();
 
     await mockServerSettings(

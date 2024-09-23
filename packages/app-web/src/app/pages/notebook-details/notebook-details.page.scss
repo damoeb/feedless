@@ -22,14 +22,17 @@ ion-header {
     &.is-open {
       color: var(--ion-color-dark);
     }
+
     &.is-group {
       display: none;
       text-transform: uppercase;
       color: rgba(var(--ion-color-dark-rgb), 0.5);
+
       ion-label {
         font-size: x-small;
       }
     }
+
     &:not(.is-group) {
       color: rgba(var(--ion-color-dark-rgb), 0.7);
 
@@ -37,6 +40,7 @@ ion-header {
         ion-label {
           color: var(--ion-color-dark);
         }
+
         background: rgba(var(--ion-color-medium-rgb), 0.1);
       }
     }
@@ -62,9 +66,11 @@ mark {
 ion-searchbar {
   @include unless-control();
   --box-shadow: none;
+
   &.searchbar-has-focus {
     border-color: var(--app-border-color-focus);
   }
+
   --background: var(--app-body-background);
   background: var(--app-body-background);
   margin: auto;
@@ -102,8 +108,25 @@ ion-button.active {
     position: relative;
     overflow-x: auto;
   }
+
+  .grid {
+    flex: 1;
+    display: flex;
+
+    ion-card {
+      height: 200px;
+      width: 300px;
+      //border-radius: 1rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      &:hover {
+        border-color: rgba(var(--ion-color-primary-rgb), 0.5);
+      }
+    }
+  }
+
   .note {
-    flex: 0 1 600px;
+    flex: 0 1 650px;
     overflow-y: auto;
     //scrollbar-width: thin;
     //background: var(--app-background);
@@ -126,12 +149,16 @@ ion-button.active {
 
   .code-editor-wrapper {
     max-height: 80vh;
+    min-height: 400px;
+    display: flex;
     overflow: auto;
     border: 2px solid transparent;
+
     &.focussed {
       border-color: var(--ion-color-primary);
     }
   }
+
   //.all-notes {
   //  position: absolute;
   //  display: flex;

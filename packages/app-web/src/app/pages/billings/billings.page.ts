@@ -7,7 +7,7 @@ import {
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-billings-page',
@@ -18,15 +18,16 @@ import { Title } from '@angular/platform-browser';
 export class BillingsPage implements OnInit {
   busy = false;
   orders: Order[] = [];
+  fromNow = relativeTimeOrElse;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly orderService: OrderService,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Billings');
+    this.appConfig.setPageTitle('Billings');
     await this.fetchOrders();
   }
 
@@ -40,6 +41,4 @@ export class BillingsPage implements OnInit {
     this.orders.push(...orders);
     this.changeRef.detectChanges();
   }
-
-  fromNow = relativeTimeOrElse;
 }

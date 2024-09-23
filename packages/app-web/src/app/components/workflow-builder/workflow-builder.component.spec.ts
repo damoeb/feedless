@@ -12,8 +12,9 @@ describe('WorkflowBuilderComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         WorkflowBuilderModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockRepositories(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockRepositories(apolloMockController),
         }),
       ],
     }).compileComponents();

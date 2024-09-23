@@ -20,21 +20,17 @@ import org.migor.feedless.session.AuthService
 import org.migor.feedless.util.CryptUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
-class MailAuthResolver {
+class MailAuthResolver(
+  private val mailAuthenticationService: MailAuthenticationService,
+  private val authService: AuthService
+) {
 
   private val log = LoggerFactory.getLogger(MailAuthResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var mailAuthenticationService: MailAuthenticationService
-
-  @Autowired
-  private lateinit var authService: AuthService
 
   @DgsSubscription
   suspend fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> = coroutineScope {

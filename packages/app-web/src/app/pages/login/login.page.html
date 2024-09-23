@@ -15,42 +15,42 @@
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
   >
-    <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
-    <div style="width: 400px" *ngIf="!loading">
+    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+    <div *ngIf="!loading" style="width: 400px">
       <form
-        *ngIf="showUserPasswordLogin"
         (ngSubmit)="loginWithUserPassword(email.value, password.value)"
+        *ngIf="showUserPasswordLogin"
       >
         <h1 class="ion-margin-start">Login</h1>
         <ion-card-content>
           <ion-list>
             <ion-item>
               <ion-input
-                label="Email"
-                class="cy-email"
-                labelPlacement="start"
                 #email
+                class="cy-email"
+                label="Email"
+                labelPlacement="start"
               ></ion-input>
             </ion-item>
             <ion-item>
               <ion-input
-                label="Password"
-                class="cy-password"
-                labelPlacement="start"
                 #password
+                class="cy-password"
+                label="Password"
+                labelPlacement="start"
                 type="password"
               ></ion-input>
             </ion-item>
             <ion-item
-              [button]="true"
               (click)="loginWithUserPassword(email.value, password.value)"
-              color="primary"
+              [button]="true"
               class="ion-margin-top cy-login-button"
+              color="primary"
             >
               Login
             </ion-item>
             <ion-item *ngIf="errorMessage">
-              <ion-label color="danger">{{errorMessage}}</ion-label>
+              <ion-label color="danger">{{ errorMessage }}</ion-label>
             </ion-item>
           </ion-list>
         </ion-card-content>
@@ -84,7 +84,7 @@
             <app-email-login *ngIf="showMailLogin"></app-email-login>
 
             <div *ngIf="showSSO">
-              <h3 class="ion-margin ion-text-center" *ngIf="showMailLogin">
+              <h3 *ngIf="showMailLogin" class="ion-margin ion-text-center">
                 or
               </h3>
 
@@ -106,9 +106,9 @@
       </div>
 
       <ion-item
-        color="dark"
-        class="ion-margin"
         *ngIf="serverConfig.isSelfHosted()"
+        class="ion-margin"
+        color="dark"
       >
         <ion-label>
           <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and

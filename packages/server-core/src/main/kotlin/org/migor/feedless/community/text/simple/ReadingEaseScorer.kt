@@ -6,19 +6,17 @@ import org.migor.feedless.community.TokenizerService
 import org.migor.feedless.community.text.hyphenation.HyphenationPattern
 import org.migor.feedless.community.text.hyphenation.Hyphenator
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class ReadingEaseScorer {
+class ReadingEaseScorer(
+  private val tokenizerService: TokenizerService
+) {
 
   private val log = LoggerFactory.getLogger(ReadingEaseScorer::class.simpleName)
-
-  @Autowired
-  private lateinit var tokenizerService: TokenizerService
 
   private final val FALLBACK_READING_EASE_SCORE = 0.3
 

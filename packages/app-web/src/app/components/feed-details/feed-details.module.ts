@@ -13,6 +13,8 @@ import { ImageDiffModule } from '../image-diff/image-diff.module';
 import { TextDiffModule } from '../text-diff/text-diff.module';
 import { HistogramModule } from '../histogram/histogram.module';
 import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
+import { RouterLink } from '@angular/router';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
@@ -31,6 +33,8 @@ import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-edito
     ImageDiffModule,
     TextDiffModule,
     HistogramModule,
-  ],
+    RemoveIfProdModule,
+    RouterLink
+  ]
 })
 export class FeedDetailsModule {}

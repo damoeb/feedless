@@ -23,7 +23,6 @@ import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -35,29 +34,16 @@ import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.mail} & ${AppProfiles.session} & ${AppLayer.service}")
-class MailAuthenticationService {
+class MailAuthenticationService(
+  private val tokenProvider: TokenProvider,
+  private val cookieProvider: CookieProvider,
+  private val oneTimePasswordDAO: OneTimePasswordDAO,
+  private val userService: UserService,
+  private val featureService: FeatureService,
+  private val userDAO: UserDAO,
+  private val oneTimePasswordService: OneTimePasswordService
+) {
   private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
-
-  @Autowired
-  private lateinit var tokenProvider: TokenProvider
-
-  @Autowired
-  private lateinit var cookieProvider: CookieProvider
-
-  @Autowired
-  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
-
-  @Autowired
-  private lateinit var userService: UserService
-
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
-  private lateinit var oneTimePasswordService: OneTimePasswordService
 
   suspend fun authenticateUsingMail(data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email

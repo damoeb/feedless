@@ -57,10 +57,13 @@ function checkboxes(view: EditorView) {
 function toggleBoolean(view: EditorView, pos: number) {
   let before = view.state.doc.sliceString(Math.max(0, pos - 5), pos);
   let change;
-  if (before == 'false') change = { from: pos - 5, to: pos, insert: 'true' };
-  else if (before.endsWith('true'))
+  if (before == 'false') {
+    change = { from: pos - 5, to: pos, insert: 'true' };
+  } else if (before.endsWith('true')) {
     change = { from: pos - 4, to: pos, insert: 'false' };
-  else return false;
+  } else {
+    return false;
+  }
   view.dispatch({ changes: change });
   return true;
 }
@@ -74,8 +77,9 @@ export const checkboxPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged)
+      if (update.docChanged || update.viewportChanged) {
         this.decorations = checkboxes(update.view);
+      }
     }
   },
   {

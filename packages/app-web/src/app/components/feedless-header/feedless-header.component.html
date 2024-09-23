@@ -1,14 +1,14 @@
 <ion-header [translucent]="true">
   <ion-toolbar
+    *ngIf="session?.user?.purgeScheduledFor"
     color="danger"
     style="padding-right: 5px; padding-left: 5px"
-    *ngIf="session?.user?.purgeScheduledFor"
   >
     <ion-label>
       This account is scheduled to be deleted in
       {{ fromNow(session.user?.purgeScheduledFor) }}
     </ion-label>
-    <ion-button slot="end" color="dark" (click)="cancelAccountDeletion()">
+    <ion-button (click)="cancelAccountDeletion()" color="dark" slot="end">
       Cancel Deletion
     </ion-button>
   </ion-toolbar>
@@ -23,16 +23,17 @@
       </div>
 
       <ion-buttons class="ion-margin-horizontal">
-        <!--        <app-repositories-button-->
-        <!--          *ngIf="serverConfig.isSaas()"-->
-        <!--          name="Directory"-->
-        <!--          link="/directory"-->
-        <!--          [product]="GqlProductName.RssProxy"-->
-        <!--        ></app-repositories-button>-->
         <app-repositories-button
-          name="Feeds"
-          link="/feeds"
+          *ngIf="serverConfig.isSaas()"
+          appDev
+          name="Directory"
+          link="/directory"
           [product]="GqlProductName.RssProxy"
+        ></app-repositories-button>
+        <app-repositories-button
+          [product]="GqlProductName.RssProxy"
+          link="/feeds"
+          name="Feeds"
         ></app-repositories-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>

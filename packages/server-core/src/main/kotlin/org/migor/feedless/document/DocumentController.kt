@@ -9,7 +9,6 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -23,15 +22,12 @@ import java.util.*
 
 @RestController
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
-class DocumentController {
+class DocumentController(
+  private val documentService: DocumentService,
+  private val meterRegistry: MeterRegistry
+) {
 
   private val log = LoggerFactory.getLogger(DocumentController::class.simpleName)
-
-  @Autowired
-  private lateinit var documentService: DocumentService
-
-  @Autowired
-  private lateinit var meterRegistry: MeterRegistry
 
   @Tracked
   @GetMapping(

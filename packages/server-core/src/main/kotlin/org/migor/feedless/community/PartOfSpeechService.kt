@@ -5,7 +5,6 @@ import opennlp.tools.postag.POSModel
 import opennlp.tools.postag.POSTaggerME
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
@@ -14,13 +13,12 @@ import java.util.*
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class PartOfSpeechService {
+class PartOfSpeechService(
+  private val tokenizerService: TokenizerService
+) {
 
   private lateinit var modelEn: POSModel
   private lateinit var modelDe: POSModel
-
-  @Autowired
-  lateinit var tokenizerService: TokenizerService
 
   @PostConstruct
   fun postConstruct() {

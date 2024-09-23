@@ -24,6 +24,7 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
   repository: Repository;
 
   feedUrl: string;
+
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,

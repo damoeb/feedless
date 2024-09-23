@@ -31,12 +31,12 @@ const routes: Routes = [
               ),
           },
           {
-            path: 'notebook-builder',
+            path: 'notebooks',
             // canActivate: [AuthGuardService],
             loadChildren: () =>
-              import(
-                '../../pages/notebook-builder/notebook-builder.module'
-              ).then((m) => m.NotebookBuilderPageModule),
+              import('../../pages/notebooks/notebooks.module').then(
+                (m) => m.NotebooksBuilderPageModule,
+              ),
           },
           {
             path: 'workflow-builder',

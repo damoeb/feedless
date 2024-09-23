@@ -2,32 +2,33 @@
   <div class="flex flex__column" left>
     <div style="flex: 1; position: relative; overflow-y: auto">
       <ion-accordion-group
-        style="position: absolute; width: 100%; padding-bottom: 150px"
-        [value]="['feeds', 'custom']"
         [multiple]="true"
+        [value]="['feeds', 'custom']"
+        style="position: absolute; width: 100%; padding-bottom: 150px"
       >
         <ng-content select="[beforeFeedsSlot]"></ng-content>
         <ion-accordion value="feeds">
           <ion-item slot="header">
-            <ion-label> Feeds </ion-label>
+            <ion-label> Feeds</ion-label>
           </ion-item>
           <div slot="content">
             <div style="position: relative; height: 400px; overflow-y: auto">
               <div style="position: absolute; width: 100%">
                 <ion-item
-                  *ngFor="let nativeFeed of nativeFeeds"
                   (click)="pickNativeFeed(nativeFeed)"
+                  *ngFor="let nativeFeed of nativeFeeds"
                   [button]="true"
                   [color]="
                     currentNativeFeed === nativeFeed ? 'primary' : undefined
                   "
                   class="feed"
                 >
-                  <ion-label> Native {{ nativeFeed?.title }} </ion-label>
+                  <ion-label> Native {{ nativeFeed?.title }}</ion-label>
                   <ion-icon name="chevron-forward"></ion-icon>
                 </ion-item>
 
                 <ion-item
+                  (click)="pickGenericFeed(genericFeed)"
                   *ngFor="let genericFeed of genericFeeds"
                   [button]="true"
                   [color]="
@@ -35,7 +36,6 @@
                       ? 'primary'
                       : undefined
                   "
-                  (click)="pickGenericFeed(genericFeed)"
                 >
                   <ion-label
                     >Generic with {{ genericFeed.count }} items
@@ -52,19 +52,19 @@
           </div>
         </ion-accordion>
         <ion-accordion
+          *ngIf="sourceBuilder.hasFetchActionReturnedHtml()"
           toggleIconSlot="start"
           value="custom"
-          *ngIf="sourceBuilder.hasFetchActionReturnedHtml()"
         >
           <ion-item
-            slot="header"
             [color]="
               selectedFeed?.genericFeed?.hash == CUSTOM_HASH
                 ? 'primary'
                 : undefined
             "
+            slot="header"
           >
-            <ion-label><strong>Customize Feed</strong> </ion-label>
+            <ion-label><strong>Customize Feed</strong></ion-label>
           </ion-item>
           <div slot="content">
             <ion-item>
@@ -87,16 +87,17 @@
                 placeholder="relative xpath from context"
               ></ion-input>
               <ion-button
-                slot="end"
-                color="light"
                 (click)="
                   pickElementWithin(
                     genFeedXpathsFg.value.contextXPath,
                     genFeedXpathsFg.controls.linkXPath
                   )
                 "
-                ><ion-icon name="search-outline"></ion-icon
-              ></ion-button>
+                color="light"
+                slot="end"
+              >
+                <ion-icon name="search-outline"></ion-icon>
+              </ion-button>
             </ion-item>
             <!--        <ion-item>-->
             <!--          <ion-select-->
@@ -124,16 +125,17 @@
                 placeholder="relative xpath from context"
               ></ion-input>
               <ion-button
-                slot="end"
-                color="light"
                 (click)="
                   pickElementWithin(
                     genFeedXpathsFg.value.contextXPath,
                     genFeedXpathsFg.controls.dateXPath
                   )
                 "
-                ><ion-icon name="search-outline"></ion-icon
-              ></ion-button>
+                color="light"
+                slot="end"
+              >
+                <ion-icon name="search-outline"></ion-icon>
+              </ion-button>
             </ion-item>
             <ion-item *ngIf="genFeedXpathsFg.value.dateXPath">
               <ion-checkbox
@@ -170,10 +172,10 @@
 
     <ion-list class="marked-border-top">
       <ion-item
-        *ngIf="!currentNativeFeed"
         (click)="fetchFeedPreview(true)"
-        [disabled]="!selectedFeed"
+        *ngIf="!currentNativeFeed"
         [button]="true"
+        [disabled]="!selectedFeed"
       >
         Preview Feed
         <app-bubble
@@ -189,27 +191,27 @@
   <div class="flex__column" right style="flex: 2; position: relative">
     <app-interactive-website
       #interactiveWebsite
-      *ngIf="!currentNativeFeed && sourceBuilder"
-      style="flex: 1; display: flex"
       (segmentChange)="handleSegmentChange($event)"
+      *ngIf="!currentNativeFeed && sourceBuilder"
       [sourceBuilder]="sourceBuilder"
+      style="flex: 1; display: flex"
     >
-      <ion-segment-button value="feed" [disabled]="!selectedFeed" segmentButton>
+      <ion-segment-button [disabled]="!selectedFeed" segmentButton value="feed">
         <div>
           Feed
           <app-bubble
             *ngIf="shouldRefresh && selectedFeed && !loadingFeedPreview"
-            style="position: absolute; top: 10px"
             color="red"
+            style="position: absolute; top: 10px"
           ></app-bubble>
         </div>
       </ion-segment-button>
 
       <div
         *ngIf="selectedFeed && activeSegment === 'feed'"
+        class="flex__column"
         segmentBody
         style="position: relative"
-        class="flex__column"
       >
         <ion-progress-bar
           *ngIf="loadingFeedPreview"
@@ -231,7 +233,7 @@
           "
         >
           <div style="margin: auto">
-            <ion-button size="small" (click)="fetchFeedPreview(false)">
+            <ion-button (click)="fetchFeedPreview(false)" size="small">
               <ion-label>
                 <ion-icon name="refresh-outline" slot="start"></ion-icon>
                 Refresh Feed
@@ -242,9 +244,9 @@
         <ion-spinner *ngIf="!feedPreview" name="dots"></ion-spinner>
         <ng-container *ngIf="feedPreview">
           <app-remote-feed-preview
-            class="flex"
-            [noMetaColumn]="true"
             [feed]="feedPreview.feed"
+            [noMetaColumn]="true"
+            class="flex"
           ></app-remote-feed-preview>
 
           <app-console-button [logs]="feedPreview.logs"></app-console-button>

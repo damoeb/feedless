@@ -18,7 +18,6 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
 import org.migor.feedless.generated.types.ProductCategory
-import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeActionInput
@@ -95,9 +94,7 @@ class RepositoryServiceTest {
           .thenReturn(true)
 
         repositoryService.create(
-          RepositoriesCreateInput(
-            repositories = emptyList()
-          )
+          emptyList()
         )
       }
     }
@@ -113,28 +110,26 @@ class RepositoryServiceTest {
       .thenAnswer { it.arguments[0] }
 
     repositoryService.create(
-      RepositoriesCreateInput(
-        repositories = listOf(
-          RepositoryCreateInput(
-            product = ProductCategory.rssProxy,
-            sources = listOf(
-              SourceInput(
-                title = "",
-                flow = ScrapeFlowInput(
-                  sequence = listOf(
-                    ScrapeActionInput(
-                      fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
-                    )
+      listOf(
+        RepositoryCreateInput(
+          product = ProductCategory.rssProxy,
+          sources = listOf(
+            SourceInput(
+              title = "",
+              flow = ScrapeFlowInput(
+                sequence = listOf(
+                  ScrapeActionInput(
+                    fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
                   )
-                ),
-
                 )
-            ),
-            title = "",
-            description = "",
-            refreshCron = "",
-            withShareKey = true
-          )
+              ),
+
+              )
+          ),
+          title = "",
+          description = "",
+          refreshCron = "",
+          withShareKey = true
         )
       )
     )
@@ -158,9 +153,7 @@ class RepositoryServiceTest {
         )
       )
       val createdRepositories = repositoryService.create(
-        RepositoriesCreateInput(
-          repositories = repositories
-        )
+        repositories
       )
 
       assertThat(createdRepositories.size).isEqualTo(repositories.size)

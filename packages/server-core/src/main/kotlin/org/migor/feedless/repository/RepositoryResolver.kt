@@ -28,9 +28,9 @@ import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.Harvest
-import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
+import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
@@ -40,6 +40,7 @@ import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.userId
+import org.migor.feedless.user.userIdOptional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -112,7 +113,7 @@ class RepositoryResolver {
   ): Repository = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("repository $data")
     val repository = repositoryService.findById(UUID.fromString(data.where.id))
-    repository.toDto(repository.ownerId == coroutineContext.userId())
+    repository.toDto(repository.ownerId == coroutineContext.userIdOptional())
   }
 
   @Throttled
@@ -120,7 +121,7 @@ class RepositoryResolver {
   @PreAuthorize("hasAuthority('ANONYMOUS')")
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
-    @InputArgument("data") data: RepositoriesCreateInput,
+    @InputArgument("data") data: List<RepositoryCreateInput>,
   ): List<Repository> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createRepositories $data")
     repositoryService.create(data)
@@ -203,30 +204,14 @@ class RepositoryResolver {
   ): Annotations = coroutineScope {
     val repository: Repository = dfe.getSource()
 
-    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repository.id
     val repositoryId = UUID.fromString(repository.id)
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
     Annotations(
       upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
       downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
     )
   }
 
-  @DgsData(parentType = DgsConstants.ANNOTATIONS.TYPE_NAME, field = DgsConstants.ANNOTATIONS.Votes)
-  suspend fun votes(
-    @InputArgument where: UserWhereUniqueInput,
-    dfe: DgsDataFetchingEnvironment
-  ): List<Annotation> = coroutineScope {
-    val context = DgsContext.getCustomContext<DgsCustomContext>(dfe)
-    val repositoryId = UUID.fromString(context.repositoryId)
-    val userId = context.userId
-    if (StringUtils.isBlank(where.id)) {
-      emptyList()
-    } else {
-      userId?.let {
-        annotationService.findAllVotesByUserIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
-      } ?: emptyList()
-    }
-  }
 }
 
 private fun VoteEntity.toDto(): Annotation {

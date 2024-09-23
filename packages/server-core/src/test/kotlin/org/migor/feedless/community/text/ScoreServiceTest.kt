@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
@@ -46,7 +47,7 @@ import kotlin.math.pow
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
-@ActiveProfiles("test", AppProfiles.community)
+@ActiveProfiles("test", AppProfiles.community, AppLayer.service)
 @MockBeans(
   MockBean(UserSecretService::class),
   MockBean(LicenseService::class),
@@ -222,10 +223,11 @@ class ScoreServiceTest {
       val commentGraphService = mock(CommentGraphService::class.java)
       Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
       Mockito.`when`(commentGraphService.getReplyCount(any(CommentEntity::class.java))).thenReturn(0)
-      engagementScorer.commentGraphService = commentGraphService
-      relevanceScorer.commentGraphService = commentGraphService
+//      engagementScorer.commentGraphService = commentGraphService
+//      relevanceScorer.commentGraphService = commentGraphService
 
       sum += score(comments, weights, log)
+      TODO("not implemented")
     }
 
     println("$sum")

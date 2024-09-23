@@ -91,6 +91,7 @@ private fun JsonItem.toDto() = Record(
   url = url,
   tags = tags,
   createdAt = publishedAt.toMillis(),
+  updatedAt = publishedAt.toMillis(),
   attachments = attachments.map { it.toDto() },
   id = id,
   imageUrl = imageUrl,

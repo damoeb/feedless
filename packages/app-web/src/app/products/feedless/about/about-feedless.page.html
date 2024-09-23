@@ -10,79 +10,80 @@
 <ion-content>
   <app-product-header productTitle="RSS Feed Builder on steroids">
     <p class="ion-padding-vertical">
-      With <em>feedless</em>, you can create RSS feeds from most websites, or refine existing feeds.
-      Feeds are created in an interactive builder, and may be improved using elaborate filters
-      and plugins. Integration to 2rd parties like telegram is build-in.
-
-      Its highly customizable and even JavaScript based websites are supported. There
-      is zero-risk, cause all sources are available on github and you can host it
-      yourself.
+      With <em>feedless</em>, you can create RSS feeds from most websites, or
+      refine existing feeds. Feeds are created in an interactive builder, and
+      may be improved using elaborate filters and plugins. Integration to 2rd
+      parties like telegram is build-in. Its highly customizable and even
+      JavaScript based websites are supported. There is zero-risk, cause all
+      sources are available on github and you can host it yourself.
     </p>
 
     <ion-list class="ion-margin-bottom" style="background: transparent">
       <ion-list-header>Specialized Use Cases</ion-list-header>
       <ion-item
-        style="border-radius: 8px"
-        lines="full"
-        color="dark"
-        routerLink="/feed-builder"
         [button]="true"
+        color="dark"
+        lines="full"
+        routerLink="/feed-builder"
+        style="border-radius: 8px"
       >
         <ion-icon name="list-outline" slot="start"></ion-icon>
         Create RSS feed from website
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
       <ion-item
-        style="border-radius: 8px"
-        lines="full"
-        color="medium"
-        routerLink="/tracker-builder"
         [button]="true"
+        color="dark"
+        appDev
+        lines="full"
+        routerLink="/tracker-builder"
+        style="border-radius: 8px"
       >
         <ion-icon name="eye-outline" slot="start"></ion-icon>
         Create a Page Tracker
-        <ion-badge slot="end" color="light">Coming Soon</ion-badge>
+        <ion-badge color="light" slot="end">Beta</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
 
       <ion-item
-        style="border-radius: 8px"
-        lines="full"
-        color="dark"
-        routerLink="/docs/telegram"
         [button]="true"
+        color="dark"
+        lines="full"
+        routerLink="/docs/telegram"
+        style="border-radius: 8px"
       >
         <ion-icon name="eye-outline" slot="start"></ion-icon>
         Push Feed to Telegram
-        <ion-badge slot="end" color="light">Beta</ion-badge>
+        <ion-badge color="light" slot="end">Beta</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
-<!--      <ion-item-->
-<!--        style="border-radius: 8px"-->
-<!--        lines="full"-->
-<!--        color="medium"-->
-<!--        routerLink="/notebook-builder"-->
-<!--        [button]="true"-->
-<!--      >-->
-<!--        <ion-icon name="git-network-outline" slot="start"></ion-icon>-->
-<!--        Create a Notebook-->
-<!--        <em class="ion-margin-start">Opiniated Zettelkasten</em>-->
-<!--        <ion-badge slot="end" color="light">Coming Soon</ion-badge>-->
-<!--        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>-->
-<!--      </ion-item>-->
+      <ion-item
+        [button]="true"
+        color="dark"
+        lines="full"
+        appDev
+        routerLink="/notebooks"
+        style="border-radius: 8px"
+      >
+        <ion-icon name="git-network-outline" slot="start"></ion-icon>
+        Notebook
+        <em class="ion-margin-start">Opiniated Zettelkasten</em>
+        <ion-badge color="light" slot="end">Beta</ion-badge>
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-item>
 
       <ion-list-header class="ion-margin-top">General Use Case</ion-list-header>
       <ion-item
-        style="border-radius: 8px"
-        lines="full"
-        color="medium"
-        routerLink="/workflow-builder"
         [button]="true"
+        color="medium"
+        lines="full"
+        routerLink="/workflow-builder"
+        style="border-radius: 8px"
       >
         <ion-icon name="git-network-outline" slot="start"></ion-icon>
         Build Workflow
         <em class="ion-margin-start">Triggers, hooks and flows</em>
-        <ion-badge slot="end" color="light">Coming Soon</ion-badge>
+        <ion-badge color="light" slot="end">Coming Soon</ion-badge>
         <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
       </ion-item>
     </ion-list>

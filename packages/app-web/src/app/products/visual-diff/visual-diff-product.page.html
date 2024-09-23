@@ -12,9 +12,9 @@
 
       <ion-buttons class="ion-margin-horizontal">
         <app-repositories-button
-          name="Trackers"
-          link="/feeds"
           [product]="GqlProductName.VisualDiff"
+          link="/feeds"
+          name="Trackers"
         ></app-repositories-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>
@@ -23,10 +23,10 @@
     <ion-buttons slot="end">
       <app-dark-mode-button></app-dark-mode-button>
       <ion-button
-        routerLink="/pricing/visual-diff"
         *ngIf="!serverConfig.isSelfHosted()"
-        >Pricing</ion-button
-      >
+        routerLink="/pricing/visual-diff"
+        >Pricing
+      </ion-button>
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>

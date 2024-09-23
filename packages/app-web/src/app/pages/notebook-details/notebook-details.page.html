@@ -2,27 +2,42 @@
   <ion-menu side="start">
     <ion-header>
       <ion-toolbar style="--background: transparent; padding-left: 10px">
-        <ion-select [value]="notebook?.id" slot="start" interface="popover">
-          <ion-select-option *ngIf="notebook" [value]="notebook.id"
-            >{{notebook.name}}</ion-select-option
-          >
-          <ion-select-option value="">Create Notebook</ion-select-option>
-        </ion-select>
-        <!--        <ion-title>-->
-        <!--          {{notebook?.name}}-->
-        <!--        </ion-title>-->
-        <ion-buttons slot="end">
+        <!--        <ion-select [value]="notebook?.id"-->
+        <!--                    aria-label="Notebook"-->
+        <!--                    slot="start"-->
+        <!--                    interface="popover">-->
+        <!--          <ion-select-option *ngIf="notebook" -->
+        <!--                             [value]="notebook.id">-->
+        <!--            {{notebook.title}}-->
+        <!--          </ion-select-option>-->
+        <!--          <ion-select-option value="">Create Notebook</ion-select-option>-->
+        <!--        </ion-select>-->
+        <ion-buttons slot="start">
+          <ion-button routerLink="/notebooks">
+            {{ notebook?.title }} Notes
+          </ion-button>
+        </ion-buttons>
+
+        <ion-buttons slot="end" appDev>
+          <ion-button color="medium"
+                      title="Export notes">
+            <ion-icon size="small"
+                      name="cloud-download-outline"
+                      slot="icon-only"></ion-icon>
+          </ion-button>
           <form class="hidden">
             <input
               #fileUpload
-              type="file"
-              name="file-upload"
-              [accept]="upload.getAcceptedMimeTypes()"
               (change)="upload.uploadFile($event)"
+              [accept]="upload.getAcceptedMimeTypes()"
+              name="file-upload"
+              type="file"
             />
           </form>
-          <ion-button title="upload" (click)="fileUpload.click()">
-            <ion-icon name="cloud-upload-outline"></ion-icon>
+          <ion-button (click)="fileUpload.click()" title="upload notes">
+            <ion-icon size="small"
+                      name="cloud-upload-outline"
+                      slot="icon-only"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -36,13 +51,13 @@
       <!--          <div slot="content" class="ion-no-padding">-->
       <ion-searchbar
         #searchbar
-        [formControl]="queryFc"
         (ionFocus)="currentNote = null"
+        [formControl]="queryFc"
         [showClearButton]="true"
+        style="border-radius: 1rem;"
         placeholder="Search your Notebook"
       ></ion-searchbar>
       <ion-list class="results" style="background: transparent">
-        <ion-spinner *ngIf="busy" name="dots"></ion-spinner>
         <ng-container *ngIf="!busy">
           <ng-container *ngIf="matches.length === 0">
             <ion-item>
@@ -50,17 +65,17 @@
             </ion-item>
           </ng-container>
           <ion-item
-            *ngFor="let searchResult of matches; let i = index"
-            style="--background: transparent"
-            [button]="!searchResult.isGroup"
-            lines="none"
-            tabindex="-1"
-            (mouseenter)="focussedMatchIndex = i"
             (click)="searchResult.onClick()"
+            (mouseenter)="focussedMatchIndex = i"
+            *ngFor="let searchResult of matches; let i = index"
+            [button]="!searchResult.isGroup"
             [ngClass]="{
                       'in-focus': i === focussedMatchIndex,
                       'is-group': searchResult.isGroup,
                       }"
+            lines="none"
+            style="--background: transparent"
+            tabindex="-1"
           >
             <ion-label>
               <h3>{{ searchResult.label || '[empty title]' }}</h3>
@@ -76,15 +91,6 @@
       <!--      </ion-accordion-group>-->
     </ion-content>
   </ion-menu>
-
-  <!--  <ion-menu side="end">-->
-  <!--    <ion-header>-->
-  <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
-  <!--      </ion-toolbar>-->
-  <!--    </ion-header>-->
-  <!--    <ion-content>-->
-  <!--    </ion-content>-->
-  <!--  </ion-menu>-->
 
   <div class="ion-page" id="main">
     <ion-header style="background: rgba(var(--ion-color-medium-rgb), 0.1)">
@@ -112,10 +118,10 @@
       </ion-toolbar>
     </ion-header>
     <ion-content
-      style="--background: rgba(var(--ion-color-medium-rgb), 0.1)"
       class="main-content"
+      style="--background: rgba(var(--ion-color-medium-rgb), 0.1)"
     >
-      <ion-spinner *ngIf="systemBusy" name="dots"></ion-spinner>
+<!--      <ion-spinner *ngIf="systemBusy" name="dots"></ion-spinner>-->
       <!--      <div style="display: flex">-->
       <!--        <ion-button fill="clear"-->
       <!--                    color="dark">-->
@@ -156,47 +162,100 @@
       <!--        </div>-->
       <!--      </div>-->
 
-      <div class="all-notes-wrapper" *ngIf="!systemBusy">
+      <div *ngIf="!systemBusy" class="all-notes-wrapper">
         <!--        <div class="scroll-pane" style="flex: 1">-->
         <!--          <div class="all-notes">-->
+        <ng-container *ngIf="openNotes.length === 0">
+          <div class="grid">
+            <ion-card *ngFor="let starredNote of starredNotes"
+                      [button]="true"
+                      (click)="openNote(starredNote)">
+              <ion-card-header>
+                <ion-card-title>
+                  {{starredNote.title}}
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                {{starredNote.text}}
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </ng-container>
+
         <div
-          class="note ion-padding"
-          [ngClass]="{opened: note.id === currentNote?.id}"
           *ngFor="let note of openNotes"
+          [ngClass]="{opened: note.id === currentNote?.id}"
+          class="note"
         >
           <div [id]="'open-note-handle-' + note.id"></div>
-          <ion-toolbar style="--background: none">
-            <ion-text color="medium" class="ion-margin-horizontal">
-              {{ note.namedId }}
+          <ion-toolbar color="light">
+            <ion-buttons slot="start">
+              <ion-button (click)="toggleUpvote(note)"
+                          color="medium">
+                <ion-icon *ngIf="note.isUpVoted"
+                          name="star"
+                          size="small"
+                          slot="icon-only"></ion-icon>
+                <ion-icon *ngIf="!note.isUpVoted"
+                          name="star-outline"
+                          size="small"
+                          slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-text class="ion-margin-horizontal" color="medium">
+              {{ note.id }}
             </ion-text>
-            <ion-buttons slot="end" tabindex="-1">
-              <ion-button size="small" (click)="deleteCurrentNote()">
+
+            <ion-buttons slot="end">
+              <ion-button id="open-note-settings-popover" size="small">
                 <ion-icon
-                  slot="icon-only"
+                  name="ellipsis-vertical-outline"
                   size="small"
-                  color="medium"
-                  name="trash-outline"
+                  slot="icon-only"
                 ></ion-icon>
               </ion-button>
               <ion-button (click)="closeNote(note)" size="small">
                 <ion-icon
-                  size="small"
-                  slot="icon-only"
                   color="medium"
                   name="close-outline"
+                  size="small"
+                  slot="icon-only"
                 ></ion-icon>
               </ion-button>
             </ion-buttons>
+
+            <ion-popover
+              trigger="open-note-settings-popover"
+              triggerAction="click"
+            >
+              <ng-template>
+                <ion-list>
+                  <ion-item (click)="deleteCurrentNote()" [button]="true">
+                    <ion-icon
+                      color="medium"
+                      name="trash-outline"
+                      size="small"
+                      slot="start"
+                    ></ion-icon>
+                    Delete
+                  </ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
           </ion-toolbar>
           <!--          <div class="flex__column">-->
-          <div class="code-editor-wrapper" [ngClass]="{'focussed': currentNote?.id == note?.id}">
+          <div
+            [ngClass]="{'focussed': currentNote?.id == note?.id}"
+            class="code-editor-wrapper"
+          >
             <app-code-editor
-              [autoSuggestionsProvider]="loadAutoSuggestions"
-              [formControl]="note.formControl"
-              (triggerQuery)="handleQuery($event)"
-              (focus)="openNote(note)"
               (blur)="currentNote = null"
+              (focus)="openNote(note)"
+              (triggerQuery)="handleQuery($event)"
+              [autoSuggestionsProvider]="loadAutoSuggestions"
               [extensions]="extensions"
+              [lineNumbers]="false"
+              [formControl]="note.formControl"
             ></app-code-editor>
           </div>
           <!--                    <div>-->
@@ -209,7 +268,7 @@
           <!--                                        color="medium"-->
           <!--                                        routerLinkActive="active"-->
           <!--                                        [routerLink]="linkTo(note)">-->
-          <!--                              {{ note.namedId }} - {{ note.title }}-->
+          <!--                              {{ note.id }} - {{ note.title }}-->
           <!--                            </ion-button>-->
           <!--                          </div>-->
           <!--                        </div>-->
@@ -222,7 +281,7 @@
           <!--                                          color="medium"-->
           <!--                                          routerLinkActive="active"-->
           <!--                                          [routerLink]="linkTo(note)">-->
-          <!--                                {{ note.namedId }} - {{ note.title }}-->
+          <!--                                {{ note.id }} - {{ note.title }}-->
           <!--                              </ion-button>-->
           <!--                            </div>-->
           <!--                          </div>-->
@@ -239,7 +298,7 @@
           <!--                                          color="medium"-->
           <!--                                          routerLinkActive="active"-->
           <!--                                          [routerLink]="linkTo(note)">-->
-          <!--                                {{ note.namedId }} - {{ note.title }}-->
+          <!--                                {{ note.id }} - {{ note.title }}-->
           <!--                              </ion-button>-->
           <!--                            </div>-->
           <!--                          </div>-->
@@ -254,3 +313,6 @@
     </ion-content>
   </div>
 </ion-split-pane>
+<ion-progress-bar *ngIf="systemBusy"
+                  color="medium"
+                  type="indeterminate"></ion-progress-bar>

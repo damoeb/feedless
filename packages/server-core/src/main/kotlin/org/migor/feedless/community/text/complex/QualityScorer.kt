@@ -11,7 +11,6 @@ import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.community.text.simple.VocabularyScorer
 import org.migor.feedless.community.text.simple.WordCountScorer
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -26,30 +25,17 @@ data class QualityWeights(
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class QualityScorer {
+class QualityScorer(
+  private val vocabularyScorer: VocabularyScorer,
+  private val readingEaseScorer: ReadingEaseScorer,
+  private val engagementScorer: EngagementScorer,
+  private val wordCountScorer: WordCountScorer,
+  private val citationScorer: CitationScorer,
+  private val spellingScorer: SpellingScorer,
+  private val languageService: LanguageService
+) {
 
   private val log = LoggerFactory.getLogger(QualityScorer::class.simpleName)
-
-  @Autowired
-  private lateinit var vocabularyScorer: VocabularyScorer
-
-  @Autowired
-  private lateinit var readingEaseScorer: ReadingEaseScorer
-
-  @Autowired
-  private lateinit var engagementScorer: EngagementScorer
-
-  @Autowired
-  private lateinit var wordCountScorer: WordCountScorer
-
-  @Autowired
-  private lateinit var citationScorer: CitationScorer
-
-  @Autowired
-  private lateinit var spellingScorer: SpellingScorer
-
-  @Autowired
-  private lateinit var languageService: LanguageService
 
   suspend fun quality(comment: CommentEntity, w: QualityWeights): Double {
     /*

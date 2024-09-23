@@ -13,30 +13,30 @@
         </ion-col>
         <ion-col size="9">
           <ion-input
+            [formControl]="formFg.controls.email"
             aria-label="Email"
             fill="outline"
-            [formControl]="formFg.controls.email"
             placeholder="Email Adress"
           ></ion-input>
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size="9" push="3">
-          <ion-note> You hate reading mails, I hate writing them </ion-note>
+        <ion-col push="3" size="9">
+          <ion-note> You hate reading mails, I hate writing them</ion-note>
         </ion-col>
       </ion-row>
       <ion-row *ngIf="requiresPlan">
-        <ion-col size="9" push="3" class="ion-padding-vertical">
+        <ion-col class="ion-padding-vertical" push="3" size="9">
           <span *ngIf="product">Plan {{ product.name }}</span>
           <span *ngIf="!product">No plan available</span>
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size="9" push="3" class="ion-padding-vertical">
+        <ion-col class="ion-padding-vertical" push="3" size="9">
           <ion-checkbox
-            labelPlacement="end"
             [formControl]="formFg.controls.terms"
             class="ion-text-wrap"
+            labelPlacement="end"
           >
             I accept the terms and conditions
           </ion-checkbox>

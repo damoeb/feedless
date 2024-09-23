@@ -22,9 +22,9 @@
       <ion-list *ngIf="!errorMessage" class="cy-remote-feed remote-feed">
         <app-remote-feed-item
           *ngFor="let item of feedItems; let feedIndex = index"
-          class="cy-feed-item"
           [feedItemIndex]="feedIndex + 1"
           [feedItem]="item"
+          class="cy-feed-item"
         ></app-remote-feed-item>
       </ion-list>
     </ng-container>

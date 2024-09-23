@@ -40,11 +40,11 @@
     </ion-row>
   </div>
 
-  <div class="grid" *ngIf="viewModeFc.value === viewModeGrid">
-    <ion-item class="grid-item"> div </ion-item>
+  <div *ngIf="viewModeFc.value === viewModeGrid" class="grid">
+    <ion-item class="grid-item"> div</ion-item>
   </div>
 
-  <div class="limited-width-pane" *ngIf="viewModeFc.value === viewModeList">
+  <div *ngIf="viewModeFc.value === viewModeList" class="limited-width-pane">
     <ion-list style="border-radius: 8px">
       <ion-item *ngIf="!loading && repositories?.length === 0">
         <p>No feeds found</p>
@@ -59,19 +59,19 @@
           <p class="ion-padding-top">{{ feed.description }}</p>
           <!--          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>-->
         </ion-label>
-        <ion-label slot="end">
+        <ion-label slot="end" appDev>
           <ion-button color="light" title="Unique pulls per week">
-            <ion-icon slot="start" name="trending-down-outline"></ion-icon>
-            {{ feed.pullsPerMonth/4 }}
+            <ion-icon name="trending-down-outline" slot="start"></ion-icon>
+            {{ feed.pullsPerMonth / 4 }}
           </ion-button>
         </ion-label>
       </ion-item>
     </ion-list>
 
     <app-pagination
+      (pageChange)="fetchFeeds($event)"
       [currentPage]="currentPage"
       [isLastPage]="isLastPage"
-      (pageChange)="fetchFeeds($event)"
     ></app-pagination>
   </div>
 </ion-content>

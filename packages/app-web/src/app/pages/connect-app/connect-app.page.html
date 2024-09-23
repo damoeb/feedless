@@ -4,8 +4,8 @@
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
   >
-    <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
-    <div style="width: 500px" *ngIf="!loading">
+    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+    <div *ngIf="!loading" style="width: 500px">
       <div class="ion-margin-top">
         <div>
           <h1 class="ion-margin-start">Connect Telegram</h1>
@@ -19,17 +19,17 @@
 
               <ion-buttons class="ion-margin-top">
                 <ion-button
+                  (click)="cancelAttempt()"
                   fill="outline"
                   style="flex: 1"
-                  (click)="cancelAttempt()"
                 >
                   Cancel
                 </ion-button>
                 <ion-button
+                  (click)="authorizeApp()"
                   color="success"
                   fill="solid"
                   style="flex: 1"
-                  (click)="authorizeApp()"
                 >
                   Authorize
                 </ion-button>

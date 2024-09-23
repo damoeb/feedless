@@ -149,7 +149,7 @@ type Mutation {
   createUserSecret: UserSecret!
   deleteUserSecret(data: DeleteUserSecretInput!): Boolean!
 
-  createRepositories(data: RepositoriesCreateInput!): [Repository!]!
+  createRepositories(data: [RepositoryCreateInput!]!): [Repository!]!
   updateRepository(data: RepositoryUpdateInput!): Repository!
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
@@ -310,7 +310,7 @@ input TextAnnotationInput {
 type Annotations {
   upVotes: Int!
   downVotes: Int!
-  votes(where: UserWhereUniqueInput!): [Annotation]
+  votes: [Annotation!] # current user votes
 }
 
 type Annotation {
@@ -365,11 +365,12 @@ input RetentionUpdateInput {
 }
 
 input CreateRecordInput {
+  id: String
   rawBase64: String
   rawMimeType: String
   text: String
   tags: [String!]
-  contentTitle: String!
+  title: String!
   publishedAt: Long!
   url: String! @url
   repositoryId: RepositoryUniqueWhereInput!
@@ -574,6 +575,7 @@ input RecordsWhereInput {
   startedAt: DatesWhereInput
   createdAt: DatesWhereInput
   publishedAt: DatesWhereInput
+  updatedAt: DatesWhereInput
   latLng: GeoPointWhereInput
   tags: StringFilter
 }
@@ -1015,8 +1017,9 @@ type Record {
   imageUrl: String
   publishedAt: Long!
   startingAt: Long
+  annotations: Annotations
   latLng: GeoPoint
-  updatedAt: Long
+  updatedAt: Long!
   url: String!
 }
 
@@ -1203,10 +1206,6 @@ input RepositoryUniqueWhereInput {
   id: ID!
 }
 
-input RepositoriesCreateInput {
-  repositories: [RepositoryCreateInput!]!
-}
-
 input RepositoryCreateInput {
   product: ProductCategory!
   sources: [SourceInput!]!
@@ -1215,7 +1214,7 @@ input RepositoryCreateInput {
   description: String!
   retention: RetentionInput
   refreshCron: String
-  withShareKey: Boolean!
+  withShareKey: Boolean
   pushNotificationsMuted: Boolean
   agents: [AgentByGroup!]
   sunset: SunSetPolicyInput
@@ -1347,21 +1346,21 @@ input StringArrayFilter {
 }
 
 input StringFilter {
-  equals: String
+  eq: String
   in: [String!]
 #  notIn: [String!]
 }
 
 input VisibilityFilter {
-#  equals: Visibility
+#  eq: Visibility
   in: [Visibility!]
 #  notIn: [String!]
 }
 
 input ProductCategoryFilter {
-#  equals: Visibility
+  eq: ProductCategory
   in: [ProductCategory!]
-#  notIn: [String!]
+#  notIn: [ProductCategory!]
 }
 
 input StringUpdateOperationsInput {

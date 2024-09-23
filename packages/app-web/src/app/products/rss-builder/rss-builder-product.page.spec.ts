@@ -19,8 +19,9 @@ describe('RssBuilderProductPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         RssBuilderProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

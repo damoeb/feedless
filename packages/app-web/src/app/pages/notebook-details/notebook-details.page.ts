@@ -8,10 +8,10 @@ import {
   OnInit,
   QueryList,
   ViewChild,
-  ViewChildren
+  ViewChildren,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { Repository } from '../../graphql/types';
+import { debounce, interval, Subscription } from 'rxjs';
+import { Annotation, Repository } from '../../graphql/types';
 import {
   Note,
   Notebook,
@@ -19,7 +19,7 @@ import {
   SearchResultGroup,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { debounce as debounceFn, DebouncedFunc, isNull } from 'lodash-es';
+import { debounce as debounceFn, DebouncedFunc, isNull, omit } from 'lodash-es';
 import { AlertController, IonSearchbar } from '@ionic/angular';
 import { Completion } from '@codemirror/autocomplete';
 import { FormControl } from '@angular/forms';
@@ -28,9 +28,12 @@ import { createNoteReferenceMarker } from './note-reference-marker';
 import { createNoteReferenceWidget } from './note-reference-widget';
 import { CodeEditorComponent } from '../../elements/code-editor/code-editor.component';
 import { UploadService } from '../../services/upload.service';
+import { AppConfigService } from '../../services/app-config.service';
+import { AnnotationService } from '../../services/annotation.service';
+import { isDefined } from '../../types';
 
 type SearchResult = {
-  namedId?: string;
+  id?: string;
   label: string;
   text?: string;
   isGroup?: boolean;
@@ -39,7 +42,7 @@ type SearchResult = {
 
 interface OpenNote extends Note {
   formControl: FormControl<string>;
-  subscriptions: Subscription[]
+  subscriptions: Subscription[];
 }
 
 type NoteReferences = {
@@ -84,10 +87,13 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   protected toggleSearchModeDebounced: DebouncedFunc<
     (searchMode?: boolean | null) => Promise<void>
   >;
+  protected starredNotes: Note[];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly alertCtrl: AlertController,
+    private readonly annotationService: AnnotationService,
+    private readonly appConfig: AppConfigService,
     protected readonly upload: UploadService,
     private readonly router: Router,
     private readonly notebookService: NotebookService,
@@ -106,7 +112,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.activatedRoute.params.subscribe((params) =>
         this.handleParams(params),
       ),
-      this.notebookService.systemBusyChanges.subscribe((systemBusy) => {
+      this.notebookService.systemBusyChanges.subscribe(async (systemBusy) => {
         this.systemBusy = systemBusy;
         this.changeRef.detectChanges();
       }),
@@ -119,10 +125,12 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.queryFc.valueChanges.subscribe((query) => {
         this.notebookService.queryChanges.next(query);
       }),
-      this.notebookService.notesChanges.subscribe(() => {
+      this.notebookService.notesChanges.subscribe(async () => {
         if (query) {
           this.notebookService.findAllAsync(query);
         }
+        this.starredNotes = await this.notebookService.findAll('true', ['isUpVoted'])[0].notes();
+        this.changeRef.detectChanges();
       }),
       this.notebookService.openNoteChanges.subscribe((note) =>
         this.openNote(note),
@@ -181,7 +189,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         () => this.router.navigateByUrl('../'),
         () => this.notebookService.openNotebook(params.notebookId),
       );
-      console.log('this.notebook', this.notebook);
+
+      this.appConfig.setPageTitle(`Notebook ${this.notebook.title}`);
 
       await failSafe(
         'Note',
@@ -190,9 +199,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         async () => {
           if (params.noteId) {
             const noteId = decodeURIComponent(params.noteId);
-            await this.openNote(
-              await this.notebookService.findByNamedId(noteId),
-            );
+            await this.openNote(await this.notebookService.findById(noteId));
           }
         },
       );
@@ -213,7 +220,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
           const notes = await group.notes();
           for (const note of notes) {
             this.matches.push({
-              namedId: note.namedId,
+              id: note.id,
               label: note.title,
               text: note.text,
               onClick: () => {
@@ -277,7 +284,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         setTimeout(() => searchResult.onClick(), 1);
       }
     } else {
-      const note = this.notebookService.createNote({
+      const note = await this.notebookService.createNote({
         title: this.queryFc.value,
       });
       await this.openNote(note);
@@ -290,8 +297,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async openNote(note: Note) {
-    console.log('openNote');
-
+    console.log('note', note);
     const inTabs = this.openNotes.find((it) => it.id == note.id);
     if (inTabs) {
       this.currentNote = inTabs;
@@ -301,22 +307,29 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
       const openNote: OpenNote = {
         ...note,
+        // upVoteAnnotationId: upVoted?.id,
         formControl,
         subscriptions: [
-          formControl.valueChanges.subscribe(async (text) => {
-            await this.notebookService.updateNote({ ...openNote, text });
-            formControl.markAsPristine();
-          })
-        ]
+          formControl.valueChanges
+            .pipe(debounce(() => interval(4000)))
+            .subscribe(async (text) => {
+              if (openNote.text != text) {
+                openNote.text = text;
+                await this.updateNote(openNote);
+              }
+
+              formControl.markAsPristine();
+            }),
+        ],
       };
-      this.notebookService.findAllAsync(note.namedId);
+      this.notebookService.findAllAsync(note.id);
       // await this.refreshReferences(openNote);
       this.currentNote = null;
       this.changeRef.detectChanges();
 
       this.openNotes.push(openNote);
       this.scrollTo(openNote);
-      await this.toggleSearchMode(false)
+      await this.toggleSearchMode(false);
       this.currentNote = openNote;
       this.searchMode = false;
       this.changeRef.detectChanges();
@@ -359,7 +372,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   //   }
   //
   //   // incoming links
-  //   const incomingRefs= await search(openNote.namedId)
+  //   const incomingRefs= await search(openNote.id)
   //
   //   // outgoing links
   //   const { hashtags, links } = openNote.references;
@@ -384,7 +397,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   // }
 
   // linkTo(note: Note): string {
-  //   return `/notebook/${this.notebookId}/${encodeURIComponent(note.namedId)}`;
+  //   return `/notebook/${this.notebookId}/${encodeURIComponent(note.id)}`;
   // }
 
   deleteCurrentNote() {
@@ -415,7 +428,46 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   closeNote(openNote: OpenNote) {
-    openNote.subscriptions.forEach(subscription => subscription.unsubscribe());
-    this.openNotes = this.openNotes.filter(note => note.id != openNote.id)
+    openNote.subscriptions.forEach((subscription) =>
+      subscription.unsubscribe(),
+    );
+    this.openNotes = this.openNotes.filter((note) => note.id != openNote.id);
+  }
+
+  async toggleUpvote(note: OpenNote) {
+    if (note.isUpVoted) {
+      await this.annotationService.deleteAnnotation({
+        where: {
+          id: note.upVoteAnnotationId,
+        },
+      });
+      note.isUpVoted = false;
+      note.upVoteAnnotationId = null;
+    } else {
+      const annotation = await this.annotationService.createAnnotation({
+        where: {
+          repository: {
+            id: note.repositoryId,
+          },
+        },
+        annotation: {
+          upVote: {
+            set: true,
+          },
+        },
+      });
+      note.isUpVoted = true;
+      note.upVoteAnnotationId = annotation.id;
+    }
+    await this.updateNote(note);
+  }
+
+  private async updateNote(openNote: OpenNote) {
+    const omitFields: (keyof OpenNote)[] = [
+      'formControl',
+      'subscriptions',
+    ];
+    const cleanNote: Note = omit(openNote, omitFields) as any;
+    await this.notebookService.updateNote(cleanNote);
   }
 }

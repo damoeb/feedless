@@ -11,11 +11,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Title } from '@angular/platform-browser';
 import { ConnectedAppService } from '../../services/connected-app.service';
 import { Product, Session, UserSecret } from '../../graphql/types';
 import { ProductService } from '../../services/product.service';
 import { first } from 'lodash-es';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-profile-page',
@@ -24,9 +24,7 @@ import { first } from 'lodash-es';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
   protected secrets: UserSecret[] = [];
-
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     emailVerified: new FormControl<boolean>(false),
@@ -43,8 +41,10 @@ export class ProfilePage implements OnInit, OnDestroy {
       Validators.maxLength(50),
     ]),
   });
-  private connectedApps: Session['user']['connectedApps'] = [];
   protected product: Product;
+  protected readonly dateTimeFormat = dateTimeFormat;
+  private subscriptions: Subscription[] = [];
+  private connectedApps: Session['user']['connectedApps'] = [];
 
   constructor(
     private readonly toastCtrl: ToastController,
@@ -53,7 +53,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     protected readonly productService: ProductService,
     protected readonly alertCtrl: AlertController,
     protected readonly connectedAppService: ConnectedAppService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     protected readonly serverConfig: ServerConfigService,
   ) {}
 
@@ -73,7 +73,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.titleService.setTitle('Profile');
+    this.appConfig.setPageTitle('Profile');
 
     this.subscriptions.push(
       this.sessionService.getSession().subscribe(async (session) => {
@@ -83,7 +83,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
           this.product = first(
             await this.productService.listProducts({
-              id: { equals: session.user.plan.productId },
+              id: { eq: session.user.plan.productId },
             }),
           );
 
@@ -99,10 +99,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
   // private async updatePluginValue(id: string, value: boolean) {
   //   await this.profileService.updateCurrentUser({
   //     plugins: [
@@ -115,6 +111,10 @@ export class ProfilePage implements OnInit, OnDestroy {
   //     ],
   //   });
   // }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
 
   async createUserSecret() {
     const promptName = await this.alertCtrl.create({
@@ -187,8 +187,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     );
     location.reload();
   }
-
-  protected readonly dateTimeFormat = dateTimeFormat;
 
   hasConnectedApp(appName: string) {
     return !!this.getConnectedAppByName(appName);

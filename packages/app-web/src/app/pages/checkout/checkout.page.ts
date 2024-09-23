@@ -7,7 +7,10 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ProductConfig } from '../../services/app-config.service';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../services/app-config.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
@@ -21,7 +24,6 @@ import {
   GqlUserCreateOrConnectInput,
 } from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
-import { Title } from '@angular/platform-browser';
 
 type Country = {
   name: string;
@@ -291,8 +293,8 @@ type PaymentOption = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
   product: ProductConfig;
+  currentStep: CheckoutStep;
   protected countries = countries;
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
@@ -313,9 +315,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
   });
   protected products: Product[];
   protected loginWithRedirect: string;
-  currentStep: CheckoutStep;
   protected loggedIn: boolean;
-  private productId: string;
   protected loading: boolean;
   protected paymentOptions: PaymentOption[] = [
     { title: 'Bill', method: GqlPaymentMethod.Bill },
@@ -324,6 +324,8 @@ export class CheckoutPage implements OnInit, OnDestroy {
     { title: 'Bitcoin', method: GqlPaymentMethod.Bitcoin },
     { title: 'Ethereum', method: GqlPaymentMethod.Ethereum },
   ];
+  private subscriptions: Subscription[] = [];
+  private productId: string;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -331,13 +333,13 @@ export class CheckoutPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly orderService: OrderService,
     private readonly sessionService: SessionService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly authService: AuthService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Checkout');
+    this.appConfig.setPageTitle('Checkout');
     this.loginWithRedirect = `/login?redirectUrl=${location.pathname}`;
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
@@ -363,7 +365,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
           this.productId = params.productId;
           this.products = await this.productService.listProducts({
             id: {
-              equals: params.productId,
+              eq: params.productId,
             },
           });
           this.changeRef.detectChanges();
@@ -411,6 +413,12 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
   }
 
+  next() {
+    if (this.formFg.controls.email.valid) {
+      this.currentStep = 'data';
+    }
+  }
+
   private getUserInput(): GqlUserCreateOrConnectInput {
     if (this.loggedIn) {
       return {
@@ -435,12 +443,6 @@ export class CheckoutPage implements OnInit, OnDestroy {
           hasAcceptedTerms,
         },
       };
-    }
-  }
-
-  next() {
-    if (this.formFg.controls.email.valid) {
-      this.currentStep = 'data';
     }
   }
 }

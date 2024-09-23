@@ -18,9 +18,11 @@ const urlMatchDecorator = new MatchDecorator({
 export const urlDecorator = ViewPlugin.fromClass(
   class implements PluginValue {
     decorations: DecorationSet;
+
     constructor(view: EditorView) {
       this.decorations = urlMatchDecorator.createDeco(view);
     }
+
     update(update: ViewUpdate) {
       this.decorations = urlMatchDecorator.updateDeco(update, this.decorations);
     }

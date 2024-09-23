@@ -339,6 +339,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       },
     });
   }
+
   private async fetchEventOverview() {
     if (!this.currentLatLon) {
       return;

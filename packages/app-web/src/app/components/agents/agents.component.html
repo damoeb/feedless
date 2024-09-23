@@ -13,10 +13,10 @@
   </ion-item>
   <ion-item *ngFor="let agent of agents">
     <ion-chip *ngIf="agent.openInstance" slot="start">Public</ion-chip>
-    <ion-chip *ngIf="!agent.openInstance" slot="start" color="success"
-      >Private</ion-chip
-    >
-    <ion-label> {{ agent.name }}, version {{ agent.version }} </ion-label>
-    <ion-label> added {{ fromNow(agent.addedAt) }} ago </ion-label>
+    <ion-chip *ngIf="!agent.openInstance" color="success" slot="start"
+      >Private
+    </ion-chip>
+    <ion-label> {{ agent.name }}, version {{ agent.version }}</ion-label>
+    <ion-label> added {{ fromNow(agent.addedAt) }} ago</ion-label>
   </ion-item>
 </ion-list>

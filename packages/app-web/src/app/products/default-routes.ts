@@ -24,6 +24,13 @@ export const DefaultRoutes: Routes = [
       ),
   },
   {
+    path: 'feeds/:feedId/report',
+    loadChildren: () =>
+      import('../pages/report/report.module').then(
+        (m) => m.ReportPageModule,
+      ),
+  },
+  {
     path: 'notebook',
     loadChildren: () =>
       import('../pages/notebook-details/notebook-details.module').then(

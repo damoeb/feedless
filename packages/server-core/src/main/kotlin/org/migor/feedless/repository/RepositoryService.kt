@@ -28,7 +28,6 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
-import org.migor.feedless.generated.types.RepositoriesCreateInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -94,8 +93,8 @@ class RepositoryService(
 //  private lateinit var analyticsService: AnalyticsService
 
 
-  suspend fun create(data: RepositoriesCreateInput): List<Repository> {
-    log.info("[${coroutineContext.corrId()}] create repository with ${data.repositories.size} sources")
+  suspend fun create(data: List<RepositoryCreateInput>): List<Repository> {
+    log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
 
     val ownerId = getActualUserOrDefaultUser().id
     val totalCount = withContext(Dispatchers.IO) {
@@ -108,7 +107,7 @@ class RepositoryService(
 //      log.info("[$corrId] violates maxActiveCount, archiving oldest")
 //      RepositoryDAO.updateArchivedForOldestActive(ownerId)
     }
-    return data.repositories.map { createRepository(ownerId, it).toDto(true) }
+    return data.map { createRepository(ownerId, it).toDto(true) }
   }
 
   private suspend fun getActualUserOrDefaultUser(): UserEntity {
@@ -348,11 +347,18 @@ class RepositoryService(
 //          )
 //        }
 
-//          where.product?.let {
-//            whereStatements.add(
-//              path(RepositoryEntity::product).`in`(ProductCategory.rssProxy)
-//            )
-//          }
+          where.product?.let {
+            it.eq?.let {
+              whereStatements.add(
+                path(RepositoryEntity::product).eq(it.fromDto())
+              )
+            }
+            it.`in`?.let { products ->
+              whereStatements.add(
+                path(RepositoryEntity::product).`in`(products.map { it.fromDto() })
+              )
+            }
+          }
           where.tags?.let {
             it.every?.let { every ->
               whereStatements.add(

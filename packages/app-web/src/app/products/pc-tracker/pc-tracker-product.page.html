@@ -18,16 +18,16 @@
         </ion-button>
         <ion-button
           *ngIf="serverConfig.isSelfHosted()"
-          target="_blank"
           href="https://gihub.com/damoeb/rss-proxy"
+          target="_blank"
         >
           <ion-icon name="logo-github" slot="start"></ion-icon>
           Documentation
         </ion-button>
         <ion-button
-          fill="solid"
-          color="primary"
           (click)="openCreateTrackerModal()"
+          color="primary"
+          fill="solid"
         >
           Create Tracker
         </ion-button>
@@ -47,17 +47,17 @@
 
 <ion-footer>
   <div class="ion-text-right">
-    <ion-chip>v.{{serverConfig.getVersion()}}</ion-chip>
+    <ion-chip>v.{{ serverConfig.getVersion() }}</ion-chip>
     <ng-container *ngIf="serverConfig.isSelfHosted() && license">
       <ion-chip *ngIf="license.isValid && !license.isTrial"
-        >Open Source Apache 2</ion-chip
-      >
+        >Open Source Apache 2
+      </ion-chip>
       <ion-chip
         *ngIf="license.isValid && license.isTrial && !license.isLocated"
         color="primary"
         routerLink="/license"
-        >Trial</ion-chip
-      >
+        >Trial
+      </ion-chip>
       <ion-chip
         *ngIf="license.isValid && license.isLocated"
         color="dark"

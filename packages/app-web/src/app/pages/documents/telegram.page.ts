@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
   selector: 'app-setup-telegram-page',
   templateUrl: './telegram.page.html',
 })
 export class TelegramPage {
-  constructor(titleService: Title) {
-    titleService.setTitle('Telegram Setup');
+  constructor(appConfig: AppConfigService) {
+    appConfig.setPageTitle('Telegram Setup');
   }
 }

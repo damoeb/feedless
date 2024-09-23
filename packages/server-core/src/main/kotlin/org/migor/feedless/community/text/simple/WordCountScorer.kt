@@ -6,19 +6,17 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.TokenizerService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class WordCountScorer {
+class WordCountScorer(
+  private val tokenizerService: TokenizerService
+) {
 
   private val log = LoggerFactory.getLogger(WordCountScorer::class.simpleName)
-
-  @Autowired
-  lateinit var tokenizerService: TokenizerService
 
   private var spline: PolynomialSplineFunction = createSplineInterpolator()
 

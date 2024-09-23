@@ -1,4 +1,8 @@
-<div class="table" [ngStyle]="{'--app-table-columns': getHeaders().length}">
+<div
+  *ngIf="rows"
+  [ngStyle]="{ '--app-table-columns': getHeaders().length }"
+  class="table"
+>
   <div class="table-header">
     <div *ngFor="let header of getHeaders()">{{ header.name }}</div>
   </div>

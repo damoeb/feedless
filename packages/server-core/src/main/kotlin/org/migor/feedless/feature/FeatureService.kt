@@ -143,7 +143,7 @@ class FeatureService(
       if (where.id == null) {
         featureGroupDAO.findAll()
       } else {
-        listOf(featureGroupDAO.findById(UUID.fromString(where.id.equals)).orElseThrow())
+        listOf(featureGroupDAO.findById(UUID.fromString(where.id.eq)).orElseThrow())
       }
     }
     return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }

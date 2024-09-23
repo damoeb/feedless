@@ -6,7 +6,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -16,15 +15,12 @@ import java.util.*
 
 @Controller
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
-class MailController {
+class MailController(
+  private val mailService: MailService,
+  private val templateService: TemplateService
+) {
 
   private val log = LoggerFactory.getLogger(MailController::class.simpleName)
-
-  @Autowired
-  private lateinit var mailService: MailService
-
-  @Autowired
-  private lateinit var templateService: TemplateService
 
   @GetMapping(
     "${mailForwardingAllow}/{mailForwardId}",

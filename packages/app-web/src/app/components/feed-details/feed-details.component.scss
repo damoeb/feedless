@@ -4,6 +4,7 @@ dl {
     margin-top: 10px;
     margin-bottom: 5px;
   }
+
   dd {
     margin: 0;
     color: rgba(var(--ion-color-dark), 0.7);
@@ -32,12 +33,14 @@ dl {
     dd {
       display: inline;
       padding-right: 4px;
+
       ion-button {
         display: none;
       }
     }
   }
 }
+
 .doc__checkbox {
   align-self: flex-start;
   margin-top: 70px;

@@ -7,7 +7,6 @@ import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.text.simple.VocabularyScorer
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -16,13 +15,12 @@ data class CivilityWeights(val sentiment: Double, val attacks: Double, val polit
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class CivilityScorer {
+class CivilityScorer(
+  private val languageService: LanguageService
+) {
 
   private val log = LoggerFactory.getLogger(VocabularyScorer::class.simpleName)
 //  private var categorizers = mutableMapOf<String, DocumentCategorizerME>()
-
-  @Autowired
-  lateinit var languageService: LanguageService
 
   @PostConstruct
   fun postConstruct() {

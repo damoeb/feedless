@@ -27,8 +27,7 @@ class EngagementScorerTest {
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    scorer = EngagementScorer()
-    scorer.commentGraphService = commentGraphService
+    scorer = EngagementScorer(commentGraphService)
   }
 
   @ParameterizedTest

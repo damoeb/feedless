@@ -11,8 +11,8 @@
       </p>
 
       <app-pricing
-        *ngIf="productConfig"
         (selectionChange)="checkout($event)"
+        *ngIf="productConfig"
         [productCategory]="productConfig.product"
       ></app-pricing>
     </div>

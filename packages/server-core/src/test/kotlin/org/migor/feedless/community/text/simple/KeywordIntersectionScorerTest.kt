@@ -30,14 +30,10 @@ class KeywordIntersectionScorerTest {
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    val partOfSpeechService = PartOfSpeechService()
-    partOfSpeechService.tokenizerService = tokenizerService
+    val partOfSpeechService = PartOfSpeechService(tokenizerService)
     partOfSpeechService.postConstruct()
 
-    scorer = KeywordIntersectionScorer()
-    scorer.languageService = languageService
-    scorer.stemmerService = StemmerService()
-    scorer.partOfSpeechService = partOfSpeechService
+    scorer = KeywordIntersectionScorer(partOfSpeechService, languageService, StemmerService())
   }
 
   @ParameterizedTest

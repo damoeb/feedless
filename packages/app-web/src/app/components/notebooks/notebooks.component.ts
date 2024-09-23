@@ -2,20 +2,23 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { Notebook, NotebookService } from '../../services/notebook.service';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notebook-builder',
-  templateUrl: './notebook-builder.component.html',
-  styleUrls: ['./notebook-builder.component.scss'],
+  templateUrl: './notebooks.component.html',
+  styleUrls: ['./notebooks.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotebookBuilderComponent implements OnInit {
+export class NotebooksComponent implements OnInit, OnDestroy {
   busy = false;
   notebooks: Notebook[];
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly router: Router,
@@ -38,9 +41,15 @@ export class NotebookBuilderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.notebookService.notebooksChanges.subscribe((notebooks) => {
-      this.notebooks = notebooks;
-      this.changeRef.detectChanges();
-    });
+    this.subscriptions.push(
+      this.notebookService.notebooksChanges.subscribe((notebooks) => {
+        this.notebooks = notebooks;
+        this.changeRef.detectChanges();
+      }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

@@ -12,8 +12,9 @@ describe('FeedlessProductPage', () => {
     TestBed.configureTestingModule({
       imports: [
         FeedlessProductModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

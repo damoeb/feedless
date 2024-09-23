@@ -5,7 +5,7 @@ import { DirectoryPageModule } from './directory.module';
 import {
   GqlListPublicRepositoriesQuery,
   GqlListPublicRepositoriesQueryVariables,
-  ListPublicRepositories
+  ListPublicRepositories,
 } from '../../../generated/graphql';
 
 describe('DirectoryPage', () => {
@@ -16,19 +16,20 @@ describe('DirectoryPage', () => {
     TestBed.configureTestingModule({
       imports: [
         DirectoryPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          apolloMockController
-            .mockQuery<
-              GqlListPublicRepositoriesQuery,
-              GqlListPublicRepositoriesQueryVariables
-            >(ListPublicRepositories)
-            .and.resolveOnce(async () => {
-              return {
-                data: {
-                  repositories: [],
-                },
-              };
-            });
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            apolloMockController
+              .mockQuery<
+                GqlListPublicRepositoriesQuery,
+                GqlListPublicRepositoriesQueryVariables
+              >(ListPublicRepositories)
+              .and.resolveOnce(async () => {
+                return {
+                  data: {
+                    repositories: [],
+                  },
+                };
+              }),
         }),
       ],
     }).compileComponents();

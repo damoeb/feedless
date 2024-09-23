@@ -178,7 +178,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       },
       where: {
         product: {
-          in: [GqlProductCategory.RssProxy],
+          eq: GqlProductCategory.Feedless,
         },
       },
     });

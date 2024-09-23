@@ -1,16 +1,24 @@
 import { Injectable } from '@angular/core';
 import {
-  DeleteRecordsById,
+  CreateRecords,
+  DeleteRecordsById, FullRecordByIds,
+  GqlCreateRecordInput,
+  GqlCreateRecordsMutation,
+  GqlCreateRecordsMutationVariables,
   GqlDeleteRecordsByIdMutation,
   GqlDeleteRecordsByIdMutationVariables,
-  GqlDeleteRecordsInput,
+  GqlDeleteRecordsInput, GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables,
   GqlRecordByIdsQuery,
   GqlRecordByIdsQueryVariables,
   GqlRecordsInput,
+  GqlUpdateRecordInput,
+  GqlUpdateRecordMutation,
+  GqlUpdateRecordMutationVariables, GqlUserWhereUniqueInput,
   RecordByIds,
+  UpdateRecord
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { Record } from '../graphql/types';
+import { Record, RecordFull } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +33,23 @@ export class RecordService {
     return this.apollo
       .query<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>({
         query: RecordByIds,
+        variables: {
+          data,
+        },
+        fetchPolicy,
+      })
+      .then((response) => {
+        return response.data.records;
+      });
+  }
+
+  findAllFullByRepositoryId(
+    data: GqlRecordsInput,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<RecordFull[]> {
+    return this.apollo
+      .query<GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables>({
+        query: FullRecordByIds,
         variables: {
           data,
         },
@@ -55,7 +80,29 @@ export class RecordService {
     return Promise.resolve(undefined);
   }
 
-  createRecord(caption: string, data: string) {
-    return Promise.resolve(undefined);
+  createRecords(records: GqlCreateRecordInput[]) {
+    return this.apollo
+      .mutate<GqlCreateRecordsMutation, GqlCreateRecordsMutationVariables>({
+        mutation: CreateRecords,
+        variables: {
+          records,
+        },
+      })
+      .then((response) => {
+        return response.data.createRecords;
+      });
+  }
+
+  updateRecord(data: GqlUpdateRecordInput) {
+    return this.apollo
+      .mutate<GqlUpdateRecordMutation, GqlUpdateRecordMutationVariables>({
+        mutation: UpdateRecord,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => {
+        return response.data.updateRecord;
+      });
   }
 }

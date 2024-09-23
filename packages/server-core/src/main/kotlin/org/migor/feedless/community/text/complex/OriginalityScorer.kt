@@ -8,7 +8,6 @@ import org.migor.feedless.community.text.simple.NoveltyScorer
 import org.migor.feedless.community.text.simple.SpamScorer
 import org.migor.feedless.community.text.simple.getHyperLinks
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -22,18 +21,13 @@ data class OriginalityWeights(
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class OriginalityScorer {
+class OriginalityScorer(
+  private val noveltyScorer: NoveltyScorer,
+  private val spamScorer: SpamScorer,
+  private val duplicateContentScorer: DuplicateContentScorer
+) {
 
   private val log = LoggerFactory.getLogger(OriginalityScorer::class.simpleName)
-
-  @Autowired
-  private lateinit var noveltyScorer: NoveltyScorer
-
-  @Autowired
-  private lateinit var spamScorer: SpamScorer
-
-  @Autowired
-  private lateinit var duplicateContentScorer: DuplicateContentScorer
 
 
   fun originality(comment: CommentEntity, w: OriginalityWeights): Double {

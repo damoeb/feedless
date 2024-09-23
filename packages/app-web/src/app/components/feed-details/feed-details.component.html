@@ -72,52 +72,52 @@
                       </p>
                       <p>
                         <ion-button
-                          fill="clear"
+                          (click)="editTags(source)"
                           [color]="
                             source.tags?.length > 0 ? 'medium' : 'primary'
                           "
-                          (click)="editTags(source)"
+                          fill="clear"
                           >{{ stringifyTags(source) }}
                         </ion-button>
 
                         <ion-button
-                          fill="clear"
-                          [color]="source.latLng ? 'medium' : 'primary'"
                           (click)="editLatLon(source)"
+                          [color]="source.latLng ? 'medium' : 'primary'"
+                          fill="clear"
                           >{{ stringifyLocalization(source) }}
                         </ion-button>
                       </p>
-                      <ion-label color="danger" *ngIf="source.disabled">
+                      <ion-label *ngIf="source.disabled" color="danger">
                         Source is disabled. Last Error Message
                         {{ source.lastErrorMessage }}
                       </ion-label>
                     </ion-label>
                     <ion-buttons [collapse]="true">
                       <ion-button
+                        (click)="setDisabledForSource(source, true)"
                         *ngIf="!source.disabled"
                         fill="solid"
-                        (click)="setDisabledForSource(source, true)"
                       >
                         Disable
                       </ion-button>
                       <ion-button
+                        (click)="setDisabledForSource(source, false)"
                         *ngIf="source.disabled"
                         color="success"
                         fill="solid"
-                        (click)="setDisabledForSource(source, false)"
                       >
                         Enable
                       </ion-button>
                       <ion-button
+                        (click)="deleteSource(source)"
                         color="danger"
                         fill="solid"
-                        (click)="deleteSource(source)"
                       >
                         Delete
                       </ion-button>
                       <ion-button (click)="editSource(source)">
-                        Edit</ion-button
-                      >
+                        Edit
+                      </ion-button>
                     </ion-buttons>
                   </ion-item>
                 </ng-container>
@@ -156,7 +156,8 @@
           </ng-template>
         </ion-modal>
 
-        <ion-button *ngIf="isOwner" [id]="harvestsModalId">
+        <ion-button *ngIf="isOwner"
+                    [id]="harvestsModalId">
           <ion-icon name="pulse-outline" slot="start"></ion-icon>
           <ion-label> Harvests</ion-label>
         </ion-button>
@@ -167,11 +168,18 @@
             Sources
             <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>
           </ion-label>
-          <ion-badge *ngIf="!hasErrors()" style="margin-left: 5px" color="light"
+          <ion-badge *ngIf="!hasErrors()" color="light" style="margin-left: 5px"
             >{{ repository.sources.length }}
           </ion-badge>
         </ion-button>
       </ng-container>
+
+      <ion-button *ngIf="!isOwner"
+                  appDev
+                  routerLink="report">
+        <ion-icon name="flag-outline" slot="start"></ion-icon>
+        <ion-label> Report</ion-label>
+      </ion-button>
       <!--      <ion-button>-->
       <!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
       <!--        Visit website-->
@@ -184,19 +192,19 @@
       <!--      ></ion-icon>-->
       <!--      Pull 2.3k-->
       <!--    </ion-button>-->
-      <ion-button *ngIf="!hasCurrentUserStarred()" (click)="starRepository()">
+      <ion-button (click)="starRepository()" *ngIf="!hasCurrentUserStarred()">
         <ion-icon name="star-outline" slot="start"></ion-icon>
         Star
-        <ion-badge style="margin-left: 5px" color="light"
+        <ion-badge color="light" style="margin-left: 5px"
           >{{ getStartCount() }}
         </ion-badge>
       </ion-button>
-      <ion-button *ngIf="hasCurrentUserStarred()" (click)="unstarRepository()">
+      <ion-button (click)="unstarRepository()" *ngIf="hasCurrentUserStarred()">
         <ion-icon name="star" slot="start"></ion-icon>
         Starred
-        <ion-badge style="margin-left: 5px" color="light">{{
-          getStartCount()
-        }}</ion-badge>
+        <ion-badge color="light" style="margin-left: 5px"
+          >{{ getStartCount() }}
+        </ion-badge>
       </ion-button>
       <ion-button [href]="feedUrl" color="primary" fill="solid">
         <ion-icon name="logo-rss" slot="start"></ion-icon>
@@ -210,10 +218,10 @@
       <ion-popover
         [showBackdrop]="false"
         [trigger]="settingsModalId"
+        alignment="end"
+        side="bottom"
         size="auto"
         triggerAction="click"
-        side="bottom"
-        alignment="end"
       >
         <ng-template>
           <ion-content>
@@ -222,11 +230,11 @@
               <!--                <ion-icon name="code-outline" slot="start"></ion-icon>-->
               <!--                <ion-label>Code</ion-label>-->
               <!--              </ion-item>-->
-              <ion-item button="true" (click)="editRepository()">
+              <ion-item (click)="editRepository()" button="true">
                 <ion-icon name="settings-outline" slot="start"></ion-icon>
                 <ion-label>Edit</ion-label>
               </ion-item>
-              <ion-item button="true" (click)="deleteRepository()">
+              <ion-item (click)="deleteRepository()" button="true">
                 <ion-icon name="trash-outline" slot="start"></ion-icon>
                 <ion-label>Delete</ion-label>
               </ion-item>
@@ -237,8 +245,8 @@
     </ion-buttons>
   </ion-toolbar>
   <div
-    class="description"
     [ngClass]="{ 'description--flat': !showFullDescription }"
+    class="description"
   >
     <ion-row>
       <ion-col>
@@ -264,12 +272,12 @@
             <dd>
               {{ fromNow(repository.nextUpdateAt) }}
               <ion-button
-                size="small"
-                [disabled]="repository.sources.length === 0"
                 (click)="refreshSources()"
-                shape="round"
-                title="Trigger Refresh"
+                [disabled]="repository.sources.length === 0"
                 class="ion-margin-start"
+                shape="round"
+                size="small"
+                title="Trigger Refresh"
               >
                 <ion-icon name="refresh-outline" slot="start"></ion-icon>
                 Trigger Refresh
@@ -281,11 +289,11 @@
             <dd>
               {{ getRetentionStrategy() }}
               <ion-button
-                size="small"
-                *ngIf="isOwner"
                 (click)="editRepository(['storage'])"
-                shape="round"
+                *ngIf="isOwner"
                 class="ion-margin-start"
+                shape="round"
+                size="small"
               >
                 <ion-icon name="pencil-outline" slot="start"></ion-icon>
                 Edit
@@ -300,8 +308,8 @@
         (click)="
           showFullDescription = !showFullDescription; $event.stopPropagation()
         "
-        fill="clear"
         color="dark"
+        fill="clear"
         style="margin: auto"
       >
         <span *ngIf="showFullDescription">Show less</span>
@@ -311,7 +319,7 @@
   </div>
 
   <div style="border-radius: 8px">
-    <div style="margin-top: 50px; display: flex" class="ion-padding">
+    <div class="ion-padding" style="margin-top: 50px; display: flex">
       <h3 style="flex: 1">
         <span *ngIf="viewModeFc.value === viewModeList">Available items</span>
         <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
@@ -320,15 +328,15 @@
 
       <div style="align-content: center">
         <ion-segment
+          [formControl]="viewModeFc"
           mode="ios"
           style="max-width: 300px"
-          [formControl]="viewModeFc"
         >
           <ion-segment-button [value]="viewModeList">List</ion-segment-button>
           <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
           <ion-segment-button
-            [value]="viewModeDiff"
             *ngIf="repository.product === GqlProductName.VisualDiff"
+            [value]="viewModeDiff"
             >Diff
           </ion-segment-button>
         </ion-segment>
@@ -339,8 +347,8 @@
 
     <ng-container *ngIf="!loading">
       <div
-        style="position: relative"
         *ngIf="viewModeFc.value === viewModeHistogram"
+        style="position: relative"
       >
         <app-histogram [data]="repository.frequency"></app-histogram>
       </div>
@@ -356,8 +364,8 @@
           <ng-container *ngIf="documents.length > 1">
             <div *ngFor="let pair of getDocumentPairs()">
               <app-image-diff
-                [before]="pair.a"
                 [after]="pair.b"
+                [before]="pair.a"
               ></app-image-diff>
             </div>
           </ng-container>
@@ -370,7 +378,7 @@
           ></app-text-diff>
           <ng-container *ngIf="documents.length > 1">
             <div *ngFor="let pair of getDocumentPairs()">
-              <app-text-diff [before]="pair.a" [after]="pair.b"></app-text-diff>
+              <app-text-diff [after]="pair.b" [before]="pair.a"></app-text-diff>
             </div>
           </ng-container>
         </ng-container>
@@ -386,22 +394,22 @@
               ></ion-checkbox>
               <div class="ion-padding-horizontal flex">
                 <ion-text
-                  class="ion-margin-end"
                   *ngIf="selectedCount === 0"
+                  class="ion-margin-end"
                   style="align-content: center"
                   >Select All
                 </ion-text>
                 <ion-text
-                  class="ion-margin-end"
                   *ngIf="selectedCount > 0"
+                  class="ion-margin-end"
                   style="align-content: center"
                   >({{ selectedCount }})
                 </ion-text>
                 <ion-button
                   (click)="deleteAllSelected()"
+                  *ngIf="selectedCount > 0"
                   color="danger"
                   fill="solid"
-                  *ngIf="selectedCount > 0"
                 >
                   Delete selected
                 </ion-button>
@@ -414,11 +422,11 @@
           <div *ngFor="let document of documents">
             <ion-item lines="full">
               <ion-checkbox
-                slot="start"
                 *ngIf="isOwner"
-                class="doc__checkbox"
                 [formControl]="document.fc"
                 aria-label="toggle document"
+                class="doc__checkbox"
+                slot="start"
               ></ion-checkbox>
               <ion-label>
                 <ion-toolbar style="--background: transparent">
@@ -429,8 +437,8 @@
 
                       <!--                      https://www.openstreetmap.org/#map=14/-->
                       <ion-icon
-                        name="location-outline"
                         *ngIf="document.latLng"
+                        name="location-outline"
                       ></ion-icon>
                     </ion-note>
                     <ion-note *ngIf="document.tags.length > 0">
@@ -442,8 +450,8 @@
                 <h2 style="padding-bottom: 5px">
                   <a
                     [href]="getDocumentUrl(document)"
-                    target="_blank"
                     referrerpolicy="no-referrer"
+                    target="_blank"
                   >
                     {{ document.title }}
                   </a>
@@ -452,8 +460,8 @@
                 <p class="content">{{ getText(document) }}</p>
 
                 <app-player
-                  [document]="document"
                   (playback)="playAudio(document)"
+                  [document]="document"
                   [isPlaying]="playDocument === document"
                 ></app-player>
               </ion-label>
@@ -461,8 +469,8 @@
           </div>
         </ion-list>
         <app-pagination
-          [currentPage]="currentPage"
           (pageChange)="fetchPage($event)"
+          [currentPage]="currentPage"
         ></app-pagination>
       </ng-container>
     </ng-container>

@@ -7,20 +7,16 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
-class EngagementScorer {
+class EngagementScorer(private val commentGraphService: CommentGraphService) {
 
   private val log = LoggerFactory.getLogger(KeywordIntersectionScorer::class.simpleName)
 
   private var spline: PolynomialSplineFunction = createSplineInterpolator()
-
-  @Autowired
-  lateinit var commentGraphService: CommentGraphService
 
   suspend fun score(comment: CommentEntity): Double {
     return spline.value(commentGraphService.getReplyCount(comment).toDouble())

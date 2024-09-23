@@ -12,6 +12,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,6 +39,7 @@ import org.springframework.test.context.ActiveProfiles
   MockBean(UserDAO::class),
   MockBean(ServerConfigResolver::class),
   MockBean(UserSecretService::class),
+  MockBean(PermissionService::class),
 )
 @Import(
   DisableDatabaseConfiguration::class,

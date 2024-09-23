@@ -41,8 +41,9 @@ export const markdownDecorator = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged)
+      if (update.docChanged || update.viewportChanged) {
         this.decorations = decorateMarkdown(update.view);
+      }
     }
   },
   {

@@ -27,7 +27,6 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -48,22 +47,15 @@ class AgentResponse(private val scrapeResponse: String) : Serializable {
 
 @Service
 @Profile("${AppProfiles.agent} & ${AppLayer.service}")
-class AgentService {
+class AgentService(
+  private val userSecretService: UserSecretService,
+  private val tokenProvider: TokenProvider,
+  private val agentDAO: AgentDAO,
+  private val meterRegistry: MeterRegistry
+) {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
-
-  @Autowired
-  private lateinit var userSecretService: UserSecretService
-
-  @Autowired
-  private lateinit var tokenProvider: TokenProvider
-
-  @Autowired
-  private lateinit var agentDAO: AgentDAO
-
-  @Autowired
-  private lateinit var meterRegistry: MeterRegistry
 
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->

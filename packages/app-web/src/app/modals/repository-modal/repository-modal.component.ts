@@ -4,7 +4,6 @@ import {
   Component,
   Input,
   OnInit,
-  ViewChild,
 } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -14,9 +13,9 @@ import {
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
   GqlPluginExecutionInput,
+  GqlRecordDateField,
   GqlSourceInput,
   GqlVisibility,
-  GqlRecordDateField,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -254,22 +253,20 @@ export class RepositoryModalComponent
 
         await toast.present();
       } else {
-        const repositories = await this.repositoryService.createRepositories({
-          repositories: [
-            {
-              product: environment.product,
-              sources: this.repository.sources as GqlSourceInput[],
-              title: this.formFg.value.title,
-              refreshCron: this.formFg.value.fetchFrequency,
-              withShareKey: true,
-              description: this.formFg.value.description,
-              visibility: this.formFg.value.isPublic
-                ? GqlVisibility.IsPublic
-                : GqlVisibility.IsPrivate,
-              plugins,
-            },
-          ],
-        });
+        const repositories = await this.repositoryService.createRepositories([
+          {
+            product: environment.product,
+            sources: this.repository.sources as GqlSourceInput[],
+            title: this.formFg.value.title,
+            refreshCron: this.formFg.value.fetchFrequency,
+            withShareKey: true,
+            description: this.formFg.value.description,
+            visibility: this.formFg.value.isPublic
+              ? GqlVisibility.IsPublic
+              : GqlVisibility.IsPrivate,
+            plugins,
+          },
+        ]);
 
         const firstRepository = repositories[0];
         await this.modalCtrl.dismiss();

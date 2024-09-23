@@ -15,9 +15,11 @@ describe('BillingsPage', () => {
     TestBed.configureTestingModule({
       imports: [
         BillingsPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockRepositories(apolloMockController);
-          mockBillings(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockRepositories(apolloMockController);
+            mockBillings(apolloMockController);
+          },
         }),
       ],
     }).compileComponents();

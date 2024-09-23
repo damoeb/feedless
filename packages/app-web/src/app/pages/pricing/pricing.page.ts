@@ -12,7 +12,6 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../graphql/types';
-import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-pricing-page',
@@ -21,20 +20,18 @@ import { Title } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PricingPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
-
   productConfig: ProductConfig;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly titleService: Title,
     private readonly activatedRoute: ActivatedRoute,
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('Pricing');
+    this.appConfigService.setPageTitle('Pricing');
     const productConfigs = await this.appConfigService.getProductConfigs();
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {

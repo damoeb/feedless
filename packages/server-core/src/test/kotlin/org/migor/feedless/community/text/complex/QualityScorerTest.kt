@@ -4,7 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.community.text.simple.DuplicateContentScorer
+import org.migor.feedless.community.text.simple.NoveltyScorer
+import org.migor.feedless.community.text.simple.SpamScorer
 import org.migor.feedless.community.text.simple.withUrls
+import org.mockito.Mockito.mock
 
 class QualityScorerTest {
 
@@ -12,7 +16,11 @@ class QualityScorerTest {
 
   @BeforeEach
   fun setUp() {
-    scorer = OriginalityScorer()
+    scorer = OriginalityScorer(
+      mock(NoveltyScorer::class.java),
+      mock(SpamScorer::class.java),
+      mock(DuplicateContentScorer::class.java),
+    )
   }
 
   @ParameterizedTest

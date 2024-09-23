@@ -1,7 +1,7 @@
 <div *ngIf="!hideServiceFlavor">
   <ion-segment
-    mode="ios"
     [formControl]="serviceFlavorFc"
+    mode="ios"
     style="max-width: 400px; height: 50px"
   >
     <ion-segment-button [value]="serviceFlavorSelf">
@@ -16,19 +16,19 @@
 <div class="ion-padding-top">
   <div *ngIf="serviceFlavorFc.value === serviceFlavorSelf">
     <ion-segment
-      mode="ios"
       [formControl]="targetGroupFc"
+      mode="ios"
       style="max-width: 800px; height: 50px"
     >
       <ion-segment-button [value]="targetGroupOrganization">
         <ion-label
-          ><span class="ion-hide-md-down">For</span> Organizations</ion-label
-        >
+          ><span class="ion-hide-md-down">For</span> Organizations
+        </ion-label>
       </ion-segment-button>
       <ion-segment-button [value]="targetGroupIndividual">
         <ion-label
-          ><span class="ion-hide-md-down">For</span> Individuals</ion-label
-        >
+          ><span class="ion-hide-md-down">For</span> Individuals
+        </ion-label>
       </ion-segment-button>
       <ion-segment-button [value]="targetGroupOther">
         <ion-label>Supported Categories</ion-label>
@@ -72,13 +72,13 @@
             <ion-col size="6" style="align-content: center">
               <ion-note>{{ price.description }}</ion-note>
             </ion-col>
-            <ion-col size="6" class="ion-text-right">
+            <ion-col class="ion-text-right" size="6">
               <h1>${{ formatPrice(price.price) }}</h1>
             </ion-col>
           </ion-row>
         </div>
 
-        <ion-button planAction color="primary" (click)="checkout(product)">
+        <ion-button (click)="checkout(product)" color="primary" planAction>
           {{ getProductActionLabel(product) }}
         </ion-button>
       </app-plan-column>

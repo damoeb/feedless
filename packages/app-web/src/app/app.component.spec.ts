@@ -18,16 +18,17 @@ describe('AppComponent', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       imports: [
         RouterTestingModule.withRoutes([]),
-        AppTestModule.withDefaults((apolloMockController) => {
-          apolloMockController
-            .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
-            .and.resolveOnce(async () => {
-              return {
-                data: {
-                  session: {} as any,
-                },
-              };
-            });
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            apolloMockController
+              .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
+              .and.resolveOnce(async () => {
+                return {
+                  data: {
+                    session: {} as any,
+                  },
+                };
+              }),
         }),
       ],
     }).compileComponents();

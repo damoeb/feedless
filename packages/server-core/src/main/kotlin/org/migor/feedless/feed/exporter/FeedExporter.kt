@@ -2,7 +2,6 @@ package org.migor.feedless.feed.exporter
 
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,14 +11,11 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Service
-class FeedExporter {
+class FeedExporter(
+  private val jsonFeedExporter: JsonFeedExporter,
+  private val atomFeedExporter: SyndAtomFeedExporter
+) {
   private val log = LoggerFactory.getLogger(FeedExporter::class.simpleName)
-
-  @Autowired
-  private lateinit var jsonFeedExporter: JsonFeedExporter
-
-  @Autowired
-  private lateinit var atomFeedExporter: SyndAtomFeedExporter
 
   fun resolveResponseType(
     responseType: String?

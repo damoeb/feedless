@@ -14,7 +14,6 @@ import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
@@ -26,16 +25,13 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 @Profile("${AppProfiles.throttle} && ${AppLayer.api}")
-class InMemoryRequestThrottleService : RequestThrottleService() {
+class InMemoryRequestThrottleService(
+  private val planService: PlanService,
+  private val authService: AuthService
+) : RequestThrottleService() {
   private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
 
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
-
-  @Autowired
-  private lateinit var planService: PlanService
-
-  @Autowired
-  private lateinit var authService: AuthService
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
     val userId =

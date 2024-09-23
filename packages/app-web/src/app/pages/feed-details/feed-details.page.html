@@ -1,15 +1,15 @@
 <app-feedless-header></app-feedless-header>
 <ion-header *ngIf="repository?.disabledFrom">
   <ion-toolbar color="danger">
-    <ion-text style="font-size: 16px" class="ion-padding-horizontal"
+    <ion-text class="ion-padding-horizontal" style="font-size: 16px"
       >This feed will expire in
-      <strong>{{fromNow(repository.disabledFrom)}}</strong></ion-text
+      <strong>{{ fromNow(repository.disabledFrom) }}</strong></ion-text
     >
     <ion-button
-      slot="end"
-      color="light"
       class="ion-margin-horizontal"
+      color="light"
       shape="round"
+      slot="end"
     >
       Remove Expiry
     </ion-button>
@@ -17,14 +17,14 @@
 </ion-header>
 <ion-header *ngIf="repository?.archived">
   <ion-toolbar color="medium">
-    <ion-text style="font-size: 16px" class="ion-padding-horizontal">
+    <ion-text class="ion-padding-horizontal" style="font-size: 16px">
       Feed is archived. It will not be updated.
     </ion-text>
     <ion-button
-      slot="end"
-      color="light"
       class="ion-margin-horizontal"
+      color="light"
       shape="round"
+      slot="end"
     >
       Resume
     </ion-button>
@@ -44,14 +44,14 @@
 
     <div *ngIf="errorMessage">
       <ion-item color="danger">
-        <p>{{errorMessage}}</p>
+        <p>{{ errorMessage }}</p>
       </ion-item>
     </div>
 
     <app-feed-details
       *ngIf="!busy && !errorMessage"
-      style="margin-top: 50px"
       [repositoryId]="repository.id"
+      style="margin-top: 50px"
     >
     </app-feed-details>
   </div>

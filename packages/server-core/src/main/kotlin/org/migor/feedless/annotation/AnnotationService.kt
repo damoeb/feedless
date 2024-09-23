@@ -139,4 +139,10 @@ class AnnotationService(
     }
   }
 
+  suspend fun findAllVotesByUserIdAndDocumentId(userId: UUID, documentId: UUID): List<VoteEntity> {
+    return withContext(Dispatchers.IO) {
+      voteDAO.findAllByOwnerIdAndDocumentId(userId, documentId)
+    }
+  }
+
 }

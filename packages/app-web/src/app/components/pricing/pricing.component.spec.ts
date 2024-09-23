@@ -15,8 +15,9 @@ describe('PricingComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         PricingModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockProducts(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) =>
+            mockProducts(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

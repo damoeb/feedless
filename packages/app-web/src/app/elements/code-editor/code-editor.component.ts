@@ -99,7 +99,9 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   create: getCursorTooltips,
 
   update(tooltips, tr) {
-    if (!tr.docChanged && !tr.selection) return tooltips;
+    if (!tr.docChanged && !tr.selection) {
+      return tooltips;
+    }
     return getCursorTooltips(tr.state);
   },
 
@@ -157,6 +159,9 @@ export class CodeEditorComponent
   lineWrapping: boolean = true;
 
   @Input()
+  lineNumbers: boolean = true;
+
+  @Input()
   extensions: Extension[] = [];
 
   // @Input()
@@ -210,10 +215,11 @@ export class CodeEditorComponent
       }),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
-          textChangeHook.emit(this.getText());
+          const text = this.getText();
+          textChangeHook.emit(text);
+          this.control.setValue(text);
         }
       }),
-      lineNumbers(),
       EditorState.readOnly.of(this.readOnly),
       highlightSpecialChars(),
       foldGutter(),
@@ -354,6 +360,9 @@ export class CodeEditorComponent
       // }, 300)),
     ];
 
+    if (this.lineNumbers) {
+      extensions.push(lineNumbers());
+    }
     if (this.lineWrapping) {
       extensions.push(EditorView.lineWrapping);
     }

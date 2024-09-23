@@ -23,14 +23,14 @@
             ></div>
             <ng-container *ngIf="feature.valueBool">
               <ion-icon
+                *ngIf="feature.valueBool.value"
                 color="success"
                 name="checkmark-outline"
-                *ngIf="feature.valueBool.value"
               ></ion-icon>
               <ion-icon
+                *ngIf="!feature.valueBool.value"
                 color="danger"
                 name="close-outline"
-                *ngIf="!feature.valueBool.value"
               ></ion-icon>
             </ng-container>
           </ion-col>

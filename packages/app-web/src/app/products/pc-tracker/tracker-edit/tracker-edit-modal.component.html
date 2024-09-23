@@ -9,10 +9,10 @@
     <ion-buttons slot="end">
       <ion-button
         (click)="createOrUpdatePageTracker()"
-        fill="solid"
         color="success"
+        fill="solid"
       >
-        <ion-label> Create Page Tracker </ion-label>
+        <ion-label> Create Page Tracker</ion-label>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -20,21 +20,21 @@
 <ion-content>
   <app-remote-feed-preview>
     <ion-list>
-      <ion-list-header> Source </ion-list-header>
+      <ion-list-header> Source</ion-list-header>
       <ion-radio-group [formControl]="formFg.controls.kind">
         <ion-item [disabled]="true">
           <ion-label>
             <ion-radio labelPlacement="start" value="static"
-              >Track One Page</ion-radio
-            >
-            <ion-note> Static tracking based on one URL </ion-note>
+              >Track One Page
+            </ion-radio>
+            <ion-note> Static tracking based on one URL</ion-note>
           </ion-label>
         </ion-item>
         <ion-item>
           <ion-label>
             <ion-radio labelPlacement="start" value="dynamic"
-              >Track Multiple Pages</ion-radio
-            >
+              >Track Multiple Pages
+            </ion-radio>
             <ion-note>
               Dynamic tracking based on a website that provides links to track
             </ion-note>
@@ -42,7 +42,7 @@
         </ion-item>
       </ion-radio-group>
 
-      <ion-list-header class="ion-margin-top"> Customize </ion-list-header>
+      <ion-list-header class="ion-margin-top"> Customize</ion-list-header>
 
       <ng-container *ngIf="formFg.value.kind === 'static'">
         <ion-item [button]="true" color="primary">
@@ -51,20 +51,20 @@
       </ng-container>
 
       <ng-container *ngIf="formFg.value.kind === 'dynamic'">
-        <ion-item [button]="true" color="primary" (click)="openFeedBuilder()">
+        <ion-item (click)="openFeedBuilder()" [button]="true" color="primary">
           Customize a Feed
         </ion-item>
         <ion-item>
-          <ion-text class="ion-padding-end"> if </ion-text>
+          <ion-text class="ion-padding-end"> if</ion-text>
           <ion-input
             [formControl]="formFg.controls.limit"
-            placeholder="Type a number"
             fill="outline"
+            placeholder="Type a number"
           ></ion-input>
         </ion-item>
       </ng-container>
 
-      <ion-list-header> Update Frequency </ion-list-header>
+      <ion-list-header> Update Frequency</ion-list-header>
 
       <ion-item>
         <ion-select
@@ -93,7 +93,7 @@
         </ion-select>
       </ion-item>
 
-      <ion-list-header> Trigger Threshold </ion-list-header>
+      <ion-list-header> Trigger Threshold</ion-list-header>
 
       <ion-item>
         <ion-select
@@ -109,7 +109,7 @@
         </ion-select>
       </ion-item>
 
-      <ion-list-header> Sun Setting </ion-list-header>
+      <ion-list-header> Sun Setting</ion-list-header>
 
       <ion-item>
         <ion-select

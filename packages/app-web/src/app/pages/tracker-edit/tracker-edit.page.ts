@@ -1,9 +1,23 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { debounce, interval, merge } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { debounce, interval } from 'rxjs';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Location } from '@angular/common';
-import { BoundingBox, XyPosition } from '../../components/embedded-image/embedded-image.component';
-import { GqlRecordField, GqlScrapeActionInput, GqlScrapeEmit, GqlSourceInput } from '../../../generated/graphql';
+import {
+  BoundingBox,
+  XyPosition,
+} from '../../components/embedded-image/embedded-image.component';
+import {
+  GqlRecordField,
+  GqlScrapeActionInput,
+  GqlScrapeEmit,
+  GqlSourceInput,
+} from '../../../generated/graphql';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { RepositoryService } from '../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../app.module';
@@ -11,10 +25,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { createEmailFormControl } from '../../form-controls';
-import { Title } from '@angular/platform-browser';
 import { DEFAULT_FETCH_CRON } from '../feed-builder/feed-builder.page';
 import { ScrapeService } from '../../services/scrape.service';
-import { BrowserAction, InteractiveWebsiteController } from '../../modals/interactive-website-modal/interactive-website-controller';
+import {
+  BrowserAction,
+  InteractiveWebsiteController,
+} from '../../modals/interactive-website-modal/interactive-website-controller';
+import { AppConfigService } from '../../services/app-config.service';
 
 type Email = string;
 
@@ -26,7 +43,10 @@ type Screen = 'area' | 'page' | 'element';
   styleUrls: ['./tracker-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TrackerEditPage extends InteractiveWebsiteController implements OnInit, OnDestroy {
+export class TrackerEditPage
+  extends InteractiveWebsiteController
+  implements OnInit, OnDestroy
+{
   // additionalWait = new FormControl<number>(0, [
   //   Validators.required,
   //   Validators.min(0),
@@ -37,7 +57,11 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
       url: new FormControl<string>('', [
         Validators.required,
         Validators.minLength(10),
-        Validators.pattern(new RegExp('https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'))
+        Validators.pattern(
+          new RegExp(
+            'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)',
+          ),
+        ),
       ]),
       sinkCondition: new FormControl<number>(0, [
         Validators.required,
@@ -67,53 +91,50 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
     },
     { updateOn: 'change' },
   );
-  protected readonly GqlRecordField = GqlRecordField;
   // errorMessage: null;
   showErrors: boolean;
   isThrottled: boolean;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
   screenElement: Screen = 'element';
+  source: GqlSourceInput;
+  protected readonly GqlRecordField = GqlRecordField;
   protected isLoading: boolean = false;
   protected hasUrl: boolean = false;
-  source: GqlSourceInput;
 
   constructor(
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly location: Location,
     private readonly sessionService: SessionService,
-    private readonly titleService: Title,
+    private readonly appConfig: AppConfigService,
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
     public readonly changeRef: ChangeDetectorRef,
     public readonly scrapeService: ScrapeService,
     public readonly serverConfig: ServerConfigService,
   ) {
-    super()
+    super();
   }
 
   ngOnInit() {
-    this.titleService.setTitle('Tracker Builder');
+    this.appConfig.setPageTitle('Tracker Builder');
     this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
       this.actionsFg.valueChanges
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
           if (this.actionsFg.valid) {
-            this.sourceBuilder.overwriteFlow(
-              this.getActionsRequestFragment(),
-            );
+            this.sourceBuilder.overwriteFlow(this.getActionsRequestFragment());
             this.sourceBuilder.events.actionsChanges.next();
           }
         }),
 
-      this.form.controls.url.valueChanges
-        .subscribe((url) => {
-          if (this.form.controls.url.valid) {
-            return this.initialize(url);
-          }
-        }),
+      this.form.controls.url.valueChanges.subscribe((url) => {
+        if (this.form.controls.url.valid) {
+          return this.initialize(url);
+        }
+      }),
       // this.activatedRoute.queryParams.subscribe((queryParams) => {
       //   if (queryParams.url && queryParams.url != this.form.value.url) {
       //     this.form.controls.url.setValue(queryParams.url);
@@ -146,8 +167,82 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
+  handleReorderActions(ev: CustomEvent<ItemReorderEventDetail>) {
+    console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
+    ev.detail.complete();
+  }
+
+  async startMonitoring() {
+    this.showErrors = true;
+    try {
+      await this.createSubscription();
+    } catch (e) {
+      this.showErrors = false;
+    }
+    this.changeRef.detectChanges();
+  }
+
+  pickArea() {
+    this.sourceBuilder.events.pickArea.next((boundingBox: BoundingBox) => {
+      this.form.controls.areaBoundingBox.patchValue(boundingBox);
+      this.changeRef.detectChanges();
+    });
+  }
+
+  pickPoint(action: FormGroup<BrowserAction>) {
+    console.log('pickPoint');
+    this.sourceBuilder.events.pickPoint.next((position: XyPosition) => {
+      action.controls.clickParams.patchValue(position);
+      this.changeRef.detectChanges();
+    });
+  }
+
+  pickXPath() {
+    this.sourceBuilder.events.pickElement.next((xpath: string) => {
+      this.form.controls.elementXpath.setValue(xpath);
+      this.changeRef.detectChanges();
+    });
+  }
+
+  getPositionLabel(action: FormGroup<BrowserAction>) {
+    const clickParams = action.value.clickParams;
+    if (clickParams) {
+      return `(${clickParams.x}, ${clickParams.y})`;
+    } else {
+      return 'Click on Screenshot';
+    }
+  }
+
+  getBoundingBoxLabel(action: FormControl<BoundingBox | null>) {
+    const boundingBox = action.value;
+    if (boundingBox) {
+      return `(${boundingBox.x}, ${boundingBox.y}; ${boundingBox.w}, ${boundingBox.h})`;
+    } else {
+      return 'Draw Area';
+    }
+  }
+
+  handleQuery(url: string) {
+    if (this.form.value.url !== url) {
+      if (isValidUrl(url)) {
+        this.form.controls.url.setValue(url);
+      } else {
+        const fixedUrl = fixUrl(url);
+        this.form.controls.url.setValue(fixedUrl);
+      }
+    }
+  }
+
+  getXPathLabel(formControl: FormControl<string | null>) {
+    if (formControl.valid) {
+      return formControl.value;
+    } else {
+      return 'Choose Element';
+    }
+  }
+
   private async initialize(url: string) {
-    console.log('initialize scrape '+ url);
+    console.log('initialize scrape ' + url);
 
     if (url.trim().length < 10) {
       return;
@@ -188,25 +283,11 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
     this.changeRef.detectChanges();
   }
 
-  handleReorderActions(ev: CustomEvent<ItemReorderEventDetail>) {
-    console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
-    ev.detail.complete();
-  }
-
-  async startMonitoring() {
-    this.showErrors = true;
-    try {
-      await this.createSubscription();
-    } catch (e) {
-      this.showErrors = false;
-    }
-    this.changeRef.detectChanges();
-  }
   private async createSubscription() {
     if (this.form.invalid) {
       return;
     }
-    throw new Error('not implemented')
+    throw new Error('not implemented');
     // const sub = await this.repositoryService.createRepositories({
     //   repositories: [
     //     {
@@ -270,55 +351,26 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
     // await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
 
-  pickArea() {
-    this.sourceBuilder.events.pickArea.next((boundingBox: BoundingBox) => {
-      this.form.controls.areaBoundingBox.patchValue(boundingBox);
-      this.changeRef.detectChanges();
-    });
-  }
-
-  pickPoint(action: FormGroup<BrowserAction>) {
-    console.log('pickPoint')
-    this.sourceBuilder.events.pickPoint.next((position: XyPosition) => {
-      action.controls.clickParams.patchValue(position);
-      this.changeRef.detectChanges();
-    });
-  }
-
-  pickXPath() {
-    this.sourceBuilder.events.pickElement.next((xpath: string) => {
-      this.form.controls.elementXpath.setValue(xpath);
-      this.changeRef.detectChanges();
-    });
-  }
-
-  getPositionLabel(action: FormGroup<BrowserAction>) {
-    const clickParams = action.value.clickParams;
-    if (clickParams) {
-      return `(${clickParams.x}, ${clickParams.y})`;
-    } else {
-      return 'Click on Screenshot';
-    }
-  }
-
-  getBoundingBoxLabel(action: FormControl<BoundingBox | null>) {
-    const boundingBox = action.value;
-    if (boundingBox) {
-      return `(${boundingBox.x}, ${boundingBox.y}; ${boundingBox.w}, ${boundingBox.h})`;
-    } else {
-      return 'Draw Area';
-    }
-  }
-
   private async patchUrlInAddressBar() {
     const url = this.router
       .createUrlTree(this.activatedRoute.snapshot.url, {
-        queryParams: {  },
+        queryParams: {},
         relativeTo: this.activatedRoute,
       })
       .toString();
     this.location.replaceState(url);
   }
+
+  // private async showAnonymousSuccessAlert() {
+  //   const alert = await this.alertCtrl.create({
+  //     header: 'Tracker created',
+  //     cssClass: 'success-alert',
+  //     message: `You should have received an email, you may continue from there.`,
+  //     buttons: ['Ok'],
+  //   });
+  //
+  //   await alert.present();
+  // }
 
   private getEmit(): GqlScrapeActionInput {
     if (this.form.value.screen === 'area') {
@@ -345,36 +397,6 @@ export class TrackerEditPage extends InteractiveWebsiteController implements OnI
           },
         },
       };
-    }
-  }
-
-  handleQuery(url: string) {
-    if (this.form.value.url !== url) {
-      if (isValidUrl(url)) {
-        this.form.controls.url.setValue(url);
-      } else {
-        const fixedUrl = fixUrl(url);
-        this.form.controls.url.setValue(fixedUrl);
-      }
-    }
-  }
-
-  // private async showAnonymousSuccessAlert() {
-  //   const alert = await this.alertCtrl.create({
-  //     header: 'Tracker created',
-  //     cssClass: 'success-alert',
-  //     message: `You should have received an email, you may continue from there.`,
-  //     buttons: ['Ok'],
-  //   });
-  //
-  //   await alert.present();
-  // }
-
-  getXPathLabel(formControl: FormControl<string | null>) {
-    if (formControl.valid) {
-      return formControl.value;
-    } else {
-      return 'Choose Element';
     }
   }
 }

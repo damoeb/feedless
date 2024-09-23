@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { GqlScrapeActionInput, GqlSourceInput, GqlXyPosition } from '../../../generated/graphql';
+import {
+  GqlScrapeActionInput,
+  GqlSourceInput,
+  GqlXyPosition,
+} from '../../../generated/graphql';
 import { ModalController } from '@ionic/angular';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SourceBuilder } from '../../components/interactive-website/source-builder';
@@ -15,14 +26,13 @@ export type BrowserAction = {
   raw?: FormControl<GqlScrapeActionInput>;
 };
 
-export abstract class InteractiveWebsiteController
-{
+export abstract class InteractiveWebsiteController {
   source: GqlSourceInput;
 
   sourceBuilder: SourceBuilder;
-  abstract changeRef: ChangeDetectorRef
-  abstract scrapeService: ScrapeService
-  abstract serverConfig: ServerConfigService
+  abstract changeRef: ChangeDetectorRef;
+  abstract scrapeService: ScrapeService;
+  abstract serverConfig: ServerConfigService;
 
   protected actionsFg = new FormArray<FormGroup<BrowserAction>>([]);
   protected subscriptions: Subscription[] = [];

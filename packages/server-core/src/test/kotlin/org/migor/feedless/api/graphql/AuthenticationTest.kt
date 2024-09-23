@@ -16,6 +16,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
@@ -44,6 +45,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @MockBeans(
   MockBean(ServerConfigResolver::class),
   MockBean(UserDAO::class),
+  MockBean(PermissionService::class),
 )
 @Import(DisableDatabaseConfiguration::class)
 class AuthenticationTest {

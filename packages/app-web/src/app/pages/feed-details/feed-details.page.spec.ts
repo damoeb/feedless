@@ -15,9 +15,11 @@ describe('FeedDetailsPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         FeedDetailsPageModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockPlugins(apolloMockController);
-          mockRepository(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockPlugins(apolloMockController);
+            mockRepository(apolloMockController);
+          },
         }),
       ],
     }).compileComponents();

@@ -46,7 +46,7 @@ import {
   ServerSettings,
   RecordByIds,
 } from '../generated/graphql';
-import { isUndefined } from 'lodash-es';
+import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
 import {
   FeedlessAppConfig,
@@ -159,6 +159,15 @@ export class ApolloMockController {
   }
 }
 
+export type AppTestOptions = {
+  configurer?: (apolloMockController: ApolloMockController) => void;
+  mockAppConfig?: boolean;
+};
+
+const defaultAppTestModuleConfig: AppTestOptions = {
+  mockAppConfig: true,
+};
+
 @NgModule({
   imports: [
     HttpClientTestingModule,
@@ -168,9 +177,8 @@ export class ApolloMockController {
   providers: [{ provide: SwUpdate, useClass: SwUpdateMock }],
 })
 export class AppTestModule {
-  static withDefaults(
-    configurer: (apolloMockController: ApolloMockController) => void = null,
-  ) {
+  static withDefaults(options: AppTestOptions = null) {
+    const config = assignIn({}, defaultAppTestModuleConfig, options);
     const apolloMockController = new ApolloMockController();
     apolloMockController
       .mockMutate<
@@ -189,8 +197,8 @@ export class AppTestModule {
         };
       });
 
-    if (configurer) {
-      configurer(apolloMockController);
+    if (config.configurer) {
+      config.configurer(apolloMockController);
     }
 
     const productConfig: ProductConfig = {
@@ -219,13 +227,25 @@ export class AppTestModule {
       getActiveProductConfigChange: () => new BehaviorSubject(productConfig),
     } as any;
 
+    const providers = [
+      { provide: AppConfigService, useValue: productServiceMock },
+      { provide: ApolloMockController, useValue: apolloMockController },
+      { provide: ApolloClient, useValue: apolloMockController.client() },
+    ];
+
+    if (config.mockAppConfig) {
+      providers.push({
+        provide: AppConfigService,
+        useValue: {
+          setPageTitle: () => {},
+          getActiveProductConfigChange: () => of(),
+        },
+      });
+    }
+
     return {
       ngModule: AppTestModule,
-      providers: [
-        { provide: AppConfigService, useValue: productServiceMock },
-        { provide: ApolloMockController, useValue: apolloMockController },
-        { provide: ApolloClient, useValue: apolloMockController.client() },
-      ],
+      providers,
     };
   }
 }
@@ -256,6 +276,7 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
       };
     });
 }
+
 export function mockDocuments(apolloMockController: ApolloMockController) {
   return apolloMockController
     .mockQuery<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>(RecordByIds)
@@ -333,6 +354,7 @@ export function mockRepositories(apolloMockController: ApolloMockController) {
       };
     });
 }
+
 export function mockBillings(apolloMockController: ApolloMockController) {
   return apolloMockController
     .mockQuery<GqlOrdersQuery, GqlOrdersQueryVariables>(Orders)

@@ -10,26 +10,25 @@ import {
   GqlCreateRepositoriesMutationVariables,
   GqlDeleteRepositoryMutation,
   GqlDeleteRepositoryMutationVariables,
-  GqlListRepositoriesQuery,
-  GqlListRepositoriesQueryVariables,
   GqlListPublicRepositoriesQuery,
   GqlListPublicRepositoriesQueryVariables,
-  GqlRepositoriesCreateInput,
+  GqlListRepositoriesQuery,
+  GqlListRepositoriesQueryVariables,
   GqlRepositoriesInput,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
+  GqlRepositoryCreateInput,
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
-  ListRepositories,
   ListPublicRepositories,
+  ListRepositories,
   RepositoryById,
   UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { PublicRepository, Repository, RepositoryFull } from '../graphql/types';
-import { ServerConfigService } from './server-config.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 import { zenToRx } from './agent.service';
@@ -42,14 +41,13 @@ import { AuthService } from './auth.service';
 export class RepositoryService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly serverConfig: ServerConfigService,
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly sessionService: SessionService,
   ) {}
 
   async createRepositories(
-    data: GqlRepositoriesCreateInput,
+    data: GqlRepositoryCreateInput[],
   ): Promise<Repository[]> {
     if (this.sessionService.isAuthenticated()) {
       return this.apollo
@@ -159,7 +157,6 @@ export class RepositoryService {
 
   async getRepositoryById(
     id: string,
-    currentUserId: string,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<RepositoryFull> {
     return this.apollo
@@ -171,9 +168,6 @@ export class RepositoryService {
             where: {
               id,
             },
-          },
-          user: {
-            id,
           },
         },
       })

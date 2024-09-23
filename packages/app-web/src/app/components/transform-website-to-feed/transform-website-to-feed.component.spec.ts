@@ -85,9 +85,11 @@ describe('TransformWebsiteToFeedComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         TransformWebsiteToFeedModule,
-        AppTestModule.withDefaults((apolloMockController) => {
-          mockScrape(apolloMockController);
-          mockRepositories(apolloMockController);
+        AppTestModule.withDefaults({
+          configurer: (apolloMockController) => {
+            mockScrape(apolloMockController);
+            mockRepositories(apolloMockController);
+          },
         }),
       ],
     }).compileComponents();

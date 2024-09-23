@@ -2,7 +2,6 @@ package org.migor.feedless.agent
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -11,13 +10,10 @@ import java.time.LocalDateTime
 
 @Service
 @Profile("${AppProfiles.agent} & ${AppLayer.scheduler}")
-class AgentSyncExecutor {
-
-  @Autowired
-  private lateinit var agentService: AgentService
-
-  @Autowired
-  private lateinit var agentDAO: AgentDAO
+class AgentSyncExecutor(
+  private val agentService: AgentService,
+  private val agentDAO: AgentDAO
+) {
 
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional

@@ -10,7 +10,6 @@ import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -21,15 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @Profile("${AppProfiles.attachment} & ${AppLayer.api}")
-class AttachmentController {
+class AttachmentController(
+  private val attachmentService: AttachmentService,
+  private val httpService: HttpService
+) {
 
   private val log = LoggerFactory.getLogger(AttachmentController::class.simpleName)
-
-  @Autowired
-  private lateinit var attachmentService: AttachmentService
-
-  @Autowired
-  private lateinit var httpService: HttpService
 
   @Tracked
   @GetMapping(

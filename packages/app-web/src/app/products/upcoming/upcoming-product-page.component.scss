@@ -20,9 +20,11 @@
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 14%;
+
   &:not(.day--no-header) {
     min-height: 100px;
   }
+
   display: flex;
   flex-direction: column;
   padding: 5px;
@@ -36,6 +38,7 @@
   &--other {
     opacity: 0.5;
   }
+
   border: 2px solid transparent;
 
   &--active {
@@ -58,6 +61,7 @@
   &--today {
     border-color: var(--app-border-color);
   }
+
   //&--active {
   //  background: var(--app-day-bg) !important;
   //}

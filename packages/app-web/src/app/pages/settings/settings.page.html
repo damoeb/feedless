@@ -10,36 +10,36 @@
           <p>Adjust the server.</p>
         </ion-item>
 
-        <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+        <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
 
         <ng-container *ngIf="!loading">
           <ion-list>
             <ion-item>
               <ion-select
-                label="Feature Group"
                 [formControl]="featureGroupsFc"
+                label="Feature Group"
                 labelPlacement="start"
               >
                 <ion-select-option
                   *ngFor="let group of featureGroups"
                   [value]="group"
                 >
-                  {{group.name}}
+                  {{ group.name }}
                 </ion-select-option>
               </ion-select>
             </ion-item>
             <ion-item *ngFor="let feature of features; let i = index">
               <ng-container *ngIf="feature.value.numVal">
-                <ion-label>{{feature.name}}</ion-label>
+                <ion-label>{{ feature.name }}</ion-label>
                 <ion-input
-                  type="number"
-                  aria-label=""
                   [formControl]="feature.fc"
+                  aria-label=""
+                  type="number"
                 ></ion-input>
               </ng-container>
               <ng-container *ngIf="feature.value.boolVal">
-                <ion-checkbox labelPlacement="start" [formControl]="feature.fc">
-                  {{feature.name}}
+                <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
+                  {{ feature.name }}
                 </ion-checkbox>
               </ng-container>
 

@@ -1,4 +1,4 @@
-<ion-header [translucent]="true" *ngIf="!embedded">
+<ion-header *ngIf="!embedded" [translucent]="true">
   <app-trial-warning></app-trial-warning>
   <ion-toolbar>
     <ion-buttons slot="start">
@@ -12,9 +12,9 @@
 
       <ion-buttons class="ion-margin-horizontal">
         <app-repositories-button
-          name="Feeds"
-          link="/feeds"
           [product]="GqlProductName.RssProxy"
+          link="/feeds"
+          name="Feeds"
         ></app-repositories-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>
@@ -31,17 +31,17 @@
       <!--      </ion-button>-->
       <ion-button
         *ngIf="serverConfig.isSelfHosted()"
-        target="_blank"
         href="https://gihub.com/damoeb/rss-proxy"
+        target="_blank"
       >
         <ion-icon name="logo-github" slot="start"></ion-icon>
         <span class="ion-hide-md-down"> Documentation </span>
       </ion-button>
       <ion-button
-        fill="solid"
         color="primary"
-        routerLinkActive="hidden"
+        fill="solid"
         routerLink="/feed-builder"
+        routerLinkActive="hidden"
       >
         Create Feed
       </ion-button>

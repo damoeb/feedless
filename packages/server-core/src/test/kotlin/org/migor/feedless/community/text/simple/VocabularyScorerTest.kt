@@ -19,9 +19,7 @@ class VocabularyScorerTest {
     val tokenizerService = TokenizerService()
     tokenizerService.postConstruct()
 
-    scorer = VocabularyScorer()
-    scorer.stemmerService = StemmerService()
-    scorer.tokenizerService = tokenizerService
+    scorer = VocabularyScorer(StemmerService(), tokenizerService)
   }
 
   @Test

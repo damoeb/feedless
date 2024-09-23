@@ -180,6 +180,10 @@ ${await marked(meta.localSetupAfterMarkup || '')}`,
     );
   }
 
+  setPageTitle(title: string) {
+    this.titleService.setTitle(`${title} | ${this.activeProductConfig.title}`);
+  }
+
   private async resolveProductConfig(
     product: GqlProductCategory,
   ): Promise<ProductConfig> {

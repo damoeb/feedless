@@ -53,7 +53,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    this.titleService.setTitle('RSS Feed Builder');
+    this.appConfigService.setPageTitle('RSS Feed Builder');
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()
@@ -125,20 +125,18 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
       };
       await this.modalService.openRepositoryEditor(componentProps);
     } else {
-      const repositories = await this.repositoryService.createRepositories({
-        repositories: [
-          {
-            product: environment.product,
-            sources: [source] as GqlSourceInput[],
-            title,
-            refreshCron: DEFAULT_FETCH_CRON,
-            withShareKey: true,
-            description,
-            visibility: GqlVisibility.IsPrivate,
-            plugins: [],
-          },
-        ],
-      });
+      const repositories = await this.repositoryService.createRepositories([
+        {
+          product: environment.product,
+          sources: [source] as GqlSourceInput[],
+          title,
+          refreshCron: DEFAULT_FETCH_CRON,
+          withShareKey: true,
+          description,
+          visibility: GqlVisibility.IsPrivate,
+          plugins: [],
+        },
+      ]);
 
       const firstRepository = repositories[0];
       await this.router.navigateByUrl(`/feeds/${firstRepository.id}`);

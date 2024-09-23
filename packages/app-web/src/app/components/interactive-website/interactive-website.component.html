@@ -7,18 +7,18 @@
       <ion-col size="9">
         <div style="display: flex; align-items: center; column-gap: 10px">
           <ion-input
-            class="ion-margin-start"
             *ngIf="showUrl"
             [formControl]="formFg.controls.url"
+            class="ion-margin-start"
           ></ion-input>
 
-          <ion-segment mode="ios" [formControl]="viewModeFc">
-            <ion-segment-button [value]="viewModeImage" *ngIf="hasScreenshot"
-              >Image</ion-segment-button
-            >
-            <ion-segment-button [value]="viewModeMarkup" *ngIf="hasMarkup"
-              >Markup</ion-segment-button
-            >
+          <ion-segment [formControl]="viewModeFc" mode="ios">
+            <ion-segment-button *ngIf="hasScreenshot" [value]="viewModeImage"
+              >Image
+            </ion-segment-button>
+            <ion-segment-button *ngIf="hasMarkup" [value]="viewModeMarkup"
+              >Markup
+            </ion-segment-button>
             <ng-content select="[segmentButton]"></ng-content>
           </ion-segment>
         </div>
@@ -34,13 +34,13 @@
             <ion-icon name="remove-outline"></ion-icon>
           </ion-button>
           <ion-range
-            class="ion-no-padding"
+            [(ngModel)]="scaleFactor"
+            [label]="parseInt(scaleFactor * 100 + '') + '%'"
+            [max]="maxScaleFactor"
             [min]="minScaleFactor"
             [step]="0.05"
-            [label]="parseInt(scaleFactor * 100 + '') + '%'"
-            [(ngModel)]="scaleFactor"
+            class="ion-no-padding"
             style="width: 100px"
-            [max]="maxScaleFactor"
           ></ion-range>
           <ion-button (click)="zoomOut()">
             <ion-icon name="add-outline"></ion-icon>
@@ -52,7 +52,7 @@
   <div
     style="display: flex; flex: 1; flex-direction: column; position: relative"
   >
-    <ion-toolbar color="danger" *ngIf="errorMessage">
+    <ion-toolbar *ngIf="errorMessage" color="danger">
       <ion-label class="ion-margin-horizontal"
         >{{ errorMessage }}.
 
@@ -64,55 +64,55 @@
       <div *ngIf="viewModeFc.value === viewModeImage" class="prerender-options">
         <div class="prerender-options__line">
           <input
-            type="number"
             [formControl]="
               formFg.controls.prerenderingOptions.controls.resolutionX
             "
+            type="number"
           />
           <ion-text style="padding-inline: 5px">x</ion-text>
           <input
-            type="number"
             [formControl]="
               formFg.controls.prerenderingOptions.controls.resolutionY
             "
+            type="number"
           />
         </div>
         <div class="prerender-options__line">
           <label>
             <input
-              type="checkbox"
               [formControl]="
                 formFg.controls.prerenderingOptions.controls.mobile
               "
+              type="checkbox"
             />Mobile
           </label>
         </div>
         <div class="prerender-options__line">
           <label>
             <input
-              type="checkbox"
               [formControl]="
                 formFg.controls.prerenderingOptions.controls.landscape
               "
+              type="checkbox"
             />Landscape
           </label>
         </div>
         <div class="prerender-options__line">
           <label>
             <ion-range
-              class="ion-no-padding"
+              [formControl]="
+                formFg.controls.prerenderingOptions.controls.additionalWait
+              "
               [label]="
                 'Wait (' +
                 formFg.value.prerenderingOptions.additionalWait +
                 's)'
               "
-              labelPlacement="start"
-              [pin]="true"
-              [formControl]="
-                formFg.controls.prerenderingOptions.controls.additionalWait
-              "
-              [min]="additionalWaitMin"
               [max]="additionalWaitMax"
+              [min]="additionalWaitMin"
+              [pin]="true"
+              class="ion-no-padding"
+              labelPlacement="start"
             ></ion-range>
           </label>
         </div>
@@ -128,24 +128,24 @@
       >
         <app-embedded-image
           *ngIf="embedScreenshot && viewModeFc.value === viewModeImage"
-          [sourceBuilder]="sourceBuilder"
           [embed]="embedScreenshot"
+          [sourceBuilder]="sourceBuilder"
         >
         </app-embedded-image>
         <app-embedded-markup
           *ngIf="embedMarkup && viewModeFc.value === viewModeMarkup"
-          [sourceBuilder]="sourceBuilder"
           [embed]="embedMarkup"
+          [sourceBuilder]="sourceBuilder"
         >
         </app-embedded-markup>
       </div>
 
       <app-console-button
-        [logs]="logs"
         *ngIf="
           viewModeFc.value === viewModeMarkup ||
           viewModeFc.value === viewModeImage
         "
+        [logs]="logs"
       ></app-console-button>
 
       <!--      <div>-->
@@ -162,10 +162,10 @@
 
       <ion-row *ngIf="pickMode">
         <ion-item color="primary" style="width: 100%">
-          <ion-label> Click on your element of choice </ion-label>
+          <ion-label> Click on your element of choice</ion-label>
           <ion-button (click)="cancelPickMode()" color="dark" slot="end"
-            >Cancel</ion-button
-          >
+            >Cancel
+          </ion-button>
         </ion-item>
       </ion-row>
     </ng-container>

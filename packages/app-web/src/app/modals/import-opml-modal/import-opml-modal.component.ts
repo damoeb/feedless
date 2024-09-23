@@ -74,8 +74,8 @@ export class ImportOpmlModalComponent
       });
     }
 
-    await this.repositoryService.createRepositories({
-      repositories: this.fcOutlines
+    await this.repositoryService.createRepositories(
+      this.fcOutlines
         .filter((outline) => outline.fc.value)
         .map((fc) => {
           const actions: GqlScrapeActionInput[] = [
@@ -113,7 +113,7 @@ export class ImportOpmlModalComponent
             plugins,
           };
         }),
-    });
+    );
   }
 
   selectAll() {
