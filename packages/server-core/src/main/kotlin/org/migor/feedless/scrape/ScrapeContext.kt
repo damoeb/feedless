@@ -11,7 +11,10 @@ data class ScrapeActionOutput(
   val fragment: FragmentOutput? = null,
 )
 
-data class ScrapeOutput(val outputs: List<ScrapeActionOutput>, val time: Int)
+data class ScrapeOutput(
+  val outputs: List<ScrapeActionOutput>,
+  val time: Int
+)
 
 class ScrapeContext(val logCollector: LogCollector) {
   fun outputsAsList(): List<ScrapeActionOutput> {

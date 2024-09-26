@@ -9,7 +9,12 @@ import { Completion } from '@codemirror/autocomplete';
 import { notebookRepository } from './notebook-repository';
 import { RepositoryService } from './repository.service';
 import { AuthGuardService } from '../guards/auth-guard.service';
-import { GqlCreateRepositoriesMutation, GqlFullRecordByIdsQuery, GqlProductCategory, GqlVisibility } from '../../generated/graphql';
+import {
+  GqlCreateRepositoriesMutation,
+  GqlFullRecordByIdsQuery,
+  GqlProductCategory,
+  GqlVisibility,
+} from '../../generated/graphql';
 import { ArrayElement } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
@@ -222,7 +227,10 @@ export class NotebookService {
     }
   }
 
-  findAll(query: string, index: string[] = ['text', 'id', 'references:links', 'references:hashtags']): SearchResultGroup[] {
+  findAll(
+    query: string,
+    index: string[] = ['text', 'id', 'references:links', 'references:hashtags'],
+  ): SearchResultGroup[] {
     if (query.trim()) {
       const results = this.index.search({
         query,
@@ -348,7 +356,7 @@ export class NotebookService {
         console.error(e.message);
       }
 
-      notebook.lastSyncedAt = new Date()
+      notebook.lastSyncedAt = new Date();
       notebookRepository.notebooks.update(notebook.id, notebook);
 
       // if (notes.length === 0) {
@@ -463,7 +471,7 @@ export class NotebookService {
       },
     });
     this.index.update(note);
-    console.log('updateNote', note)
+    console.log('updateNote', note);
     notebookRepository.notes.update(note.id, note);
     this.notesChanges.next();
   }

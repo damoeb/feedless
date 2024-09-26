@@ -1,29 +1,40 @@
 package org.migor.feedless.pipeline.plugins
 
+import org.apache.commons.lang3.BooleanUtils
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.toDto
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
-import org.migor.feedless.feed.asRemoteNativeFeed
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
+import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.GeoPoint
+import org.migor.feedless.generated.types.Record
+import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
+import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
@@ -52,19 +63,9 @@ class FeedsPlugin : FragmentTransformerPlugin {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] transformFragment")
 
-    val feedMimeTypes = arrayOf(
-      "text/xml",
-      "text/rss+xml",
-      "application/rss+xml",
-      "application/rdf+xml",
-      "application/rss+xml",
-      "application/atom+xml",
-      "application/xml"
-    )
-
     val mimeType = data.contentType.lowercase()
     logger.log("Found mimeType=$mimeType")
-    return if (feedMimeTypes.any { mimeType.startsWith(it) }) {
+    return if (FeedUtil.isFeed(mimeType)) {
       logger.log("Parsing native feed")
       val jsonFeed = feedParserService.parseFeed(data)
       FragmentOutput(
@@ -117,5 +118,60 @@ class FeedsPlugin : FragmentTransformerPlugin {
       )
     )
   }
+}
+
+private fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
+
+  return RemoteNativeFeed(
+    description = description,
+    title = title,
+    feedUrl = feedUrl,
+    websiteUrl = websiteUrl,
+    language = language,
+    publishedAt = publishedAt.toMillis(),
+    tags = tags,
+    nextPageUrls = links,
+    expired = BooleanUtils.isTrue(expired),
+    items = items.map {
+      var html: String? = null
+      var rawBase64: String? = null
+      var rawMimeType: String? = null
+      if (isHtml(it.rawMimeType)) {
+        try {
+          html = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
+        } catch (e: Exception) {
+          html = it.rawBase64
+        }
+      } else {
+        rawBase64 = it.rawBase64
+        rawMimeType = it.rawMimeType
+      }
+
+      Record(
+        id = it.url,
+        tags = it.tags,
+        title = it.title,
+        text = it.text,
+        publishedAt = it.publishedAt.toMillis(),
+        updatedAt = it.publishedAt.toMillis(),
+        startingAt = it.startingAt?.toMillis(),
+        latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
+        createdAt = LocalDateTime.now().toMillis(),
+        url = it.url,
+        attachments = it.attachments.map { it.toDto() },
+        imageUrl = it.imageUrl,
+        html = html,
+        rawMimeType = rawMimeType,
+        rawBase64 = rawBase64,
+      )
+    }
+  )
 
 }
+
+private fun JsonAttachment.toDto(): Attachment = Attachment(
+  url = url,
+  type = type,
+  size = length,
+  duration = duration,
+)

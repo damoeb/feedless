@@ -25,7 +25,6 @@
       <ion-buttons class="ion-margin-horizontal">
         <app-repositories-button
           *ngIf="serverConfig.isSaas()"
-          appDev
           name="Directory"
           link="/directory"
           [product]="GqlProductName.RssProxy"

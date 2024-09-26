@@ -19,7 +19,7 @@ import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if
     ProductHeaderModule,
     SearchbarModule,
     FeedlessHeaderModule,
-    RemoveIfProdModule
+    RemoveIfProdModule,
   ],
   declarations: [AboutFeedlessPage],
 })

@@ -37,4 +37,11 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
   )
 
   fun existsByRepositoryIdAndDisabledTrue(id: UUID): Boolean
+
+  @Query(
+    """SELECT s FROM SourceEntity s
+    LEFT JOIN FETCH s.actions
+    WHERE s.id = :id"""
+  )
+  fun findByIdWithActions(@Param("id") sourceId: UUID): SourceEntity?
 }

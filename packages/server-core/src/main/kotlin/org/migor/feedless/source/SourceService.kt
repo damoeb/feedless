@@ -14,6 +14,7 @@ import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.actions.WaitActionEntity
+import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
@@ -22,7 +23,6 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,19 +33,14 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Profile("${AppProfiles.source} & ${AppLayer.service}")
 @Transactional
-class SourceService {
+class SourceService(
+  private val sourcePipelineJobDAO: SourcePipelineJobDAO,
+  private val sourceDAO: SourceDAO,
+  private val repositoryHarvester: RepositoryHarvester,
+  private val documentDAO: DocumentDAO
+) {
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)
-
-  @Autowired
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-
-  @Autowired
-  private lateinit var sourceDAO: SourceDAO
-
-  @Autowired
-  private lateinit var repositoryHarvester: RepositoryHarvester
-
 
   suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
     val corrId = coroutineContext.corrId()
@@ -56,7 +51,7 @@ class SourceService {
 
     val source = withContext(Dispatchers.IO) {
       sourcePipelineJobDAO.save(job)
-      sourceDAO.findById(sourceId).orElseThrow()
+      sourceDAO.findByIdWithActions(sourceId)!!
     }
 
     try {
@@ -122,6 +117,12 @@ class SourceService {
   suspend fun existsByRepositoryIdAndDisabledTrue(repositoryId: UUID): Boolean {
     return withContext(Dispatchers.IO) {
       sourceDAO.existsByRepositoryIdAndDisabledTrue(repositoryId)
+    }
+  }
+
+  suspend fun countDocumentsBySourceId(sourceId: UUID): Int {
+    return withContext(Dispatchers.IO) {
+      documentDAO.countBySourceId(sourceId)
     }
   }
 

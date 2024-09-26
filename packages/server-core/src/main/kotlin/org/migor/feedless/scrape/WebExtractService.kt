@@ -45,6 +45,9 @@ class WebExtractService(private val dateClaimer: DateClaimer) {
       Xsoup.compile(fixXpath(extract.xpath)).evaluate(element).elements
         .filterIndexed { index, _ -> index < (extract.max ?: Integer.MAX_VALUE) }
     }
+    // expected
+    // found //main/div[2]/div/div/div/div/div[3]/div/div/div/div[2]/table/tbody/tr/td
+    // found //main/div[2]/div/div/div/div/div[3]/div/div/div/div[2]/table/tbody/tr/td
     logger.log("extracting @level $level ${extract.xpath} -> ${fragments.size} elements (max ${extract.max})")
 
     return ScrapeExtractResponse(

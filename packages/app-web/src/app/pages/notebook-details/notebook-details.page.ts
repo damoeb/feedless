@@ -11,7 +11,7 @@ import {
   ViewChildren,
 } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
-import { Annotation, Repository } from '../../graphql/types';
+import { Repository } from '../../graphql/types';
 import {
   Note,
   Notebook,
@@ -30,7 +30,6 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
 import { UploadService } from '../../services/upload.service';
 import { AppConfigService } from '../../services/app-config.service';
 import { AnnotationService } from '../../services/annotation.service';
-import { isDefined } from '../../types';
 
 type SearchResult = {
   id?: string;
@@ -129,7 +128,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         if (query) {
           this.notebookService.findAllAsync(query);
         }
-        this.starredNotes = await this.notebookService.findAll('true', ['isUpVoted'])[0].notes();
+        this.starredNotes = await this.notebookService
+          .findAll('true', ['isUpVoted'])[0]
+          .notes();
         this.changeRef.detectChanges();
       }),
       this.notebookService.openNoteChanges.subscribe((note) =>
@@ -463,10 +464,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async updateNote(openNote: OpenNote) {
-    const omitFields: (keyof OpenNote)[] = [
-      'formControl',
-      'subscriptions',
-    ];
+    const omitFields: (keyof OpenNote)[] = ['formControl', 'subscriptions'];
     const cleanNote: Note = omit(openNote, omitFields) as any;
     await this.notebookService.updateNote(cleanNote);
   }

@@ -4,28 +4,25 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
+  GqlLogStatement,
   GqlRemoteNativeFeed,
-  GqlSource,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
-import { FeedPreview, Selectors } from '../../graphql/types';
+import { Record, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { assign, cloneDeep, max, min, omit } from 'lodash-es';
+import { assign, last, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
 import { ModalService } from '../../services/modal.service';
-import { FeedService } from '../../services/feed.service';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 import { debounce as rxDebounce, interval, Subscription } from 'rxjs';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -33,6 +30,7 @@ import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/co
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { ScrapeService } from '../../services/scrape.service';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -98,7 +96,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   protected selectedFeed: NativeOrGenericFeed;
   private scaleScore: ScaleLinear<number, number, never>;
   private subscriptions: Subscription[] = [];
-  feedPreview: FeedPreview;
+  feedItems: Record[];
+  feedLogs: Array<Pick<GqlLogStatement, 'time' | 'message'>>;
   // protected useCustomSelectors: boolean;
   protected shouldRefresh: boolean = false;
   activeSegment: string;
@@ -107,7 +106,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly feedService: FeedService,
+    private readonly scrapeService: ScrapeService,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly location: Location,
@@ -274,7 +273,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     if (this.isValid()) {
       this.sourceBuilder.events.stateChange.next('DIRTY');
     }
-    if (!this.feedPreview) {
+    if (!this.feedItems) {
       this.fetchFeedPreview(false);
     }
   }
@@ -310,11 +309,12 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
       try {
         this.loadingFeedPreview = true;
-        this.feedPreview = await this.feedService.previewFeed({
-          sources: [this.sourceBuilder.build()],
-          filters: [],
-          tags: [],
-        });
+        const response = await this.scrapeService.scrape(
+          this.sourceBuilder.build(),
+        );
+        this.feedItems = last(response.outputs).response.extract.items;
+        this.feedLogs = response.logs;
+
         this.sourceBuilder.events.stateChange.next('PRISTINE');
       } finally {
         this.loadingFeedPreview = false;
@@ -330,6 +330,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
         linkXPath: genericFeed.selectors.linkXPath,
         paginationXPath: genericFeed.selectors.paginationXPath,
         dateIsStartOfEvent: genericFeed.selectors.dateIsStartOfEvent,
+        dateXPath: genericFeed.selectors.dateXPath,
         extendContext: genericFeed.selectors.extendContext,
       },
       { emitEvent: false },

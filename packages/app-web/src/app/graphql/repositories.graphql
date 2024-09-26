@@ -60,9 +60,7 @@ fragment RepositoryFull on Repository {
   }
 }
 
-query repositoryById(
-  $repository: RepositoryWhereInput!
-) {
+query repositoryById($repository: RepositoryWhereInput!) {
   repository(data: $repository) {
     ...RepositoryFull
     annotations {

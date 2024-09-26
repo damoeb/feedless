@@ -12,10 +12,18 @@ import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ConnectedAppService } from '../../services/connected-app.service';
-import { Product, Session, UserSecret } from '../../graphql/types';
+import {
+  Product,
+  RepositoryFull,
+  Session,
+  UserSecret,
+} from '../../graphql/types';
 import { ProductService } from '../../services/product.service';
 import { first } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
+import dayjs from 'dayjs';
+import { GqlProductCategory } from '../../../generated/graphql';
+import { RepositoryService } from '../../services/repository.service';
 
 @Component({
   selector: 'app-profile-page',
@@ -49,6 +57,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   constructor(
     private readonly toastCtrl: ToastController,
     protected readonly sessionService: SessionService,
+    protected readonly repositoryService: RepositoryService,
     protected readonly changeRef: ChangeDetectorRef,
     protected readonly productService: ProductService,
     protected readonly alertCtrl: AlertController,
@@ -194,5 +203,64 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   private getConnectedAppByName(appName: string) {
     return this.connectedApps?.find((it) => it.app == appName);
+  }
+
+  async downloadAllRepositories() {
+    const rRepositories = await this.getAllRepositories();
+
+    var a = window.document.createElement('a');
+    a.href = window.URL.createObjectURL(
+      new Blob([JSON.stringify(rRepositories, null, 2)], {
+        type: 'application/json',
+      }),
+    );
+    a.download = `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+  }
+
+  private async getAllRepositories(): Promise<RepositoryFull[]> {
+    const repositories: RepositoryFull[] = [];
+
+    let page = 0;
+    while (true) {
+      const repositoriesOnPage = await this.repositoryService.listRepositories({
+        cursor: {
+          page,
+        },
+        where: {
+          product: {
+            eq: GqlProductCategory.Feedless,
+          },
+        },
+      });
+      if (repositoriesOnPage.length === 0) {
+        break;
+      }
+      for (let index = 0; index < repositoriesOnPage.length; index++) {
+        repositories.push(
+          await this.repositoryService.getRepositoryById(
+            repositoriesOnPage[index].id,
+          ),
+        );
+      }
+      page++;
+    }
+    return repositories;
+  }
+
+  uploadRepositories(uploadEvent: Event) {
+    const file = (uploadEvent.target as any).files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data: ArrayBuffer | string = (e.target as any).result;
+      const repositories: RepositoryFull[] = JSON.parse(String(data));
+
+      // TODO await this.repositoryService.createRepositories(repositories)
+    };
+    reader.readAsText(file);
   }
 }

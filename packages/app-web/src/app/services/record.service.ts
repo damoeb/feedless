@@ -1,21 +1,24 @@
 import { Injectable } from '@angular/core';
 import {
   CreateRecords,
-  DeleteRecordsById, FullRecordByIds,
+  DeleteRecordsById,
+  FullRecordByIds,
   GqlCreateRecordInput,
   GqlCreateRecordsMutation,
   GqlCreateRecordsMutationVariables,
   GqlDeleteRecordsByIdMutation,
   GqlDeleteRecordsByIdMutationVariables,
-  GqlDeleteRecordsInput, GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables,
+  GqlDeleteRecordsInput,
+  GqlFullRecordByIdsQuery,
+  GqlFullRecordByIdsQueryVariables,
   GqlRecordByIdsQuery,
   GqlRecordByIdsQueryVariables,
   GqlRecordsInput,
   GqlUpdateRecordInput,
   GqlUpdateRecordMutation,
-  GqlUpdateRecordMutationVariables, GqlUserWhereUniqueInput,
+  GqlUpdateRecordMutationVariables,
   RecordByIds,
-  UpdateRecord
+  UpdateRecord,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Record, RecordFull } from '../graphql/types';

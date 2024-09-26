@@ -133,6 +133,7 @@ class DocumentService(
       }
 
       where?.let {
+        it.source?.let { whereStatements.add(path(DocumentEntity::sourceId).eq(UUID.fromString(it.id))) }
         it.startedAt?.let { addDateConstraint(it, path(DocumentEntity::startingAt)) }
         it.createdAt?.let { addDateConstraint(it, path(DocumentEntity::createdAt)) }
         it.updatedAt?.let { addDateConstraint(it, path(DocumentEntity::updatedAt)) }

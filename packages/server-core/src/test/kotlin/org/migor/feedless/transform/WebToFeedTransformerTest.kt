@@ -31,6 +31,7 @@ import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.util.ResourceUtils
+import us.codecraft.xsoup.Xsoup
 import java.net.URI
 import java.nio.file.Files
 import java.util.*
@@ -99,6 +100,25 @@ internal class WebToFeedTransformerTest {
     )
   }
 
+  @Test
+  fun testRelativeXPath() = runTest {
+    val document = Jsoup.parse("""
+      <div>
+        <ul>
+          <li></li>
+          <li><a><em></em></a></li>
+          <li></li>
+        </ul>
+      </div>
+    """.trimIndent())
+
+    val root = document.select("div").first()!!
+    val child = document.select("em").first()!!
+    val relativeXPath = parser.getRelativeXPath(child, root)
+//    assertThat(relativeXPath).isEqualTo("")
+    assertThat(Xsoup.compile(relativeXPath).evaluate(root).elements.first()).isEqualTo(child)
+  }
+
   @ParameterizedTest
   @CsvSource(
     value = [
@@ -106,18 +126,17 @@ internal class WebToFeedTransformerTest {
       "https://blog.spencermounta.in, 01-spencermounta-in",
       "https://spotify.com, 02-spotify-com",
       "https://telepolis.de, 03-telepolis-de",
-//    "https://arzg.github.io/lang, 04-arzg-github-io-lang",
+//      "https://arzg.github.io/lang, 04-arzg-github-io-lang",
       "https://www.brandonsmith.ninja, 05-www-brandonsmith-ninja",
-//    "https://jon.bo/posts, 06-jon-bo-posts",
-//    "https://paulgraham.com, 00-paulgraham-com-articles",
-//    "https://www.fool.com/author/20415, 09-fool-com",
+//      "https://jon.bo/posts, 06-jon-bo-posts",
+//      "https://paulgraham.com, 00-paulgraham-com-articles",
+      "https://www.fool.com/author/20415, 09-fool-com",
       "https://www.audacityteam.org/posts/, 11-audacityteam-org",
-//    "https://cloud.google.com/blog, 13-google-cloud-blog",
+      "https://cloud.google.com/blog, 13-google-cloud-blog",
       "https://demo.linkace.org/guest/links, 14-linkace-org",
-//    "https://abilene.craigslist.org, 07-craigslist",
-//    "https://arxiv.org/list/math.GN/recent, 08-arxiv-org",
+//      "https://abilene.craigslist.org, 07-craigslist",
+//      "https://arxiv.org/list/math.GN/recent, 08-arxiv-org",
       "https://sph.ethz.ch/news, 12-sph-ethz-ch", // todo expand context
-//    "https://lukesmith.xyz/articles, 14-lukesmith-xyz",
     ]
   )
   fun testSiteIsSupported(url: String, id: String) = runTest {
@@ -149,11 +168,11 @@ internal class WebToFeedTransformerTest {
 
     val parserOptions = GenericFeedParserOptions()
     val rules = parser.parseFeedRules(document, url, parserOptions)
-    if (rules.isEmpty()) {
-      throw RuntimeException("No rules available")
-    }
+    assertThat(rules).isNotEmpty
     val bestRule = rules[0]
-    return parser.getArticlesBySelectors(bestRule, document, url)
+    val articles = parser.getArticlesBySelectors(bestRule, document, url)
+    assertThat(articles).isNotEmpty
+    return articles
   }
 
   private fun readFile(filename: String): String {

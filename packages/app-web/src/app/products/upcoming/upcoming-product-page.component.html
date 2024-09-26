@@ -163,8 +163,7 @@
                   class="ion-text-center"
                   style="color: var(--ion-color-danger)"
                 >
-                  <span></span>
-                  <span *ngFor="let e of getEvents(day.day)"> &#9679; </span>
+                  <span *ngIf="hasEvents(day.day)"> &#9679; </span>
                 </div>
               </div>
             </a>

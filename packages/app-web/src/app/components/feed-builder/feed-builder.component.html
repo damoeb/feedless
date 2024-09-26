@@ -25,9 +25,11 @@
   </div>
 
   <div class="flex">
-    <div *ngIf="loading" class="ion-margin">
-      <ion-spinner name="dots"></ion-spinner>
-    </div>
+    <ion-progress-bar
+      *ngIf="loading"
+      color="medium"
+      type="indeterminate"
+    ></ion-progress-bar>
 
     <div
       *ngIf="!sourceBuilder?.response && repositories.length > 0 && !loading"
@@ -59,12 +61,19 @@
         beforeFeedsSlot
         class="cy-enable-js-button"
       >
-        Use JavaScript
+        <ion-label color="medium" *ngIf="!needsJavaScript()">
+          Use JavaScript
+        </ion-label>
+        <ion-label color="primary" *ngIf="needsJavaScript()">
+          Using JavaScript
+        </ion-label>
         <ion-icon color="warning" name="logo-javascript" slot="end"></ion-icon>
       </ion-item>
       <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
         <ion-item slot="header">
-          <ion-label> Metadata</ion-label>
+          <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'">
+            Metadata</ion-label
+          >
         </ion-item>
         <ion-list class="ion-no-padding" slot="content">
           <ion-item (click)="showTagsModal()" [button]="true">

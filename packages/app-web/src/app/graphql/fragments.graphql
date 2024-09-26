@@ -88,6 +88,7 @@ fragment SourceFragment on Source {
     lon
   }
   lastErrorMessage
+  recordCount
   title
   flow {
     ...ScrapeFlowFragment
@@ -220,6 +221,7 @@ fragment HttpGetRequestFragment on HttpGetRequest {
   viewport {
     ...ViewportFragment
   }
+  forcePrerender
   additionalWaitSec
   language
   waitUntil

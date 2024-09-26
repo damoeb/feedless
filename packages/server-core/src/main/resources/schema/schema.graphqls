@@ -480,9 +480,6 @@ type Query {
   scrape(data: SourceInput!): ScrapeResponse!
   session: Session!
 
-  remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed! # todo replace by scrape
-  previewFeed(data: PreviewFeedInput!): FeedPreview! # todo replace by scrape
-
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 #  license: License!
 
@@ -501,11 +498,6 @@ type ConnectedApp {
   authorized: Boolean!
   authorizedAt: Long
   app: String!
-}
-
-type FeedPreview {
-  logs: [LogStatement!]!
-  feed: RemoteNativeFeed!
 }
 
 input FeatureGroupWhereInput {
@@ -556,12 +548,6 @@ input StoriesWhereInput {
   newest: Boolean!
 }
 
-input PreviewFeedInput {
-  sources: [SourceInput!]!
-  filters: [ItemFilterParamsInput!]!
-  tags: [ConditionalTagInput!]!
-}
-
 input RecordsInput {
   cursor: Cursor!
   where: RecordsWhereInput!
@@ -571,6 +557,7 @@ input RecordsInput {
 input RecordsWhereInput {
   id: StringFilter
   repository: RepositoryUniqueWhereInput!
+  source: SourceUniqueWhereInput
 #  updatedAt: DatesWhereInput
   startedAt: DatesWhereInput
   createdAt: DatesWhereInput
@@ -599,7 +586,7 @@ input ServerSettingsContextInput {
   product: ProductCategory!
 }
 
-type RemoteNativeFeed {
+type RemoteNativeFeed { # rename to feed
   expired: Boolean
   feedUrl: String!
   publishedAt: Long!
@@ -1306,10 +1293,6 @@ input OsInfo {
   platform: String!
 }
 
-input RemoteNativeFeedInput {
-  nativeFeedUrl: String! @url
-}
-
 input ScheduledRefreshRate {
   expression: String!
 }
@@ -1634,6 +1617,7 @@ type Source {
   disabled: Boolean
   latLng: GeoPoint
   tags: [String!]
+  recordCount: Int
   lastErrorMessage: String
 }
 

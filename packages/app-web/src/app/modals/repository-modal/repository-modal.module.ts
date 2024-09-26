@@ -18,7 +18,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     FilterItemsAccordionModule,
     FetchRateAccordionModule,
     RouterLink,
-    RemoveIfProdModule
-  ]
+    RemoveIfProdModule,
+  ],
 })
 export class RepositoryModalModule {}

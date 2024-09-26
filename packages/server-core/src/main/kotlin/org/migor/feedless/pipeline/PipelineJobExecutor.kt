@@ -89,8 +89,7 @@ class PipelineJobExecutor internal constructor() {
     }
   }
 
-  //  @Scheduled(fixedDelay = 5245, initialDelay = 20000)
-  // todo activate
+    @Scheduled(fixedDelay = 5245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()

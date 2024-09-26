@@ -12,7 +12,6 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../services/app-config.service';
-import { fixUrl } from '../../app.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';

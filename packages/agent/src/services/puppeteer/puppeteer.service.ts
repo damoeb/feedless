@@ -300,6 +300,7 @@ export class PuppeteerService {
     xpath: string,
     exposePixel: boolean,
   ): Promise<ScrapeExtractResponseInput> {
+    this.log.log(`grabElement fragmentName=${fragmentName} xpath=${xpath} exposePixel=${exposePixel}`)
     const evaluateResponse: EvaluateResponse = await page.evaluate(
       (baseXpath) => {
         let element: HTMLElement = document
@@ -343,7 +344,6 @@ export class PuppeteerService {
         );
       }
     };
-
     return {
       fragmentName,
       fragments: [

@@ -82,6 +82,7 @@ fun SourceEntity.toDto(): Source {
       )
     },
     title = title,
+    recordCount = 0,
     flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

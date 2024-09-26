@@ -12,7 +12,7 @@
             <ion-label> Feeds</ion-label>
           </ion-item>
           <div slot="content">
-            <div style="position: relative; height: 400px; overflow-y: auto">
+            <div style="position: relative; height: 300px; overflow-y: auto">
               <div style="position: absolute; width: 100%">
                 <ion-item
                   (click)="pickNativeFeed(nativeFeed)"
@@ -99,6 +99,12 @@
                 <ion-icon name="search-outline"></ion-icon>
               </ion-button>
             </ion-item>
+            <ion-item>
+              <ion-note
+                >The URL will be used to avoid duplicate feed items. If the URL
+                isn't available, the title will be used instead.</ion-note
+              >
+            </ion-item>
             <!--        <ion-item>-->
             <!--          <ion-select-->
             <!--            [formControl]="formGroup.controls.extendContext"-->
@@ -146,6 +152,11 @@
               </ion-checkbox>
             </ion-item>
             <ion-item>
+              <ion-note>
+                Either datetime elements or date string will be parsed/guessed
+              </ion-note>
+            </ion-item>
+            <ion-item>
               <ion-input
                 [formControl]="genFeedXpathsFg.controls.paginationXPath"
                 color="primary"
@@ -154,6 +165,12 @@
                 name="paginationXPath"
                 placeholder="xpath from root"
               ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-note>
+                Links from pagination element will be followed and parsed as a
+                feed.
+              </ion-note>
             </ion-item>
             <ion-item>
               <ion-label class="ion-text-right" color="medium">
@@ -173,7 +190,6 @@
     <ion-list class="marked-border-top">
       <ion-item
         (click)="fetchFeedPreview(true)"
-        *ngIf="!currentNativeFeed"
         [button]="true"
         [disabled]="!selectedFeed"
       >
@@ -192,7 +208,7 @@
     <app-interactive-website
       #interactiveWebsite
       (segmentChange)="handleSegmentChange($event)"
-      *ngIf="!currentNativeFeed && sourceBuilder"
+      *ngIf="sourceBuilder"
       [sourceBuilder]="sourceBuilder"
       style="flex: 1; display: flex"
     >
@@ -241,24 +257,18 @@
             </ion-button>
           </div>
         </div>
-        <ion-spinner *ngIf="!feedPreview" name="dots"></ion-spinner>
-        <ng-container *ngIf="feedPreview">
+        <ion-spinner *ngIf="!feedItems" name="dots"></ion-spinner>
+        <ng-container *ngIf="feedItems">
           <app-remote-feed-preview
-            [feed]="feedPreview.feed"
+            [items]="feedItems"
             [noMetaColumn]="true"
             class="flex"
           ></app-remote-feed-preview>
 
-          <app-console-button [logs]="feedPreview.logs"></app-console-button>
+          <app-console-button [logs]="feedLogs"></app-console-button>
         </ng-container>
       </div>
     </app-interactive-website>
-    <app-native-feed
-      *ngIf="currentNativeFeed"
-      [feedUrl]="currentNativeFeed.feedUrl"
-      [title]="currentNativeFeed.title"
-      class="flex"
-    ></app-native-feed>
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>
       <ion-spinner name="dots"></ion-spinner>

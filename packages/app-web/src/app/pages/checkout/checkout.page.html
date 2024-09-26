@@ -39,12 +39,12 @@
 
         <ng-container *ngIf="currentStep === 'data'">
           <ion-list-header>
-            <h3>Your Products</h3>
+            <h3>Your Basket</h3>
           </ion-list-header>
           <ion-row *ngFor="let product of products">
             <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
             <ion-col class="ion-text-center" push="4" size="4"
-              >${{ getPrice(product) }}
+              >${{ getPrice(product).toFixed(2) }}
             </ion-col>
           </ion-row>
           <ion-row class="ion-margin-top">
@@ -57,7 +57,7 @@
               size="4"
               style="border-top: 1px solid var(--app-foreground)"
             >
-              <strong>${{ getTotalPrice() }} </strong>
+              <strong>${{ getTotalPrice().toFixed(2) }} </strong>
             </ion-col>
           </ion-row>
 

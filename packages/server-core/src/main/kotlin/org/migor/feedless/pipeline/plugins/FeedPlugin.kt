@@ -17,6 +17,7 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.Selectors
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -51,16 +52,18 @@ class FeedPlugin : FragmentTransformerPlugin {
     val executorParams = action.executorParams!!
     logger.log("transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")
 
-
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
 
-    val feed = (executorParams.org_feedless_feed?.generic?.let {
+    val feed = if(FeedUtil.isFeed(data.contentType)) {
+      feedParserService.parseFeed(data)
+    } else {
       webToFeedTransformer.getFeedBySelectors(
-        it.toSelectors(),
+        executorParams.org_feedless_feed?.generic?.toSelectors()!!,
         document, URI(data.url),
         logger
       )
-    } ?: feedParserService.parseFeed(data))
+    }
+
     logger.log("transformed to feed with ${feed.items.size} items")
 
     return FragmentOutput(

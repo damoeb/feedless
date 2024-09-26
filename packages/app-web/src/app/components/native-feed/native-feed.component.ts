@@ -5,8 +5,10 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { RemoteFeedItem } from '../../graphql/types';
-import { FeedService } from '../../services/feed.service';
+import { ScrapeService } from '../../services/scrape.service';
+import { GqlFeedlessPlugins } from '../../../generated/graphql';
+import { last } from 'lodash-es';
+import { Record } from '../../graphql/types';
 
 @Component({
   selector: 'app-native-feed',
@@ -23,11 +25,11 @@ export class NativeFeedComponent implements OnInit {
   showTitle = true;
 
   loading: boolean;
-  feedItems: Array<RemoteFeedItem>;
+  feedItems: Record[];
   errorMessage: string;
 
   constructor(
-    private readonly feedService: FeedService,
+    private readonly scrapeService: ScrapeService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
@@ -44,9 +46,22 @@ export class NativeFeedComponent implements OnInit {
     this.feedItems = [];
     this.changeRef.detectChanges();
     try {
-      this.feedItems = await this.feedService.remoteFeedContent({
-        nativeFeedUrl,
-      });
+      this.feedItems = await this.scrapeService
+        .scrape({
+          title: 'Remote Feed',
+          flow: {
+            sequence: [
+              { fetch: { get: { url: { literal: nativeFeedUrl } } } },
+              {
+                execute: {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                  params: {},
+                },
+              },
+            ],
+          },
+        })
+        .then((response) => last(response.outputs).response.extract.items);
     } catch (e) {
       this.errorMessage = e.message;
     }

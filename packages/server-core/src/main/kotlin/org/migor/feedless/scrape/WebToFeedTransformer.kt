@@ -296,7 +296,7 @@ class WebToFeedTransformer(
     logger: LogCollector,
   ): JsonFeed {
     val locale = extractLocale(document, propertyService.locale)
-    val element = withAbsUrls(normalizeTags(document.body()), uri)
+    val element = withAbsUrls(document, uri)
     val response = webExtractService.extract(
       selectors.toScrapeExtracts(),
       element,
@@ -323,7 +323,7 @@ class WebToFeedTransformer(
         logger,
       )
     }
-    return convertExtractsToJsonFeed(response, links, uri, logger)
+    return convertExtractsToJsonFeed(response, links, uri, logger, StringUtils.isNotBlank(selectors.linkXPath))
   }
 
   suspend fun getArticlesBySelectors(
@@ -338,7 +338,8 @@ class WebToFeedTransformer(
     feed: ScrapeExtractResponse,
     links: ScrapeExtractResponse?,
     url: URI,
-    logger: LogCollector
+    logger: LogCollector,
+    distinctUrls: Boolean
   ): JsonFeed {
 
     val items = feed.fragments!!
@@ -351,8 +352,12 @@ class WebToFeedTransformer(
     jsonFeed.title = "Feed"
     jsonFeed.websiteUrl = ""
     jsonFeed.publishedAt = LocalDateTime.now()
-    jsonFeed.items = items
-      .distinctBy { it.url }
+    jsonFeed.items = if (distinctUrls) {
+      items
+        .distinctBy { it.url }
+    } else {
+      items
+    }
     jsonFeed.feedUrl = ""
     links?.let {
       jsonFeed.links = links.fragments!!.mapNotNull { it.data?.data }
@@ -503,9 +508,13 @@ class WebToFeedTransformer(
             }
           }
         } else if (xPathSegment.match != null) {
-          val changingIndex = tokenized.stream()
-            .map { otherXpathSegment -> otherXpathSegment[index].match!!.index }
-            .collect(Collectors.toSet()).size > 1
+          val changingIndex = try {
+            tokenized.stream()
+              .map { otherXpathSegment -> otherXpathSegment[index].match!!.index }
+              .collect(Collectors.toSet()).size > 1
+          } catch (e: Exception) {
+            false
+          }
           if (changingIndex) {
             xPathSegment.match.path
           } else {
@@ -537,28 +546,43 @@ class WebToFeedTransformer(
     }
   }
 
-  private suspend fun getRelativeXPath(element: Element, context: Element): String {
+  suspend fun getRelativeXPath(element: Element, context: Element): String {
 
     if (element === context) {
       return ""
     }
 
-    var ix = 0
-    val siblings = element.parent()!!.children()
+    val xpath = StringBuilder()
 
-    for (sibling in siblings) {
-      if (sibling === element) {
-        return "${getRelativeXPath(element.parent()!!, context)}/${
-          element.tagName().lowercase(Locale.getDefault())
-        }[${ix + 1}]"
+    var currentElement: Element? = element
+    while (currentElement != null && currentElement != context) {
+      val index: Int = getElementIndex(currentElement)
+      val tagName = currentElement.tagName()
+
+      if (index > 1) {
+        xpath.insert(0, "/$tagName[$index]")
+      } else {
+        xpath.insert(0, "/$tagName")
       }
 
-      // todo sibling.nodeType === 1 &&
-      if (sibling.tagName() === element.tagName()) {
-        ix++
-      }
+      currentElement = currentElement.parent()!!
     }
-    throw IllegalArgumentException("Cannot generate xpath")
+
+    return if (xpath.isNotEmpty()) xpath.insert(0, "/").toString() else throw IllegalArgumentException("Cannot generate xpath")
+  }
+
+  fun getElementIndex(element: Element): Int {
+    var index = 1
+    var sibling = element.previousElementSibling()
+
+    while (sibling != null) {
+      if (sibling.tagName() == element.tagName()) {
+        index++
+      }
+      sibling = sibling.previousElementSibling()
+    }
+
+    return index
   }
 
   private suspend fun evaluateXPath(xpath: String, context: Element): List<Element> {
@@ -608,7 +632,7 @@ class WebToFeedTransformer(
   }
 
   private suspend fun words(text: String): List<String> = text.split(" ")
-    .filterTo(ArrayList()) { word: String -> word.length > 0 }
+    .filterTo(ArrayList()) { word: String -> word.isNotEmpty() }
 
   private suspend fun scoreRule(selectors: GenericFeedSelectors): GenericFeedSelectors {
 //    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest
@@ -792,6 +816,7 @@ class WebToFeedTransformer(
       null
     }
     val generalizeContext = generalizeContextXPath(contexts, root)
+//    assert(Xsoup.compile(generalizeContext.contextXPath).evaluate(root).elements.isNotEmpty())
     return GenericFeedSelectors(
       count = contexts.size,
       score = 0.0,
@@ -835,17 +860,17 @@ class WebToFeedTransformer(
     }
 
 
-    fun normalizeTags(element: Element): Element {
-      element.select("table").tagName("div").attr("role", "table")
-      element.select("thead").tagName("div").attr("role", "thead")
-      element.select("tbody").tagName("div").attr("role", "tbody")
-      element.select("tfoot").tagName("div").attr("role", "tfoot")
-      element.select("tr").tagName("div").attr("role", "row")
-      element.select("td").tagName("div").attr("role", "cell")
-      element.select("font").tagName("div").attr("role", "font")
-      element.select("form").tagName("div").attr("role", "form")
-      return element
-    }
+//    fun normalizeTags(element: Element): Element {
+//      element.select("table").tagName("div").attr("role", "table")
+//      element.select("thead").tagName("div").attr("role", "thead")
+//      element.select("tbody").tagName("div").attr("role", "tbody")
+//      element.select("tfoot").tagName("div").attr("role", "tfoot")
+//      element.select("tr").tagName("div").attr("role", "row")
+//      element.select("td").tagName("div").attr("role", "cell")
+//      element.select("font").tagName("div").attr("role", "font")
+//      element.select("form").tagName("div").attr("role", "form")
+//      return element
+//    }
   }
 }
 

@@ -3,18 +3,17 @@ import {
   GqlAuthentication,
   GqlCreateUserSecretMutation,
   GqlFeatureGroupsQuery,
+  GqlFullRecordByIdsQuery,
   GqlListPluginsQuery,
   GqlListProductsQuery,
   GqlListPublicRepositoriesQuery,
   GqlListRepositoriesQuery,
-  GqlPreviewFeedQuery,
-  GqlRemoteNativeFeedQuery,
+  GqlRecordByIdQuery,
   GqlRepositoryByIdQuery,
   GqlScrapeQuery,
   GqlSelectors,
   GqlServerSettingsQuery,
   GqlSessionQuery,
-  GqlRecordByIdQuery, GqlFullRecordByIdsQuery
 } from '../../generated/graphql';
 
 export type GetElementType<T extends any[]> = T extends (infer U)[] ? U : never;
@@ -49,9 +48,6 @@ export type ScrapedReadability = Record;
 export type User = Session['user'];
 // export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
-export type RemoteFeedItem = GetElementType<RemoteFeed['items']>;
-export type FeedPreview = GqlPreviewFeedQuery['previewFeed'];
-export type RemoteFeed = GqlRemoteNativeFeedQuery['remoteNativeFeed'];
 export type FeatureGroup = GetElementType<
   GqlFeatureGroupsQuery['featureGroups']
 >;

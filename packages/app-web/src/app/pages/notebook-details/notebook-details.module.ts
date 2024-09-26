@@ -22,7 +22,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     FormsModule,
     LoginButtonModule,
     FeedlessHeaderModule,
-    RemoveIfProdModule
+    RemoveIfProdModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [NotebookDetailsPage],

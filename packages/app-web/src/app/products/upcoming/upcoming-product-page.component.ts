@@ -36,9 +36,9 @@ import {
   GqlFindEventsQuery,
   GqlFindEventsQueryVariables,
 } from '../../../generated/graphql';
-import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { namedPlaces } from './places';
 
 type Day = {
   day: Dayjs | null;
@@ -98,7 +98,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected currentDateRef: Dayjs;
   private currentLatLon: number[];
 
-  private readonly repositoryId = 'd7a27f3a-27bd-4917-9eda-2ab84800cb0a';
+  private readonly repositoryId = 'ee5e2fd7-4b3e-4bf0-bf74-1224b5d667ff';
 
   protected now: Dayjs;
   private eventsOfMonth: LocalizedEvent[] = [];
@@ -272,11 +272,11 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     });
   }
 
-  getEvents(day: Dayjs): number[] {
+  hasEvents(day: Dayjs): boolean {
     const freq = this.eventsOfMonth.find((event) =>
       day.isSame(event.group, 'day'),
     );
-    return freq ? times(freq.count) : [];
+    return freq?.count > 0;
   }
 
   private getDistanceFromLatLonInKm(
@@ -453,14 +453,26 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         unionBy(
           events.map((e) => e.latLng),
           (e) => `${e.lat},${e.lon}`,
-        ).map((latLon) =>
-          this.openStreetMapService
-            .reverseSearch(latLon.lat, latLon.lon)
-            .then((match) => ({
-              latLon,
-              place: this.getDisplayName(match),
-            })),
-        ),
+        )
+          .filter((e) => e)
+          .map((latLon) => {
+            const namedPlace = namedPlaces.find(
+              (place) => place.lat == latLon.lat && place.lon == latLon.lon,
+            );
+            if (namedPlace) {
+              return {
+                latLon,
+                place: namedPlace.name,
+              };
+            } else {
+              return this.openStreetMapService
+                .reverseSearch(latLon.lat, latLon.lon)
+                .then((match) => ({
+                  latLon,
+                  place: this.getDisplayName(match),
+                }));
+            }
+          }),
       );
 
       const groups = events.reduce((agg, event) => {

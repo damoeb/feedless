@@ -92,9 +92,7 @@ export const fixUrl = (value: string): string => {
 };
 
 @NgModule({
-  declarations: [
-    AppComponent,
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
@@ -103,7 +101,7 @@ export const fixUrl = (value: string): string => {
     HttpClientModule,
     FinalizeProfileModalModule,
     AppLoadModule,
-    ProductTitleModule
+    ProductTitleModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -113,17 +111,17 @@ export const fixUrl = (value: string): string => {
         HttpErrorInterceptorService,
         ServerConfigService,
         AppConfigService,
-        ApolloAbortControllerService
+        ApolloAbortControllerService,
       ],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
         serverConfig: ServerConfigService,
         appConfig: AppConfigService,
-        abortController: ApolloAbortControllerService
+        abortController: ApolloAbortControllerService,
       ): ApolloClient<any> => {
         const wsUrl = `${serverConfig.apiUrl.replace(
           'http',
-          'ws'
+          'ws',
         )}/subscriptions`;
         const newCorrId = (Math.random() + 1)
           .toString(36)
@@ -140,10 +138,10 @@ export const fixUrl = (value: string): string => {
             query: {
               context: {
                 fetchOptions: {
-                  signal: abortController.signal
-                }
-              }
-            }
+                  signal: abortController.signal,
+                },
+              },
+            },
           },
           link: split(
             ({ query }) => {
@@ -155,21 +153,21 @@ export const fixUrl = (value: string): string => {
             },
             new GraphQLWsLink(
               createClient({
-                url: wsUrl
-              })
+                url: wsUrl,
+              }),
             ),
             ApolloLink.from([
               removeTypenameFromVariables(),
               onError(({ graphQLErrors, networkError }) => {
                 if (networkError) {
                   httpErrorInterceptorService.interceptNetworkError(
-                    networkError
+                    networkError,
                   );
                 }
 
                 if (graphQLErrors) {
                   httpErrorInterceptorService.interceptGraphQLErrors(
-                    graphQLErrors
+                    graphQLErrors,
                   );
                 }
               }),
@@ -178,15 +176,15 @@ export const fixUrl = (value: string): string => {
                 credentials: 'include',
                 headers: {
                   'x-corr-id': corrId,
-                  'x-product': appConfig.activeProductConfig.product
-                }
-              })
-            ])
+                  'x-product': appConfig.activeProductConfig.product,
+                },
+              }),
+            ]),
           ),
-          cache: new InMemoryCache()
+          cache: new InMemoryCache(),
         });
-      }
-    }
+      },
+    },
   ],
   bootstrap: [AppComponent],
 })

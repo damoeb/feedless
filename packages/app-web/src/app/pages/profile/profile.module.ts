@@ -8,6 +8,7 @@ import { ProfilePageRoutingModule } from './profile-routing.module';
 
 import { ProfilePage } from './profile.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-
     ProfilePageRoutingModule,
     ReactiveFormsModule,
     FeedlessHeaderModule,
+    RemoveIfProdModule,
   ],
   declarations: [ProfilePage],
 })

@@ -33,7 +33,6 @@ import java.time.LocalDateTime
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FeedPluginTest {
 
-  private lateinit var httpResponse: HttpResponse
   private lateinit var jsonFeed: JsonFeed
 
   @Mock
@@ -49,13 +48,6 @@ class FeedPluginTest {
 
   @BeforeEach
   fun setUp() {
-    httpResponse = HttpResponse(
-      contentType = "text/html",
-      url = "https://example.org",
-      statusCode = 200,
-      responseBody = "html".toByteArray()
-    )
-
     jsonFeed = JsonFeed()
     jsonFeed.id = ""
     jsonFeed.title = ""
@@ -89,6 +81,13 @@ class FeedPluginTest {
         any(LogCollector::class.java),
       )
     ).thenReturn(jsonFeed)
+    val httpResponse = HttpResponse(
+      contentType = "text/html",
+      url = "https://example.org",
+      statusCode = 200,
+      responseBody = "html".toByteArray()
+    )
+
 
     // when
     feedPlugin.transformFragment(action, httpResponse, logCollector)
@@ -110,6 +109,12 @@ class FeedPluginTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(PluginExecutionParamsInput(org_feedless_feed = FeedParamsInput()))
     `when`(feedParserService.parseFeed(any(HttpResponse::class.java))).thenReturn(jsonFeed)
+    val httpResponse = HttpResponse(
+      contentType = "application/rss+xml",
+      url = "https://example.org",
+      statusCode = 200,
+      responseBody = "html".toByteArray()
+    )
 
     // when
     feedPlugin.transformFragment(action, httpResponse, logCollector)

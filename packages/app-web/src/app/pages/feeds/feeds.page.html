@@ -25,27 +25,7 @@
           <!--          </ion-button>-->
 
           <!--          <app-import-button></app-import-button>-->
-          <input
-            #filePicker
-            (change)="uploadRepositories($event)"
-            style="display: none"
-            accept="application/json"
-            type="file"
-          />
-          <ion-button (click)="filePicker.click()"
-                      appDev
-                      color="medium"
-                      title="Upload feeds">
-            <ion-icon name="cloud-upload-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-button (click)="downloadRepositories()"
-                      color="medium"
-                      title="Download feeds">
-            <ion-icon name="cloud-download-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-button color="primary"
-                      fill="solid"
-                      routerLink="/feed-builder">
+          <ion-button color="primary" fill="solid" routerLink="/feed-builder">
             Create Feed
           </ion-button>
         </ion-buttons>

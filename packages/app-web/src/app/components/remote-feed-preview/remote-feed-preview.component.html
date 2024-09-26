@@ -7,14 +7,14 @@
       style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
     >
       <ion-list
-        *ngIf="feed"
+        *ngIf="items"
         style="position: absolute; width: 100%; opacity: 0.6"
       >
-        <ion-item *ngIf="feed.items.length === 0">
+        <ion-item *ngIf="items.length === 0">
           <ion-label>Feed is empty</ion-label>
         </ion-item>
         <app-remote-feed-item
-          *ngFor="let item of feed.items; let feedIndex = index"
+          *ngFor="let item of items; let feedIndex = index"
           [feedItemIndex]="feedIndex + 1"
           [feedItem]="item"
         ></app-remote-feed-item>

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { RemoteFeed } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 
 @Component({
   selector: 'app-remote-feed-preview',
@@ -8,8 +8,7 @@ import { RemoteFeed } from '../../graphql/types';
 })
 export class RemoteFeedPreviewComponent {
   @Input()
-  feed: RemoteFeed;
-  protected busy: boolean = false;
+  items: Record[];
   @Input()
   noMetaColumn: boolean = false;
 

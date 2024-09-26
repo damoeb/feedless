@@ -24,6 +24,7 @@ import { RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
+import { omit } from 'lodash-es';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -256,7 +257,10 @@ export class RepositoryModalComponent
         const repositories = await this.repositoryService.createRepositories([
           {
             product: environment.product,
-            sources: this.repository.sources as GqlSourceInput[],
+            sources: omit(
+              this.repository.sources,
+              'recordCount',
+            ) as any as GqlSourceInput[],
             title: this.formFg.value.title,
             refreshCron: this.formFg.value.fetchFrequency,
             withShareKey: true,

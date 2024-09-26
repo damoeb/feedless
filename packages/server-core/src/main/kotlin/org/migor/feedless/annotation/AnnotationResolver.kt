@@ -20,7 +20,6 @@ import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotation
-import org.migor.feedless.repository.toDto
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
@@ -28,7 +27,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 @Profile("${AppProfiles.annotation} & ${AppLayer.api}")

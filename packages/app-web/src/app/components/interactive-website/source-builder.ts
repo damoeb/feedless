@@ -118,7 +118,7 @@ export class SourceBuilder {
     params: Partial<
       Pick<
         GqlHttpGetRequestInput,
-        'additionalWaitSec' | 'url' | 'timeout' | 'language'
+        'additionalWaitSec' | 'url' | 'timeout' | 'language' | 'forcePrerender'
       >
     >,
   ) {
@@ -290,6 +290,10 @@ export class SourceBuilder {
       'too many feeds plugins',
       this.flow,
     );
+  }
+
+  needsJavascript() {
+    return getFirstFetch(this.flow)?.get?.forcePrerender;
   }
 }
 

@@ -28,7 +28,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     SearchbarModule,
     ReactiveFormsModule,
     FeedlessHeaderModule,
-    RemoveIfProdModule
+    RemoveIfProdModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [DirectoryPage],

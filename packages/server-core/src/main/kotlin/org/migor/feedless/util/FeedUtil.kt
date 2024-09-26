@@ -3,6 +3,7 @@ package org.migor.feedless.util
 import org.jsoup.Jsoup
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.FeedType
+import org.springframework.util.MimeType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -21,39 +22,38 @@ object FeedUtil {
     return publishedAt?.let { basic + ":${publishedAt.format(DateTimeFormatter.ISO_DATE)}" } ?: basic
   }
 
-  fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, String> {
-    val mimeType = response.contentType
-    val contentType = simpleContentType(response)
-    return try {
-      Pair(detectFeedType(contentType), mimeType)
-    } catch (e: RuntimeException) {
-      Pair(guessFeedType(response), mimeType)
-    }
+  fun detectFeedTypeForResponse(response: HttpResponse): FeedType? {
+    return detectFeedType(response.contentType) ?: guessFeedType(response)
   }
 
-  fun detectFeedType(contentType: String): FeedType {
-    return when (contentType) {
+  fun isFeed(contentType: String): Boolean {
+    return detectFeedType(contentType)?.let { true } ?: false
+  }
+
+  fun detectFeedType(contentType: String): FeedType? {
+    val mimeType = MimeType.valueOf(contentType.lowercase())
+    return when ("${mimeType.type}/${mimeType.subtype}") {
       "application/json" -> FeedType.JSON
-      "application/rss+xml" -> FeedType.RSS
-      "application/atom+xml" -> FeedType.ATOM
-      "text/xml", "application/xml" -> FeedType.XML
-      else -> throw IllegalArgumentException("Cannot resolve feedType $contentType")
+      "text/rss+xml", "application/rss+xml",
+      "application/atom+xml",
+      "application/rdf+xml", "text/xml", "application/xml" -> FeedType.ATOM
+      else -> null
     }
   }
 
-  private fun simpleContentType(harvestResponse: HttpResponse): String {
-    return harvestResponse.contentType.split(";")[0]
-  }
+//  private fun simpleContentType(harvestResponse: HttpResponse): String {
+//    return harvestResponse.contentType.split(";")[0]
+//  }
 
-  private fun guessFeedType(harvestResponse: HttpResponse): FeedType {
+  private fun guessFeedType(harvestResponse: HttpResponse): FeedType? {
     val html = String(harvestResponse.responseBody)
     return if (html.trimStart().startsWith("<?xml ")) {
       kotlin.runCatching {
         Jsoup.parse(html)
-        FeedType.NONE
-      }.getOrElse { FeedType.XML }
+        FeedType.ATOM
+      }.getOrNull()
     } else {
-      FeedType.NONE
+      null
     }
   }
 

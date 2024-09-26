@@ -27,7 +27,7 @@ export class ConsoleButtonComponent {
   }
 }
 
-export const stringifyLogStatement = (lsl: GqlLogStatement[]): string =>
+const stringifyLogStatement = (lsl: GqlLogStatement[]): string =>
   lsl
     .map((ls) => `${new Date(ls.time).toLocaleTimeString()}\t ${ls.message}`)
     .join('\n');

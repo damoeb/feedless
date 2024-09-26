@@ -40,14 +40,14 @@ class XmlFeedParser : FeedBodyParser {
   }
 
   override fun canProcess(feedType: FeedType): Boolean {
-    return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
+    return FeedType.ATOM == feedType
   }
 
   override suspend fun process(response: HttpResponse): JsonFeed {
     // parse rss/atom/rdf/opml
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response)
+    val feedType = FeedUtil.detectFeedTypeForResponse(response)
     return when (feedType) {
-      FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
+      FeedType.ATOM -> fromSyndFeed(parseXml(response), response.url)
       else -> throw IllegalArgumentException("Not supported")
     }
   }
@@ -284,5 +284,5 @@ private fun SyndPerson.toJsonAuthor(): JsonAuthor {
 }
 
 enum class FeedType {
-  RSS, ATOM, JSON, XML, NONE
+  ATOM, JSON
 }

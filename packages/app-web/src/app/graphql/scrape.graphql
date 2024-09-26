@@ -10,6 +10,19 @@ fragment ScrapeExtractFragmentFragment on ScrapeExtractFragment {
     data
   }
 }
+
+fragment RemoteNativeFeedFragment on RemoteNativeFeed {
+  title
+  description
+  websiteUrl
+  tags
+  feedUrl
+  nextPageUrls
+  items {
+    ...RecordFragment
+  }
+}
+
 fragment ScrapeExtractResponseFragment on ScrapeExtractResponse {
   fragmentName
   items {

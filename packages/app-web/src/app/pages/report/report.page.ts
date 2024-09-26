@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -18,24 +24,22 @@ export class ReportPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly appConfigService: AppConfigService,
     private readonly repositoryService: RepositoryService,
-  ) {
-  }
+  ) {}
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Report Feed');
 
-    this.subscriptions.push(
+    this.subscriptions
+      .push
       // this.activatedRoute.queryParams.subscribe(async (queryParams) => {
       //   if (queryParams.reload) {
       //     await this.fetchFeeds(0, 'network-only');
       //   }
       // }),
-    );
-
+      ();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
 }

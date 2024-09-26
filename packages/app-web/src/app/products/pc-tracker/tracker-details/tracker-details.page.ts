@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { Repository, Record } from '../../../graphql/types';
+import { Record, Repository } from '../../../graphql/types';
 import { ModalController } from '@ionic/angular';
 
 @Component({

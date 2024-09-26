@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.annotation.AnnotationService
@@ -35,8 +34,6 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.Source
-import org.migor.feedless.generated.types.UserWhereUniqueInput
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.userId
@@ -66,9 +63,6 @@ class RepositoryResolver {
 
   @Autowired
   private lateinit var repositoryService: RepositoryService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
 
   @Autowired
   private lateinit var sourceService: SourceService
@@ -162,6 +156,14 @@ class RepositoryResolver {
     } else {
       emptyList()
     }
+  }
+
+  @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.RecordCount)
+  suspend fun recordCountForSources(
+    dfe: DgsDataFetchingEnvironment,
+  ): Int = coroutineScope {
+    val source: Source = dfe.getSource()
+    sourceService.countDocumentsBySourceId(UUID.fromString(source.id))
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)

@@ -79,6 +79,9 @@ open class DocumentEntity : EntityWithUUID() {
       field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
     }
 
+  @Column(length = 50, name = "content_hash", nullable = false)
+  open lateinit var contentHash: String
+
   @Size(max = LEN_50)
   @Column(length = LEN_50, name = "content_raw_mime")
   open var rawMimeType: String? = null

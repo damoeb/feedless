@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
@@ -13,7 +6,6 @@ import {
   GqlSourceInput,
   GqlXyPosition,
 } from '../../../generated/graphql';
-import { ModalController } from '@ionic/angular';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SourceBuilder } from '../../components/interactive-website/source-builder';
 import { ScrapeService } from '../../services/scrape.service';
@@ -52,6 +44,9 @@ export abstract class InteractiveWebsiteController {
       this.source,
       this.scrapeService,
     );
+    this.sourceBuilder.patchFetch({
+      forcePrerender: true,
+    });
     this.source.flow.sequence
       .map((action) => this.convertScrapeActionToActionFg(action))
       .forEach((actionFg) => {

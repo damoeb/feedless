@@ -111,7 +111,7 @@ export class ModalService {
     });
     await modal.present();
     const { data } = await modal.onDidDismiss();
-    await this.updateUrlParams()
+    await this.updateUrlParams();
     return data;
   }
 
@@ -139,7 +139,7 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<OsmMatch>();
-    await this.updateUrlParams()
+    await this.updateUrlParams();
     return response.data;
   }
 
@@ -152,7 +152,7 @@ export class ModalService {
 
     await modal.present();
     await modal.onDidDismiss();
-    await this.updateUrlParams()
+    await this.updateUrlParams();
   }
 
   async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {
@@ -165,14 +165,16 @@ export class ModalService {
 
     await modal.present();
     await modal.onDidDismiss();
-    await this.updateUrlParams()
+    await this.updateUrlParams();
   }
 
-  private async updateUrlParams(modal: ModalName|undefined = undefined) {
+  private async updateUrlParams(modal: ModalName | undefined = undefined) {
     await this.router.navigate(this.activatedRoute.snapshot.url, {
-      queryParams: modal ? {
-        modal,
-      } : {},
+      queryParams: modal
+        ? {
+            modal,
+          }
+        : {},
       relativeTo: this.activatedRoute,
       queryParamsHandling: modal ? 'merge' : undefined,
       replaceUrl: true,

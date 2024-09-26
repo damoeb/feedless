@@ -30,6 +30,8 @@ import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JtsUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -152,6 +154,7 @@ class IntegrationTest {
     d.repositoryId = repository.id
     d.status = status
     d.publishedAt = publishedAt
+    d.contentHash = CryptUtil.sha1(newCorrId())
     d.startingAt = startingAt
     d.createdAt = createdAt
     d.latLon = latlon

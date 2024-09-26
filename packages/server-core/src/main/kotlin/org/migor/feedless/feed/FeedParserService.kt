@@ -74,7 +74,7 @@ class FeedParserService(
   suspend fun parseFeed(response: HttpResponse): JsonFeed {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] Parsing feed")
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response)
+    val feedType = FeedUtil.detectFeedTypeForResponse(response)!!
     log.debug("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
       bodyParser.canProcess(feedType)

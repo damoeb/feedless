@@ -86,9 +86,16 @@
                           fill="clear"
                           >{{ stringifyLocalization(source) }}
                         </ion-button>
+
+                        <ion-text
+                          [color]="
+                            source.recordCount === 0 ? 'danger' : undefined
+                          "
+                          >{{ source.recordCount }} items
+                        </ion-text>
                       </p>
                       <ion-label *ngIf="source.disabled" color="danger">
-                        Source is disabled. Last Error Message
+                        Disabled.
                         {{ source.lastErrorMessage }}
                       </ion-label>
                     </ion-label>
@@ -96,7 +103,6 @@
                       <ion-button
                         (click)="setDisabledForSource(source, true)"
                         *ngIf="!source.disabled"
-                        fill="solid"
                       >
                         Disable
                       </ion-button>
@@ -156,8 +162,7 @@
           </ng-template>
         </ion-modal>
 
-        <ion-button *ngIf="isOwner"
-                    [id]="harvestsModalId">
+        <ion-button *ngIf="isOwner" [id]="harvestsModalId">
           <ion-icon name="pulse-outline" slot="start"></ion-icon>
           <ion-label> Harvests</ion-label>
         </ion-button>
@@ -174,9 +179,7 @@
         </ion-button>
       </ng-container>
 
-      <ion-button *ngIf="!isOwner"
-                  appDev
-                  routerLink="report">
+      <ion-button *ngIf="!isOwner" appDev routerLink="report">
         <ion-icon name="flag-outline" slot="start"></ion-icon>
         <ion-label> Report</ion-label>
       </ion-button>

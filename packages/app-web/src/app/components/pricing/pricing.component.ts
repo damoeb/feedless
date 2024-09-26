@@ -139,17 +139,19 @@ export class PricingComponent implements OnInit {
     return {
       groupLabel: 'Features',
       features:
-        featureGroups[0].features?.map<StringFeature>((feature) => ({
-          title: feature.name,
-          valueBool: feature.value.boolVal,
-          valueHtml:
-            feature.value.numVal != null
-              ? feature.value.numVal.value == -1
-                ? 'Infinite'
-                : `${feature.value.numVal.value}`
-              : null,
-          subtitle: '',
-        })) || [],
+        featureGroups[0].features
+          ?.filter((feature) => this.localise(feature.name))
+          ?.map<StringFeature>((feature) => ({
+            title: this.localise(feature.name),
+            valueBool: feature.value.boolVal,
+            valueHtml:
+              feature.value.numVal != null
+                ? feature.value.numVal.value == -1
+                  ? 'Infinite'
+                  : `${feature.value.numVal.value}`
+                : null,
+            subtitle: '',
+          })) || [],
     };
   }
 
@@ -175,5 +177,14 @@ export class PricingComponent implements OnInit {
 
   formatPrice(price: number) {
     return price.toFixed(2);
+  }
+
+  private localise(feature: GqlFeatureName): string {
+    switch (feature) {
+      case GqlFeatureName.Plugins:
+        return 'Plugins';
+      case GqlFeatureName.PublicRepository:
+        return 'Public Listing';
+    }
   }
 }

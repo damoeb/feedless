@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { IonicModule } from '@ionic/angular';
-import { NativeFeedModule } from '../native-feed/native-feed.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
 import { InteractiveWebsiteModule } from '../interactive-website/interactive-website.module';
@@ -17,7 +16,6 @@ import { RemoteFeedPreviewModule } from '../remote-feed-preview/remote-feed-prev
   imports: [
     CommonModule,
     IonicModule,
-    NativeFeedModule,
     CodeEditorModalModule,
     ReactiveFormsModule,
     ResponsiveColumnsModule,

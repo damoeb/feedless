@@ -34,7 +34,7 @@ import { RouterLink } from '@angular/router';
     TextDiffModule,
     HistogramModule,
     RemoveIfProdModule,
-    RouterLink
-  ]
+    RouterLink,
+  ],
 })
 export class FeedDetailsModule {}

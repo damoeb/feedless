@@ -41,8 +41,6 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 
   fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: LocalDateTime, released: ReleaseStatus)
 
-  fun findFirstByUrlAndRepositoryId(url: String, repositoryId: UUID): DocumentEntity?
-
   fun findByTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
 
   fun countByRepositoryId(id: UUID): Long
@@ -59,5 +57,18 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
     WHERE s.id = :id"""
   )
   fun findByIdWithSource(@Param("id") documentId: UUID): DocumentEntity?
+  fun countBySourceId(sourceId: UUID): Int
+
+
+  @Query(
+    """SELECT d FROM DocumentEntity d
+    WHERE d.repositoryId = :repositoryId
+    AND (
+        (d.contentHash != '' AND d.contentHash = :contentHash)
+        OR
+        (d.contentHash = '' AND d.url = :url)
+    )"""
+  )
+  fun findFirstByContentHashOrUrlAndRepositoryId(@Param("contentHash") contentHash: String, @Param("url") url: String, @Param("repositoryId") repositoryId: UUID): DocumentEntity?
 
 }

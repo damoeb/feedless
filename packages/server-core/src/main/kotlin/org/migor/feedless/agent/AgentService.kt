@@ -112,7 +112,9 @@ class AgentService(
     log.info("[$corrId] Added Agent $agentRef")
 
     withContext(Dispatchers.IO) {
-      agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+      agentDAO.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+        agentDAO.delete(it)
+      }
 
       val agent = AgentEntity()
       agent.secretKeyId = agentRef.secretKeyId
@@ -133,7 +135,9 @@ class AgentService(
     agentRefs.remove(agentRef)
     log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
     withContext(Dispatchers.IO) {
-      agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
+      agentDAO.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+        agentDAO.delete(it)
+      }
     }
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }

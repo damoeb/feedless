@@ -24,7 +24,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     LoginButtonModule,
     RepositoriesButtonModule,
     RouterLink,
-    RemoveIfProdModule
-  ]
+    RemoveIfProdModule,
+  ],
 })
 export class FeedlessHeaderModule {}

@@ -24,7 +24,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     PaginationModule,
     FeedlessHeaderModule,
     TableModule,
-    RemoveIfProdModule
+    RemoveIfProdModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [ReportPage],

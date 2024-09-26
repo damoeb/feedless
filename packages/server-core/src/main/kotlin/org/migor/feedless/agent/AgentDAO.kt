@@ -11,9 +11,7 @@ import java.util.*
 @Repository
 @Profile("${AppLayer.repository} & ${AppProfiles.agent}")
 interface AgentDAO : JpaRepository<AgentEntity, UUID> {
-  fun deleteByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UUID)
   fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UUID?): List<AgentEntity>
   fun deleteAllByLastSyncedAtBefore(date: LocalDateTime)
-
   fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UUID): AgentEntity?
 }

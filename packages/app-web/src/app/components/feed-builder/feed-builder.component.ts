@@ -141,6 +141,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     if (this.source) {
+      console.log('this.source', this.source);
       this.sourceBuilder = SourceBuilder.fromSource(
         this.source,
         this.scrapeService,
@@ -411,6 +412,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         },
       );
     }
+  }
+
+  needsJavaScript() {
+    return this.sourceBuilder.needsJavascript();
   }
 }
 

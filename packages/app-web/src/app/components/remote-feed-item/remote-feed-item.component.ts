@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
-import { RemoteFeedItem } from '../../graphql/types';
+import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
 
 @Component({
@@ -13,7 +13,7 @@ export class RemoteFeedItemComponent {
   protected readonly dateFormat = dateFormat;
 
   @Input({ required: true })
-  feedItem: RemoteFeedItem;
+  feedItem: Record;
   @Input({ required: true })
   feedItemIndex: number;
 
