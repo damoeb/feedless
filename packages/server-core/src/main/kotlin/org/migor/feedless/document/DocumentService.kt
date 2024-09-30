@@ -202,11 +202,19 @@ class DocumentService(
               ReleaseStatus.released
             )
           } else {
-            documentDAO.deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
-              repository.id,
-              maxDate,
-              ReleaseStatus.released
-            )
+            if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.createdAt) {
+              documentDAO.deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+                repository.id,
+                maxDate,
+                ReleaseStatus.released
+              )
+            } else {
+              documentDAO.deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+                repository.id,
+                maxDate,
+                ReleaseStatus.released
+              )
+            }
           }
         }
 

@@ -13,7 +13,9 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
@@ -24,7 +26,11 @@ import org.migor.feedless.generated.types.ScrapeActionInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeActionOutput
+import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
@@ -34,10 +40,14 @@ import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatcher
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit

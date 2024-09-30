@@ -34,7 +34,7 @@ import java.time.Duration
 @Service
 @Profile("${AppProfiles.telegram} & ${AppLayer.service}")
 class TelegramBotService(
-  @Value("\${telegram.bot.token}")
+  @Value("\${app.telegram.bot.token}")
   private val botToken: String,
   @Value("\${app.appHost}")
   private val appHost: String,

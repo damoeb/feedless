@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
@@ -15,6 +17,7 @@ import org.migor.feedless.generated.types.StringFilter
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
@@ -30,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import org.springframework.transaction.PlatformTransactionManager
+import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -44,6 +48,8 @@ class DocumentServiceTest {
 
   private lateinit var currentUser: UserEntity
   private lateinit var permissionService: PermissionService
+  private lateinit var planConstraintsService: PlanConstraintsService
+
   private val currentUserId = UUID.randomUUID()
 
   @BeforeEach
@@ -55,12 +61,13 @@ class DocumentServiceTest {
     repositoryDAO = mock(RepositoryDAO::class.java)
     documentDAO = mock(DocumentDAO::class.java)
     permissionService = PermissionService(userDAO, repositoryDAO)
+    planConstraintsService = mock(PlanConstraintsService::class.java)
     documentService = DocumentService(
       documentDAO,
       mock(PlatformTransactionManager::class.java),
       mock(EntityManager::class.java),
       repositoryDAO,
-      mock(PlanConstraintsService::class.java),
+      planConstraintsService,
       mock(DocumentPipelineJobDAO::class.java),
       mock(PluginService::class.java),
       permissionService,
@@ -71,27 +78,65 @@ class DocumentServiceTest {
 //  fun `applyRetentionStrategy by capacity is skipped if plan returns null or 0`() {
 //    TODO()
 //  }
-//
+
 //  @Test
 //  fun `applyRetentionStrategy by age is skipped if plan returns null`() {
 //    TODO()
 //  }
 
   @Test
+  fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val repositoryId = UUID.randomUUID()
+    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
+
+    // when
+    documentService.applyRetentionStrategy(repositoryId)
+
+    // then
+    verify(documentDAO).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
+      ReleaseStatus::class.java))
+  }
+  @Test
+  fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val repositoryId = UUID.randomUUID()
+    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
+
+    // when
+    documentService.applyRetentionStrategy(repositoryId)
+
+    // then
+    verify(documentDAO).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
+      ReleaseStatus::class.java))
+  }
+  @Test
+  fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val repositoryId = UUID.randomUUID()
+    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
+
+    // when
+    documentService.applyRetentionStrategy(repositoryId)
+
+    // then
+    verify(documentDAO).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
+      ReleaseStatus::class.java))
+  }
+
+  @Test
   fun `create document without permissions fails`() {
     val documentId = UUID.randomUUID()
     val repositoryId = UUID.randomUUID()
 
-    mockUser(currentUserId)
-    mockDocument(documentId = documentId, repositoryId = repositoryId)
-    mockRepository(repositoryId, ownerId = UUID.randomUUID())
-
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = currentUserId)) {
+        mockUser(currentUserId)
+        mockDocument(documentId = documentId, repositoryId = repositoryId)
+        mockRepository(repositoryId, ownerId = UUID.randomUUID())
+
         val data = CreateRecordInput(
           title = "foo",
           publishedAt = Date().time,
           url = "",
+          text = "",
           repositoryId = RepositoryUniqueWhereInput(id = repositoryId.toString()),
         )
         documentService.createDocument(data)
@@ -126,10 +171,11 @@ class DocumentServiceTest {
 
     mockUser(currentUserId)
     mockDocument(documentId = documentId, repositoryId = repositoryId)
-    mockRepository(repositoryId, ownerId = UUID.randomUUID())
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = currentUserId)) {
+        mockRepository(repositoryId, ownerId = UUID.randomUUID())
+
         val data = RecordUpdateInput()
         val where = RecordUniqueWhereInput(id = documentId.toString())
         documentService.updateDocument(data, where)
@@ -186,10 +232,24 @@ class DocumentServiceTest {
     return document
   }
 
-  private fun mockRepository(repositoryId: UUID, ownerId: UUID) {
+  private suspend fun mockRepository(repositoryId: UUID, ownerId: UUID, maxAgeDaysDateField: MaxAgeDaysDateField? = null): RepositoryEntity {
     val repository = mock(RepositoryEntity::class.java)
     `when`(repository.id).thenReturn(repositoryId)
     `when`(repository.ownerId).thenReturn(ownerId)
+    maxAgeDaysDateField?.let {
+      `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
+    }
+    `when`(repository.retentionMaxAgeDays).thenReturn(20)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.product).thenReturn(ProductCategory.feedless)
     `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
+
+    `when`(planConstraintsService.coerceRetentionMaxAgeDays(
+      repository.retentionMaxAgeDays,
+      repository.ownerId,
+      repository.product
+    )).thenReturn(20)
+
+    return repository
   }
 }

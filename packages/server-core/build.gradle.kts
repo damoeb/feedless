@@ -4,6 +4,7 @@ import java.util.*
 val versions = mapOf(
   "kotlinxCoroutines" to "1.7.2",
   "dgs-framework" to "8.7.1",
+  "testcontainers" to "1.20.1",
 )
 
 plugins {
@@ -182,9 +183,12 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.testcontainers:postgresql:1.20.0")
-  testImplementation("org.testcontainers:testcontainers:1.20.0")
-  testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+  testImplementation("org.testcontainers:postgresql:${versions["testcontainers"]}")
+  testImplementation("org.testcontainers:testcontainers:${versions["testcontainers"]}")
+  testImplementation("org.testcontainers:junit-jupiter:${versions["testcontainers"]}")
+// Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
+  testImplementation("net.jqwik:jqwik:1.9.0")
+
 
 //  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
 //  testImplementation("org.powermock:powermock-module-junit4:2.0.9")

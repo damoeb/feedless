@@ -40,10 +40,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import kotlin.coroutines.coroutineContext
 
-private fun ScrapeOutput.lastOutput(): ScrapeActionOutput {
-  return this.outputs.last()
-}
-
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedParserService(
