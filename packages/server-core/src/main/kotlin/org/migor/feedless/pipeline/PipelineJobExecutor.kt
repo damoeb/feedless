@@ -89,7 +89,7 @@ class PipelineJobExecutor internal constructor() {
     }
   }
 
-    @Scheduled(fixedDelay = 5245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 5245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()
@@ -122,14 +122,15 @@ class PipelineJobExecutor internal constructor() {
 
   private suspend fun getOwnerIdForDocumentId(documentId: UUID): UUID {
     val repo = withContext(Dispatchers.IO) {
-      repositoryDAO.findByDocumentId(documentId) ?: throw IllegalArgumentException("repo not found by documentId")
+      repositoryDAO.findByDocumentId(documentId) ?:
+        throw IllegalArgumentException("repo not found by documentId=$documentId")
     }
     return repo.ownerId
   }
 
   private suspend fun getOwnerIdForSourceId(sourceId: UUID): UUID {
     val repo = withContext(Dispatchers.IO) {
-      repositoryDAO.findBySourceId(sourceId) ?: throw IllegalArgumentException("repo not found by sourceId")
+      repositoryDAO.findBySourceId(sourceId) ?: throw IllegalArgumentException("repo not found by sourceId=$sourceId")
     }
     return repo.ownerId
   }

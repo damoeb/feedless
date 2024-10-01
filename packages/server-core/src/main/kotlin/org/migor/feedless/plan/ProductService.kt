@@ -8,6 +8,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
+import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -33,6 +34,9 @@ class ProductService {
 
   @Autowired
   private lateinit var productDAO: ProductDAO
+
+  @Autowired
+  private lateinit var userDAO: UserDAO
 
   @Autowired
   private lateinit var planDAO: PlanDAO
@@ -121,6 +125,7 @@ class ProductService {
         planDAO.save(it)
       }
 
+      log.info("[${coroutineContext.corrId()}] enabling plan for product ${product.name} for user ${user.id}")
       val plan = PlanEntity()
       plan.productId = product.id
       plan.userId = user.id
@@ -130,5 +135,12 @@ class ProductService {
         planDAO.save(plan)
       }
     }
+  }
+
+  suspend fun enableDefaultCloudProduct(productCategory: ProductCategory, userId: UUID) {
+    val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(productCategory)!!}
+    val user = withContext(Dispatchers.IO) {userDAO.findById(userId).orElseThrow()}
+
+    enableCloudProduct(product, user)
   }
 }

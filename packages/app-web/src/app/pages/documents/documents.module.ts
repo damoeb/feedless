@@ -9,6 +9,7 @@ import { DocumentsPageRoutingModule } from './documents-routing.module';
 import { DocumentsPage } from './documents.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { TermsPage } from './terms.page';
+import { TelegramPage } from './telegram.page';
 
 @NgModule({
   imports: [
@@ -18,6 +19,6 @@ import { TermsPage } from './terms.page';
     DocumentsPageRoutingModule,
     FeedlessHeaderModule,
   ],
-  declarations: [DocumentsPage, TermsPage],
+  declarations: [DocumentsPage, TermsPage, TelegramPage],
 })
 export class DocumentsPageModule {}

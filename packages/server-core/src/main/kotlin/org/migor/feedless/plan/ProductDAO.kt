@@ -11,7 +11,7 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 interface ProductDAO : JpaRepository<ProductEntity, UUID> {
-  fun findByName(name: String): ProductEntity?
+  fun findByNameEqualsIgnoreCase(name: String): ProductEntity?
   fun findByPartOfAndBaseProductIsTrue(name: ProductCategory): ProductEntity?
   fun findAllByPartOfOrPartOfIsNull(category: ProductCategory): List<ProductEntity>
 }

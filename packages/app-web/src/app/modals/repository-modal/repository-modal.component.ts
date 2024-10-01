@@ -257,10 +257,9 @@ export class RepositoryModalComponent
         const repositories = await this.repositoryService.createRepositories([
           {
             product: environment.product,
-            sources: omit(
-              this.repository.sources,
-              'recordCount',
-            ) as any as GqlSourceInput[],
+            sources: this.repository.sources.map<GqlSourceInput>(
+              (source) => omit(source, 'recordCount') as GqlSourceInput,
+            ),
             title: this.formFg.value.title,
             refreshCron: this.formFg.value.fetchFrequency,
             withShareKey: true,

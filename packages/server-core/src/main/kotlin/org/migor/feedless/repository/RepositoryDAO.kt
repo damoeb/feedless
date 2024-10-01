@@ -74,6 +74,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   @Query(
     """SELECT r FROM RepositoryEntity r
     INNER JOIN DocumentEntity d ON d.repositoryId = r.id
+    LEFT JOIN SourceEntity s ON s.repositoryId = r.id
     WHERE d.id = :documentId"""
   )
   fun findByDocumentId(@Param("documentId") documentId: UUID): RepositoryEntity?

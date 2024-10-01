@@ -60,7 +60,7 @@ class RepositoryController {
     feedExporter.to(
       HttpStatus.OK,
       "atom",
-      repositoryService.getFeedByRepositoryId(repositoryId, page, tag, shareKey)
+      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tag, shareKey)
     )
   }
 
@@ -89,7 +89,7 @@ class RepositoryController {
     feedExporter.to(
       HttpStatus.OK,
       "json",
-      repositoryService.getFeedByRepositoryId(repositoryId, page, tag, shareKey)
+      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tag, shareKey)
     )
   }
 

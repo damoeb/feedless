@@ -243,20 +243,19 @@ class RepositoryService(
 
   @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tag")
   suspend fun getFeedByRepositoryId(
-    repositoryId: String,
+    repositoryId: UUID,
     page: Int,
     tag: String? = null,
     shareKey: String? = null
   ): JsonFeed {
-    val id = UUID.fromString(repositoryId)
-    val repository = findById(id, shareKey)
+    val repository = findById(repositoryId, shareKey)
 
     val pageSize = 11
     val pageable = toPageRequest(page, pageSize)
     val items = try {
       val pageResult = withContext(Dispatchers.IO) {
         documentService.findAllByRepositoryId(
-          id,
+          repositoryId,
           status = ReleaseStatus.released,
           tag = tag,
           pageable = pageable,

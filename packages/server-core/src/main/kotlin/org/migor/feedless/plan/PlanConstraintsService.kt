@@ -1,6 +1,7 @@
 package org.migor.feedless.plan
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -11,7 +12,7 @@ import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValueDAO
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
@@ -42,13 +43,13 @@ class PlanConstraintsService {
   private lateinit var environment: Environment
 
   @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
   private lateinit var repositoryDAO: RepositoryDAO
 
   @Autowired
   private lateinit var featureValueDAO: FeatureValueDAO
+
+  @Autowired
+  private lateinit var productService: ProductService
 
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
@@ -63,10 +64,6 @@ class PlanConstraintsService {
           .coerceAtMost(maxItems)
       } ?: customMaxItems.coerceAtLeast(minItems)
     } ?: maxItems
-  }
-
-  private suspend fun resolveProduct(product: ProductCategory?): ProductCategory {
-    return product ?: sessionService.activeProductFromRequest()!!
   }
 
   suspend fun coerceMinScheduledNextAt(
@@ -132,6 +129,27 @@ class PlanConstraintsService {
       }
   }
 
+  suspend fun auditRepositoryMaxCount(count: Int, userId: UUID) {
+    val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
+    if (maxRepoCount != null && maxRepoCount < count) {
+      throw IllegalArgumentException("Too many repository (limit $maxRepoCount, actual $count")
+    }
+  }
+
+  suspend fun violatesRepositoriesMaxActiveCount(userId: UUID): Boolean {
+    val activeCount = withContext(Dispatchers.IO) {
+      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
+    }
+    return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
+  }
+
+  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
+    val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
+    if (maxRequests != null && maxRequests < count) {
+      throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
+    }
+  }
+
   private suspend fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? =
     getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
@@ -155,10 +173,14 @@ class PlanConstraintsService {
             featureName.name
           )
         } else {
-          planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
-            ?.let {
-              featureValueDAO.resolveByFeatureGroupIdAndName(it.product!!.featureGroupId!!, featureName.name)
-            } ?: throw IllegalArgumentException("user has no subscription")
+          var plan =
+            planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
+          if (plan == null) {
+            productService.enableDefaultCloudProduct(product, userId)
+            plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
+          }
+
+          featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId!!, featureName.name)
         }
       }
     } catch (e: Exception) {
@@ -167,24 +189,7 @@ class PlanConstraintsService {
     }
   }
 
-  suspend fun auditRepositoryMaxCount(count: Int, userId: UUID) {
-    val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
-    if (maxRepoCount != null && maxRepoCount < count) {
-      throw IllegalArgumentException("Too many repository (limit $maxRepoCount, actual $count")
-    }
-  }
-
-  suspend fun violatesRepositoriesMaxActiveCount(userId: UUID): Boolean {
-    val activeCount = withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
-    }
-    return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
-  }
-
-  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
-    val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
-    if (maxRequests != null && maxRequests < count) {
-      throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
-    }
+  private suspend fun resolveProduct(product: ProductCategory?): ProductCategory {
+    return product ?: currentCoroutineContext()[RequestContext]?.product!!
   }
 }

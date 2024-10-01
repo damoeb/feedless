@@ -12,5 +12,5 @@ import java.util.*
 interface FeatureGroupDAO : JpaRepository<FeatureGroupEntity, UUID> {
 
   fun findByParentFeatureGroupIdIsNull(): FeatureGroupEntity?
-  fun findByName(name: String): FeatureGroupEntity?
+  fun findByNameEqualsIgnoreCase(name: String): FeatureGroupEntity?
 }

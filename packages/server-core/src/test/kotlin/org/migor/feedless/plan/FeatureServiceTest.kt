@@ -63,7 +63,7 @@ class FeatureServiceTest {
     group.name = name
     group.parentFeatureGroupId = parentId
 
-    return featureGroupDAO.findByName(name) ?: featureGroupDAO.save(group)
+    return featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: featureGroupDAO.save(group)
   }
 
   @BeforeEach

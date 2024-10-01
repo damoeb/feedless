@@ -32,6 +32,7 @@ import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretType
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -126,34 +127,34 @@ class Seeder {
     }
 
     pushLegacyNotifications(root)
-    pushFeedlessOpsNotifications(root)
+//    pushFeedlessOpsNotifications(root)
 
     return root
   }
 
-  private fun pushFeedlessOpsNotifications(root: UserEntity) {
-    val feedlessOpsNotificationRepo = resolveFeedlessOpsNotificationsRepo(root)
-
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "Important Note: feedless 1 is online!"
-      val repositoryId = feedlessOpsNotificationRepo.id
-
-      val notification = documentDAO.findByTitleAndRepositoryId(title, repositoryId) ?: run {
-        val n = DocumentEntity()
-        n.repositoryId = repositoryId
-        n
-      }
-
-      notification.url = propertyService.appHost
-      notification.title = title
-      notification.status = ReleaseStatus.released
-      notification.text =
-        "Hi, I released a new version of feedless, that gives you a lot of new features."
-      notification.updatedAt = LocalDateTime.now()
-
-      documentDAO.save(notification)
-    }
-  }
+//  private fun pushFeedlessOpsNotifications(root: UserEntity) {
+//    val feedlessOpsNotificationRepo = resolveFeedlessOpsNotificationsRepo(root)
+//
+//    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
+//      val title = "Important Note: feedless 1 is online!"
+//      val repositoryId = feedlessOpsNotificationRepo.id
+//
+//      val notification = documentDAO.findByTitleAndRepositoryId(title, repositoryId) ?: run {
+//        val n = DocumentEntity()
+//        n.repositoryId = repositoryId
+//        n
+//      }
+//
+//      notification.url = propertyService.appHost
+//      notification.title = title
+//      notification.status = ReleaseStatus.released
+//      notification.text =
+//        "Hi, I released a new version of feedless, that gives you a lot of new features."
+//      notification.updatedAt = LocalDateTime.now()
+//
+//      documentDAO.save(notification)
+//    }
+//  }
 
   private fun pushLegacyNotifications(root: UserEntity) {
     val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
@@ -168,10 +169,11 @@ class Seeder {
         d
       }
 
-      notification.url =
-        "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
+      val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
+      notification.url = url
       notification.title = title
       notification.status = ReleaseStatus.released
+      notification.contentHash = CryptUtil.sha1(url)
       notification.text =
         "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at https://feedless.org, where you can import your RSS-proxy feeds."
       notification.html =
@@ -299,7 +301,7 @@ class Seeder {
       )
     } else {
       val feedlessFree = createProduct(
-        "Feedless Free",
+        "feedless Free",
         "Getting started",
         group = ProductCategory.feedless,
         isBaseProduct = true,
@@ -340,7 +342,7 @@ class Seeder {
 
 
       createProduct(
-        "Feedless Pro",
+        "feedless Pro",
         "Getting serious",
         group = ProductCategory.feedless,
         isCloud = true,
@@ -384,7 +386,7 @@ class Seeder {
     features: Map<FeatureName, FeatureValueEntity>
   ): FeatureGroupEntity {
     val group = withContext(Dispatchers.IO) {
-      featureGroupDAO.findByName(name) ?: run {
+      featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: run {
         val group = FeatureGroupEntity()
         group.name = name
         group.parentFeatureGroupId = parentFeatureGroup?.id
@@ -427,7 +429,7 @@ class Seeder {
   ): ProductEntity {
 
     return withContext(Dispatchers.IO) {
-      val product = productDAO.findByName(name) ?: run {
+      val product = productDAO.findByNameEqualsIgnoreCase(name) ?: run {
         val product = ProductEntity()
         product.name = name
         product.description = description

@@ -72,7 +72,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
         log.debug("[$corrId] expression '${q}'")
         FilterByExpression(q.reader()).matches(item)
       } catch (e: Exception) {
-        log.warn("[$corrId] matchesExpression failed for expression '${q}'", e)
+        log.warn("[$corrId] matchesExpression failed for expression '${q}'")
         false
       }
     } ?: true
