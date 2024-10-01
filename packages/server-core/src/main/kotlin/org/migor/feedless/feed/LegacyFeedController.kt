@@ -2,7 +2,7 @@ package org.migor.feedless.feed
 
 import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -13,6 +13,7 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.session.createRequestContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -70,7 +71,7 @@ class LegacyFeedController {
   suspend fun legacyEntities(
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
-  ): ResponseEntity<String> = coroutineScope {
+  ): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.getFeed(
@@ -85,7 +86,7 @@ class LegacyFeedController {
   @GetMapping(
     "/api/feed",
   )
-  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
+  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl)
     {
@@ -107,7 +108,7 @@ class LegacyFeedController {
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
-  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
+  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.webToFeed(
@@ -131,7 +132,7 @@ class LegacyFeedController {
     "/api/feeds/transform",
     ApiUrls.transformFeed
   )
-  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = coroutineScope {
+  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.transformFeed(
