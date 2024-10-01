@@ -72,6 +72,7 @@ class TelegramBotService(
     val isSaas = environment.acceptsProfiles(Profiles.of(AppProfiles.saas))
 
     val chats = telegramConnectionDAO.findAllByAuthorizedIsTrue()
+    log.info("Using bot token ${StringUtils.abbreviate(botToken, "...", 4)}")
     log.info("Subscribing to ${chats.size} telegram chats")
 
     createTelegramPublisher(subscribeToChats(chats))

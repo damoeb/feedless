@@ -42,6 +42,7 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
   inputs.dir("src")
+  inputs.files("codegen.yml", "yarn.lock", "../server-core/src/main/resources/schema/schema.graphqls")
   outputs.upToDateWhen { true }
 }
 

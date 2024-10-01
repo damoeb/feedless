@@ -16,8 +16,9 @@ import { AppConfigService } from './services/app-config.service';
           appConfigService: AppConfigService,
         ) =>
         async () => {
-          const product = await serverConfig.fetchConfig();
-          await appConfigService.activateUserInterface(product);
+          await appConfigService.activateUserInterface(
+            await serverConfig.fetchConfig(),
+          );
           await serverConfig.fetchServerSettings();
         },
       deps: [ServerConfigService, AppConfigService],

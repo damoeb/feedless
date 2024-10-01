@@ -98,8 +98,6 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected currentDateRef: Dayjs;
   private currentLatLon: number[];
 
-  private readonly repositoryId = 'ee5e2fd7-4b3e-4bf0-bf74-1224b5d667ff';
-
   protected now: Dayjs;
   private eventsOfMonth: LocalizedEvent[] = [];
   protected placesByDistance: PlaceByDistance[] = [];
@@ -313,7 +311,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       },
       where: {
         repository: {
-          id: this.repositoryId,
+          id: this.getRepositoryId(),
         },
         latLng: {
           near: {
@@ -350,7 +348,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
         variables: {
           where: {
             repository: {
-              id: this.repositoryId,
+              id: this.getRepositoryId(),
             },
             latLng: {
               near: {
@@ -581,5 +579,9 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   isSame(a: Dayjs, b: Dayjs, units: OpUnitType[]) {
     return units.every((unit) => a.isSame(b, unit));
+  }
+
+  private getRepositoryId(): string {
+    return this.appConfigService.customProperties.eventRepositoryId as any;
   }
 }

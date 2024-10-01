@@ -5,7 +5,7 @@
     "ng": "ng",
     "feedless-config": "npx tsc feedless-config-writer.ts --outDir build/ && node build/feedless-config-writer.js > feedless-config.json",
     "prebuild": "yarn graphql-codegen",
-    "prestart:feedless": "yarn graphql-codegen && sh prepare-product.sh '' false",
+    "prestart:feedless": "yarn graphql-codegen && sh prepare-product.sh feedless false",
     "start:feedless": "ng serve",
     "prestart:rss-proxy": "yarn graphql-codegen && sh prepare-product.sh rssProxy false",
     "start:rss-proxy": "ng serve",

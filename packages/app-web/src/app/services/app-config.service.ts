@@ -6,6 +6,7 @@ import { GqlProductCategory } from '../../generated/graphql';
 import { ReplaySubject } from 'rxjs';
 import { marked } from 'marked';
 import { AppConfig, feedlessConfig, ProductId } from '../feedless-config';
+import { WebsiteConfig } from './server-config.service';
 
 // see https://ionicframework.com/docs/api/split-pane#setting-breakpoints
 export type SidemenuBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -138,17 +139,21 @@ export class AppConfigService {
 
   private activeProductConfigSubject = new ReplaySubject<ProductConfig>();
   public activeProductConfig: ProductConfig;
+  public customProperties: { [p: string]: number | boolean | string };
 
   constructor(
     private readonly router: Router,
     private readonly titleService: Title,
   ) {}
 
-  async activateUserInterface(product: GqlProductCategory) {
-    console.log(`activateUserInterface ${product}`);
+  async activateUserInterface({ product, customProperties }: WebsiteConfig) {
+    console.log(
+      `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`,
+    );
     environment.product = product;
     const config = await this.resolveProductConfig(product);
     console.log('productConfig', config);
+    this.customProperties = customProperties;
     environment.offlineSupport = config.offlineSupport === true;
     this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);

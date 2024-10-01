@@ -14,7 +14,6 @@ import { AlertController } from '@ionic/angular';
 import { Feature, LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
-import { AppConfigService } from './app-config.service';
 
 type FeedlessProductConfig = {
   hostname: string;
@@ -35,6 +34,11 @@ type ToastOptions = {
   buttons?: AlertButton[];
 };
 
+export type WebsiteConfig = {
+  product: GqlProductCategory;
+  customProperties: { [s: string]: number | boolean | string };
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -51,24 +55,22 @@ export class ServerConfigService {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly appConfig: AppConfigService,
     private readonly alertCtrl: AlertController,
   ) {}
 
-  async fetchConfig(): Promise<GqlProductCategory> {
+  async fetchConfig(): Promise<WebsiteConfig> {
     const config = await firstValueFrom(
       this.httpClient.get<FeedlessAppConfig>('/config.json'),
     );
 
     this.apiUrl = config.apiUrl;
 
-    // const product= environment.production ? config.products.find(p => p.hostname === location.hostname)?.product : config.forceProduct
     const product =
       config.forceProduct ||
       config.products.find((p) => p.hostname === location.hostname)?.product;
 
     if (product) {
-      console.log(`forcing product ${product}`);
+      console.log(`enabling product ${product}`);
       const products = Object.keys(GqlProductCategory).map(
         (p) => GqlProductCategory[p],
       );
@@ -88,7 +90,11 @@ export class ServerConfigService {
         message: `Cannot map hostname ${location.hostname} to product`,
       });
     }
-    return product;
+
+    return {
+      product,
+      customProperties: config[product],
+    };
   }
 
   async fetchServerSettings(): Promise<void> {
