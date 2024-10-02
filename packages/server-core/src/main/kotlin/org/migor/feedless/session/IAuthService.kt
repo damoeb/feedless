@@ -30,6 +30,6 @@ enum class AuthTokenType(val value: String) {
 @Service
 interface IAuthService {
   suspend fun decodeToken(token: String): OAuth2AuthenticationToken?
-  suspend fun interceptJwt(request: HttpServletRequest): Jwt?
+  fun interceptJwt(request: HttpServletRequest): Jwt?
   suspend fun assertToken(request: HttpServletRequest)
 }

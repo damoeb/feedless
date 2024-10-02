@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 @Profile("!${AppProfiles.session} & ${AppLayer.service}")
 class NoopAuthService : IAuthService {
   override suspend fun decodeToken(token: String): OAuth2AuthenticationToken? = null
-  override suspend fun interceptJwt(request: HttpServletRequest): Jwt? = null
+  override fun interceptJwt(request: HttpServletRequest): Jwt? = null
   override suspend fun assertToken(request: HttpServletRequest) {
 
   }

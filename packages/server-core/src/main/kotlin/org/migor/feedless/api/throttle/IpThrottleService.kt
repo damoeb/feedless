@@ -1,6 +1,8 @@
 package org.migor.feedless.api.throttle
 
+import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
+import io.github.bucket4j.Refill
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
@@ -8,8 +10,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.HostOverloadingException
-import org.migor.feedless.plan.PlanService
 import org.migor.feedless.session.AuthService
+import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil
@@ -25,35 +27,34 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 @Profile("${AppProfiles.throttle} && ${AppLayer.api}")
-class InMemoryRequestThrottleService(
-  private val planService: PlanService,
+class IpThrottleService(
   private val authService: AuthService
-) : RequestThrottleService() {
-  private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
+) {
+  private val log = LoggerFactory.getLogger(IpThrottleService::class.simpleName)
 
-  private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
+  private val ip2BucketCache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
     val userId =
       StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw BadRequestException("invalid jwt)")
-    return cache.computeIfAbsent(userId) {
+    return ip2BucketCache.computeIfAbsent(userId) {
       Bucket.builder()
-        .addLimit(planService.resolveRateLimitFromApiKey(jwt))
+        .addLimit(resolveRateLimitFromApiKey(jwt))
         .build()
     }
   }
 
   fun resolveIpBucket(remoteAddr: String): Bucket {
     log.debug("throttle by ip $remoteAddr")
-    return cache.computeIfAbsent(remoteAddr) {
+    return ip2BucketCache.computeIfAbsent(remoteAddr) {
       Bucket.builder()
-        .addLimit(planService.resolveRateLimitFromIp(remoteAddr))
+        .addLimit(resolveRateLimitFromIp(remoteAddr))
         .build()
     }
   }
 
   // see https://www.baeldung.com/spring-bucket4j
-  override suspend fun tryConsume(joinPoint: ProceedingJoinPoint): Boolean {
+  fun tryAquire(joinPoint: ProceedingJoinPoint): Boolean {
     val response = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).response!!
     val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
@@ -76,7 +77,20 @@ class InMemoryRequestThrottleService(
     }
   }
 
-  private suspend fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
+  fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
+    return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
+      AuthTokenType.AGENT -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
+      AuthTokenType.USER -> Bandwidth.classic(300, Refill.intervally(300, Duration.ofMinutes(1)))
+      AuthTokenType.API -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
+      AuthTokenType.ANON -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
+    }
+  }
+
+  fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
+    return Bandwidth.classic(100, Refill.intervally(100, Duration.ofMinutes(1)))
+  }
+
+  private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
     return runCatching {
       val jwt = authService.interceptJwt(request)
       listOf(resolveTokenBucket(jwt))

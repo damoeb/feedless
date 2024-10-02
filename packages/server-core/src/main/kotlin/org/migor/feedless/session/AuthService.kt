@@ -132,7 +132,7 @@ class AuthService : IAuthService {
     return decodeToken(rawToken)
   }
 
-  override suspend fun interceptJwt(request: HttpServletRequest): Jwt {
+  override fun interceptJwt(request: HttpServletRequest): Jwt {
     val rawToken = interceptTokenRaw(request)
     return decodeJwt(rawToken)
   }

@@ -27,13 +27,14 @@
           *ngIf="serverConfig.isSaas()"
           name="Directory"
           link="/directory"
-          [product]="GqlProductName.RssProxy"
         ></app-repositories-button>
         <app-repositories-button
-          [product]="GqlProductName.RssProxy"
           link="/feeds"
           name="Feeds"
         ></app-repositories-button>
+        <ion-button href="https://discord.gg/8Tu742HQkr" target="_blank">
+          Discord
+        </ion-button>
         <app-agents-button></app-agents-button>
       </ion-buttons>
     </div>
@@ -42,9 +43,6 @@
       <app-dark-mode-button></app-dark-mode-button>
       <!--      <ion-button routerLink="/plans">-->
       <!--        <ion-label> Pricing </ion-label>-->
-      <!--      </ion-button>-->
-      <!--      <ion-button href="https://discord.gg/8Tu742HQkr">-->
-      <!--        <ion-label> Community </ion-label>-->
       <!--      </ion-button>-->
       <app-login-button></app-login-button>
     </ion-buttons>

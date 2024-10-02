@@ -1,5 +1,7 @@
 package org.migor.feedless.api.throttle
 
+import org.aspectj.lang.ProceedingJoinPoint
+import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -15,16 +17,16 @@ class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)
 
   @Autowired
-  private lateinit var cache: RequestThrottleService
+  private lateinit var ipThrottle: IpThrottleService
 
-//  @Around("@annotation(org.migor.feedless.api.throttle.Throttled)")
-//  suspend fun aquire(joinPoint: ProceedingJoinPoint): Any? {
-//    return if (cache.tryConsume(joinPoint)) {
-//      joinPoint.proceed()
-//    } else {
-//      joinPoint.proceed()
-//    }
-//  }
+  @Around("@annotation(org.migor.feedless.api.throttle.Throttled)")
+  fun aquire(joinPoint: ProceedingJoinPoint): Any? {
+    return if (ipThrottle.tryAquire(joinPoint)) {
+      joinPoint.proceed()
+    } else {
+      null
+    }
+  }
 
   //  @Before("execution(* com.gkatzioura.spring.aop.service.SampleService.createSample (java.lang.String)) && args(sampleName)")
 //  fun beforeSampleCreation(sampleName: String) {
