@@ -36,11 +36,10 @@ else
   echo "BUILD exited with ${BUILD_EXIT_CODE}"
   echo "$LATEST_COMMIT" > "$PWD"/LAST_BUILD_COMMIT
 
-  echo "Removing lockfile"
-  rm ${LOCK_FILE}
-
   if [ "$BUILD_EXIT_CODE" = "0" ]; then
     echo "Build was successful, triggering deploy script ${DEPLOY_SCRIPT}"
     cd $(dirname ${DEPLOY_SCRIPT}) && sh $(basename ${DEPLOY_SCRIPT})
   fi
 fi
+
+rm ${LOCK_FILE}

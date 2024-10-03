@@ -2,6 +2,8 @@ package org.migor.feedless.plan
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
@@ -12,7 +14,9 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.PricedProduct
+import org.migor.feedless.generated.types.RecurringPaymentInterval
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Entity
@@ -33,17 +37,12 @@ open class PricedProductEntity : EntityWithUUID() {
   @Column(name = "price", nullable = false)
   open var price: Double = 0.0
 
-  @Column(name = "target_group_individual", nullable = false)
-  open var individual: Boolean = false
-
-  @Column(name = "target_group_enterprise", nullable = false)
-  open var enterprise: Boolean = false
-
-  @Column(name = "target_group_other", nullable = false)
-  open var other: Boolean = false
-
   @Column(name = "in_stock")
   open var inStock: Int? = null
+
+  @Column(nullable = false, name = "recurring_interval")
+  @Enumerated(EnumType.STRING)
+  open var recurringInterval: ChronoUnit = ChronoUnit.YEARS
 
   @Column(name = StandardJpaFields.product_id, nullable = false)
   open var productId: UUID? = null
@@ -63,11 +62,17 @@ open class PricedProductEntity : EntityWithUUID() {
 fun PricedProductEntity.toDto(): PricedProduct {
   return PricedProduct(
     id = id.toString(),
-    other = other,
-    enterprise = enterprise,
-    individual = individual,
     description = this.unit,
     price = price,
+    recurringInterval = recurringInterval.toDto(),
     inStock = inStock ?: -1,
   )
+}
+
+private fun ChronoUnit.toDto(): RecurringPaymentInterval {
+  return when(this) {
+    ChronoUnit.YEARS -> RecurringPaymentInterval.yearly
+    ChronoUnit.MONTHS -> RecurringPaymentInterval.monthly
+    else -> throw IllegalArgumentException("Invalid RecurringPaymentInterval: $this")
+  }
 }

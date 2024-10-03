@@ -365,7 +365,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   suspend fun createLicenseForProduct(product: ProductEntity, billing: OrderEntity): LicenseEntity {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] createLicenseForProduct ${product.name}")
-    if (product.isCloudProduct) {
+    if (product.saas) {
       throw IllegalArgumentException("cloud product cannot be licenced")
     }
     val license = LicenseEntity()

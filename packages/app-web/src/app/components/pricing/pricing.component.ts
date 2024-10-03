@@ -15,6 +15,7 @@ import {
   GqlFeatureName,
   GqlPricedProduct,
   GqlProductCategory,
+  GqlRecurringPaymentInterval,
 } from '../../../generated/graphql';
 import {
   StringFeature,
@@ -24,6 +25,7 @@ import { FeatureService } from '../../services/feature.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
+type PaymentInterval = GqlRecurringPaymentInterval;
 
 type ProductWithFeatureGroups = Product & {
   stringifiedFeatureGroups: StringFeatureGroup[];
@@ -38,12 +40,17 @@ type ProductWithFeatureGroups = Product & {
 })
 export class PricingComponent implements OnInit {
   targetGroupFc = new FormControl<TargetGroup>('individual');
+  paymentIntervalFc = new FormControl<PaymentInterval>(
+    GqlRecurringPaymentInterval.Yearly,
+  );
   serviceFlavorFc = new FormControl<ServiceFlavor>('saas');
   serviceFlavorSelf: ServiceFlavor = 'selfHosting';
   serviceFlavorCloud: ServiceFlavor = 'saas';
   targetGroupOrganization: TargetGroup = 'organization';
   targetGroupIndividual: TargetGroup = 'individual';
   targetGroupOther: TargetGroup = 'other';
+  paymentIntervalMonthly: PaymentInterval = GqlRecurringPaymentInterval.Monthly;
+  paymentIntervalYearly: PaymentInterval = GqlRecurringPaymentInterval.Yearly;
   private products: ProductWithFeatureGroups[];
 
   @Input({ required: true })
@@ -97,18 +104,14 @@ export class PricingComponent implements OnInit {
     if (!this.products) {
       return [];
     }
-    return filter(this.products, {
-      isCloud: this.serviceFlavorFc.value === 'saas',
-    }).filter(
-      (product) =>
-        filter<GqlPricedProduct>(product.prices, this.filterParams()).length >
-        0,
-    );
+    return filter<ProductWithFeatureGroups>(this.products, this.filterParams());
   }
 
   private filterParams() {
     if (this.serviceFlavorFc.value === 'saas') {
-      return {};
+      return {
+        isCloud: true,
+      };
     }
     if (this.targetGroupFc.value === 'individual') {
       return {
@@ -128,9 +131,11 @@ export class PricingComponent implements OnInit {
   }
 
   filteredPrices(prices: GqlPricedProduct[]): GqlPricedProduct[] {
-    return filter<GqlPricedProduct>(prices, this.filterParams()).filter(
-      (price) => price.price >= 0,
-    );
+    return filter<GqlPricedProduct>(prices)
+      .filter((price) => price.price >= 0)
+      .filter(
+        (price) => price.recurringInterval === this.paymentIntervalFc.value,
+      );
   }
 
   private async stringifyFeatureGroup(

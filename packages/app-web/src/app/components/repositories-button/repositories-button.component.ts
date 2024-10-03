@@ -13,7 +13,5 @@ export class RepositoriesButtonComponent {
   @Input({ required: true })
   link: string;
 
-  constructor(
-  ) {}
-
+  constructor() {}
 }

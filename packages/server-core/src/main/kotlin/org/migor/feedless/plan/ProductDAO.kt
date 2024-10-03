@@ -13,5 +13,5 @@ import java.util.*
 interface ProductDAO : JpaRepository<ProductEntity, UUID> {
   fun findByNameEqualsIgnoreCase(name: String): ProductEntity?
   fun findByPartOfAndBaseProductIsTrue(name: ProductCategory): ProductEntity?
-  fun findAllByPartOfOrPartOfIsNull(category: ProductCategory): List<ProductEntity>
+  fun findAllByPartOfOrPartOfIsNullAndAvailableTrue(category: ProductCategory): List<ProductEntity>
 }

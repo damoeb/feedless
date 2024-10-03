@@ -40,17 +40,29 @@ open class ProductEntity : EntityWithUUID() {
   open lateinit var description: String
 
   @Column(nullable = false, name = "is_cloud")
-  open var isCloudProduct: Boolean = false
+  open var saas: Boolean = false
+
+  @Column(nullable = false, name = "is_available")
+  open var available: Boolean = false
 
   @Column(nullable = false, name = "is_base_product")
   open var baseProduct: Boolean = false
+
+  @Column(name = "self_hosting_individual", nullable = false)
+  open var selfHostingIndividual: Boolean = false
+
+  @Column(name = "self_hosting_enterprise", nullable = false)
+  open var selfHostingEnterprise: Boolean = false
+
+  @Column(name = "self_hosting_other", nullable = false)
+  open var selfHostingOther: Boolean = false
 
   @Column(name = "part_of")
   @Enumerated(EnumType.STRING)
   open var partOf: ProductCategory? = null
 
   @Column(name = "feature_group_id")
-  open var featureGroupId: UUID? = null
+  open lateinit var featureGroupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
@@ -67,12 +79,6 @@ open class ProductEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var prices: MutableList<PricedProductEntity> = mutableListOf()
 
-  @PrePersist
-  fun prePersist() {
-    if (isCloudProduct && featureGroup == null) {
-      throw IllegalArgumentException("when isCloudProject=true you must define a feature group")
-    }
-  }
 }
 
 
@@ -81,7 +87,10 @@ fun ProductEntity.toDTO(): Product {
     id = id.toString(),
     name = name,
     description = description,
-    isCloud = isCloudProduct,
+    isCloud = saas,
+    individual = selfHostingIndividual,
+    enterprise = selfHostingEnterprise,
+    other = selfHostingOther,
     partOf = partOf?.toDto(),
     featureGroupId = featureGroupId?.toString(),
     prices = emptyList(),

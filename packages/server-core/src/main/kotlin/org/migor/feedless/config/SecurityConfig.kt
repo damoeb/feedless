@@ -95,14 +95,14 @@ class SecurityConfig {
       .cors {
         it.configurationSource(corsConfigurationSource())
       }
-      .csrf().disable()
-      .formLogin().disable()
+      .csrf { it.disable() }
+      .formLogin { it.disable() }
       .httpBasic(Customizer.withDefaults())
-      .authorizeHttpRequests()
-      .requestMatchers(*(whitelistedUrls())).permitAll()
-      .requestMatchers("/actuator/**").hasAnyRole(metricRole)
-      .requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
-      .and()
+      .authorizeHttpRequests {
+        it.requestMatchers(*(whitelistedUrls())).permitAll()
+        it.requestMatchers("/actuator/**").hasAnyRole(metricRole)
+        it.requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
+      }
       .build()
   }
 
@@ -149,32 +149,35 @@ class SecurityConfig {
     return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
-        .oauth2Login()
-        .successHandler { _, response, authentication ->
-          runBlocking {
-            coroutineScope {
-              val authenticationToken = authentication as OAuth2AuthenticationToken
-              val user = when (authenticationToken.authorizedClientRegistrationId) {
-                "github" -> handleGithubAuthResponse(authenticationToken)
-//              "google" -> handleGoogleAuthResponse(authenticationToken)
-                else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
-              }
-              log.info("jwt from user ${user.id}")
-              val jwt = tokenProvider.createJwtForUser(user)
+        .oauth2Login {
+          it.successHandler { _, response, authentication ->
+            runBlocking {
+              coroutineScope {
+                val authenticationToken = authentication as OAuth2AuthenticationToken
+                val user = when (authenticationToken.authorizedClientRegistrationId) {
+                  "github" -> handleGithubAuthResponse(authenticationToken)
+                  else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
+                }
+                log.info("jwt from user ${user.id}")
+                val jwt = tokenProvider.createJwtForUser(user)
               response.addCookie(cookieProvider.createTokenCookie(jwt))
-              response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
-
-              if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
-                response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
-              } else {
-                response.sendRedirect(propertyService.appHost)
+                response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
+//
+                if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
+                  response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
+                } else {
+                  response.sendRedirect(propertyService.appHost)
 //            request.getRequestDispatcher("/").forward(request, response)
+                }
               }
             }
           }
+          it.failureHandler { _, response, exception ->
+            log.error("conditionalOauth failed: ${exception.message}", exception)
+            response.sendRedirect(propertyService.appHost + "/login?error=${exception.message}")
+          }
         }
-        .failureHandler { _, _, exception -> log.error("conditionalOauth failed: ${exception.message}", exception) }
-        .and()
+
     } else {
       http
     }
@@ -186,28 +189,10 @@ class SecurityConfig {
     val githubId = (attributes["id"] as Int).toString()
     return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(it, githubId) }
       ?: userService.createUser(
-        email = email,
+        emailDirty = email,
         githubId = githubId,
       )
   }
-
-//  private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
-//    val attributes = (authentication.principal as DefaultOAuth2User).attributes
-//    val email = attributes["email"] as String
-//    return resolveUserByEmail(email) ?: userService.createUser(
-//      newCorrId(),
-//      email,
-//    )
-//  }
-
-//  private fun resolveUserByEmail(email: String): UserEntity? {
-//    return userService.findByEmail(email)
-//      .also {
-//        it?.let {
-//          meterRegistry.counter(AppMetrics.userLogin).increment()
-//        }
-//      }
-//  }
 
   private suspend fun resolveUserByGithubId(githubId: String): UserEntity? {
     return userService.findByGithubId(githubId)

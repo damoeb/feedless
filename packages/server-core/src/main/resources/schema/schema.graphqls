@@ -523,6 +523,9 @@ type Product {
   name: String!
   description: String!
   isCloud: Boolean!
+  individual: Boolean!
+  enterprise: Boolean!
+  other: Boolean!
   partOf: ProductCategory
   featureGroupId: ID
 #  featureGroup: FeatureGroup
@@ -533,10 +536,13 @@ type PricedProduct {
   id: ID!
   description: String
   price: Float!
-  individual: Boolean!
-  enterprise: Boolean!
-  other: Boolean!
+  recurringInterval: RecurringPaymentInterval!
   inStock: Int!
+}
+
+enum RecurringPaymentInterval {
+  yearly
+  monthly
 }
 
 input CountRepositoriesInput {

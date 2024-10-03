@@ -162,7 +162,7 @@ class OrderService {
       orderDAO.save(order)
 
       val product = order.product!!
-      if (product.isCloudProduct) {
+      if (product.saas) {
         productService.enableCloudProduct(product, order.user!!, order)
       } else {
         order.licenses = mutableListOf(licenseService.createLicenseForProduct(product, order))

@@ -15,14 +15,7 @@ import {
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
-import {
-  debounce,
-  distinct,
-  firstValueFrom,
-  interval,
-  lastValueFrom,
-  Subscription,
-} from 'rxjs';
+import { debounce, distinct, interval, Subscription } from 'rxjs';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath

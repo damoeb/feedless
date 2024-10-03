@@ -84,7 +84,7 @@ class ProductService {
     return withContext(Dispatchers.IO) {
       data.id?.eq?.let {
         listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
-      } ?: productDAO.findAllByPartOfOrPartOfIsNull(data.category!!.fromDto())
+      } ?: productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.category!!.fromDto())
     }
   }
 

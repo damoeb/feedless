@@ -36,27 +36,44 @@
     </ion-segment>
   </div>
 
-  <div class="ion-margin-top">
-    <ng-container *ngIf="targetGroupFc.value === targetGroupIndividual">
-      <p>
-        Hobbyists, professionals, or casual users who seek to enhance their
-        personal experience or skills.
-      </p>
-    </ng-container>
-    <ng-container *ngIf="targetGroupFc.value === targetGroupOrganization">
-      <p>
-        Commercial enterprises, Non-Profit Organizations, Educational
-        Institutions and Governmental Bodies who use the product as part of
-        their activities.
-      </p>
-    </ng-container>
+  <ion-segment
+    mode="ios"
+    [formControl]="paymentIntervalFc"
+    style="max-width: 300px; height: 50px"
+  >
+    <ion-segment-button [value]="paymentIntervalMonthly">
+      <ion-label>Monthly</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="paymentIntervalYearly">
+      <ion-label>Yearly</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-    <ng-container *ngIf="targetGroupFc.value === targetGroupOther">
-      <p>
-        Students or teachers who use the product as part of their studies and
-        Open Source contributors who integrate the product into their project
-        it's free.
-      </p>
+  <div class="ion-margin-top">
+    <ng-container *ngIf="serviceFlavorFc.value === serviceFlavorCloud">
+    </ng-container>
+    <ng-container *ngIf="serviceFlavorFc.value !== serviceFlavorCloud">
+      <ng-container *ngIf="targetGroupFc.value === targetGroupIndividual">
+        <p>
+          Hobbyists, professionals, or casual users who seek to enhance their
+          personal experience or skills.
+        </p>
+      </ng-container>
+      <ng-container *ngIf="targetGroupFc.value === targetGroupOrganization">
+        <p>
+          Commercial enterprises, Non-Profit Organizations, Educational
+          Institutions and Governmental Bodies who use the product as part of
+          their activities.
+        </p>
+      </ng-container>
+
+      <ng-container *ngIf="targetGroupFc.value === targetGroupOther">
+        <p>
+          Students or teachers who use the product as part of their studies and
+          Open Source contributors who integrate the product into their project
+          it's free.
+        </p>
+      </ng-container>
     </ng-container>
 
     <div class="offers">

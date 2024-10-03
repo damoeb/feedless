@@ -5,7 +5,6 @@ import { FetchRateAccordionModule } from './fetch-rate-accordion.module';
 import {
   ApolloMockController,
   AppTestModule,
-  mocks,
   mockServerSettings,
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
