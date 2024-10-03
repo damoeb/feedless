@@ -40,10 +40,19 @@ open class ProductEntity : EntityWithUUID() {
   open lateinit var description: String
 
   @Column(nullable = false, name = "is_cloud")
-  open var isCloudProduct: Boolean = false
+  open var saas: Boolean = false
 
   @Column(nullable = false, name = "is_base_product")
   open var baseProduct: Boolean = false
+
+  @Column(name = "self_hosting_individual", nullable = false)
+  open var selfHostingIndividual: Boolean = false
+
+  @Column(name = "self_hosting_enterprise", nullable = false)
+  open var selfHostingEnterprise: Boolean = false
+
+  @Column(name = "self_hosting_other", nullable = false)
+  open var selfHostingOther: Boolean = false
 
   @Column(name = "part_of")
   @Enumerated(EnumType.STRING)
@@ -69,7 +78,7 @@ open class ProductEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    if (isCloudProduct && featureGroup == null) {
+    if (saas && featureGroup == null) {
       throw IllegalArgumentException("when isCloudProject=true you must define a feature group")
     }
   }
@@ -81,7 +90,10 @@ fun ProductEntity.toDTO(): Product {
     id = id.toString(),
     name = name,
     description = description,
-    isCloud = isCloudProduct,
+    isCloud = saas,
+    individual = selfHostingIndividual,
+    enterprise = selfHostingEnterprise,
+    other = selfHostingOther,
     partOf = partOf?.toDto(),
     featureGroupId = featureGroupId?.toString(),
     prices = emptyList(),

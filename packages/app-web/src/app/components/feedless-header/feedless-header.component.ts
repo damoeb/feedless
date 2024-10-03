@@ -1,10 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlProductCategory } from '../../../generated/graphql';
 import {
@@ -14,7 +8,6 @@ import {
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { Session } from '../../graphql/types';
-import { ActivatedRoute } from '@angular/router';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SessionService } from '../../services/session.service';
 

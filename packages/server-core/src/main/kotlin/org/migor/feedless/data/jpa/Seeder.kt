@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @Service
 @Order(1)
@@ -305,15 +306,18 @@ class Seeder {
         "Getting started",
         group = ProductCategory.feedless,
         isBaseProduct = true,
-        isCloud = true,
+        saas = true,
         prices = listOf(
           createPricedProduct(
-            individual = true,
-            enterprise = true,
-            other = true,
             unit = "Per Month",
+            recurringInterval = ChronoUnit.MONTHS,
             price = 0.0
           ),
+          createPricedProduct(
+            unit = "Per Year",
+            recurringInterval = ChronoUnit.YEARS,
+            price = 0.0
+          )
         ),
         parentFeatureGroup = baseFeatureGroup,
         features = mapOf(
@@ -345,16 +349,32 @@ class Seeder {
         "feedless Pro",
         "Getting serious",
         group = ProductCategory.feedless,
-        isCloud = true,
+        saas = true,
+        selfHostingIndividual = true,
+        selfHostingEnterprise = true,
+        selfHostingOther = true,
         parentFeatureGroup = feedlessFree.featureGroup!!,
         prices = listOf(
           createPricedProduct(
-            individual = true,
-            enterprise = true,
-            other = true,
             unit = "Per Month",
+            recurringInterval = ChronoUnit.MONTHS,
             price = 9.9
           ),
+          createPricedProduct(
+            unit = "1st Year",
+            recurringInterval = ChronoUnit.YEARS,
+            price = 99.0
+          ),
+          createPricedProduct(
+            unit = "2nd Year",
+            recurringInterval = ChronoUnit.YEARS,
+            price = 69.0
+          ),
+          createPricedProduct(
+            unit = "3rd Year onward",
+            recurringInterval = ChronoUnit.YEARS,
+            price = 49.0
+          )
         ),
         features = mapOf(
 //          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
@@ -399,20 +419,16 @@ class Seeder {
   }
 
   private fun createPricedProduct(
-    individual: Boolean = false,
-    enterprise: Boolean = false,
-    other: Boolean = false,
     inStock: Int? = null,
     unit: String,
-    price: Double
+    price: Double,
+    recurringInterval: ChronoUnit
   ): PricedProductEntity {
     val priced = PricedProductEntity()
-    priced.individual = individual
-    priced.other = other
-    priced.enterprise = enterprise
     priced.inStock = inStock
     priced.price = price
     priced.unit = unit
+    priced.recurringInterval = recurringInterval
 
     return priced
   }
@@ -424,14 +440,21 @@ class Seeder {
     prices: List<PricedProductEntity>,
     parentFeatureGroup: FeatureGroupEntity? = null,
     features: Map<FeatureName, FeatureValueEntity>? = null,
-    isCloud: Boolean = false,
-    isBaseProduct: Boolean = false
-  ): ProductEntity {
+    saas: Boolean = false,
+    isBaseProduct: Boolean = false,
+    selfHostingIndividual: Boolean = false,
+    selfHostingEnterprise: Boolean = false,
+    selfHostingOther: Boolean = false,
+    ): ProductEntity {
 
     return withContext(Dispatchers.IO) {
       val product = productDAO.findByNameEqualsIgnoreCase(name) ?: run {
         val product = ProductEntity()
         product.name = name
+        product.saas = saas
+        product.selfHostingIndividual = selfHostingIndividual
+        product.selfHostingOther = selfHostingOther
+        product.selfHostingEnterprise = selfHostingEnterprise
         product.description = description
         product.baseProduct = isBaseProduct
         product.partOf = group
@@ -443,7 +466,9 @@ class Seeder {
         val featureGroup = resolveFeatureGroup(name, parentFeatureGroup, features)
         product.featureGroupId = featureGroup.id
         product.featureGroup = featureGroup
-        product.isCloudProduct = isCloud
+        if (!saas) {
+          throw IllegalArgumentException("featureGroup is set, while saas is not")
+        }
         productDAO.save(product)
       }
 

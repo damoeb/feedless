@@ -11,13 +11,14 @@ fragment ProductFragment on Product {
   #    }
   #  }
   isCloud
+  enterprise
+  individual
+  other
   partOf
   prices {
     id
+    recurringInterval
     description
-    enterprise
-    individual
-    other
     inStock
     price
   }
