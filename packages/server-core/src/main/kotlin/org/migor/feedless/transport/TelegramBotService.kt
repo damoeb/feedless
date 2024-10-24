@@ -140,7 +140,7 @@ class TelegramBotService(
         } else {
           if (update.hasMessage()) {
             if (update.message.isCommand) {
-              handleCommand(connection, update)
+              handleCommand(connection, update, chatId)
             } else {
               storeMessage(connection, update)
             }
@@ -153,8 +153,8 @@ class TelegramBotService(
 
     val messageText = update.message?.text
 
-    if (chatId != null && messageText != null) {
-      println("Received message from chat $chatId: $messageText")
+    if (chatId != null || messageText != null) {
+      log.warn("Received invalid message from chat $chatId: $messageText")
     }
   }
 
@@ -162,17 +162,22 @@ class TelegramBotService(
     inboxService.appendMessage(connection.userId!!, toDocument(update))
   }
 
-  private fun handleCommand(connection: TelegramConnectionEntity, update: Update) {
-    sendMessage(update.message.chatId, "Commands are not yet supported")
+  private fun handleCommand(connection: TelegramConnectionEntity, update: Update, chatId: Long) {
+    val command = update.message.text.lowercase().trim()
+    when(command) {
+      "/start" -> welcomeNewUser(chatId, connection)
+      else -> log.warn("Cannot handle command $command")
+    }
   }
 
-  private fun welcomeNewUser(chatId: Long, linkOptional: TelegramConnectionEntity?) {
-    val link = linkOptional ?: run {
+  private fun welcomeNewUser(chatId: Long, connectionOptional: TelegramConnectionEntity?) {
+    val link = connectionOptional ?: run {
       val t = TelegramConnectionEntity()
       t.chatId = chatId
       telegramConnectionDAO.save(t)
     }
 
+    log.info("welcome telegram user ${link.id}")
     sendMessage(chatId, "Hi, to proceed connect your feedless account here ${appHost}/connect-app/${link.id}")
   }
 

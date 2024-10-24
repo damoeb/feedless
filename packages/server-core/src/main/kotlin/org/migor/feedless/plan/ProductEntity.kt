@@ -42,6 +42,9 @@ open class ProductEntity : EntityWithUUID() {
   @Column(nullable = false, name = "is_cloud")
   open var saas: Boolean = false
 
+  @Column(nullable = false, name = "is_available")
+  open var available: Boolean = false
+
   @Column(nullable = false, name = "is_base_product")
   open var baseProduct: Boolean = false
 
@@ -59,7 +62,7 @@ open class ProductEntity : EntityWithUUID() {
   open var partOf: ProductCategory? = null
 
   @Column(name = "feature_group_id")
-  open var featureGroupId: UUID? = null
+  open lateinit var featureGroupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
@@ -76,12 +79,6 @@ open class ProductEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var prices: MutableList<PricedProductEntity> = mutableListOf()
 
-  @PrePersist
-  fun prePersist() {
-    if (saas && featureGroup == null) {
-      throw IllegalArgumentException("when isCloudProject=true you must define a feature group")
-    }
-  }
 }
 
 

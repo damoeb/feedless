@@ -81,7 +81,9 @@ class InboxService {
         val user = userDAO.findById(ownerId).orElseThrow()
 
         document.status = ReleaseStatus.released
-        document.repositoryId = user.inboxRepositoryId ?: userService.createInboxRepository(user).id
+        val repositoryId = user.inboxRepositoryId ?: userService.createInboxRepository(user).id
+        log.info("appending inbox message to $repositoryId")
+        document.repositoryId = repositoryId
         val attachments = document.attachments
         document.attachments = mutableListOf()
         documentDAO.save(document)
