@@ -68,8 +68,11 @@ services:
   feedless-core:
     image: damoeb/feedless:core-latest
     restart: unless-stopped
-#    healthcheck:
-#      test: curl -f https://localhost:8080 || exit 1
+    healthcheck:
+      test: curl -f http://localhost:8080
+      interval: 60s
+      timeout: 10s
+      retries: 10
     depends_on:
       - postgis
     ports:

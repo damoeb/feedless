@@ -32,7 +32,7 @@ import java.net.URI
 import java.time.Duration
 
 @Service
-@Profile("${AppProfiles.telegram} & ${AppLayer.service}")
+@Profile("${AppProfiles.telegram} & ${AppLayer.service} & ${AppProfiles.prod}")
 class TelegramBotService(
   @Value("\${app.telegram.bot.token}")
   private val botToken: String,

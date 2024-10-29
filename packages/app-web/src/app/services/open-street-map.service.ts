@@ -12,13 +12,13 @@ export interface OsmMatch {
     country?: string;
     neighbourhood?: string;
     city_district?: string;
-    country_code?: string;
+    country_code: string;
     state_district?: string;
     county?: string;
     postcode: string;
-    state?: string;
+    state: string;
     town?: string;
-    village?: string;
+    village: string;
     amenity?: string;
     house_number?: string;
     road?: string;

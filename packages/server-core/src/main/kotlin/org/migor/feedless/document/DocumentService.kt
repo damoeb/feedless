@@ -133,6 +133,8 @@ class DocumentService(
       }
 
       where?.let {
+        it.id?.eq?.let { whereStatements.add(path(DocumentEntity::id).eq(UUID.fromString(it))) }
+        it.id?.`in`?.let { whereStatements.add(path(DocumentEntity::id).`in`(it.map { UUID.fromString(it) })) }
         it.source?.let { whereStatements.add(path(DocumentEntity::sourceId).eq(UUID.fromString(it.id))) }
         it.startedAt?.let { addDateConstraint(it, path(DocumentEntity::startingAt)) }
         it.createdAt?.let { addDateConstraint(it, path(DocumentEntity::createdAt)) }

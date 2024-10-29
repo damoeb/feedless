@@ -189,7 +189,7 @@ class SecurityConfig {
     val githubId = (attributes["id"] as Int).toString()
     return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(it, githubId) }
       ?: userService.createUser(
-        emailDirty = email,
+        email = email,
         githubId = githubId,
       )
   }

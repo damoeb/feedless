@@ -1,0 +1,22 @@
+a {
+  //border-bottom: 1px solid var(--app-foreground);
+  color: var(--ion-color-primary);
+  text-decoration: none;
+
+  &:visited {
+    color: var(--ion-color-tertiary);
+  }
+
+  &:hover {
+    border-bottom-color: transparent;
+  }
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: bold;
+}
+h3 {
+  font-size: 1rem;
+  line-height: 1.3rem;
+}

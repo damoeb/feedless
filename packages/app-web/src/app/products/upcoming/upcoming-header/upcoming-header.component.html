@@ -1,0 +1,233 @@
+<ion-header style="box-shadow: none">
+  <ion-toolbar style="--background: transparent">
+    <div
+      style="
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 5px;
+        display: flex;
+      "
+    >
+      <ion-button
+        color="light"
+        aria-label="Datum"
+        (click)="showCalendar = !showCalendar"
+      >
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+<!--        <span class="ion-hide-md-down"-->
+<!--        >{{ formatToRelativeDay(currentDate, ', ') }}-->
+<!--        </span>-->
+        {{ getWeekday() }}
+        {{ getLabelForCalendar() }}
+      </ion-button>
+      <ion-searchbar
+        (ionFocus)="isLocationFocussed = true"
+        [formControl]="locationFc"
+        placeholder="Postleitzahl oder Ortschaft"
+        search-icon="location-outline"
+        style="
+          flex: 1;
+          --border-radius: 8px;
+          --box-shadow: 0px 0px 4px 1px var(--ion-color-danger);
+        "
+      >
+      </ion-searchbar>
+      <ion-button
+        color="light"
+        aria-label="Karte anzeigen"
+        (click)="showMap = !showMap"
+      >
+        <ion-icon name="map-outline" slot="start"></ion-icon>
+        Karte
+      </ion-button>
+      <ion-button
+        color="light"
+        aria-label="Kategorien filtern"
+        (click)="showFilters = !showFilters"
+      >
+        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div
+      style="display: flex; position: absolute; right: 0; top: 10px"
+      class="ion-hide-md-down"
+    >
+      <!--      <ion-title>-->
+      <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
+      <!--      </ion-title>-->
+      <ion-buttons>
+        <app-dark-mode-button></app-dark-mode-button>
+      </ion-buttons>
+    </div>
+  </ion-toolbar>
+
+  <div
+    *ngIf="!loadingCalendar"
+    style="
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+    "
+  >
+    <ion-list *ngIf="isLocationFocussed" class="ion-margin-bottom">
+      <ion-item
+        (click)="getCurrentLocation()"
+        *ngIf="!locationNotAvailable"
+        [button]="true"
+      >
+        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>
+        Your Location
+      </ion-item>
+      <ion-item *ngIf="locationSuggestions.length === 0">
+        Tippe deine PLZ oder Ortschaft
+      </ion-item>
+      <ion-item
+        (click)="changeLocation(location)"
+        *ngFor="let location of locationSuggestions"
+        [button]="true"
+      >
+        <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>
+        {{ convertOsmMatchToString(location) }}
+      </ion-item>
+    </ion-list>
+
+    <ng-container *ngIf="showCalendar">
+      <div class="calendar ion-margin-top">
+        <ion-toolbar style="--background: transparent">
+          <ion-buttons slot="start">
+            <ion-button (click)="goToDateRelative(-1, 'month')">
+              <ion-icon name="chevron-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+
+          <ion-title class="ion-text-center">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              {{ formatDate(currentDate, "MMMM") }}
+              {{ formatDate(currentDate, "YYYY") }}
+
+              <ion-button
+                (click)="changeMonth(now)"
+                *ngIf="!isSame(currentDate, now, ['month'])"
+                class="ion-margin-start"
+                color="dark"
+                size="small"
+              >Heute
+              </ion-button>
+            </div>
+          </ion-title>
+
+          <ion-buttons slot="end">
+            <ion-button (click)="goToDateRelative(1, 'month')">
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+
+        <div *ngFor="let year of years | keyvalue" class="calendar__body">
+          <ng-container *ngFor="let month of year.value | keyvalue">
+            <div
+              *ngFor="let day of filterFirstWeek(month.value)"
+              class="day day--no-header no-background ion-text-center ion-text-uppercase"
+            >
+              {{ formatDate(day.day, "ddd") }}
+            </div>
+            <div
+              *ngFor="let day of month.value"
+              [ngClass]="{
+                'day--today': day.today,
+                'day--other': day.otherMonth,
+                'no-background': day.otherMonth,
+                'day--active': isSame(day.day, currentDate, [
+                  'month',
+                  'year',
+                  'day',
+                ]),
+                'day--past': day.past,
+              }"
+              class="day"
+            >
+              <a
+                (click)="changeDate(day.day)"
+                [title]="
+                  'Zeige Veranstaltungen für das Datum ' +
+                  formatDate(day.day, 'YYYY-MM-DD')
+                "
+                href="javascript:void(0)"
+              >
+                <time [attr.datetime]="formatDate(day.day, 'YYYY-MM-DD')">
+                  <h4 class="ion-text-center">
+                    <span *ngIf="day.printMonth">
+                      {{ formatDate(day.day, "MMM") }}
+                    </span>
+                    <span class="date">
+                      {{ formatDate(day.day, "D") }}
+                    </span>
+                  </h4>
+                  <div
+                    class="ion-text-center"
+                    style="color: var(--ion-color-danger)"
+                  >
+                    <span *ngIf="hasEvents(day.day)"> &#9679; </span>
+                  </div>
+                </time>
+              </a>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="showMap || isLocationFocussed">
+      <ion-list>
+        <ion-item>
+          <ion-select
+            [formControl]="perimeterFc"
+            interface="action-sheet"
+            label="Umkreis"
+            labelPlacement="start"
+          >
+            <ion-select-option [value]="5">+5 Km</ion-select-option>
+            <ion-select-option [value]="10">+10 Km</ion-select-option>
+            <ion-select-option [value]="20">+20 Km</ion-select-option>
+            <ion-select-option [value]="30">+30 Km</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <app-map
+        [position]="currentLatLon"
+        (positionChange)="handlePositionChange($event)"
+        [perimeter]="perimeterFc.value"
+      ></app-map>
+    </ng-container>
+
+    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">
+      <ion-item>
+        <ion-select
+          [formControl]="categoriesFc"
+          [interfaceOptions]="selectCategoriesOptions"
+          interface="action-sheet"
+          label="Kategorien"
+          [multiple]="true"
+          labelPlacement="start"
+        >
+          <ion-select-option
+            *ngFor="let category of categories"
+            [value]="category"
+          >{{ category }}</ion-select-option
+          >
+        </ion-select>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-header>
