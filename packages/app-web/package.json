@@ -54,6 +54,8 @@
     "@codemirror/view": "^6.23.0",
     "@ionic/angular": "8.2.6",
     "@justinribeiro/lite-youtube": "1.5.0",
+    "@ngx-translate/core": "^15.0.0",
+    "@ngx-translate/http-loader": "^8.0.0",
     "d3-scale": "4.0.2",
     "dayjs": "1.11.12",
     "dexie": "^3.2.5",
