@@ -4,7 +4,7 @@ echo "width product $PRODUCT $OFFLINE_SUPPORT"
 echo "{
   \"apiUrl\": \"http://localhost:8080\",
   \"upcoming\": {
-    \"eventRepositoryId\": \"123\"
+    \"eventRepositoryId\": \"ee5e2fd7-4b3e-4bf0-bf74-1224b5d667ff\"
   },
   \"offlineSupport\": ${OFFLINE_SUPPORT},
   \"products\": [

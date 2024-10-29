@@ -11,6 +11,7 @@ import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mod
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { MapModule } from '../../components/map/map.module';
+import { MapModalModule } from '../../modals/map-modal/map-modal.module';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { MapModule } from '../../components/map/map.module';
     SearchbarModule,
     BubbleModule,
     MapModule,
+    MapModalModule,
     ReactiveFormsModule,
   ],
   declarations: [UpcomingProductPage],

@@ -6,6 +6,8 @@ import {
   OnInit,
 } from '@angular/core';
 import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
+import 'dayjs/locale/de';
+import 'dayjs/locale/en';
 import {
   AppConfigService,
   ProductConfig,
@@ -20,9 +22,9 @@ import {
   isUndefined,
   omit,
   sortBy,
-  times,
   unionBy,
 } from 'lodash-es';
+import { Graph, EducationEvent, ChildrensEvent, DanceEvent, FoodEvent, MusicEvent, LiteraryEvent, SaleEvent, SportsEvent } from 'schema-dts';
 import { RecordService } from '../../services/record.service';
 import { GetElementType, Record } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
@@ -39,6 +41,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { namedPlaces } from './places';
+import { PageService } from '../../services/page.service';
 
 type Day = {
   day: Dayjs | null;
@@ -84,6 +87,8 @@ type UrlFragments = {
   day?: string;
 };
 
+type SiteLocale = 'de' | 'en';
+
 @Component({
   selector: 'app-upcoming-product-page',
   templateUrl: './upcoming-product-page.component.html',
@@ -96,13 +101,15 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   locationFc = new FormControl<string>('');
   private subscriptions: Subscription[] = [];
   protected currentDateRef: Dayjs;
-  private currentLatLon: number[];
+  protected currentLatLon: number[];
 
   protected now: Dayjs;
   private eventsOfMonth: LocalizedEvent[] = [];
   protected placesByDistance: PlaceByDistance[] = [];
 
   protected perimeterFc = new FormControl<number>(10);
+  protected categoriesFc = new FormControl<string[]>([]);
+  protected categories = ['Algemein', 'Kinder', 'Sport', 'Veranstaltung'];
   private readonly perimeterUnit = 'Km';
   private timeWindowTo: number;
   private timeWindowFrom: number;
@@ -113,10 +120,16 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected loadingCalendar = true;
   protected loadingDay = true;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
+  protected locale: SiteLocale = 'de';
+  selectCategoriesOptions = {
+    header: 'Kategorien',
+    subHeader: 'Select your favorite color',
+  };
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly recordService: RecordService,
+    private readonly pageService: PageService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly location: Location,
@@ -165,6 +178,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     await this.setLocation(this.currentLocation, false);
 
     await this.patchUrl();
+    dayjs.locale('de');
     await this.setCurrentDate(this.currentDateRef);
 
     this.loadingCalendar = false;
@@ -388,10 +402,6 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  filterFirstWeek(days: Day[]): Day[] {
-    return days.filter((day) => day.isFirstWeek);
-  }
-
   private getGeoDistance(event: Record): number {
     return this.getDistanceFromLatLonInKm(
       event.latLng.lat,
@@ -519,15 +529,20 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   private async patchUrl() {
     const parts: UrlFragments = {
       state: this.currentLocation.address.state,
-      country: this.currentLocation.address.country,
+      country: this.currentLocation.address.country_code?.toUpperCase(),
       perimeter: this.perimeterFc.value,
       place: this.getDisplayName(this.currentLocation),
-      year: this.currentDateRef.format('YYYY'),
-      month: this.currentDateRef.format('MM'),
-      day: this.currentDateRef.format('DD'),
+      year: this.currentDateRef.locale(this.locale).format('YYYY'),
+      month: this.currentDateRef.locale(this.locale).format('MM'),
+      day: this.currentDateRef.locale(this.locale).format('DD'),
     };
 
-    const texts = ['events/near', 'within', 'on'];
+    let texts: string[];
+    if (this.locale == 'de') {
+      texts = ['events/in', 'innerhalb', 'am'];
+    } else {
+      texts = ['events/in', 'within', 'on'];
+    }
 
     const url = this.router
       .createUrlTree([
@@ -544,6 +559,18 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       ])
       .toString();
     this.location.replaceState(url);
+
+    this.pageService.setMetaTags({
+      title: `Events in ${parts.place}, ${parts.state} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
+      description: `Erfahre alles über aktuelle Veranstaltungen in ${parts.place}, ${parts.state}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${parts.place}, ${parts.state} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
+      publisher: 'upcoming',
+      category: '',
+      url: location.href,
+      region: parts.state,
+      place: parts.place,
+      position: [parseFloat(`${this.currentLocation.lat}`), parseFloat(`${this.currentLocation.lon}`)]
+    })
+
   }
 
   private async parseDateFromUrl(): Promise<Dayjs> {
@@ -583,5 +610,164 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
 
   private getRepositoryId(): string {
     return this.appConfigService.customProperties.eventRepositoryId as any;
+  }
+
+  createSchemaOrgGraph(): string {
+    // const s = {
+    //   "@context": "https://schema.org",
+    //   "@type": "Event",
+    //   "name": "Event Listings in Switzerland - Aargau and Zürich",
+    //   "url": "https://eventfilet.ch/events",
+    //   "description": "Discover a wide range of events happening across Switzerland, including the cantons of Aargau and Zürich, and various villages.",
+    //   "location": [
+    //   {
+    //     "@type": "Place",
+    //     "name": "Aargau",
+    //     "address": {
+    //       "@type": "PostalAddress",
+    //       "addressCountry": "CH",
+    //       "addressRegion": "Aargau",
+    //       "addressLocality": ""
+    //     }
+    //   },
+    //   {
+    //     "@type": "Place",
+    //     "name": "Zürich",
+    //     "address": {
+    //       "@type": "PostalAddress",
+    //       "addressCountry": "CH",
+    //       "addressRegion": "Zürich",
+    //       "addressLocality": "Villages in Zürich"
+    //     }
+    //   }
+    // ],
+    //   "eventSchedule": {
+    //   "@type": "Schedule",
+    //     "repeatFrequency": "http://schema.org/Daily",
+    //     "startDate": "2024-01-01",
+    //     "endDate": "2024-12-31"
+    // },
+    //   "subEvent": [
+    //   {
+    //     "@type": "Event",
+    //     "name": "Music Festival in Aarau",
+    //     "startDate": "2024-05-10",
+    //     "endDate": "2024-05-12",
+    //     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    //     "location": {
+    //       "@type": "Place",
+    //       "name": "Aarau Music Arena",
+    //       "address": {
+    //         "@type": "PostalAddress",
+    //         "addressLocality": "Aarau",
+    //         "addressRegion": "Aargau",
+    //         "addressCountry": "CH"
+    //       }
+    //     },
+    //     "performer": {
+    //       "@type": "PerformingGroup",
+    //       "name": "Swiss National Orchestra"
+    //     },
+    //     "offers": {
+    //       "@type": "Offer",
+    //       "url": "https://example.com/events/aarau-music-festival",
+    //       "priceCurrency": "CHF",
+    //       "price": "50",
+    //       "availability": "https://schema.org/InStock"
+    //     }
+    //   },
+    //   {
+    //     "@type": "Event",
+    //     "name": "Food Festival in Zürich",
+    //     "startDate": "2024-06-20",
+    //     "endDate": "2024-06-22",
+    //     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    //     "location": {
+    //       "@type": "Place",
+    //       "name": "Zürich Food Plaza",
+    //       "address": {
+    //         "@type": "PostalAddress",
+    //         "addressLocality": "Zürich",
+    //         "addressRegion": "Zürich",
+    //         "addressCountry": "CH"
+    //       }
+    //     },
+    //     "offers": {
+    //       "@type": "Offer",
+    //       "url": "https://example.com/events/zurich-food-festival",
+    //       "priceCurrency": "CHF",
+    //       "price": "20",
+    //       "availability": "https://schema.org/InStock"
+    //     }
+    //   }
+    // ],
+    //   "organizer": {
+    //   "@type": "Organization",
+    //     "name": "Swiss Events",
+    //     "url": "https://example.com",
+    //     "contactPoint": {
+    //     "@type": "ContactPoint",
+    //       "telephone": "+41-44-123-4567",
+    //       "contactType": "Customer Service"
+    //   }
+    // }
+    // }
+    // https://www.npmjs.com/package/schema-dts
+    const graph: Graph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Person',
+          '@id': 'https://my.site/#alyssa',
+          name: 'Alyssa P. Hacker',
+          hasOccupation: {
+            '@type': 'Occupation',
+            name: 'LISP Hacker',
+            qualifications: 'Knows LISP',
+          },
+          mainEntityOfPage: {'@id': 'https://my.site/about/#page'},
+          subjectOf: {'@id': 'https://my.site/about/#page'},
+        },
+        {
+          '@type': 'AboutPage',
+          '@id': 'https://my.site/#site',
+          url: 'https://my.site',
+          name: "Alyssa P. Hacker's Website",
+          inLanguage: 'en-US',
+          description: 'The personal website of LISP legend Alyssa P. Hacker',
+          mainEntity: {'@id': 'https://my.site/#alyssa'},
+        },
+        {
+          '@type': 'WebPage',
+          '@id': 'https://my.site/about/#page',
+          url: 'https://my.site/about/',
+          name: "About | Alyssa P. Hacker's Website",
+          inLanguage: 'en-US',
+          isPartOf: {
+            '@id': 'https://my.site/#site',
+          },
+          about: {'@id': 'https://my.site/#alyssa'},
+          mainEntity: {'@id': 'https://my.site/#alyssa'},
+        },
+      ],
+    };
+    return JSON.stringify(graph, null, 2);
+  }
+
+  handlePositionChange(latLon: number[]) {
+
+  }
+
+  formatDate(date: Dayjs, format: string) {
+    return date.locale(this.locale).format(format);
+  }
+
+  switchLocale() {
+    if(this.locale == 'de') {
+      this.locale = 'en';
+    } else {
+      this.locale = 'de';
+    }
+    this.patchUrl();
   }
 }

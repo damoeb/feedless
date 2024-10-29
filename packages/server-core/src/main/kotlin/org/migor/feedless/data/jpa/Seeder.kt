@@ -339,8 +339,8 @@ class Seeder {
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),
-          FeatureName.canLoginWithCredentials to asBoolFeature(true),
-          FeatureName.signUpRequiresInvitationKeyOnly to asBoolFeature(true),
+//          FeatureName.canLoginWithCredentials to asBoolFeature(true),
+//          FeatureName.signUpRequiresInvitationKeyOnly to asBoolFeature(true),
 
 //          FeatureName.itemEmailForwardBool to asBoolFeature(false),
 //          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
@@ -420,8 +420,8 @@ class Seeder {
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),
-          FeatureName.canLoginWithCredentials to asBoolFeature(true),
-          FeatureName.signUpRequiresInvitationKeyOnly to asBoolFeature(true),
+//          FeatureName.canLoginWithCredentials to asBoolFeature(true),
+//          FeatureName.signUpRequiresInvitationKeyOnly to asBoolFeature(true),
         )
       )
 

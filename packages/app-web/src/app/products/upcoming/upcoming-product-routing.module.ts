@@ -5,21 +5,26 @@ import { UpcomingProductPage } from './upcoming-product-page.component';
 
 const routes: Routes = [
   {
-    path: 'events/near',
+    path: 'events/in',
     component: UpcomingProductPage,
   },
   {
-    // H/Zurich/Affoltern%20a.A./2024/6/3
-    path: 'events/near/:state/:country/:place/within/:perimeter/on/:year/:month/:day',
+    path: 'events/in/:state/:country/:place/within/:perimeter/on/:year/:month/:day',
+    data: {
+      lang: 'en'
+    },
     component: UpcomingProductPage,
   },
   {
-    path: 'events/bei/:state/:country/:place/innerhalb/:perimeter/am/:year/:month/:day',
+    path: 'events/in/:state/:country/:place/innerhalb/:perimeter/am/:year/:month/:day',
+    data: {
+      lang: 'de'
+    },
     component: UpcomingProductPage,
   },
   {
     path: '**',
-    redirectTo: 'events/near',
+    redirectTo: 'events/in',
   },
 ];
 

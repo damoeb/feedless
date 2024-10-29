@@ -19,7 +19,7 @@
 .day {
   flex-grow: 1;
   flex-shrink: 0;
-  flex-basis: 14%;
+  flex-basis: 13%;
 
   &:not(.day--no-header) {
     min-height: 100px;

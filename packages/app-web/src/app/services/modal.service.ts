@@ -27,6 +27,8 @@ import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
 } from '../modals/code-editor-modal/code-editor-modal.component';
+import { MapModalComponent, MapModalComponentProps } from '../modals/map-modal/map-modal.component';
+import { LatLon } from '../components/map/map.component';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -95,6 +97,22 @@ export class ModalService {
     });
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
+    await this.updateUrlParams();
+    return data;
+  }
+
+  async openMapModal(
+    componentProps: MapModalComponentProps,
+  ): Promise<LatLon> {
+    await this.updateUrlParams(ModalName.tagEditor);
+    const modal = await this.modalCtrl.create({
+      component: MapModalComponent,
+      componentProps,
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss<LatLon>();
     await this.updateUrlParams();
     return data;
   }

@@ -2,6 +2,7 @@
   (click)="sessionService.setColorScheme(!darkMode)"
   [color]="color"
   [expand]="expand"
+  aria-label="Toggle light mode"
 >
   <ng-container *ngIf="label">
     <ion-icon *ngIf="darkMode" name="sunny-outline" slot="start"></ion-icon>

@@ -1,30 +1,44 @@
 <ion-header style="box-shadow: none">
   <ion-toolbar style="--background: transparent">
-    <ion-searchbar
-      (ionFocus)="isLocationFocussed = true"
-      [formControl]="locationFc"
-      placeholder="Postleitzahl oder Ortschaft"
-      search-icon="location-outline"
-      style="
+    <div style="
         max-width: 700px;
         margin-left: auto;
         margin-right: auto;
         margin-top: 5px;
-        --border-radius: 8px;
-        --box-shadow: 0px 0px 4px 1px var(--ion-color-danger);
-      "
-    >
-    </ion-searchbar>
+        display: flex;
+      ">
+      <ion-searchbar
+        (ionFocus)="isLocationFocussed = true"
+        [formControl]="locationFc"
+        placeholder="Postleitzahl oder Ortschaft"
+        search-icon="location-outline"
+        style="
+          flex: 1;
+          --border-radius: 8px;
+          --box-shadow: 0px 0px 4px 1px var(--ion-color-danger);
+        "
+      >
+      </ion-searchbar>
+      <ion-button color="light" aria-label="Karte anzeigen">
+        <ion-icon name="map-outline" slot="start"></ion-icon>
+        Karte
+      </ion-button>
+    </div>
 
     <div style="display: flex; position: absolute; right: 0; top: 10px">
       <!--      <ion-title>-->
       <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
       <!--      </ion-title>-->
       <ion-buttons>
+        <ion-button (click)="switchLocale()"
+                    aria-label="Change language">{{ locale }}</ion-button>
         <app-dark-mode-button></app-dark-mode-button>
       </ion-buttons>
     </div>
   </ion-toolbar>
+
+  <script type="application/ld+json" [innerText]="createSchemaOrgGraph()">
+  </script>
 </ion-header>
 
 <ion-content>
@@ -32,7 +46,7 @@
   <div
     *ngIf="!loadingCalendar"
     style="
-      width: 700px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
       display: flex;
@@ -65,38 +79,42 @@
       <ion-item>
         <ion-select
           [formControl]="perimeterFc"
-          interface="popover"
+          interface="action-sheet"
           label="Umkreis"
           labelPlacement="start"
         >
           <ion-select-option [value]="5">+5 Km</ion-select-option>
           <ion-select-option [value]="10">+10 Km</ion-select-option>
           <ion-select-option [value]="20">+20 Km</ion-select-option>
-          <ion-select-option [value]="30">+20 Km</ion-select-option>
+          <ion-select-option [value]="30">+30 Km</ion-select-option>
         </ion-select>
       </ion-item>
     </ion-list>
 
-    <!--    <div style="display: flex">-->
-    <!--      <h3 class="ion-margin-end">-->
-    <!--        <ion-text color="danger">am</ion-text>-->
-    <!--      </h3>-->
-    <!--      <ion-input color="danger" fill="outline" [formControl]="locationFc"></ion-input>-->
-    <!--    </div>-->
-    <!--    <div style="display: flex">-->
-    <!--      <h3 class="ion-margin-end">-->
-    <!--        <ion-text color="danger">Distanz</ion-text>-->
-    <!--      </h3>-->
-    <!--      <ion-select>-->
-    <!--        <ion-select-option>10 Km</ion-select-option>-->
-    <!--        <ion-select-option>20 Km</ion-select-option>-->
-    <!--      </ion-select>-->
-    <!--    </div>-->
+    <app-map [position]="currentLatLon"
+             (positionChange)="handlePositionChange($event)"
+             [perimeter]="perimeterFc.value"></app-map>
 
-    <div class="calendar ion-margin-top">
-      <ion-toolbar style="--background: transparent">
+    <ion-list>
+      <ion-item>
+        <ion-select
+          [formControl]="categoriesFc"
+          [interfaceOptions]="selectCategoriesOptions"
+          interface="action-sheet"
+          label="Kategorien"
+          [multiple]="true"
+          labelPlacement="start"
+        >
+          <ion-select-option *ngFor="let category of categories"
+                             [value]="category">{{ category }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-margin-top">
+      <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="goToDateRelative(-1, 'month')">
+          <ion-button (click)="goToDateRelative(-1, 'day')">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -105,8 +123,9 @@
           <div
             style="display: flex; align-items: center; justify-content: center"
           >
-            {{ currentDateRef.format("MMMM") }}
-            {{ currentDateRef.format("YYYY") }}
+            <ion-button color="light">
+              {{ formatDate(currentDateRef, "D. MMMM YYYY") }}
+            </ion-button>
 
             <ion-button
               (click)="changeMonth(now)"
@@ -114,67 +133,103 @@
               class="ion-margin-start"
               color="dark"
               size="small"
-              >Heute
+            >Heute
             </ion-button>
           </div>
         </ion-title>
 
         <ion-buttons slot="end">
-          <ion-button (click)="goToDateRelative(1, 'month')">
+          <ion-button (click)="goToDateRelative(1, 'day')">
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
-
-      <div *ngFor="let year of years | keyvalue" class="calendar__body">
-        <ng-container *ngFor="let month of year.value | keyvalue">
-          <div
-            *ngFor="let day of filterFirstWeek(month.value)"
-            class="day day--no-header no-background ion-text-center ion-text-uppercase"
-          >
-            {{ day.day.format("ddd") }}
-          </div>
-          <div
-            *ngFor="let day of month.value"
-            [ngClass]="{
-              'day--today': day.today,
-              'day--other': day.otherMonth,
-              'no-background': day.otherMonth,
-              'day--active': isSame(day.day, currentDateRef, [
-                'month',
-                'year',
-                'day',
-              ]),
-              'day--past': day.past,
-            }"
-            class="day"
-          >
-            <a (click)="setCurrentDate(day.day)" href="javascript:void(0)">
-              <div>
-                <h4 class="ion-text-center">
-                  <span *ngIf="day.printMonth">
-                    {{ day.day.format("MMM") }}
-                  </span>
-                  <span class="date">
-                    {{ day.day.format("D") }}
-                  </span>
-                </h4>
-                <div
-                  class="ion-text-center"
-                  style="color: var(--ion-color-danger)"
-                >
-                  <span *ngIf="hasEvents(day.day)"> &#9679; </span>
-                </div>
-              </div>
-            </a>
-          </div>
-        </ng-container>
-      </div>
     </div>
+
+<!--    <div class="calendar ion-margin-top">-->
+<!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
+<!--        <ion-buttons slot="start">-->
+<!--          <ion-button (click)="goToDateRelative(-1, 'month')">-->
+<!--            <ion-icon name="chevron-back-outline"></ion-icon>-->
+<!--          </ion-button>-->
+<!--        </ion-buttons>-->
+
+<!--        <ion-title class="ion-text-center">-->
+<!--          <div-->
+<!--            style="display: flex; align-items: center; justify-content: center"-->
+<!--          >-->
+<!--            {{ formatDate(currentDateRef, "MMMM") }}-->
+<!--            {{ formatDate(currentDateRef, "YYYY") }}-->
+
+<!--            <ion-button-->
+<!--              (click)="changeMonth(now)"-->
+<!--              *ngIf="!isSame(currentDateRef, now, ['month'])"-->
+<!--              class="ion-margin-start"-->
+<!--              color="dark"-->
+<!--              size="small"-->
+<!--            >Heute-->
+<!--            </ion-button>-->
+<!--          </div>-->
+<!--        </ion-title>-->
+
+<!--        <ion-buttons slot="end">-->
+<!--          <ion-button (click)="goToDateRelative(1, 'month')">-->
+<!--            <ion-icon name="chevron-forward-outline"></ion-icon>-->
+<!--          </ion-button>-->
+<!--        </ion-buttons>-->
+<!--      </ion-toolbar>-->
+
+<!--      <div *ngFor="let year of years | keyvalue" class="calendar__body">-->
+<!--        <ng-container *ngFor="let month of year.value | keyvalue">-->
+<!--          <div-->
+<!--            *ngFor="let day of filterFirstWeek(month.value)"-->
+<!--            class="day day&#45;&#45;no-header no-background ion-text-center ion-text-uppercase"-->
+<!--          >-->
+<!--            {{ formatDate(day.day, "ddd") }}-->
+<!--          </div>-->
+<!--          <div-->
+<!--            *ngFor="let day of month.value"-->
+<!--            [ngClass]="{-->
+<!--              'day&#45;&#45;today': day.today,-->
+<!--              'day&#45;&#45;other': day.otherMonth,-->
+<!--              'no-background': day.otherMonth,-->
+<!--              'day&#45;&#45;active': isSame(day.day, currentDateRef, [-->
+<!--                'month',-->
+<!--                'year',-->
+<!--                'day',-->
+<!--              ]),-->
+<!--              'day&#45;&#45;past': day.past,-->
+<!--            }"-->
+<!--            class="day"-->
+<!--          >-->
+<!--            <a (click)="setCurrentDate(day.day)"-->
+<!--               href="javascript:void(0)">-->
+<!--              <div>-->
+<!--                <h4 class="ion-text-center">-->
+<!--                  <span *ngIf="day.printMonth">-->
+<!--                    {{ formatDate(day.day, "MMM") }}-->
+<!--                  </span>-->
+<!--                  <span class="date">-->
+<!--                    {{ formatDate(day.day, "D") }}-->
+<!--                  </span>-->
+<!--                </h4>-->
+<!--                <div-->
+<!--                  class="ion-text-center"-->
+<!--                  style="color: var(&#45;&#45;ion-color-danger)"-->
+<!--                >-->
+<!--                  <span *ngIf="hasEvents(day.day)"> &#9679; </span>-->
+<!--                </div>-->
+<!--              </div>-->
+
+<!--            </a>-->
+<!--          </div>-->
+<!--        </ng-container>-->
+<!--      </div>-->
+<!--    </div>-->
     <div class="ion-margin-top" style="min-height: 50vh">
       <ng-container *ngIf="currentDateRef">
         <h1 class="ion-text-center">
-          Veranstaltungen am {{ currentDateRef.format("DD.MM") }} nahe
+          Veranstaltungen am {{ formatDate(currentDateRef,"DD.MM") }} nahe
           {{ locationFc.value }}
         </h1>
         <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
@@ -182,7 +237,7 @@
           <p *ngIf="placesByDistance.length === 0" class="ion-text-center">
             Keine Einträge gefunden
           </p>
-          <ul *ngFor="let placesGroup of placesByDistance">
+          <div *ngFor="let placesGroup of placesByDistance">
             <ng-container *ngFor="let place of placesGroup.places">
               <h3 class="ion-padding-top">
                 {{ place.place }}
@@ -200,19 +255,47 @@
                 </a>
                 <ion-note> {{ placesGroup.distance }} Km entfernt</ion-note>
               </h3>
-              <li
-                *ngFor="let event of place.events"
-                class="ion-margin-bottom ion-margin-start"
-              >
-                <!--                <h5>-->
-                <a [href]="event.url">{{ event.title }}</a>
-                <!--                </h5>-->
-                <!--                <p style="opacity: 0.8">-->
-                <!--                  {{ event.text }}-->
-                <!--                </p>-->
-              </li>
+              <ul>
+                <li
+                  *ngFor="let event of place.events"
+                  class="ion-margin-bottom ion-margin-start"
+                >
+
+                  <article>
+                    <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+                    <header>
+                      <h3 itemprop="name">
+                        <a [href]="event.url">{{ event.title }}</a>
+                      </h3>
+  <!--                    <p itemprop="description">Join us for an unforgettable night of music featuring top artists.</p>-->
+                    </header>
+
+  <!--                  <section>-->
+  <!--                    <h2>Event Details</h2>-->
+  <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
+  <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
+  <!--                  </section>-->
+
+  <!--                  <section>-->
+  <!--                    <h2>Location</h2>-->
+  <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
+  <!--                      <span itemprop="name">Zurich Music Hall</span>-->
+  <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+  <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
+  <!--                        <meta itemprop="latitude" content="47.3769">-->
+  <!--                        <meta itemprop="longitude" content="8.5417">-->
+  <!--                      </div>-->
+  <!--                    </address>-->
+  <!--                  </section>-->
+
+                    <footer>
+                      <p>For tickets, visit our <a href="https://example.com/tickets">official ticket page</a>.</p>
+                    </footer>
+                  </article>
+                </li>
+              </ul>
             </ng-container>
-          </ul>
+          </div>
         </div>
       </ng-container>
     </div>
