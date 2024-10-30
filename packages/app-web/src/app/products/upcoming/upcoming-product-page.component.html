@@ -21,7 +21,7 @@
       </ion-searchbar>
       <ion-button color="light" aria-label="Karte anzeigen">
         <ion-icon name="map-outline" slot="start"></ion-icon>
-        Karte
+        <span appLocalize="upcoming.map"></span>
       </ion-button>
     </div>
 
@@ -30,8 +30,7 @@
       <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
       <!--      </ion-title>-->
       <ion-buttons>
-        <ion-button (click)="switchLocale()"
-                    aria-label="Change language">{{ locale }}</ion-button>
+        <app-language-button></app-language-button>
         <app-dark-mode-button></app-dark-mode-button>
       </ion-buttons>
     </div>
@@ -62,8 +61,7 @@
         <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>
         Your Location
       </ion-item>
-      <ion-item *ngIf="locationSuggestions.length === 0">
-        Tippe deine PLZ oder Ortschaft
+      <ion-item *ngIf="locationSuggestions.length === 0" appLocalize="upcoming.typeZipOrPlace">
       </ion-item>
       <ion-item
         (click)="setLocation(location)"
@@ -80,7 +78,8 @@
         <ion-select
           [formControl]="perimeterFc"
           interface="action-sheet"
-          label="Umkreis"
+          appLocalizeAttr="label"
+          appLocalizeKey="upcoming.perimeter"
           labelPlacement="start"
         >
           <ion-select-option [value]="5">+5 Km</ion-select-option>
@@ -101,7 +100,8 @@
           [formControl]="categoriesFc"
           [interfaceOptions]="selectCategoriesOptions"
           interface="action-sheet"
-          label="Kategorien"
+          appLocalizeAttr="label"
+          appLocalizeKey="upcoming.categories"
           [multiple]="true"
           labelPlacement="start"
         >
@@ -114,7 +114,8 @@
     <div class="ion-margin-top">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="goToDateRelative(-1, 'day')">
+          <ion-button (click)="goToDateRelative(-1, 'day')"
+                      title="vorheriger Tag">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -139,7 +140,8 @@
         </ion-title>
 
         <ion-buttons slot="end">
-          <ion-button (click)="goToDateRelative(1, 'day')">
+          <ion-button (click)="goToDateRelative(1, 'day')"
+                      title="nächster Tag">
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -265,7 +267,7 @@
                     <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
                     <header>
                       <h3 itemprop="name">
-                        <a [href]="event.url">{{ event.title }}</a>
+                        <a [href]="event.url" aria-label="" title="" rel="noopener external" hreflang="de">{{ event.title }}</a>
                       </h3>
   <!--                    <p itemprop="description">Join us for an unforgettable night of music featuring top artists.</p>-->
                     </header>

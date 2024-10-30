@@ -19,9 +19,11 @@ import { MapModule } from '../../components/map/map.module';
 import { MapModalModule } from '../../modals/map-modal/map-modal.module';
 import { HttpClient } from '@angular/common/http';
 import dayjs from 'dayjs';
+import { LanguageButtonModule } from '../../components/language-button/language-button.module';
+import { LocalizeModule } from '../../directives/localize/localize.module';
 
 export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/upcoming/', '.json');
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
 @NgModule({
@@ -41,10 +43,12 @@ export function createTranslateLoader(http: HttpClient) {
       loader: {
         provide: TranslateLoader,
         useFactory: createTranslateLoader,
-        deps: [HttpClient],
-      },
+        deps: [HttpClient]
+      }
     }),
     ReactiveFormsModule,
+    LanguageButtonModule,
+    LocalizeModule
   ],
   declarations: [UpcomingProductPage],
 })
@@ -52,7 +56,7 @@ export class UpcomingProductModule {
   constructor(translateService: TranslateService) {
     const defaultLanguage = 'de';
     translateService.setDefaultLang(defaultLanguage);
-    translateService.langs = ['en', 'de'];
+    translateService.langs = ['de', 'en'];
     const browserLang = translateService.getBrowserLang();
     if (translateService.langs.includes(browserLang)) {
       translateService.use(browserLang);

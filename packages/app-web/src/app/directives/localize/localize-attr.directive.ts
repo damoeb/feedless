@@ -4,11 +4,12 @@ import { TranslationKeys } from '../../types';
 import { Subscription } from 'rxjs';
 
 @Directive({
-  selector: '[appLocalize]',
+  selector: '[appLocalizeAttr]',
 })
-export class LocalizeDirective implements OnChanges, OnDestroy {
+export class LocalizeAttrDirective implements OnChanges, OnDestroy {
 
-  @Input('appLocalize') key!: TranslationKeys;
+  @Input('appLocalizeAttr') attr!: string;
+  @Input({ alias: 'appLocalizeKey', required: true }) key!: TranslationKeys;
 
   private subscriptions: Subscription;
 
@@ -26,7 +27,7 @@ export class LocalizeDirective implements OnChanges, OnDestroy {
 
   private updateText() {
     this.translateService.get(this.key).subscribe(value => {
-      this.element.nativeElement.textContent = value;
+      this.element.nativeElement.setAttribute(this.attr, value);
     })
   }
 

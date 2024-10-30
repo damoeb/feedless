@@ -38,6 +38,8 @@ export class PageService {
       { name: 'title', content: options.title },
       { name: 'description', content: options.description },
       { name: 'publisher', content: options.publisher },
+      // <meta name="date" content="2023-10-30" />
+      // <meta name="expires" content="2024-10-30" />
     ]);
     this.setOpenGraphTags(options);
     this.setTwitterCardTags(options);

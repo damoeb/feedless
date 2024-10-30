@@ -42,6 +42,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { namedPlaces } from './places';
 import { PageService } from '../../services/page.service';
+import { TranslateService } from '@ngx-translate/core';
 
 type Day = {
   day: Dayjs | null;
@@ -87,8 +88,6 @@ type UrlFragments = {
   day?: string;
 };
 
-type SiteLocale = 'de' | 'en';
-
 @Component({
   selector: 'app-upcoming-product-page',
   templateUrl: './upcoming-product-page.component.html',
@@ -120,7 +119,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   protected loadingCalendar = true;
   protected loadingDay = true;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
-  protected locale: SiteLocale = 'de';
+  protected lang: string;
   selectCategoriesOptions = {
     header: 'Kategorien',
     subHeader: 'Select your favorite color',
@@ -131,6 +130,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     private readonly recordService: RecordService,
     private readonly pageService: PageService,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly translateService: TranslateService,
     private readonly router: Router,
     private readonly location: Location,
     private readonly apollo: ApolloClient<any>,
@@ -141,6 +141,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       this.fetchEventOverview.bind(this),
       500,
     );
+    this.lang = this.translateService.defaultLang;
   }
 
   async ngOnInit() {
@@ -178,7 +179,6 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     await this.setLocation(this.currentLocation, false);
 
     await this.patchUrl();
-    dayjs.locale('de');
     await this.setCurrentDate(this.currentDateRef);
 
     this.loadingCalendar = false;
@@ -186,6 +186,10 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     this.subscriptions.push(
+      this.translateService.onLangChange.subscribe(event => {
+        console.log('lang', event.lang);
+        this.lang = event.lang;
+      }),
       this.perimeterFc.valueChanges.subscribe(async () => {
         await this.fetchEventOverviewDebounced();
         await this.setCurrentDate(this.currentDateRef);
@@ -532,13 +536,13 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
       country: this.currentLocation.address.country_code?.toUpperCase(),
       perimeter: this.perimeterFc.value,
       place: this.getDisplayName(this.currentLocation),
-      year: this.currentDateRef.locale(this.locale).format('YYYY'),
-      month: this.currentDateRef.locale(this.locale).format('MM'),
-      day: this.currentDateRef.locale(this.locale).format('DD'),
+      year: this.currentDateRef.locale(this.lang).format('YYYY'),
+      month: this.currentDateRef.locale(this.lang).format('MM'),
+      day: this.currentDateRef.locale(this.lang).format('DD'),
     };
 
     let texts: string[];
-    if (this.locale == 'de') {
+    if (this.lang == 'de') {
       texts = ['events/in', 'innerhalb', 'am'];
     } else {
       texts = ['events/in', 'within', 'on'];
@@ -759,15 +763,7 @@ export class UpcomingProductPage implements OnInit, OnDestroy {
   }
 
   formatDate(date: Dayjs, format: string) {
-    return date.locale(this.locale).format(format);
+    return date.locale(this.lang).format(format);
   }
 
-  switchLocale() {
-    if(this.locale == 'de') {
-      this.locale = 'en';
-    } else {
-      this.locale = 'de';
-    }
-    this.patchUrl();
-  }
 }

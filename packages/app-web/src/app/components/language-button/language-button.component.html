@@ -1,0 +1,5 @@
+<ion-select [formControl]="langFc" interface="popover">
+  <ion-select-option *ngFor="let l of languages" [value]="l">{{
+    l
+  }}</ion-select-option>
+</ion-select>

@@ -29,3 +29,25 @@ export function isDefined(v: any | undefined): boolean {
 }
 
 export type Order = GqlUpsertOrderMutation['upsertOrder'];
+
+type UpcomingTranslationKeys = 'perimeter' |
+  'location' |
+  'today' |
+  'no_events_found' |
+  'place_distance' |
+  'typeZipOrPlace' |
+  'categories' |
+  'events' |
+  'map' |
+  'type_location' |
+  'support' |
+  'imprint' |
+  'by' |
+  'about';
+export type TranslationKeys = `upcoming.${UpcomingTranslationKeys}`;
+export type TranslationsLanguage = {
+  lang: string;
+  translations: {
+    [k in TranslationKeys]: string
+  }
+}
