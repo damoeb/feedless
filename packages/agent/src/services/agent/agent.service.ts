@@ -34,9 +34,7 @@ export class AgentService implements OnModuleInit {
       async (event) => {
         this.log.log('incoming event');
         if (event.scrape) {
-          this.log.log(
-            `harvestRequest ${JSON.stringify(event)}`,
-          );
+          this.log.log(`harvestRequest ${JSON.stringify(event)}`);
           try {
             const scrapeResponse = await this.puppeteerService.submit(
               event.scrape as any,

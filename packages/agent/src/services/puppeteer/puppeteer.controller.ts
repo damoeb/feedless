@@ -1,5 +1,7 @@
-import { Controller, Logger, OnModuleInit } from '@nestjs/common';
+import { Controller, Get, Logger, OnModuleInit, Query } from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
+import { ScrapeResponseInput, Source } from '../../generated/graphql';
+import { newCorrId } from '../../corrId';
 
 // https://www.browserless.io/docs/scrape
 
@@ -67,22 +69,32 @@ export class PuppeteerController implements OnModuleInit {
   // @Get('api/intern/prerender')
   // async prerenderWebsite(
   //   @Query('url') url: string,
-  //   @Headers('x-corr-id') corrIdParam: string,
-  //   @Query('options') optionsRaw: string,
-  // ): Promise<PuppeteerResponse> {
-  //   const corrId = corrIdParam || newCorrId();
-  //   const options = defaults(
-  //     optionsRaw ? (JSON.parse(optionsRaw) as ScrapeOptions) : {},
-  //     defaultOptions,
-  //   );
+  //   // @Headers('x-corr-id') corrIdParam: string,
+  //   // @Query('options') optionsRaw: string,
+  // ): Promise<ScrapeResponseInput> {
+  //   const corrId = newCorrId();
+  //   // const options = defaults(
+  //   //   optionsRaw ? (JSON.parse(optionsRaw) as ScrapeOptions) : {},
+  //   //   defaultOptions,
+  //   // );
   //   // this.logger.log(options)
-  //   this.log.log(
-  //     `[${corrId}] prerenderWebsite ${url} script=${options.prerenderScript!!}`,
-  //   );
-  //   const job: GqlScrapeRequest = {
-  //     corrId,
-  //     url,
-  //     options,
+  //   this.log.log(`[${corrId}] prerenderWebsite ${url}}`);
+  //   const job: Source = {
+  //     id: '',
+  //     title: '',
+  //     flow: {
+  //       sequence: [
+  //         {
+  //           fetch: {
+  //             get: {
+  //               url: {
+  //                 literal: url,
+  //               },
+  //             },
+  //           },
+  //         },
+  //       ],
+  //     },
   //   };
   //   return this.puppeteer.submit(job);
   // }

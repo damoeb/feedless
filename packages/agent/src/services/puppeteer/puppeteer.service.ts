@@ -187,27 +187,19 @@ export class PuppeteerService {
         (waitFor, action, currentIndex) =>
           waitFor.then(async () => {
             const writeLog = createLogAppender(`action#${currentIndex}`);
-            try {
-              const output = await this.executeAction(
-                action,
-                page,
-                writeLog,
+            const output = await this.executeAction(action, page, writeLog);
+            if (output) {
+              writeLog(
+                `terminated with output of type ${Object.keys(output).find(
+                  (key) => !!output[key],
+                )}`,
               );
-              if (output) {
-                writeLog(
-                  `terminated with output of type ${Object.keys(output).find(
-                    (key) => !!output[key],
-                  )}`,
-                );
-                outputs.push({
-                  index: currentIndex,
-                  response: output,
-                });
-              } else {
-                writeLog(`terminated without output`);
-              }
-            } catch (e) {
-              writeLog(e.message);
+              outputs.push({
+                index: currentIndex,
+                response: output,
+              });
+            } else {
+              writeLog(`terminated without output`);
             }
           }),
         Promise.resolve(),
@@ -300,7 +292,9 @@ export class PuppeteerService {
     xpath: string,
     exposePixel: boolean,
   ): Promise<ScrapeExtractResponseInput> {
-    this.log.log(`grabElement fragmentName=${fragmentName} xpath=${xpath} exposePixel=${exposePixel}`)
+    this.log.log(
+      `grabElement fragmentName=${fragmentName} xpath=${xpath} exposePixel=${exposePixel}`,
+    );
     const evaluateResponse: EvaluateResponse = await page.evaluate(
       (baseXpath) => {
         let element: HTMLElement = document
@@ -396,7 +390,7 @@ export class PuppeteerService {
     };
   }
 
-  private async newPage(browser: Browser, request: Source) {
+  async newPage(browser: Browser, request: Source) {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
@@ -424,9 +418,7 @@ export class PuppeteerService {
     while (this.queue.length > 0) {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
       const httpGet = getHttpGet(job);
-      this.log.debug(
-        `worker #${workerId} consumes ${httpGet.url}`,
-      );
+      this.log.debug(`worker #${workerId} consumes ${httpGet.url}`);
 
       const browser = await this.newBrowser(job);
       try {
@@ -453,9 +445,7 @@ export class PuppeteerService {
           await browser.close();
         }
         this.log.warn(
-          `prerendered within ${
-            (Date.now() - queuedAt) / 1000
-          }s ${e.message}`,
+          `prerendered within ${(Date.now() - queuedAt) / 1000}s ${e.message}`,
           e,
         );
         reject(e.message);
@@ -552,11 +542,7 @@ export class PuppeteerService {
       return this.executeClickAction(action.click, page, createLogger('click'));
     }
     if (action.fetch) {
-      return this.executeFetchAction(
-        action.fetch,
-        page,
-        createLogger('fetch'),
-      );
+      return this.executeFetchAction(action.fetch, page, createLogger('fetch'));
     }
     if (action.waitFor) {
       return this.executeWaitAction(action.waitFor, page, createLogger('wait'));
@@ -568,11 +554,7 @@ export class PuppeteerService {
       return this.executePurgeAction(action.purge, page, createLogger('purge'));
     }
     if (action.extract) {
-      return this.extractAction(
-        action.extract,
-        page,
-        createLogger('extract'),
-      );
+      return this.extractAction(action.extract, page, createLogger('extract'));
     }
     appendLog(`ignoring action ${stringifyJson(action)}`);
   }
