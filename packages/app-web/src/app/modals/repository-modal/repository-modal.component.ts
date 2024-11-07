@@ -42,6 +42,8 @@ export interface RepositoryModalComponentProps {
 //   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
 // >;
 
+export type FulltextTransformer = 'none' | 'summary' | 'readability';
+
 export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
 
 @Component({
@@ -70,13 +72,17 @@ export class RepositoryModalComponent
       validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
     }),
     applyFulltextPlugin: new FormControl<boolean>(false),
-    transformToReadability: new FormControl<boolean>(true),
+    fulltextTransformer: new FormControl<FulltextTransformer>('none'),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
     enablePushNotifications: new FormControl<boolean>(false),
     applyConditionalTagsPlugin: new FormControl<boolean>(false),
   });
   // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
+
+  summaryTransformer: FulltextTransformer = 'summary';
+  noTransformer: FulltextTransformer = 'none';
+  readabilityTransformer: FulltextTransformer = 'readability';
 
   @Input({ required: true })
   repository: RepositoryFull;
@@ -190,7 +196,8 @@ export class RepositoryModalComponent
           pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
           params: {
             org_feedless_fulltext: {
-              readability: this.formFg.value.transformToReadability,
+              readability: this.formFg.value.fulltextTransformer == 'readability',
+              summary: this.formFg.value.fulltextTransformer == 'summary',
               inheritParams: true,
             },
           },
@@ -323,14 +330,16 @@ export class RepositoryModalComponent
     }
 
     const retention = this.repository.retention;
+    const fulltextPlugin = this.repository.plugins.find(
+      (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
+    );
     this.formFg.patchValue({
       title: this.repository.title.substring(0, 255),
       isPublic: this.repository.visibility == GqlVisibility.IsPublic,
       description: this.repository.description,
       fetchFrequency: this.repository.refreshCron || DEFAULT_FETCH_CRON,
-      applyFulltextPlugin: this.repository.plugins.some(
-        (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessFulltext,
-      ),
+      applyFulltextPlugin: !!fulltextPlugin,
+      fulltextTransformer: fulltextPlugin.params.org_feedless_fulltext.summary ? 'summary' : fulltextPlugin.params.org_feedless_fulltext.readability ? 'readability' : 'none',
       applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),

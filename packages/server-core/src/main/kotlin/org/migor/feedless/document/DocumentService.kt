@@ -285,7 +285,7 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+  suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
@@ -332,7 +332,7 @@ class DocumentService(
               delayJob(job, e, document)
             } else {
               if (e !is FilterMismatchException) {
-                log.warn("[$corrId] ${e.message}")
+                log.warn("[$corrId] ${e.message}", e)
               }
               deleteDocument(document)
             }
@@ -341,7 +341,7 @@ class DocumentService(
         }
 
         if (!withError) {
-          releaseDocument(document, repository)
+          releaseDocument(document)
         }
 
       } catch (throwable: Throwable) {
@@ -352,12 +352,11 @@ class DocumentService(
       log.warn("[$corrId] delete remainging jobs")
       documentPipelineJobDAO.deleteAllByDocumentId(documentId)
     }
-
+    return document
   }
 
-  private suspend fun DocumentService.releaseDocument(
+  private suspend fun releaseDocument(
     document: DocumentEntity,
-    repository: RepositoryEntity
   ) {
 //    forwardToMail(corrId, document, repository)
     document.status = ReleaseStatus.released
@@ -365,7 +364,6 @@ class DocumentService(
     withContext(Dispatchers.IO) {
       documentDAO.save(document)
     }
-    applyRetentionStrategy(repository.id)
   }
 
   private suspend fun deleteDocument(document: DocumentEntity) {

@@ -346,6 +346,7 @@ private fun CompareByInput.toDto(): CompareBy {
 private fun FulltextPluginParamsInput.toDto(): FulltextPluginParams {
   return FulltextPluginParams(
     readability = readability,
+    summary = summary,
     inheritParams = false
   )
 }

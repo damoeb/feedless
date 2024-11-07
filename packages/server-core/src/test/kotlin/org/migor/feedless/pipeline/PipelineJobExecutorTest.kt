@@ -1,53 +1,51 @@
 package org.migor.feedless.pipeline
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
-import org.mockito.InjectMocks
-import org.mockito.Mock
+import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.junit.jupiter.MockitoSettings
-import org.mockito.quality.Strictness
+import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
 import java.util.*
 
-@ExtendWith(MockitoExtension::class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-class PipelineJobTest {
+class PipelineJobExecutorTest {
 
-  @Mock
-  lateinit var documentDAO: DocumentDAO
-
-  @Mock
-  lateinit var pluginService: PluginService
-
-  @Mock
-  lateinit var sourceDAO: SourceDAO
-
-  @Mock
-  lateinit var repositoryDAO: RepositoryDAO
-
-  @Mock
-  lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-
-  @Mock
-  lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-
-  @InjectMocks
-  lateinit var pipelineJobExecutor: PipelineJobExecutor
+  private lateinit var documentDAO: DocumentDAO
+  private lateinit var sourceDAO: SourceDAO
+  private lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
+  private lateinit var pipelineJobExecutor: PipelineJobExecutor
 
   @BeforeEach
   fun setUp() {
+    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
+    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
+    sourceDAO = mock(SourceDAO::class.java)
+    documentDAO = mock(DocumentDAO::class.java)
+    repositoryDAO = mock(RepositoryDAO::class.java)
+
+    pipelineJobExecutor = PipelineJobExecutor(
+      sourceDAO,
+      documentPipelineJobDAO,
+      sourcePipelineJobDAO,
+      documentDAO,
+      repositoryDAO,
+      mock(DocumentService::class.java),
+      mock(SourceService::class.java)
+    )
+
     val repositoryId = UUID.randomUUID()
     val id1 = UUID.randomUUID()
     val id2 = UUID.randomUUID()
@@ -64,6 +62,18 @@ class PipelineJobTest {
       createSourcePipelineJob(id1)
     )
     `when`(sourcePipelineJobDAO.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
+  }
+
+  @Test
+  fun `verify processDocumentJobs is annotated with scheduled`() {
+    val method = PipelineJobExecutor::class.java.declaredMethods.first { it.name == "processDocumentJobs" }
+    assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
+  }
+
+  @Test
+  fun `verify processSourceJobs is annotated with scheduled`() {
+    val method = PipelineJobExecutor::class.java.declaredMethods.first { it.name == "processSourceJobs" }
+    assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
   }
 
   @Test

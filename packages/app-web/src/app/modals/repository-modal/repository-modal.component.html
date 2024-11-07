@@ -104,23 +104,62 @@
             Fetch Fulltext for every item
           </ion-label>
         </ion-item>
-        <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
-          <ion-checkbox
-            [formControl]="formFg.controls.transformToReadability"
-            aria-label=""
-            aria-labelledby="readability__label"
-            class="ion-margin-end"
-            justify="end"
-            style="flex: 3"
-          ></ion-checkbox>
-          <ion-label
-            class="ion-text-left"
-            id="readability__label"
-            style="flex: 9"
-          >
-            Transform to readability
-          </ion-label>
-        </ion-item>
+
+        <ion-radio-group [formControl]="formFg.controls.fulltextTransformer">
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="readabilityTransformer"
+              aria-label=""
+              aria-labelledby="readability__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+
+            <ion-label
+              class="ion-text-left"
+              id="readability__label"
+              style="flex: 9"
+            >
+              Transform to readability
+            </ion-label>
+          </ion-item>
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="summaryTransformer"
+              aria-label=""
+              aria-labelledby="summary__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+            <ion-label
+              class="ion-text-left"
+              id="summary__label"
+              style="flex: 9"
+            >
+              Transform to summary (opengraph, jsonld, meta...)
+            </ion-label>
+          </ion-item>
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="noTransformer"
+              aria-label=""
+              aria-labelledby="no_transformer__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+            <ion-label
+              class="ion-text-left"
+              id="no_transformer__label"
+              style="flex: 9"
+            >
+              No Transformer
+            </ion-label>
+          </ion-item>
+        </ion-radio-group>
+
         <ion-item>
           <ion-checkbox
             [formControl]="formFg.controls.applyPrivacyPlugin"

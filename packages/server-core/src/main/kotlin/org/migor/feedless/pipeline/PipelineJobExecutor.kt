@@ -20,7 +20,6 @@ import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -33,29 +32,17 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 @Transactional(propagation = Propagation.NEVER)
-class PipelineJobExecutor internal constructor() {
+class PipelineJobExecutor internal constructor(
+  val sourceDAO: SourceDAO,
+  val documentPipelineJobDAO: DocumentPipelineJobDAO,
+  val sourcePipelineJobDAO: SourcePipelineJobDAO,
+  val documentDAO: DocumentDAO,
+  val repositoryDAO: RepositoryDAO,
+  val documentService: DocumentService,
+  val sourceService: SourceService
+) {
 
-  @Autowired
-  private lateinit var sourceDAO: SourceDAO
   private val log = LoggerFactory.getLogger(PipelineJobExecutor::class.simpleName)
-
-  @Autowired
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-
-  @Autowired
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-
-  @Autowired
-  private lateinit var documentDAO: DocumentDAO
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var documentService: DocumentService
-
-  @Autowired
-  private lateinit var sourceService: SourceService
 
   @Scheduled(fixedDelay = 6245, initialDelay = 20000)
   @Transactional
@@ -151,7 +138,8 @@ class PipelineJobExecutor internal constructor() {
 
   private suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
     try {
-      documentService.processDocumentPlugins(documentId, jobs)
+      val document = documentService.processDocumentPlugins(documentId, jobs)
+      document?.let { documentService.applyRetentionStrategy(it.repositoryId) }
     } catch (t: Throwable) {
       val corrId = coroutineContext.corrId()
       log.error("[$corrId] processDocumentPlugins fatal failure", t)

@@ -61,6 +61,7 @@ class FulltextPluginTest {
     val params = PluginExecutionParamsInput(
       org_feedless_fulltext = FulltextPluginParamsInput(
         readability = true,
+        summary = false,
         inheritParams = true
       )
     )

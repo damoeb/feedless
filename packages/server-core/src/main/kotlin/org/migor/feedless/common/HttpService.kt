@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
 import java.io.Serializable
+import java.net.MalformedURLException
 import java.net.URL
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
@@ -105,7 +106,11 @@ class HttpService(
   }
 
   private suspend fun protectFromOverloading(url: String) {
-    val actualUrl = URL(url)
+    val actualUrl = try {
+      URL(url)
+    } catch (e: MalformedURLException) {
+      throw MalformedURLException("bad url ${e.message} $url")
+    }
     if (actualUrl.host != gatewayHost) {
       val probes =
         listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }

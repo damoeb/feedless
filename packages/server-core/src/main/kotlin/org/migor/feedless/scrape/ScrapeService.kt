@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -310,7 +311,7 @@ class ScrapeService {
 //        200,
 //        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
 //      )
-
+      assert(StringUtils.isNotBlank(url))
       val staticResponse = httpService.httpGetCaching(url, 200, context.headers)
       val debug = FetchActionDebugResponse(
         corrId = "",

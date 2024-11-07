@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.PdfService
+import org.migor.feedless.scrape.PageInspectionService
 import org.migor.feedless.scrape.WebToArticleTransformer
 import org.springframework.util.ResourceUtils
 import java.io.File
@@ -32,8 +33,8 @@ class PdfServiceTest {
   @Test
   fun toArticle() = runTest {
     val html = service.toHTML(pdf)
-    val w2a = WebToArticleTransformer()
-    val article = w2a.fromHtml(html, "http://example.org")
+    val w2a = WebToArticleTransformer(PageInspectionService())
+    val article = w2a.fromHtml(html, "http://example.org", false)
     Assertions.assertNotNull(article)
   }
 }

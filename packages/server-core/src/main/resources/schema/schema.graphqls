@@ -1596,6 +1596,7 @@ input CompareByInput {
 
 input FulltextPluginParamsInput {
   readability: Boolean!
+  summary: Boolean!
   inheritParams: Boolean!
 }
 
@@ -1702,6 +1703,7 @@ type CompareBy {
 
 type FulltextPluginParams {
   readability: Boolean!
+  summary: Boolean!
   inheritParams: Boolean!
 }
 

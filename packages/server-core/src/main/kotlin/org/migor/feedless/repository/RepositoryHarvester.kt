@@ -386,7 +386,7 @@ class RepositoryHarvester(
           .map { (_, document) -> document }
           .flatMap {
             repository.plugins
-              .mapIndexed { index, pluginRef -> toPipelineJob(pluginRef, it, index) }
+              .mapIndexed { index, pluginRef -> toDocumentPipelineJob(pluginRef, it, index) }
               .toMutableList()
           }
       )
@@ -454,6 +454,7 @@ class RepositoryHarvester(
       existing
         ?.let {
           existing.title = document.title
+          existing.text = document.text
           existing.contentHash = document.contentHash
           existing.latLon = document.latLon
           existing.tags = document.tags
@@ -487,7 +488,7 @@ class RepositoryHarvester(
     }
   }
 
-  private fun toPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): DocumentPipelineJobEntity {
+  private fun toDocumentPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): DocumentPipelineJobEntity {
     val job = DocumentPipelineJobEntity()
     job.sequenceId = index
     job.documentId = document.id

@@ -62,6 +62,7 @@ export class ImportOpmlModalComponent
         params: {
           org_feedless_fulltext: {
             readability: true,
+            summary: true,
             inheritParams: false,
           },
         },

@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.lang3.BooleanUtils
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
@@ -59,37 +60,41 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     val corrId = coroutineContext.corrId()
     logCollector.log("[$corrId] mapEntity ${document.url}")
 
-    val request = SourceEntity()
-    request.title = "Feed from ${document.url}"
-    val fetchAction = FetchActionEntity()
-    fetchAction.url = document.url
-
-
-    val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
-    if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
-      logCollector.log("[$corrId] inheritParams from source")
-      request.actions = mergeWithSourceActions(fetchAction, document.source!!.actions).toMutableList()
+    return if (StringUtils.isBlank(document.url)) {
+      logCollector.log("[$corrId] skipping, url is empty")
+      document
     } else {
-      request.actions = mutableListOf(fetchAction)
-    }
+      val request = SourceEntity()
+      request.title = "Feed from ${document.url}"
+      val fetchAction = FetchActionEntity()
+      fetchAction.url = document.url
 
-    val scrapeOutput = scrapeService.scrape(request, logCollector)
-
-    if (scrapeOutput.outputs.isNotEmpty()) {
-      val lastOutput = scrapeOutput.outputs.last()
-      val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-      if (params.org_feedless_fulltext.readability) {
-        logCollector.log("[$corrId] convert to readability")
-        val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""))
-        document.html = readability.html
-        document.text = readability.text!!
-        document.title = readability.title
+      val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
+      if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
+        logCollector.log("[$corrId] inheritParams from source")
+        request.actions = mergeWithSourceActions(fetchAction, document.source!!.actions).toMutableList()
       } else {
-        document.html = html
-        document.title = HtmlUtil.parseHtml(html, document.url).title()
+        request.actions = mutableListOf(fetchAction)
       }
+
+      val scrapeOutput = scrapeService.scrape(request, logCollector)
+
+      if (scrapeOutput.outputs.isNotEmpty()) {
+        val lastOutput = scrapeOutput.outputs.last()
+        val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+        if (params.org_feedless_fulltext.readability || params.org_feedless_fulltext.summary) {
+          logCollector.log("[$corrId] convert to readability/summary")
+          val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""), params.org_feedless_fulltext.summary)
+          document.html = readability.html
+          document.text = StringUtils.trimToEmpty(readability.text)
+          document.title = readability.title
+        } else {
+          document.html = html
+          document.title = HtmlUtil.parseHtml(html, document.url).title()
+        }
+      }
+      document
     }
-    return document
   }
 
   suspend fun mergeWithSourceActions(
@@ -117,7 +122,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     return FragmentOutput(
       fragmentName = "fulltext",
       items = listOf(
-        webToArticleTransformer.fromHtml(markup, data.url)
+        webToArticleTransformer.fromHtml(markup, data.url, action.executorParams!!.org_feedless_fulltext!!.summary)
       ),
     )
   }

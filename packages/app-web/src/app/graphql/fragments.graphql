@@ -71,6 +71,7 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
   }
   org_feedless_fulltext {
     readability
+    summary
     inheritParams
   }
   #  org_feedless_conditional_tag {

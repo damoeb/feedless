@@ -1,11 +1,13 @@
 package org.migor.feedless.jobs
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.common.CleanupExecutor
 import org.migor.feedless.mail.OneTimePasswordDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
+import org.migor.feedless.pipeline.PipelineJobExecutor
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.repository.HarvestDAO
 import org.migor.feedless.repository.any
@@ -15,11 +17,12 @@ import org.mockito.Mockito.times
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class CleanupJobTest {
+class CleanupExecutorTest {
 
   private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
   private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
@@ -41,6 +44,12 @@ class CleanupJobTest {
       harvestDAO,
       documentPipelineJobDAO
     )
+  }
+
+  @Test
+  fun `verify executeCleanup is annotated with scheduled`() {
+    val method = CleanupExecutor::class.java.declaredMethods.first { it.name == "executeCleanup" }
+    assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
   }
 
   @Test
