@@ -1,0 +1,105 @@
+<app-upcoming-header
+  *ngIf="date && location"
+  [date]="date"
+  [location]="location"
+  [categories]="[]"
+></app-upcoming-header>
+<ion-content>
+  <div class="events">
+    <ion-spinner *ngIf="loading"></ion-spinner>
+    <article
+      itemscope
+      itemtype="https://schema.org/Event"
+      style="margin-top: 50px"
+      class="ion-padding"
+      *ngIf="!loading"
+    >
+      <ion-toolbar style="--background: transparent">
+        <ion-buttons slot="start">
+          <ion-button routerLink="..">
+            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+            Alle Events anzeigen
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <!--          <ion-button>-->
+          <!--            <ion-icon name="star-outline"></ion-icon>-->
+          <!--          </ion-button>-->
+        </ion-buttons>
+      </ion-toolbar>
+
+      <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+      <header>
+        <h1 itemprop="title">
+          <a [href]="event.url">{{ event.title }}</a>
+        </h1>
+        <ion-note itemprop="url">{{ event.url }}</ion-note>
+        <p
+          *ngIf="event.tags"
+          itemprop="keywords"
+          [attr.content]="event.tags.join(', ')"
+        >
+          <ion-badge color="warning" *ngFor="let tag of event.tags"
+            >{{ tag }}</ion-badge
+          >
+        </p>
+        <p class="desc" itemprop="description">{{ event.text }}</p>
+      </header>
+
+      <section *ngIf="event?.latLng">
+        <h2>Ort</h2>
+        <address
+          itemprop="location"
+          itemscope
+          itemtype="https://schema.org/Place"
+        >
+          <span itemprop="name"
+            >{{ location.displayName }}, {{ location.country }}</span
+          >
+          <!--          <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+          <div
+            itemprop="geo"
+            itemscope
+            itemtype="https://schema.org/GeoCoordinates"
+          >
+            <meta itemprop="latitude" [content]="event.latLng.lat" />
+            <meta itemprop="longitude" [content]="event.latLng.lon" />
+          </div>
+        </address>
+      </section>
+
+      <section>
+        <h2>Datum und Uhrzeit</h2>
+        <p>
+          <time
+            itemprop="startDate"
+            [attr.datetime]="formatDate(event.startingAt, '')"
+            >{{ formatDate(event.startingAt, '') }}</time
+          >
+          <ion-button (click)="downloadIcs()" class="ion-margin-start">
+            <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
+            Termin
+          </ion-button>
+        </p>
+        <!--        <p>-->
+        <!--          End Date:-->
+        <!--          <time itemprop="endDate" datetime="2024-06-20T22:30"-->
+        <!--            >June 20, 2024, 10:30 PM</time-->
+        <!--          >-->
+        <!--        </p>-->
+      </section>
+
+      <!--  <footer>-->
+      <!--    <p>-->
+      <!--      For tickets, visit our-->
+      <!--      <a href="https://example.com/tickets"-->
+      <!--        >official ticket page</a-->
+      <!--      >.-->
+      <!--    </p>-->
+      <!--  </footer>-->
+    </article>
+  </div>
+</ion-content>
+<ion-footer>
+  <app-upcoming-footer [location]="location"></app-upcoming-footer>
+</ion-footer>

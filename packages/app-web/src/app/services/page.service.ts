@@ -4,7 +4,7 @@ import { LatLon } from '../components/map/map.component';
 import { Dayjs } from 'dayjs';
 import { WebPage, BreadcrumbList, Event } from 'schema-dts';
 
-export type PageOptions = {
+export type PageTags = {
   title: string;
   lang: string;
   description: string;
@@ -27,7 +27,7 @@ export class PageService {
     private readonly title: Title,
   ) {}
 
-  setMetaTags(options: PageOptions) {
+  setMetaTags(options: PageTags) {
     this.title.setTitle(options.title);
     document
       .getElementsByTagName('html')
@@ -56,7 +56,7 @@ export class PageService {
      */
   }
 
-  private setOpenGraphTags(options: PageOptions) {
+  private setOpenGraphTags(options: PageTags) {
     this.addMetaTags([
       { property: 'og:site_name', content: options.title },
       { property: 'og:title', content: options.title },
@@ -67,7 +67,7 @@ export class PageService {
     ]);
   }
 
-  private setTwitterCardTags(options: PageOptions) {
+  private setTwitterCardTags(options: PageTags) {
     this.addMetaTags([
       { name: 'twitter:title', content: options.title },
       { name: 'twitter:description', content: options.description },
@@ -75,7 +75,7 @@ export class PageService {
     ]);
   }
 
-  private setGeoTags(options: PageOptions) {
+  private setGeoTags(options: PageTags) {
     this.addMetaTags([
       { name: 'geo.region', content: options.region },
       { name: 'geo.placename', content: options.place },
@@ -98,6 +98,6 @@ export class PageService {
     const script = document.createElement('script');
     script.setAttribute('type', 'application/ld+json');
     script.textContent = JSON.stringify(data, null, 2);
-    document.head.append(script)
+    document.head.append(script);
   }
 }

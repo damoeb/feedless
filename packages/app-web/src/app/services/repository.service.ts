@@ -34,6 +34,7 @@ import { Router } from '@angular/router';
 import { zenToRx } from './agent.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
+import dayjs from 'dayjs';
 
 @Injectable({
   providedIn: 'root',
@@ -78,6 +79,25 @@ export class RepositoryService {
         },
       })
       .then();
+  }
+
+  async downloadRepositories(
+    repositories: RepositoryFull[],
+    fileName: string = null,
+  ) {
+    const a = window.document.createElement('a');
+    a.href = window.URL.createObjectURL(
+      new Blob([JSON.stringify(repositories, null, 2)], {
+        type: 'application/json',
+      }),
+    );
+    a.download =
+      fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
   }
 
   updateRepository(data: GqlRepositoryUpdateInput): Promise<RepositoryFull> {

@@ -533,13 +533,13 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       .literal;
   }
 
-  // async showCode() {
-  //   await this.modalService.openCodeEditorModal({
-  //     title: 'JSON Editor',
-  //     text: JSON.stringify(this.repository, null, 2),
-  //     contentType: 'json',
-  //   });
-  // }
+  async showCode() {
+    await this.modalService.openCodeEditorModal({
+      title: 'JSON Editor',
+      text: JSON.stringify(this.repository, null, 2),
+      contentType: 'json',
+    });
+  }
 
   // toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
   //   return new Date(date);
@@ -639,5 +639,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     } else {
       return document.text.substring(0, 150);
     }
+  }
+
+  async exportRepository() {
+    await this.repositoryService.downloadRepositories(
+      [this.repository],
+      `feedless-repo-${this.repository.id}.json`,
+    );
   }
 }

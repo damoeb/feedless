@@ -45,6 +45,9 @@ import {
   Scrape,
   ServerSettings,
   RecordByIds,
+  GqlFullRecordByIdsQuery,
+  GqlFullRecordByIdsQueryVariables,
+  FullRecordByIds,
 } from '../generated/graphql';
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -277,9 +280,24 @@ export function mockPlugins(apolloMockController: ApolloMockController) {
     });
 }
 
-export function mockDocuments(apolloMockController: ApolloMockController) {
+export function mockRecords(apolloMockController: ApolloMockController) {
   return apolloMockController
     .mockQuery<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>(RecordByIds)
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          records: [],
+        },
+      };
+    });
+}
+
+export function mockFullRecords(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<
+      GqlFullRecordByIdsQuery,
+      GqlFullRecordByIdsQueryVariables
+    >(FullRecordByIds)
     .and.resolveOnce(async () => {
       return {
         data: {

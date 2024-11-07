@@ -87,7 +87,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
           val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""), params.org_feedless_fulltext.summary)
           document.html = readability.html
           document.text = StringUtils.trimToEmpty(readability.text)
-          log.info("title ${document.title} -> ${readability.title}")
+          log.debug("${document.id} title ${document.title} -> ${readability.title}")
           document.title = readability.title
         } else {
           document.html = html

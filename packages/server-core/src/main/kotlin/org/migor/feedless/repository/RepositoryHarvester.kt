@@ -234,8 +234,6 @@ class RepositoryHarvester(
         source.lastErrorMessage = e?.message
         sourceDAO.save(source)
       }
-    } else {
-      logCollector.log("delaying due to ${e::class.simpleName}")
     }
   }
 

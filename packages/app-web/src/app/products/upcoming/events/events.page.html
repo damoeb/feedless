@@ -1,0 +1,139 @@
+<app-upcoming-header
+  *ngIf="date && location && perimeter"
+  [date]="date"
+  [location]="location"
+  [perimeter]="perimeter"
+  [categories]="[]"
+></app-upcoming-header>
+<ion-content>
+  <div class="events">
+    <h1
+      class="ion-padding-horizontal"
+      style="font-size: 1.2rem; font-weight: bold"
+    >
+      {{ eventCount }} Veranstaltungen in und um {{location?.displayName}}
+    </h1>
+
+    <ion-toolbar style="--background: transparent">
+      <ion-buttons slot="start">
+        <ion-button
+          [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +
+                  formatDate(date?.subtract(1, 'day'), 'DD.MM')"
+          (click)="changeDate(-1)"
+        >
+          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+          vorheriger Tag
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button
+          [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +
+                  formatDate(date?.add(1, 'day'), 'DD.MM')"
+          (click)="changeDate(+1)"
+        >
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          nächster Tag
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+
+    <div
+      class="ion-padding-horizontal ion-margin-bottom"
+      style="min-height: 50vh"
+    >
+      <ng-container *ngIf="date">
+        <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
+        <div *ngIf="!loadingDay">
+          <p *ngIf="placesByDistance.length === 0" class="ion-text-center">
+            Keine Veranstaltungen gefunden
+          </p>
+          <div *ngFor="let placesGroup of placesByDistance">
+            <ng-container *ngFor="let place of placesGroup.places">
+              <h2 class="ion-padding-top">
+                <a
+                  [routerLink]="getPlaceUrl(place.place)"
+                  style="color: var(--ion-color-dark)"
+                >
+                  {{ place.place.place }}</a
+                >
+                <!--            <a-->
+                <!--              [href]="-->
+                <!--                'https://www.openstreetmap.org/#map=14/' +-->
+                <!--                place.events[0].latLng.lat +-->
+                <!--                '/' +-->
+                <!--                place.events[0].latLng.lon-->
+                <!--              "-->
+                <!--              target="_blank"-->
+                <!--              title="Show on map"-->
+                <!--            >-->
+                <!--              <ion-icon name="location-outline"></ion-icon>-->
+                <!--            </a>-->
+                <ion-note *ngIf="placesGroup.distance > 0">
+                  ~ {{ placesGroup.distance }} Km entfernt
+                </ion-note>
+              </h2>
+              <ul class="ion-no-padding">
+                <li
+                  *ngFor="let event of place.events"
+                  class="ion-margin-bottom ion-margin-start"
+                >
+                  <article itemscope itemtype="https://schema.org/Event">
+                    <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+                    <header>
+                      <h3 itemprop="title">
+                        <a [routerLink]="getEventUrl(event)"
+                          >{{ event.title }}</a
+                        >
+                        <!--                    <ion-badge color="warning">Kinder</ion-badge>-->
+                      </h3>
+                      <!--                  <ion-note>{{ event.url }}</ion-note>-->
+                      <!--                  <p itemprop="description">-->
+                      <!--                    {{ event.text }}-->
+                      <!--                  </p>-->
+                    </header>
+
+                    <!--                  <section>-->
+                    <!--                    <h2>Event Details</h2>-->
+                    <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
+                    <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
+                    <!--                  </section>-->
+
+                    <!--                  <section>-->
+                    <!--                    <h2>Location</h2>-->
+                    <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
+                    <!--                      <span itemprop="name">Zurich Music Hall</span>-->
+                    <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+                    <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
+                    <!--                        <meta itemprop="latitude" content="47.3769">-->
+                    <!--                        <meta itemprop="longitude" content="8.5417">-->
+                    <!--                      </div>-->
+                    <!--                    </address>-->
+                    <!--                  </section>-->
+
+                    <!--                  <footer>-->
+                    <!--                    <p>-->
+                    <!--                      For tickets, visit our-->
+                    <!--                      <a href="https://example.com/tickets"-->
+                    <!--                        >official ticket page</a-->
+                    <!--                      >.-->
+                    <!--                    </p>-->
+                    <!--                  </footer>-->
+                  </article>
+                </li>
+              </ul>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div style="position: fixed; bottom: 0; width: 700px; text-align: center">
+      <ion-button color="primary" shape="round">
+        Events in {{location?.displayName}} als E-Mail abonieren
+        <ion-icon name="send-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
+<ion-footer>
+  <app-upcoming-footer [location]="location"></app-upcoming-footer>
+</ion-footer>

@@ -5,7 +5,7 @@ import { FeedDetailsModule } from './feed-details.module';
 import {
   ApolloMockController,
   AppTestModule,
-  mockDocuments,
+  mockRecords,
   mockPlugins,
   mockRepository,
   mockServerSettings,
@@ -24,7 +24,7 @@ describe('FeedDetailsComponent', () => {
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockPlugins(apolloMockController);
-            mockDocuments(apolloMockController);
+            mockRecords(apolloMockController);
             mockRepository(apolloMockController);
           },
         }),

@@ -14,6 +14,7 @@ import {
   ImportOpmlModalComponentProps,
 } from '../../modals/import-opml-modal/import-opml-modal.component';
 import { firstValueFrom } from 'rxjs';
+import { FileService } from '../../services/file.service';
 
 @Component({
   selector: 'app-import-button',
@@ -31,12 +32,10 @@ export class ImportButtonComponent {
   @Input()
   fill: string = 'clear';
 
-  @ViewChild('opmlPicker')
-  opmlPickerElement!: ElementRef<HTMLInputElement>;
-
   constructor(
     private readonly omplService: OpmlService,
     private readonly authService: AuthService,
+    private readonly fileService: FileService,
     private readonly router: Router,
     private readonly modalCtrl: ModalController,
   ) {}
@@ -55,11 +54,17 @@ export class ImportButtonComponent {
     await modal.present();
   }
 
-  async openOpmlPicker() {
+  async openFilePicker(filePicker: HTMLInputElement) {
     if (await firstValueFrom(this.authService.isAuthenticated())) {
-      this.opmlPickerElement.nativeElement.click();
+      filePicker.click();
     } else {
       await this.router.navigateByUrl('/login');
     }
+  }
+
+  async importFeedlessJson(uploadEvent: Event) {
+    const data = await this.fileService.uploadAsText(uploadEvent);
+    const json = JSON.parse(data);
+    console.log(json);
   }
 }

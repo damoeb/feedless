@@ -21,10 +21,21 @@
           #opmlPicker
           (change)="importOpml($event)"
           style="display: none"
+          accept="text/xml, application/opml"
           type="file"
         />
-        <ion-item (click)="openOpmlPicker()" [button]="true">
+        <ion-item (click)="openFilePicker(opmlPicker)" [button]="true">
           Import OPML
+        </ion-item>
+        <input
+          #jsonPicker
+          (change)="importFeedlessJson($event)"
+          accept="application/json"
+          style="display: none"
+          type="file"
+        />
+        <ion-item (click)="openFilePicker(jsonPicker)" [button]="true">
+          Import Feedless Json
         </ion-item>
         <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
         <!--          Import Urls-->

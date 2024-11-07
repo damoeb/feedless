@@ -22,9 +22,15 @@
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 13%;
+  a {
+    color: var(--ion-color-dark);
+  }
+  time {
+    align-content: center;
+  }
 
   &:not(.day--no-header) {
-    min-height: 85px;
+    min-height: 65px;
   }
 
   display: flex;
@@ -51,11 +57,11 @@
   &--today {
     --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
     background: repeating-linear-gradient(
-        45deg,
-        color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
-        color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
-        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
-        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
+      45deg,
+      color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
+      color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
     ) !important;
   }
 

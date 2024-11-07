@@ -15,9 +15,9 @@
         (click)="showCalendar = !showCalendar"
       >
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
-<!--        <span class="ion-hide-md-down"-->
-<!--        >{{ formatToRelativeDay(currentDate, ', ') }}-->
-<!--        </span>-->
+        <!--        <span class="ion-hide-md-down"-->
+        <!--        >{{ formatToRelativeDay(currentDate, ', ') }}-->
+        <!--        </span>-->
         {{ getWeekday() }}
         {{ getLabelForCalendar() }}
       </ion-button>
@@ -33,21 +33,41 @@
         "
       >
       </ion-searchbar>
+      <ion-select
+        [formControl]="perimeterFc"
+        #perimeterCtrl
+        interface="action-sheet"
+        class="hidden"
+        aria-label="Umkreis"
+      >
+        <ion-select-option [value]="5">+5 Km</ion-select-option>
+        <ion-select-option [value]="10">+10 Km</ion-select-option>
+        <ion-select-option [value]="20">+20 Km</ion-select-option>
+        <ion-select-option [value]="30">+30 Km</ion-select-option>
+      </ion-select>
       <ion-button
         color="light"
-        aria-label="Karte anzeigen"
-        (click)="showMap = !showMap"
+        aria-label="Umkreis konfigurieren"
+        title="Umkreis konfigurieren"
+        (click)="perimeterCtrl.open($event)"
       >
-        <ion-icon name="map-outline" slot="start"></ion-icon>
-        Karte
+        +{{ perimeterFc.value }} Km
       </ion-button>
-      <ion-button
-        color="light"
-        aria-label="Kategorien filtern"
-        (click)="showFilters = !showFilters"
-      >
-        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>
-      </ion-button>
+      <!--      <ion-button-->
+      <!--        color="light"-->
+      <!--        aria-label="Karte anzeigen"-->
+      <!--        (click)="showMap = !showMap"-->
+      <!--      >-->
+      <!--        <ion-icon name="map-outline" slot="start"></ion-icon>-->
+      <!--        Karte-->
+      <!--      </ion-button>-->
+      <!--      <ion-button-->
+      <!--        color="light"-->
+      <!--        aria-label="Kategorien filtern"-->
+      <!--        (click)="showFilters = !showFilters"-->
+      <!--      >-->
+      <!--        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>-->
+      <!--      </ion-button>-->
     </div>
 
     <div
@@ -74,16 +94,16 @@
     "
   >
     <ion-list *ngIf="isLocationFocussed" class="ion-margin-bottom">
-      <ion-item
-        (click)="getCurrentLocation()"
-        *ngIf="!locationNotAvailable"
-        [button]="true"
-      >
-        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>
-        Your Location
-      </ion-item>
+      <!--      <ion-item-->
+      <!--        (click)="getCurrentLocation()"-->
+      <!--        *ngIf="!locationNotAvailable"-->
+      <!--        [button]="true"-->
+      <!--      >-->
+      <!--        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>-->
+      <!--        Your Location-->
+      <!--      </ion-item>-->
       <ion-item *ngIf="locationSuggestions.length === 0">
-        Tippe deine PLZ oder Ortschaft
+        Tippe deine Ortschaft
       </ion-item>
       <ion-item
         (click)="changeLocation(location)"
@@ -91,7 +111,7 @@
         [button]="true"
       >
         <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>
-        {{ convertOsmMatchToString(location) }}
+        {{ location.country }} {{ location.displayName }}
       </ion-item>
     </ion-list>
 
@@ -99,7 +119,12 @@
       <div class="calendar ion-margin-top">
         <ion-toolbar style="--background: transparent">
           <ion-buttons slot="start">
-            <ion-button (click)="goToDateRelative(-1, 'month')">
+            <ion-button
+              [title]="
+                formatDate(currentDate.subtract(1, 'month'), 'MMMM YYYY')
+              "
+              (click)="goToDateRelative(-1, 'month')"
+            >
               <ion-icon name="chevron-back-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
@@ -121,13 +146,16 @@
                 class="ion-margin-start"
                 color="dark"
                 size="small"
-              >Heute
+                >Heute
               </ion-button>
             </div>
           </ion-title>
 
           <ion-buttons slot="end">
-            <ion-button (click)="goToDateRelative(1, 'month')">
+            <ion-button
+              [title]="formatDate(currentDate.add(1, 'month'), 'MMMM YYYY')"
+              (click)="goToDateRelative(1, 'month')"
+            >
               <ion-icon name="chevron-forward-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
@@ -159,20 +187,22 @@
               <a
                 (click)="changeDate(day.day)"
                 [title]="
-                  'Zeige Veranstaltungen für das Datum ' +
-                  formatDate(day.day, 'YYYY-MM-DD')
+                  'Veranstaltungen nahe ' +
+                  this.location.displayName +
+                  ' am ' +
+                  formatDate(day.day, 'DD.MM')
                 "
                 href="javascript:void(0)"
               >
                 <time [attr.datetime]="formatDate(day.day, 'YYYY-MM-DD')">
-                  <h4 class="ion-text-center">
+                  <div class="ion-text-center">
                     <span *ngIf="day.printMonth">
                       {{ formatDate(day.day, "MMM") }}
                     </span>
                     <span class="date">
                       {{ formatDate(day.day, "D") }}
                     </span>
-                  </h4>
+                  </div>
                   <div
                     class="ion-text-center"
                     style="color: var(--ion-color-danger)"
@@ -188,22 +218,6 @@
     </ng-container>
 
     <ng-container *ngIf="showMap || isLocationFocussed">
-      <ion-list>
-        <ion-item>
-          <ion-select
-            [formControl]="perimeterFc"
-            interface="action-sheet"
-            label="Umkreis"
-            labelPlacement="start"
-          >
-            <ion-select-option [value]="5">+5 Km</ion-select-option>
-            <ion-select-option [value]="10">+10 Km</ion-select-option>
-            <ion-select-option [value]="20">+20 Km</ion-select-option>
-            <ion-select-option [value]="30">+30 Km</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
-
       <app-map
         [position]="currentLatLon"
         (positionChange)="handlePositionChange($event)"
@@ -224,10 +238,19 @@
           <ion-select-option
             *ngFor="let category of categories"
             [value]="category"
-          >{{ category }}</ion-select-option
+            >{{ category }}</ion-select-option
           >
         </ion-select>
       </ion-item>
     </ion-list>
+
+    <div
+      style="max-height: 200px; overflow: hidden; border-radius: 8px"
+      class="ion-margin-top"
+    >
+      <img
+        src="http://upload.wikimedia.org/wikipedia/commons/3/35/Deutsch_Kaltenbrunn_evangelische_Kirche.jpg"
+      />
+    </div>
   </div>
 </ion-header>

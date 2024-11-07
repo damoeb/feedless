@@ -9,7 +9,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime

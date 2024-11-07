@@ -33,3 +33,4 @@ npm-debug.log*
 /src/generated
 src/config.json
 feedless-config.json
+src/*-sitemap.xml

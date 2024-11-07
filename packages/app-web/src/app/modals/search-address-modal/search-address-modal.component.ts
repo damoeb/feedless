@@ -6,6 +6,7 @@ import {
   OsmMatch,
 } from '../../services/open-street-map.service';
 import { GqlGeoPoint } from '../../../generated/graphql';
+import { NamedLatLon } from '../../products/upcoming/places';
 
 @Component({
   selector: 'app-search-address-modal',
@@ -13,7 +14,7 @@ import { GqlGeoPoint } from '../../../generated/graphql';
   styleUrls: ['./search-address-modal.component.scss'],
 })
 export class SearchAddressModalComponent {
-  matches: OsmMatch[];
+  matches: NamedLatLon[];
   loading = false;
   protected latLon: GqlGeoPoint;
 
@@ -33,11 +34,11 @@ export class SearchAddressModalComponent {
   async searchAddress(query: string) {
     this.loading = true;
     this.latLon = this.parsePoint(query);
-    this.matches = await this.openStreetMapService.searchAddress(query);
+    this.matches = await this.openStreetMapService.searchByQuery(query);
     this.loading = false;
   }
 
-  async pick(match: OsmMatch) {
+  async pick(match: Pick<NamedLatLon, 'lat' | 'lon'>) {
     await this.modalCtrl.dismiss(match);
   }
 
@@ -54,8 +55,8 @@ export class SearchAddressModalComponent {
 
   pickLatLon() {
     return this.pick({
-      lat: `${this.latLon.lat}`,
-      lon: `${this.latLon.lon}`,
+      lat: this.latLon.lat,
+      lon: this.latLon.lon,
     });
   }
 }

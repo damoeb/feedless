@@ -150,7 +150,7 @@ class DocumentService(
               doubleLiteral(it.near.lat),
               doubleLiteral(it.near.lon)
             )
-              .lt(doubleLiteral(it.distanceKm))
+              .lt(doubleLiteral(it.distanceKm.coerceAtMost(50.0)))
           )
         }
       }

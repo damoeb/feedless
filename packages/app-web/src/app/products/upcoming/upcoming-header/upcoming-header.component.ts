@@ -1,16 +1,43 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { AppConfigService, ProductConfig } from '../../../services/app-config.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import {
+  AppConfigService,
+  ProductConfig,
+} from '../../../services/app-config.service';
 import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
-import { OpenStreetMapService, OsmMatch } from '../../../services/open-street-map.service';
-import { compact, debounce as debounceLD, DebouncedFunc, isUndefined, omit } from 'lodash-es';
+import {
+  OpenStreetMapService,
+  OsmMatch,
+} from '../../../services/open-street-map.service';
+import {
+  compact,
+  debounce as debounceLD,
+  DebouncedFunc,
+  isUndefined,
+  omit,
+} from 'lodash-es';
 import { GetElementType } from '../../../graphql/types';
 import { LatLon } from '../../../components/map/map.component';
-import { FindEvents, GqlFindEventsQuery, GqlFindEventsQueryVariables } from '../../../../generated/graphql';
+import {
+  FindEvents,
+  GqlFindEventsQuery,
+  GqlFindEventsQueryVariables,
+} from '../../../../generated/graphql';
 import { FormControl } from '@angular/forms';
 import { debounce, interval, Subscription } from 'rxjs';
 import { ApolloClient } from '@apollo/client/core';
 import weekday from 'dayjs/plugin/weekday';
-
+import { createEventsUrl } from '../events/events.page';
+import { Router } from '@angular/router';
+import { NamedLatLon } from '../places';
 
 type Day = {
   day: Dayjs | null;
@@ -31,13 +58,13 @@ type Years = {
 type LocalizedEvent = GetElementType<GqlFindEventsQuery['recordsFrequency']>;
 
 export type EventsUrlFragments = {
-  state?: string;
-  country?: string;
-  place?: string;
-  perimeter?: number;
-  year?: number;
-  month?: number;
-  day?: number;
+  state: string;
+  country: string;
+  place: string;
+  perimeter: number;
+  year: number;
+  month: number;
+  day: number;
 };
 
 type SiteLocale = 'de' | 'en';
@@ -69,7 +96,7 @@ export function convertOsmMatchToString(location: OsmMatch): string {
   styleUrls: ['./upcoming-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
+export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};
   productConfig: ProductConfig;
   locationFc = new FormControl<string>('');
@@ -78,17 +105,17 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   protected currentLatLon: LatLon;
   protected now = dayjs();
 
-  @Input({required: true})
-  date: Dayjs
+  @Input({ required: true })
+  date: Dayjs;
 
-  @Input({required: true})
-  location: OsmMatch
+  @Input({ required: true })
+  location: NamedLatLon;
 
   @Input()
   perimeter: number = 10;
 
-  @Input({required: true})
-  categories: string[]
+  @Input({ required: true })
+  categories: string[];
 
   protected showMap: boolean = false;
   protected showCalendar: boolean = false;
@@ -100,10 +127,10 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   // protected categories = ['Algemein', 'Kinder', 'Sport', 'Veranstaltung'];
   private timeWindowTo: number;
   private timeWindowFrom: number;
-  protected locationSuggestions: OsmMatch[];
+  protected locationSuggestions: NamedLatLon[];
   protected isLocationFocussed: boolean = false;
   protected locationNotAvailable: boolean = true;
-  protected currentLocation: OsmMatch;
+  protected currentLocation: NamedLatLon;
   protected loadingCalendar = true;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
   protected locale: SiteLocale = 'de';
@@ -116,6 +143,7 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly apollo: ApolloClient<any>,
+    private readonly router: Router,
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
   ) {
@@ -127,20 +155,26 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
     if (changes.perimeter?.currentValue) {
-      this.perimeterFc.setValue(changes.perimeter.currentValue);
+      this.perimeterFc.setValue(changes.perimeter.currentValue, {
+        emitEvent: false,
+      });
     }
     if (changes.date?.currentValue) {
-      this.changeDate(changes.date.currentValue);
+      this.changeDate(changes.date.currentValue, false);
+    }
+    if (changes.location?.currentValue) {
+      this.locationFc.setValue(changes.location.currentValue.displayName, {
+        emitEvent: false,
+      });
     }
   }
 
   async ngOnInit() {
-    this.perimeterFc.patchValue(this.perimeter, {emitEvent: false});
+    this.perimeterFc.patchValue(this.perimeter, { emitEvent: false });
     this.locationNotAvailable = false;
     await this.changeLocation(this.location, false);
-    await this.changeDate(this.currentDate);
+    await this.changeDate(this.date, false);
     this.changeRef.detectChanges();
     dayjs.locale('de');
 
@@ -157,7 +191,7 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
         .pipe(debounce(() => interval(400)))
         .subscribe(async (value) => {
           this.locationSuggestions =
-            await this.openStreetMapService.searchAddress(`${value} Schweiz`);
+            await this.openStreetMapService.searchByQuery(`${value} Schweiz`);
           // console.log('this.locationSuggestions', this.locationSuggestions);
           this.changeRef.detectChanges();
         }),
@@ -258,6 +292,7 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   }
 
   private async fetchEventOverview() {
+    console.error('make async fetchEventOverview');
     if (!this.currentLatLon) {
       return;
     }
@@ -289,7 +324,7 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
     this.changeRef.detectChanges();
   }
 
-  async changeMonth(date: Dayjs, triggerUrlUpdate = true) {
+  async changeMonth(date: Dayjs) {
     if (!date) {
       return;
     }
@@ -301,9 +336,9 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
 
     this.currentDate = date;
 
-    if (triggerUrlUpdate) {
-      await this.patchUrl();
-    }
+    // if (triggerUrlUpdate) {
+    //   await this.patchUrl();
+    // }
 
     this.fillCalendar(date);
     await this.fetchEventOverviewDebounced();
@@ -315,12 +350,12 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
     return days.filter((day) => day.isFirstWeek);
   }
 
-  async changeLocation(location: OsmMatch, triggerUrlUpdate = true) {
+  async changeLocation(location: NamedLatLon, triggerUrlUpdate = true) {
     this.isLocationFocussed = false;
     this.currentLocation = location;
     if (location) {
-      this.currentLatLon = [parseFloat(location.lat), parseFloat(location.lon)];
-      this.locationFc.setValue(convertOsmMatchToString(location), {
+      this.currentLatLon = [location.lat, location.lon];
+      this.locationFc.setValue(location.displayName, {
         emitEvent: false,
       });
     }
@@ -330,31 +365,33 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
     }
 
     this.locationSuggestions = [];
-    await this.fetchEventOverviewDebounced();
+    this.fetchEventOverviewDebounced();
     this.changeRef.detectChanges();
   }
 
-  getCurrentLocation() {}
-
-  async changeDate(day: Dayjs) {
-    this.currentDate = day;
-    await this.patchUrl();
+  async changeDate(date: Dayjs, triggerUpdate: boolean = true) {
+    this.currentDate = date;
+    if (triggerUpdate) {
+      await this.patchUrl();
+    } else {
+      this.fillCalendar(date);
+    }
     this.changeRef.detectChanges();
   }
 
   private async patchUrl() {
-    console.log('patchUrl')
-    // const parts: EventsUrlFragments = {
-    //   state: this.currentLocation.address.state,
-    //   country: this.currentLocation.address.country_code?.toUpperCase(),
-    //   perimeter: this.perimeterFc.value,
-    //   place: convertOsmMatchToString(this.currentLocation),
-    //   year: this.currentDate.locale(this.locale).year(),
-    //   month: this.currentDate.locale(this.locale).month(),
-    //   day: this.currentDate.locale(this.locale).day(),
-    // };
-    // const url = createEventsUrl(parts, this.router)
-    // await this.router.navigateByUrl(url)
+    console.log('patchUrl');
+    const parts: EventsUrlFragments = {
+      state: this.currentLocation.country,
+      country: this.currentLocation.state?.toUpperCase(),
+      perimeter: this.perimeterFc.value,
+      place: this.currentLocation.displayName,
+      year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
+      month: parseInt(this.currentDate.locale(this.locale).format('MM')),
+      day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+    };
+    const url = createEventsUrl(parts, this.router);
+    await this.router.navigateByUrl(url, { replaceUrl: true });
   }
 
   isSame(a: Dayjs, b: Dayjs, units: OpUnitType[]) {
@@ -366,10 +403,6 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   }
 
   handlePositionChange(latLon: number[]) {}
-
-  convertOsmMatchToString(location: OsmMatch) {
-    return convertOsmMatchToString(location);
-  }
 
   // formatToRelativeDay(inputDate: Dayjs, suffix: string = '') {
   //   const today = dayjs();
@@ -389,9 +422,9 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   getLabelForCalendar(): string {
     if (this.currentDate) {
       if (this.currentDate.year() != dayjs().year()) {
-        return this.formatDate(this.currentDate, "D.MM.YYYY")
+        return this.formatDate(this.currentDate, 'D.MM.YYYY');
       } else {
-        return this.formatDate(this.currentDate, "D.MM")
+        return this.formatDate(this.currentDate, 'D.MM');
       }
     }
   }
@@ -399,8 +432,13 @@ export class UpcomingHeaderComponent  implements OnInit, OnDestroy, OnChanges {
   getWeekday(): string {
     if (this.currentDate) {
       return [
-        'Sonntag', 'Montag', 'Dienstag', 'Mittwoch',
-        'Donnerstag', 'Freitag', 'Samstag'
+        'Sonntag',
+        'Montag',
+        'Dienstag',
+        'Mittwoch',
+        'Donnerstag',
+        'Freitag',
+        'Samstag',
       ][this.currentDate.day()];
     }
   }

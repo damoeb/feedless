@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { FileService } from './file.service';
 
 export interface Outline {
   title: string;
@@ -13,37 +14,31 @@ export interface Outline {
   providedIn: 'root',
 })
 export class OpmlService {
-  constructor(private readonly toastCtrl: ToastController) {}
+  constructor(
+    private readonly toastCtrl: ToastController,
+    private readonly fileService: FileService,
+  ) {}
 
   async convertOpmlToJson(uploadEvent: Event): Promise<Outline[]> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      Array.from((uploadEvent.target as any).files).map((file: File) => {
-        reader.onloadend = async (event) => {
-          const data: ArrayBuffer | string = (event.target as any).result;
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(String(data), 'application/xml');
-          const errorNode = doc.querySelector('parsererror');
-          if (errorNode) {
-            console.log(errorNode);
-            const toast = await this.toastCtrl.create({
-              message: 'Parsing failed',
-              duration: 3000,
-              color: 'danger',
-            });
-            await toast.present();
-            reject(new Error(`${errorNode}`));
-          } else {
-            const groups = Array.from(
-              doc.documentElement.querySelectorAll('body>outline'),
-            );
-            resolve(groups.map((group) => this.parseOutline(group)));
-          }
-        };
-        reader.readAsText(file);
+    const data = this.fileService.uploadAsText(uploadEvent);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(String(data), 'application/xml');
+    const errorNode = doc.querySelector('parsererror');
+    if (errorNode) {
+      console.log(errorNode);
+      const toast = await this.toastCtrl.create({
+        message: 'Parsing failed',
+        duration: 3000,
+        color: 'danger',
       });
-    });
+      await toast.present();
+      throw new Error(`${errorNode}`);
+    } else {
+      const groups = Array.from(
+        doc.documentElement.querySelectorAll('body>outline'),
+      );
+      return groups.map((group) => this.parseOutline(group));
+    }
   }
 
   private parseOutline(group: Element): Outline {

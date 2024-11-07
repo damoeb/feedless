@@ -35,7 +35,6 @@ import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
-import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService

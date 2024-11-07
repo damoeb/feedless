@@ -206,20 +206,11 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async downloadAllRepositories() {
-    const rRepositories = await this.getAllRepositories();
-
-    var a = window.document.createElement('a');
-    a.href = window.URL.createObjectURL(
-      new Blob([JSON.stringify(rRepositories, null, 2)], {
-        type: 'application/json',
-      }),
+    const repos = await this.getAllRepositories();
+    await this.repositoryService.downloadRepositories(
+      repos,
+      `feedless-full-backup-${dayjs().format('YYYY-MM-DD')}.json`,
     );
-    a.download = `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
-
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
   }
 
   private async getAllRepositories(): Promise<RepositoryFull[]> {

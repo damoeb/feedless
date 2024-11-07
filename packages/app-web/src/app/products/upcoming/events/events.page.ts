@@ -1,17 +1,41 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs } from 'dayjs';
-import { OpenStreetMapService, OsmMatch } from '../../../services/open-street-map.service';
+import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import { groupBy, sortBy, unionBy } from 'lodash-es';
 import { RecordService } from '../../../services/record.service';
 import { Record } from '../../../graphql/types';
-import { Event as SchemaEvent, Place as SchemaPlace, WebPage } from 'schema-dts';
-import { NamedLatLon, namedPlaces } from '../places';
+import {
+  BreadcrumbList,
+  Event as SchemaEvent,
+  Place as SchemaPlace,
+  WebPage,
+} from 'schema-dts';
+import {
+  getSupportedPlaces,
+  NamedLatLon,
+  placeAffolternAmAlbis,
+} from '../places';
 import { LatLon } from '../../../components/map/map.component';
-import { PageService } from '../../../services/page.service';
+import { PageService, PageTags } from '../../../services/page.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { convertOsmMatchToString, EventsUrlFragments } from '../upcoming-header/upcoming-header.component';
-import { parseDateFromUrl, parseLocationFromUrl, parsePerimeterFromUrl, perimeterUnit } from '../upcoming-product-routing.module';
+import { Location } from '@angular/common';
+import {
+  convertOsmMatchToString,
+  EventsUrlFragments,
+} from '../upcoming-header/upcoming-header.component';
+import {
+  parseDateFromUrl,
+  parseLocationFromUrl,
+  parsePerimeterFromUrl,
+  perimeterUnit,
+} from '../upcoming-product-routing.module';
 import { Subscription } from 'rxjs';
 
 type Distance2Events = { [distance: string]: Record[] };
@@ -30,18 +54,21 @@ type EventsAtPlace = {
   events: Record[];
 };
 
-export function createEventsUrl(parts: EventsUrlFragments, router: Router): string {
+export function createEventsUrl(
+  parts: EventsUrlFragments,
+  router: Router,
+): string {
   let texts: string[];
   // if (this.locale == 'de') {
-  texts = ['events/in', 'am', 'innerhalb', ];
+  texts = ['events/in', 'am', 'innerhalb'];
   // } else {
   //   texts = ['events/in', 'on', 'within', ];
   // }
   return router
     .createUrlTree([
       texts[0],
-      parts.country,
       parts.state,
+      parts.country,
       parts.place,
       texts[1],
       parts.year,
@@ -49,34 +76,66 @@ export function createEventsUrl(parts: EventsUrlFragments, router: Router): stri
       parts.day,
       texts[2],
       `${parts.perimeter}${perimeterUnit}`,
-
     ])
     .toString();
 }
 
+export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
+  return {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        item: {
+          '@id': 'https://example.com/dresses',
+          name: 'Events',
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        item: {
+          '@id': 'https://example.com/dresses',
+          name: loc.country,
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        item: {
+          '@id': 'https://example.com/dresses',
+          name: loc.displayName,
+        },
+      },
+    ],
+  };
+}
 
 @Component({
   selector: 'app-events-page',
-  templateUrl: './events-page.component.html',
-  styleUrls: ['./events-page.component.scss'],
+  templateUrl: './events.page.html',
+  styleUrls: ['./events.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventsPageComponent implements OnInit, OnDestroy {
+export class EventsPage implements OnInit, OnDestroy {
   date: Dayjs;
   perimeter: number;
   latLon: LatLon;
-  location: OsmMatch;
+  location: NamedLatLon;
   loading: boolean = true;
   private subscriptions: Subscription[] = [];
 
   protected placesByDistance: PlaceByDistance[] = [];
   protected loadingDay = true;
+  protected eventCount: number = 0;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly recordService: RecordService,
     private readonly changeRef: ChangeDetectorRef,
+    private readonly locationService: Location,
     private readonly pageService: PageService,
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
@@ -86,52 +145,59 @@ export class EventsPageComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         try {
-          console.log('params', params, this.activatedRoute.snapshot.params)
-          this.location = await parseLocationFromUrl(this.activatedRoute, this.openStreetMapService);
-          this.latLon = [parseFloat(this.location.lat), parseFloat(this.location.lon)];
+          this.location = await parseLocationFromUrl(
+            this.activatedRoute,
+            this.openStreetMapService,
+          );
+          this.latLon = [this.location.lat, this.location.lon];
           this.perimeter = parsePerimeterFromUrl(this.activatedRoute);
           this.date = parseDateFromUrl(this.activatedRoute);
           this.changeRef.detectChanges();
 
-          await this.fetchEvents();
+          this.pageService.setMetaTags(this.getPageTags());
 
+          await this.fetchEvents();
         } catch (e) {
           const today = dayjs();
-          const url = createEventsUrl({
-            state: 'CH',
-            country: 'Zurich',
-            place: 'Affoltern a.A.',
-            perimeter: 10,
-            year: today.year(),
-            month: today.month(),
-            day: today.day()
-          }, this.router);
-          console.log('redirect');
+          const url = createEventsUrl(
+            {
+              state: placeAffolternAmAlbis.state,
+              country: placeAffolternAmAlbis.country,
+              place: placeAffolternAmAlbis.place,
+              perimeter: 10,
+              year: parseInt(today.format('YYYY')),
+              month: parseInt(today.format('MM')),
+              day: parseInt(today.format('DD')),
+            },
+            this.router,
+          );
+          // console.log('redirect', today.format(), today.format('MM'), today.month());
           await this.router.navigateByUrl(url);
         } finally {
           this.loading = false;
         }
         this.changeRef.detectChanges();
-      })
-    )
+      }),
+    );
+  }
 
-    // this.pageService.setMetaTags({
-    //   title: `Events in ${parts.place}, ${parts.state} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
-    //   description: `Erfahre alles über aktuelle Veranstaltungen in ${parts.place}, ${parts.state}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${parts.place}, ${parts.state} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
-    //   publisher: 'upcoming',
-    //   category: '',
-    //   url: document.location.href,
-    //   region: parts.state,
-    //   place: parts.place,
-    //   lang: 'de',
-    //   publishedAt: dayjs(),
-    //   position: [
-    //     parseFloat(`${location.lat}`),
-    //     parseFloat(`${location.lon}`),
-    //   ],
-    // })
-    //
-    // this.fetchEvents();
+  formatDate(date: Dayjs, format: string) {
+    return date?.locale('de')?.format(format);
+  }
+
+  private getPageTags(): PageTags {
+    return {
+      title: `Events in ${this.location.displayName}, ${this.location.country} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
+      description: `Erfahre alles über aktuelle Veranstaltungen in ${this.location.displayName}, ${this.location.country}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${this.location.displayName}, ${this.location.country} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
+      publisher: 'upcoming',
+      category: '',
+      url: document.location.href,
+      region: this.location.country,
+      place: this.location.displayName,
+      lang: 'de',
+      publishedAt: dayjs(),
+      position: [this.location.lat, this.location.lon],
+    };
   }
 
   ngOnDestroy(): void {
@@ -196,9 +262,10 @@ export class EventsPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  async fetchEvents() {
+  private async fetchEvents() {
     try {
       const events = await this.fetchEventOfDay(this.date.clone());
+      this.eventCount = events.length;
       const places: NamedLatLon[] = await Promise.all(
         unionBy(
           events.map((e) => e.latLng),
@@ -206,22 +273,20 @@ export class EventsPageComponent implements OnInit, OnDestroy {
         )
           .filter((e) => e)
           .map((latLon) => {
-            const namedPlace = namedPlaces.find(
+            const namedPlace = getSupportedPlaces().find(
               (place) => place.lat == latLon.lat && place.lon == latLon.lon,
             );
             if (namedPlace) {
-              return {
-                lat: latLon.lat,
-                lon: latLon.lon,
-                name: namedPlace.name,
-              };
+              return namedPlace;
             } else {
               return this.openStreetMapService
                 .reverseSearch(latLon.lat, latLon.lon)
-                .then((match) => ({
+                .then<NamedLatLon>((match) => ({
                   lat: latLon.lat,
                   lon: latLon.lon,
-                  name: convertOsmMatchToString(match),
+                  state: match.address.country_code,
+                  country: match.address.state,
+                  place: convertOsmMatchToString(match),
                 }));
             }
           }),
@@ -266,7 +331,7 @@ export class EventsPageComponent implements OnInit, OnDestroy {
         return groupedPlaces;
       }, [] as PlaceByDistance[]);
 
-      this.pageService.setJsonLdData(this.createSchemaOrgGraph());
+      this.pageService.setJsonLdData(this.createWebsiteSchema());
     } catch (e) {
     } finally {
       this.loadingDay = false;
@@ -287,11 +352,15 @@ export class EventsPageComponent implements OnInit, OnDestroy {
     return this.appConfigService.customProperties.eventRepositoryId as any;
   }
 
-  createSchemaOrgGraph(): WebPage {
+  createWebsiteSchema(): WebPage {
+    const tags = this.getPageTags();
     return {
       '@type': 'WebPage',
-      name: 'Upcoming Events by Location',
+      name: tags.title,
+      description: tags.description,
+      datePublished: tags.publishedAt.toISOString(),
       url: 'https://example.com/upcoming-events',
+      breadcrumb: createBreadcrumbsSchema(this.location),
       mainEntity: {
         '@type': 'ItemList',
         itemListElement: this.placesByDistance
@@ -317,30 +386,26 @@ export class EventsPageComponent implements OnInit, OnDestroy {
   }
 
   getEventUrl(event: Record) {
-    const { state, country, place, year, month, day } = this.activatedRoute.snapshot.params;
-    // event/in/:state/:country/:place/am/:year/:month/:day/details/:eventId/
-    let texts = ['event/in', 'am', 'details', ];
-
-    return this.router
-      .createUrlTree([
-        texts[0],
+    const { state, country, place, year, month, day } =
+      this.activatedRoute.snapshot.params;
+    return `${createEventsUrl(
+      {
         state,
         country,
         place,
-        texts[1],
         year,
+        perimeter: this.perimeter,
         month,
         day,
-        texts[2],
-        event.id,
-      ])
-      .toString();
+      },
+      this.router,
+    )}/${event.id}`;
   }
 
   private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
     return {
       '@type': 'Place',
-      name: place.place.name,
+      name: place.place.place,
       geo: {
         '@type': 'GeoCoordinates',
         latitude: place.place.lat,
@@ -348,5 +413,39 @@ export class EventsPageComponent implements OnInit, OnDestroy {
       },
       event: place.events.map((event) => this.toSchemaOrgEvent(event)),
     };
+  }
+
+  getPlaceUrl({ state, country, displayName }: NamedLatLon): string {
+    const { year, month, day } = this.activatedRoute.snapshot.params;
+    return createEventsUrl(
+      {
+        state,
+        country,
+        place: displayName,
+        year,
+        perimeter: this.perimeter,
+        month,
+        day,
+      },
+      this.router,
+    );
+  }
+
+  async changeDate(change: number) {
+    this.date = this.date.add(change, 'day');
+    const url = createEventsUrl(
+      {
+        state: this.location.state,
+        country: this.location.country,
+        place: this.location.place,
+        perimeter: 10,
+        year: parseInt(this.date.format('YYYY')),
+        month: parseInt(this.date.format('MM')),
+        day: parseInt(this.date.format('DD')),
+      },
+      this.router,
+    );
+    this.locationService.replaceState(url);
+    await this.fetchEvents();
   }
 }

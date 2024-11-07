@@ -202,6 +202,7 @@ describe('InteractiveWebsiteComponent', () => {
             org_feedless_fulltext: {
               inheritParams: false,
               readability: true,
+              summary: false,
             },
           },
         };

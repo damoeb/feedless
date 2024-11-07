@@ -38,6 +38,7 @@
               "src/manifest.webmanifest",
               "src/robots.txt",
               "src/ads.txt",
+              "src/browserconfig.xml",
               "src/sitemap.xml"
             ],
             "styles": [

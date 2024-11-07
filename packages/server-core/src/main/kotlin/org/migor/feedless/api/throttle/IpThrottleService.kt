@@ -13,7 +13,6 @@ import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

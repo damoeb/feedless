@@ -196,7 +196,8 @@ export class RepositoryModalComponent
           pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
           params: {
             org_feedless_fulltext: {
-              readability: this.formFg.value.fulltextTransformer == 'readability',
+              readability:
+                this.formFg.value.fulltextTransformer == 'readability',
               summary: this.formFg.value.fulltextTransformer == 'summary',
               inheritParams: true,
             },
@@ -339,7 +340,12 @@ export class RepositoryModalComponent
       description: this.repository.description,
       fetchFrequency: this.repository.refreshCron || DEFAULT_FETCH_CRON,
       applyFulltextPlugin: !!fulltextPlugin,
-      fulltextTransformer: fulltextPlugin.params.org_feedless_fulltext.summary ? 'summary' : fulltextPlugin.params.org_feedless_fulltext.readability ? 'readability' : 'none',
+      fulltextTransformer: fulltextPlugin?.params?.org_feedless_fulltext
+        ?.summary
+        ? 'summary'
+        : fulltextPlugin?.params?.org_feedless_fulltext?.readability
+          ? 'readability'
+          : 'none',
       applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),

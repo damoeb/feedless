@@ -3,6 +3,7 @@ package org.migor.feedless.repository
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -134,10 +135,24 @@ class RepositoryHarvesterTest {
     verify(sourceDAO, times(1)).save(source)
   }
 
-//  @Test
-//  fun `given scrape fails with resumable exception, error count is not changed`() = runTest {
-//    TODO()
-//  }
+  @Test
+  fun `given scrape works, errorCount will be reset`() = runTest {
+    `when`(source.errorsInSuccession).thenReturn(3)
+    `when`(
+      scrapeService.scrape(
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
+      ScrapeOutput(outputs = emptyList(), time = 0)
+    )
+
+    repositoryHarvester.handleRepository(repository.id)
+
+    verify(source).errorsInSuccession = 0
+    verify(source).lastErrorMessage = null
+    verify(sourceDAO, times(1)).save(source)
+  }
 
   @Test
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
@@ -166,6 +181,8 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given scrape fails recoverable will not flag the source errornous`() = runTest {
+    // given
+    assertThat(source.errorsInSuccession).isEqualTo(0)
     `when`(
       scrapeService.scrape(
         any(SourceEntity::class.java),
@@ -175,8 +192,11 @@ class RepositoryHarvesterTest {
       ResumableHarvestException("", Duration.ofMinutes(5))
     )
 
+    // when
     repositoryHarvester.handleRepository(repository.id)
 
+    // then
+    assertThat(source.errorsInSuccession).isEqualTo(0)
     verify(scrapeService, times(1)).scrape(
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
@@ -227,7 +247,6 @@ class RepositoryHarvesterTest {
   }
 
   @Test
-
   fun `given documents feature no url, then titles will be used to deduplicate`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
     `when`(
       scrapeService.scrape(
@@ -258,6 +277,20 @@ class RepositoryHarvesterTest {
     repositoryHarvester.handleRepository(repositoryId)
 
     verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 2 })
-
   }
+
+//  @Test
+//  fun `existing document will be patched`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//    TODO()
+//  }
+//
+//  @Test
+//  fun `documents will inherit the plugins defined in repository`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//    TODO()
+//  }
+//
+//  @Test
+//  fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//    TODO()
+//  }
 }

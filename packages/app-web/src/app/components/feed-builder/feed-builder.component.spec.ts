@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedBuilderComponent } from './feed-builder.component';
 import {
   AppTestModule,
-  mockDocuments,
+  mockRecords,
   mockRepositories,
   mockScrape,
 } from '../../app-test.module';
@@ -19,7 +19,7 @@ describe('FeedBuilderComponent', () => {
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockScrape(apolloMockController);
-            mockDocuments(apolloMockController);
+            mockRecords(apolloMockController);
             mockRepositories(apolloMockController);
           },
         }),

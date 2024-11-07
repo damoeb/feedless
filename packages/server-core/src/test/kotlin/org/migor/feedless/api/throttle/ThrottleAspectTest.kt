@@ -2,8 +2,6 @@ package org.migor.feedless.api.throttle
 
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
-import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -20,7 +18,6 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.repository.any
-import org.migor.feedless.repository.anyList
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService

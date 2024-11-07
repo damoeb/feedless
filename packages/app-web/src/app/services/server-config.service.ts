@@ -81,12 +81,14 @@ export class ServerConfigService {
         )}`;
         await this.showToast({
           header: 'Invalid Config',
+          cssClass: 'fatal-alert medium-alert',
           message,
         });
       }
     } else {
       await this.showToast({
         header: 'Invalid Config',
+        cssClass: 'fatal-alert medium-alert',
         message: `Cannot map hostname ${location.hostname} to product`,
       });
     }
@@ -120,20 +122,9 @@ export class ServerConfigService {
       this.appUrl = response.appUrl;
     } catch (e) {
       if (!environment.offlineSupport) {
-        // setTimeout(() => location.reload(), 5000);
         await this.showToast({
-          header: 'Server is not reachable',
-          subHeader: `Received error '${e.message}'`,
-          message: `The client tries to connect to the server at ${this.apiUrl}, as specified in the config.json`,
-          // buttons: [
-          //   {
-          //     text: 'Ok',
-          //     role: 'confirm',
-          //     handler: () => {
-          //       location.reload();
-          //     },
-          //   },
-          // ],
+          header: 'Temporary Connection Issue',
+          message: `Our servers are currently unavailable, and we're working to restore access as quickly as possible. Please try again in a few minutes. Thank you for your patience!`,
         });
         throw e;
       }
@@ -151,6 +142,7 @@ export class ServerConfigService {
     header,
     message,
     subHeader,
+    cssClass,
     buttons,
   }: ToastOptions) {
     const alert = await this.alertCtrl.create({
@@ -158,7 +150,7 @@ export class ServerConfigService {
       backdropDismiss: false,
       message,
       subHeader,
-      cssClass: 'fatal-alert medium-alert',
+      cssClass,
       buttons,
     });
 
