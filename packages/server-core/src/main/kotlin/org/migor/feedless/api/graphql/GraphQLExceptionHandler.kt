@@ -7,7 +7,7 @@ import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.DataFetcherExceptionHandlerParameters
 import graphql.execution.DataFetcherExceptionHandlerResult
 import org.migor.feedless.BadRequestException
-import org.migor.feedless.HarvestException
+import org.migor.feedless.FatalHarvestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
@@ -68,7 +68,7 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
       is UnavailableException -> ErrorType.UNAVAILABLE
       is BadRequestException -> ErrorType.BAD_REQUEST
       is NotFoundException -> ErrorType.NOT_FOUND
-      is HarvestException -> ErrorType.FAILED_PRECONDITION
+      is FatalHarvestException -> ErrorType.FAILED_PRECONDITION
       else -> ErrorType.UNKNOWN
     }
   }

@@ -28,9 +28,6 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
 
-  @Autowired
-  lateinit var propertyService: PropertyService
-
   override fun id(): String = FeedlessPlugins.org_feedless_filter.name
   override fun listed() = true
   override fun name(): String = "Filter"

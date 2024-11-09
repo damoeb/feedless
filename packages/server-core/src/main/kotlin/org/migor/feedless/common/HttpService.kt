@@ -11,10 +11,9 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.migor.feedless.HarvestException
+import org.migor.feedless.FatalHarvestException
 import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.ServiceUnavailableException
 import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
@@ -22,15 +21,18 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.http.HttpStatus
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
 import java.io.Serializable
+import java.net.ConnectException
 import java.net.MalformedURLException
 import java.net.URL
+import java.net.UnknownHostException
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.coroutines.coroutineContext
 
 
@@ -108,7 +110,7 @@ class HttpService(
   private suspend fun protectFromOverloading(url: String) {
     val actualUrl = try {
       URL(url)
-    } catch (e: MalformedURLException) {
+    } catch (e: Exception) {
       throw MalformedURLException("bad url ${e.message} $url")
     }
     if (actualUrl.host != gatewayHost) {
@@ -120,7 +122,6 @@ class HttpService(
           delay(waitFor.toMillis())
         } else {
           throw HostOverloadingException(
-            coroutineContext.corrId()!!,
             "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
             Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
           )
@@ -164,12 +165,13 @@ class HttpService(
       if (response.statusCode != expectedStatusCode) {
         when (response.statusCode) {
           // todo mag readjust bucket
-          500 -> throw ResumableHarvestException(corrId, "500 received", Duration.ofMinutes(5))
-          429 -> throw HostOverloadingException(corrId, "429 received", Duration.ofMinutes(5))
-          400 -> throw TemporaryServerException(corrId, "400 received", Duration.ofHours(1))
-          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          404, 403 -> throw SiteNotFoundException(response.uri.toUrl())
-          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
+          500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
+          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
+          400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
+//          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
+          in 400.. 499 -> throw SiteNotFoundException(response.uri.toUrl())
+          in 500..599 -> throw ResumableHarvestException(response.uri.toUrl(), Duration.ofHours(5))
+          else -> throw FatalHarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
         log.debug("[$corrId] -> ${response.getHeader("content-type")}")
@@ -179,7 +181,15 @@ class HttpService(
       if (e is NullPointerException) {
         e.printStackTrace()
       }
-      throw HarvestException("${e.message}")
+      if (e is UnknownHostException || e is ConnectException || e is TimeoutException || e is ExecutionException) {
+        throw ResumableHarvestException("${e.message}", Duration.ofMinutes(5))
+      } else {
+        if (e is ResumableHarvestException) {
+          throw e
+        } else {
+          throw FatalHarvestException("${e.message}")
+        }
+      }
     }
   }
 

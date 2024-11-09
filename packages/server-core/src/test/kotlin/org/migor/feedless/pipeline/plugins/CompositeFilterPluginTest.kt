@@ -27,7 +27,6 @@ class CompositeFilterPluginTest {
   @BeforeEach
   fun setUp() {
     service = CompositeFilterPlugin()
-    service.propertyService = mock(PropertyService::class.java)
     item = JsonItem()
     item.title = " foo is the perfect title"
     item.text = "bar is the payload"

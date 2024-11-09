@@ -69,7 +69,6 @@ class IpThrottleService(
       } else {
         val waitForRefill: Long = probes.maxOf { it.nanosToWaitForRefill }
         throw HostOverloadingException(
-          newCorrId(),
           "You have exhausted your API Request Quota",
           Duration.ofNanos(waitForRefill)
         )

@@ -76,7 +76,6 @@ fun DocumentEntity.asJsonItem(repository: RepositoryEntity? = null): JsonItem {
   item.url = url
   item.repositoryId = repositoryId
   item.repositoryName = repository?.title
-  item.url = url
   item.text = StringUtils.trimToEmpty(text)
   item.rawBase64 = raw?.let { Base64.getEncoder().encodeToString(raw) }
   item.rawMimeType = rawMimeType

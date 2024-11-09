@@ -1,6 +1,7 @@
 package org.migor.feedless.common
 
 import org.migor.feedless.AppLayer
+import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.OneTimePasswordDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
@@ -20,18 +21,20 @@ class CleanupExecutor(
   private val oneTimePasswordDAO: OneTimePasswordDAO?,
   private val sourcePipelineJobDAO: SourcePipelineJobDAO,
   private val harvestDAO: HarvestDAO,
+  private val documentService: DocumentService,
   private val documentPipelineJobDAO: DocumentPipelineJobDAO
 ) {
 
   private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
 
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 0 * * * *")
   @Transactional
   fun executeCleanup() {
     val now = LocalDateTime.now()
     harvestDAO.deleteAllTailingByRepositoryId()
     oneTimePasswordDAO?.deleteAllByValidUntilBefore(now)
     sourcePipelineJobDAO.deleteAllByCreatedAtBefore(now.minusDays(3))
+    documentService.applyRetentionStrategyByCapacity()
     documentPipelineJobDAO.deleteAllByCreatedAtBefore(now.minusDays(3))
   }
 }

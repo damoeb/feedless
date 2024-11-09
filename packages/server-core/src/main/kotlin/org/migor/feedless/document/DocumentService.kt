@@ -35,7 +35,6 @@ import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserEntity
@@ -162,31 +161,31 @@ class DocumentService(
     return whereStatements
   }
 
+  fun applyRetentionStrategyByCapacity() {
+    repositoryDAO.findAllByLastUpdatedAtAfter(LocalDateTime.now().minusDays(1))
+      .forEach { repository ->
+        val retentionSize = runBlocking {
+          planConstraintsService.coerceRetentionMaxCapacity(
+            repository.retentionMaxCapacity,
+            repository.ownerId,
+            repository.product
+          )
+        }
+        if (retentionSize != null && retentionSize > 0) {
+          log.info("applying retention for repo ${repository.id} with maxItems=$retentionSize")
+          documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
+        } else {
+          log.info("no retention with maxItems given repo ${repository.id}")
+        }
+      }
+  }
+
   suspend fun applyRetentionStrategy(repositoryId: UUID) {
     val repository = withContext(Dispatchers.IO) {
       repositoryDAO.findById(repositoryId).orElseThrow()
     }
-    val retentionSize =
-      planConstraintsService.coerceRetentionMaxCapacity(
-        repository.retentionMaxCapacity,
-        repository.ownerId,
-        repository.product
-      )
 
     val corrId = coroutineContext.corrId()
-    if (retentionSize != null && retentionSize > 0) {
-      log.debug("[$corrId] applying retention with maxItems=$retentionSize")
-      withContext(Dispatchers.IO) {
-        val transactionTemplate = TransactionTemplate(transactionManager)
-        transactionTemplate.executeWithoutResult {
-          runBlocking {
-            documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
-          }
-        }
-      }
-    } else {
-      log.debug("[$corrId] no retention with maxItems given")
-    }
 
     planConstraintsService.coerceRetentionMaxAgeDays(
       repository.retentionMaxAgeDays,
@@ -291,7 +290,7 @@ class DocumentService(
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
     val logCollector = LogCollector()
 
-    document?.let {
+    return document?.let {
       try {
         val repository = withContext(Dispatchers.IO) {
           repositoryDAO.findById(document.repositoryId).orElseThrow()
@@ -331,7 +330,7 @@ class DocumentService(
             if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
               delayJob(job, e, document)
             } else {
-              if (e !is FilterMismatchException) {
+              if (e !is FilterMismatchException && e !is IllegalArgumentException) {
                 log.warn("[$corrId] ${e.message}", e)
               }
               deleteDocument(document)
@@ -342,17 +341,17 @@ class DocumentService(
 
         if (!withError) {
           releaseDocument(document)
+          document
+        } else {
+          null
         }
 
       } catch (throwable: Throwable) {
         log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
         deleteDocument(document)
+        null
       }
-    } ?: withContext(Dispatchers.IO) {
-      log.warn("[$corrId] delete remainging jobs")
-      documentPipelineJobDAO.deleteAllByDocumentId(documentId)
     }
-    return document
   }
 
   private suspend fun releaseDocument(

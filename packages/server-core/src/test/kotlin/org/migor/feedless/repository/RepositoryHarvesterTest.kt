@@ -134,6 +134,11 @@ class RepositoryHarvesterTest {
     verify(sourceDAO, times(1)).save(source)
   }
 
+//  @Test
+//  fun `given scrape fails with resumable exception, error count is not changed`() = runTest {
+//    TODO()
+//  }
+
   @Test
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
     `when`(
@@ -167,7 +172,7 @@ class RepositoryHarvesterTest {
         any(LogCollector::class.java)
       )
     ).thenThrow(
-      ResumableHarvestException("", "", Duration.ofMinutes(5))
+      ResumableHarvestException("", Duration.ofMinutes(5))
     )
 
     repositoryHarvester.handleRepository(repository.id)

@@ -2,6 +2,8 @@ package org.migor.feedless.document
 
 import jakarta.persistence.EntityManager
 import kotlinx.coroutines.test.runTest
+import org.apache.commons.lang3.StringUtils
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -9,24 +11,39 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
+import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.CreateRecordInput
+import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.FulltextPluginParamsInput
+import org.migor.feedless.generated.types.ItemFilterParamsInput
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.StringFilter
+import org.migor.feedless.generated.types.StringFilterOperator
+import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
+import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.plugins.FulltextPlugin
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
@@ -49,6 +66,11 @@ class DocumentServiceTest {
   private lateinit var currentUser: UserEntity
   private lateinit var permissionService: PermissionService
   private lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var pluginService: PluginService
+  private lateinit var filterPlugin: CompositeFilterPlugin
+  private lateinit var fulltextPlugin: FulltextPlugin
+  private lateinit var documentId: UUID
+  private lateinit var document: DocumentEntity
 
   private val currentUserId = UUID.randomUUID()
 
@@ -62,6 +84,17 @@ class DocumentServiceTest {
     documentDAO = mock(DocumentDAO::class.java)
     permissionService = PermissionService(userDAO, repositoryDAO)
     planConstraintsService = mock(PlanConstraintsService::class.java)
+
+    filterPlugin = spy(CompositeFilterPlugin())
+    fulltextPlugin = mock(FulltextPlugin::class.java)
+    `when`(fulltextPlugin.id()).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
+    pluginService = PluginService(
+      entityPlugins = emptyList(),
+      transformerPlugins = emptyList(),
+      plugins = listOf(filterPlugin, fulltextPlugin)
+    )
+//    `when`(pluginService.resolveById<FilterEntityPlugin>(eq(FeedlessPlugins.org_feedless_filter.name))).thenReturn(filterPlugin)
+
     documentService = DocumentService(
       documentDAO,
       mock(PlatformTransactionManager::class.java),
@@ -69,18 +102,122 @@ class DocumentServiceTest {
       repositoryDAO,
       planConstraintsService,
       mock(DocumentPipelineJobDAO::class.java),
-      mock(PluginService::class.java),
+      pluginService,
       permissionService,
     )
+
+    documentId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
+    document = mock(DocumentEntity::class.java)
+    `when`(document.id).thenReturn(documentId)
+    `when`(document.url).thenReturn("http://localhost")
+    `when`(document.title).thenReturn("foo bar")
+    `when`(document.status).thenReturn(ReleaseStatus.unreleased)
+    `when`(document.publishedAt).thenReturn(LocalDateTime.now())
+    `when`(document.repositoryId).thenReturn(repositoryId)
+    `when`(documentDAO.findByIdWithSource(eq(documentId))).thenReturn(document)
+    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(mock(RepositoryEntity::class.java)))
+  }
+
+  @Test
+  fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
+    val filterJob = DocumentPipelineJobEntity()
+    filterJob.executorId = FeedlessPlugins.org_feedless_filter.name
+    filterJob.executorParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        ItemFilterParamsInput(
+          composite = CompositeFilterParamsInput(
+            exclude = CompositeFieldFilterParamsInput(
+              title = StringFilterParamsInput(
+                operator = StringFilterOperator.contains,
+                value = "foo"
+              )
+            )
+          )
+        )
+      )
+    )
+    documentService.processDocumentPlugins(
+      documentId, listOf(
+        filterJob
+      )
+    )
+    verify(filterPlugin).matches(
+      any(JsonItem::class.java), any(CompositeFieldFilterParamsInput::class.java),
+      any(Int::class.java)
+    )
+    verify(documentDAO).delete(eq(document))
+  }
+
+  @Test
+  fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
+    val filterJob = DocumentPipelineJobEntity()
+    filterJob.executorId = FeedlessPlugins.org_feedless_filter.name
+    filterJob.executorParams = PluginExecutionParamsInput(
+      org_feedless_filter = listOf(
+        ItemFilterParamsInput(
+          composite = CompositeFilterParamsInput(
+            exclude = CompositeFieldFilterParamsInput(
+              title = StringFilterParamsInput(
+                operator = StringFilterOperator.contains,
+                value = "foo2"
+              )
+            )
+          )
+        )
+      )
+    )
+    documentService.processDocumentPlugins(
+      documentId, listOf(
+        filterJob
+      )
+    )
+    verify(documentDAO).save(eq(document))
+  }
+
+  @Test
+  fun `processDocumentPlugins will map document`() = runTest {
+    val mapJob = DocumentPipelineJobEntity()
+    mapJob.executorId = FeedlessPlugins.org_feedless_fulltext.name
+    mapJob.executorParams = PluginExecutionParamsInput(
+      org_feedless_fulltext = FulltextPluginParamsInput(
+        summary = true,
+        readability = true,
+        inheritParams = false
+      )
+    )
+    `when`(fulltextPlugin.mapEntity(
+      eq(document),
+      any(RepositoryEntity::class.java),
+      any(PluginExecutionParamsInput::class.java),
+      any(LogCollector::class.java),
+    )).thenAnswer {
+      val d = it.arguments[0] as DocumentEntity
+      d.title = StringUtils.reverse(d.title)
+      d
+    }
+
+    documentService.processDocumentPlugins(
+      documentId, listOf(
+        mapJob
+      )
+    )
+    verify(document).title = "rab oof"
+    verify(documentDAO).save(eq(document))
+  }
+
+  @Test
+  fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
+    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
+    documentService.processDocumentPlugins(
+      documentId, listOf()
+    )
+    verify(document).status = ReleaseStatus.released
+    verify(documentDAO).save(eq(document))
   }
 
 //  @Test
-//  fun `applyRetentionStrategy by capacity is skipped if plan returns null or 0`() {
-//    TODO()
-//  }
-
-//  @Test
-//  fun `applyRetentionStrategy by age is skipped if plan returns null`() {
+//  fun `processDocumentPlugins will save document when execution gets delayed`() {
 //    TODO()
 //  }
 
@@ -93,9 +230,13 @@ class DocumentServiceTest {
     documentService.applyRetentionStrategy(repositoryId)
 
     // then
-    verify(documentDAO).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
-      ReleaseStatus::class.java))
+    verify(documentDAO).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+      eq(repositoryId), any(LocalDateTime::class.java), any(
+        ReleaseStatus::class.java
+      )
+    )
   }
+
   @Test
   fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
     val repositoryId = UUID.randomUUID()
@@ -105,9 +246,13 @@ class DocumentServiceTest {
     documentService.applyRetentionStrategy(repositoryId)
 
     // then
-    verify(documentDAO).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
-      ReleaseStatus::class.java))
+    verify(documentDAO).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+      eq(repositoryId), any(LocalDateTime::class.java), any(
+        ReleaseStatus::class.java
+      )
+    )
   }
+
   @Test
   fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
     val repositoryId = UUID.randomUUID()
@@ -117,8 +262,11 @@ class DocumentServiceTest {
     documentService.applyRetentionStrategy(repositoryId)
 
     // then
-    verify(documentDAO).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(eq(repositoryId), any(LocalDateTime::class.java), any(
-      ReleaseStatus::class.java))
+    verify(documentDAO).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+      eq(repositoryId), any(LocalDateTime::class.java), any(
+        ReleaseStatus::class.java
+      )
+    )
   }
 
   @Test
@@ -232,23 +380,41 @@ class DocumentServiceTest {
     return document
   }
 
-  private suspend fun mockRepository(repositoryId: UUID, ownerId: UUID, maxAgeDaysDateField: MaxAgeDaysDateField? = null): RepositoryEntity {
+  private suspend fun mockRepository(
+    repositoryId: UUID,
+    ownerId: UUID,
+    maxAgeDaysDateField: MaxAgeDaysDateField? = null,
+    retentionMaxCapacity: Int? = null
+  ): RepositoryEntity {
     val repository = mock(RepositoryEntity::class.java)
     `when`(repository.id).thenReturn(repositoryId)
     `when`(repository.ownerId).thenReturn(ownerId)
     maxAgeDaysDateField?.let {
       `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
     }
+    retentionMaxCapacity?.let {
+      `when`(repository.retentionMaxCapacity).thenReturn(it)
+    }
     `when`(repository.retentionMaxAgeDays).thenReturn(20)
     `when`(repository.id).thenReturn(repositoryId)
     `when`(repository.product).thenReturn(ProductCategory.feedless)
     `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
 
-    `when`(planConstraintsService.coerceRetentionMaxAgeDays(
-      repository.retentionMaxAgeDays,
-      repository.ownerId,
-      repository.product
-    )).thenReturn(20)
+    `when`(
+      planConstraintsService.coerceRetentionMaxAgeDays(
+        repository.retentionMaxAgeDays,
+        repository.ownerId,
+        repository.product
+      )
+    ).thenReturn(20)
+
+    `when`(
+      planConstraintsService.coerceRetentionMaxCapacity(
+        repository.retentionMaxCapacity,
+        repository.ownerId,
+        repository.product
+      )
+    ).thenReturn(retentionMaxCapacity)
 
     return repository
   }

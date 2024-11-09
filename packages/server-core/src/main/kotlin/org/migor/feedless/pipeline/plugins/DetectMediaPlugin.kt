@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.HarvestAbortedException
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.document.DocumentEntity
@@ -62,7 +61,7 @@ class DetectMediaPlugin : MapEntityPlugin {
     val corrId = coroutineContext.corrId()!!
     log.debug("[$corrId] mapEntity $url")
     if (!ResourceUtils.isUrl(url)) {
-      throw HarvestAbortedException(corrId, "illegal url $url")
+      throw IllegalArgumentException("illegal url $url")
     }
     runCatching {
       val mediaItems = mutableListOf<MediaItem>()

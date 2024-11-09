@@ -18,7 +18,7 @@ import java.util.*
 @Profile("${AppProfiles.document} & ${AppLayer.repository}")
 interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecutor {
 
-  @Modifying(clearAutomatically = true)
+  @Modifying
   @Query(
     """
     DELETE FROM DocumentEntity d

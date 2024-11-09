@@ -154,7 +154,7 @@ class AgentService(
         .await()
     } else {
       log.warn("[$corrId] no agents present")
-      throw ResumableHarvestException(corrId!!, "No agents available", Duration.ofMinutes(10))
+      throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))
     }
   }
 

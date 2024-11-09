@@ -13,19 +13,13 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class PluginService {
+class PluginService(
+  private val entityPlugins: List<MapEntityPlugin>,
+  private val transformerPlugins: List<FragmentTransformerPlugin>,
+  @Lazy val plugins: List<FeedlessPlugin>
+) {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
-
-  @Autowired
-  private lateinit var entityPlugins: List<MapEntityPlugin>
-
-  @Autowired
-  private lateinit var transformerPlugins: List<FragmentTransformerPlugin>
-
-  @Lazy
-  @Autowired
-  lateinit var plugins: List<FeedlessPlugin>
 
 //  @Autowired
 //  private lateinit var defaultMailFormatterService: MailProviderService
