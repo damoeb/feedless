@@ -13,6 +13,7 @@ import { ApolloClient } from '@apollo/client/core';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 import { Annotation } from '../graphql/types';
+import { Nullable } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,9 @@ export class AnnotationService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async createAnnotation(data: GqlCreateAnnotationInput): Promise<Annotation> {
+  async createAnnotation(
+    data: GqlCreateAnnotationInput,
+  ): Promise<Nullable<Annotation>> {
     if (this.sessionService.isAuthenticated()) {
       return this.apollo
         .mutate<
@@ -36,7 +39,7 @@ export class AnnotationService {
             data,
           },
         })
-        .then((response) => response.data.createAnnotation);
+        .then((response) => response.data!.createAnnotation);
     } else {
       await this.router.navigateByUrl('/login');
     }

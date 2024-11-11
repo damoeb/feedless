@@ -1,6 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
+import { addIcons } from 'ionicons';
+import { notificationsOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-notifications-button',
@@ -11,7 +13,9 @@ export class NotificationsButtonComponent implements OnInit, OnDestroy {
   notificationRepositoryId: string;
   private subscriptions: Subscription[] = [];
 
-  constructor(readonly sessionService: SessionService) {}
+  constructor(readonly sessionService: SessionService) {
+    addIcons({ notificationsOutline });
+  }
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(

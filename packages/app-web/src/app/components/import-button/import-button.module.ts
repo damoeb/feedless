@@ -1,13 +1,32 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImportButtonComponent } from './import-button.component';
-import { IonicModule } from '@ionic/angular';
 import { BubbleModule } from '../bubble/bubble.module';
 import { RouterLink } from '@angular/router';
+import {
+  IonButton,
+  IonLabel,
+  IonPopover,
+  IonContent,
+  IonList,
+  IonItem,
+  ModalController,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [ImportButtonComponent],
   exports: [ImportButtonComponent],
-  imports: [CommonModule, IonicModule, BubbleModule, RouterLink],
+  providers: [ModalController],
+  imports: [
+    CommonModule,
+    BubbleModule,
+    RouterLink,
+    IonButton,
+    IonLabel,
+    IonPopover,
+    IonContent,
+    IonList,
+    IonItem,
+  ],
 })
 export class ImportButtonModule {}

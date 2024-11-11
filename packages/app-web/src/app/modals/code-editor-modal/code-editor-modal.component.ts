@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { ContentType } from '../../elements/code-editor/code-editor.component';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 export interface CodeEditorModalComponentProps {
   text: string;
@@ -24,7 +26,9 @@ export class CodeEditorModalComponent
   readOnly: boolean;
   controls: boolean;
 
-  constructor(private readonly modalCtrl: ModalController) {}
+  constructor(private readonly modalCtrl: ModalController) {
+    addIcons({ closeOutline });
+  }
 
   ngOnInit() {}
 

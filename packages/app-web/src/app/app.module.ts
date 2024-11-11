@@ -2,8 +2,17 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  IonicRouteStrategy,
+  provideIonicAngular,
+  IonApp,
+  IonRouterOutlet,
+  ModalController,
+} from '@ionic/angular/standalone';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {
   ApolloClient,
   ApolloLink,
@@ -93,15 +102,16 @@ export const fixUrl = (value: string): string => {
 
 @NgModule({
   declarations: [AppComponent],
+  bootstrap: [AppComponent],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
     AppRoutingModule,
     BrowserAnimationsModule,
-    HttpClientModule,
     FinalizeProfileModalModule,
     AppLoadModule,
     ProductTitleModule,
+    IonApp,
+    IonRouterOutlet,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -119,10 +129,7 @@ export const fixUrl = (value: string): string => {
         appConfig: AppConfigService,
         abortController: ApolloAbortControllerService,
       ): ApolloClient<any> => {
-        const wsUrl = `${serverConfig.apiUrl.replace(
-          'http',
-          'ws',
-        )}/subscriptions`;
+        const wsUrl = `${serverConfig.apiUrl.replace('http', 'ws')}/subscriptions`;
         const newCorrId = (Math.random() + 1)
           .toString(36)
           .substring(7)
@@ -164,7 +171,6 @@ export const fixUrl = (value: string): string => {
                     networkError,
                   );
                 }
-
                 if (graphQLErrors) {
                   httpErrorInterceptorService.interceptGraphQLErrors(
                     graphQLErrors,
@@ -185,7 +191,9 @@ export const fixUrl = (value: string): string => {
         });
       },
     },
+    provideHttpClient(withInterceptorsFromDi()),
+    provideIonicAngular(),
+    ModalController,
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DarkModeButtonComponent } from './dark-mode-button.component';
-import { IonicModule } from '@ionic/angular';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [DarkModeButtonComponent],
   exports: [DarkModeButtonComponent],
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonButton, IonIcon],
 })
 export class DarkModeButtonModule {}

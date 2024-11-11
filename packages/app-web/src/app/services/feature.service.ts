@@ -46,6 +46,6 @@ export class FeatureService {
           data,
         },
       })
-      .then((response) => response.data.updateFeatureValue);
+      .then((response) => response.data!.updateFeatureValue);
   }
 }

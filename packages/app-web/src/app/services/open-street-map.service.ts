@@ -9,7 +9,7 @@ export interface OsmMatch {
   lon: string;
   display_name?: string;
   importance?: number;
-  address?: {
+  address: {
     'ISO3166-2-lvl4'?: string;
     country?: string;
     neighbourhood?: string;

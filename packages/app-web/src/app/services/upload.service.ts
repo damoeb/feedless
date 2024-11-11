@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { AlertController, ToastController } from '@ionic/angular';
-import { GqlRecord } from '../../generated/graphql';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
+import { Record } from '../graphql/types';
 import { RecordService } from './record.service';
 
 export type UploadFileHandler = {
   mimeTypes: string[];
-  handleData: (file: File, data: URL | string) => Promise<GqlRecord>;
+  handleData: (file: File, data: URL | string) => Promise<Record>;
   binaryContent: boolean;
 };
 
@@ -24,35 +24,37 @@ export class UploadService {
   }
 
   uploadFile(uploadEvent: Event): void {
-    Array.from((uploadEvent.target as any).files).forEach((file: File) => {
-      console.log('upload', file);
-      const handler = this.fileHandlers.find((fileHandler) => {
-        return fileHandler.mimeTypes.some((mimeTypeRE) => {
-          const matches = file.type.match(new RegExp(mimeTypeRE));
-          return matches && matches.length > 0;
+    Array.from((uploadEvent.target as any).files as any).forEach(
+      (file: any) => {
+        console.log('upload', file);
+        const handler = this.fileHandlers.find((fileHandler) => {
+          return fileHandler.mimeTypes.some((mimeTypeRE) => {
+            const matches = file.type.match(new RegExp(mimeTypeRE));
+            return matches && matches.length > 0;
+          });
         });
-      });
 
-      if (!handler) {
-        // this.core.showError(`Your file '${file.name}' has MIME type '${file.type}',` +
-        //   ` should be one of ${this.getAcceptedMimes()}.`, 'Unsupported MIME Type');
-        throw new Error(`No handler available for ${file.type}`);
-      }
+        if (!handler) {
+          // this.core.showError(`Your file '${file.name}' has MIME type '${file.type}',` +
+          //   ` should be one of ${this.getAcceptedMimes()}.`, 'Unsupported MIME Type');
+          throw new Error(`No handler available for ${file.type}`);
+        }
 
-      const reader = new FileReader();
+        const reader = new FileReader();
 
-      reader.onloadend = async (event) => {
-        const data: ArrayBuffer | string = (event.target as any).result;
-        await handler.handleData(file, data as any);
-      };
+        reader.onloadend = async (event) => {
+          const data: ArrayBuffer | string = (event.target as any).result;
+          await handler.handleData(file, data as any);
+        };
 
-      // Read in the image file as a data URL.
-      if (handler.binaryContent) {
-        reader.readAsDataURL(file);
-      } else {
-        reader.readAsText(file);
-      }
-    });
+        // Read in the image file as a data URL.
+        if (handler.binaryContent) {
+          reader.readAsDataURL(file);
+        } else {
+          reader.readAsText(file);
+        }
+      },
+    );
   }
 
   getAcceptedMimeTypes(): string {
@@ -66,7 +68,7 @@ export class UploadService {
     return [
       {
         mimeTypes: ['image/png', 'image/jpeg', 'image/gif'],
-        handleData: async (file: File, dataUrl: URL) => {
+        handleData: async (file, dataUrl) => {
           console.log('upload image');
 
           // const note = await this.core.createBinaryNote(file, dataUrl, 'image');
@@ -81,7 +83,7 @@ export class UploadService {
       },
       {
         mimeTypes: ['application/pdf'],
-        handleData: async (file: File, dataUrl: URL) => {
+        handleData: async (file, dataUrl) => {
           console.log('upload pdf');
           const caption = await this.askForCaption(file);
           return this.recordService.createRecordFromUpload(
@@ -94,7 +96,7 @@ export class UploadService {
       },
       {
         mimeTypes: ['text/*'],
-        handleData: async (file: File, data: string) => {
+        handleData: async (file, data) => {
           const caption = await this.askForCaption(file);
           throw new Error('not implemented');
           // return this.recordService.createRecords(caption, data);

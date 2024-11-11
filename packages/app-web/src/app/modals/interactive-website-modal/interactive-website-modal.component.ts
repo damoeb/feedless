@@ -7,10 +7,12 @@ import {
   OnInit,
 } from '@angular/core';
 import { GqlSourceInput } from '../../../generated/graphql';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ScrapeService } from '../../services/scrape.service';
 import { InteractiveWebsiteController } from './interactive-website-controller';
+import { addIcons } from 'ionicons';
+import { closeOutline, trashOutline } from 'ionicons/icons';
 
 export type InteractiveWebsiteModalComponentProps = {
   source: GqlSourceInput;
@@ -38,6 +40,7 @@ export class InteractiveWebsiteModalComponent
     public readonly serverConfig: ServerConfigService,
   ) {
     super();
+    addIcons({ closeOutline, trashOutline });
   }
 
   ngOnInit(): void {

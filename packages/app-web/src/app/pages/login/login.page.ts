@@ -11,6 +11,8 @@ import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
+import { addIcons } from 'ionicons';
+import { logoGithub } from 'ionicons/icons';
 
 @Component({
   selector: 'app-login-page',
@@ -37,6 +39,7 @@ export class LoginPage implements OnInit, OnDestroy {
     private readonly authService: AuthService,
   ) {
     this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/';
+    addIcons({ logoGithub });
   }
 
   ngOnDestroy(): void {
@@ -90,8 +93,8 @@ export class LoginPage implements OnInit, OnDestroy {
         email: `${email}`,
         secretKey: `${password}`,
       });
-    } catch (e) {
-      this.errorMessage = e.message;
+    } catch (e: any) {
+      this.errorMessage = e?.message;
       this.changeRef.detectChanges();
     }
   }

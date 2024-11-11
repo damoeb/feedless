@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GetElementType, Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
+import { addIcons } from 'ionicons';
+import { playOutline } from 'ionicons/icons';
 
 type Enclosure = GetElementType<Record['attachments']>;
 
@@ -20,7 +22,9 @@ export class PlayerComponent {
   @Output()
   playback = new EventEmitter<void>();
 
-  constructor(private readonly domSanitizer: DomSanitizer) {}
+  constructor(private readonly domSanitizer: DomSanitizer) {
+    addIcons({ playOutline });
+  }
 
   hasAudioStream(document: Record): boolean {
     return document.attachments?.some((e) => e.type.startsWith('audio/'));

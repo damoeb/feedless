@@ -37,6 +37,12 @@ import {
   perimeterUnit,
 } from '../upcoming-product-routing.module';
 import { Subscription } from 'rxjs';
+import { addIcons } from 'ionicons';
+import {
+  arrowBackOutline,
+  arrowForwardOutline,
+  sendOutline,
+} from 'ionicons/icons';
 
 type Distance2Events = { [distance: string]: Record[] };
 type EventsByDistance = {
@@ -139,7 +145,9 @@ export class EventsPage implements OnInit, OnDestroy {
     private readonly pageService: PageService,
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
-  ) {}
+  ) {
+    addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
+  }
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(
@@ -223,7 +231,7 @@ export class EventsPage implements OnInit, OnDestroy {
     return R * c; // Distance in km
   }
 
-  private deg2rad(deg) {
+  private deg2rad(deg: number) {
     return deg * (Math.PI / 180);
   }
 

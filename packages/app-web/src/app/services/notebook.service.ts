@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
@@ -10,12 +10,13 @@ import { notebookRepository } from './notebook-repository';
 import { RepositoryService } from './repository.service';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import {
+  GqlCreateRecordInput,
   GqlCreateRepositoriesMutation,
   GqlFullRecordByIdsQuery,
   GqlProductCategory,
   GqlVisibility,
 } from '../../generated/graphql';
-import { ArrayElement } from '../types';
+import { ArrayElement, isNonNull } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
 
@@ -162,9 +163,9 @@ export class NotebookService {
   searchResultsChanges = new ReplaySubject<SearchResultGroup[]>(1);
   queryChanges = new ReplaySubject<string>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
-  private index: Flexsearch.Document<IndexDocument>;
+  private index!: Flexsearch.Document<IndexDocument>;
   findAllAsync: DebouncedFunc<(query: string) => void>;
-  private currentRepositoryId: string;
+  private currentRepositoryId!: string;
 
   constructor(
     private readonly alertCtrl: AlertController,
@@ -237,13 +238,13 @@ export class NotebookService {
         index,
         limit: this.LIMIT,
       });
-      return results.map((perField) => {
+      return results.map((perField): SearchResultGroup => {
         return {
           name: perField.field,
-          notes: async () =>
-            notebookRepository.notes.bulkGet(
-              perField.result.map((id) => `${id}`),
-            ),
+          notes: async (): Promise<Note[]> =>
+            notebookRepository.notes
+              .bulkGet(perField.result.map((id) => `${id}`))
+              .then((notes) => notes.filter(isNonNull)),
         };
       });
     } else {
@@ -288,7 +289,7 @@ export class NotebookService {
     return note;
   }
 
-  private covertNoteToRecord(note: Note) {
+  private covertNoteToRecord(note: Note): GqlCreateRecordInput {
     return {
       id: note.id,
       url: '',
@@ -353,7 +354,7 @@ export class NotebookService {
           page++;
         }
       } catch (e) {
-        console.error(e.message);
+        console.error(e);
       }
 
       notebook.lastSyncedAt = new Date();
@@ -497,11 +498,14 @@ export class NotebookService {
         results.flatMap((perField) => {
           return perField.result.map((id) =>
             notebookRepository.notes.get(id.toString()).then((note) => {
-              return {
-                apply: `[${note.id}]`,
-                label: `${note.title}: ${note[perField.field]}`,
-                // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
-              };
+              if (note) {
+                return {
+                  apply: `[${note.id}]`,
+                  // @ts-ignore
+                  label: `${note.title}: ${note[perField.field]}`,
+                  // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
+                };
+              }
             }),
           );
         }),

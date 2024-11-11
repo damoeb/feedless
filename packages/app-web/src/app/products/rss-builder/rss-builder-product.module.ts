@@ -1,8 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { IonicModule } from '@ionic/angular';
-
 import { RssBuilderPageRoutingModule } from './rss-builder-product-routing.module';
 
 import { RssBuilderProductPage } from './rss-builder-product.page';
@@ -14,11 +11,20 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
 import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
 import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
 import { NotificationsButtonModule } from '../../components/notifications-button/notifications-button.module';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonRouterOutlet,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
     RssBuilderPageRoutingModule,
     DarkModeButtonModule,
     LoginButtonModule,
@@ -28,6 +34,14 @@ import { NotificationsButtonModule } from '../../components/notifications-button
     AgentsButtonModule,
     RepositoriesButtonModule,
     NotificationsButtonModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonRouterOutlet,
   ],
   declarations: [RssBuilderProductPage],
 })

@@ -9,6 +9,7 @@ import { AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { AuthService } from '../../services/auth.service';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-agents-button',

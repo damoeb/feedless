@@ -8,6 +8,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { addIcons } from 'ionicons';
+import { chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-searchbar',
@@ -38,7 +40,9 @@ export class SearchbarComponent implements OnInit, OnChanges {
 
   queryFc = new FormControl<string>('', [Validators.required]);
 
-  constructor() {}
+  constructor() {
+    addIcons({ chevronForwardOutline });
+  }
 
   triggerUpdate() {
     this.querySubmit.emit(this.queryFc.value);

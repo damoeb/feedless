@@ -4,6 +4,8 @@ import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
 import { FormControl, Validators } from '@angular/forms';
+import { addIcons } from 'ionicons';
+import { arrowForwardOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-email-login',
@@ -27,7 +29,9 @@ export class EmailLoginComponent implements OnDestroy {
     private readonly router: Router,
     private readonly sessionService: SessionService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ arrowForwardOutline });
+  }
 
   ngOnDestroy(): void {
     this.unsubscribe();

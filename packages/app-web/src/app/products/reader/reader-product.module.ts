@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { IonicModule } from '@ionic/angular';
-
 import { ReaderProductRoutingModule } from './reader-product-routing.module';
 
 import { ReaderProductPage } from './reader-product.page';
@@ -12,18 +9,59 @@ import { EmbeddedMarkupModule } from '../../components/embedded-markup/embedded-
 import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { ReaderMenuModule } from './reader-menu/reader-menu.module';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonButton,
+  IonIcon,
+  IonPopover,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonItemDivider,
+  IonText,
+  IonSpinner,
+  IonSegment,
+  IonSegmentButton,
+  IonRow,
+  IonCol,
+  IonFooter,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     ReaderMenuModule,
-    IonicModule,
     ReaderProductRoutingModule,
     ReaderModule,
     EmbeddedMarkupModule,
     DarkModeButtonModule,
     SearchbarModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    IonButton,
+    IonIcon,
+    IonPopover,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonItemDivider,
+    IonText,
+    IonSpinner,
+    IonSegment,
+    IonSegmentButton,
+    IonRow,
+    IonCol,
+    IonFooter,
   ],
   declarations: [ReaderProductPage],
 })

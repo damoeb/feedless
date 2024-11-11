@@ -8,7 +8,8 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Record, Repository } from '../../../graphql/types';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-tracker-details-page',

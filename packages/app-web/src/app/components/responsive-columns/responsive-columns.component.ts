@@ -6,6 +6,8 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
+import { addIcons } from 'ionicons';
+import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-responsive-columns',
@@ -17,7 +19,9 @@ export class ResponsiveColumnsComponent implements AfterViewInit {
   @ViewChild('scrollpane')
   scrollpaneElement: ElementRef;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {
+    addIcons({ chevronForwardOutline, chevronBackOutline });
+  }
 
   triggerSlider(scrollpane: HTMLDivElement) {
     scrollpane.scrollLeft === 0

@@ -1,13 +1,26 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FeedlessMenuComponent } from './feedless-menu.component';
-import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { BubbleModule } from '../../../components/bubble/bubble.module';
+import {
+  IonList,
+  IonMenuToggle,
+  IonItem,
+  IonChip,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [FeedlessMenuComponent],
   exports: [FeedlessMenuComponent],
-  imports: [CommonModule, IonicModule, RouterModule, BubbleModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    BubbleModule,
+    IonList,
+    IonMenuToggle,
+    IonItem,
+    IonChip,
+  ],
 })
 export class FeedlessMenuModule {}

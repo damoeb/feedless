@@ -25,6 +25,9 @@ import {
 import { NamedLatLon } from '../places';
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
+import { addIcons } from 'ionicons';
+import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-event-page',
@@ -47,7 +50,9 @@ export class EventPage implements OnInit, OnDestroy {
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
     private readonly recordService: RecordService,
-  ) {}
+  ) {
+    addIcons({ arrowBackOutline, calendarNumberOutline });
+  }
 
   async ngOnInit() {
     this.subscriptions.push(

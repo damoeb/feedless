@@ -10,8 +10,16 @@ import {
   AppConfigService,
   ProductConfig,
 } from '../../../services/app-config.service';
-import { IonPopover } from '@ionic/angular';
+import { IonPopover } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
+import { addIcons } from 'ionicons';
+import {
+  listOutline,
+  chevronForwardOutline,
+  eyeOutline,
+  gitNetworkOutline,
+} from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -28,7 +36,14 @@ export class AboutFeedlessPage implements OnInit {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly appConfigService: AppConfigService,
-  ) {}
+  ) {
+    addIcons({
+      listOutline,
+      chevronForwardOutline,
+      eyeOutline,
+      gitNetworkOutline,
+    });
+  }
 
   async ngOnInit() {
     const allProducts = await this.appConfigService.getProductConfigs();

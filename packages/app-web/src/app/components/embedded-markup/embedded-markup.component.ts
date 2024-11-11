@@ -107,9 +107,9 @@ export class EmbeddedMarkupComponent
           null,
         );
         let element = xpathResult.iterateNext();
-        const elements = [];
+        const elements: HTMLElement[] = [];
         while (element) {
-          elements.push(element);
+          elements.push(element as HTMLElement);
           element = xpathResult.iterateNext();
         }
         params.callback(elements);

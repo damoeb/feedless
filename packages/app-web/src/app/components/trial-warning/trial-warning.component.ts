@@ -5,6 +5,7 @@ import { LicenseService } from '../../services/license.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Subscription } from 'rxjs';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-trial-warning',

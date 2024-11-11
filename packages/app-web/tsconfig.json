@@ -5,7 +5,9 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "strictNullChecks": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -13,13 +15,13 @@
     "target": "ES2022",
     "module": "ES2020",
     "lib": ["ES2022", "dom"],
-    "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
+    "strictNullInputTypes": false,
     "strictTemplates": true
   }
 }

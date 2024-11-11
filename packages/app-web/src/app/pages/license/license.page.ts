@@ -15,6 +15,12 @@ import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
 import { AppConfigService } from '../../services/app-config.service';
+import { addIcons } from 'ionicons';
+import {
+  timeOutline,
+  checkmarkDoneOutline,
+  alertOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-license-page',
@@ -38,7 +44,9 @@ export class LicensePage implements OnInit, OnDestroy {
     private readonly appConfig: AppConfigService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ timeOutline, checkmarkDoneOutline, alertOutline });
+  }
 
   async ngOnInit() {
     this.appConfig.setPageTitle('License');

@@ -62,8 +62,8 @@ export class NativeFeedComponent implements OnInit {
           },
         })
         .then((response) => last(response.outputs).response.extract.items);
-    } catch (e) {
-      this.errorMessage = e.message;
+    } catch (e: any) {
+      this.errorMessage = e?.message;
     }
     this.loading = false;
     this.changeRef.detectChanges();

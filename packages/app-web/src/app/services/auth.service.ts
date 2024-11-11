@@ -27,10 +27,11 @@ import {
   Subject,
   take,
 } from 'rxjs';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
+import { Nullable } from '../types';
 
 interface RichAuthToken {
   authorities: string[];
@@ -49,16 +50,16 @@ export interface Authentication {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly authStatus: Subject<Authentication>;
+  private readonly authStatus: Subject<Nullable<Authentication>>;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly router: Router,
   ) {
-    this.authStatus = new BehaviorSubject(null);
+    this.authStatus = new BehaviorSubject<Nullable<Authentication>>(null);
   }
 
-  authorizationChange(): Observable<Authentication> {
+  authorizationChange(): Observable<Nullable<Authentication>> {
     return this.authStatus.asObservable();
   }
 
@@ -92,7 +93,7 @@ export class AuthService {
         },
       })
       .then((response) =>
-        this.handleAuthenticationToken(response.data.authUser.token),
+        this.handleAuthenticationToken(response.data!.authUser.token),
       );
   }
 
@@ -127,7 +128,7 @@ export class AuthService {
   }
 
   async handleAuthenticationToken(token: string) {
-    const decodedToken = jwt_decode<RichAuthToken>(token);
+    const decodedToken = jwtDecode<RichAuthToken>(token);
     // console.log('handleAuthenticationToken', decodedToken);
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
@@ -158,7 +159,7 @@ export class AuthService {
       .mutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>({
         mutation: AuthAnonymous,
       })
-      .then((response) => response.data.authAnonymous);
+      .then((response) => response.data!.authAnonymous);
   }
 
   rememberRedirectUrl(redirectUrl: string) {

@@ -2,6 +2,12 @@ import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { isNull, isUndefined } from 'lodash-es';
 import { GqlUpsertOrderMutation } from '../generated/graphql';
 
+export type Nullable<T> = T | null | undefined;
+
+export function isNonNull<T>(value: T): value is NonNullable<T> {
+  return value !== null && value !== undefined;
+}
+
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 

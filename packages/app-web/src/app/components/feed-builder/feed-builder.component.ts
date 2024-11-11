@@ -20,7 +20,7 @@ import {
   GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Repository, ScrapeResponse } from '../../graphql/types';
@@ -39,6 +39,12 @@ import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/tr
 import { OsmMatch } from '../../services/open-street-map.service';
 import { RepositoryService } from '../../services/repository.service';
 import { SourceBuilder } from '../interactive-website/source-builder';
+import { addIcons } from 'ionicons';
+import {
+  logoJavascript,
+  settingsOutline,
+  checkmarkOutline,
+} from 'ionicons/icons';
 
 /**
  * IDEEN
@@ -137,7 +143,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     private readonly alertCtrl: AlertController,
     private readonly repositoryService: RepositoryService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ logoJavascript, settingsOutline, checkmarkOutline });
+  }
 
   async ngOnInit() {
     if (this.source) {
@@ -218,8 +226,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       }
 
       await this.sourceBuilder.fetchFeedsUsingStatic();
-    } catch (e) {
-      this.errorMessage = e.message;
+    } catch (e: any) {
+      this.errorMessage = e?.message;
     }
 
     this.loading = false;

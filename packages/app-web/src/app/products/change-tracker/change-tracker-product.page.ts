@@ -17,14 +17,17 @@ import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
 import { ModalService } from '../../services/modal.service';
 import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-modal.component';
+import { addIcons } from 'ionicons';
+import { logoGithub } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
-  selector: 'app-page-change-tracker-product-page',
-  templateUrl: './pc-tracker-product.page.html',
-  styleUrls: ['./pc-tracker-product.page.scss'],
+  selector: 'app-change-tracker-product-page',
+  templateUrl: './change-tracker-product.page.html',
+  styleUrls: ['./change-tracker-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PcTrackerProductPage implements OnInit, OnDestroy {
+export class ChangeTrackerProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
   productConfig: ProductConfig;
   url: string;
@@ -39,7 +42,9 @@ export class PcTrackerProductPage implements OnInit, OnDestroy {
     readonly serverConfig: ServerConfigService,
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ logoGithub });
+  }
 
   async ngOnInit() {
     this.subscriptions.push(

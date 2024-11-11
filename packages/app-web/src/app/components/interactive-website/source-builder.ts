@@ -82,7 +82,7 @@ export class SourceBuilder {
   static fromUrl(url: string, scrapeService: ScrapeService) {
     const source = {
       title: `From ${url}`,
-      tags: [],
+      tags: [] as string[],
       flow: {
         sequence: [
           {
@@ -124,6 +124,7 @@ export class SourceBuilder {
   ) {
     const fetchAction = getFirstFetch(this.flow);
 
+    // @ts-ignore
     Object.keys(params).forEach((key) => (fetchAction.get[key] = params[key]));
     this.events.stateChange.next('DIRTY');
     return this;

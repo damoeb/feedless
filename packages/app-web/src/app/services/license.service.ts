@@ -38,8 +38,8 @@ export class LicenseService {
         },
       })
       .then((response) => {
-        this.serverConfig.setLicense(response.data.updateLicense);
-        this.licenseChange.next(response.data.updateLicense);
+        this.serverConfig.setLicense(response.data!.updateLicense);
+        this.licenseChange.next(response.data!.updateLicense);
       });
   }
 }

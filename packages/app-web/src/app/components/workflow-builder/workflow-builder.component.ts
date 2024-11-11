@@ -3,6 +3,8 @@ import {
   ChangeDetectorRef,
   Component,
 } from '@angular/core';
+import { addIcons } from 'ionicons';
+import { removeOutline, addOutline, ellipse } from 'ionicons/icons';
 
 @Component({
   selector: 'app-workflow-builder',
@@ -15,7 +17,9 @@ export class WorkflowBuilderComponent {
   minScaleFactor: number = 0.5;
   maxScaleFactor: number = 1.3;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {
+    addIcons({ removeOutline, addOutline, ellipse });
+  }
 
   zoomOut() {
     this.scaleFactor = Math.min(this.scaleFactor + 0.05, 1.3);

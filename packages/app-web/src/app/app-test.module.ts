@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
-
-import { IonicModule } from '@ionic/angular';
 import { ApolloClient, DocumentNode } from '@apollo/client/core';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
 import {
@@ -55,10 +53,19 @@ import {
   FeedlessAppConfig,
   ServerConfigService,
 } from './services/server-config.service';
-import { HttpClient } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService, ProductConfig } from './services/app-config.service';
+import {
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular/standalone';
 
 export type MockedRequestResolver<R, V> = (
   args: V,
@@ -122,8 +129,8 @@ export class ApolloMockController {
         ) => {
           this.mockedRequests.push({
             query,
-            condition,
-            resolver,
+            condition: condition as any,
+            resolver: resolver as any,
           });
           return this;
         },
@@ -144,8 +151,8 @@ export class ApolloMockController {
         ) => {
           this.mockedRequests.push({
             query,
-            condition,
-            resolver,
+            condition: condition as any,
+            resolver: resolver as any,
           });
           return this;
         },
@@ -172,12 +179,12 @@ const defaultAppTestModuleConfig: AppTestOptions = {
 };
 
 @NgModule({
-  imports: [
-    HttpClientTestingModule,
-    RouterTestingModule.withRoutes([]),
-    IonicModule.forRoot(),
+  imports: [RouterTestingModule.withRoutes([])],
+  providers: [
+    { provide: SwUpdate, useClass: SwUpdateMock },
+    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClientTesting(),
   ],
-  providers: [{ provide: SwUpdate, useClass: SwUpdateMock }],
 })
 export class AppTestModule {
   static withDefaults(options: AppTestOptions = null) {
@@ -232,6 +239,9 @@ export class AppTestModule {
 
     const providers = [
       { provide: AppConfigService, useValue: productServiceMock },
+      { provide: ModalController, useValue: {} },
+      { provide: PopoverController, useValue: {} },
+      { provide: ToastController, useValue: {} },
       { provide: ApolloMockController, useValue: apolloMockController },
       { provide: ApolloClient, useValue: apolloMockController.client() },
     ];
@@ -421,8 +431,6 @@ export async function mockServerSettings(
     >(ServerSettings)
     .and.resolveOnce(async () => {
       const serverSettings: GqlServerSettings = {
-        appUrl: '',
-        gatewayUrl: '',
         // license: {},
         build: {
           date: 0,

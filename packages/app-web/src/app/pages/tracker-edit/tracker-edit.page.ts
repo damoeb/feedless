@@ -18,7 +18,10 @@ import {
   GqlScrapeEmit,
   GqlSourceInput,
 } from '../../../generated/graphql';
-import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
+import {
+  AlertController,
+  ItemReorderEventDetail,
+} from '@ionic/angular/standalone';
 import { RepositoryService } from '../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -32,6 +35,8 @@ import {
   InteractiveWebsiteController,
 } from '../../modals/interactive-website-modal/interactive-website-controller';
 import { AppConfigService } from '../../services/app-config.service';
+import { addIcons } from 'ionicons';
+import { trashOutline } from 'ionicons/icons';
 
 type Email = string;
 
@@ -115,6 +120,7 @@ export class TrackerEditPage
     public readonly serverConfig: ServerConfigService,
   ) {
     super();
+    addIcons({ trashOutline });
   }
 
   ngOnInit() {

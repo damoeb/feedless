@@ -1,8 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { IonicModule } from '@ionic/angular';
-
 import { UntoldNotesPageRoutingModule } from './untold-notes-product-routing.module';
 
 import { UntoldNotesProductPage } from './untold-notes-product.page';
@@ -11,11 +8,18 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { OfflineModule } from '../../offline.module';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonContent,
+  IonRouterOutlet,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
     UntoldNotesPageRoutingModule,
     DarkModeButtonModule,
     LoginButtonModule,
@@ -23,6 +27,12 @@ import { OfflineModule } from '../../offline.module';
     FormsModule,
     SearchbarModule,
     OfflineModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    IonContent,
+    IonRouterOutlet,
   ],
   // providers: [NotebookService],
   declarations: [UntoldNotesProductPage],

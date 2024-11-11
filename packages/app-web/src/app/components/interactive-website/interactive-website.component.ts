@@ -16,6 +16,8 @@ import { map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
+import { addIcons } from 'ionicons';
+import { removeOutline, addOutline } from 'ionicons/icons';
 
 type ViewMode = 'markup' | 'image';
 
@@ -76,7 +78,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   constructor(
     protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ removeOutline, addOutline });
+  }
 
   viewModeFc = new FormControl<ViewMode | string>('markup');
   viewModeImage: ViewMode = 'image';
@@ -157,9 +161,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       const scrapeResponse = await this.sourceBuilder.fetchFeedsUsingBrowser();
 
       this.handleScrapeResponse(scrapeResponse);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      this.errorMessage = e.message;
+      this.errorMessage = e?.message;
     }
     this.loading = false;
     this.loadingChange.emit(this.loading);

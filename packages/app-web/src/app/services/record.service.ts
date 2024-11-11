@@ -75,11 +75,15 @@ export class RecordService {
         },
       })
       .then((response) => {
-        return response.data.deleteRecords;
+        return response.data!.deleteRecords;
       });
   }
 
-  createRecordFromUpload(caption: string, file: File, dataUrl: URL) {
+  createRecordFromUpload(
+    caption: string,
+    file: File,
+    dataUrl: URL | string,
+  ): Promise<Record> {
     return Promise.resolve(undefined);
   }
 
@@ -92,7 +96,7 @@ export class RecordService {
         },
       })
       .then((response) => {
-        return response.data.createRecords;
+        return response.data!.createRecords;
       });
   }
 
@@ -105,7 +109,7 @@ export class RecordService {
         },
       })
       .then((response) => {
-        return response.data.updateRecord;
+        return response.data!.updateRecord;
       });
   }
 }

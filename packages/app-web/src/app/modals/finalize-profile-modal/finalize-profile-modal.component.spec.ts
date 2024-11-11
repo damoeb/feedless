@@ -4,7 +4,7 @@ import { FinalizeProfileModalComponent } from './finalize-profile-modal.componen
 import { FinalizeProfileModalModule } from './finalize-profile-modal.module';
 import { AppTestModule } from '../../app-test.module';
 
-describe('TermsModalComponent', () => {
+describe('FinalizeProfileModalComponent', () => {
   let component: FinalizeProfileModalComponent;
   let fixture: ComponentFixture<FinalizeProfileModalComponent>;
 

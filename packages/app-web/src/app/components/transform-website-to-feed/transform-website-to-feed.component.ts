@@ -31,6 +31,13 @@ import { InteractiveWebsiteComponent } from '../interactive-website/interactive-
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { ScrapeService } from '../../services/scrape.service';
+import { addIcons } from 'ionicons';
+import {
+  chevronForward,
+  searchOutline,
+  chevronForwardOutline,
+  refreshOutline,
+} from 'ionicons/icons';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -111,7 +118,14 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly location: Location,
     private readonly modalService: ModalService,
-  ) {}
+  ) {
+    addIcons({
+      chevronForward,
+      searchOutline,
+      chevronForwardOutline,
+      refreshOutline,
+    });
+  }
 
   async ngOnInit() {
     try {

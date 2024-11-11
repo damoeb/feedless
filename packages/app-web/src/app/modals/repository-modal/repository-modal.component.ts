@@ -5,7 +5,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular/standalone';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -25,6 +25,9 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 import { omit } from 'lodash-es';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -109,7 +112,9 @@ export class RepositoryModalComponent
     private readonly router: Router,
     private readonly changeRef: ChangeDetectorRef,
     private readonly repositoryService: RepositoryService,
-  ) {}
+  ) {
+    addIcons({ closeOutline });
+  }
 
   closeModal() {
     return this.modalCtrl.dismiss();
@@ -283,8 +288,8 @@ export class RepositoryModalComponent
         await this.modalCtrl.dismiss();
         await this.router.navigateByUrl(`/feeds/${firstRepository.id}`);
       }
-    } catch (e) {
-      this.errorMessage = e.message;
+    } catch (e: any) {
+      this.errorMessage = e?.message;
     } finally {
       this.loading = false;
     }

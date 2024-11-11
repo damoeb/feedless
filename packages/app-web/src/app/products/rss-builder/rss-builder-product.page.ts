@@ -16,6 +16,9 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
 import { GqlProductCategory } from '../../../generated/graphql';
+import { addIcons } from 'ionicons';
+import { logoGithub } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -39,7 +42,9 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
     private readonly licenseService: LicenseService,
     readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ logoGithub });
+  }
 
   async ngOnInit() {
     this.subscriptions.push(

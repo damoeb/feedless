@@ -4,6 +4,8 @@ import {
   ElementRef,
   EventEmitter,
   forwardRef,
+  Inject,
+  Injector,
   Input,
   OnChanges,
   Output,
@@ -62,6 +64,10 @@ import { html } from '@codemirror/lang-html';
 import { json } from '@codemirror/lang-json';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
+import { addIcons } from 'ionicons';
+import { listOutline, linkOutline } from 'ionicons/icons';
+import { markdown } from '@codemirror/lang-markdown';
+import { javascript } from '@codemirror/lang-javascript';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -182,6 +188,11 @@ export class CodeEditorComponent
   private editorView: EditorView;
   ctrlPressed: boolean;
 
+  constructor(@Inject(Injector) injector: Injector) {
+    super(injector);
+    addIcons({ listOutline, linkOutline });
+  }
+
   ngAfterViewInit() {
     this.setText(this.text || this.control.value);
     this.highlightLines(this.highlightedLines);
@@ -242,10 +253,10 @@ export class CodeEditorComponent
         ...foldKeymap,
         ...completionKeymap,
         ...lintKeymap,
-      ]),
+      ] as any),
       // defaultHighlightStyle,
       cursorTooltipField.extension,
-      this.getLanguageSupportForMimeType(),
+      // todo fix this this.getLanguageSupportForMimeType(),
       // EditorView.updateListener.of((v) => {
       //   // console.log(v.transactions)
       //   // if (v.docChanged) {
@@ -291,7 +302,7 @@ export class CodeEditorComponent
         },
       }),
       theme,
-      history({ minDepth: 10 }),
+      // history({ minDepth: 10 }),
       checkboxPlugin.extension,
       markdownDecorator,
       urlDecorator,

@@ -1,24 +1,24 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { PcTrackerProductPage } from './pc-tracker-product.page';
+import { ChangeTrackerProductPage } from './change-tracker-product.page';
 import {
   ApolloMockController,
   AppTestModule,
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
-import { PcTrackerProductModule } from './pc-tracker-product.module';
+import { ChangeTrackerProductModule } from './change-tracker-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('PcTrackerProductPage', () => {
-  let component: PcTrackerProductPage;
-  let fixture: ComponentFixture<PcTrackerProductPage>;
+describe('ChangeTrackerProductPage', () => {
+  let component: ChangeTrackerProductPage;
+  let fixture: ComponentFixture<ChangeTrackerProductPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        PcTrackerProductModule,
+        ChangeTrackerProductModule,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockScrape(apolloMockController),
@@ -33,7 +33,7 @@ describe('PcTrackerProductPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(PcTrackerProductPage);
+    fixture = TestBed.createComponent(ChangeTrackerProductPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

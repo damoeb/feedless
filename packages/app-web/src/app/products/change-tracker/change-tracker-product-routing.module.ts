@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { PcTrackerProductPage } from './pc-tracker-product.page';
+import { ChangeTrackerProductPage } from './change-tracker-product.page';
 import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
     path: '',
-    component: PcTrackerProductPage,
+    component: ChangeTrackerProductPage,
     children: [
       {
         path: '',

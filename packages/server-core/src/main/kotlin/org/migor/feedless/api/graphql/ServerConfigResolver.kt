@@ -45,9 +45,6 @@ class ServerConfigResolver {
   lateinit var version: String
 
   @Autowired
-  private lateinit var productService: ProductService
-
-  @Autowired
   private lateinit var licenseService: LicenseService
 
   @Tracked
@@ -71,7 +68,6 @@ class ServerConfigResolver {
     }
 
     ServerSettings(
-      appUrl = productService.getAppUrl(product),
       version = version,
       build = BuildInfo(
         date = licenseService.buildFrom(),
@@ -86,7 +82,6 @@ class ServerConfigResolver {
           else -> null
         }
       }.filterNotNull(),
-      gatewayUrl = productService.getGatewayUrl(product),
       features = featureService.findAllByProduct(product),
     )
   }

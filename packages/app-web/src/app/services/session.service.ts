@@ -28,11 +28,11 @@ import {
   Observable,
   ReplaySubject,
 } from 'rxjs';
-import { isNull, isUndefined } from 'lodash-es';
 import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { ServerConfigService } from './server-config.service';
 import { AppConfigService } from './app-config.service';
+import { isNonNull, Nullable } from '../types';
 
 export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
@@ -42,7 +42,7 @@ export function needsPlanSubscription(
   user: User,
   serverConfig: ServerConfigService,
 ) {
-  return serverConfig.isSaas() && !user.plan;
+  return serverConfig.isSaas() && !user!.plan;
 }
 
 @Injectable({
@@ -51,7 +51,7 @@ export function needsPlanSubscription(
 export class SessionService {
   private session: Session = {} as any;
   private darkModePipe: ReplaySubject<boolean>;
-  private sessionPipe: BehaviorSubject<Session>;
+  private sessionPipe: BehaviorSubject<Nullable<Session>>;
   private modalIsOpen: boolean = false;
 
   constructor(
@@ -61,14 +61,13 @@ export class SessionService {
     private readonly appConfigService: AppConfigService,
     private readonly modalCtrl: ModalController,
   ) {
-    this.sessionPipe = new BehaviorSubject(null);
+    this.darkModePipe = new ReplaySubject<boolean>(1);
+    this.sessionPipe = new BehaviorSubject<Nullable<Session>>(null);
     this.detectColorScheme();
   }
 
   getSession(): Observable<Session> {
-    return this.sessionPipe
-      .asObservable()
-      .pipe(filter((session) => !isNull(session) && !isUndefined(session)));
+    return this.sessionPipe.asObservable().pipe(filter(isNonNull));
   }
 
   watchColorScheme(): Observable<boolean> {
@@ -104,7 +103,7 @@ export class SessionService {
   }
 
   async finalizeProfile() {
-    const hasCompletedSignup = this.session.user.hasCompletedSignup;
+    const hasCompletedSignup = this.session.user!.hasCompletedSignup;
     const needsPlan = needsPlanSubscription(
       this.session.user,
       this.serverConfigService,
@@ -132,7 +131,10 @@ export class SessionService {
     }
   }
 
-  async finalizeSignUp(email: string, product: Product = null): Promise<void> {
+  async finalizeSignUp(
+    email: string,
+    product: Nullable<Product> = null,
+  ): Promise<void> {
     const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
     const data: GqlUpdateCurrentUserMutationVariables['data'] = {
       email: {
@@ -181,7 +183,7 @@ export class SessionService {
       >({
         mutation: CreateUserSecret,
       })
-      .then((response) => response.data.createUserSecret);
+      .then((response) => response.data!.createUserSecret);
   }
 
   async logout(): Promise<void> {
@@ -194,12 +196,12 @@ export class SessionService {
       .then(() => this.fetchSession('network-only'));
   }
 
-  getUserId(): string {
+  getUserId(): Nullable<string> {
     return this.session?.user?.id;
   }
 
   isAuthenticated() {
-    return this.getUserId()?.length > 0;
+    return this.getUserId()?.length != 0;
   }
 
   async deleteUserSecret(data: GqlDeleteUserSecretInput) {
@@ -218,7 +220,6 @@ export class SessionService {
     const isDarkMode = window.matchMedia(
       '(prefers-color-scheme: dark)',
     ).matches;
-    this.darkModePipe = new ReplaySubject<boolean>(1);
     this.darkModePipe.next(isDarkMode);
   }
 

@@ -875,8 +875,6 @@ type Selectors {
 }
 
 type ServerSettings {
-  gatewayUrl: String!
-  appUrl: String!
   build: BuildInfo!
   version: String!
   features: [Feature!]!

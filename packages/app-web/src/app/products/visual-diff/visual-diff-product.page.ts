@@ -15,6 +15,7 @@ import {
 import { filter, map, Subscription } from 'rxjs';
 import { GqlProductCategory } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-visual-diff-product-page',

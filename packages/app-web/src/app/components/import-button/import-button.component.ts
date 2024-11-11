@@ -8,7 +8,7 @@ import {
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,

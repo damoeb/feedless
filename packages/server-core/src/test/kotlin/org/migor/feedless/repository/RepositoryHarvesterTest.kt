@@ -13,14 +13,18 @@ import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.generated.types.MimeData
+import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
+import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
@@ -51,6 +55,7 @@ class RepositoryHarvesterTest {
 
   private lateinit var repository: RepositoryEntity
   private lateinit var source: SourceEntity
+  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
 
   @BeforeEach
   fun setUp() = runTest {
@@ -61,12 +66,13 @@ class RepositoryHarvesterTest {
     repositoryService = mock(RepositoryService::class.java)
     scrapeService = mock(ScrapeService::class.java)
     repositoryHarvester = mock(RepositoryHarvester::class.java)
+    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
 
     repositoryHarvester = RepositoryHarvester(
       documentDAO,
       mock(DocumentPipelineJobDAO::class.java),
       mock(HarvestDAO::class.java),
-      mock(SourcePipelineJobDAO::class.java),
+      sourcePipelineJobDAO,
       mock(TelegramConnectionDAO::class.java),
       sourceDAO,
       repositoryDAO,
@@ -205,37 +211,38 @@ class RepositoryHarvesterTest {
   }
 
   @Test
-  fun `given documents feature a url, then urls will be used to deduplicate`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-    `when`(
-      scrapeService.scrape(
-        any(SourceEntity::class.java),
-        any(LogCollector::class.java)
-      )
-    ).thenReturn(
-      ScrapeOutput(
-        outputs = listOf(
-          ScrapeActionOutput(
-            index = 0,
-            fragment = FragmentOutput(
-              fragmentName = "feed",
-              fragments = emptyList(),
-              items = listOf(
-                newJsonItem(url="https://example.org/1", title="1"),
-                newJsonItem(url="https://example.org/1", title="1"),
-                newJsonItem(url="https://example.org/3", title="3"),
-                newJsonItem(url="https://example.org/4", title="4"),
+  fun `given documents feature a url, then urls will be used to deduplicate`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+      `when`(
+        scrapeService.scrape(
+          any(SourceEntity::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = emptyList(),
+                items = listOf(
+                  newJsonItem(url = "https://example.org/1", title = "1"),
+                  newJsonItem(url = "https://example.org/1", title = "1"),
+                  newJsonItem(url = "https://example.org/3", title = "3"),
+                  newJsonItem(url = "https://example.org/4", title = "4"),
+                )
               )
             )
-          )
-        ),
-        time = 0
+          ),
+          time = 0
+        )
       )
-    )
 
-    repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.handleRepository(repositoryId)
 
-    verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 3 })
-  }
+      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 3 })
+    }
 
   private fun newJsonItem(url: String, title: String): JsonItem {
     val item = JsonItem()
@@ -247,7 +254,58 @@ class RepositoryHarvesterTest {
   }
 
   @Test
-  fun `given documents feature no url, then titles will be used to deduplicate`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+  fun `given documents feature no url, then titles will be used to deduplicate`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+      `when`(
+        scrapeService.scrape(
+          any(SourceEntity::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = emptyList(),
+                items = listOf(
+                  newJsonItem(url = "", title = "1"),
+                  newJsonItem(url = "", title = "1"),
+                  newJsonItem(url = "", title = "1"),
+                  newJsonItem(url = "", title = "4"),
+                )
+              )
+            )
+          ),
+          time = 0
+        )
+      )
+
+      repositoryHarvester.handleRepository(repositoryId)
+
+      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 2 })
+    }
+
+  //  @Test
+//  fun `existing document will be patched`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//    TODO()
+//  }
+//
+//  @Test
+//  fun `documents will inherit the plugins defined in repository`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//    TODO()
+//  }
+//
+  @Test
+  fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    `when`(
+      sourcePipelineJobDAO.existsBySourceIdAndUrl(
+        any(UUID::class.java),
+        any(String::class.java)
+      )
+    ).thenReturn(false)
+
     `when`(
       scrapeService.scrape(
         any(SourceEntity::class.java),
@@ -260,13 +318,8 @@ class RepositoryHarvesterTest {
             index = 0,
             fragment = FragmentOutput(
               fragmentName = "feed",
-              fragments = emptyList(),
-              items = listOf(
-                newJsonItem(url="", title="1"),
-                newJsonItem(url="", title="1"),
-                newJsonItem(url="", title="1"),
-                newJsonItem(url="", title="4"),
-              )
+              fragments = listOf(ScrapeExtractFragment(data = MimeData(mimeType = MIME_URL, data = "https://foo.bar/page/1"))),
+              items = listOf(newJsonItem(url = "", title = "1"))
             )
           )
         ),
@@ -276,21 +329,6 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(repositoryId)
 
-    verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 2 })
+    verify(sourcePipelineJobDAO).saveAll(argThat<Iterable<SourcePipelineJobEntity>> { it.count() == 1 })
   }
-
-//  @Test
-//  fun `existing document will be patched`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//    TODO()
-//  }
-//
-//  @Test
-//  fun `documents will inherit the plugins defined in repository`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//    TODO()
-//  }
-//
-//  @Test
-//  fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//    TODO()
-//  }
 }

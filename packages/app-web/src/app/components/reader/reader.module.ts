@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReaderComponent } from './reader.component';
-import { IonicModule } from '@ionic/angular';
+import { IonRow, IonCol } from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [ReaderComponent],
   exports: [ReaderComponent],
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonRow, IonCol],
 })
 export class ReaderModule {}

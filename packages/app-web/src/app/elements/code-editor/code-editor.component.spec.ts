@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { CodeEditorComponent } from './code-editor.component';
 import { CodeEditorModule } from './code-editor.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('CodeEditorComponent', () => {
   let component: CodeEditorComponent;
@@ -9,7 +10,7 @@ describe('CodeEditorComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [CodeEditorModule],
+      imports: [AppTestModule.withDefaults(), CodeEditorModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CodeEditorComponent);

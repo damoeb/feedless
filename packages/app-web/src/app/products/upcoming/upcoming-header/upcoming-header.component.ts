@@ -38,6 +38,13 @@ import weekday from 'dayjs/plugin/weekday';
 import { createEventsUrl } from '../events/events.page';
 import { Router } from '@angular/router';
 import { NamedLatLon } from '../places';
+import { addIcons } from 'ionicons';
+import {
+  calendarOutline,
+  locationOutline,
+  chevronBackOutline,
+  chevronForwardOutline,
+} from 'ionicons/icons';
 
 type Day = {
   day: Dayjs | null;
@@ -152,6 +159,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       this.fetchEventOverview.bind(this),
       500,
     );
+    addIcons({
+      calendarOutline,
+      locationOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -292,7 +305,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private async fetchEventOverview() {
-    console.error('make async fetchEventOverview');
     if (!this.currentLatLon) {
       return;
     }

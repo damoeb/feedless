@@ -11,6 +11,8 @@ import { debounce, interval, merge, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { Repository, RepositoryFull } from '../../graphql/types';
 import { ArrayElement, TypedFormGroup } from '../../types';
+import { addIcons } from 'ionicons';
+import { trashOutline, addOutline } from 'ionicons/icons';
 
 export type FilterOperator = GqlStringFilterOperator;
 export type FilterField = keyof GqlCompositeFieldFilterParamsInput;
@@ -71,7 +73,9 @@ export class FilterItemsAccordionComponent implements OnInit {
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
 
-  constructor() {}
+  constructor() {
+    addIcons({ trashOutline, addOutline });
+  }
 
   addGeneralFilter(params: GeneralFilterParams = null, isNew = true) {
     if (isNew && this.filters.some((filter) => filter.invalid)) {
@@ -94,15 +98,20 @@ export class FilterItemsAccordionComponent implements OnInit {
     if (params?.composite) {
       const data = params.composite;
       const type = Object.keys(data).find(
+        // @ts-ignore
         (field) => field != '__typename' && !!data[field],
       );
+      // @ts-ignore
       const field = Object.keys(data[type]).find(
+        // @ts-ignore
         (field) => field != '__typename' && !!data[type][field],
       );
       filter.patchValue({
         type: type as any,
         field: field as any,
+        // @ts-ignore
         value: data[type][field].value,
+        // @ts-ignore
         operator: data[type][field].operator,
       });
     }

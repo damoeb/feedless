@@ -5,11 +5,18 @@ import { ProductHeadlineModule } from '../product-headline/product-headline.modu
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { AgentsButtonModule } from '../agents-button/agents-button.module';
 import { DarkModeButtonModule } from '../dark-mode-button/dark-mode-button.module';
-import { IonicModule } from '@ionic/angular';
 import { LoginButtonModule } from '../login-button/login-button.module';
 import { RepositoriesButtonModule } from '../repositories-button/repositories-button.module';
 import { RouterLink } from '@angular/router';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
+import {
+  IonHeader,
+  IonToolbar,
+  IonLabel,
+  IonButton,
+  IonButtons,
+  IonMenuButton,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [FeedlessHeaderComponent],
@@ -20,11 +27,16 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     SearchbarModule,
     AgentsButtonModule,
     DarkModeButtonModule,
-    IonicModule,
     LoginButtonModule,
     RepositoriesButtonModule,
     RouterLink,
     RemoveIfProdModule,
+    IonHeader,
+    IonToolbar,
+    IonLabel,
+    IonButton,
+    IonButtons,
+    IonMenuButton,
   ],
 })
 export class FeedlessHeaderModule {}

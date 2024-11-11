@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   FeedBuilderModalComponent,
@@ -16,7 +16,7 @@ import {
 import {
   TrackerEditModalComponent,
   TrackerEditModalComponentProps,
-} from '../products/pc-tracker/tracker-edit/tracker-edit-modal.component';
+} from '../products/change-tracker/tracker-edit/tracker-edit-modal.component';
 import {
   TagsModalComponent,
   TagsModalComponentProps,
@@ -32,6 +32,7 @@ import {
   MapModalComponentProps,
 } from '../modals/map-modal/map-modal.component';
 import { LatLon } from '../components/map/map.component';
+import { Nullable } from '../types';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -56,10 +57,12 @@ export class ModalService {
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,
-    overwriteHandler: (
-      data: FeedOrRepository,
-      role: String,
-    ) => Promise<void> = null,
+    overwriteHandler: Nullable<
+      (
+        data: Nullable<FeedOrRepository>,
+        role: Nullable<String>,
+      ) => Promise<void>
+    > = null,
   ) {
     await this.updateUrlParams(ModalName.feedBuilder);
     const modal = await this.modalCtrl.create({
@@ -101,7 +104,7 @@ export class ModalService {
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
     await this.updateUrlParams();
-    return data;
+    return data!;
   }
 
   async openMapModal(componentProps: MapModalComponentProps): Promise<LatLon> {
@@ -115,7 +118,7 @@ export class ModalService {
     await modal.present();
     const { data } = await modal.onDidDismiss<LatLon>();
     await this.updateUrlParams();
-    return data;
+    return data!;
   }
 
   async openCodeEditorModal(
@@ -159,7 +162,7 @@ export class ModalService {
 
     const response = await modal.onDidDismiss<OsmMatch>();
     await this.updateUrlParams();
-    return response.data;
+    return response.data!;
   }
 
   async openRepositoryEditor(componentProps: RepositoryModalComponentProps) {

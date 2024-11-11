@@ -10,10 +10,11 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 import { Feature, LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
+import { Nullable } from '../types';
 
 type FeedlessProductConfig = {
   hostname: string;
@@ -24,6 +25,10 @@ export type FeedlessAppConfig = {
   apiUrl: string;
   forceProduct?: GqlProductCategory;
   products: FeedlessProductConfig[];
+  [key: string | GqlProductCategory]:
+    | any
+    | GqlProductCategory
+    | FeedlessProductConfig[];
 };
 
 type ToastOptions = {
@@ -36,21 +41,18 @@ type ToastOptions = {
 
 export type WebsiteConfig = {
   product: GqlProductCategory;
-  customProperties: { [s: string]: number | boolean | string };
+  customProperties: Nullable<{ [s: string]: number | boolean | string } | any>;
 };
 
 @Injectable({
   providedIn: 'root',
 })
 export class ServerConfigService {
-  apiUrl: string; // todo merge api and gateway
-  gatewayUrl: string;
-  appUrl: string;
-  private features: Feature[];
-  private profiles: GqlProfileName[];
-  private buildFrom: number;
-  private commitId: string;
-  private version: string;
+  apiUrl!: string;
+  private features!: Feature[];
+  private profiles!: GqlProfileName[];
+  private buildFrom!: number;
+  private version!: string;
   private license: LocalizedLicense;
 
   constructor(
@@ -67,11 +69,14 @@ export class ServerConfigService {
 
     const product =
       config.forceProduct ||
-      config.products.find((p) => p.hostname === location.hostname)?.product;
+      config.products.find((p) => p.hostname === location.hostname)?.product!;
 
     if (product) {
       console.log(`enabling product ${product}`);
-      const products = Object.keys(GqlProductCategory).map(
+      const products: GqlProductCategory[] = Object.keys(
+        GqlProductCategory,
+      ).map(
+        // @ts-ignore
         (p) => GqlProductCategory[p],
       );
       console.log(`Know products ${products.join(', ')}`);
@@ -116,10 +121,7 @@ export class ServerConfigService {
       this.profiles = response.profiles;
       this.version = response.version;
       this.buildFrom = response.build.date;
-      this.commitId = response.build.commit;
       this.license = response.license;
-      this.gatewayUrl = response.gatewayUrl;
-      this.appUrl = response.appUrl;
     } catch (e) {
       if (!environment.offlineSupport) {
         await this.showToast({
@@ -180,21 +182,21 @@ export class ServerConfigService {
   getFeatureValueInt(featureName: GqlFeatureName): number | undefined {
     const feature = this.getFeature(featureName);
     if (feature) {
-      return feature.value.numVal.value;
+      return feature.value.numVal!.value;
     }
   }
 
   getFeatureValueBool(featureName: GqlFeatureName): boolean {
     const feature = this.getFeature(featureName);
     if (feature) {
-      return feature.value.boolVal.value;
+      return feature.value.boolVal!.value;
     }
     console.warn(`Feature ${featureName} not listed`);
     return false;
   }
 
   private getFeature(featureName: GqlFeatureName): Feature {
-    return this.features.find((ft) => ft.name === featureName);
+    return this.features.find((ft) => ft.name === featureName)!;
   }
 
   getLicense(): LocalizedLicense {

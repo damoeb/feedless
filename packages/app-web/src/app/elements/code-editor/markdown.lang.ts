@@ -1,5 +1,10 @@
 import { LanguageDescription, LanguageSupport } from '@codemirror/language';
 import { InlineContext } from '@lezer/markdown';
+import { javascriptLanguage, jsxLanguage } from '@codemirror/lang-javascript';
+import { cssLanguage } from '@codemirror/lang-css';
+import { jsonLanguage } from '@codemirror/lang-json';
+import { htmlLanguage } from '@codemirror/lang-html';
+
 import { markdown } from '@codemirror/lang-markdown';
 
 export const NODE_HASHTAG = 'Hashtag';
@@ -35,42 +40,28 @@ export const markdownLanguageSupport = markdown({
     },
   ],
   codeLanguages: [
-    LanguageDescription.of({
-      name: 'javascript',
-      alias: ['js', 'jsx'],
-      async load() {
-        const { javascriptLanguage } = await import(
-          '@codemirror/lang-javascript'
-        );
-        return new LanguageSupport(javascriptLanguage);
-      },
-    }),
-    LanguageDescription.of({
-      name: 'css',
-      async load() {
-        const { cssLanguage } = await import('@codemirror/lang-css');
-        return new LanguageSupport(cssLanguage);
-      },
-    }),
-    LanguageDescription.of({
-      name: 'json',
-      async load() {
-        const { jsonLanguage } = await import('@codemirror/lang-json');
-        return new LanguageSupport(jsonLanguage);
-      },
-    }),
-    LanguageDescription.of({
-      name: 'html',
-      alias: ['htm'],
-      async load() {
-        const { jsxLanguage } = await import('@codemirror/lang-javascript');
-        const javascript = new LanguageSupport(jsxLanguage);
-        const { cssLanguage } = await import('@codemirror/lang-css');
-        const css = new LanguageSupport(cssLanguage);
-        const { htmlLanguage } = await import('@codemirror/lang-html');
-
-        return new LanguageSupport(htmlLanguage, [css, javascript]);
-      },
-    }),
+    // LanguageDescription.of({
+    //   name: 'javascript',
+    //   alias: ['js', 'jsx'],
+    //   load: async () => new LanguageSupport(javascriptLanguage),
+    // }),
+    // LanguageDescription.of({
+    //   name: 'css',
+    //   load: async () => new LanguageSupport(cssLanguage),
+    // }),
+    // LanguageDescription.of({
+    //   name: 'json',
+    //   load: async () => new LanguageSupport(jsonLanguage),
+    // }),
+    // LanguageDescription.of({
+    //   name: 'html',
+    //   alias: ['htm'],
+    //   load: async () => {
+    //     const javascript = new LanguageSupport(jsxLanguage);
+    //     const css = new LanguageSupport(cssLanguage);
+    //
+    //     return new LanguageSupport(htmlLanguage, [css, javascript]);
+    //   },
+    // }),
   ],
 });

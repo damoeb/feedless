@@ -14,6 +14,7 @@ import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { firstValueFrom, Subscription } from 'rxjs';
+import { Nullable } from '../../types';
 
 export type XyPosition = GqlXyPosition;
 
@@ -50,13 +51,13 @@ export class EmbeddedImageComponent
   implements AfterViewInit, OnDestroy, OnInit
 {
   @Input({ required: true })
-  embed: Embeddable;
+  embed!: Embeddable;
 
   @Input()
   strokeStyle: string = 'red';
 
   @Input({ required: true })
-  sourceBuilder: SourceBuilder;
+  sourceBuilder!: SourceBuilder;
 
   pickedBoundingBox: EventEmitter<BoundingBox | null> =
     new EventEmitter<BoundingBox | null>();
@@ -65,24 +66,24 @@ export class EmbeddedImageComponent
     new EventEmitter<XyPosition | null>();
 
   @ViewChild('imageLayer', { static: false })
-  imageLayerCanvas: ElementRef;
+  imageLayerCanvas!: ElementRef;
 
   @ViewChild('overlay', { static: false })
-  overlayCanvas: ElementRef;
+  overlayCanvas!: ElementRef;
 
   @ViewChild('wrapper', { static: false })
-  wrapper: ElementRef;
+  wrapper!: ElementRef;
 
   drag: boolean = false;
   mode: OperatorMode = 'move';
-  box: Box;
-  position: { x: number; y: number };
+  box: Nullable<Box>;
+  position: Nullable<{ x: number; y: number }>;
 
   private subscriptions: Subscription[] = [];
 
-  private boxFrom: { x: number; y: number };
+  private boxFrom: Nullable<{ x: number; y: number }>;
   private readonly drawBoxDebounced: DebouncedFunc<(box: Box) => void>;
-  private imageUrl: string;
+  private imageUrl: Nullable<string>;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {
     this.drawBoxDebounced = debounce(this.drawBox, 5);
@@ -225,7 +226,7 @@ export class EmbeddedImageComponent
   }
 
   private toBox({ offsetX: x2, offsetY: y2 }: MouseEvent): Box {
-    const { x: x1, y: y1 } = this.boxFrom;
+    const { x: x1, y: y1 } = this.boxFrom!;
     let x,
       y: number = 0;
     if (x1 < x2) {
@@ -251,7 +252,7 @@ export class EmbeddedImageComponent
     ctx.strokeStyle = this.strokeStyle;
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);
+    ctx.arc(this.position!.x, this.position!.y, 20, 0, 2 * Math.PI);
     ctx.stroke();
   }
 
@@ -265,7 +266,7 @@ export class EmbeddedImageComponent
   ngOnInit(): void {
     this.subscriptions.push(
       this.sourceBuilder.events.pickPoint.subscribe(
-        (callback: (XyPosition) => void) => {
+        (callback: (position: Nullable<XyPosition>) => void) => {
           console.log('pickPoint');
           this.mode = 'position';
           this.changeRef.detectChanges();
@@ -278,7 +279,7 @@ export class EmbeddedImageComponent
         },
       ),
       this.sourceBuilder.events.pickArea.subscribe(
-        (callback: (BoundingBox) => void) => {
+        (callback: (box: Nullable<BoundingBox>) => void) => {
           console.log('pickArea');
           this.mode = 'mark';
           this.changeRef.detectChanges();

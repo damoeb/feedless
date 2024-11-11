@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
 import { AppConfigService } from '../../services/app-config.service';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 type ViewMode = 'list' | 'table';
 

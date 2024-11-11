@@ -8,7 +8,7 @@ import {
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { FeedOrRepository } from '../../../components/feed-builder/feed-builder.component';
 import {
   GqlItemFilterParamsInput,
@@ -16,6 +16,8 @@ import {
   GqlSourceInput,
 } from '../../../../generated/graphql';
 import { ServerConfigService } from '../../../services/server-config.service';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -48,7 +50,9 @@ export class TrackerEditModalComponent
     private readonly modalService: ModalService,
     private readonly serverConfig: ServerConfigService,
     private readonly modalCtrl: ModalController,
-  ) {}
+  ) {
+    addIcons({ closeOutline });
+  }
 
   async ngOnInit() {
     this.isThrottled = !this.serverConfig.isSelfHosted();

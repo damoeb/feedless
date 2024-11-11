@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgentsComponent } from './agents.component';
-import { IonicModule } from '@ionic/angular';
+import { IonList, IonItem, IonLabel, IonChip } from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [AgentsComponent],
   exports: [AgentsComponent],
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonList, IonItem, IonLabel, IonChip],
 })
 export class AgentsModule {}

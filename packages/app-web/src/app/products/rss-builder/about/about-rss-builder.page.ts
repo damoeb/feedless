@@ -15,6 +15,9 @@ import '@justinribeiro/lite-youtube';
 import { AppConfig } from '../../../feedless-config';
 import { AppConfigService } from '../../../services/app-config.service';
 import { LocalizedLicense } from '../../../graphql/types';
+import { addIcons } from 'ionicons';
+import { settingsOutline } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -37,7 +40,9 @@ export class AboutRssBuilderPage implements OnInit {
     private readonly licenseService: LicenseService,
     private readonly appConfigService: AppConfigService,
     readonly serverConfig: ServerConfigService,
-  ) {}
+  ) {
+    addIcons({ settingsOutline });
+  }
 
   async handleQuery(url: string) {
     try {

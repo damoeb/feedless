@@ -24,10 +24,10 @@ import { kebabCase } from 'lodash-es';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnDestroy, OnInit {
-  productConfig: ProductConfig;
+  productConfig!: ProductConfig;
   private subscriptions: Subscription[] = [];
-  private isDarkMode: boolean;
-  private product: GqlProductCategory;
+  private isDarkMode!: boolean;
+  private product!: GqlProductCategory;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,

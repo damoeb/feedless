@@ -1,7 +1,7 @@
 export type NamedLatLon = {
   lat: number;
   lon: number;
-  place: string;
+  place?: string;
   displayName?: string;
   country: 'Zürich' | 'Aargau' | string;
   state: 'CH' | string;

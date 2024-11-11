@@ -44,9 +44,6 @@ class ProductService {
   @Autowired
   private lateinit var pricedProductDAO: PricedProductDAO
 
-  @Autowired
-  private lateinit var environment: Environment
-
   fun getDomain(product: ProductCategory): String {
     return when (product) {
       ProductCategory.visualDiff -> "visualdiff.com"
@@ -61,24 +58,8 @@ class ProductService {
     }
   }
 
-  fun getAppUrl(product: ProductCategory): String {
-    return if (isSelfHosted()) {
-      propertyService.appHost
-    } else {
-      "https://${getDomain(product)}"
-    }
-  }
-
-  fun getGatewayUrl(product: ProductCategory): String {
-    return if (isSelfHosted() || isDev()) {
-      propertyService.apiGatewayUrl
-    } else {
-      "https://api.${getDomain(product)}"
-    }
-  }
-
-  fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
-  private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.dev))
+//  fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+//  private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.dev))
 
   suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
     return withContext(Dispatchers.IO) {

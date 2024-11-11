@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { LatLon } from '../../components/map/map.component';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 export interface MapModalComponentProps {
   position: LatLon;
@@ -17,7 +19,9 @@ export class MapModalComponent implements MapModalComponentProps {
 
   perimeter: number;
 
-  constructor(private readonly modalCtrl: ModalController) {}
+  constructor(private readonly modalCtrl: ModalController) {
+    addIcons({ closeOutline });
+  }
 
   closeModal() {
     return this.modalCtrl.dismiss(this.position);

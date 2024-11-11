@@ -10,6 +10,8 @@ import pixelmatch from 'pixelmatch';
 import { Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { dateFormat, dateTimeFormat } from '../../services/session.service';
+import { addIcons } from 'ionicons';
+import { arrowForwardOutline } from 'ionicons/icons';
 
 type ImageSize = {
   width: number;
@@ -35,7 +37,9 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly domSanitizer: DomSanitizer,
-  ) {}
+  ) {
+    addIcons({ arrowForwardOutline });
+  }
 
   ngOnDestroy(): void {
     URL.revokeObjectURL(this.diffImageUrl);

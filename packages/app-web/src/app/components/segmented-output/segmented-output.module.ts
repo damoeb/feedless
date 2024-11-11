@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SegmentedOutputComponent } from './segmented-output.component';
-import { IonicModule } from '@ionic/angular';
 import { InputModule } from '../../elements/input/input.module';
+import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [SegmentedOutputComponent],
   exports: [SegmentedOutputComponent],
-  imports: [CommonModule, IonicModule, InputModule],
+  imports: [CommonModule, InputModule, IonGrid, IonRow, IonCol, IonButton],
 })
 export class SegmentedOutputModule {}

@@ -13,6 +13,9 @@ import {
   ProductConfig,
 } from '../../../services/app-config.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { addIcons } from 'ionicons';
+import { arrowForwardOutline } from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-feedless-products-page',
@@ -31,7 +34,9 @@ export class ProductsPage implements OnInit, OnDestroy {
     private readonly appConfigService: AppConfigService,
     private readonly domSanitizer: DomSanitizer,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ arrowForwardOutline });
+  }
 
   async ngOnInit() {
     this.subscriptions.push(

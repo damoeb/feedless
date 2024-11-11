@@ -64,9 +64,9 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/pc-tracker/pc-tracker-product.module').then(
-              (m) => m.PcTrackerProductModule,
-            ),
+            import(
+              '../products/change-tracker/change-tracker-product.module'
+            ).then((m) => m.ChangeTrackerProductModule),
         },
       ],
     },
@@ -138,8 +138,8 @@ export class AppConfigService {
   ];
 
   private activeProductConfigSubject = new ReplaySubject<ProductConfig>();
-  public activeProductConfig: ProductConfig;
-  public customProperties: { [p: string]: number | boolean | string };
+  public activeProductConfig!: ProductConfig;
+  public customProperties!: { [p: string]: number | boolean | string };
 
   constructor(
     private readonly router: Router,
@@ -165,23 +165,31 @@ export class AppConfigService {
     return this.activeProductConfigSubject.asObservable();
   }
 
-  getProductConfigs(): Promise<ProductConfig[]> {
+  getProductConfigs(): Promise<
+    (ProductConfig & { localSetup: string; videoTeaserSnipped: string })[]
+  > {
     return Promise.all(
-      feedlessConfig.apps.map(async (meta) => {
-        const ui = this.productRoutes.find((p) => meta.id === p.id);
-        return {
-          ...meta,
-          videoTeaserSnipped: `<lite-youtube videoid="${meta.videoUrl}"></lite-youtube>`,
-          ...ui,
-          localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
+      feedlessConfig.apps.map(
+        async (
+          meta,
+        ): Promise<
+          ProductConfig & { localSetup: string; videoTeaserSnipped: string }
+        > => {
+          const ui = this.productRoutes.find((p) => meta.id === p.id)!;
+          return {
+            ...meta,
+            videoTeaserSnipped: `<lite-youtube videoid="${meta.videoUrl}"></lite-youtube>`,
+            ...ui,
+            localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
 \`\`\`bash
 ${meta.localSetupBash}
 \`\`\`
 ${await marked(meta.localSetupAfterMarkup || '')}`,
-          descriptionHtml: await marked(meta.descriptionMarkdown),
-          imageUrl: `/assets/${meta.id}.jpeg`,
-        };
-      }),
+            descriptionHtml: await marked(meta.descriptionMarkdown),
+            imageUrl: `/assets/${meta.id}.jpeg`,
+          };
+        },
+      ),
     );
   }
 
@@ -193,6 +201,6 @@ ${await marked(meta.localSetupAfterMarkup || '')}`,
     product: GqlProductCategory,
   ): Promise<ProductConfig> {
     const configs = await this.getProductConfigs();
-    return configs.find((productConfig) => productConfig.product === product);
+    return configs.find((productConfig) => productConfig.product === product)!;
   }
 }

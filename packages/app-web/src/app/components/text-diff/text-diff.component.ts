@@ -70,12 +70,12 @@ export class TextDiffComponent implements OnInit {
     throw Error();
   }
 
-  private formatHtml(html) {
+  private formatHtml(html: string) {
     const tab = '\t';
     let result = '';
     let indent = '';
 
-    html.split(/>\s*</).forEach(function (element) {
+    html.split(/>\s*</).forEach((element) => {
       if (element.match(/^\/\w/)) {
         indent = indent.substring(tab.length);
       }

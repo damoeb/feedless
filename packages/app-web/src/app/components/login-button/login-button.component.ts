@@ -10,6 +10,14 @@ import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
+import { addIcons } from 'ionicons';
+import {
+  appsOutline,
+  personOutline,
+  settingsOutline,
+  cardOutline,
+  exitOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-login-button',
@@ -33,7 +41,15 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
     private readonly sessionService: SessionService,
     protected readonly serverConfig: ServerConfigService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({
+      appsOutline,
+      personOutline,
+      settingsOutline,
+      cardOutline,
+      exitOutline,
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(

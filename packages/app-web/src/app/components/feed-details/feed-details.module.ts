@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FeedDetailsComponent } from './feed-details.component';
-import { IonicModule } from '@ionic/angular';
 import { BubbleModule } from '../bubble/bubble.module';
 import { ReaderModule } from '../reader/reader.module';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
@@ -15,13 +14,37 @@ import { HistogramModule } from '../histogram/histogram.module';
 import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 import { RouterLink } from '@angular/router';
+import {
+  IonSpinner,
+  IonRow,
+  IonChip,
+  IonToolbar,
+  IonButtons,
+  IonModal,
+  IonHeader,
+  IonTitle,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonNote,
+  IonText,
+  IonBadge,
+  IonPopover,
+  IonCol,
+  IonSegment,
+  IonSegmentButton,
+  IonCheckbox,
+  ModalController,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
   exports: [FeedDetailsComponent],
   imports: [
     CommonModule,
-    IonicModule,
     BubbleModule,
     ReaderModule,
     FeedBuilderModalModule,
@@ -35,6 +58,29 @@ import { RouterLink } from '@angular/router';
     HistogramModule,
     RemoveIfProdModule,
     RouterLink,
+    IonSpinner,
+    IonRow,
+    IonChip,
+    IonToolbar,
+    IonButtons,
+    IonModal,
+    IonHeader,
+    IonTitle,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonNote,
+    IonText,
+    IonBadge,
+    IonPopover,
+    IonCol,
+    IonSegment,
+    IonSegmentButton,
+    IonCheckbox,
   ],
+  providers: [ModalController],
 })
 export class FeedDetailsModule {}

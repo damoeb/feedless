@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { addIcons } from 'ionicons';
+import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
 export type StringFeature = {
   title: string;
@@ -32,5 +34,7 @@ export class PlanColumnComponent {
   @Input()
   pricePerUnit: string = '/ Month';
 
-  constructor() {}
+  constructor() {
+    addIcons({ checkmarkOutline, closeOutline });
+  }
 }

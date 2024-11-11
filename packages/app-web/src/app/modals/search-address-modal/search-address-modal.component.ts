@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { ModalCancel } from '../../app.module';
 import {
   OpenStreetMapService,
@@ -7,6 +7,8 @@ import {
 } from '../../services/open-street-map.service';
 import { GqlGeoPoint } from '../../../generated/graphql';
 import { NamedLatLon } from '../../products/upcoming/places';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-search-address-modal',
@@ -21,7 +23,9 @@ export class SearchAddressModalComponent {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly openStreetMapService: OpenStreetMapService,
-  ) {}
+  ) {
+    addIcons({ closeOutline });
+  }
 
   async closeModal() {
     const response: ModalCancel = {

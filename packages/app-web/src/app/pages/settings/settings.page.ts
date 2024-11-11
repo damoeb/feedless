@@ -9,7 +9,7 @@ import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
 import { Feature, FeatureGroup } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
-import { ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular/standalone';
 import { sortBy } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
 

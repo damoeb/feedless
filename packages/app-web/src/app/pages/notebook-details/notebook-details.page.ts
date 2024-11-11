@@ -20,7 +20,7 @@ import {
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { debounce as debounceFn, DebouncedFunc, isNull, omit } from 'lodash-es';
-import { AlertController, IonSearchbar } from '@ionic/angular';
+import { AlertController, IonSearchbar } from '@ionic/angular/standalone';
 import { Completion } from '@codemirror/autocomplete';
 import { FormControl } from '@angular/forms';
 import { Extension } from '@codemirror/state';
@@ -30,6 +30,17 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
 import { UploadService } from '../../services/upload.service';
 import { AppConfigService } from '../../services/app-config.service';
 import { AnnotationService } from '../../services/annotation.service';
+import { addIcons } from 'ionicons';
+import {
+  cloudDownloadOutline,
+  cloudUploadOutline,
+  star,
+  starOutline,
+  ellipsisVerticalOutline,
+  closeOutline,
+  trashOutline,
+} from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 type SearchResult = {
   id?: string;
@@ -100,6 +111,15 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   ) {
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
     this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 400);
+    addIcons({
+      cloudDownloadOutline,
+      cloudUploadOutline,
+      star,
+      starOutline,
+      ellipsisVerticalOutline,
+      closeOutline,
+      trashOutline,
+    });
   }
 
   ngOnInit() {

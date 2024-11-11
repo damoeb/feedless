@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { FormControl, FormGroup } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -10,6 +10,8 @@ import {
   GqlScrapeActionInput,
   GqlVisibility,
 } from '../../../generated/graphql';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -46,7 +48,9 @@ export class ImportOpmlModalComponent
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly repositoryService: RepositoryService,
-  ) {}
+  ) {
+    addIcons({ closeOutline });
+  }
 
   ngOnInit() {
     this.fcOutlines = this.outlines.map((outline) =>

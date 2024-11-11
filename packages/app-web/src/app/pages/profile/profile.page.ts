@@ -6,7 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
@@ -24,6 +24,12 @@ import { AppConfigService } from '../../services/app-config.service';
 import dayjs from 'dayjs';
 import { GqlProductCategory } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
+import { addIcons } from 'ionicons';
+import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
+import {
+  IonRouterLink,
+  IonRouterLinkWithHref,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-profile-page',
@@ -64,7 +70,9 @@ export class ProfilePage implements OnInit, OnDestroy {
     protected readonly connectedAppService: ConnectedAppService,
     private readonly appConfig: AppConfigService,
     protected readonly serverConfig: ServerConfigService,
-  ) {}
+  ) {
+    addIcons({ cardOutline, cloudDownloadOutline });
+  }
 
   async deleteAccount() {
     await this.sessionService.updateCurrentUser({

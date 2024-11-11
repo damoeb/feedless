@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { GqlSourceInput } from '../../../generated/graphql';
 import { Repository } from '../../graphql/types';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 export interface FeedBuilderModalComponentProps {
   source?: GqlSourceInput;
@@ -22,7 +24,9 @@ export class FeedBuilderModalComponent
   modalTitle: string = 'Feed Builder';
   submitButtonText = 'Save Feed';
 
-  constructor(private readonly modalCtrl: ModalController) {}
+  constructor(private readonly modalCtrl: ModalController) {
+    addIcons({ closeOutline });
+  }
 
   closeModal() {
     return this.modalCtrl.dismiss();

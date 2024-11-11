@@ -1,7 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { IonicModule } from '@ionic/angular';
 import { FeedDetailsPage } from './feed-details.page';
 import 'img-comparison-slider';
 import { FeedDetailsRoutingModule } from './feed-details-routing.module';
@@ -13,11 +11,21 @@ import { FormsModule } from '@angular/forms';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { FeedDetailsModule } from '../../components/feed-details/feed-details.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+import {
+  IonHeader,
+  IonToolbar,
+  IonText,
+  IonButton,
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonSpinner,
+  IonItem,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
     FeedDetailsRoutingModule,
     BubbleModule,
     LoginButtonModule,
@@ -27,6 +35,15 @@ import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-
     FormsModule,
     FeedDetailsModule,
     FeedlessHeaderModule,
+    IonHeader,
+    IonToolbar,
+    IonText,
+    IonButton,
+    IonContent,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    IonSpinner,
+    IonItem,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [FeedDetailsPage],

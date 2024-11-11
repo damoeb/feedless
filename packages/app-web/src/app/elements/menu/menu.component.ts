@@ -6,7 +6,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { IonPopover, IonSearchbar, PopoverController } from '@ionic/angular';
+import {
+  IonPopover,
+  IonSearchbar,
+  PopoverController,
+} from '@ionic/angular/standalone';
 import { isFunction, isObject, isString } from 'lodash-es';
 
 export function labelProvider<T>(

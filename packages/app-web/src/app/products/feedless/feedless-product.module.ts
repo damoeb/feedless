@@ -1,8 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { IonicModule } from '@ionic/angular';
-
 import { FeedlessProductRoutingModule } from './feedless-product-routing.module';
 
 import { FeedlessProductPage } from './feedless-product.page';
@@ -12,11 +9,11 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
 import { FeedlessMenuModule } from './feedless-menu/feedless-menu.module';
 import { AgentsButtonModule } from '../../components/agents-button/agents-button.module';
 import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
+import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule,
     FeedlessProductRoutingModule,
     ProductTitleModule,
     FeedlessMenuModule,
@@ -24,6 +21,8 @@ import { RepositoriesButtonModule } from '../../components/repositories-button/r
     LoginButtonModule,
     AgentsButtonModule,
     RepositoriesButtonModule,
+    IonContent,
+    IonRouterOutlet,
   ],
   declarations: [FeedlessProductPage],
 })

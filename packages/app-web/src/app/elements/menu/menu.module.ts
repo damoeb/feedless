@@ -1,12 +1,33 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuComponent } from './menu.component';
-import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  IonPopover,
+  IonContent,
+  IonHeader,
+  IonSearchbar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButton,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   declarations: [MenuComponent],
   exports: [MenuComponent],
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    IonPopover,
+    IonContent,
+    IonHeader,
+    IonSearchbar,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButton,
+  ],
 })
 export class MenuModule {}

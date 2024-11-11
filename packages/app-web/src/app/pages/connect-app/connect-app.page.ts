@@ -9,7 +9,7 @@ import {
   ConnectedApp,
   ConnectedAppService,
 } from '../../services/connected-app.service';
-import { ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-connect-app-page',

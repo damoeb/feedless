@@ -23,6 +23,8 @@ import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { Embeddable } from '../../components/embedded-image/embedded-image.component';
+import { addIcons } from 'ionicons';
+import { settingsOutline } from 'ionicons/icons';
 
 type InlineContent = {
   hostname: string;
@@ -86,7 +88,9 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     private readonly router: Router,
     readonly profile: SessionService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ settingsOutline });
+  }
 
   async ngOnInit() {
     const urlInParams = this.activatedRoute.snapshot.params.url;

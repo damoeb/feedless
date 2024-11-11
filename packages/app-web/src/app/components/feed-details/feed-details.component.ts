@@ -29,7 +29,7 @@ import {
   ModalController,
   PopoverController,
   ToastController,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import {
   FeedOrRepository,
   tagsToString,
@@ -50,6 +50,26 @@ import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { FetchPolicy } from '@apollo/client/core';
+import { addIcons } from 'ionicons';
+import {
+  closeOutline,
+  addOutline,
+  listOutline,
+  pulseOutline,
+  gitBranchOutline,
+  flagOutline,
+  starOutline,
+  star,
+  logoRss,
+  settingsOutline,
+  codeOutline,
+  cloudDownloadOutline,
+  trashOutline,
+  refreshOutline,
+  pencilOutline,
+  locationOutline,
+} from 'ionicons/icons';
+import { IonRouterLink } from '@ionic/angular/standalone';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -121,7 +141,26 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     private readonly repositoryService: RepositoryService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
-  ) {}
+  ) {
+    addIcons({
+      closeOutline,
+      addOutline,
+      listOutline,
+      pulseOutline,
+      gitBranchOutline,
+      flagOutline,
+      starOutline,
+      star,
+      logoRss,
+      settingsOutline,
+      codeOutline,
+      cloudDownloadOutline,
+      trashOutline,
+      refreshOutline,
+      pencilOutline,
+      locationOutline,
+    });
+  }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
@@ -176,9 +215,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.repository.visibility === GqlVisibility.IsPrivate &&
       this.repository.shareKey?.length > 0
     ) {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
     } else {
-      this.feedUrl = `${this.serverConfig.gatewayUrl}/f/${this.repository.id}/atom`;
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
     }
     this.changeRef.detectChanges();
   }
@@ -466,7 +505,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   getDocumentUrl(document: Record): string {
     if (this.track) {
-      return `${this.serverConfig.gatewayUrl}/article/${document.id}`;
+      return `${this.serverConfig.apiUrl}/article/${document.id}`;
     } else {
       return document.url;
     }

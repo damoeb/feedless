@@ -8,6 +8,8 @@ import {
 import { Notebook, NotebookService } from '../../services/notebook.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { addIcons } from 'ionicons';
+import { chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-notebook-builder',
@@ -24,7 +26,9 @@ export class NotebooksComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly notebookService: NotebookService,
     private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    addIcons({ chevronForwardOutline });
+  }
 
   async createNotebook(notebookName: string) {
     if (this.busy) {

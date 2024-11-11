@@ -11,6 +11,8 @@ import { GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl } from '@angular/forms';
 import { AppConfigService } from '../../services/app-config.service';
+import { addIcons } from 'ionicons';
+import { trendingDownOutline } from 'ionicons/icons';
 
 type ViewMode = 'list' | 'grid';
 
@@ -35,7 +37,9 @@ export class DirectoryPage implements OnInit {
     private readonly changeRef: ChangeDetectorRef,
     private readonly appConfig: AppConfigService,
     private readonly repositoryService: RepositoryService,
-  ) {}
+  ) {
+    addIcons({ trendingDownOutline });
+  }
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Directory');
