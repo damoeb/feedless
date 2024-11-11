@@ -124,6 +124,6 @@
     "prettier": "^3.3.3",
     "protractor": "^7.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "5.4.5"
   }
 }

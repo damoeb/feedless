@@ -45,7 +45,7 @@ type EventsByDistance = {
 };
 
 type PlaceByDistance = {
-  distance: string;
+  distance: number;
   places: EventsAtPlace[];
 };
 
@@ -315,7 +315,7 @@ export class EventsPage implements OnInit, OnDestroy {
           JSON.stringify(e.latLng),
         );
         groupedPlaces.push({
-          distance: eventGroup.distance,
+          distance: parseInt(eventGroup.distance),
           places: Object.keys(latLonGroups).map((latLonGroup) => {
             return {
               events: latLonGroups[latLonGroup],

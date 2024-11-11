@@ -101,7 +101,7 @@ export class PuppeteerService {
     });
   }
 
-  private async newBrowser(source: Source): Promise<Browser> {
+  async newBrowser(source: Source): Promise<Browser> {
     const viewport: Viewport = this.resolveViewport(source);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',

@@ -31,6 +31,11 @@ describe('PuppeteerService', () => {
     //   'ERR_CERT_DATE_INVALID',
     //   'ERR_SSL_PROTOCOL_ERROR',
     //   'ERR_SSL_VERSION_OR_CIPHER_MISMATCH',
+    service.newBrowser = jest.fn().mockImplementation(() => {
+      return {
+        close: () => {},
+      };
+    });
     service.newPage = jest.fn().mockImplementation(() => {
       return {
         on: () => {},
