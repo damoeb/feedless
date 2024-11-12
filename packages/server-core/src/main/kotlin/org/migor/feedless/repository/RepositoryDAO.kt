@@ -4,7 +4,7 @@ import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpql
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -40,7 +40,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   fun countByOwnerId(id: UUID): Int
 
   fun countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(id: UUID, cron: String): Int
-  fun countAllByOwnerIdAndProduct(it: UUID, product: ProductCategory): Int
+  fun countAllByOwnerIdAndProduct(it: UUID, product: Vertical): Int
   fun countAllByVisibility(visibility: EntityVisibility): Int
   fun findByTitleAndOwnerId(title: String, ownerId: UUID): RepositoryEntity?
 

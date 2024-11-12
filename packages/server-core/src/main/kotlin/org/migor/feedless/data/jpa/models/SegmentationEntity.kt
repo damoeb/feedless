@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.generated.types.ChronoUnit
 import org.migor.feedless.generated.types.Segment
 import org.migor.feedless.repository.RepositoryEntity
 
@@ -40,5 +41,7 @@ fun SegmentationEntity.toDto(): Segment {
     size = size,
     sortAsc = sortAsc,
     sortBy = sortBy,
+    interval = ChronoUnit.WEEK,
+    startingAt = 0
   )
 }

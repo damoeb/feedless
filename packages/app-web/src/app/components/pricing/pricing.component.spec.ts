@@ -5,7 +5,7 @@ import { PricingModule } from './pricing.module';
 import { AppTestModule, mockProducts } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 
 describe('PricingComponent', () => {
   let component: PricingComponent;
@@ -24,11 +24,11 @@ describe('PricingComponent', () => {
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);
-    appConfigService.getProductConfigs = () => Promise.resolve([]);
+    appConfigService.getAllAppConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(PricingComponent);
     component = fixture.componentInstance;
-    component.productCategory = GqlProductCategory.RssProxy;
+    component.vertical = GqlVertical.RssProxy;
     fixture.detectChanges();
   }));
 

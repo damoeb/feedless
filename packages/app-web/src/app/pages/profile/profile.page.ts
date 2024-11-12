@@ -22,7 +22,7 @@ import { ProductService } from '../../services/product.service';
 import { first } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
 import dayjs from 'dayjs';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { addIcons } from 'ionicons';
 import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
@@ -232,7 +232,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         },
         where: {
           product: {
-            eq: GqlProductCategory.Feedless,
+            eq: GqlVertical.Feedless,
           },
         },
       });

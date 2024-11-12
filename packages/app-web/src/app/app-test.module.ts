@@ -10,10 +10,13 @@ import {
 import {
   AuthAnonymous,
   FindEvents,
+  FullRecordByIds,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
   GqlFindEventsQuery,
   GqlFindEventsQueryVariables,
+  GqlFullRecordByIdsQuery,
+  GqlFullRecordByIdsQueryVariables,
   GqlListPluginsQuery,
   GqlListPluginsQueryVariables,
   GqlListProductsQuery,
@@ -22,7 +25,9 @@ import {
   GqlListRepositoriesQueryVariables,
   GqlOrdersQuery,
   GqlOrdersQueryVariables,
-  GqlProductCategory,
+  GqlVertical,
+  GqlRecordByIdsQuery,
+  GqlRecordByIdsQueryVariables,
   GqlRepository,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
@@ -33,26 +38,18 @@ import {
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
   GqlVisibility,
-  GqlRecordByIdsQuery,
-  GqlRecordByIdsQueryVariables,
   ListPlugins,
   ListProducts,
   ListRepositories,
   Orders,
+  RecordByIds,
   RepositoryById,
   Scrape,
   ServerSettings,
-  RecordByIds,
-  GqlFullRecordByIdsQuery,
-  GqlFullRecordByIdsQueryVariables,
-  FullRecordByIds,
 } from '../generated/graphql';
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
-import {
-  FeedlessAppConfig,
-  ServerConfigService,
-} from './services/server-config.service';
+import { ServerConfigService } from './services/server-config.service';
 import {
   HttpClient,
   provideHttpClient,
@@ -60,12 +57,16 @@ import {
 } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AppConfigService, ProductConfig } from './services/app-config.service';
+import {
+  VerticalSpecWithRoutes,
+  AppConfigService,
+} from './services/app-config.service';
 import {
   ModalController,
   PopoverController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { VerticalAppConfig } from './types';
 
 export type MockedRequestResolver<R, V> = (
   args: V,
@@ -211,15 +212,16 @@ export class AppTestModule {
       config.configurer(apolloMockController);
     }
 
-    const productConfig: ProductConfig = {
+    const productConfig: VerticalSpecWithRoutes = {
       id: 'feedless',
-      product: GqlProductCategory.Feedless,
+      product: GqlVertical.Feedless,
       localSetupBash: '',
       title: '',
       titleHtml: '',
       imageUrl: '',
       pageTitle: '',
       routes: [],
+      links: [],
       subtitle: '',
       descriptionMarkdown: '',
       descriptionHtml: '',
@@ -324,7 +326,7 @@ export type Mocks = {
 export const mocks: Mocks = {
   repository: {
     id: '',
-    product: GqlProductCategory.RssProxy,
+    product: GqlVertical.RssProxy,
     description: '',
     shareKey: '',
     title: '',
@@ -456,9 +458,9 @@ export async function mockServerSettings(
     .createSpy()
     .and.returnValue(apolloClient);
   const httpClient = TestBed.inject(HttpClient);
-  const mockConfig: FeedlessAppConfig = {
+  const mockConfig: VerticalAppConfig = {
     apiUrl: '',
-    products: [],
+    product: GqlVertical.Feedless,
   };
   httpClient.get = jasmine
     .createSpy('mockHttpGet')

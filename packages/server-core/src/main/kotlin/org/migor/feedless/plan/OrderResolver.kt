@@ -19,8 +19,8 @@ import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
-import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.UpsertOrderInput
+import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.license.LicenseEntity
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.injectCurrentUser
@@ -85,7 +85,7 @@ private fun LicenseEntity.toDTO(): License {
   return License(
     name = "",
     email = "",
-    scope = ProductCategory.feedless,
+    scope = Vertical.feedless,
     createdAt = LocalDateTime.now().toMillis(),
     version = 0
   )

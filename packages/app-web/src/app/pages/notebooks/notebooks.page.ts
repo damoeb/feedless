@@ -8,7 +8,7 @@ import {
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 
 @Component({
@@ -19,7 +19,7 @@ import {
 })
 export class NotebooksPage implements OnInit, OnDestroy {
   loading = false;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
 
   constructor(

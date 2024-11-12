@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { addIcons } from 'ionicons';
@@ -26,7 +26,7 @@ import { IonRouterLink } from '@ionic/angular/standalone';
 })
 export class ProductsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
-  product: ProductConfig;
+  product: VerticalSpecWithRoutes;
   videoUrl: SafeResourceUrl;
 
   constructor(
@@ -41,7 +41,7 @@ export class ProductsPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
-        this.product = (await this.appConfigService.getProductConfigs()).find(
+        this.product = (await this.appConfigService.getAllAppConfigs()).find(
           (p) => p.id === params.productId,
         );
         if (this.product?.videoUrl) {

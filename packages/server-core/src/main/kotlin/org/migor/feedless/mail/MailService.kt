@@ -1,7 +1,7 @@
 package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.user.UserEntity
 import java.util.*
@@ -19,7 +19,7 @@ interface MailService {
 
   suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String)
 
-  suspend fun getNoReplyAddress(product: ProductCategory): String
+  suspend fun getNoReplyAddress(product: Vertical): String
 
   @Deprecated("")
   suspend fun send(mimeMessage: MimeMessage)

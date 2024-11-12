@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
@@ -19,7 +19,6 @@ import { ModalService } from '../../services/modal.service';
 import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-modal.component';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-change-tracker-product-page',
@@ -28,8 +27,7 @@ import { IonRouterLink } from '@ionic/angular/standalone';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {
-  scrapeResponse: ScrapeResponse;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   url: string;
   private subscriptions: Subscription[] = [];
   license: LocalizedLicense;

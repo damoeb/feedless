@@ -8,7 +8,7 @@ import {
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
 import {
@@ -39,7 +39,7 @@ export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
   loading = false;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
 
   constructor(

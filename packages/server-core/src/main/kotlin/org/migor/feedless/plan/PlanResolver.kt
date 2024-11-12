@@ -10,8 +10,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Plan
-import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +30,7 @@ class PlanResolver {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Plan)
   @Transactional
-  suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: ProductCategory): Plan? = coroutineScope {
+  suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: Vertical): Plan? = coroutineScope {
     val user: User = dfe.getSource()!!
     planService.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))
       ?.toDto()

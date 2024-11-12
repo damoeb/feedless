@@ -20,7 +20,7 @@ describe('ProductsPage', () => {
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);
-    appConfigService.getProductConfigs = () => Promise.resolve([]);
+    appConfigService.getAllAppConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(ProductsPage);
     component = fixture.componentInstance;

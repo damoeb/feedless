@@ -15,7 +15,7 @@ import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
-  GqlProductCategory,
+  GqlVertical,
   GqlRemoteNativeFeed,
   GqlSourceInput,
   GqlTransientGenericFeed,
@@ -26,7 +26,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Repository, ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
@@ -109,7 +109,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   source: GqlSourceInput;
 
   selectedFeed: NativeOrGenericFeed;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   errorMessage: string;
 
@@ -187,7 +187,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       },
       where: {
         product: {
-          eq: GqlProductCategory.Feedless,
+          eq: GqlVertical.Feedless,
         },
       },
     });

@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 
 @Component({
@@ -20,7 +20,7 @@ import {
 })
 export class UntoldNotesProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
 
   constructor(

@@ -14,7 +14,7 @@ import { FeatureGroup, Product } from '../../graphql/types';
 import {
   GqlFeatureName,
   GqlPricedProduct,
-  GqlProductCategory,
+  GqlVertical,
   GqlRecurringPaymentInterval,
 } from '../../../generated/graphql';
 import {
@@ -54,7 +54,7 @@ export class PricingComponent implements OnInit {
   private products: ProductWithFeatureGroups[];
 
   @Input({ required: true })
-  productCategory: GqlProductCategory;
+  vertical: GqlVertical;
 
   @Input()
   serviceFlavor: ServiceFlavor;
@@ -76,7 +76,7 @@ export class PricingComponent implements OnInit {
       this.serviceFlavorFc.setValue(this.serviceFlavor);
     }
     const products = await this.productService.listProducts({
-      category: this.productCategory,
+      category: this.vertical,
     });
 
     this.products = await Promise.all(

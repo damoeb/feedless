@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
 import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
 import {
@@ -105,7 +105,7 @@ export function convertOsmMatchToString(location: OsmMatch): string {
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   locationFc = new FormControl<string>('');
   private subscriptions: Subscription[] = [];
   protected currentDate: Dayjs;
@@ -203,8 +203,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       this.locationFc.valueChanges
         .pipe(debounce(() => interval(400)))
         .subscribe(async (value) => {
-          this.locationSuggestions =
-            await this.openStreetMapService.searchByQuery(`${value} Schweiz`);
+          const suggestions = await this.openStreetMapService.searchByQuery(
+            `${value} Schweiz`,
+          );
+          this.locationSuggestions = suggestions.filter(
+            (_, index) => index < 6,
+          );
           // console.log('this.locationSuggestions', this.locationSuggestions);
           this.changeRef.detectChanges();
         }),

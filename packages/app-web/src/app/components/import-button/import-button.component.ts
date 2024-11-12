@@ -1,20 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Input,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController, ToastController } from '@ionic/angular/standalone';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,
 } from '../../modals/import-opml-modal/import-opml-modal.component';
 import { firstValueFrom } from 'rxjs';
 import { FileService } from '../../services/file.service';
+import { RepositoryService } from '../../services/repository.service';
 
 @Component({
   selector: 'app-import-button',
@@ -36,7 +31,9 @@ export class ImportButtonComponent {
     private readonly omplService: OpmlService,
     private readonly authService: AuthService,
     private readonly fileService: FileService,
+    private readonly repositoryService: RepositoryService,
     private readonly router: Router,
+    private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController,
   ) {}
 
@@ -65,6 +62,15 @@ export class ImportButtonComponent {
   async importFeedlessJson(uploadEvent: Event) {
     const data = await this.fileService.uploadAsText(uploadEvent);
     const json = JSON.parse(data);
-    console.log(json);
+
+    const repo = await this.repositoryService.createRepositories(json);
+    const toast = await this.toastCtrl.create({
+      message: 'Created',
+      duration: 3000,
+      color: 'success',
+    });
+
+    await toast.present();
+    await this.router.navigateByUrl(`/feeds/${repo[0].id}`);
   }
 }

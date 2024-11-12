@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
-  GqlProductCategory,
+  GqlVertical,
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
@@ -14,22 +14,7 @@ import { AlertController } from '@ionic/angular/standalone';
 import { Feature, LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
-import { Nullable } from '../types';
-
-type FeedlessProductConfig = {
-  hostname: string;
-  product: GqlProductCategory;
-};
-
-export type FeedlessAppConfig = {
-  apiUrl: string;
-  forceProduct?: GqlProductCategory;
-  products: FeedlessProductConfig[];
-  [key: string | GqlProductCategory]:
-    | any
-    | GqlProductCategory
-    | FeedlessProductConfig[];
-};
+import { VerticalAppConfig } from '../types';
 
 type ToastOptions = {
   header: string;
@@ -37,11 +22,6 @@ type ToastOptions = {
   subHeader?: string | undefined;
   cssClass?: string;
   buttons?: AlertButton[];
-};
-
-export type WebsiteConfig = {
-  product: GqlProductCategory;
-  customProperties: Nullable<{ [s: string]: number | boolean | string } | any>;
 };
 
 @Injectable({
@@ -60,24 +40,20 @@ export class ServerConfigService {
     private readonly alertCtrl: AlertController,
   ) {}
 
-  async fetchConfig(): Promise<WebsiteConfig> {
+  async fetchConfig(): Promise<VerticalAppConfig> {
     const config = await firstValueFrom(
-      this.httpClient.get<FeedlessAppConfig>('/config.json'),
+      this.httpClient.get<VerticalAppConfig>('/config.json'),
     );
 
     this.apiUrl = config.apiUrl;
 
-    const product =
-      config.forceProduct ||
-      config.products.find((p) => p.hostname === location.hostname)?.product!;
+    const product = config.product;
 
     if (product) {
       console.log(`enabling product ${product}`);
-      const products: GqlProductCategory[] = Object.keys(
-        GqlProductCategory,
-      ).map(
+      const products: GqlVertical[] = Object.keys(GqlVertical).map(
         // @ts-ignore
-        (p) => GqlProductCategory[p],
+        (p) => GqlVertical[p],
       );
       console.log(`Know products ${products.join(', ')}`);
       if (!products.some((otherProduct) => otherProduct == product)) {
@@ -98,10 +74,7 @@ export class ServerConfigService {
       });
     }
 
-    return {
-      product,
-      customProperties: config[product],
-    };
+    return config;
   }
 
   async fetchServerSettings(): Promise<void> {

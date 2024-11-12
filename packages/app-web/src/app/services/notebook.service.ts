@@ -13,7 +13,7 @@ import {
   GqlCreateRecordInput,
   GqlCreateRepositoriesMutation,
   GqlFullRecordByIdsQuery,
-  GqlProductCategory,
+  GqlVertical,
   GqlVisibility,
 } from '../../generated/graphql';
 import { ArrayElement, isNonNull } from '../types';
@@ -187,7 +187,7 @@ export class NotebookService {
         {
           title: name,
           description: '',
-          product: GqlProductCategory.UntoldNotes,
+          product: GqlVertical.UntoldNotes,
           sources: [],
           withShareKey: false,
           visibility: GqlVisibility.IsPrivate,
@@ -526,7 +526,7 @@ export class NotebookService {
     const remoteNotebooks = await this.repositoryService.listRepositories({
       where: {
         product: {
-          eq: GqlProductCategory.UntoldNotes,
+          eq: GqlVertical.UntoldNotes,
         },
       },
       cursor: {

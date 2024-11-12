@@ -27,7 +27,7 @@ import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.data.jpa.models.SegmentationEntity
 import org.migor.feedless.data.jpa.models.toDto
@@ -142,7 +142,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, name = "for_product", length = 20)
-  open lateinit var product: ProductCategory
+  open lateinit var product: Vertical
 
   @Column(name = "trigger_scheduled_next_at")
   open var triggerScheduledNextAt: LocalDateTime? = null

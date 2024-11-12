@@ -11,10 +11,10 @@ import { SessionService } from './services/session.service';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
   SidemenuBreakpoint,
 } from './services/app-config.service';
-import { GqlProductCategory } from '../generated/graphql';
+import { GqlVertical } from '../generated/graphql';
 import { kebabCase } from 'lodash-es';
 
 @Component({
@@ -24,10 +24,10 @@ import { kebabCase } from 'lodash-es';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnDestroy, OnInit {
-  productConfig!: ProductConfig;
+  verticalConfig!: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   private isDarkMode!: boolean;
-  private product!: GqlProductCategory;
+  private vertical!: GqlVertical;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -42,8 +42,8 @@ export class AppComponent implements OnDestroy, OnInit {
     this.subscriptions.push(
       this.appConfigService
         .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
+        .subscribe((verticalConfig) => {
+          this.verticalConfig = verticalConfig;
           this.changeRef.detectChanges();
         }),
       this.activatedRoute.queryParams.subscribe(async (queryParams) => {
@@ -68,8 +68,8 @@ export class AppComponent implements OnDestroy, OnInit {
       }),
       this.appConfigService
         .getActiveProductConfigChange()
-        .subscribe((product) => {
-          this.product = product.product;
+        .subscribe((vertical) => {
+          this.vertical = vertical.product;
           this.propagateColorModeAndProduct();
         }),
     );
@@ -79,9 +79,9 @@ export class AppComponent implements OnDestroy, OnInit {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  getBreakpointMinWidth(): SidemenuBreakpoint {
-    return this.productConfig.sideMenu?.breakpoint ?? 'sm';
-  }
+  // getBreakpointMinWidth(): SidemenuBreakpoint {
+  //   return this.verticalConfig.sideMenu?.breakpoint ?? 'sm';
+  // }
 
   private propagateColorModeAndProduct() {
     const classNames: string[] = [];
@@ -91,8 +91,8 @@ export class AppComponent implements OnDestroy, OnInit {
       classNames.push('light');
     }
 
-    if (this.product) {
-      classNames.push('product--' + kebabCase(this.product.toString()));
+    if (this.vertical) {
+      classNames.push('product--' + kebabCase(this.vertical.toString()));
     }
 
     document.body.className = classNames.join(' ');

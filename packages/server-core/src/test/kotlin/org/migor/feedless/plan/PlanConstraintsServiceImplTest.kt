@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.feature.FeatureName
@@ -57,7 +57,7 @@ class PlanConstraintsServiceImplTest {
   private lateinit var userId: UUID
   private val currentUserId = UUID.randomUUID()
   private lateinit var user: UserEntity
-  private val product = ProductCategory.feedless
+  private val product = Vertical.feedless
 
   @BeforeEach
   fun beforeEach() = runTest {
@@ -88,7 +88,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is defined when coerceRetentionMaxItems works`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       val maxItems = 50L
       mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
       mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
@@ -99,7 +99,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = null)
       mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
       assertThat(service.coerceRetentionMaxCapacity(null, userId, product)).isNull()
@@ -121,7 +121,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is true, when coerceVisibility works`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = true)
       // fallback
       assertThat(service.coerceVisibility(null)).isEqualTo(EntityVisibility.isPrivate)
@@ -133,7 +133,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is false, when coerceVisibility works`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = false)
 
       // fallback
@@ -146,7 +146,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given invalid refreshRate when coerceMinScheduledNextAt returns minimum rate`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
       val now = LocalDateTime.now()
       val minNext = now.plusMinutes(4)
@@ -163,7 +163,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given valid refreshRate when coerceMinScheduledNextAt returns refreshRate`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
       val now = LocalDateTime.now()
       val future = now.plusDays(2)
@@ -180,13 +180,13 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given maxAge is undefined, RetentionMaxAgeDays is undefined`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       assertThat(service.coerceRetentionMaxAgeDays(null, userId, product)).isEqualTo(null)
     }
 
   @Test
   fun `given maxAge is defined, RetentionMaxAgeDays is at least 2`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, intValue = 2)
       assertThat(service.coerceRetentionMaxAgeDays(-3, userId, product)).isEqualTo(2)
       assertThat(service.coerceRetentionMaxAgeDays(0, userId, product)).isEqualTo(2)
@@ -195,7 +195,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestActionMaxCountInt is undefined, all actionsCount will pass`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = null)
       service.auditScrapeRequestMaxActions(null, userId)
       service.auditScrapeRequestMaxActions(10000, userId)
@@ -205,7 +205,7 @@ class PlanConstraintsServiceImplTest {
   fun `given scrapeRequestActionMaxCountInt is defined, violating actionsCounts will fail`() {
     mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+      runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
         service.auditScrapeRequestMaxActions(12, userId)
       }
     }
@@ -213,7 +213,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestActionMaxCountInt is defined, valid actionsCounts will pass`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = 4)
       service.auditScrapeRequestMaxActions(4, userId)
       service.auditScrapeRequestMaxActions(0, userId)
@@ -223,7 +223,7 @@ class PlanConstraintsServiceImplTest {
   fun `given scrapeRequestTimeoutInt is defined, violating actionsCounts will fail`() {
     mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+      runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
         service.auditScrapeRequestTimeout(12, userId)
       }
     }
@@ -232,7 +232,7 @@ class PlanConstraintsServiceImplTest {
   @Test
 
   fun `given scrapeRequestTimeoutInt is defined, valid actionsCounts will pass`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
       service.auditScrapeRequestTimeout(4, userId)
       service.auditScrapeRequestTimeout(0, userId)
@@ -240,7 +240,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeSourceMaxCountTotalInt is undefined, all sourceCounts will pass`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = null)
       service.auditRepositoryMaxCount(0, userId)
       service.auditRepositoryMaxCount(10000, userId)
@@ -250,7 +250,7 @@ class PlanConstraintsServiceImplTest {
   fun `given scrapeSourceMaxCountTotalInt is defined, violating sourceCounts will fail`() {
     mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+      runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
         service.auditRepositoryMaxCount(12, userId)
       }
     }
@@ -263,7 +263,7 @@ class PlanConstraintsServiceImplTest {
       "4"
     ]
   )
-  fun `given scrapeSourceMaxCountTotalInt is defined, valid sourceCounts will pass`(sourceCount: Int) = runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+  fun `given scrapeSourceMaxCountTotalInt is defined, valid sourceCounts will pass`(sourceCount: Int) = runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
     mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
     service.auditRepositoryMaxCount(sourceCount, userId)
   }
@@ -276,7 +276,7 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is undefined, all counts will pass`() =
-    runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
       mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = null)
       service.auditSourcesMaxCountPerRepository(0, userId, product)
       service.auditSourcesMaxCountPerRepository(10000, userId, product)
@@ -286,7 +286,7 @@ class PlanConstraintsServiceImplTest {
   fun `given scrapeRequestMaxCountPerSourceInt is defined, violating counts will fail`() {
     mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = 4)
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId, product = ProductCategory.feedless)) {
+      runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
         service.auditSourcesMaxCountPerRepository(12, userId, product)
       }
     }

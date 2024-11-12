@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.user.UserDAO
@@ -14,8 +14,6 @@ import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -44,16 +42,16 @@ class ProductService {
   @Autowired
   private lateinit var pricedProductDAO: PricedProductDAO
 
-  fun getDomain(product: ProductCategory): String {
+  fun getDomain(product: Vertical): String {
     return when (product) {
-      ProductCategory.visualDiff -> "visualdiff.com"
-      ProductCategory.pageChangeTracker -> "pagechangetracker.com"
-      ProductCategory.rssProxy -> "rssproxy.migor.org"
-      ProductCategory.feedless -> "feedless.org"
-      ProductCategory.untoldNotes -> "notes.feedless.org"
-      ProductCategory.upcoming -> "upcoming.feedless.org"
-      ProductCategory.reader -> "reader.feedless.org"
-      ProductCategory.feedDump -> "dump.feedless.org"
+      Vertical.visualDiff -> "visualdiff.com"
+      Vertical.pageChangeTracker -> "pagechangetracker.com"
+      Vertical.rssProxy -> "rssproxy.migor.org"
+      Vertical.feedless -> "feedless.org"
+      Vertical.untoldNotes -> "notes.feedless.org"
+      Vertical.upcoming -> "upcoming.feedless.org"
+      Vertical.reader -> "reader.feedless.org"
+      Vertical.feedDump -> "dump.feedless.org"
       else -> throw IllegalArgumentException("$product not supported")
     }
   }
@@ -118,8 +116,8 @@ class ProductService {
     }
   }
 
-  suspend fun enableDefaultCloudProduct(productCategory: ProductCategory, userId: UUID) {
-    val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(productCategory)!!}
+  suspend fun enableDefaultCloudProduct(vertical: Vertical, userId: UUID) {
+    val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!!}
     val user = withContext(Dispatchers.IO) {userDAO.findById(userId).orElseThrow()}
 
     enableCloudProduct(product, user)

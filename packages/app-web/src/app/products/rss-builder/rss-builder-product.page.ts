@@ -10,12 +10,12 @@ import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 import { IonRouterLink } from '@ionic/angular/standalone';
@@ -28,7 +28,7 @@ import { IonRouterLink } from '@ionic/angular/standalone';
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   url: string;
   private subscriptions: Subscription[] = [];
   license: LocalizedLicense;
@@ -75,5 +75,5 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  protected readonly GqlProductName = GqlProductCategory;
+  protected readonly GqlProductName = GqlVertical;
 }

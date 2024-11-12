@@ -15,7 +15,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.generated.types.Product
@@ -58,7 +58,7 @@ open class ProductEntity : EntityWithUUID() {
 
   @Column(name = "part_of")
   @Enumerated(EnumType.STRING)
-  open var partOf: ProductCategory? = null
+  open var partOf: Vertical? = null
 
   @Column(name = "feature_group_id")
   open lateinit var featureGroupId: UUID

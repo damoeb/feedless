@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
@@ -293,7 +293,7 @@ type PaymentOption = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutPage implements OnInit, OnDestroy {
-  product: ProductConfig;
+  product: VerticalSpecWithRoutes;
   currentStep: CheckoutStep;
   protected countries = countries;
   protected formFg = new FormGroup({

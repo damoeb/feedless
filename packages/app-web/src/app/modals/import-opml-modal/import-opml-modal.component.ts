@@ -6,7 +6,7 @@ import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
-  GqlProductCategory,
+  GqlVertical,
   GqlScrapeActionInput,
   GqlVisibility,
 } from '../../../generated/graphql';
@@ -101,7 +101,7 @@ export class ImportOpmlModalComponent
             },
           ];
           return {
-            product: GqlProductCategory.RssProxy,
+            product: GqlVertical.RssProxy,
             sources: [
               {
                 title: fc.title,

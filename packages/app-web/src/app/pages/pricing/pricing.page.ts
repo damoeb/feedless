@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,7 +20,7 @@ import { Product } from '../../graphql/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PricingPage implements OnInit, OnDestroy {
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -32,7 +32,7 @@ export class PricingPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Pricing');
-    const productConfigs = await this.appConfigService.getProductConfigs();
+    const productConfigs = await this.appConfigService.getAllAppConfigs();
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.productId) {

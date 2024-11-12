@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
-import { GqlProductCategory } from '../../../../generated/graphql';
+import { GqlVertical } from '../../../../generated/graphql';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
@@ -44,13 +44,13 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
         this.changeRef.detectChanges();
       }),
       this.repositoryService
-        .countRepositories({ product: GqlProductCategory.RssProxy })
+        .countRepositories({ product: GqlVertical.RssProxy })
         .subscribe((repoCount) => {
           this.feedCount = repoCount;
           this.changeRef.detectChanges();
         }),
       this.repositoryService
-        .countRepositories({ product: GqlProductCategory.VisualDiff })
+        .countRepositories({ product: GqlVertical.VisualDiff })
         .subscribe((repoCount) => {
           this.trackerCount = repoCount;
           this.changeRef.detectChanges();

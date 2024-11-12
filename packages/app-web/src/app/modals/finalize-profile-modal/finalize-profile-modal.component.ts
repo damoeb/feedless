@@ -13,7 +13,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 import { AppConfigService } from '../../services/app-config.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../services/product.service';
@@ -28,8 +28,6 @@ import { Product } from '../../graphql/types';
 export class FinalizeProfileModalComponent implements OnInit {
   loading = false;
   name: string;
-
-  protected readonly GqlProductCategory = GqlProductCategory;
 
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
@@ -65,12 +63,12 @@ export class FinalizeProfileModalComponent implements OnInit {
       );
       if (this.requiresPlan) {
         this.formFg.controls.plan.addValidators(Validators.required);
-        const productCategory = await firstValueFrom(
+        const vertical = await firstValueFrom(
           this.appConfigService.getActiveProductConfigChange(),
         );
         const cloudProducts = (
           await this.productService.listProducts({
-            category: productCategory.product,
+            category: vertical.product,
           })
         ).filter((product) => product.isCloud);
         this.product = cloudProducts.find((product) =>

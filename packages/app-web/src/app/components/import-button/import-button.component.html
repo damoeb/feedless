@@ -24,7 +24,7 @@
           accept="text/xml, application/opml"
           type="file"
         />
-        <ion-item (click)="openFilePicker(opmlPicker)" [button]="true">
+        <ion-item appDev (click)="openFilePicker(opmlPicker)" [button]="true">
           Import OPML
         </ion-item>
         <input
@@ -35,7 +35,7 @@
           type="file"
         />
         <ion-item (click)="openFilePicker(jsonPicker)" [button]="true">
-          Import Feedless Json
+          Import JSON
         </ion-item>
         <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
         <!--          Import Urls-->

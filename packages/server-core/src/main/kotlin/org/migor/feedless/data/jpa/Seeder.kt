@@ -9,8 +9,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feature.FeatureGroupDAO
@@ -204,7 +204,7 @@ class Seeder {
     repo.shareKey = ""
     repo.ownerId = root.id
     repo.visibility = EntityVisibility.isPrivate
-    repo.product = ProductCategory.feedless
+    repo.product = Vertical.feedless
     repo.sourcesSyncCron = ""
 
     return repositoryDAO.findByTitleAndOwnerId(repoTitle, root.id) ?: repositoryDAO.save(repo)
@@ -305,7 +305,7 @@ class Seeder {
       val feedlessFree = createProduct(
         "feedless Free",
         "Getting started",
-        group = ProductCategory.feedless,
+        group = Vertical.feedless,
         isBaseProduct = true,
         saas = true,
         prices = listOf(
@@ -350,7 +350,7 @@ class Seeder {
       val feedlessSupporter = createProduct(
         "feedless Supporter",
         "Getting Started",
-        group = ProductCategory.feedless,
+        group = Vertical.feedless,
         isBaseProduct = false,
         saas = true,
         prices = listOf(
@@ -373,7 +373,7 @@ class Seeder {
       createProduct(
         "feedless Pro",
         "Getting serious",
-        group = ProductCategory.feedless,
+        group = Vertical.feedless,
         saas = true,
         available = false,
         selfHostingIndividual = true,
@@ -463,18 +463,18 @@ class Seeder {
   }
 
   private suspend fun createProduct(
-    name: String,
-    description: String,
-    group: ProductCategory? = null,
-    prices: List<PricedProductEntity>,
-    parentFeatureGroupId: UUID,
-    features: Map<FeatureName, FeatureValueEntity>,
-    available: Boolean = true,
-    saas: Boolean = false,
-    isBaseProduct: Boolean = false,
-    selfHostingIndividual: Boolean = false,
-    selfHostingEnterprise: Boolean = false,
-    selfHostingOther: Boolean = false,
+      name: String,
+      description: String,
+      group: Vertical? = null,
+      prices: List<PricedProductEntity>,
+      parentFeatureGroupId: UUID,
+      features: Map<FeatureName, FeatureValueEntity>,
+      available: Boolean = true,
+      saas: Boolean = false,
+      isBaseProduct: Boolean = false,
+      selfHostingIndividual: Boolean = false,
+      selfHostingEnterprise: Boolean = false,
+      selfHostingOther: Boolean = false,
     ): ProductEntity {
 
     return withContext(Dispatchers.IO) {

@@ -1,0 +1,112 @@
+import { SitemapItemLoose, SitemapStream, streamToPromise } from 'sitemap';
+import { VerticalSpec, allVerticals } from './src/app/all-verticals';
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { VerticalAppConfig } from './src/app/types';
+
+class AppsDataGenerator {
+  constructor(buildFolder: string) {
+    this.createFeedlessConfig();
+
+    rmSync(buildFolder, { recursive: true });
+    mkdirSync(buildFolder, { recursive: true });
+
+    for (let appKey in allVerticals.verticals) {
+      const app = allVerticals.verticals[appKey];
+      if (!app.domain) {
+        continue;
+      }
+      const outDir = join(buildFolder, app.id);
+      mkdirSync(outDir);
+
+      this.generateSiteMap(app, outDir);
+      this.generateRobotsTxt(app, outDir);
+      this.generateAppConfig(app, outDir);
+      const index = String(readFileSync('src/index.html'));
+      this.generateIndex(app, outDir, index);
+    }
+  }
+
+  private generateSiteMap(app: VerticalSpec, outDir: string) {
+    const domain = `https://${app.domain}/`;
+    const lastMod = new Date().toISOString();
+
+    const smStream = new SitemapStream({
+      hostname: domain,
+      lastmodDateOnly: false,
+      xmlns: {
+        news: false,
+        xhtml: true,
+        image: false,
+        video: false,
+      },
+    });
+
+    streamToPromise(smStream).then((sitemap) =>
+      writeFileSync(join(outDir, `sitemap.xml`), String(sitemap)),
+    );
+
+    const mainPage: SitemapItemLoose = {
+      url: domain,
+      lastmod: lastMod,
+      priority: 0.8,
+    };
+    smStream.write(mainPage);
+
+    smStream.end();
+  }
+
+  private generateAppConfig(app: VerticalSpec, outDir: string) {
+    const appConfig: VerticalAppConfig = {
+      apiUrl: `https://api.${app.domain}`,
+      product: app.product,
+      offlineSupport: app.offlineSupport,
+    };
+    writeFileSync(
+      join(outDir, `config.json`),
+      JSON.stringify(appConfig, null, 2),
+    );
+  }
+
+  private createFeedlessConfig() {
+    type ProductId2AppConfig = { [k: string]: VerticalSpec };
+    const apps: ProductId2AppConfig = allVerticals.verticals.reduce(
+      (acc, app) => {
+        acc[app.id] = app;
+        return acc;
+      },
+      {} as ProductId2AppConfig,
+    );
+
+    const config = JSON.parse(JSON.stringify(allVerticals));
+    config.apps = apps;
+
+    writeFileSync('./all-verticals.json', JSON.stringify(config, null, 2));
+  }
+
+  private generateRobotsTxt(app: VerticalSpec, outDir: string) {
+    const domain = `https://${app.domain}`;
+    const allowed = app.links.filter((link) => link.allow).map((l) => l.url);
+    const disallowed = app.links
+      .filter((link) => !link.allow)
+      .map((l) => l.url) || [''];
+    const data = `User-agent: *
+${allowed.map((url) => `Allow: ${url}`)}
+${disallowed.map((url) => `Disallow: ${url}`)}
+
+Sitemap: ${domain}/sitemap.xml
+`;
+    writeFileSync(join(outDir, `robots.txt`), data);
+  }
+
+  private generateIndex(app: VerticalSpec, outDir: string, index: string) {
+    const api = `https://api.${app.domain}`;
+    const data = `<link rel="preconnect" href="${api}">`;
+    writeFileSync(
+      join(outDir, `index.html`),
+      index.replace('<!--  FEEDLESS PLACEHOLDER -->', data),
+    );
+  }
+}
+
+new AppsDataGenerator('build/generated');

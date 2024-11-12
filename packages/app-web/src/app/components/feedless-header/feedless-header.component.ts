@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
@@ -17,11 +17,11 @@ import { SessionService } from '../../services/session.service';
   styleUrls: ['./feedless-header.component.scss'],
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {
-  protected productConfig: ProductConfig;
+  protected productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   protected authorization: Authentication;
   protected session: Session;
-  protected readonly GqlProductName = GqlProductCategory;
+  protected readonly GqlProductName = GqlVertical;
   protected fromNow = relativeTimeOrElse;
 
   constructor(

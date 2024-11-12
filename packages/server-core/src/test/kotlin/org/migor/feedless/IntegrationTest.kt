@@ -10,8 +10,8 @@ import org.locationtech.jts.geom.Point
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
@@ -134,7 +134,7 @@ class IntegrationTest {
     repository.title = "title $suffix"
     repository.description = "description $suffix"
     repository.sourcesSyncCron = ""
-    repository.product = ProductCategory.rssProxy
+    repository.product = Vertical.rssProxy
     repository.ownerId = user.id
 
     return repositoryDAO.save(repository).also { addDocuments(it) }

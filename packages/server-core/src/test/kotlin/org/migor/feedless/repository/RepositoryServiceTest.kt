@@ -17,13 +17,13 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
-import org.migor.feedless.generated.types.ProductCategory
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeActionInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
@@ -81,7 +81,7 @@ class RepositoryServiceTest {
     val user = mock(UserEntity::class.java)
     `when`(user.id).thenReturn(userId)
     `when`(sessionService.user()).thenReturn(user)
-    `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy.fromDto())
+    `when`(sessionService.activeProductFromRequest()).thenReturn(Vertical.rssProxy.fromDto())
     `when`(repositoryDAO.save(any(RepositoryEntity::class.java)))
       .thenAnswer { it.getArgument(0) }
   }
@@ -112,7 +112,7 @@ class RepositoryServiceTest {
     repositoryService.create(
       listOf(
         RepositoryCreateInput(
-          product = ProductCategory.rssProxy,
+          product = Vertical.rssProxy,
           sources = listOf(
             SourceInput(
               title = "",
@@ -146,7 +146,7 @@ class RepositoryServiceTest {
       val repositories = listOf(
         RepositoryCreateInput(
           sources = emptyList(),
-          product = ProductCategory.rssProxy,
+          product = Vertical.rssProxy,
           title = "",
           description = "",
           withShareKey = false

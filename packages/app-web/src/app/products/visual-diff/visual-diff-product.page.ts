@@ -10,10 +10,10 @@ import { ChildActivationEnd, Router } from '@angular/router';
 import { has } from 'lodash-es';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { filter, map, Subscription } from 'rxjs';
-import { GqlProductCategory } from '../../../generated/graphql';
+import { GqlVertical } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
@@ -24,7 +24,7 @@ import { IonRouterLink } from '@ionic/angular/standalone';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   activePageTitle: string;
 
@@ -61,5 +61,5 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  protected readonly GqlProductName = GqlProductCategory;
+  protected readonly GqlProductName = GqlVertical;
 }

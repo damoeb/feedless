@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 
@@ -18,7 +18,7 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductTitleComponent implements OnInit, OnDestroy {
-  productConfig: ProductConfig;
+  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
 
   constructor(

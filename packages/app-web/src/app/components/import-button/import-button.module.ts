@@ -12,6 +12,7 @@ import {
   IonItem,
   ModalController,
 } from '@ionic/angular/standalone';
+import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   declarations: [ImportButtonComponent],
@@ -27,6 +28,7 @@ import {
     IonContent,
     IonList,
     IonItem,
+    RemoveIfProdModule,
   ],
 })
 export class ImportButtonModule {}

@@ -8,7 +8,7 @@ import {
 import '@justinribeiro/lite-youtube';
 import {
   AppConfigService,
-  ProductConfig,
+  VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
 import { IonPopover } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
@@ -31,7 +31,7 @@ export class AboutFeedlessPage implements OnInit {
   @ViewChild('createOptions')
   createOptionsPopover: IonPopover;
 
-  listedProducts: ProductConfig[];
+  listedProducts: VerticalSpecWithRoutes[];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -46,7 +46,7 @@ export class AboutFeedlessPage implements OnInit {
   }
 
   async ngOnInit() {
-    const allProducts = await this.appConfigService.getProductConfigs();
+    const allProducts = await this.appConfigService.getAllAppConfigs();
     this.listedProducts = allProducts.filter((p) => p.listed);
     // this.unstableProducts = allProducts.filter((p) => !p.listed);
     this.changeRef.detectChanges();

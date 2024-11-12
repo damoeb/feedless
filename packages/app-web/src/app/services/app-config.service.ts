@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
-import { GqlProductCategory } from '../../generated/graphql';
+import { GqlVertical } from '../../generated/graphql';
 import { ReplaySubject } from 'rxjs';
 import { marked } from 'marked';
-import { AppConfig, feedlessConfig, ProductId } from '../feedless-config';
-import { WebsiteConfig } from './server-config.service';
+import { VerticalSpec, allVerticals, VerticalId } from '../all-verticals';
+import { omit } from 'lodash-es';
+import { VerticalAppConfig } from '../types';
 
 // see https://ionicframework.com/docs/api/split-pane#setting-breakpoints
 export type SidemenuBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -16,11 +17,15 @@ export interface SideMenuConfig {
   breakpoint?: SidemenuBreakpoint;
 }
 
-export type ProductConfig = ProductRoutesConfig &
-  AppConfig & { imageUrl: string };
+export type VerticalSpecWithRoutesAndMarkup = VerticalSpecWithRoutes & {
+  localSetup: string;
+  videoTeaserSnipped: string;
+};
+export type VerticalSpecWithRoutes = VerticalRoutes &
+  VerticalSpec & { imageUrl: string };
 
-export type ProductRoutesConfig = {
-  id: ProductId;
+export type VerticalRoutes = {
+  id: VerticalId;
   routes: Routes;
   sideMenu?: SideMenuConfig;
 };
@@ -29,7 +34,7 @@ export type ProductRoutesConfig = {
   providedIn: 'root',
 })
 export class AppConfigService {
-  private productRoutes: ProductRoutesConfig[] = [
+  private verticalRoutes: VerticalRoutes[] = [
     {
       id: 'reader',
       // sideMenu: {
@@ -59,7 +64,7 @@ export class AppConfigService {
       ],
     },
     {
-      id: 'pageChangeTracker',
+      id: 'changeTracker',
       routes: [
         {
           path: '',
@@ -137,8 +142,9 @@ export class AppConfigService {
     },
   ];
 
-  private activeProductConfigSubject = new ReplaySubject<ProductConfig>();
-  public activeProductConfig!: ProductConfig;
+  private activeProductConfigSubject =
+    new ReplaySubject<VerticalSpecWithRoutes>();
+  public activeProductConfig!: VerticalSpecWithRoutes;
   public customProperties!: { [p: string]: number | boolean | string };
 
   constructor(
@@ -146,40 +152,41 @@ export class AppConfigService {
     private readonly titleService: Title,
   ) {}
 
-  async activateUserInterface({ product, customProperties }: WebsiteConfig) {
+  async activateUserInterface(appConfig: VerticalAppConfig) {
+    const product = appConfig.product;
+    const customProperties = omit(
+      appConfig,
+      'product',
+      'offlineSupport',
+      'apiUrl',
+    );
     console.log(
       `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`,
     );
     environment.product = product;
-    const config = await this.resolveProductConfig(product);
-    console.log('productConfig', config);
+    environment.offlineSupport = appConfig.offlineSupport === true;
+    const appConfigFull = await this.resolveAppConfig(product);
+    console.log('productConfig', appConfigFull);
     this.customProperties = customProperties;
-    environment.offlineSupport = config.offlineSupport === true;
-    this.titleService.setTitle(config.pageTitle);
-    this.router.resetConfig(config.routes);
-    this.activeProductConfig = config;
-    this.activeProductConfigSubject.next(config);
+    this.titleService.setTitle(appConfigFull.pageTitle);
+    this.router.resetConfig(appConfigFull.routes);
+    this.activeProductConfig = appConfigFull;
+    this.activeProductConfigSubject.next(appConfigFull);
   }
 
   getActiveProductConfigChange() {
     return this.activeProductConfigSubject.asObservable();
   }
 
-  getProductConfigs(): Promise<
-    (ProductConfig & { localSetup: string; videoTeaserSnipped: string })[]
-  > {
+  getAllAppConfigs(): Promise<VerticalSpecWithRoutesAndMarkup[]> {
     return Promise.all(
-      feedlessConfig.apps.map(
-        async (
-          meta,
-        ): Promise<
-          ProductConfig & { localSetup: string; videoTeaserSnipped: string }
-        > => {
-          const ui = this.productRoutes.find((p) => meta.id === p.id)!;
+      allVerticals.verticals.map(
+        async (meta): Promise<VerticalSpecWithRoutesAndMarkup> => {
+          const vertical = this.verticalRoutes.find((p) => meta.id === p.id)!;
           return {
             ...meta,
             videoTeaserSnipped: `<lite-youtube videoid="${meta.videoUrl}"></lite-youtube>`,
-            ...ui,
+            ...vertical,
             localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
 \`\`\`bash
 ${meta.localSetupBash}
@@ -197,10 +204,10 @@ ${await marked(meta.localSetupAfterMarkup || '')}`,
     this.titleService.setTitle(`${title} | ${this.activeProductConfig.title}`);
   }
 
-  private async resolveProductConfig(
-    product: GqlProductCategory,
-  ): Promise<ProductConfig> {
-    const configs = await this.getProductConfigs();
+  private async resolveAppConfig(
+    product: GqlVertical,
+  ): Promise<VerticalSpecWithRoutes> {
+    const configs = await this.getAllAppConfigs();
     return configs.find((productConfig) => productConfig.product === product)!;
   }
 }

@@ -22,6 +22,7 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Record, RecordFull } from '../graphql/types';
+import type { DefaultContext } from '@apollo/client/core/types';
 
 @Injectable({
   providedIn: 'root',
@@ -32,10 +33,12 @@ export class RecordService {
   findAllByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
+    context: DefaultContext = null,
   ): Promise<Record[]> {
     return this.apollo
       .query<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>({
         query: RecordByIds,
+        context,
         variables: {
           data,
         },
@@ -49,10 +52,12 @@ export class RecordService {
   findAllFullByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
+    context: DefaultContext = null,
   ): Promise<RecordFull[]> {
     return this.apollo
       .query<GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables>({
         query: FullRecordByIds,
+        context,
         variables: {
           data,
         },

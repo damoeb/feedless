@@ -12,7 +12,7 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
 import '@justinribeiro/lite-youtube';
-import { AppConfig } from '../../../feedless-config';
+import { VerticalSpec } from '../../../all-verticals';
 import { AppConfigService } from '../../../services/app-config.service';
 import { LocalizedLicense } from '../../../graphql/types';
 import { addIcons } from 'ionicons';
@@ -31,7 +31,7 @@ export class AboutRssBuilderPage implements OnInit {
 
   protected readonly dateFormat = dateFormat;
   protected license: LocalizedLicense;
-  protected product: AppConfig;
+  protected product: VerticalSpec;
 
   constructor(
     private readonly router: Router,
@@ -63,7 +63,7 @@ export class AboutRssBuilderPage implements OnInit {
   }
 
   async ngOnInit() {
-    const products = await this.appConfigService.getProductConfigs();
+    const products = await this.appConfigService.getAllAppConfigs();
     const source = this.activatedRoute.snapshot.queryParams['source'];
     if (source) {
       await this.handleQuery(source);

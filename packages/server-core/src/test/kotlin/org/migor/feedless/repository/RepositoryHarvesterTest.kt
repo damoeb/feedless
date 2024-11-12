@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
@@ -96,7 +96,7 @@ class RepositoryHarvesterTest {
     `when`(repository.id).thenReturn(repositoryId)
     `when`(repository.sourcesSyncCron).thenReturn("")
     `when`(repository.ownerId).thenReturn(UUID.randomUUID())
-    `when`(repository.product).thenReturn(ProductCategory.feedless)
+    `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repository.plugins).thenReturn(emptyList())
 
 
@@ -108,7 +108,7 @@ class RepositoryHarvesterTest {
     `when`(
       repositoryService.calculateScheduledNextAt(
         any(String::class.java), any(UUID::class.java), any(
-          ProductCategory::class.java
+          Vertical::class.java
         ), any(
           LocalDateTime::class.java
         )

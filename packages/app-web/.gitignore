@@ -32,5 +32,4 @@ npm-debug.log*
 /www
 /src/generated
 src/config.json
-feedless-config.json
-src/*-sitemap.xml
+all-verticals.json

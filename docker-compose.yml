@@ -26,11 +26,19 @@ services:
 #    ports:
 #      - "9200:9200"
 
-  smtp:
-    image: rnwood/smtp4dev
-    ports:
-      - "2525:25"
-      - "4000:80"
+  ingress:
+    build: docker/ingress
+    environment:
+      API_SERVER_NAME: "api.feedless.org"
+      API_DOCKER_NAME: ""
+      API_DOCKER_PORT:
+      SERVER_NAME_MAIN: "feedless.org"
+
+#  smtp:
+#    image: rnwood/smtp4dev
+#    ports:
+#      - "2525:25"
+#      - "4000:80"
 
 #  feed-validator:
 #    image: unboxed/docker-feed-validator
@@ -65,6 +73,8 @@ services:
     security_opt:
       - seccomp=./chrome.json
     restart: unless-stopped
+    deploy:
+      replicas: 2
     environment:
       - APP_EMAIL=${APP_ROOT_EMAIL}
       - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
@@ -122,12 +132,14 @@ services:
   feedless-aio-chromium:
     image: damoeb/feedless:aio-chromium-latest
     restart: unless-stopped
+#    healthcheck:
+#      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - postgis
     ports:
       - "8080:8080"
     volumes:
-      - ./docker/app/rss-proxy-config.json:/usr/feedless/public/config.json
+      - ./docker/app/app-config.json:/usr/feedless/public/config.json
       - ./docker/your-license.key:/usr/feedless/license.key:rw
     security_opt:
       - seccomp=./chrome.json

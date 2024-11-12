@@ -1,6 +1,6 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { isNull, isUndefined } from 'lodash-es';
-import { GqlUpsertOrderMutation } from '../generated/graphql';
+import { GqlVertical, GqlUpsertOrderMutation } from '../generated/graphql';
 
 export type Nullable<T> = T | null | undefined;
 
@@ -35,3 +35,10 @@ export function isDefined(v: any | undefined): boolean {
 }
 
 export type Order = GqlUpsertOrderMutation['upsertOrder'];
+
+export type VerticalAppConfig = {
+  apiUrl: string;
+  product: GqlVertical;
+  offlineSupport?: boolean;
+  [key: string | GqlVertical]: any | GqlVertical;
+};

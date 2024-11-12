@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
@@ -396,7 +396,7 @@ class DocumentServiceTest {
     }
     `when`(repository.retentionMaxAgeDays).thenReturn(20)
     `when`(repository.id).thenReturn(repositoryId)
-    `when`(repository.product).thenReturn(ProductCategory.feedless)
+    `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
 
     `when`(

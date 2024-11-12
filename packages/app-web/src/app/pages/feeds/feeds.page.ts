@@ -8,7 +8,7 @@ import {
 import { Record, Repository } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { BubbleColor } from '../../components/bubble/bubble.component';
-import { GqlProductCategory, GqlVisibility } from '../../../generated/graphql';
+import { GqlVertical, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -91,7 +91,7 @@ export class FeedsPage implements OnInit, OnDestroy {
           },
           where: {
             product: {
-              eq: GqlProductCategory.Feedless,
+              eq: GqlVertical.Feedless,
             },
           },
         },

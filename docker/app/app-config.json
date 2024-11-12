@@ -1,37 +1,6 @@
 {
   "apiUrl": "http://localhost:8080",
-  "upcoming": {
-    "eventRepositoryId": "ee5e2fd7-4b3e-4bf0-bf74-1224b5d667ff"
-  },
-  "forceProduct": "upcoming",
-  "products": [
-    {
-      "product": "feedless",
-      "hostname": ""
-    },
-    {
-      "product": "untoldNotes",
-      "hostname": ""
-    },
-    {
-      "product": "reader",
-      "hostname": ""
-    },
-    {
-      "product": "pageChangeTracker",
-      "hostname": ""
-    },
-    {
-      "product": "upcoming",
-      "hostname": "localhost"
-    },
-    {
-      "product": "visualDiff",
-      "hostname": ""
-    },
-    {
-      "product": "digest",
-      "hostname": ""
-    }
-  ]
+  "product": "upcoming",
+  "eventRepositoryId": "ee5e2fd7-4b3e-4bf0-bf74-1224b5d667ff",
+  "offlineSupport": false
 }

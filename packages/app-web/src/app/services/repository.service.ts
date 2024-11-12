@@ -14,12 +14,15 @@ import {
   GqlListPublicRepositoriesQueryVariables,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
+  GqlPluginExecutionInput,
   GqlRepositoriesInput,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
   GqlRepositoryCreateInput,
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
+  GqlScrapeActionInput,
+  GqlSourceInput,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
   ListPublicRepositories,
@@ -35,6 +38,10 @@ import { zenToRx } from './agent.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import dayjs from 'dayjs';
+import { ArrayElement } from '../types';
+
+type Source = ArrayElement<RepositoryFull['sources']>;
+type ScrapeAction = ArrayElement<Source['flow']['sequence']>;
 
 @Injectable({
   providedIn: 'root',
@@ -87,9 +94,18 @@ export class RepositoryService {
   ) {
     const a = window.document.createElement('a');
     a.href = window.URL.createObjectURL(
-      new Blob([JSON.stringify(repositories, null, 2)], {
-        type: 'application/json',
-      }),
+      new Blob(
+        [
+          JSON.stringify(
+            repositories.map((r) => this.toRepositoryInput(r)),
+            null,
+            2,
+          ),
+        ],
+        {
+          type: 'application/json',
+        },
+      ),
     );
     a.download =
       fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
@@ -193,4 +209,58 @@ export class RepositoryService {
       })
       .then((response) => response.data.repository);
   }
+
+  public toRepositoryInput(
+    repository: RepositoryFull,
+  ): GqlRepositoryCreateInput {
+    return {
+      visibility: repository.visibility,
+      product: repository.product,
+      sources: repository.sources.map((source) => this.toSourceInput(source)), // SourceInput
+      // segmented: SegmentInput
+      title: repository.title,
+      description: repository.description,
+      retention: removeTypename(repository.retention) as any,
+      refreshCron: repository.refreshCron,
+      // withShareKey: Boolean
+      pushNotificationsMuted: false,
+      // sunset: SunSetPolicyInput
+      plugins: repository.plugins.map((p) => removeTypename(p) as any),
+      // additionalSinks: repository.[WebhookOrEmailInput!]
+    };
+  }
+
+  private toSourceInput(source: Source): GqlSourceInput {
+    return {
+      title: source.title,
+      flow: removeTypename(source.flow) as any,
+      latLng: removeTypename(source.latLng) as any,
+      tags: source.tags,
+    };
+  }
+}
+
+type AnyObject = {
+  [key: string]: any;
+};
+
+export function removeTypename(obj: AnyObject): AnyObject {
+  // If obj is not an object or array, return it as is
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
+
+  // If obj is an array, map over each item and apply removeTypename
+  if (Array.isArray(obj)) {
+    return obj.map((item) => removeTypename(item));
+  }
+
+  // Create a new object without the __typename property
+  const newObj: AnyObject = {};
+  for (const key in obj) {
+    if (key !== '__typename' && obj[key] != null && obj[key] != undefined) {
+      newObj[key] = removeTypename(obj[key]);
+    }
+  }
+  return newObj;
 }

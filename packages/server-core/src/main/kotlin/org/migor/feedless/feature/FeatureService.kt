@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValueInput
 import org.migor.feedless.generated.types.FeatureGroup
@@ -45,7 +45,7 @@ class FeatureService(
     }
   }
 
-  suspend fun findAllByProduct(product: ProductCategory): List<Feature> {
+  suspend fun findAllByProduct(product: Vertical): List<Feature> {
     return withContext(Dispatchers.IO) {
       val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
         ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!

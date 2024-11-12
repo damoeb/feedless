@@ -26,7 +26,7 @@ describe('AboutRssBuilderPage', () => {
     );
 
     const appConfigService = TestBed.inject(AppConfigService);
-    appConfigService.getProductConfigs = () =>
+    appConfigService.getAllAppConfigs = () =>
       Promise.resolve([
         {
           id: 'rss-proxy',

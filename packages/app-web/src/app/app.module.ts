@@ -33,7 +33,7 @@ import { AppLoadModule } from './app-load.module';
 import { ServerConfigService } from './services/server-config.service';
 import { FinalizeProfileModalModule } from './modals/finalize-profile-modal/finalize-profile-modal.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { GqlProductCategory } from '../generated/graphql';
+import { GqlVertical } from '../generated/graphql';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
@@ -43,7 +43,7 @@ import { AppConfigService } from './services/app-config.service';
 export interface AppEnvironment {
   production: boolean;
   offlineSupport: boolean;
-  product: GqlProductCategory;
+  product: GqlVertical;
   officialFeedlessUrl: string;
 }
 

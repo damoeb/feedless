@@ -1,7 +1,7 @@
-import { GqlProductCategory } from '../generated/graphql';
+import { GqlVertical } from '../generated/graphql';
 
-export type ProductId =
-  | 'pageChangeTracker'
+export type VerticalId =
+  | 'changeTracker'
   | 'rss-proxy'
   | 'visual-diff'
   | 'reader'
@@ -21,9 +21,15 @@ export type CostItem = {
   };
 };
 
-export type AppConfig = {
-  id: ProductId;
-  product: GqlProductCategory;
+export type AppLink = {
+  url: string;
+  allow: boolean;
+};
+
+export type VerticalSpec = {
+  id: VerticalId;
+  product: GqlVertical;
+  domain?: string;
   localSetupBeforeMarkup?: string;
   localSetupBash: string;
   localSetupAfterMarkup?: string;
@@ -40,25 +46,26 @@ export type AppConfig = {
   descriptionHtml?: string;
   videoUrl?: string;
   costs?: CostItem[];
+  links: AppLink[];
   listed: boolean;
   features: string[];
 };
 
-export type FeedlessConfig = {
+export type AllVerticals = {
   license: string;
   localSetup: string;
-  apps: AppConfig[];
+  verticals: VerticalSpec[];
 };
 
-export const feedlessConfig: FeedlessConfig = {
+export const allVerticals: AllVerticals = {
   license:
     'is released under non-competitive FSL license, that falls back to Open Source Apache 2 after two years ([FSL-1.0-Apache-2.0](https://fsl.software/)).',
   localSetup:
     'Once you have [docker-compose](https://docs.docker.com/compose/install/) or [podman-compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), here is the basic setup.',
-  apps: [
+  verticals: [
     {
       id: 'rss-proxy',
-      product: GqlProductCategory.RssProxy,
+      product: GqlVertical.RssProxy,
       title: 'RSS-proxy',
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',
@@ -69,6 +76,7 @@ export const feedlessConfig: FeedlessConfig = {
       summary: 'Create feeds from Websites',
       descriptionMarkdown: `RSS-proxy allows you to do create an ATOM or JSON feed of any static website or feeds (web to feed),
 just by analyzing just the HTML structure. Usually the structuring to a feed works automatically.`,
+      links: [{ url: '/', allow: true }],
       costs: [
         {
           name: 'First major release',
@@ -111,7 +119,7 @@ docker-compose up`,
     },
     {
       id: 'visual-diff',
-      product: GqlProductCategory.VisualDiff,
+      product: GqlVertical.VisualDiff,
       titleHtml: '<strong>Visual</strong><em>Diff</em>',
       pageTitle: 'VisualDiff',
       title: 'VisualDiff',
@@ -124,6 +132,7 @@ docker-compose up`,
         'Detect changes in a website based on image, markup or text and get a notification via mail or feed.',
       // costs: 79.99,
       videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
+      links: [{ url: '/', allow: true }],
       features: [
         'Page change tracking',
         'Track pixel, markup or text',
@@ -143,7 +152,7 @@ docker-compose up`,
     },
     {
       id: 'reader',
-      product: GqlProductCategory.Reader,
+      product: GqlVertical.Reader,
       titleHtml: '<strong>Reader</strong>',
       pageTitle: 'Reader',
       title: 'Reader',
@@ -158,6 +167,7 @@ docker-compose up`,
       Inspiration for this comes from uncomissioned readability.com or instapaper`,
       // costs: 4.99,
       videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
+      links: [{ url: '/', allow: true }],
       features: [
         'Font Family',
         'Text Size',
@@ -176,7 +186,7 @@ docker-compose up`,
     },
     {
       id: 'untold',
-      product: GqlProductCategory.UntoldNotes,
+      product: GqlVertical.UntoldNotes,
       titleHtml: '<strong>Un</strong><em>told</em>',
       pageTitle: 'Untold Notes',
       title: 'Untold Notes',
@@ -199,6 +209,7 @@ his approach to structure information in a Zettelkasten. His approach will help 
 way to think, learn and remember.`,
       // costs: -1,
       videoUrl: '',
+      links: [{ url: '/', allow: true }],
       features: [
         'Text based notes',
         'Markdown editor (codemirror 6)',
@@ -232,7 +243,8 @@ way to think, learn and remember.`,
     // },
     {
       id: 'feedless',
-      product: GqlProductCategory.Feedless,
+      product: GqlVertical.Feedless,
+      domain: 'feedless.org',
       title: 'Feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
@@ -259,12 +271,14 @@ Extraction
  * create just the document repository
 `,
       videoUrl: '',
+      links: [{ url: '/', allow: true }],
       features: ['Workflow Builder', 'Self-Hosting or SaaS'],
       localSetupBash: ``,
     },
     {
       id: 'upcoming',
-      product: GqlProductCategory.Upcoming,
+      product: GqlVertical.Upcoming,
+      domain: 'allesevents.ch',
       title: 'Upcoming',
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',
@@ -276,6 +290,7 @@ Extraction
       therefore not listed on commercial ticket platforms, just shared on their particular website mostly relying on Word-of-mouth marketing.`,
       phase: 'development',
       videoUrl: '',
+      links: [{ url: '/', allow: true }],
       features: [
         'Seed Events from Websites',
         'Source Localization',
@@ -284,7 +299,7 @@ Extraction
       localSetupBash: ``,
     },
     // {
-    //   id: 'pageChangeTracker',
+    //   id: 'changeTracker',
     //   product: GqlProductCategory.PageChangeTracker,
     //   title: 'Page Change Tracker',
     //   listed: false,

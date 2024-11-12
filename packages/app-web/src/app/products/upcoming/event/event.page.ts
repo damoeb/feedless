@@ -65,20 +65,26 @@ export class EventPage implements OnInit, OnDestroy {
           this.date = parseDateFromUrl(this.activatedRoute);
           this.changeRef.detectChanges();
 
-          const event = await this.recordService.findAllFullByRepositoryId({
-            where: {
-              repository: {
-                id: this.appConfigService.customProperties
-                  .eventRepositoryId as any,
+          const event = await this.recordService.findAllFullByRepositoryId(
+            {
+              where: {
+                repository: {
+                  id: this.appConfigService.customProperties
+                    .eventRepositoryId as any,
+                },
+                id: {
+                  eq: params.eventId,
+                },
               },
-              id: {
-                eq: params.eventId,
+              cursor: {
+                page: 0,
               },
             },
-            cursor: {
-              page: 0,
+            'cache-first',
+            {
+              xSetCacheControlMaxAge: '1h',
             },
-          });
+          );
           this.event = event[0];
           this.loading = false;
           this.pageService.setMetaTags(this.getPageTags());

@@ -17,7 +17,6 @@ import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.plan.ProductService
 import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

@@ -92,7 +92,7 @@ type Repository {
   title: String!
   shareKey: String!
   ownerId: ID!
-  product: ProductCategory!
+  product: Vertical!
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
@@ -153,6 +153,9 @@ type Mutation {
   updateRepository(data: RepositoryUpdateInput!): Repository!
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
+#  createEnrollment(repositoryId: ID!, segmentation: SegmentInput!, email: String!): Enrollment!
+#  deleteEnrollment(enrollmentId: ID!): Boolean!
+
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
@@ -167,6 +170,14 @@ type Mutation {
 
   upsertOrder(data: UpsertOrderInput!): Order!
 }
+
+#type Enrollment {
+#  repositoryId: ID!
+#  segmentation: Segment!
+#  email: String!
+#  authorized: Boolean!
+#  createdAt: Long!
+#}
 
 input UpsertOrderInput {
   where: OrderWhereUniqueInput
@@ -401,7 +412,7 @@ input RecordUpdateInput {
 #  newsletter: Boolean!
 #}
 
-enum ProductCategory {
+enum Vertical {
 #  system
   all,
   rssProxy
@@ -515,7 +526,7 @@ input BillingsWhereInput {
 
 input ProductsWhereInput {
   id: StringFilter
-  category: ProductCategory
+  category: Vertical
 }
 
 type Product {
@@ -526,7 +537,7 @@ type Product {
   individual: Boolean!
   enterprise: Boolean!
   other: Boolean!
-  partOf: ProductCategory
+  partOf: Vertical
   featureGroupId: ID
 #  featureGroup: FeatureGroup
   prices: [PricedProduct!]!
@@ -546,7 +557,7 @@ enum RecurringPaymentInterval {
 }
 
 input CountRepositoriesInput {
-  product: ProductCategory!
+  product: Vertical!
 }
 
 input StoriesWhereInput {
@@ -589,7 +600,7 @@ input DateWhereInput {
 
 input ServerSettingsContextInput {
   host: String!
-  product: ProductCategory!
+  product: Vertical!
 }
 
 type RemoteNativeFeed { # rename to feed
@@ -860,9 +871,17 @@ input NetworkRequestInput {
 
 type Segment {
   digest: Boolean!
-  size: Int!
+  size: Int
+  interval: ChronoUnit!
+  startingAt: Long!
   sortAsc: Boolean!
   sortBy: String!
+}
+
+enum ChronoUnit {
+  DAY
+  WEEK
+  MONTH
 }
 
 type Selectors {
@@ -898,7 +917,7 @@ type LocalizedLicense {
 type License {
   name: String!
   email: String!
-  scope: ProductCategory!
+  scope: Vertical!
   version: Int!
   createdAt: Long!
 }
@@ -912,7 +931,7 @@ type Subscription {
 input AuthViaMailInput {
   email: String!
   token: String!
-  product: ProductCategory!
+  product: Vertical!
   osInfo: String!
   allowCreate: Boolean!
 }
@@ -964,7 +983,7 @@ type User {
   connectedApps: [ConnectedApp]!
   secrets: [UserSecret!]!
   groups: [GroupAssignment!]!
-  plan(product: ProductCategory!): Plan
+  plan(product: Vertical!): Plan
 }
 
 type GroupAssignment {
@@ -1146,7 +1165,7 @@ input RepositoriesInput {
 }
 
 input RepositoriesWhereInput {
-  product: ProductCategoryFilter
+  product: VerticalFilter
   visibility: VisibilityFilter
   text: FulltextQueryFilter
   tags: StringArrayFilter
@@ -1198,7 +1217,7 @@ input RepositoryUniqueWhereInput {
 }
 
 input RepositoryCreateInput {
-  product: ProductCategory!
+  product: Vertical!
   sources: [SourceInput!]!
   segmented: SegmentInput
   title: String!
@@ -1313,7 +1332,9 @@ input SecretKey {
 
 input SegmentInput {
   digest: Boolean!
-  size: Int!
+  size: Int
+  interval: ChronoUnit!
+  startingAt: Long!
   orderAsc: Boolean!
   orderBy: String!
 }
@@ -1344,10 +1365,10 @@ input VisibilityFilter {
 #  notIn: [String!]
 }
 
-input ProductCategoryFilter {
-  eq: ProductCategory
-  in: [ProductCategory!]
-#  notIn: [ProductCategory!]
+input VerticalFilter {
+  eq: Vertical
+  in: [Vertical!]
+#  notIn: [Vertical!]
 }
 
 input StringUpdateOperationsInput {

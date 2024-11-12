@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.DgsCustomContext
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.userIdOptional
@@ -47,7 +47,7 @@ fun createRequestContext(): RequestContext {
     context.product = runCatching {
       RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
         ?.let {
-          ProductCategory.valueOf(it as String)
+          Vertical.valueOf(it as String)
         }
     }.getOrNull()
 
@@ -58,9 +58,9 @@ fun createRequestContext(): RequestContext {
 }
 
 class RequestContext(
-  var product: ProductCategory? = null,
-  val corrId: String? = newCorrId(),
-  var userId: UUID? = null
+    var product: Vertical? = null,
+    val corrId: String? = newCorrId(),
+    var userId: UUID? = null
 ) : AbstractCoroutineContextElement(RequestContext) {
   companion object Key : CoroutineContext.Key<RequestContext>
 }
@@ -82,7 +82,7 @@ class SessionService {
       ?: throw notFoundException
   }
 
-  suspend fun activeProductFromRequest(): ProductCategory? {
+  suspend fun activeProductFromRequest(): Vertical? {
     return currentCoroutineContext()[RequestContext]?.product
   }
 

@@ -6,7 +6,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValueDAO
@@ -54,7 +54,7 @@ class PlanConstraintsService {
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
-  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: ProductCategory): Int? {
+  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: Vertical): Int? {
     val minItems =
       (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
     val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
@@ -70,7 +70,7 @@ class PlanConstraintsService {
     lastDate: LocalDateTime,
     nextDate: LocalDateTime,
     userId: UUID,
-    product: ProductCategory
+    product: Vertical
   ): LocalDateTime {
     val minRefreshRateInMinutes =
       (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
@@ -83,7 +83,7 @@ class PlanConstraintsService {
     }
   }
 
-  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: ProductCategory): Int? {
+  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: Vertical): Int? {
     val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
@@ -143,27 +143,27 @@ class PlanConstraintsService {
     return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
-  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: ProductCategory) {
+  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: Vertical) {
     val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }
   }
 
-  private suspend fun getFeatureInt(featureName: FeatureName, userId: UUID, product: ProductCategory? = null): Long? =
+  private suspend fun getFeatureInt(featureName: FeatureName, userId: UUID, product: Vertical? = null): Long? =
     getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
   private suspend fun getFeatureBool(
     featureName: FeatureName,
     userId: UUID,
-    product: ProductCategory? = null
+    product: Vertical? = null
   ): Boolean? =
     getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
 
   private suspend fun getFeature(
     featureName: FeatureName,
     userId: UUID,
-    product: ProductCategory
+    product: Vertical
   ): FeatureValueEntity? {
     return try {
       withContext(Dispatchers.IO) {
@@ -174,10 +174,10 @@ class PlanConstraintsService {
           )
         } else {
           var plan =
-            planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
+            planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
           if (plan == null) {
             productService.enableDefaultCloudProduct(product, userId)
-            plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, ProductCategory.feedless), LocalDateTime.now())
+            plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
           }
 
           featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId!!, featureName.name)
@@ -189,7 +189,7 @@ class PlanConstraintsService {
     }
   }
 
-  private suspend fun resolveProduct(product: ProductCategory?): ProductCategory {
+  private suspend fun resolveProduct(product: Vertical?): Vertical {
     return product ?: currentCoroutineContext()[RequestContext]?.product!!
   }
 }

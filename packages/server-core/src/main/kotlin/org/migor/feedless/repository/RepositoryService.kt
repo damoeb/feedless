@@ -17,8 +17,8 @@ import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
@@ -434,10 +434,10 @@ class RepositoryService(
   }
 
   suspend fun calculateScheduledNextAt(
-    cron: String,
-    ownerId: UUID,
-    product: ProductCategory,
-    after: LocalDateTime
+      cron: String,
+      ownerId: UUID,
+      product: Vertical,
+      after: LocalDateTime
   ): LocalDateTime {
     return planConstraintsService.coerceMinScheduledNextAt(
       LocalDateTime.now(),
@@ -542,7 +542,7 @@ class RepositoryService(
     }
   }
 
-  fun countAll(userId: UUID?, product: ProductCategory): Int {
+  fun countAll(userId: UUID?, product: Vertical): Int {
     return userId
       ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)

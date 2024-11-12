@@ -3,22 +3,22 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
-    "feedless-config": "npx tsc feedless-config-writer.ts --outDir build/ && node build/feedless-config-writer.js > feedless-config.json",
-    "prebuild": "yarn graphql-codegen",
-    "prestart:feedless": "yarn graphql-codegen && sh prepare-product.sh feedless false",
+    "generate-verticals-data": "npx tsc generate-verticals-data.ts --outDir build/ && node build/generate-verticals-data.js",
+    "prebuild": "yarn codegen",
+    "prestart:feedless": "yarn codegen && sh generate-dev-app-config.sh feedless false",
     "start:feedless": "ng serve",
-    "prestart:rss-proxy": "yarn graphql-codegen && sh prepare-product.sh rssProxy false",
+    "prestart:rss-proxy": "yarn codegen && sh generate-dev-app-config.sh rssProxy false",
     "start:rss-proxy": "ng serve",
-    "prestart:page-change-tracker": "yarn graphql-codegen && sh prepare-product.sh pageChangeTracker false",
+    "prestart:page-change-tracker": "yarn codegen && sh generate-dev-app-config.sh pageChangeTracker false",
     "start:page-change-tracker": "ng serve",
-    "prestart:untold-notes": "yarn graphql-codegen && sh prepare-product.sh untoldNotes true",
+    "prestart:untold-notes": "yarn codegen && sh generate-dev-app-config.sh untoldNotes true",
     "start:untold-notes": "ng serve",
-    "prestart:reader": "yarn graphql-codegen && sh prepare-product.sh reader false",
+    "prestart:reader": "yarn codegen && sh generate-dev-app-config.sh reader false",
     "start:reader": "ng serve",
-    "prestart:upcoming": "yarn graphql-codegen && sh prepare-product.sh upcoming false",
+    "prestart:upcoming": "yarn codegen && sh generate-dev-app-config.sh upcoming false",
     "start:upcoming": "ng serve",
     "start:upcoming:prod": "ng serve -c production",
-    "prestart:visual-diff": "yarn graphql-codegen && sh prepare-product.sh visualDiff false",
+    "prestart:visual-diff": "yarn codegen && sh generate-dev-app-config.sh visualDiff false",
     "start:visual-diff": "ng serve",
     "build": "ng build",
     "build:prod": "ng build -c production",
@@ -27,7 +27,7 @@
     "lint": "yarn prettier --write --log-level=warn .",
     "e2e": "ng e2e",
     "outdated": "upgrade-interactive --latest",
-    "codegen": "graphql-codegen --config codegen.yml && yarn feedless-config"
+    "codegen": "graphql-codegen --config codegen.yml && yarn generate-verticals-data"
   },
   "private": true,
   "dependencies": {
@@ -123,6 +123,7 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "prettier": "^3.3.3",
     "protractor": "^7.0.0",
+    "sitemap": "^8.0.0",
     "ts-node": "^10.9.2",
     "typescript": "5.4.5"
   }

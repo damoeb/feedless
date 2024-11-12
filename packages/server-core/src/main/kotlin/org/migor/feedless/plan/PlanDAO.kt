@@ -2,7 +2,7 @@ package org.migor.feedless.plan
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -24,8 +24,8 @@ interface PlanDAO : JpaRepository<PlanEntity, UUID> {
   """
   )
   fun findActiveByUserAndProductIn(
-    @Param("userId") userId: UUID,
-    @Param("products") products: List<ProductCategory>,
-    @Param("now") date: LocalDateTime,
+      @Param("userId") userId: UUID,
+      @Param("products") products: List<Vertical>,
+      @Param("now") date: LocalDateTime,
   ): PlanEntity?
 }

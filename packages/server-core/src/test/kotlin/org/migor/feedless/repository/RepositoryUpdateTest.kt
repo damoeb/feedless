@@ -8,7 +8,7 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableIntUpdateOperationsInput
@@ -124,10 +124,10 @@ class RepositoryUpdateTest {
         any(LocalDateTime::class.java),
         any(LocalDateTime::class.java),
         any(UUID::class.java),
-        any(ProductCategory::class.java),
+        any(Vertical::class.java),
       )
     ).thenReturn(LocalDateTime.now())
-    `when`(sessionService.activeProductFromRequest()).thenReturn(ProductCategory.rssProxy)
+    `when`(sessionService.activeProductFromRequest()).thenReturn(Vertical.rssProxy)
     `when`(repositoryDAO.findByIdWithSources(any(UUID::class.java))).thenReturn(repository)
     `when`(repositoryDAO.save(any(RepositoryEntity::class.java))).thenAnswer { it.arguments[0] }
 

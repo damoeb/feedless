@@ -29,7 +29,7 @@ fragment UserFragment on User {
     ...PlanFragment
   }
 }
-query session($product: ProductCategory!) {
+query session($product: Vertical!) {
   session {
     isLoggedIn
     user {

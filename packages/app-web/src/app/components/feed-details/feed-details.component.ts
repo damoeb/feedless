@@ -9,7 +9,7 @@ import {
 import {
   GqlFeedlessPlugins,
   GqlHarvest,
-  GqlProductCategory,
+  GqlVertical,
   GqlRecordField,
   GqlVisibility,
 } from '../../../generated/graphql';
@@ -118,7 +118,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   viewModeHistogram: ViewMode = 'histogram';
   viewModeDiff: ViewMode = 'diff';
   protected compareByField: GqlRecordField | undefined;
-  protected readonly GqlProductName = GqlProductCategory;
+  protected readonly GqlProductName = GqlVertical;
   protected readonly compareByPixel: GqlRecordField = GqlRecordField.Pixel;
 
   private seed = Math.random();
@@ -203,7 +203,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.repositoryId,
       fetchPolicy,
     );
-    if (this.repository.product === GqlProductCategory.VisualDiff) {
+    if (this.repository.product === GqlVertical.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
     this.compareByField = this.repository.plugins.find(
@@ -575,7 +575,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async showCode() {
     await this.modalService.openCodeEditorModal({
       title: 'JSON Editor',
-      text: JSON.stringify(this.repository, null, 2),
+      text: JSON.stringify(
+        this.repositoryService.toRepositoryInput(this.repository),
+        null,
+        2,
+      ),
       contentType: 'json',
     });
   }

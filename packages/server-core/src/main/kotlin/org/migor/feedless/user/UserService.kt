@@ -12,7 +12,7 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
@@ -143,7 +143,7 @@ class UserService {
     r.title = "Notifications"
     r.description = ""
     r.sourcesSyncCron = ""
-    r.product = ProductCategory.all
+    r.product = Vertical.all
     r.ownerId = user.id
     r.retentionMaxCapacity = 1000
     r.retentionMaxAgeDays = null

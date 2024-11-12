@@ -22,7 +22,7 @@ import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ProductCategory
+import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.ProductEntity
 import org.migor.feedless.user.corrId
@@ -61,7 +61,7 @@ data class LicensePayload(
   @SerializedName("e") val email: String,
   @SerializedName("c") val createdAt: LocalDateTime,
   @SerializedName("u") val validUntil: LocalDateTime? = null,
-  @SerializedName("s") val scope: ProductCategory
+  @SerializedName("s") val scope: Vertical
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -353,7 +353,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return keyFactory.generatePublic(X509EncodedKeySpec(publicKeyByte)) as RSAPublicKey
   }
 
-  fun isLicensedForProduct(product: ProductCategory): Boolean {
+  fun isLicensedForProduct(product: Vertical): Boolean {
 //    return this.license?.let {
 //      (it.scope === product || it.scope == ProductCategory.feedless) &&
 //        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&
@@ -373,7 +373,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
       name = billing.invoiceRecipientName,
       createdAt = LocalDateTime.now(),
       version = 1,
-      scope = product.partOf ?: ProductCategory.feedless,
+      scope = product.partOf ?: Vertical.feedless,
       validUntil = null,
       email = billing.invoiceRecipientEmail
     )

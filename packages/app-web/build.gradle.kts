@@ -25,8 +25,8 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
-  inputs.files("codegen.yml", "yarn.lock", "feedless-config-writer.ts", "src/app/feedless-config.ts", "../server-core/src/main/resources/schema/schema.graphqls")
-  outputs.files("src/generated/graphql.ts", "feedless-config.json")
+  inputs.files("codegen.yml", "yarn.lock", "generate-verticals-data.ts", "src/app/all-verticals.ts", "../server-core/src/main/resources/schema/schema.graphqls")
+  outputs.files("src/generated/graphql.ts", "all-verticals.json")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
