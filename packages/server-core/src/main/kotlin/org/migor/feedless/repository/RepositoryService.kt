@@ -454,6 +454,7 @@ class RepositoryService(
     if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("not authorized")
     }
+    repository.lastUpdatedAt = LocalDateTime.now()
     data.title?.set?.let { repository.title = it }
     data.description?.set?.let { repository.description = it }
     val product = sessionService.activeProductFromRequest()!!

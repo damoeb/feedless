@@ -153,7 +153,7 @@ type Mutation {
   updateRepository(data: RepositoryUpdateInput!): Repository!
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
-#  createEnrollment(repositoryId: ID!, segmentation: SegmentInput!, email: String!): Enrollment!
+#  createEnrollment(repositoryId: ID!, segmentation: SegmentInput!, filter: RecordsWhereInput!, email: String!): Enrollment!
 #  deleteEnrollment(enrollmentId: ID!): Boolean!
 
   logout: Boolean

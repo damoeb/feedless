@@ -378,9 +378,15 @@ class RepositoryHarvester(
         }
       }
 
+      if (repository.plugins.isNotEmpty()) {
+        documentPipelineJobDAO.deleteAllByDocumentIdIn(
+          documents.filter { (isNew, _) -> !isNew }
+            .map { (_, document) -> document.id }
+        )
+      }
+
       documentPipelineJobDAO.saveAll(
         documents
-          .filter { (new, _) -> new }
           .map { (_, document) -> document }
           .flatMap {
             repository.plugins
@@ -449,8 +455,20 @@ class RepositoryHarvester(
   ): Pair<Boolean, DocumentEntity>? {
     val corrId = coroutineContext.corrId()
     return try {
-      existing
-        ?.let {
+      if (existing == null) {
+        meterRegistry.counter(AppMetrics.createDocument).increment()
+
+        document.status = if (repository.plugins.isEmpty()) {
+          logCollector.log("[$corrId] released ${document.url}")
+          ReleaseStatus.released
+        } else {
+          logCollector.log("[$corrId] queued for post-processing ${document.url}")
+          ReleaseStatus.unreleased
+        }
+
+        Pair(true, document)
+      } else {
+        if (repository.plugins.isEmpty()) {
           existing.title = document.title
           existing.text = document.text
           existing.contentHash = document.contentHash
@@ -459,20 +477,15 @@ class RepositoryHarvester(
           existing.startingAt = document.startingAt
           logCollector.log("[$corrId] updated item ${document.url}")
           Pair(false, existing)
-        }
-        ?: run {
-          meterRegistry.counter(AppMetrics.createDocument).increment()
-
-          document.status = if (repository.plugins.isEmpty()) {
-            logCollector.log("[$corrId] released ${document.url}")
-            ReleaseStatus.released
+        } else {
+          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
+            existing.status = ReleaseStatus.unreleased
+            Pair(false, existing)
           } else {
-            logCollector.log("[$corrId] queued for post-processing ${document.url}")
-            ReleaseStatus.unreleased
+            null
           }
-
-          Pair(true, document)
         }
+      }
     } catch (e: Exception) {
       if (e is ResumableHarvestException) {
         log.debug("[$corrId] ${e.message}")

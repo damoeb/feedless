@@ -8,15 +8,20 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.feed.parser.json.JsonPoint
+import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.MimeData
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
+import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
@@ -56,6 +61,7 @@ class RepositoryHarvesterTest {
   private lateinit var repository: RepositoryEntity
   private lateinit var source: SourceEntity
   private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
+  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
 
   @BeforeEach
   fun setUp() = runTest {
@@ -67,10 +73,11 @@ class RepositoryHarvesterTest {
     scrapeService = mock(ScrapeService::class.java)
     repositoryHarvester = mock(RepositoryHarvester::class.java)
     sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
+    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
 
     repositoryHarvester = RepositoryHarvester(
       documentDAO,
-      mock(DocumentPipelineJobDAO::class.java),
+      documentPipelineJobDAO,
       mock(HarvestDAO::class.java),
       sourcePipelineJobDAO,
       mock(TelegramConnectionDAO::class.java),
@@ -99,9 +106,7 @@ class RepositoryHarvesterTest {
     `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repository.plugins).thenReturn(emptyList())
 
-
     `when`(sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(any(UUID::class.java))).thenReturn(mutableListOf(source))
-
 
     `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
 
@@ -244,15 +249,6 @@ class RepositoryHarvesterTest {
       verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 3 })
     }
 
-  private fun newJsonItem(url: String, title: String): JsonItem {
-    val item = JsonItem()
-    item.title = title
-    item.url = url
-    item.text = ""
-    item.publishedAt = LocalDateTime.now()
-    return item
-  }
-
   @Test
   fun `given documents feature no url, then titles will be used to deduplicate`() =
     runTest(context = RequestContext(userId = UUID.randomUUID())) {
@@ -287,16 +283,160 @@ class RepositoryHarvesterTest {
       verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 2 })
     }
 
-  //  @Test
-//  fun `existing document will be patched`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//    TODO()
-//  }
-//
+  @Test
+  fun `updates for existing documents will be ignored, if repository has plugins`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    `when`(repository.plugins).thenReturn(listOf(mock(PluginExecution::class.java)))
+    val existing = mock(DocumentEntity::class.java)
+    `when`(
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        any(String::class.java),
+        any(String::class.java),
+        any(UUID::class.java)
+      )
+    ).thenReturn(
+      existing
+    )
+
+    `when`(
+      scrapeService.scrape(
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
+      ScrapeOutput(
+        outputs = listOf(
+          ScrapeActionOutput(
+            index = 0,
+            fragment = FragmentOutput(
+              fragmentName = "feed",
+              fragments = emptyList(),
+              items = listOf(
+                newJsonItem(url = "", title = "updated.title"),
+              )
+            )
+          )
+        ),
+        time = 0
+      )
+    )
+
+    repositoryHarvester.handleRepository(repositoryId)
+
+    verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> {
+      it.count() == 0
+    })
+  }
+
+  private fun createPlugin(): PluginExecution {
+    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionParamsInput())
+  }
+
+  @Test
+  fun `updates for existing documents will be processed, if repository has changed after existing has been created`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    `when`(repository.plugins).thenReturn(listOf(createPlugin(), createPlugin()))
+    val existing = mock(DocumentEntity::class.java)
+    `when`(existing.id).thenReturn(UUID.randomUUID())
+    `when`(
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        any(String::class.java),
+        any(String::class.java),
+        any(UUID::class.java)
+      )
+    ).thenReturn(
+      existing
+    )
+
+    val date = LocalDateTime.now()
+    `when`(repository.lastUpdatedAt).thenReturn(date)
+    `when`(existing.createdAt).thenReturn(date.minusMinutes(1))
+
+    `when`(
+      scrapeService.scrape(
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
+      ScrapeOutput(
+        outputs = listOf(
+          ScrapeActionOutput(
+            index = 0,
+            fragment = FragmentOutput(
+              fragmentName = "feed",
+              fragments = emptyList(),
+              items = listOf(
+                newJsonItem(url = "", title = "updated.title"),
+              )
+            )
+          )
+        ),
+        time = 0
+      )
+    )
+
+    repositoryHarvester.handleRepository(repositoryId)
+
+    verify(documentPipelineJobDAO).deleteAllByDocumentIdIn(argThat {
+      it.count() == 1
+    })
+    verify(documentPipelineJobDAO).saveAll(argThat<Iterable<DocumentPipelineJobEntity>> {
+      it.count() == 2 // number of plugins
+    })
+    verify(existing).status = ReleaseStatus.unreleased
+  }
+
+  @Test
+  fun `updates for existing documents will be processed, if repository has no plugins`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    val existing = mock(DocumentEntity::class.java)
+    `when`(
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        any(String::class.java),
+        any(String::class.java),
+        any(UUID::class.java)
+      )
+    ).thenReturn(
+      existing
+    )
+
+    val updatedStartingAt = LocalDateTime.now().plusMinutes(5)
+    `when`(
+      scrapeService.scrape(
+        any(SourceEntity::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
+      ScrapeOutput(
+        outputs = listOf(
+          ScrapeActionOutput(
+            index = 0,
+            fragment = FragmentOutput(
+              fragmentName = "feed",
+              fragments = emptyList(),
+              items = listOf(
+                newJsonItem(url = "", title = "updated.title", text = "updated.text", tags = listOf("up", "date", "ed"), startingAt = updatedStartingAt),
+              )
+            )
+          )
+        ),
+        time = 0
+      )
+    )
+
+    repositoryHarvester.handleRepository(repositoryId)
+
+    verify(existing).title = "updated.title"
+    verify(existing).text = "updated.text"
+    verify(existing).startingAt = updatedStartingAt
+    verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> {
+      it.count() == 1 && it.first() == existing
+    })
+  }
+
 //  @Test
-//  fun `documents will inherit the plugins defined in repository`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//    TODO()
+//  fun `documents will inherit the plugins defined in repository`() =
+//    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+//      TODO()
 //  }
-//
+
   @Test
   fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
     `when`(
@@ -318,7 +458,14 @@ class RepositoryHarvesterTest {
             index = 0,
             fragment = FragmentOutput(
               fragmentName = "feed",
-              fragments = listOf(ScrapeExtractFragment(data = MimeData(mimeType = MIME_URL, data = "https://foo.bar/page/1"))),
+              fragments = listOf(
+                ScrapeExtractFragment(
+                  data = MimeData(
+                    mimeType = MIME_URL,
+                    data = "https://foo.bar/page/1"
+                  )
+                )
+              ),
               items = listOf(newJsonItem(url = "", title = "1"))
             )
           )
@@ -330,5 +477,17 @@ class RepositoryHarvesterTest {
     repositoryHarvester.handleRepository(repositoryId)
 
     verify(sourcePipelineJobDAO).saveAll(argThat<Iterable<SourcePipelineJobEntity>> { it.count() == 1 })
+  }
+
+  private fun newJsonItem(url: String, title: String, text: String = "", latLng: JsonPoint? = null, startingAt: LocalDateTime? = null, tags: List<String>? = null): JsonItem {
+    val item = JsonItem()
+    item.title = title
+    item.url = url
+    item.text = text
+    item.tags = tags
+    item.latLng = latLng
+    item.startingAt = startingAt
+    item.publishedAt = LocalDateTime.now()
+    return item
   }
 }

@@ -14,21 +14,19 @@ import {
   GqlListPublicRepositoriesQueryVariables,
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
-  GqlPluginExecutionInput,
   GqlRepositoriesInput,
   GqlRepositoryByIdQuery,
   GqlRepositoryByIdQueryVariables,
   GqlRepositoryCreateInput,
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
-  GqlScrapeActionInput,
   GqlSourceInput,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
   ListPublicRepositories,
   ListRepositories,
   RepositoryById,
-  UpdateRepository,
+  UpdateRepository
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { PublicRepository, Repository, RepositoryFull } from '../graphql/types';
@@ -41,7 +39,6 @@ import dayjs from 'dayjs';
 import { ArrayElement } from '../types';
 
 type Source = ArrayElement<RepositoryFull['sources']>;
-type ScrapeAction = ArrayElement<Source['flow']['sequence']>;
 
 @Injectable({
   providedIn: 'root',
@@ -68,7 +65,7 @@ export class RepositoryService {
             data,
           },
         })
-        .then((response) => response.data.createRepositories);
+        .then((response) => response.data!.createRepositories!);
     } else {
       await this.router.navigateByUrl('/login');
     }
@@ -90,7 +87,7 @@ export class RepositoryService {
 
   async downloadRepositories(
     repositories: RepositoryFull[],
-    fileName: string = null,
+    fileName: string|null = null,
   ) {
     const a = window.document.createElement('a');
     a.href = window.URL.createObjectURL(
@@ -127,7 +124,7 @@ export class RepositoryService {
           data,
         },
       })
-      .then((response) => response.data.updateRepository);
+      .then((response) => response.data!.updateRepository);
   }
 
   listRepositories(
@@ -216,7 +213,7 @@ export class RepositoryService {
     return {
       visibility: repository.visibility,
       product: repository.product,
-      sources: repository.sources.map((source) => this.toSourceInput(source)), // SourceInput
+      sources: repository.sources?.map((source) => this.toSourceInput(source)) ?? [], // SourceInput
       // segmented: SegmentInput
       title: repository.title,
       description: repository.description,
@@ -225,18 +222,21 @@ export class RepositoryService {
       // withShareKey: Boolean
       pushNotificationsMuted: false,
       // sunset: SunSetPolicyInput
-      plugins: repository.plugins.map((p) => removeTypename(p) as any),
+      plugins: repository.plugins?.map((p) => removeTypename(p) as any),
       // additionalSinks: repository.[WebhookOrEmailInput!]
     };
   }
 
   private toSourceInput(source: Source): GqlSourceInput {
-    return {
+    const sourceInput: GqlSourceInput = {
       title: source.title,
       flow: removeTypename(source.flow) as any,
-      latLng: removeTypename(source.latLng) as any,
       tags: source.tags,
     };
+    if (source.latLng) {
+      sourceInput.latLng = removeTypename(source.latLng) as any;
+    }
+    return sourceInput;
   }
 }
 

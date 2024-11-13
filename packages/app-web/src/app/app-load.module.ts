@@ -22,7 +22,8 @@ import { AppConfigService } from './services/app-config.service';
           await appConfigService.activateUserInterface(
             await serverConfig.fetchConfig(),
           );
-          // await serverConfig.fetchServerSettings();
+          // todo remove
+          await serverConfig.fetchServerSettings();
         },
       deps: [ServerConfigService, AppConfigService],
       multi: true,

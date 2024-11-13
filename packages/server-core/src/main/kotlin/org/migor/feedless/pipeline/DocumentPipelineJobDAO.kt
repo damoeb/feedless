@@ -35,5 +35,8 @@ interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID
   )
   fun findAllPendingBatched(@Param("now") now: LocalDateTime): List<DocumentPipelineJobEntity>
   fun deleteAllByCreatedAtBefore(date: LocalDateTime)
+
+  fun deleteAllByDocumentIdIn(ids: List<UUID>)
+
 //  fun deleteAllByDocumentId(documentId: UUID)
 }

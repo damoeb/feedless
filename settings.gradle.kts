@@ -3,7 +3,6 @@ rootProject.name = "feedless"
 include("packages:app-web")
 include("packages:server-core")
 include("packages:agent")
-include("packages:testing")
 
 buildscript {
   repositories {

@@ -26,13 +26,15 @@ services:
 #    ports:
 #      - "9200:9200"
 
-  ingress:
-    build: docker/ingress
+  feedless-ingress:
+    image: damoeb/feedless:ingress-latest
     environment:
-      API_SERVER_NAME: "api.feedless.org"
-      API_DOCKER_NAME: ""
-      API_DOCKER_PORT:
-      SERVER_NAME_MAIN: "feedless.org"
+      API_SERVER_NAMES: "api.feedless.org"
+      API_DOCKER_NAME: "feedless-core"
+      API_DOCKER_PORT: 8080
+      APP_SERVER_NAMES: "feedless.org"
+      APP_DOCKER_NAME: "feedless-app"
+      APP_DOCKER_PORT: 80
 
 #  smtp:
 #    image: rnwood/smtp4dev
