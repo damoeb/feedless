@@ -278,7 +278,7 @@ Extraction
     {
       id: 'upcoming',
       product: GqlVertical.Upcoming,
-      domain: 'allesevents.ch',
+      domain: 'lokale.events',
       title: 'Upcoming',
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',

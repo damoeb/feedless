@@ -11,6 +11,7 @@ COPY yarn.lock .
 #    &&  \
 RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --slient --network-timeout 600000
 
+# todo replace with node22 image
 FROM zenika/alpine-chrome:117-with-node
 WORKDIR /usr/node/agent
 ARG APP_VERSION

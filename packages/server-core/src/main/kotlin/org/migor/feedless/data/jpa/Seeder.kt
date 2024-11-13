@@ -335,7 +335,7 @@ class Seeder {
           FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
           FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(1000),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),

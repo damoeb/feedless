@@ -15,9 +15,15 @@ git pull
 LATEST_COMMIT=$(git rev-parse HEAD)
 LAST_COMMIT=$(cat "$PWD"/LAST_BUILD_COMMIT)
 
+
 if [ "$LATEST_COMMIT" = "$LAST_COMMIT" ]; then
   echo "No updates."
 else
+
+  docker tag damoeb/feedless:ingress-latest damoeb/feedless:ingress-decom
+  docker tag damoeb/feedless:agent-latest damoeb/feedless:agent-decom
+  docker tag damoeb/feedless:app-latest damoeb/feedless:app-decom
+  docker tag damoeb/feedless:core-latest damoeb/feedless:core-decom
 
   # -Dorg.gradle.caching.debug=true
   docker run -u "$UID:$GID" \

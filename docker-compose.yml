@@ -30,11 +30,11 @@ services:
     image: damoeb/feedless:ingress-latest
     environment:
       API_SERVER_NAMES: "api.feedless.org"
-      API_DOCKER_NAME: "feedless-core"
-      API_DOCKER_PORT: 8080
       APP_SERVER_NAMES: "feedless.org"
-      APP_DOCKER_NAME: "feedless-app"
-      APP_DOCKER_PORT: 80
+      INTERNAL_API_URL: "localhost:8080"
+      INTERNAL_APP_URL: "localhost:4200"
+    ports:
+      - "8888:80"
 
 #  smtp:
 #    image: rnwood/smtp4dev

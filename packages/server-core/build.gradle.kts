@@ -283,6 +283,11 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   val gitHash = grgit.head().id
 
   environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
+
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
+  inputs.property("semver", semver)
+
   commandLine(
     "docker", "build",
     "--build-arg", "APP_VERSION=$semver",

@@ -8,4 +8,4 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set entrypoint
-CMD ["sh", "./docker-entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

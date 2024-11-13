@@ -142,7 +142,7 @@ export class EventPage implements OnInit, OnDestroy {
 VERSION:2.0
 PRODID:EVENTFROG//EVENT//ICAL
 BEGIN:VEVENT
-UID:${this.event.id}@allesevents.ch
+UID:${this.event.id}@lokale.events
 DTSTAMP:${startingAt.format(utcFormat)}
 DTSTART:${startingAt.format(utcFormat)}
 DTEND:${startingAt.add(1, 'hour').format(utcFormat)}Z

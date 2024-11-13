@@ -18,6 +18,8 @@ val prepareTask = tasks.register("prepare") {
 
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
 }
@@ -25,13 +27,19 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
-  inputs.files("codegen.yml", "yarn.lock", "generate-verticals-data.ts", "src/app/all-verticals.ts", "../server-core/src/main/resources/schema/schema.graphqls")
-  outputs.files("src/generated/graphql.ts", "all-verticals.json")
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+
+  outputs.files("src/generated/graphql.ts", "all-verticals.json", "build/generate-verticals-data.js")
+  outputs.dir("build/generated")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
-  args.set(listOf("lint"))
   dependsOn(prepareTask)
+
+  args.set(listOf("lint"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir("src")
   inputs.files(
     "angular.json",
@@ -47,8 +55,10 @@ val lintTask = tasks.register<YarnTask>("lint") {
 }
 
 val testTask = tasks.register<YarnTask>("test") {
-  args.set(listOf("test:ci"))
   dependsOn(prepareTask)
+  args.set(listOf("test:ci"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files(
@@ -59,8 +69,10 @@ val testTask = tasks.register<YarnTask>("test") {
 }
 
 val buildTask = tasks.register<YarnTask>("build") {
-  args.set(listOf("build:prod"))
   dependsOn(prepareTask, lintTask, testTask)
+  args.set(listOf("build:prod"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
@@ -71,6 +83,10 @@ tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
   val gitHash = grgit.head().id
   val baseTag = findProperty("dockerImageTag")
+
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
+
   commandLine(
     "docker", "build",
     "-t", "$baseTag:app-latest",

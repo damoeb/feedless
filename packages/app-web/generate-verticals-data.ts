@@ -1,14 +1,17 @@
 import { SitemapItemLoose, SitemapStream, streamToPromise } from 'sitemap';
 import { VerticalSpec, allVerticals } from './src/app/all-verticals';
-import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { VerticalAppConfig } from './src/app/types';
 
 class AppsDataGenerator {
   constructor(buildFolder: string) {
+    console.log('buildFolder:', buildFolder);
     this.createFeedlessConfig();
 
-    rmSync(buildFolder, { recursive: true });
+    if (existsSync(buildFolder)) {
+      rmSync(buildFolder, { recursive: true });
+    }
     mkdirSync(buildFolder, { recursive: true });
 
     for (let appKey in allVerticals.verticals) {
@@ -43,7 +46,7 @@ class AppsDataGenerator {
     });
 
     streamToPromise(smStream).then((sitemap) =>
-      writeFileSync(join(outDir, `sitemap.xml`), String(sitemap)),
+      this.writeFile(join(outDir, `sitemap.xml`), String(sitemap)),
     );
 
     const mainPage: SitemapItemLoose = {
@@ -62,7 +65,7 @@ class AppsDataGenerator {
       product: app.product,
       offlineSupport: app.offlineSupport,
     };
-    writeFileSync(
+    this.writeFile(
       join(outDir, `config.json`),
       JSON.stringify(appConfig, null, 2),
     );
@@ -81,7 +84,7 @@ class AppsDataGenerator {
     const config = JSON.parse(JSON.stringify(allVerticals));
     config.apps = apps;
 
-    writeFileSync('./all-verticals.json', JSON.stringify(config, null, 2));
+    this.writeFile('./all-verticals.json', JSON.stringify(config, null, 2));
   }
 
   private generateRobotsTxt(app: VerticalSpec, outDir: string) {
@@ -96,17 +99,22 @@ ${disallowed.map((url) => `Disallow: ${url}`)}
 
 Sitemap: ${domain}/sitemap.xml
 `;
-    writeFileSync(join(outDir, `robots.txt`), data);
+    this.writeFile(join(outDir, `robots.txt`), data);
   }
 
   private generateIndex(app: VerticalSpec, outDir: string, index: string) {
     const api = `https://api.${app.domain}`;
     const data = `<link rel="preconnect" href="${api}">`;
-    writeFileSync(
+    this.writeFile(
       join(outDir, `index.html`),
       index.replace('<!--  FEEDLESS PLACEHOLDER -->', data),
     );
   }
+
+  private writeFile(file: string, data: string) {
+    console.log(`* ${file}`);
+    writeFileSync(file, data);
+  }
 }
 
-new AppsDataGenerator('build/generated');
+new AppsDataGenerator(join(process.cwd(), 'build/generated'));

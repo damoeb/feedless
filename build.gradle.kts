@@ -20,6 +20,10 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
 
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
+  inputs.property("semver", semver)
+
   // with web
   commandLine(
     "docker", "build",
@@ -73,6 +77,10 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
 
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
+  inputs.property("semver", semver)
+
   // with chromium
   commandLine(
     "docker", "build",
@@ -91,6 +99,9 @@ tasks.register("bundle", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
 
   val gitHash = grgit.head().id
+
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
 
   commandLine(
     "docker", "build",

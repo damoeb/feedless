@@ -26,7 +26,7 @@ import {
   ListPublicRepositories,
   ListRepositories,
   RepositoryById,
-  UpdateRepository
+  UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { PublicRepository, Repository, RepositoryFull } from '../graphql/types';
@@ -87,7 +87,7 @@ export class RepositoryService {
 
   async downloadRepositories(
     repositories: RepositoryFull[],
-    fileName: string|null = null,
+    fileName: string | null = null,
   ) {
     const a = window.document.createElement('a');
     a.href = window.URL.createObjectURL(
@@ -213,7 +213,8 @@ export class RepositoryService {
     return {
       visibility: repository.visibility,
       product: repository.product,
-      sources: repository.sources?.map((source) => this.toSourceInput(source)) ?? [], // SourceInput
+      sources:
+        repository.sources?.map((source) => this.toSourceInput(source)) ?? [], // SourceInput
       // segmented: SegmentInput
       title: repository.title,
       description: repository.description,

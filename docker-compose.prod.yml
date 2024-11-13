@@ -4,19 +4,6 @@ version: '3.4'
 
 services:
 
-
-  feedless-ingress:
-    image: damoeb/feedless:ingress-latest
-    environment:
-      API_SERVER_NAMES: "api.feedless.org api.lokale.events api.allesevents.ch"
-      API_DOCKER_NAME: "feedless-core"
-      API_DOCKER_PORT: 8080
-      APP_SERVER_NAMES: "feedless.org lokale.events allesevents.ch"
-      APP_DOCKER_NAME: "feedless-app"
-      APP_DOCKER_PORT: 80
-    ports:
-      - "8080:80"
-
   postgis:
     image: postgis/postgis:15-3.4-alpine
     container_name: postgis
@@ -25,24 +12,39 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    expose:
-      - 5433
     logging:
       driver: json-file
       options:
         max-size: 10m
+    expose:
+      - 5433
+    ports:
+      - "5433:5432"
     networks:
       - postgis
 
+  feedless-ingress:
+    image: damoeb/feedless:ingress-latest
+    environment:
+      API_SERVER_NAMES: "api.feedless.org api.lokale.events"
+      APP_SERVER_NAMES: "feedless.org lokale.events"
+      INTERNAL_API_URL: "localhost:8082"
+      INTERNAL_APP_URL: "localhost:4200"
+    ports:
+     - "8888:80"
+    depends_on:
+      - feedless-app
+      - feedless-core
+    networks:
+      - public
+
   feedless-agent:
     image: damoeb/feedless:agent-latest
-#    deploy:
-#      replicas: 2
     security_opt:
       - seccomp=./chrome.json
     restart: unless-stopped
-    deploy:
-      replicas: 2
+#    deploy:
+#      replicas: 2
     environment:
       - APP_EMAIL=${APP_ROOT_EMAIL}
       - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
@@ -54,8 +56,8 @@ services:
       driver: json-file
       options:
         max-size: 10m
-    ports:
-      - "3000:3000"
+#    ports:
+#      - "3000:3000"
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
     networks:
@@ -65,21 +67,30 @@ services:
   feedless-app:
     image: damoeb/feedless:app-latest
     restart: unless-stopped
+    volumes:
+      # vertical specific files will be served by nginx
+      - ./docker/upcoming-config.json:/usr/share/nginx/html/verticals-data/upcoming/config.json
+    ports:
+      - "4200:80"
     logging:
       driver: json-file
       options:
         max-size: 10m
+    networks:
+      - public
 
   feedless-core:
     image: damoeb/feedless:core-latest
     restart: unless-stopped
-    healthcheck:
-      test: curl -f http://localhost:8080
-      interval: 60s
-      timeout: 10s
-      retries: 10
+#    healthcheck:
+#      test: curl -f http://localhost:8080
+#      interval: 60s
+#      timeout: 10s
+#      retries: 10
     depends_on:
       - postgis
+    ports:
+      - "8082:8080"
     volumes:
       - ./feedless.pem:/usr/feedless/feedless.pem
       - ./debug/:/usr/feedless/debug/ # heap dump directory
@@ -93,8 +104,13 @@ services:
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
       - app.cors.allowedOrigins=https://feedless.org
       - APP_PLAUSIBLE_URL=http://plausible:8000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
     networks:
       - postgis
+      - public
       - monitoring
       - puppeteer
 
@@ -185,5 +201,9 @@ networks:
   postgis:
     driver: bridge
   monitoring:
+    driver: bridge
+  puppeteer:
+    driver: bridge
+  public:
     driver: bridge
 

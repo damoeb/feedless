@@ -26,13 +26,17 @@ val gradleCleanTask = tasks.register<Delete>("clean") {
 
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
-  args.set(listOf("lint"))
   dependsOn(yarnInstallTask)
+  args.set(listOf("lint"))
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir("src")
   inputs.files("yarn.lock")
   outputs.upToDateWhen { true }
@@ -41,6 +45,8 @@ val lintTask = tasks.register<YarnTask>("lint") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir("src")
   inputs.files("codegen.yml", "yarn.lock", "../server-core/src/main/resources/schema/schema.graphqls")
   outputs.upToDateWhen { true }
@@ -66,8 +72,9 @@ val testTask = tasks.register<YarnTask>("test") {
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
   dependsOn(prepareTask, lintTask, testTask)
+
+  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
-  inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
   outputs.dir("dist")
 }
@@ -78,6 +85,10 @@ tasks.register("bundle", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
 
   val gitHash = grgit.head().id
+
+  inputs.property("baseTag", findProperty("dockerImageTag"))
+  inputs.property("gitHash", gitHash)
+  inputs.property("semver", semver)
 
   commandLine(
     "docker", "build",
