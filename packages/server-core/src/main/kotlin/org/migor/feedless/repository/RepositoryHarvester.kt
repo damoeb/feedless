@@ -49,8 +49,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.net.ConnectException
 import java.net.UnknownHostException
 import java.time.Duration
@@ -60,7 +62,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.coroutines.coroutineContext
-
 
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
@@ -76,7 +77,8 @@ class RepositoryHarvester(
   private val documentService: DocumentService,
   private val meterRegistry: MeterRegistry,
   private val messageService: MessageService,
-  private val repositoryService: RepositoryService
+  private val repositoryService: RepositoryService,
+  private val transactionManager: PlatformTransactionManager,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
@@ -227,9 +229,11 @@ class RepositoryHarvester(
       withContext(Dispatchers.IO) {
         source.errorsInSuccession += 1
         logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
+        log.info("source ${source.id} error increment -> '${source.errorsInSuccession}'")
         source.disabled = source.errorsInSuccession >= maxErrorCount
         if (source.disabled) {
           logCollector.log("[$corrId] disabled source")
+          log.info("source ${source.id} disabled")
         }
         source.lastErrorMessage = e?.message
         sourceDAO.save(source)
@@ -363,7 +367,7 @@ class RepositoryHarvester(
           }
         }.map { (_, document) -> document }
       documentDAO.saveAll(validDocuments)
-      log.info("appended ${validDocuments.size} documents")
+      log.info("$repositoryId found ${validDocuments.size} documents")
 
       if (repository.pushNotificationsMuted) {
         telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
@@ -379,10 +383,18 @@ class RepositoryHarvester(
       }
 
       if (repository.plugins.isNotEmpty()) {
-        documentPipelineJobDAO.deleteAllByDocumentIdIn(
-          documents.filter { (isNew, _) -> !isNew }
-            .map { (_, document) -> document.id }
-        )
+        try {
+          val transactionTemplate = TransactionTemplate(transactionManager)
+          transactionTemplate.executeWithoutResult {
+            runBlocking {
+              documentPipelineJobDAO.deleteAllByDocumentIdIn(
+                documents.filter { (isNew, _) -> !isNew }
+                  .map { (_, document) -> document.id })
+            }
+          }
+        } catch (e: Exception) {
+          log.warn("deleteAllByDocumentIdIn failed: ${e.message}")
+        }
       }
 
       documentPipelineJobDAO.saveAll(
@@ -400,7 +412,7 @@ class RepositoryHarvester(
       if (next?.isNotEmpty() == true) {
         if (hasNew) {
           val pageUrls = next.filterNot { url -> sourcePipelineJobDAO.existsBySourceIdAndUrl(source.id, url) }
-          log.info("[$corrId] Trigger following ${pageUrls.size} (${next.size}) page urls ${pageUrls.joinToString(", ")}")
+          log.info("[$corrId] Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
           sourcePipelineJobDAO.saveAll(
             pageUrls
               .mapIndexed { index, url ->

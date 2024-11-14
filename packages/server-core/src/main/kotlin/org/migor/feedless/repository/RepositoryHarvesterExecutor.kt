@@ -47,71 +47,83 @@ class RepositoryHarvesterExecutor internal constructor() {
   @Scheduled(fixedDelay = 61000, initialDelay = 5000)
   @Transactional
   fun syncPullCountForPublicRepos() {
-    if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
-      val corrId = newCorrId()
+    try {
+      if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
+        val corrId = newCorrId()
 
-      LocalDateTime.now().minusDays(1)
-      val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
-      val repos =
-        repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(EntityVisibility.isPublic, LocalDateTime.now(), pageable)
+        LocalDateTime.now().minusDays(1)
+        val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
+        val repos =
+          repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(
+            EntityVisibility.isPublic,
+            LocalDateTime.now(),
+            pageable
+          )
 
-      if (analyticsService.canPullEvents()) {
+        if (analyticsService.canPullEvents()) {
 
-        val semaphore = Semaphore(2)
-        runBlocking {
-          runCatching {
-            coroutineScope {
-              repos.map { repo ->
-                async(RequestContext(userId = repo.ownerId)) {
-                  semaphore.acquire()
-                  try {
-                    val views = analyticsService.getUniquePageViewsForRepository(repo.id)
-                    repositoryService.updatePullsFromAnalytics(repo.id, views)
-                  } finally {
-                    semaphore.release()
+          val semaphore = Semaphore(2)
+          runBlocking {
+            runCatching {
+              coroutineScope {
+                repos.map { repo ->
+                  async(RequestContext(userId = repo.ownerId)) {
+                    semaphore.acquire()
+                    try {
+                      val views = analyticsService.getUniquePageViewsForRepository(repo.id)
+                      repositoryService.updatePullsFromAnalytics(repo.id, views)
+                    } finally {
+                      semaphore.release()
+                    }
                   }
-                }
-              }.awaitAll()
+                }.awaitAll()
+              }
+              log.debug("batch refresh done")
+            }.onFailure {
+              log.error("[$corrId] batch refresh done: ${it.message}")
             }
-            log.debug("batch refresh done")
-          }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}", it)
           }
         }
       }
+    } catch (e: Exception) {
+      log.error("batch refresh done: ${e.message}")
     }
   }
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   @Transactional
   fun refreshSubscriptions() {
-    if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
-      val corrId = newCorrId()
-      val reposDue =
-        repositoryDAO.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
-      log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
-      if (reposDue.isNotEmpty()) {
-        val semaphore = Semaphore(10)
-        runBlocking {
-          runCatching {
-            coroutineScope {
-              reposDue.map {
-                async(RequestContext(userId = it.ownerId)) {
-                  semaphore.acquire()
-                  try {
-                    repositoryHarvester.handleRepository(it.id)
-                  } finally {
-                    semaphore.release()
+    try {
+      if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
+        val corrId = newCorrId()
+        val reposDue =
+          repositoryDAO.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
+        log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
+        if (reposDue.isNotEmpty()) {
+          val semaphore = Semaphore(10)
+          runBlocking {
+            runCatching {
+              coroutineScope {
+                reposDue.map {
+                  async(RequestContext(userId = it.ownerId)) {
+                    semaphore.acquire()
+                    try {
+                      repositoryHarvester.handleRepository(it.id)
+                    } finally {
+                      semaphore.release()
+                    }
                   }
-                }
-              }.awaitAll()
+                }.awaitAll()
+              }
+              log.debug("[$corrId] batch refresh done")
+            }.onFailure {
+              log.error("[$corrId] batch refresh done: ${it.message}")
             }
-            log.debug("[$corrId] batch refresh done")
-          }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}", it)
           }
         }
       }
+    } catch (e: Exception) {
+      log.error("batch refresh done: ${e.message}")
     }
   }
 }

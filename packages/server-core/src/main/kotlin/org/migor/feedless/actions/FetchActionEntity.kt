@@ -29,10 +29,11 @@ open class FetchActionEntity : ScrapeActionEntity() {
   open var timeout: Int? = null
 
   @URL
+  @Size(message = "url", max = 900)
   @Column(name = "url", nullable = false, length = 900)
   open lateinit var url: String
 
-  @Size(min = 1, max = 30)
+  @Size(message = "language", min = 1, max = 30)
   @Column(name = "language")
   open var language: String? = null
 

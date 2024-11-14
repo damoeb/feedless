@@ -115,7 +115,7 @@ class RepositoryServiceTest {
           product = Vertical.rssProxy,
           sources = listOf(
             SourceInput(
-              title = "",
+              title = "wef",
               flow = ScrapeFlowInput(
                 sequence = listOf(
                   ScrapeActionInput(
@@ -123,8 +123,7 @@ class RepositoryServiceTest {
                   )
                 )
               ),
-
-              )
+            )
           ),
           title = "",
           description = "",

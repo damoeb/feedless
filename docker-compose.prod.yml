@@ -102,7 +102,7 @@ services:
       - APP_PEM_FILE=./feedless.pem
       - APP_WHITELISTED_HOSTS=feedless-core,172.26.0.1
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
-      - app.cors.allowedOrigins=https://feedless.org
+      - app.cors.allowedOrigins=https://feedless.org,https://lokale.events
       - APP_PLAUSIBLE_URL=http://plausible:8000
     logging:
       driver: json-file

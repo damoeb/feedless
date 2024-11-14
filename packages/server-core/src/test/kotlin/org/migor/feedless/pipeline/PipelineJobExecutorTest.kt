@@ -16,6 +16,7 @@ import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDateTime
 import java.util.*
 
@@ -40,6 +41,7 @@ class PipelineJobExecutorTest {
       sourceDAO,
       documentPipelineJobDAO,
       sourcePipelineJobDAO,
+      mock(PlatformTransactionManager::class.java),
       documentDAO,
       repositoryDAO,
       mock(DocumentService::class.java),

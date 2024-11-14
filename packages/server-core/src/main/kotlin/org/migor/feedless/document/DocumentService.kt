@@ -172,7 +172,7 @@ class DocumentService(
           )
         }
         if (retentionSize != null && retentionSize > 0) {
-          log.info("applying retention for repo ${repository.id} with maxItems=$retentionSize")
+          log.debug("applying retention for repo ${repository.id} with maxItems=$retentionSize")
           documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
         } else {
           log.info("no retention with maxItems given repo ${repository.id}")
@@ -286,7 +286,7 @@ class DocumentService(
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
     val corrId = coroutineContext.corrId()
-    log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
+    log.info("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
     val logCollector = LogCollector()
 
@@ -331,7 +331,7 @@ class DocumentService(
               delayJob(job, e, document)
             } else {
               if (e !is FilterMismatchException && e !is IllegalArgumentException) {
-                log.warn("[$corrId] ${e.message}", e)
+                log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
               }
               deleteDocument(document)
             }

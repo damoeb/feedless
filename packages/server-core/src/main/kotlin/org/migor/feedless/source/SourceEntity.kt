@@ -8,7 +8,10 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
+import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -17,6 +20,7 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.ScrapeFlow
 import org.migor.feedless.generated.types.Source
@@ -33,6 +37,7 @@ open class SourceEntity : EntityWithUUID() {
   open var language: String? = null
 
   @Column(name = "title", nullable = false)
+  @Size(message = "title", min = 1, max = LEN_STR_DEFAULT)
   open lateinit var title: String
 
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
@@ -55,7 +60,11 @@ open class SourceEntity : EntityWithUUID() {
   open var errorsInSuccession: Int = 0
 
   @Column(name = "last_error_message")
+  @Size(message = "lastErrorMessage", min = 1, max = LEN_STR_DEFAULT)
   open var lastErrorMessage: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
+    }
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -67,6 +76,15 @@ open class SourceEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_source__to__repository")
   )
   open var repository: RepositoryEntity? = null
+
+  @PrePersist
+  fun prePersist() {
+    if (tags != null && tags?.size!! > 10) {
+      throw IllegalArgumentException("too many tags")
+    }
+    title = StringUtils.abbreviate(title, LEN_STR_DEFAULT)
+    lastErrorMessage = StringUtils.abbreviate(lastErrorMessage, LEN_STR_DEFAULT)
+  }
 }
 
 fun SourceEntity.toDto(): Source {

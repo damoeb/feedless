@@ -9,6 +9,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.ScrapeEmit
 import java.sql.Types
 
@@ -22,11 +23,12 @@ import java.sql.Types
 )
 open class ExtractXpathActionEntity : ScrapeActionEntity() {
 
+  @Size(message = "fragmentName", max = LEN_STR_DEFAULT)
   @Column(name = "fragment_name", nullable = false)
   open lateinit var fragmentName: String
 
   @XPathConstraint
-  @Size(min = 1, max = 100)
+  @Size(message = "xpath", min = 1, max = 100)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 

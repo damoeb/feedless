@@ -28,19 +28,19 @@ open class AttachmentEntity : EntityWithUUID() {
   @Column(nullable = false, name = "has_data")
   open var hasData: Boolean = false
 
-  @Size(max = LEN_URL)
+  @Size(message = "remoteDataUrl", max = LEN_URL)
   @Column(length = LEN_URL, name = "remote_data_url")
   open var remoteDataUrl: String? = null
 
-  @Size(max = LEN_STR_DEFAULT)
+  @Size(message = "mimeType", max = LEN_STR_DEFAULT)
   @Column(nullable = false, length = LEN_STR_DEFAULT, name = "content_type")
   open lateinit var mimeType: String
 
-  @Size(max = LEN_URL)
+  @Size(message = "originalUrl", max = LEN_URL)
   @Column(length = LEN_URL, name = "original_url")
   open var originalUrl: String? = null
 
-  @Size(max = LEN_STR_DEFAULT)
+  @Size(message = "name", max = LEN_STR_DEFAULT)
   @Column(name = "name")
   open var name: String? = null
 

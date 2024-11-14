@@ -15,7 +15,6 @@
             <option value="$PROJECT_DIR$/packages/agent" />
             <option value="$PROJECT_DIR$/packages/app-web" />
             <option value="$PROJECT_DIR$/packages/server-core" />
-            <option value="$PROJECT_DIR$/packages/testing" />
           </set>
         </option>
       </GradleProjectSettings>

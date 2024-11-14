@@ -68,11 +68,11 @@ open class DocumentEntity : EntityWithUUID() {
     const val LEN_URL: Int = 1500
   }
 
-  @Size(max = LEN_URL)
+  @Size(message = "url", max = LEN_URL)
   @Column(nullable = false, length = LEN_URL, name = StandardJpaFields.url)
   open lateinit var url: String
 
-  @Size(max = LEN_STR_DEFAULT)
+  @Size(message = "title", max = LEN_STR_DEFAULT)
   @Column(length = LEN_STR_DEFAULT, name = "content_title")
   open var title: String? = null
     set(value) {
@@ -82,7 +82,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(length = 50, name = "content_hash", nullable = false)
   open lateinit var contentHash: String
 
-  @Size(max = LEN_50)
+  @Size(message = "rawMimeType", max = LEN_50)
   @Column(length = LEN_50, name = "content_raw_mime")
   open var rawMimeType: String? = null
 
@@ -105,7 +105,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(name = "content_html")
   open var html: String? = null
 
-  @Size(max = LEN_URL)
+  @Size(message = "imageUrl", max = LEN_URL)
   @Column(length = LEN_URL, name = "image_url")
   open var imageUrl: String? = null
 

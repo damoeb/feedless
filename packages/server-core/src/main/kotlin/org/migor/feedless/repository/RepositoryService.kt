@@ -198,7 +198,7 @@ class RepositoryService(
     repository: RepositoryEntity
   ): SourceEntity {
     val entity = SourceEntity()
-    log.info("[${coroutineContext.corrId()}] create source")
+    log.debug("[${coroutineContext.corrId()}] create source")
     val source = sourceInput.fromDto()
     planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
 //    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)

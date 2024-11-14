@@ -8,6 +8,7 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 
 @Entity
 @Table(name = "t_action_dom")
@@ -20,7 +21,7 @@ import jakarta.validation.constraints.Size
 open class DomActionEntity : ScrapeActionEntity() {
 
   @XPathConstraint
-  @Size(min = 1, max = 100)
+  @Size(message = "xpath", min = 1, max = 100)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 
@@ -28,6 +29,7 @@ open class DomActionEntity : ScrapeActionEntity() {
   @Enumerated(EnumType.STRING)
   open lateinit var event: DomEventType
 
+  @Size(message = "data", max = LEN_STR_DEFAULT)
   @Column(name = "data")
   open var data: String? = null
 }

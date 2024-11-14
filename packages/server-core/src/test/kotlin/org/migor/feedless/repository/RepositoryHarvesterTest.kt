@@ -41,6 +41,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import org.springframework.transaction.PlatformTransactionManager
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
@@ -87,7 +88,8 @@ class RepositoryHarvesterTest {
       mock(DocumentService::class.java),
       meterRegistry,
       mock(MessageService::class.java),
-      repositoryService
+      repositoryService,
+      mock(PlatformTransactionManager::class.java)
     )
 
     `when`(meterRegistry.counter(any(String::class.java), anyList())).thenReturn(mock(Counter::class.java))

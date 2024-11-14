@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Size
 open class ClickXpathActionEntity : ScrapeActionEntity() {
 
   @XPathConstraint
-  @Size(min = 1, max = 100)
+  @Size(message = "xpath", min = 1, max = 100)
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 }

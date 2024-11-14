@@ -18,6 +18,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
+import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -86,10 +87,10 @@ enum class MaxAgeDaysDateField {
 open class AbstractRepositoryEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.title, nullable = false)
-  @Size(min = 1, max = LEN_STR_DEFAULT)
+  @Size(message = "title", min = 1, max = LEN_STR_DEFAULT)
   open lateinit var title: String
 
-  @Size(max = 1024)
+  @Size(message = "description", max = 1024)
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
 
@@ -101,7 +102,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
-  @Size(max = LEN_STR_DEFAULT)
+  @Size(message = "sourcesSyncCron", max = LEN_STR_DEFAULT)
   @Column(nullable = false, name = "scheduler_expression")
   open lateinit var sourcesSyncCron: String
 
@@ -124,7 +125,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "disabled_from")
   open var disabledFrom: LocalDateTime? = null
 
-  @Size(max = 10)
+  @Size(message = "shareKey", max = 10)
   @Column(name = "share_key", nullable = false, length = 10)
   open var shareKey: String = ""
 
@@ -216,6 +217,14 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @PrePersist
   fun prePersist() {
     tags = extractHashTags(description).toTypedArray()
+
+//    if (tags != null && tags?.size!! > 10) {
+//      throw IllegalArgumentException("too many tags")
+//    }
+    title = StringUtils.abbreviate(title, LEN_STR_DEFAULT)
+    sourcesSyncCron = StringUtils.abbreviate(sourcesSyncCron, LEN_STR_DEFAULT)
+    description = StringUtils.abbreviate(description, 1024)
+
   }
 }
 

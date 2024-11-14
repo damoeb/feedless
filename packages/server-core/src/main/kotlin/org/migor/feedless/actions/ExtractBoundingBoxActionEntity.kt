@@ -7,6 +7,8 @@ import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Size
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 
 @Entity
 @Table(name = "t_action_extract_bbox")
@@ -23,6 +25,7 @@ open class ExtractBoundingBoxActionEntity : ScrapeActionEntity() {
   @Max(10000)
   open var x: Int = 0
 
+  @Size(message = "fragmentName", max = LEN_STR_DEFAULT)
   @Column(name = "fragment_name", nullable = false)
   open lateinit var fragmentName: String
 

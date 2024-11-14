@@ -7,8 +7,10 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 
 @Entity
@@ -21,6 +23,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 )
 open class ExecuteActionEntity : ScrapeActionEntity() {
 
+  @Size(message = "pluginId", max = LEN_STR_DEFAULT)
   @Column(name = "plugin_id", nullable = false)
   open lateinit var pluginId: String
 

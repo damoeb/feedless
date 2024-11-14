@@ -6,6 +6,8 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
+import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 
 @Entity
 @Table(name = "t_action_header")
@@ -18,10 +20,12 @@ import jakarta.validation.constraints.NotEmpty
 open class HeaderActionEntity : ScrapeActionEntity() {
 
   @NotEmpty
+  @Size(message = "name", max = LEN_STR_DEFAULT)
   @Column(name = "name", nullable = false)
   open lateinit var name: String
 
   @NotEmpty
+  @Size(message = "value", max = LEN_STR_DEFAULT)
   @Column(name = "value", nullable = false)
   open lateinit var value: String
 }

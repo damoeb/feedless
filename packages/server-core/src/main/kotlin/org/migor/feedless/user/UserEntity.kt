@@ -44,15 +44,15 @@ open class UserEntity : EntityWithUUID() {
   open lateinit var email: String
 
   @Column(name = "first_name")
-  @Size(max = 150)
+  @Size(message = "fistName", max = 150)
   open var firstName: String? = null
 
   @Column(name = "last_name")
-  @Size(max = 150)
+  @Size(message = "lastname", max = 150)
   open var lastName: String? = null
 
   @Column(name = "country")
-  @Size(max = 150)
+  @Size(message = "country", max = 150)
   open var country: String? = null
 
   @Column(nullable = false, name = "has_validated_email")

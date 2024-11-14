@@ -47,6 +47,7 @@ interface SourcePipelineJobDAO : JpaRepository<SourcePipelineJobEntity, UUID> {
   fun findAllPendingBatched(@Param("now") now: LocalDateTime): List<SourcePipelineJobEntity>
   fun deleteAllByCreatedAtBefore(date: LocalDateTime)
   fun existsBySourceIdAndUrl(sourceId: UUID, url: String): Boolean
+  fun deleteBySourceId(sourceId: UUID)
 
 
 }

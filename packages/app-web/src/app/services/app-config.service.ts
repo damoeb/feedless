@@ -153,6 +153,7 @@ export class AppConfigService {
   ) {}
 
   async activateUserInterface(appConfig: VerticalAppConfig) {
+    console.log('appConfig', appConfig);
     const product = appConfig.product;
     const customProperties = omit(
       appConfig,
@@ -166,7 +167,6 @@ export class AppConfigService {
     environment.product = product;
     environment.offlineSupport = appConfig.offlineSupport === true;
     const appConfigFull = await this.resolveAppConfig(product);
-    console.log('productConfig', appConfigFull);
     this.customProperties = customProperties;
     this.titleService.setTitle(appConfigFull.pageTitle);
     this.router.resetConfig(appConfigFull.routes);

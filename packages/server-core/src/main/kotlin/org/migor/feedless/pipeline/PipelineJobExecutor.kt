@@ -23,8 +23,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -36,6 +38,7 @@ class PipelineJobExecutor internal constructor(
   val sourceDAO: SourceDAO,
   val documentPipelineJobDAO: DocumentPipelineJobDAO,
   val sourcePipelineJobDAO: SourcePipelineJobDAO,
+  val transactionManager: PlatformTransactionManager,
   val documentDAO: DocumentDAO,
   val repositoryDAO: RepositoryDAO,
   val documentService: DocumentService,
@@ -44,7 +47,7 @@ class PipelineJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(PipelineJobExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 6245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 2245, initialDelay = 20000)
   @Transactional
   fun processDocumentJobs() {
     val corrId = newCorrId()
@@ -57,26 +60,31 @@ class PipelineJobExecutor internal constructor(
         runCatching {
           coroutineScope {
             groupedDocuments.map { groupedDocuments ->
-              async(RequestContext(userId = getOwnerIdForDocumentId(groupedDocuments.key))) {
-                semaphore.acquire()
-                delay(2000)
-                try {
-                  processDocumentPlugins(groupedDocuments.key, groupedDocuments.value)
-                } finally {
-                  semaphore.release()
+              try {
+                val userId = getOwnerIdForDocumentId(groupedDocuments.key)
+                async(RequestContext(userId = userId)) {
+                  semaphore.acquire()
+                  delay(300)
+                  try {
+                    processDocumentPlugins(groupedDocuments.key, groupedDocuments.value)
+                  } finally {
+                    semaphore.release()
+                  }
                 }
+              } catch (e: Exception) {
+                async {}
               }
             }.awaitAll()
           }
           log.debug("[$corrId] batch refresh done")
         }.onFailure {
-          log.error("[$corrId] batch refresh done: ${it.message}", it)
+          log.error("[$corrId] batch refresh done: ${it.message}")
         }
       }
     }
   }
 
-  @Scheduled(fixedDelay = 5245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 3245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()
@@ -89,13 +97,19 @@ class PipelineJobExecutor internal constructor(
         runCatching {
           coroutineScope {
             groupedSources.map { groupedSources ->
-              async(RequestContext(userId = getOwnerIdForSourceId(groupedSources.key))) {
-                semaphore.acquire()
-                try {
-                  processSourcePipeline(groupedSources.key, groupedSources.value)
-                } finally {
-                  semaphore.release()
+              try {
+                val userId = getOwnerIdForSourceId(groupedSources.key)
+                async(RequestContext(userId = userId)) {
+                  semaphore.acquire()
+                  delay(300)
+                  try {
+                    processSourcePipeline(groupedSources.key, groupedSources.value)
+                  } finally {
+                    semaphore.release()
+                  }
                 }
+              } catch (e: Exception) {
+                async {}
               }
             }.awaitAll()
           }
@@ -109,18 +123,50 @@ class PipelineJobExecutor internal constructor(
 
   private suspend fun getOwnerIdForDocumentId(documentId: UUID): UUID {
     val repo = withContext(Dispatchers.IO) {
-      repositoryDAO.findByDocumentId(documentId) ?:
-        throw IllegalArgumentException("repo not found by documentId=$documentId")
+      repositoryDAO.findByDocumentId(documentId) ?: throw failAfterCleaningJobsForDocument(documentId)
     }
     return repo.ownerId
   }
 
+  private suspend fun failAfterCleaningJobsForDocument(documentId: UUID): IllegalArgumentException {
+    withContext(Dispatchers.IO) {
+      try {
+        val transactionTemplate = TransactionTemplate(transactionManager)
+        transactionTemplate.executeWithoutResult {
+          runBlocking {
+            documentPipelineJobDAO.deleteAllByDocumentIdIn(listOf(documentId))
+          }
+        }
+      } catch (e: Exception) {
+        log.warn("job cleanup of document $documentId failed: ${e.message}")
+      }
+    }
+    return IllegalArgumentException("repo not found by documentId=$documentId")
+  }
+
   private suspend fun getOwnerIdForSourceId(sourceId: UUID): UUID {
     val repo = withContext(Dispatchers.IO) {
-      repositoryDAO.findBySourceId(sourceId) ?: throw IllegalArgumentException("repo not found by sourceId=$sourceId")
+      repositoryDAO.findBySourceId(sourceId) ?: throw failAfterCleaningJobsForSource(sourceId)
     }
     return repo.ownerId
   }
+
+  private suspend fun failAfterCleaningJobsForSource(sourceId: UUID): IllegalArgumentException {
+    withContext(Dispatchers.IO) {
+      try {
+        val transactionTemplate = TransactionTemplate(transactionManager)
+        transactionTemplate.executeWithoutResult {
+          runBlocking {
+            sourcePipelineJobDAO.deleteBySourceId(sourceId)
+          }
+        }
+      } catch (e: Exception) {
+        log.warn("job cleanup of source $sourceId failed: ${e.message}")
+      }
+    }
+    return IllegalArgumentException("repo not found by sourceId=$sourceId")
+  }
+
 
   private suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
     val corrId = coroutineContext.corrId()
@@ -138,8 +184,7 @@ class PipelineJobExecutor internal constructor(
 
   private suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
     try {
-      val document = documentService.processDocumentPlugins(documentId, jobs)
-      document?.let { documentService.applyRetentionStrategy(it.repositoryId) }
+      documentService.processDocumentPlugins(documentId, jobs)
     } catch (t: Throwable) {
       val corrId = coroutineContext.corrId()
       log.error("[$corrId] processDocumentPlugins fatal failure", t)
