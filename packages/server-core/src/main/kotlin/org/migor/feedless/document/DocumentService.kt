@@ -286,7 +286,7 @@ class DocumentService(
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
     val corrId = coroutineContext.corrId()
-    log.info("[$corrId] ${jobs.size} processPlugins for document $documentId")
+    log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
     val logCollector = LogCollector()
 
@@ -299,10 +299,6 @@ class DocumentService(
 
         jobs.takeWhile { job ->
           try {
-            if (job.attempt > 10) {
-              throw IllegalArgumentException("max attempts reached")
-            }
-
             when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.executorId)) {
               is FilterEntityPlugin -> if (!plugin.filterEntity(
                   document.asJsonItem(),
@@ -359,7 +355,7 @@ class DocumentService(
   ) {
 //    forwardToMail(corrId, document, repository)
     document.status = ReleaseStatus.released
-    log.debug("[${coroutineContext.corrId()}] releasing document")
+    log.info("[${coroutineContext.corrId()}] releasing document ${document.id}")
     withContext(Dispatchers.IO) {
       documentDAO.save(document)
     }
@@ -377,7 +373,7 @@ class DocumentService(
     e: Exception,
     document: DocumentEntity,
   ) {
-    log.debug("[${coroutineContext.corrId()}] delaying (${job.executorId}): ${e.message}")
+    log.info("[${coroutineContext.corrId()}] delaying (${job.executorId}): ${e.message}")
 
     val coolDownUntil = if (e is ResumableHarvestException) {
       LocalDateTime.now().plus(e.nextRetryAfter)
@@ -386,7 +382,6 @@ class DocumentService(
     }
     job.coolDownUntil = coolDownUntil
 
-    job.attempt += 1
     withContext(Dispatchers.IO) {
       documentPipelineJobDAO.save(job)
       documentDAO.save(document)

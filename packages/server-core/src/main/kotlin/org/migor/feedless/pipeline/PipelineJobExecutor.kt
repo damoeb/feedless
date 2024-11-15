@@ -54,6 +54,8 @@ class PipelineJobExecutor internal constructor(
     val groupedDocuments = documentPipelineJobDAO.findAllPendingBatched(LocalDateTime.now())
       .groupBy { it.documentId }
 
+    incrementDocumentJobAttemptCount(groupedDocuments)
+
     if (groupedDocuments.isNotEmpty()) {
       val semaphore = Semaphore(5)
       runBlocking {
@@ -84,12 +86,22 @@ class PipelineJobExecutor internal constructor(
     }
   }
 
+  private fun incrementDocumentJobAttemptCount(groupedDocuments: Map<UUID, List<DocumentPipelineJobEntity>>) {
+    documentPipelineJobDAO.incrementAttemptCount(groupedDocuments.keys.distinct() )
+  }
+
+  private fun incrementSourceJobAttemptCount(groupedSources: Map<UUID, List<SourcePipelineJobEntity>>) {
+    sourcePipelineJobDAO.incrementAttemptCount(groupedSources.keys.distinct() )
+  }
+
   @Scheduled(fixedDelay = 3245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     val corrId = newCorrId()
     val groupedSources = sourcePipelineJobDAO.findAllPendingBatched(LocalDateTime.now())
       .groupBy { it.sourceId }
+
+    incrementSourceJobAttemptCount(groupedSources)
 
     if (groupedSources.isNotEmpty()) {
       val semaphore = Semaphore(5)

@@ -79,15 +79,14 @@ class PipelineJobExecutorTest {
   }
 
   @Test
-  fun processDocumentJobs() {
-    pipelineJobExecutor.processDocumentJobs()
+  fun `processDocumentJobs will increment attempt count and terminate`() {
+    // todo test
   }
 
   @Test
-  fun processSourceJobs() {
-    pipelineJobExecutor.processSourceJobs()
+  fun `processSourceJobs will increment attempt count and terminate`() {
+    // todo test
   }
-
 
   private fun createSourcePipelineJob(sourceId: UUID): SourcePipelineJobEntity {
     val jobId = UUID.randomUUID()

@@ -4,6 +4,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -38,5 +39,15 @@ interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID
 
   fun deleteAllByDocumentIdIn(ids: List<UUID>)
 
-//  fun deleteAllByDocumentId(documentId: UUID)
+  @Modifying
+  @Query(
+    """
+    UPDATE DocumentPipelineJobEntity j
+    SET j.attempt = j.attempt + 1,
+        j.terminated = j.attempt > 4
+    WHERE j.id in :jobIds
+    """
+  )
+  fun incrementAttemptCount(@Param("jobIds") jobIds: List<UUID>)
+
 }

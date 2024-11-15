@@ -64,26 +64,32 @@ export function createEventsUrl(
   parts: EventsUrlFragments,
   router: Router,
 ): string {
+  return router
+    .createUrlTree(createEventsUrlParts(parts))
+    .toString();
+}
+
+export function createEventsUrlParts(
+  parts: EventsUrlFragments,
+): string[] {
   let texts: string[];
   // if (this.locale == 'de') {
   texts = ['events/in', 'am', 'innerhalb'];
   // } else {
   //   texts = ['events/in', 'on', 'within', ];
   // }
-  return router
-    .createUrlTree([
-      texts[0],
-      parts.state,
-      parts.country,
-      parts.place,
-      texts[1],
-      parts.year,
-      parts.month,
-      parts.day,
-      texts[2],
-      `${parts.perimeter}${perimeterUnit}`,
-    ])
-    .toString();
+  return [
+    texts[0],
+    parts.state,
+    parts.country,
+    parts.place,
+    texts[1],
+    ''+parts.year,
+    ''+parts.month,
+    ''+parts.day,
+    texts[2],
+    `${parts.perimeter}${perimeterUnit}`,
+  ];
 }
 
 export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
@@ -396,7 +402,7 @@ export class EventsPage implements OnInit, OnDestroy {
   getEventUrl(event: Record) {
     const { state, country, place, year, month, day } =
       this.activatedRoute.snapshot.params;
-    return `${createEventsUrl(
+    const parts = createEventsUrlParts(
       {
         state,
         country,
@@ -406,8 +412,9 @@ export class EventsPage implements OnInit, OnDestroy {
         month,
         day,
       },
-      this.router,
-    )}/${event.id}`;
+    );
+    parts.push(event.id);
+    return parts;
   }
 
   private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
@@ -423,9 +430,9 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  getPlaceUrl({ state, country, displayName }: NamedLatLon): string {
+  getPlaceUrl({ state, country, displayName }: NamedLatLon): string[] {
     const { year, month, day } = this.activatedRoute.snapshot.params;
-    return createEventsUrl(
+    return createEventsUrlParts(
       {
         state,
         country,
@@ -434,8 +441,7 @@ export class EventsPage implements OnInit, OnDestroy {
         perimeter: this.perimeter,
         month,
         day,
-      },
-      this.router,
+      }
     );
   }
 

@@ -4,6 +4,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -13,16 +14,6 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.scrape} & ${AppLayer.repository}")
 interface SourcePipelineJobDAO : JpaRepository<SourcePipelineJobEntity, UUID> {
-
-//  @Query(
-//    """
-//    select K from SourcePipelineJobEntity K
-//    inner join SourceEntity S on S.id = K.sourceId
-//    where S.repositoryId = :id
-//    ORDER BY K.createdAt DESC
-//  """
-//  )
-//  fun findAllByRepositoryId(@Param("id") id: UUID): List<SourcePipelineJobEntity>
 
   @Query(
     nativeQuery = true,
@@ -49,5 +40,14 @@ interface SourcePipelineJobDAO : JpaRepository<SourcePipelineJobEntity, UUID> {
   fun existsBySourceIdAndUrl(sourceId: UUID, url: String): Boolean
   fun deleteBySourceId(sourceId: UUID)
 
-
+  @Modifying
+  @Query(
+    """
+    UPDATE SourcePipelineJobEntity j
+    SET j.attempt = j.attempt + 1,
+        j.terminated = j.attempt > 3
+    WHERE j.id in :jobIds
+    """
+  )
+  fun incrementAttemptCount(@Param("jobIds") jobIds: List<UUID>)
 }

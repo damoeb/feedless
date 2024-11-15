@@ -55,10 +55,6 @@ class SourceService(
     }
 
     try {
-      if (job.attempt > 3) {
-        throw IllegalArgumentException("max attempts reached")
-      }
-
       try {
         repositoryHarvester.scrapeSource(patchRequestUrl(source, job.url), LogCollector())
         job.status = PipelineJobStatus.SUCCEEDED
@@ -67,7 +63,6 @@ class SourceService(
       } catch (e: ResumableHarvestException) {
         log.info("[$corrId] delaying: ${e.message}")
         job.coolDownUntil = LocalDateTime.now().plus(e.nextRetryAfter)
-        job.attempt += 1
       }
 
     } catch (e: Exception) {
