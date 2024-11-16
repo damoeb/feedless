@@ -12,6 +12,8 @@ import {
   GqlVertical,
   GqlRecordField,
   GqlVisibility,
+  GqlRepositoryCreateInput,
+  GqlSourceInput,
 } from '../../../generated/graphql';
 import {
   Annotation,
@@ -41,7 +43,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isUndefined, uniq, without } from 'lodash-es';
+import { isArray, isUndefined, sortBy, uniq, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
@@ -68,8 +70,10 @@ import {
   refreshOutline,
   pencilOutline,
   locationOutline,
+  cloudUploadOutline,
 } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
+import { FileService } from '../../services/file.service';
+import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -129,6 +133,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly modalService: ModalService,
     private readonly authGuard: AuthGuardService,
+    private readonly fileService: FileService,
     private readonly alertCtrl: AlertController,
     private readonly annotationService: AnnotationService,
     private readonly popoverCtrl: PopoverController,
@@ -159,6 +164,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       refreshOutline,
       pencilOutline,
       locationOutline,
+      cloudUploadOutline,
     });
   }
 
@@ -689,5 +695,57 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       [this.repository],
       `feedless-repo-${this.repository.id}.json`,
     );
+  }
+
+  async importFeedlessJson(uploadEvent: Event) {
+    const data = await this.fileService.uploadAsText(uploadEvent);
+    const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
+    const selectables: SelectableEntity<GqlSourceInput>[] = sortBy(
+      repositories
+        .filter((r) => r.sources)
+        .flatMap((r) => r.sources)
+        .map<SelectableEntity<GqlSourceInput>>((source) => {
+          const disabled = this.repository.sources.some(
+            (existingSource) => existingSource.title == source.title,
+          );
+          return {
+            entity: source,
+            disabled,
+            note: disabled ? 'Already exists by name' : null,
+            label: source.title,
+          };
+        }),
+      (selectable) => selectable.entity.title,
+    );
+
+    const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
+      {
+        selectables,
+        title: 'Import new sources',
+        description: 'Select those sources you want to import',
+      },
+    );
+
+    if (selected.length > 0) {
+      this.repository = await this.repositoryService.updateRepository({
+        where: {
+          id: this.repository.id,
+        },
+        data: {
+          sources: {
+            add: selected,
+          },
+        },
+      });
+      this.changeRef.detectChanges();
+
+      const toast = await this.toastCtrl.create({
+        message: `Added ${selected.length} sources`,
+        duration: 3000,
+        color: 'success',
+      });
+
+      await toast.present();
+    }
   }
 }

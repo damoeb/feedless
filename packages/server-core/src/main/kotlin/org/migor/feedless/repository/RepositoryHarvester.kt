@@ -166,11 +166,11 @@ class RepositoryHarvester(
     val corrId = coroutineContext.corrId()
     val sources = withContext(Dispatchers.IO) {
       sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
-    }.distinctBy { it.id }
+    }.filter { !it.disabled }
+      .distinctBy { it.id }
 
     logCollector.log("[$corrId] queueing ${sources.size} sources")
     return sources
-      .filter { !it.disabled }
       .fold(0) { agg, source ->
         try {
           val appended = scrapeSource(source, logCollector)
@@ -490,12 +490,12 @@ class RepositoryHarvester(
           logCollector.log("[$corrId] updated item ${document.url}")
           Pair(false, existing)
         } else {
-          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
-            existing.status = ReleaseStatus.unreleased
-            Pair(false, existing)
-          } else {
+//          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
+//            existing.status = ReleaseStatus.unreleased
+//            Pair(false, existing)
+//          } else {
             null
-          }
+//          }
         }
       }
     } catch (e: Exception) {
@@ -511,7 +511,11 @@ class RepositoryHarvester(
     }
   }
 
-  private fun toDocumentPipelineJob(plugin: PluginExecution, document: DocumentEntity, index: Int): DocumentPipelineJobEntity {
+  private fun toDocumentPipelineJob(
+    plugin: PluginExecution,
+    document: DocumentEntity,
+    index: Int
+  ): DocumentPipelineJobEntity {
     val job = DocumentPipelineJobEntity()
     job.sequenceId = index
     job.documentId = document.id

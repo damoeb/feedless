@@ -10,6 +10,9 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { FileService } from '../../services/file.service';
 import { RepositoryService } from '../../services/repository.service';
+import { isArray } from 'lodash-es';
+import { GqlRepositoryCreateInput } from '../../../generated/graphql';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-import-button',
@@ -31,6 +34,7 @@ export class ImportButtonComponent {
     private readonly omplService: OpmlService,
     private readonly authService: AuthService,
     private readonly fileService: FileService,
+    private readonly modalService: ModalService,
     private readonly repositoryService: RepositoryService,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
@@ -61,16 +65,27 @@ export class ImportButtonComponent {
 
   async importFeedlessJson(uploadEvent: Event) {
     const data = await this.fileService.uploadAsText(uploadEvent);
-    const json = JSON.parse(data);
+    const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
 
-    const repo = await this.repositoryService.createRepositories(json);
-    const toast = await this.toastCtrl.create({
-      message: 'Created',
-      duration: 3000,
-      color: 'success',
+    const selected = await this.modalService.openSelectionModal({
+      title: 'Import Repositories',
+      description: '',
+      selectables: repositories.map((r) => ({
+        entity: r,
+        label: r.title,
+      })),
     });
 
-    await toast.present();
-    await this.router.navigateByUrl(`/feeds/${repo[0].id}`);
+    if (selected.length > 0) {
+      const repo = await this.repositoryService.createRepositories(selected);
+      const toast = await this.toastCtrl.create({
+        message: `Imported ${selected.length} repositories`,
+        duration: 3000,
+        color: 'success',
+      });
+
+      await toast.present();
+      await this.router.navigateByUrl(`/feeds/${repo[0].id}`);
+    }
   }
 }

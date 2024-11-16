@@ -33,6 +33,10 @@ import {
 } from '../modals/map-modal/map-modal.component';
 import { LatLon } from '../components/map/map.component';
 import { Nullable } from '../types';
+import {
+  SelectionModalComponent,
+  SelectionModalComponentProps,
+} from '../modals/selection-modal/selection-modal.component';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -108,7 +112,7 @@ export class ModalService {
   }
 
   async openMapModal(componentProps: MapModalComponentProps): Promise<LatLon> {
-    await this.updateUrlParams(ModalName.tagEditor);
+    // await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
       component: MapModalComponent,
       componentProps,
@@ -118,6 +122,22 @@ export class ModalService {
     await modal.present();
     const { data } = await modal.onDidDismiss<LatLon>();
     await this.updateUrlParams();
+    return data!;
+  }
+
+  async openSelectionModal<T>(
+    componentProps: SelectionModalComponentProps<T>,
+  ): Promise<T[]> {
+    // await this.updateUrlParams(ModalName.tagEditor);
+    const modal = await this.modalCtrl.create({
+      component: SelectionModalComponent,
+      componentProps,
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss<T[]>();
+    // await this.updateUrlParams();
     return data!;
   }
 

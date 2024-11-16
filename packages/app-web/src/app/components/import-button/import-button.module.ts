@@ -13,6 +13,7 @@ import {
   ModalController,
 } from '@ionic/angular/standalone';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
+import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
 
 @NgModule({
   declarations: [ImportButtonComponent],
@@ -29,6 +30,7 @@ import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-pr
     IonList,
     IonItem,
     RemoveIfProdModule,
+    SelectionModalModule,
   ],
 })
 export class ImportButtonModule {}

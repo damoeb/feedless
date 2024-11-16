@@ -64,14 +64,10 @@ export function createEventsUrl(
   parts: EventsUrlFragments,
   router: Router,
 ): string {
-  return router
-    .createUrlTree(createEventsUrlParts(parts))
-    .toString();
+  return router.createUrlTree(createEventsUrlParts(parts)).toString();
 }
 
-export function createEventsUrlParts(
-  parts: EventsUrlFragments,
-): string[] {
+export function createEventsUrlParts(parts: EventsUrlFragments): string[] {
   let texts: string[];
   // if (this.locale == 'de') {
   texts = ['events/in', 'am', 'innerhalb'];
@@ -84,9 +80,9 @@ export function createEventsUrlParts(
     parts.country,
     parts.place,
     texts[1],
-    ''+parts.year,
-    ''+parts.month,
-    ''+parts.day,
+    '' + parts.year,
+    '' + parts.month,
+    '' + parts.day,
     texts[2],
     `${parts.perimeter}${perimeterUnit}`,
   ];
@@ -402,17 +398,15 @@ export class EventsPage implements OnInit, OnDestroy {
   getEventUrl(event: Record) {
     const { state, country, place, year, month, day } =
       this.activatedRoute.snapshot.params;
-    const parts = createEventsUrlParts(
-      {
-        state,
-        country,
-        place,
-        year,
-        perimeter: this.perimeter,
-        month,
-        day,
-      },
-    );
+    const parts = createEventsUrlParts({
+      state,
+      country,
+      place,
+      year,
+      perimeter: this.perimeter,
+      month,
+      day,
+    });
     parts.push(event.id);
     return parts;
   }
@@ -432,17 +426,15 @@ export class EventsPage implements OnInit, OnDestroy {
 
   getPlaceUrl({ state, country, displayName }: NamedLatLon): string[] {
     const { year, month, day } = this.activatedRoute.snapshot.params;
-    return createEventsUrlParts(
-      {
-        state,
-        country,
-        place: displayName,
-        year,
-        perimeter: this.perimeter,
-        month,
-        day,
-      }
-    );
+    return createEventsUrlParts({
+      state,
+      country,
+      place: displayName,
+      year,
+      perimeter: this.perimeter,
+      month,
+      day,
+    });
   }
 
   async changeDate(change: number) {

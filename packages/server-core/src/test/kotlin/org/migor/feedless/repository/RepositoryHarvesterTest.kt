@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
@@ -334,6 +335,7 @@ class RepositoryHarvesterTest {
   }
 
   @Test
+  @Disabled("lastUpdateAt is polluted and cannot be used atm")
   fun `updates for existing documents will be processed, if repository has changed after existing has been created`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
     `when`(repository.plugins).thenReturn(listOf(createPlugin(), createPlugin()))
     val existing = mock(DocumentEntity::class.java)

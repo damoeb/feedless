@@ -39,6 +39,7 @@ import {
   IonCheckbox,
   ModalController,
 } from '@ionic/angular/standalone';
+import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
 
 @NgModule({
   declarations: [FeedDetailsComponent],
@@ -80,6 +81,7 @@ import {
     IonSegment,
     IonSegmentButton,
     IonCheckbox,
+    SelectionModalModule,
   ],
   providers: [ModalController],
 })
