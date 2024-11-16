@@ -14,7 +14,6 @@ import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
@@ -30,8 +29,6 @@ import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.toDto
-import org.migor.feedless.data.jpa.models.SegmentationEntity
-import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.CompareBy
@@ -59,7 +56,7 @@ import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.group.GroupEntity
-import org.migor.feedless.mail.MailForwardEntity
+import org.migor.feedless.report.ReportEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
@@ -197,22 +194,7 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   open var sources: MutableList<SourceEntity> = mutableListOf()
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId")
-  open var mailForwards: MutableList<MailForwardEntity> = mutableListOf()
-
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "repositoryId")
   open var documents: MutableList<DocumentEntity> = mutableListOf()
-
-  @Column(name = "segmentation_id", insertable = false, updatable = false)
-  open var segmentationId: UUID? = null
-
-  @OneToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.NO_ACTION)
-  @JoinColumn(
-    name = "segmentation_id",
-    referencedColumnName = "id",
-    foreignKey = ForeignKey(name = "fk_repository__to__segmentation")
-  )
-  open var segmentation: SegmentationEntity? = null
 
   @PrePersist
   fun prePersist() {
@@ -263,7 +245,6 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     nextUpdateAt = triggerScheduledNextAt?.toMillis(),
     description = description,
     title = title,
-    segmented = segmentation?.toDto(),
     refreshCron = sourcesSyncCron,
     documentCount = 0,
     tags = tags.asList(),

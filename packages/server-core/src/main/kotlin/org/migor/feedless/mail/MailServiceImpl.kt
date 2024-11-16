@@ -6,9 +6,8 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.pipeline.plugins.MailAttachment
-import org.migor.feedless.pipeline.plugins.MailData
 import org.migor.feedless.plan.ProductService
+import org.migor.feedless.report.ReportDAO
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +31,7 @@ class MailServiceImpl : MailService {
   private lateinit var productService: ProductService
 
   @Autowired
-  private lateinit var mailForwardDAO: MailForwardDAO
+  private lateinit var mailEnrollmentDAO: ReportDAO
 
   @Autowired
   private lateinit var templateService: TemplateService
@@ -48,17 +47,17 @@ class MailServiceImpl : MailService {
     javaMailSender.send(mailMessage)
   }
 
-  override suspend fun sendWelcomeWaitListMail(user: UserEntity) {
-//    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
-  }
-
-  override suspend fun sendWelcomePaidMail(user: UserEntity) {
-//    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
-  }
-
-  override suspend fun sendWelcomeFreeMail(user: UserEntity) {
-//    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
-  }
+//  override suspend fun sendWelcomeWaitListMail(user: UserEntity) {
+////    sendWelcomeAnyMail(corrId, user, WelcomeWaitListMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
+//  }
+//
+//  override suspend fun sendWelcomePaidMail(user: UserEntity) {
+////    sendWelcomeAnyMail(corrId, user, WelcomePaidMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
+//  }
+//
+//  override suspend fun sendWelcomeFreeMail(user: UserEntity) {
+////    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
+//  }
 
   override suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String) {
 //    if (StringUtils.isBlank(user.email)) {
@@ -102,27 +101,27 @@ class MailServiceImpl : MailService {
 
   override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
     withContext(Dispatchers.IO) {
-      mailForwardDAO.findById(mailForwardId).orElseThrow()?.let {
+      mailEnrollmentDAO.findById(mailForwardId).orElseThrow()?.let {
         it.authorized = authorize
         it.authorizedAt = LocalDateTime.now()
-        mailForwardDAO.save(it)
+        mailEnrollmentDAO.save(it)
       }
     }
   }
 
-  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {
-    val mimeMessage = createMimeMessage()
-    val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
-    message.setFrom(from)
-    message.setTo(to)
-    message.setSubject(mailData.subject)
-    message.setText(mailData.body, true)
-    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> it.inline }
-      .forEach { inline -> message.addInline(inline.id, inline.resource) }
-    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> !it.inline }
-      .forEach { inline -> message.addAttachment(inline.id, inline.resource) }
-    javaMailSender.send(mimeMessage)
-  }
+//  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {
+//    val mimeMessage = createMimeMessage()
+//    val message = MimeMessageHelper(mimeMessage, true, "UTF-8")
+//    message.setFrom(from)
+//    message.setTo(to)
+//    message.setSubject(mailData.subject)
+//    message.setText(mailData.body, true)
+//    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> it.inline }
+//      .forEach { inline -> message.addInline(inline.id, inline.resource) }
+//    mailData.attachments.filterTo(ArrayList()) { it: MailAttachment -> !it.inline }
+//      .forEach { inline -> message.addAttachment(inline.id, inline.resource) }
+//    javaMailSender.send(mimeMessage)
+//  }
 
 //  private fun <T> sendWelcomeAnyMail(corrId: String, user: UserEntity, template: FtlTemplate<T>) {
 //    log.info("[$corrId] send welcome mail ${user.email} using ${template.templateName}")

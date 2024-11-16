@@ -1,4 +1,4 @@
-package org.migor.feedless.mail
+package org.migor.feedless.report
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-@Profile("${AppProfiles.mail} & ${AppLayer.repository}")
-interface MailForwardDAO : JpaRepository<MailForwardEntity, UUID> {
-  fun findAllByRepositoryId(id: UUID): List<MailForwardEntity>
+@Profile("${AppProfiles.report} & ${AppLayer.repository}")
+interface SegmentationDAO : JpaRepository<SegmentationEntity, UUID> {
 
 }

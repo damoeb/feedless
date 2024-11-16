@@ -133,7 +133,7 @@ class SecurityConfig {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.mail))) {
       urls.add("/api/auth/magic-mail/**")
     }
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))) {
       urls.add("/testing/**")
     }
 
@@ -163,7 +163,7 @@ class SecurityConfig {
               response.addCookie(cookieProvider.createTokenCookie(jwt))
                 response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 //
-                if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
+                if (environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))) {
                   response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
                 } else {
                   response.sendRedirect(propertyService.appHost)

@@ -43,6 +43,8 @@ import {
   arrowForwardOutline,
   sendOutline,
 } from 'ionicons/icons';
+import { AlertController } from '@ionic/angular/standalone';
+import { ReportService } from '../../../services/report.service';
 
 type Distance2Events = { [distance: string]: Record[] };
 type EventsByDistance = {
@@ -142,9 +144,11 @@ export class EventsPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly recordService: RecordService,
+    private readonly alertCtrl: AlertController,
     private readonly changeRef: ChangeDetectorRef,
     private readonly locationService: Location,
     private readonly pageService: PageService,
+    private readonly reportService: ReportService,
     private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
   ) {
@@ -453,5 +457,43 @@ export class EventsPage implements OnInit, OnDestroy {
     );
     this.locationService.replaceState(url);
     await this.fetchEvents();
+  }
+
+  async createMailSubscription() {
+    const alertInstance = await this.alertCtrl.create({
+      header: 'Gratis Event Email',
+      message: `Du bekommst jeden Sonntag die Event Übersicht für  ${this.location.displayName} der kommenden Woche.`,
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Dein Name',
+          min: 3,
+        },
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Deine Email',
+          min: 5,
+        },
+      ],
+      buttons: [
+        {
+          role: 'cancel',
+          text: 'Abbrechen',
+        },
+        {
+          cssClass: 'confirm-button',
+          text: 'Jetzt Abonnieren',
+        },
+      ],
+    });
+    await alertInstance.present();
+    const data = await alertInstance.onDidDismiss();
+    console.log(data);
+
+    // this.reportService.createReport(this.getRepositoryId(), {
+    //
+    // })
   }
 }

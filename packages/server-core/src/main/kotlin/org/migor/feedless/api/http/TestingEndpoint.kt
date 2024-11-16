@@ -21,7 +21,7 @@ import java.nio.file.Files
 import java.time.LocalDateTime
 
 @RestController
-@Profile(AppProfiles.dev)
+@Profile(AppProfiles.DEV_ONLY)
 @Tag("stable")
 class TestingEndpoint {
 

@@ -5,6 +5,7 @@ object StandardJpaFields {
   const val product = "product"
   const val email = "email"
   const val repositoryId = "repository_id"
+  const val segmentationId = "segmentation_id"
   const val url = "url"
   const val sourceId = "source_id"
   const val documentId = "document_id"

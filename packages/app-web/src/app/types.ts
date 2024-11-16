@@ -38,6 +38,8 @@ export type Order = GqlUpsertOrderMutation['upsertOrder'];
 
 export type VerticalAppConfig = {
   apiUrl: string;
+  attributionHtml: string;
+  indexHtmlAddition?: string;
   product: GqlVertical;
   offlineSupport?: boolean;
   [key: string | GqlVertical]: any | GqlVertical;

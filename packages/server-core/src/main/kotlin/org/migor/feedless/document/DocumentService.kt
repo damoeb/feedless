@@ -23,7 +23,7 @@ import org.migor.feedless.generated.types.RecordOrderByInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RecordsWhereInput
-import org.migor.feedless.generated.types.StringFilter
+import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -222,7 +222,7 @@ class DocumentService(
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
-  suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilter) {
+  suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilterInput) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
     val repository = withContext(Dispatchers.IO) { repositoryDAO.findById(repositoryId).orElseThrow() }
     if (repository.ownerId != user.id) {

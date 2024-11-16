@@ -15,6 +15,9 @@ import {
   IonSpinner,
   IonNote,
   IonFooter,
+  IonCard,
+  IonCardContent,
+  IonCardTitle,
 } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -33,6 +36,9 @@ import {
     IonSpinner,
     IonNote,
     IonFooter,
+    IonCard,
+    IonCardContent,
+    IonCardTitle,
   ],
   declarations: [EventsPage],
   exports: [EventsPage],

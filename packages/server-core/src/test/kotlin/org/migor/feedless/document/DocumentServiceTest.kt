@@ -22,7 +22,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.generated.types.StringFilter
+import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
@@ -359,7 +359,7 @@ class DocumentServiceTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest {
-        documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
+        documentService.deleteDocuments(currentUser, repositoryId, StringFilterInput())
       }
     }
   }

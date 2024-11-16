@@ -63,6 +63,7 @@ class AppsDataGenerator {
     const appConfig: VerticalAppConfig = {
       apiUrl: `https://api.${app.domain}`,
       product: app.product,
+      attributionHtml: 'Whoever loves discipline loves knowledge',
       offlineSupport: app.offlineSupport,
     };
     this.writeFile(

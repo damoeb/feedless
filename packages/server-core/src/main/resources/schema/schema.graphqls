@@ -112,7 +112,6 @@ type Repository {
   hasDisabledSources: Boolean!
   frequency(groupBy: RecordDateField!): [RecordFrequency!]
   plugins: [PluginExecution!]
-  segmented: Segment
   retention: Retention!
   sources: [Source!]
 }
@@ -153,8 +152,8 @@ type Mutation {
   updateRepository(data: RepositoryUpdateInput!): Repository!
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
-#  createEnrollment(repositoryId: ID!, segmentation: SegmentInput!, filter: RecordsWhereInput!, email: String!): Enrollment!
-#  deleteEnrollment(enrollmentId: ID!): Boolean!
+  createReport(repositoryId: ID!, segmentation: SegmentInput!): Report!
+  deleteReport(reportId: ID!): Boolean!
 
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
@@ -171,13 +170,10 @@ type Mutation {
   upsertOrder(data: UpsertOrderInput!): Order!
 }
 
-#type Enrollment {
-#  repositoryId: ID!
-#  segmentation: Segment!
-#  email: String!
-#  authorized: Boolean!
-#  createdAt: Long!
-#}
+type Report {
+  id: ID!
+  createdAt: Long!
+}
 
 input UpsertOrderInput {
   where: OrderWhereUniqueInput
@@ -512,7 +508,7 @@ type ConnectedApp {
 }
 
 input FeatureGroupWhereInput {
-  id: StringFilter
+  id: StringFilterInput
 }
 
 input OrdersInput {
@@ -521,11 +517,11 @@ input OrdersInput {
 }
 
 input BillingsWhereInput {
-  id: StringFilter
+  id: StringFilterInput
 }
 
 input ProductsWhereInput {
-  id: StringFilter
+  id: StringFilterInput
   category: Vertical
 }
 
@@ -572,16 +568,16 @@ input RecordsInput {
 }
 
 input RecordsWhereInput {
-  id: StringFilter
+  id: StringFilterInput
   repository: RepositoryUniqueWhereInput!
   source: SourceUniqueWhereInput
-#  updatedAt: DatesWhereInput
+  #  updatedAt: DatesWhereInput
   startedAt: DatesWhereInput
   createdAt: DatesWhereInput
   publishedAt: DatesWhereInput
   updatedAt: DatesWhereInput
   latLng: GeoPointWhereInput
-  tags: StringFilter
+  tags: StringFilterInput
 }
 
 input GeoPointWhereInput {
@@ -869,16 +865,7 @@ input NetworkRequestInput {
   responseBody: String
 }
 
-type Segment {
-  digest: Boolean!
-  size: Int
-  interval: ChronoUnit!
-  startingAt: Long!
-  sortAsc: Boolean!
-  sortBy: String!
-}
-
-enum ChronoUnit {
+enum IntervalUnit {
   DAY
   WEEK
   MONTH
@@ -1219,7 +1206,6 @@ input RepositoryUniqueWhereInput {
 input RepositoryCreateInput {
   product: Vertical!
   sources: [SourceInput!]!
-  segmented: SegmentInput
   title: String!
   description: String!
   retention: RetentionInput
@@ -1331,12 +1317,26 @@ input SecretKey {
 }
 
 input SegmentInput {
-  digest: Boolean!
-  size: Int
-  interval: ChronoUnit!
+  time: TimeSegmentInput!
+  filter: SegmentRecordsWhereInput!
+  report: SegmentReportInput!
+}
+
+input SegmentRecordsWhereInput {
+  latLng: GeoPointWhereInput
+  tags: StringFilterInput!
+}
+
+input SegmentReportInput {
+  plugin: PluginExecutionInput!
+  maxSize: Int
+#  orderAsc: Boolean!
+#  orderBy: String!
+}
+
+input TimeSegmentInput {
+  interval: IntervalUnit!
   startingAt: Long!
-  orderAsc: Boolean!
-  orderBy: String!
 }
 
 input SelectorsInput {
@@ -1353,7 +1353,7 @@ input StringArrayFilter {
   some: [String!]
 }
 
-input StringFilter {
+input StringFilterInput {
   eq: String
   in: [String!]
 #  notIn: [String!]
@@ -1564,6 +1564,11 @@ input PluginExecutionParamsInput {
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
   org_feedless_conditional_tag: [ConditionalTagInput!]
+  org_feedless_events_report: EventsReportPluginParamsInput
+}
+
+input EventsReportPluginParamsInput {
+  email: String!
 }
 
 input FeedParamsInput {
@@ -1624,6 +1629,7 @@ enum FeedlessPlugins {
   org_feedless_feeds
   org_feedless_fulltext
   org_feedless_filter
+  org_feedless_event_report
   org_feedless_conditional_tag
   org_feedless_privacy
   org_feedless_detect_media
@@ -1667,7 +1673,12 @@ type PluginExecutionParams {
   org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
+  org_feedless_events_report: EventsReportPluginParams
 #  org_feedless_conditional_tag: [ConditionalTag!]
+}
+
+interface EventsReportPluginParams {
+  email: String!
 }
 
 type FeedParams {

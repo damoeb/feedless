@@ -43,7 +43,7 @@ class AgentResponseCacheKeyGenerator : KeyGenerator {
 
 @Configuration
 @EnableCaching
-@Profile("${AppProfiles.cache} & ${AppLayer.api} & !${AppProfiles.dev}")
+@Profile("${AppProfiles.cache} & ${AppLayer.api} & !${AppProfiles.DEV_ONLY}")
 class ProdCacheConfig {
 
   @Bean
@@ -144,7 +144,7 @@ class ProdCacheConfig {
 
 @Configuration
 @EnableCaching
-@Profile("${AppProfiles.cache} & ${AppLayer.api} & ${AppProfiles.dev}")
+@Profile("${AppProfiles.cache} & ${AppLayer.api} & ${AppProfiles.DEV_ONLY}")
 class DevCacheConfig {
 
   @Bean

@@ -1,7 +1,7 @@
 package org.migor.feedless
 
 object AppProfiles {
-  const val dev = "dev"
+  const val DEV_ONLY = "dev"
   const val prod = "prod"
   const val secrets = "secrets"
   const val telegram = "telegram"
@@ -12,6 +12,7 @@ object AppProfiles {
   const val features = "features"
   const val document = "document"
   const val annotation = "annotation"
+  const val report = "report"
   const val attachment = "attachment"
   const val user = "user"
   const val repository = "repository"

@@ -113,12 +113,6 @@ fragment RepositoryFragment on Repository {
       ...PluginExecutionParamsFragment
     }
   }
-  segmented {
-    digest
-    size
-    sortAsc
-    sortBy
-  }
   annotations {
     downVotes
     upVotes
