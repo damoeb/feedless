@@ -77,8 +77,8 @@ class ProdCacheConfig {
         CacheConfigurationBuilder.newCacheConfigurationBuilder(
           String::class.java,
           HttpResponse::class.java,
-          ResourcePoolsBuilder.heap(1000)
-            .offheap(200, MemoryUnit.MB)
+          ResourcePoolsBuilder.heap(3000)
+            .offheap(50, MemoryUnit.MB)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
           .withService(asynchronousListener)
@@ -90,8 +90,8 @@ class ProdCacheConfig {
         CacheConfigurationBuilder.newCacheConfigurationBuilder(
           String::class.java,
           AgentResponse::class.java,
-          ResourcePoolsBuilder.heap(1000)
-            .offheap(100, MemoryUnit.MB)
+          ResourcePoolsBuilder.heap(100)
+            .offheap(50, MemoryUnit.MB)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(5)))
           .withService(asynchronousListener)
@@ -118,7 +118,7 @@ class ProdCacheConfig {
           String::class.java,
           JsonFeed::class.java,
           ResourcePoolsBuilder.heap(10000)
-            .offheap(300, MemoryUnit.MB)
+            .offheap(200, MemoryUnit.MB)
         )
           .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(2)))
           .withService(asynchronousListener)
