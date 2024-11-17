@@ -43,6 +43,12 @@
     background: rgba(var(--app-foreground-rgb), 0.05);
   }
 
+  &--past {
+    time {
+      color: var(--ion-color-medium);
+    }
+  }
+
   &--other {
     opacity: 0.5;
   }
@@ -50,8 +56,8 @@
   border: 2px solid transparent;
 
   &--active {
-    --app-border-color: rgba(var(--ion-color-danger-rgb), 0.8) !important;
-    --app-day-bg: rgba(var(--ion-color-danger-rgb), 0.2);
+    --app-border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;
+    --app-day-bg: rgba(var(--ion-color-primary-rgb), 0.2);
   }
 
   &--today {
@@ -82,5 +88,20 @@
     & > * {
       flex: 1;
     }
+  }
+}
+
+.suggestion {
+  margin-left: 200px;
+  @media screen and (max-width: 575px) {
+    margin-left: 140px;
+  }
+
+  color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));
+
+  mark {
+    background-color: transparent;
+    color: var(--app-foreground);
+    font-weight: bold;
   }
 }

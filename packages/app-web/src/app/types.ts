@@ -44,3 +44,13 @@ export type VerticalAppConfig = {
   offlineSupport?: boolean;
   [key: string | GqlVertical]: any | GqlVertical;
 };
+
+export type NamedLatLon = {
+  lat: number;
+  lon: number;
+  place: string;
+  displayName: string;
+  index?: string;
+  area: string;
+  countryCode: string;
+};

@@ -19,7 +19,7 @@ class ReportJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(ReportJobExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 2245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 60000, initialDelay = 20000)
   @Transactional
   fun askForReportAuthorization() {
 

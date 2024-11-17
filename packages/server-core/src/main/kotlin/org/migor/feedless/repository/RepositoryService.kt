@@ -11,6 +11,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.attachment.createAttachmentUrl
@@ -28,6 +29,7 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -504,41 +506,45 @@ class RepositoryService(
         documentService.applyRetentionStrategy(repository.id)
       }
     }
-    return withContext(Dispatchers.IO) {
-      data.sources?.let {
-        it.add?.let {
-          repository.sources.addAll(it.map { createSource(repository.ownerId, it, repository) })
-        }
-        it.update?.let {
-          val sources: List<SourceEntity> = it.mapNotNull { sourceUpdate ->
-            run {
-              val source = repository.sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }
-              sourceUpdate.data.tags?.let {
-                source?.tags = sourceUpdate.data.tags.set.toTypedArray()
-              }
-              sourceUpdate.data.latLng?.let { point ->
-                point.set?.let {
-                  source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
-                } ?: run { source?.latLon = null }
-              }
-              sourceUpdate.data.disabled?.let { disabled ->
-                source?.disabled = disabled.set
-                source?.errorsInSuccession = 0
-              }
-
-              source
+    data.sources?.let {
+      it.add?.let {
+        repository.sources.addAll(it.map { createSource(repository.ownerId, it, repository) })
+      }
+      it.update?.let {
+        val sources: List<SourceEntity> = it.mapNotNull { sourceUpdate ->
+          run {
+            val source = repository.sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }
+            sourceUpdate.data.tags?.let {
+              source?.tags = sourceUpdate.data.tags.set.toTypedArray()
             }
-          }
+            sourceUpdate.data.latLng?.let { point ->
+              point.set?.let {
+                source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
+              } ?: run { source?.latLon = null }
+            }
+            sourceUpdate.data.disabled?.let { disabled ->
+              source?.disabled = disabled.set
+              source?.errorsInSuccession = 0
+            }
 
+            source
+          }
+        }
+
+        withContext(Dispatchers.IO) {
           sourceDAO.saveAll(sources)
         }
-        it.remove?.let {
-          val deleteIds = it.map { UUID.fromString(it) }
-          sourceDAO.deleteAllById(deleteIds.filter { id -> repository.sources.any { it.id == id } }.toMutableList())
-          repository.sources =
-            repository.sources.filter { source -> deleteIds.none { it == source.id } }.toMutableList()
-        }
       }
+      it.remove?.let {
+        val deleteIds = it.map { UUID.fromString(it) }
+        withContext(Dispatchers.IO) {
+          sourceDAO.deleteAllById(deleteIds.filter { id -> repository.sources.any { it.id == id } }.toMutableList())
+        }
+        repository.sources =
+          repository.sources.filter { source -> deleteIds.none { it == source.id } }.toMutableList()
+      }
+    }
+    return withContext(Dispatchers.IO) {
       repositoryDAO.save(repository)
     }
   }
@@ -569,7 +575,18 @@ private fun Visibility.fromDto(): EntityVisibility {
 }
 
 private fun PluginExecutionInput.fromDto(): PluginExecution {
-  return PluginExecution(id = pluginId, params = params)
+  return PluginExecution(id = pluginId, params = params.toEntity())
+}
+
+fun PluginExecutionParamsInput.toEntity(): PluginExecutionJsonEntity {
+  return PluginExecutionJsonEntity(
+    org_feedless_filter = org_feedless_filter,
+    org_feedless_feed = org_feedless_feed,
+    org_feedless_diff_email_forward = org_feedless_diff_email_forward,
+    jsonData = jsonData,
+    org_feedless_conditional_tag = org_feedless_conditional_tag,
+    org_feedless_fulltext = org_feedless_fulltext
+  )
 }
 
 fun DocumentEntity.toJsonItem(

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
@@ -90,7 +91,6 @@ class RepositoryHarvesterTest {
       meterRegistry,
       mock(MessageService::class.java),
       repositoryService,
-      mock(PlatformTransactionManager::class.java)
     )
 
     `when`(meterRegistry.counter(any(String::class.java), anyList())).thenReturn(mock(Counter::class.java))
@@ -331,7 +331,7 @@ class RepositoryHarvesterTest {
   }
 
   private fun createPlugin(): PluginExecution {
-    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionParamsInput())
+    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionJsonEntity())
   }
 
   @Test
@@ -435,11 +435,12 @@ class RepositoryHarvesterTest {
     })
   }
 
-//  @Test
-//  fun `documents will inherit the plugins defined in repository`() =
-//    runTest(context = RequestContext(userId = UUID.randomUUID())) {
-//      TODO()
-//  }
+  @Test
+  @Disabled
+  fun `documents will inherit the plugins defined in repository`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+      TODO()
+  }
 
   @Test
   fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {

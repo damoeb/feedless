@@ -22,7 +22,6 @@ import {
   TagsModalComponentProps,
 } from '../modals/tags-modal/tags-modal.component';
 import { SearchAddressModalComponent } from '../modals/search-address-modal/search-address-modal.component';
-import { OsmMatch } from './open-street-map.service';
 import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
@@ -32,7 +31,7 @@ import {
   MapModalComponentProps,
 } from '../modals/map-modal/map-modal.component';
 import { LatLon } from '../components/map/map.component';
-import { Nullable } from '../types';
+import { NamedLatLon, Nullable } from '../types';
 import {
   SelectionModalComponent,
   SelectionModalComponentProps,
@@ -170,7 +169,7 @@ export class ModalService {
   //   await modal.present();
   // }
 
-  async openSearchAddressModal(): Promise<OsmMatch> {
+  async openSearchAddressModal(): Promise<NamedLatLon> {
     await this.updateUrlParams(ModalName.searchAddress);
     const modal = await this.modalCtrl.create({
       component: SearchAddressModalComponent,
@@ -180,7 +179,7 @@ export class ModalService {
     });
     await modal.present();
 
-    const response = await modal.onDidDismiss<OsmMatch>();
+    const response = await modal.onDidDismiss<NamedLatLon>();
     await this.updateUrlParams();
     return response.data!;
   }

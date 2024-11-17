@@ -7,11 +7,11 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
@@ -54,7 +54,7 @@ class DetectMediaPlugin : MapEntityPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput,
+    params: PluginExecutionJsonEntity,
     logCollector: LogCollector
   ): DocumentEntity {
     val url = document.url

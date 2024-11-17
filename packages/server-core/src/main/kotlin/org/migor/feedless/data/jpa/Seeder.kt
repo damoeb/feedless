@@ -463,54 +463,54 @@ class Seeder {
   }
 
   private suspend fun createProduct(
-      name: String,
-      description: String,
-      group: Vertical? = null,
-      prices: List<PricedProductEntity>,
-      parentFeatureGroupId: UUID,
-      features: Map<FeatureName, FeatureValueEntity>,
-      available: Boolean = true,
-      saas: Boolean = false,
-      isBaseProduct: Boolean = false,
-      selfHostingIndividual: Boolean = false,
-      selfHostingEnterprise: Boolean = false,
-      selfHostingOther: Boolean = false,
-    ): ProductEntity {
+    name: String,
+    description: String,
+    group: Vertical? = null,
+    prices: List<PricedProductEntity>,
+    parentFeatureGroupId: UUID,
+    features: Map<FeatureName, FeatureValueEntity>,
+    available: Boolean = true,
+    saas: Boolean = false,
+    isBaseProduct: Boolean = false,
+    selfHostingIndividual: Boolean = false,
+    selfHostingEnterprise: Boolean = false,
+    selfHostingOther: Boolean = false,
+  ): ProductEntity {
 
-    return withContext(Dispatchers.IO) {
-      val product = productDAO.findByNameEqualsIgnoreCase(name) ?: run {
-        ProductEntity()
+    val product = withContext(Dispatchers.IO) { productDAO.findByNameEqualsIgnoreCase(name) } ?: ProductEntity()
+
+    product.name = name
+    product.saas = saas
+    product.available = available
+    product.selfHostingIndividual = selfHostingIndividual
+    product.selfHostingOther = selfHostingOther
+    product.selfHostingEnterprise = selfHostingEnterprise
+    product.description = description
+    product.baseProduct = isBaseProduct
+    product.partOf = group
+
+    withContext(Dispatchers.IO) { productDAO.save(product) }
+
+    if (saas) {
+      product.featureGroupId = parentFeatureGroupId
+
+      if (features.isNotEmpty()) {
+        val featureGroup = resolveFeatureGroup(name, parentFeatureGroupId, features)
+        product.featureGroupId = featureGroup.id
       }
+      withContext(Dispatchers.IO) { productDAO.save(product) }
+    }
 
-      product.name = name
-      product.saas = saas
-      product.available = available
-      product.selfHostingIndividual = selfHostingIndividual
-      product.selfHostingOther = selfHostingOther
-      product.selfHostingEnterprise = selfHostingEnterprise
-      product.description = description
-      product.baseProduct = isBaseProduct
-      product.partOf = group
-      productDAO.save(product)
 
-      if (saas) {
-        product.featureGroupId = parentFeatureGroupId
-
-        if (features.isNotEmpty()) {
-          val featureGroup = resolveFeatureGroup(name, parentFeatureGroupId, features)
-          product.featureGroupId = featureGroup.id
-        }
-        productDAO.save(product)
-      }
-
+    withContext(Dispatchers.IO) {
       pricedProductDAO.deleteAllByProductId(product.id)
       pricedProductDAO.saveAll(prices.map {
         it.productId = product.id
         it
       })
-
-      product
     }
+
+    return product
   }
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))

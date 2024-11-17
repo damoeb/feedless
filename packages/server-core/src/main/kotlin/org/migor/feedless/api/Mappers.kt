@@ -17,6 +17,7 @@ import org.migor.feedless.actions.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
+import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.GenericFeedSelectors
@@ -209,7 +210,7 @@ fun toExecuteAction(it: PluginExecutionInput): ExecuteActionEntity {
   val e = ExecuteActionEntity()
 
   e.pluginId = it.pluginId
-  e.executorParams = it.params
+  e.executorParams = it.params.toEntity()
 
   return e
 }

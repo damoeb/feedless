@@ -82,6 +82,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
 //  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+//  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework:spring-aspects")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

@@ -12,22 +12,16 @@ import { ActivatedRoute } from '@angular/router';
 import { AppConfigService } from '../../../services/app-config.service';
 import { PageService, PageTags } from '../../../services/page.service';
 import dayjs, { Dayjs } from 'dayjs';
-import { LatLon } from '../../../components/map/map.component';
-import {
-  OpenStreetMapService,
-  OsmMatch,
-} from '../../../services/open-street-map.service';
+import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
   parseDateFromUrl,
   parseLocationFromUrl,
-  parsePerimeterFromUrl,
 } from '../upcoming-product-routing.module';
-import { NamedLatLon } from '../places';
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
+import { NamedLatLon } from '../../../types';
 
 @Component({
   selector: 'app-event-page',
@@ -62,7 +56,7 @@ export class EventPage implements OnInit, OnDestroy {
             this.activatedRoute,
             this.openStreetMapService,
           );
-          this.date = parseDateFromUrl(this.activatedRoute);
+          this.date = parseDateFromUrl(params);
           this.changeRef.detectChanges();
 
           const event = await this.recordService.findAllFullByRepositoryId(
@@ -81,9 +75,6 @@ export class EventPage implements OnInit, OnDestroy {
               },
             },
             'cache-first',
-            {
-              xSetCacheControlMaxAge: '1h',
-            },
           );
           this.event = event[0];
           this.loading = false;
@@ -122,7 +113,7 @@ export class EventPage implements OnInit, OnDestroy {
       publisher: 'upcoming',
       category: '',
       url: document.location.href,
-      region: this.location.country,
+      region: this.location.area,
       place: this.location.displayName,
       lang: 'de',
       publishedAt: dayjs(this.event.createdAt),

@@ -3,12 +3,12 @@ package org.migor.feedless.pipeline.plugins
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
@@ -37,7 +37,7 @@ class ConditionalTagPlugin : MapEntityPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput,
+    params: PluginExecutionJsonEntity,
     logCollector: LogCollector
   ): DocumentEntity {
     val corrId = coroutineContext.corrId()

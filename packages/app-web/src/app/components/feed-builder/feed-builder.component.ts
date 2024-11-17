@@ -36,7 +36,6 @@ import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
-import { OsmMatch } from '../../services/open-street-map.service';
 import { RepositoryService } from '../../services/repository.service';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
@@ -45,6 +44,7 @@ import {
   settingsOutline,
   checkmarkOutline,
 } from 'ionicons/icons';
+import { NamedLatLon } from '../../types';
 
 /**
  * IDEEN
@@ -126,7 +126,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   selectedRepositoryChanged = new EventEmitter<Repository>();
 
   protected tags: string[] = [];
-  protected geoLocation: OsmMatch;
+  protected geoLocation: NamedLatLon;
   protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
@@ -245,8 +245,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (this.geoLocation) {
       this.sourceBuilder.patch({
         latLng: {
-          lat: parseFloat(this.geoLocation.lat),
-          lon: parseFloat(this.geoLocation.lon),
+          lat: this.geoLocation.lat,
+          lon: this.geoLocation.lon,
         },
       });
     }

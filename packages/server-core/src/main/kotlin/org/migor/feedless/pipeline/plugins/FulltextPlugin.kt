@@ -8,11 +8,11 @@ import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
@@ -54,7 +54,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput,
+    params: PluginExecutionJsonEntity,
     logCollector: LogCollector
   ): DocumentEntity {
     val corrId = coroutineContext.corrId()

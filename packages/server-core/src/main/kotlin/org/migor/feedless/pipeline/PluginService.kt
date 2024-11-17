@@ -27,11 +27,15 @@ class PluginService(
   fun postConstruct() {
     log.info("Detected ${transformerPlugins.size} transformer plugins")
     for (plugin in transformerPlugins) {
-      log.info("Plugin ${plugin.id()}")
+      log.info("Plugin ${plugin.id()} -> ${plugin::class.simpleName}")
     }
     log.info("Detected ${entityPlugins.size} entity plugins")
     for (plugin in entityPlugins) {
-      log.info("Plugin ${plugin.id()}")
+      log.info("Plugin ${plugin.id()} -> ${plugin::class.simpleName}")
+    }
+    val collidingIds = plugins.groupingBy { it.id() }.eachCount().filter { it.value > 1 }
+    if (collidingIds.isNotEmpty()) {
+      throw IllegalArgumentException("plugin ids must be unique, the following are not: ${collidingIds.keys.joinToString(", ")} caused by ${plugins.filter { it.id() in collidingIds.keys }.map { it::class.simpleName }}")
     }
   }
 

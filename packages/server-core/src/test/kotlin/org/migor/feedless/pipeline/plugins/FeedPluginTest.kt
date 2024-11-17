@@ -6,12 +6,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.actions.ExecuteActionEntity
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.repository.any
 import org.migor.feedless.scrape.LogCollector
@@ -60,7 +60,7 @@ class FeedPluginTest {
   fun `extracts generic feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(
-      PluginExecutionParamsInput(
+      PluginExecutionJsonEntity(
         org_feedless_feed = FeedParamsInput(
           generic = SelectorsInput(
             contextXPath = "",
@@ -107,7 +107,7 @@ class FeedPluginTest {
   @Test
   fun `extracts native feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
-    `when`(action.executorParams).thenReturn(PluginExecutionParamsInput(org_feedless_feed = FeedParamsInput()))
+    `when`(action.executorParams).thenReturn(PluginExecutionJsonEntity(org_feedless_feed = FeedParamsInput()))
     `when`(feedParserService.parseFeed(any(HttpResponse::class.java))).thenReturn(jsonFeed)
     val httpResponse = HttpResponse(
       contentType = "application/rss+xml",

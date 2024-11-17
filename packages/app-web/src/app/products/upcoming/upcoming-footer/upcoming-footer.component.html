@@ -1,15 +1,21 @@
-<div style="text-align: right" class="ion-padding-horizontal">
-  <!--  <ion-breadcrumbs>-->
-  <!--    <ion-breadcrumb>Events</ion-breadcrumb>-->
-  <!--    <ion-breadcrumb>{{ location?.country }}</ion-breadcrumb>-->
-  <!--    <ion-breadcrumb>{{ location?.place }}</ion-breadcrumb>-->
-  <!--  </ion-breadcrumbs>-->
-  <!--  <ion-list>-->
-  <!--    <ion-item>-->
-  <!--      Login-->
-  <!--    </ion-item>-->
-  <!--    <ion-item>-->
-  <!--      Impressum-->
-  <!--    </ion-item>-->
-  <!--  </ion-list>-->
-</div>
+<ion-footer>
+  <div class="events">
+    <div appDev style="align-self: center">
+      <ion-button
+        color="primary"
+        size="large"
+        shape="round"
+        (click)="createMailSubscription()"
+      >
+        Jetzt Events als E-Mail abonnieren!
+        <ion-icon name="send-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+    <ul style="list-style: none">
+      <li><a>Events melden</a></li>
+      <li><a>Unterstütze uns</a></li>
+      <li><a routerLink="/events/in/CH">Sitemap</a></li>
+      <li><a href="">Impressum</a></li>
+    </ul>
+  </div>
+</ion-footer>

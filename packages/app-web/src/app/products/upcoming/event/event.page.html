@@ -2,7 +2,6 @@
   *ngIf="date && location"
   [date]="date"
   [location]="location"
-  [categories]="[]"
 ></app-upcoming-header>
 <ion-content>
   <div class="events">
@@ -54,7 +53,7 @@
           itemtype="https://schema.org/Place"
         >
           <span itemprop="name"
-            >{{ location.displayName }}, {{ location.country }}</span
+            >{{ location.displayName }}, {{ location.area }}</span
           >
           <!--          <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
           <div
@@ -99,7 +98,6 @@
       <!--  </footer>-->
     </article>
   </div>
-</ion-content>
-<ion-footer>
+
   <app-upcoming-footer [location]="location"></app-upcoming-footer>
-</ion-footer>
+</ion-content>

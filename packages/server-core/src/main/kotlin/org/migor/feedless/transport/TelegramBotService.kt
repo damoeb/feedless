@@ -100,7 +100,7 @@ class TelegramBotService(
     }
   }
 
-  @Scheduled(fixedDelay = 4000)
+//  @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
     try {
       val url = "https://api.telegram.org/bot$botToken/getUpdates"

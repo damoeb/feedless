@@ -13,6 +13,7 @@ import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.document.DocumentEntity
@@ -58,7 +59,7 @@ class FulltextPluginTest {
     val repository = mock(RepositoryEntity::class.java)
     `when`(repository.sources).thenReturn(mutableListOf(source))
 
-    val params = PluginExecutionParamsInput(
+    val params = PluginExecutionJsonEntity(
       org_feedless_fulltext = FulltextPluginParamsInput(
         readability = true,
         summary = false,

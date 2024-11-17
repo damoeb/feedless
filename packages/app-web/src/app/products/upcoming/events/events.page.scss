@@ -1,1 +1,5 @@
 @import "../upcoming-mixins";
+
+ion-content::part(scroll) {
+  display: flex;
+}

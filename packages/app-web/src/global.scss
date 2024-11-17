@@ -258,10 +258,10 @@ a {
     --height: 500px;
   }
 
-  & > * {
-    border: 6px solid rgba(var(--ion-color-primary-rgb), 0.8);
-    border-radius: 8px;
-  }
+  //& > * {
+  //  border: 6px solid rgba(var(--ion-color-primary-rgb), 0.8);
+  //  border-radius: 8px;
+  //}
 }
 
 .product--untold-notes {

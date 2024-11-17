@@ -6,9 +6,11 @@ import org.apache.commons.lang3.StringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -48,7 +50,6 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDateTime
 import java.util.*
 
@@ -96,7 +97,6 @@ class DocumentServiceTest {
 
     documentService = DocumentService(
       documentDAO,
-      mock(PlatformTransactionManager::class.java),
       mock(EntityManager::class.java),
       repositoryDAO,
       planConstraintsService,
@@ -121,8 +121,8 @@ class DocumentServiceTest {
   @Test
   fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJobEntity()
-    filterJob.executorId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionParamsInput(
+    filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
+    filterJob.executorParams = PluginExecutionJsonEntity(
       org_feedless_filter = listOf(
         ItemFilterParamsInput(
           composite = CompositeFilterParamsInput(
@@ -151,8 +151,8 @@ class DocumentServiceTest {
   @Test
   fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJobEntity()
-    filterJob.executorId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionParamsInput(
+    filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
+    filterJob.executorParams = PluginExecutionJsonEntity(
       org_feedless_filter = listOf(
         ItemFilterParamsInput(
           composite = CompositeFilterParamsInput(
@@ -177,8 +177,8 @@ class DocumentServiceTest {
   @Test
   fun `processDocumentPlugins will map document`() = runTest {
     val mapJob = DocumentPipelineJobEntity()
-    mapJob.executorId = FeedlessPlugins.org_feedless_fulltext.name
-    mapJob.executorParams = PluginExecutionParamsInput(
+    mapJob.pluginId = FeedlessPlugins.org_feedless_fulltext.name
+    mapJob.executorParams = PluginExecutionJsonEntity(
       org_feedless_fulltext = FulltextPluginParamsInput(
         summary = true,
         readability = true,
@@ -188,7 +188,7 @@ class DocumentServiceTest {
     `when`(fulltextPlugin.mapEntity(
       eq(document),
       any(RepositoryEntity::class.java),
-      any(PluginExecutionParamsInput::class.java),
+      any(PluginExecutionJsonEntity::class.java),
       any(LogCollector::class.java),
     )).thenAnswer {
       val d = it.arguments[0] as DocumentEntity
@@ -215,10 +215,11 @@ class DocumentServiceTest {
     verify(documentDAO).save(eq(document))
   }
 
-//  @Test
-//  fun `processDocumentPlugins will save document when execution gets delayed`() {
-//    TODO()
-//  }
+  @Test
+  @Disabled
+  fun `processDocumentPlugins will save document when execution gets delayed`() {
+    TODO()
+  }
 
   @Test
   fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {

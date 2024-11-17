@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 
 @Entity
 @Table(name = "t_action_execute_plugin")
@@ -30,5 +29,5 @@ open class ExecuteActionEntity : ScrapeActionEntity() {
   @Basic(fetch = FetchType.EAGER)
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb", name = "executor_params", nullable = false)
-  open var executorParams: PluginExecutionParamsInput? = null
+  open var executorParams: PluginExecutionJsonEntity? = null
 }

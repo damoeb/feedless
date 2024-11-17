@@ -10,23 +10,23 @@
       "
     >
       <ion-button
-        color="light"
+        [color]="expand == 'calendar' ? 'primary' : 'light'"
         aria-label="Datum"
-        (click)="showCalendar = !showCalendar"
+        (click)="expand == 'calendar' ? (expand = null) : (expand = 'calendar')"
       >
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <span class="ion-hide-sm-down"> {{ getWeekday() }}, </span>
         {{ getLabelForCalendar() }}
       </ion-button>
       <ion-searchbar
-        (ionFocus)="isLocationFocussed = true"
+        (ionFocus)="expand = 'suggestions'"
         [formControl]="locationFc"
         placeholder="Postleitzahl oder Ortschaft"
         search-icon="location-outline"
         style="
           flex: 1;
           --border-radius: 8px;
-          --box-shadow: 0px 0px 4px 1px var(--ion-color-danger);
+          --box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
         "
       >
       </ion-searchbar>
@@ -81,7 +81,6 @@
   </ion-toolbar>
 
   <div
-    *ngIf="!loadingCalendar"
     style="
       max-width: 700px;
       margin-left: auto;
@@ -90,29 +89,44 @@
       flex-direction: column;
     "
   >
-    <ion-list *ngIf="isLocationFocussed" class="ion-margin-bottom">
-      <!--      <ion-item-->
-      <!--        (click)="getCurrentLocation()"-->
-      <!--        *ngIf="!locationNotAvailable"-->
-      <!--        [button]="true"-->
-      <!--      >-->
-      <!--        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>-->
-      <!--        Your Location-->
-      <!--      </ion-item>-->
-      <ion-item *ngIf="locationSuggestions.length === 0">
-        Tippe deine Ortschaft
-      </ion-item>
-      <ion-item
-        (click)="changeLocation(location)"
-        *ngFor="let location of locationSuggestions"
-        [button]="true"
+    <ng-container *ngIf="expand === 'suggestions'">
+      <ion-list
+        class="ion-margin-bottom"
+        style="max-height: 20vh; overflow-y: auto"
       >
-        <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>
-        {{ location.displayName }} [{{ location.country }}]
-      </ion-item>
-    </ion-list>
+        <!--      <ion-item-->
+        <!--        (click)="getCurrentLocation()"-->
+        <!--        *ngIf="!locationNotAvailable"-->
+        <!--        [button]="true"-->
+        <!--      >-->
+        <!--        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>-->
+        <!--        Your Location-->
+        <!--      </ion-item>-->
+        <ion-item *ngIf="locationSuggestions.length === 0">
+          <span class="suggestion">
+            Tippe deine Ortschaft oder Postleitzahl
+          </span>
+        </ion-item>
 
-    <ng-container *ngIf="showCalendar">
+        <ion-item
+          *ngFor="let location of locationSuggestions"
+          [routerLink]="getUrlForLocation(location)"
+          [button]="true"
+        >
+          <!--          <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>-->
+          <span class="suggestion" [innerHTML]="location.displayName"></span>
+        </ion-item>
+      </ion-list>
+      {{ currentLatLon | json }}
+      <app-map
+        [position]="getCurrentLatLon()"
+        style="height: 200px; border-radius: 8px; overflow: hidden"
+        (positionChange)="handlePositionChange($event)"
+        [perimeter]="perimeterFc.value"
+      ></app-map>
+    </ng-container>
+
+    <ng-container *ngIf="expand === 'calendar'">
       <div class="calendar ion-margin-top">
         <ion-toolbar style="--background: transparent">
           <ion-buttons slot="start">
@@ -200,12 +214,12 @@
                       {{ formatDate(day.day, "D") }}
                     </span>
                   </div>
-                  <div
-                    class="ion-text-center"
-                    style="color: var(--ion-color-danger)"
-                  >
-                    <span *ngIf="hasEvents(day.day)"> &#9679; </span>
-                  </div>
+                  <!--                  <div-->
+                  <!--                    class="ion-text-center"-->
+                  <!--                    style="color: var(&#45;&#45;ion-color-danger)"-->
+                  <!--                  >-->
+                  <!--                    <span *ngIf="hasEvents(day.day)"> &#9679; </span>-->
+                  <!--                  </div>-->
                 </time>
               </a>
             </div>
@@ -214,32 +228,24 @@
       </div>
     </ng-container>
 
-    <ng-container *ngIf="showMap || isLocationFocussed">
-      <app-map
-        [position]="currentLatLon"
-        (positionChange)="handlePositionChange($event)"
-        [perimeter]="perimeterFc.value"
-      ></app-map>
-    </ng-container>
-
-    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">
-      <ion-item>
-        <ion-select
-          [formControl]="categoriesFc"
-          [interfaceOptions]="selectCategoriesOptions"
-          interface="action-sheet"
-          label="Kategorien"
-          [multiple]="true"
-          labelPlacement="start"
-        >
-          <ion-select-option
-            *ngFor="let category of categories"
-            [value]="category"
-            >{{ category }}</ion-select-option
-          >
-        </ion-select>
-      </ion-item>
-    </ion-list>
+    <!--    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">-->
+    <!--      <ion-item>-->
+    <!--        <ion-select-->
+    <!--          [formControl]="categoriesFc"-->
+    <!--          [interfaceOptions]="selectCategoriesOptions"-->
+    <!--          interface="action-sheet"-->
+    <!--          label="Kategorien"-->
+    <!--          [multiple]="true"-->
+    <!--          labelPlacement="start"-->
+    <!--        >-->
+    <!--          <ion-select-option-->
+    <!--            *ngFor="let category of categories"-->
+    <!--            [value]="category"-->
+    <!--            >{{ category }}</ion-select-option-->
+    <!--          >-->
+    <!--        </ion-select>-->
+    <!--      </ion-item>-->
+    <!--    </ion-list>-->
 
     <!--    <div-->
     <!--      style="max-height: 200px; overflow: hidden; border-radius: 8px"-->

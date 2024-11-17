@@ -23,7 +23,7 @@ class EventsReportPlugin : ReportPlugin {
 
   private val log = LoggerFactory.getLogger(EventsReportPlugin::class.simpleName)
 
-  override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
+  override fun id(): String = FeedlessPlugins.org_feedless_event_report.name
   override fun name(): String = ""
   override fun listed() = false
 

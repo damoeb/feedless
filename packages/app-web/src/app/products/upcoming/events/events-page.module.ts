@@ -19,6 +19,7 @@ import {
   IonCardContent,
   IonCardTitle,
 } from '@ionic/angular/standalone';
+import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if-prod.module';
 
 @NgModule({
   imports: [
@@ -39,6 +40,7 @@ import {
     IonCard,
     IonCardContent,
     IonCardTitle,
+    RemoveIfProdModule,
   ],
   declarations: [EventsPage],
   exports: [EventsPage],

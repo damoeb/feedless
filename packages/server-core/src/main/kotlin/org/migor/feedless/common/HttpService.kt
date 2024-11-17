@@ -122,7 +122,7 @@ class HttpService(
           delay(waitFor.toMillis())
         } else {
           throw HostOverloadingException(
-            "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
+            "host overloading ${actualUrl.host}",
             Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
           )
         }

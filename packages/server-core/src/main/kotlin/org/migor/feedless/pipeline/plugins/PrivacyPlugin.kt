@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.attachment.AttachmentEntity
 import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.HttpResponse
@@ -13,7 +14,6 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
@@ -62,7 +62,7 @@ class PrivacyPlugin : MapEntityPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionParamsInput,
+    params: PluginExecutionJsonEntity,
     logCollector: LogCollector
   ): DocumentEntity {
     log.debug("mapEntity ${document.url}")

@@ -17,6 +17,7 @@ import {
   IonList,
   IonItem,
   IonTitle,
+  IonNote,
 } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -37,6 +38,7 @@ import {
     IonList,
     IonItem,
     IonTitle,
+    IonNote,
   ],
   declarations: [UpcomingHeaderComponent],
   exports: [UpcomingHeaderComponent],

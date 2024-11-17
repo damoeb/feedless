@@ -12,8 +12,8 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.secrets.EncryptionConverter
+import org.migor.feedless.secrets.HashConverter
 import org.migor.feedless.user.UserEntity
 import java.time.LocalDateTime
 import java.util.*
@@ -23,8 +23,11 @@ import java.util.*
 open class ReportEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = "email")
+  open lateinit var recipientEmail: String
+
+  @Column(nullable = false, name = "name")
   @Convert(converter = EncryptionConverter::class)
-  open lateinit var email: String
+  open lateinit var recipientName: String
 
   @Column(nullable = false, name="authorized")
   open var authorized: Boolean = false

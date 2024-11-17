@@ -7,6 +7,7 @@ import graphql.schema.DataFetchingEnvironment
 import graphql.schema.GraphQLFieldDefinition
 import graphql.schema.idl.SchemaDirectiveWiring
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment
+import org.apache.commons.validator.EmailValidator
 import org.migor.feedless.AppLayer
 import org.migor.feedless.common.CacheKeyGenerator
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
@@ -98,6 +99,30 @@ class XPathValidatorDirective : SchemaDirectiveWiring {
         }
 
         return@wrapDataFetcher value
+      }
+
+      value
+    }
+
+    env.codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, dataFetcher)
+
+    return fieldDefinition
+  }
+}
+
+@Profile(AppLayer.api)
+@DgsDirective(name = "email")
+class EmailValidatorDirective : SchemaDirectiveWiring {
+  override fun onField(env: SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition>): GraphQLFieldDefinition {
+    val fieldsContainer = env.fieldsContainer
+    val fieldDefinition = env.fieldDefinition
+
+    val originalDataFetcher = env.codeRegistry.getDataFetcher(fieldsContainer, fieldDefinition)
+    val dataFetcher = DataFetcherFactories.wrapDataFetcher(
+      originalDataFetcher
+    ) { _: DataFetchingEnvironment?, value: Any? ->
+      if (!EmailValidator.getInstance().isValid(value as String)) {
+        throw IllegalArgumentException("invalid email")
       }
 
       value

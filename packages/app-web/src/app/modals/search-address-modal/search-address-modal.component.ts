@@ -1,14 +1,11 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { ModalCancel } from '../../app.module';
-import {
-  OpenStreetMapService,
-  OsmMatch,
-} from '../../services/open-street-map.service';
+import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { GqlGeoPoint } from '../../../generated/graphql';
-import { NamedLatLon } from '../../products/upcoming/places';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { NamedLatLon } from '../../types';
 
 @Component({
   selector: 'app-search-address-modal',

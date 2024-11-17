@@ -13,9 +13,9 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
 import org.jetbrains.annotations.NotNull
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import java.util.*
 
 @Entity
@@ -24,12 +24,12 @@ open class DocumentPipelineJobEntity : PipelineJobEntity() {
 
   @NotNull
   @Column(name = "executor_id")
-  open lateinit var executorId: String
+  open lateinit var pluginId: String
 
   @NotNull
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "executor_params", columnDefinition = "jsonb")
-  open lateinit var executorParams: PluginExecutionParamsInput
+  open lateinit var executorParams: PluginExecutionJsonEntity
 
   @NotNull
   @Column(name = StandardJpaFields.documentId, nullable = true)

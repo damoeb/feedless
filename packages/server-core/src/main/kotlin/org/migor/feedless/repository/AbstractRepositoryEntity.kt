@@ -22,6 +22,7 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -49,14 +50,12 @@ import org.migor.feedless.generated.types.NumericalFilterParams
 import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParams
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.StringFilterParams
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.group.GroupEntity
-import org.migor.feedless.report.ReportEntity
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
@@ -65,7 +64,7 @@ import java.sql.Types
 import java.time.LocalDateTime
 import java.util.*
 
-data class PluginExecution(val id: String, val params: PluginExecutionParamsInput)
+data class PluginExecution(val id: String, val params: PluginExecutionJsonEntity)
 
 enum class MaxAgeDaysDateField {
   createdAt,
@@ -263,7 +262,7 @@ private fun org.migor.feedless.repository.PluginExecution.toDto(): PluginExecuti
   )
 }
 
-fun PluginExecutionParamsInput.toDto(): PluginExecutionParams {
+fun PluginExecutionJsonEntity.toDto(): PluginExecutionParams {
   return PluginExecutionParams(
     org_feedless_fulltext = org_feedless_fulltext?.toDto(),
     org_feedless_feed = org_feedless_feed?.toDto(),

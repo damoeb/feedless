@@ -6,6 +6,8 @@ scalar JSON
 scalar Long
 scalar Upload
 
+directive @min(len: Int) on INPUT_FIELD_DEFINITION
+directive @email on INPUT_FIELD_DEFINITION
 directive @url on INPUT_FIELD_DEFINITION
 directive @xpath on INPUT_FIELD_DEFINITION
 #directive @extends on OBJECT | INTERFACE
@@ -195,7 +197,7 @@ input OrderCreateInput {
   targetGroup: ProductTargetGroup!
   invoiceRecipientName: String!
   callbackUrl: String! @url
-  invoiceRecipientEmail: String!
+  invoiceRecipientEmail: String! @email
   user: UserCreateOrConnectInput!
 }
 
@@ -251,7 +253,7 @@ input UserCreateOrConnectInput {
 }
 
 input UserCreateInput {
-  email: String!
+  email: String! @email
   firstName: String!
   lastName: String!
   country: String!
@@ -916,7 +918,7 @@ type Subscription {
 }
 
 input AuthViaMailInput {
-  email: String!
+  email: String! @email
   token: String!
   product: Vertical!
   osInfo: String!
@@ -1102,7 +1104,7 @@ enum Visibility {
 }
 
 input AuthUserInput {
-  email: String!
+  email: String! @email
   secretKey: String!
 }
 
@@ -1317,24 +1319,43 @@ input SecretKey {
 }
 
 input SegmentInput {
-  time: TimeSegmentInput!
-  filter: SegmentRecordsWhereInput!
+  when: TimeSegmentInput!
+  what: SegmentRecordsWhereInput!
   report: SegmentReportInput!
+  recipient: ReportRecipientInput!
 }
+
+input ReportRecipientInput {
+  email: ReportEmailRecipientInput!
+}
+
+input ReportEmailRecipientInput {
+  email: String! @email
+  name: String! @min(len: 3)
+}
+
 
 input SegmentRecordsWhereInput {
   latLng: GeoPointWhereInput
   tags: StringFilterInput!
+  maxSize: Int
 }
 
 input SegmentReportInput {
   plugin: PluginExecutionInput!
-  maxSize: Int
 #  orderAsc: Boolean!
 #  orderBy: String!
 }
 
 input TimeSegmentInput {
+  scheduled: ScheduledSegmentInput!
+#  live: LiveSegmentInput
+}
+#input LiveSegmentInput {
+#  criticality: Int!
+#
+#}
+input ScheduledSegmentInput {
   interval: IntervalUnit!
   startingAt: Long!
 }
@@ -1564,11 +1585,6 @@ input PluginExecutionParamsInput {
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
   org_feedless_conditional_tag: [ConditionalTagInput!]
-  org_feedless_events_report: EventsReportPluginParamsInput
-}
-
-input EventsReportPluginParamsInput {
-  email: String!
 }
 
 input FeedParamsInput {
@@ -1673,12 +1689,7 @@ type PluginExecutionParams {
   org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
-  org_feedless_events_report: EventsReportPluginParams
 #  org_feedless_conditional_tag: [ConditionalTag!]
-}
-
-interface EventsReportPluginParams {
-  email: String!
 }
 
 type FeedParams {

@@ -460,6 +460,7 @@ export async function mockServerSettings(
   const httpClient = TestBed.inject(HttpClient);
   const mockConfig: VerticalAppConfig = {
     apiUrl: '',
+    attributionHtml: '',
     product: GqlVertical.Feedless,
   };
   httpClient.get = jasmine

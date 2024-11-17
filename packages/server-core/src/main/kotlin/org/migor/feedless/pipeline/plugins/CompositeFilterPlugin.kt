@@ -3,13 +3,13 @@ package org.migor.feedless.pipeline.plugins
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.document.filter.generated.FilterByExpression
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.NumberFilterOperator
 import org.migor.feedless.generated.types.NumericalFilterParamsInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
 import org.migor.feedless.pipeline.FilterEntityPlugin
@@ -32,7 +32,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   override suspend fun filterEntity(
     item: JsonItem,
-    params: PluginExecutionParamsInput,
+    params: PluginExecutionJsonEntity,
     index: Int,
     logCollector: LogCollector,
   ): Boolean {

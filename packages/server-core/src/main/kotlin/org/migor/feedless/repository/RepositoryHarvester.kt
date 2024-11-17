@@ -52,7 +52,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionTemplate
 import java.net.ConnectException
 import java.net.UnknownHostException
 import java.time.Duration
@@ -78,7 +77,6 @@ class RepositoryHarvester(
   private val meterRegistry: MeterRegistry,
   private val messageService: MessageService,
   private val repositoryService: RepositoryService,
-  private val transactionManager: PlatformTransactionManager,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
@@ -95,11 +93,11 @@ class RepositoryHarvester(
   }
 
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   suspend fun handleRepository(repositoryId: UUID) {
     val corrId = coroutineContext.corrId()
     runCatching {
-      log.debug("[${corrId}] handleRepository $repositoryId")
+      log.info("[${corrId}] handleRepository $repositoryId")
 
       val logCollector = LogCollector()
       val harvest = HarvestEntity()
@@ -127,7 +125,7 @@ class RepositoryHarvester(
 
       if (appendCount > 0) {
         harvest.itemsAdded = appendCount
-        val message = "[$corrId] appended ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
+        val message = "[$corrId] appending ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
         log.info(message)
         logCollector.log(message)
       }
@@ -140,7 +138,7 @@ class RepositoryHarvester(
           repository.product,
           LocalDateTime.now()
         )
-        log.debug("[$corrId] Next harvest scheduled for ${scheduledNextAt.format(iso8601DateFormat)}")
+        log.info("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
         repository.triggerScheduledNextAt = scheduledNextAt
         repository.lastUpdatedAt = LocalDateTime.now()
         repositoryDAO.save(repository)
@@ -154,6 +152,7 @@ class RepositoryHarvester(
           .joinToString("\n"), "...", 5000)
         harvestDAO.save(harvest)
       }
+      log.info("done")
     }.onFailure {
       log.error("[$corrId] handleRepository failed: ${it.message}", it)
     }
@@ -367,7 +366,10 @@ class RepositoryHarvester(
           }
         }.map { (_, document) -> document }
       documentDAO.saveAll(validDocuments)
-      log.info("$repositoryId found ${validDocuments.size} documents")
+
+      if (validDocuments.isNotEmpty()) {
+        log.info("[$corrId] $repositoryId/${source.id} found ${validDocuments.size} documents")
+      }
 
       if (repository.pushNotificationsMuted) {
         telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
@@ -384,19 +386,14 @@ class RepositoryHarvester(
 
       if (repository.plugins.isNotEmpty()) {
         try {
-          val transactionTemplate = TransactionTemplate(transactionManager)
-          transactionTemplate.executeWithoutResult {
-            runBlocking {
-              documentPipelineJobDAO.deleteAllByDocumentIdIn(
-                documents.filter { (isNew, _) -> !isNew }
-                  .map { (_, document) -> document.id })
-            }
-          }
+            log.debug("[$corrId] delete all document job by documents")
+            documentPipelineJobDAO.deleteAllByDocumentIdIn(
+              documents.filter { (isNew, _) -> !isNew }
+                .map { (_, document) -> document.id })
         } catch (e: Exception) {
-          log.warn("deleteAllByDocumentIdIn failed: ${e.message}")
+          log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
         }
       }
-
       documentPipelineJobDAO.saveAll(
         documents
           .map { (_, document) -> document }
@@ -519,7 +516,7 @@ class RepositoryHarvester(
     val job = DocumentPipelineJobEntity()
     job.sequenceId = index
     job.documentId = document.id
-    job.executorId = plugin.id
+    job.pluginId = plugin.id
     job.executorParams = plugin.params
     return job
   }

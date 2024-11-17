@@ -29,7 +29,9 @@ services:
       API_SERVER_NAMES: "api.feedless.org api.lokale.events"
       APP_SERVER_NAMES: "feedless.org lokale.events"
       INTERNAL_API_URL: "localhost:8082"
-      INTERNAL_APP_URL: "localhost:4200"
+      INTERNAL_PLAUSIBLE_URL: "localhost:4200"
+      INTERNAL_GRAFANA_URL: "localhost:4200"
+      INTERNAL_LOKI_URL: "localhost:4200"
     ports:
      - "8888:80"
     depends_on:

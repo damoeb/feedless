@@ -23,6 +23,7 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
@@ -171,7 +172,7 @@ class LegacyFeedService {
           feed.items = feed.items.filterIndexed { index, jsonItem ->
             filterPlugin.filterEntity(
               jsonItem,
-              params,
+              params.toEntity(),
               index,
               LogCollector()
             )

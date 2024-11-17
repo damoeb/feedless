@@ -3,7 +3,7 @@ import { EventPage } from './event.page';
 import { AppTestModule, mockFullRecords } from '../../../app-test.module';
 import { EventPageModule } from './event-page.module';
 
-describe('EventComponent', () => {
+describe('EventPage', () => {
   let component: EventPage;
   let fixture: ComponentFixture<EventPage>;
 

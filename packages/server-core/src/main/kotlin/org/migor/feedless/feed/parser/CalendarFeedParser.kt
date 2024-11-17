@@ -11,7 +11,6 @@ import java.io.StringReader
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.temporal.Temporal
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -48,8 +47,8 @@ private fun VEvent.toJsonItem(): JsonItem {
   val item = JsonItem()
   item.id = uid.get().value
   item.title = summary.get().value
-  item.url = url.get().value
-  item.text = description.get().value
+  item.url = url.getOrNull()?.value ?: ""
+  item.text = description.getOrNull()?.value ?: ""
   item.tags = categories.getOrNull()?.categories?.texts?.toList()
   item.startingAt = getDateTimeStart<OffsetDateTime>().get().date.toLocalDateTime()
   item.endingAt = getDateTimeEnd<OffsetDateTime>().get().date.toLocalDateTime()

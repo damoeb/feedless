@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -268,8 +269,8 @@ class PlanConstraintsServiceImplTest {
     service.auditRepositoryMaxCount(sourceCount, userId)
   }
 
-
   @Test
+  @Disabled
   fun violatesRepositoriesMaxActiveCount() {
     // todo
   }

@@ -9,7 +9,7 @@ import {
 import { EventsPageModule } from './events-page.module';
 import { Router } from '@angular/router';
 
-describe('EventsComponent', () => {
+describe('EventsPage', () => {
   let component: EventsPage;
   let fixture: ComponentFixture<EventsPage>;
 

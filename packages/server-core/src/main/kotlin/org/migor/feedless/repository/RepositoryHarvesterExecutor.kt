@@ -78,7 +78,7 @@ class RepositoryHarvesterExecutor internal constructor() {
                   }
                 }.awaitAll()
               }
-              log.debug("batch refresh done")
+              log.info("done")
             }.onFailure {
               log.error("[$corrId] batch refresh done: ${it.message}")
             }
@@ -86,7 +86,7 @@ class RepositoryHarvesterExecutor internal constructor() {
         }
       }
     } catch (e: Exception) {
-      log.error("batch refresh done: ${e.message}")
+      log.error("batch refresh failed: ${e.message}")
     }
   }
 
@@ -115,7 +115,7 @@ class RepositoryHarvesterExecutor internal constructor() {
                   }
                 }.awaitAll()
               }
-              log.debug("[$corrId] batch refresh done")
+              log.info("[$corrId] done")
             }.onFailure {
               log.error("[$corrId] batch refresh done: ${it.message}")
             }
@@ -123,7 +123,7 @@ class RepositoryHarvesterExecutor internal constructor() {
         }
       }
     } catch (e: Exception) {
-      log.error("batch refresh done: ${e.message}")
+      log.error("batch refresh failed: ${e.message}")
     }
   }
 }
