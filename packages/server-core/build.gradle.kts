@@ -135,6 +135,8 @@ dependencies {
   // json feed
   implementation("org.json:json:20240303")
   implementation("com.google.guava:guava:33.1.0-jre")
+// https://mvnrepository.com/artifact/org.mnode.ical4j/ical4j
+  implementation("org.mnode.ical4j:ical4j:4.0.5")
 
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")

@@ -12,6 +12,7 @@ open class JsonItem : Serializable {
     const val TITLE = "title"
     const val URL = "url"
     const val STARTING_AT = "date_starting"
+    const val ENDING_AT = "date_ending"
     const val LAT_LNG = "latlng"
     const val PUBLISHED_AT = "date_published"
   }
@@ -72,6 +73,9 @@ open class JsonItem : Serializable {
 
   @SerializedName(STARTING_AT)
   var startingAt: LocalDateTime? = null
+
+  @SerializedName(ENDING_AT)
+  var endingAt: LocalDateTime? = null
 
   @SerializedName(LAT_LNG)
   var latLng: JsonPoint? = null

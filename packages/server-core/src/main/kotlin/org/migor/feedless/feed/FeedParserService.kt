@@ -5,6 +5,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.feed.parser.CalendarFeedParser
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
@@ -30,6 +31,7 @@ class FeedParserService(
   private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
     XmlFeedParser(),
     JsonFeedParser(),
+    CalendarFeedParser(),
     NullFeedParser()
   )
 

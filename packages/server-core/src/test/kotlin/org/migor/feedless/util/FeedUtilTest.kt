@@ -18,6 +18,7 @@ class FeedUtilTest {
       "application/atom+xml, ATOM",
       "application/atom+xml, ATOM",
       "application/xml, ATOM",
+      "text/calendar; charset=UTF-8, CALENDAR",
       "text/html, ",
     ]
   )

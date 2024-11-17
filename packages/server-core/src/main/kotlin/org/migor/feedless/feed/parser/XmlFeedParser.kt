@@ -284,5 +284,5 @@ private fun SyndPerson.toJsonAuthor(): JsonAuthor {
 }
 
 enum class FeedType {
-  ATOM, JSON
+  ATOM, JSON, CALENDAR
 }

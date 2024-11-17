@@ -37,6 +37,7 @@ object FeedUtil {
       "text/rss+xml", "application/rss+xml",
       "application/atom+xml",
       "application/rdf+xml", "text/xml", "application/xml" -> FeedType.ATOM
+      "text/calendar" -> FeedType.CALENDAR
       else -> null
     }
   }
