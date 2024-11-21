@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.features} & ${AppLayer.api}")
 class FeatureResolver(
   private val featureService: FeatureService
@@ -34,7 +35,6 @@ class FeatureResolver(
 
   @Throttled
   @DgsQuery
-  @Transactional
   suspend fun featureGroups(
     dfe: DataFetchingEnvironment,
     @InputArgument inherit: Boolean,
@@ -54,7 +54,6 @@ class FeatureResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateFeatureValue)
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateFeatureValue(
     dfe: DataFetchingEnvironment,
     @InputArgument data: UpdateFeatureValueInput

@@ -19,28 +19,25 @@ import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.Session
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
-@Transactional
 class UserResolver {
 
   private val log = LoggerFactory.getLogger(UserResolver::class.simpleName)
 
   @Autowired
   private lateinit var userService: UserService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
 
   @Autowired
   private lateinit var connectedAppService: ConnectedAppService

@@ -30,10 +30,12 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.api}")
 class SessionResolver {
 
@@ -61,7 +63,6 @@ class SessionResolver {
   private lateinit var cookieProvider: CookieProvider
 
   @DgsQuery
-  @Transactional
   suspend fun session(dfe: DataFetchingEnvironment): Session =
     withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       unsetSessionCookie(dfe)

@@ -70,7 +70,7 @@ fun PricedProductEntity.toDto(): PricedProduct {
 }
 
 private fun ChronoUnit.toDto(): RecurringPaymentInterval {
-  return when(this) {
+  return when (this) {
     ChronoUnit.YEARS -> RecurringPaymentInterval.yearly
     ChronoUnit.MONTHS -> RecurringPaymentInterval.monthly
     else -> throw IllegalArgumentException("Invalid RecurringPaymentInterval: $this")

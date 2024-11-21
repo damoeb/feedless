@@ -25,8 +25,11 @@ import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.api}")
 class AgentResolver(
   private val agentService: AgentService

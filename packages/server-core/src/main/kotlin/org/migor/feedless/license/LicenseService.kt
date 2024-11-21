@@ -38,6 +38,8 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.io.File
 import java.io.FileWriter
 import java.io.InputStream
@@ -94,6 +96,7 @@ data class LicensePayload(
 }
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.license} & ${AppLayer.service}")
 class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
@@ -362,6 +365,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return true
   }
 
+  @Transactional
   suspend fun createLicenseForProduct(product: ProductEntity, billing: OrderEntity): LicenseEntity {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] createLicenseForProduct ${product.name}")
@@ -387,6 +391,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByOrderId(orderId: UUID): List<LicenseEntity> {
     return withContext(Dispatchers.IO) {
       licenseDAO.findAllByOrderId(orderId)

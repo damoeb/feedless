@@ -160,7 +160,7 @@ class SecurityConfig {
                 }
                 log.info("jwt from user ${user.id}")
                 val jwt = tokenProvider.createJwtForUser(user)
-              response.addCookie(cookieProvider.createTokenCookie(jwt))
+                response.addCookie(cookieProvider.createTokenCookie(jwt))
                 response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 //
                 if (environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))) {

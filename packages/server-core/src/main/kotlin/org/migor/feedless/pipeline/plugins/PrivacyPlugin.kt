@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -34,6 +36,7 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class PrivacyPlugin : MapEntityPlugin {
 

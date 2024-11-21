@@ -7,11 +7,14 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.ResourceUtils
 import java.util.*
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class TokenizerService {
 

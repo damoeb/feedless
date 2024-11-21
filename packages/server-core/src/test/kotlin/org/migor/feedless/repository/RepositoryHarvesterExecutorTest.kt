@@ -8,7 +8,8 @@ class RepositoryHarvesterExecutorTest {
 
   @Test
   fun `verify syncPullCountForPublicRepos is annotated with scheduled`() {
-    val method = RepositoryHarvesterExecutor::class.java.declaredMethods.first { it.name == "syncPullCountForPublicRepos" }
+    val method =
+      RepositoryHarvesterExecutor::class.java.declaredMethods.first { it.name == "syncPullCountForPublicRepos" }
     assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
   }
 

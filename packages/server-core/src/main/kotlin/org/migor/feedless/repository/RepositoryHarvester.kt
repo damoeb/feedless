@@ -44,12 +44,10 @@ import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.net.ConnectException
@@ -63,6 +61,7 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryHarvester(
   private val documentDAO: DocumentDAO,
@@ -93,16 +92,16 @@ class RepositoryHarvester(
   }
 
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun handleRepository(repositoryId: UUID) {
     val corrId = coroutineContext.corrId()
     runCatching {
       log.info("[${corrId}] handleRepository $repositoryId")
 
       val logCollector = LogCollector()
-      val harvest = HarvestEntity()
-      harvest.repositoryId = repositoryId
-      harvest.startedAt = LocalDateTime.now()
+//      val harvest = HarvestEntity()
+//      harvest.repositoryId = repositoryId
+//      harvest.startedAt = LocalDateTime.now()
 
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
@@ -124,12 +123,11 @@ class RepositoryHarvester(
       val appendCount = scrapeSources(repositoryId, logCollector)
 
       if (appendCount > 0) {
-        harvest.itemsAdded = appendCount
+//        harvest.itemsAdded = appendCount
         val message = "[$corrId] appending ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
         log.info(message)
         logCollector.log(message)
       }
-      documentService.applyRetentionStrategy(repositoryId)
       withContext(Dispatchers.IO) {
         val repository = repositoryDAO.findById(repositoryId).orElseThrow()
         val scheduledNextAt = repositoryService.calculateScheduledNextAt(
@@ -138,19 +136,19 @@ class RepositoryHarvester(
           repository.product,
           LocalDateTime.now()
         )
-        log.info("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
+        log.debug("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
         repository.triggerScheduledNextAt = scheduledNextAt
         repository.lastUpdatedAt = LocalDateTime.now()
         repositoryDAO.save(repository)
 
-        harvest.finishedAt = LocalDateTime.now()
-        harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
-          "${
-            it.time.toLocalDateTime().format(iso8601DateFormat)
-          }  ${it.message}"
-        }
-          .joinToString("\n"), "...", 5000)
-        harvestDAO.save(harvest)
+//        harvest.finishedAt = LocalDateTime.now()
+//        harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
+//          "${
+//            it.time.toLocalDateTime().format(iso8601DateFormat)
+//          }  ${it.message}"
+//        }
+//          .joinToString("\n"), "...", 5000)
+//        harvestDAO.save(harvest)
       }
       log.info("done")
     }.onFailure {
@@ -164,7 +162,7 @@ class RepositoryHarvester(
   ): Int {
     val corrId = coroutineContext.corrId()
     val sources = withContext(Dispatchers.IO) {
-      sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
+      sourceDAO.findAllByRepositoryId(repositoryId)
     }.filter { !it.disabled }
       .distinctBy { it.id }
 
@@ -228,7 +226,7 @@ class RepositoryHarvester(
       withContext(Dispatchers.IO) {
         source.errorsInSuccession += 1
         logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
-        log.info("source ${source.id} error increment -> '${source.errorsInSuccession}'")
+        log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
         source.disabled = source.errorsInSuccession >= maxErrorCount
         if (source.disabled) {
           logCollector.log("[$corrId] disabled source")
@@ -386,10 +384,10 @@ class RepositoryHarvester(
 
       if (repository.plugins.isNotEmpty()) {
         try {
-            log.debug("[$corrId] delete all document job by documents")
-            documentPipelineJobDAO.deleteAllByDocumentIdIn(
-              documents.filter { (isNew, _) -> !isNew }
-                .map { (_, document) -> document.id })
+          log.debug("[$corrId] delete all document job by documents")
+          documentPipelineJobDAO.deleteAllByDocumentIdIn(
+            documents.filter { (isNew, _) -> !isNew }
+              .map { (_, document) -> document.id })
         } catch (e: Exception) {
           log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
         }
@@ -491,7 +489,7 @@ class RepositoryHarvester(
 //            existing.status = ReleaseStatus.unreleased
 //            Pair(false, existing)
 //          } else {
-            null
+          null
 //          }
         }
       }

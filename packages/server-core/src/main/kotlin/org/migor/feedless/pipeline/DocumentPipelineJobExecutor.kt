@@ -10,9 +10,8 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -27,26 +26,24 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
-@Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 @Transactional(propagation = Propagation.NEVER)
+@Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 class DocumentPipelineJobExecutor internal constructor(
-  val documentPipelineJobDAO: DocumentPipelineJobDAO,
-  val documentDAO: DocumentDAO,
-  val repositoryDAO: RepositoryDAO,
+  val documentPipelineService: DocumentPipelineService,
+  val repositoryService: RepositoryService,
   val documentService: DocumentService,
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentPipelineJobExecutor::class.simpleName)
 
   @Scheduled(fixedDelay = 2245, initialDelay = 20000)
-  @Transactional
   fun processDocumentJobs() {
     try {
       val corrId = newCorrId()
-      val groupedDocuments = documentPipelineJobDAO.findAllPendingBatched(LocalDateTime.now())
+      val groupedDocuments = documentPipelineService.findAllPendingBatched(LocalDateTime.now())
         .groupBy { it.documentId }
 
-      incrementDocumentJobAttemptCount(groupedDocuments)
+      documentPipelineService.incrementDocumentJobAttemptCount(groupedDocuments)
 
       if (groupedDocuments.isNotEmpty()) {
         val semaphore = Semaphore(5)
@@ -81,27 +78,11 @@ class DocumentPipelineJobExecutor internal constructor(
     }
   }
 
-  private fun incrementDocumentJobAttemptCount(groupedDocuments: Map<UUID, List<DocumentPipelineJobEntity>>) {
-    documentPipelineJobDAO.incrementAttemptCount(groupedDocuments.keys.distinct())
-  }
-
   private suspend fun getOwnerIdForDocumentId(documentId: UUID): UUID {
     val repo = withContext(Dispatchers.IO) {
-      repositoryDAO.findByDocumentId(documentId)
-    } ?: throw failAfterCleaningJobsForDocument(documentId)
+      repositoryService.findByDocumentId(documentId)
+    } ?: throw documentPipelineService.failAfterCleaningJobsForDocument(documentId)
     return repo.ownerId
-  }
-
-  private suspend fun failAfterCleaningJobsForDocument(documentId: UUID): IllegalArgumentException {
-    withContext(Dispatchers.IO) {
-      try {
-        log.info("clean jobs for document $documentId")
-        documentPipelineJobDAO.deleteAllByDocumentIdIn(listOf(documentId))
-      } catch (e: Exception) {
-        log.warn("job cleanup of document $documentId failed: ${e.message}")
-      }
-    }
-    return IllegalArgumentException("repo not found by documentId=$documentId")
   }
 
   private suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
@@ -110,9 +91,7 @@ class DocumentPipelineJobExecutor internal constructor(
     } catch (t: Throwable) {
       val corrId = coroutineContext.corrId()
       log.error("[$corrId] processDocumentPlugins fatal failure", t)
-      withContext(Dispatchers.IO) {
-        documentDAO.deleteById(documentId)
-      }
+      documentService.deleteById(documentId)
     }
   }
 }

@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.annotation} & ${AppLayer.api}")
 class AnnotationResolver(
   private val annotationService: AnnotationService,
@@ -40,7 +41,6 @@ class AnnotationResolver(
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateAnnotation)
   @PreAuthorize("hasAuthority('USER')")
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument data: CreateAnnotationInput
@@ -52,7 +52,6 @@ class AnnotationResolver(
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteAnnotation)
   @PreAuthorize("hasAuthority('USER')")
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument data: DeleteAnnotationInput,

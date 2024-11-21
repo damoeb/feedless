@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
@@ -15,20 +14,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-@Transactional
 class ProductService {
 
   private val log = LoggerFactory.getLogger(ProductService::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
 
   @Autowired
   private lateinit var productDAO: ProductDAO
@@ -56,9 +53,7 @@ class ProductService {
     }
   }
 
-//  fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
-//  private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.dev))
-
+  @Transactional(readOnly = true)
   suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
     return withContext(Dispatchers.IO) {
       data.id?.eq?.let {
@@ -67,6 +62,7 @@ class ProductService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun resolvePriceForProduct(productId: UUID, existingUserId: UUID?): Double {
     val product = withContext(Dispatchers.IO) {
       productDAO.findById(productId).orElseThrow()
@@ -82,6 +78,7 @@ class ProductService {
     }
   }
 
+  @Transactional
   suspend fun enableCloudProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
     val prices = withContext(Dispatchers.IO) {
@@ -116,10 +113,18 @@ class ProductService {
     }
   }
 
+  @Transactional
   suspend fun enableDefaultCloudProduct(vertical: Vertical, userId: UUID) {
-    val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!!}
-    val user = withContext(Dispatchers.IO) {userDAO.findById(userId).orElseThrow()}
+    val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
+    val user = withContext(Dispatchers.IO) { userDAO.findById(userId).orElseThrow() }
 
     enableCloudProduct(product, user)
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findAllByProductId(productId: UUID): List<PricedProductEntity> {
+    return withContext(Dispatchers.IO) {
+      pricedProductDAO.findAllByProductId(productId)
+    }
   }
 }

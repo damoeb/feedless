@@ -4,8 +4,11 @@ import com.google.gson.GsonBuilder
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class JsonFeedExporter {
   private val FORMAT_RFC3339 = "yyyy-MM-dd'T'HH:mm:ss-Z"
 

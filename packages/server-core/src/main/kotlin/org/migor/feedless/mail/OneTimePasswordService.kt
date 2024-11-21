@@ -9,10 +9,13 @@ import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class OneTimePasswordService(
   private val mailService: MailService,
@@ -24,6 +27,7 @@ class OneTimePasswordService(
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
+  @Transactional
   suspend fun createOTP(user: UserEntity, description: String): OneTimePasswordEntity {
     val otp = createOTP()
     otp.userId = user.id
@@ -40,6 +44,11 @@ class OneTimePasswordService(
     otp.password = CryptUtil.newCorrId(otpConfirmCodeLength).uppercase()
     otp.validUntil = LocalDateTime.now().plusMinutes(otpValidForMinutes)
     return otp
+  }
+
+  @Transactional
+  fun deleteAllByValidUntilBefore(now: LocalDateTime) {
+    oneTimePasswordDAO.deleteAllByValidUntilBefore(now)
   }
 
 }

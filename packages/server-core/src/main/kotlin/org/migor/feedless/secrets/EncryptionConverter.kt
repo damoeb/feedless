@@ -3,7 +3,7 @@ package org.migor.feedless.secrets
 import jakarta.persistence.AttributeConverter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
-class EncryptionConverter: AttributeConverter<String, String> {
+class EncryptionConverter : AttributeConverter<String, String> {
   private val prefix = "bcrypt:"
 
   override fun convertToDatabaseColumn(value: String): String {

@@ -24,8 +24,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class ServerConfigResolver {
 

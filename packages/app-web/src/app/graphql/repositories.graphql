@@ -48,13 +48,13 @@ fragment RepositoryFull on Repository {
     count
     group
   }
-  harvests {
-    startedAt
-    finishedAt
-    itemsAdded
-    itemsIgnored
-    logs
-  }
+  #  harvests {
+  #    startedAt
+  #    finishedAt
+  #    itemsAdded
+  #    itemsIgnored
+  #    logs
+  #  }
   sources {
     ...SourceFragment
   }

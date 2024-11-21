@@ -336,7 +336,6 @@ export const mocks: Mocks = {
     archived: false,
     documentCount: 0,
     frequency: [],
-    harvests: [],
     hasDisabledSources: false,
     currentUserIsOwner: false,
     pullsPerMonth: 0,

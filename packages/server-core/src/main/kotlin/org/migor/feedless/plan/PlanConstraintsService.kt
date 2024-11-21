@@ -22,6 +22,7 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -31,7 +32,7 @@ import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-@Transactional
+@Transactional(propagation = Propagation.NEVER)
 class PlanConstraintsService {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
@@ -54,6 +55,7 @@ class PlanConstraintsService {
   @Autowired
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
+  @Transactional(readOnly = true)
   suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: Vertical): Int? {
     val minItems =
       (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
@@ -66,6 +68,7 @@ class PlanConstraintsService {
     } ?: maxItems
   }
 
+  @Transactional(readOnly = true)
   suspend fun coerceMinScheduledNextAt(
     lastDate: LocalDateTime,
     nextDate: LocalDateTime,
@@ -83,6 +86,7 @@ class PlanConstraintsService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: Vertical): Int? {
     val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
@@ -94,6 +98,7 @@ class PlanConstraintsService {
     return cronString
   }
 
+  @Transactional(readOnly = true)
   suspend fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
@@ -109,6 +114,7 @@ class PlanConstraintsService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
     actionsCount
       ?.let {
@@ -119,6 +125,7 @@ class PlanConstraintsService {
       }
   }
 
+  @Transactional(readOnly = true)
   suspend fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
     timeout
       ?.let {
@@ -129,6 +136,7 @@ class PlanConstraintsService {
       }
   }
 
+  @Transactional(readOnly = true)
   suspend fun auditRepositoryMaxCount(count: Int, userId: UUID) {
     val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
     if (maxRepoCount != null && maxRepoCount < count) {
@@ -136,6 +144,7 @@ class PlanConstraintsService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun violatesRepositoriesMaxActiveCount(userId: UUID): Boolean {
     val activeCount = withContext(Dispatchers.IO) {
       repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
@@ -143,6 +152,7 @@ class PlanConstraintsService {
     return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
+  @Transactional(readOnly = true)
   suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: Vertical) {
     val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
@@ -180,7 +190,7 @@ class PlanConstraintsService {
             plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
           }
 
-          featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId!!, featureName.name)
+          featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId, featureName.name)
         }
       }
     } catch (e: Exception) {

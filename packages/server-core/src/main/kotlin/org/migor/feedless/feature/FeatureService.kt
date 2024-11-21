@@ -21,7 +21,6 @@ import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
-@Transactional
 class FeatureService(
   private val sessionService: SessionService,
   private val productDAO: ProductDAO,
@@ -32,6 +31,7 @@ class FeatureService(
 
   private val log = LoggerFactory.getLogger(FeatureService::class.simpleName)
 
+  @Transactional(readOnly = true)
   suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
     return withContext(Dispatchers.IO) {
       val featureGroupId = featureGroupIdOptional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
@@ -45,6 +45,7 @@ class FeatureService(
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByProduct(product: Vertical): List<Feature> {
     return withContext(Dispatchers.IO) {
       val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
@@ -64,9 +65,9 @@ class FeatureService(
         )
       }
     }
-
   }
 
+  @Transactional
   suspend fun updateFeatureValue(
     id: UUID,
     intValue: FeatureIntValueInput?,
@@ -94,6 +95,7 @@ class FeatureService(
     }
   }
 
+  @Transactional
   suspend fun assignFeatureValues(
     featureGroup: FeatureGroupEntity,
     features: Map<FeatureName, FeatureValueEntity>
@@ -137,7 +139,7 @@ class FeatureService(
     }
   }
 
-
+  @Transactional(readOnly = true)
   suspend fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
     val groups = withContext(Dispatchers.IO) {
       if (where.id == null) {
@@ -149,6 +151,7 @@ class FeatureService(
     return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
     return withContext(Dispatchers.IO) {
       toDTO(

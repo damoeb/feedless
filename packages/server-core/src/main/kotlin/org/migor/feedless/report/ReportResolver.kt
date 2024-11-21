@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.report} & ${AppLayer.api}")
 class ReportResolver(
   private val reportService: ReportService,
@@ -31,26 +32,24 @@ class ReportResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateReport)
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createReport(
-      dfe: DataFetchingEnvironment,
-      @InputArgument repositoryId: String,
-      @InputArgument segmentation: SegmentInput
+    dfe: DataFetchingEnvironment,
+    @InputArgument repositoryId: String,
+    @InputArgument segmentation: SegmentInput
   ): Report = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-      log.debug("createReport")
-      reportService.createReport(repositoryId, segmentation, sessionService.userId()).toDto()
+    log.debug("createReport")
+    reportService.createReport(repositoryId, segmentation, sessionService.userId()).toDto()
   }
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteReport)
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteReport(
-      dfe: DataFetchingEnvironment,
-      @InputArgument reportId: String,
+    dfe: DataFetchingEnvironment,
+    @InputArgument reportId: String,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-      log.debug("deleteReport $reportId")
-      reportService.deleteReport(reportId, sessionService.user())
-      true
+    log.debug("deleteReport $reportId")
+    reportService.deleteReport(reportId, sessionService.user())
+    true
   }
 }
 

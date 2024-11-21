@@ -1,14 +1,12 @@
 package org.migor.feedless.actions
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.`annotation`.JsonProperty
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.migor.feedless.generated.types.ConditionalTagInput
 import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.ItemFilterParamsInput
-import kotlin.String
-import kotlin.collections.List
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)

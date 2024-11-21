@@ -11,9 +11,12 @@ import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToArticleTransformer(
   private val pageInspectionService: PageInspectionService
@@ -46,8 +49,16 @@ class WebToArticleTransformer(
 
     return if (summaryOnly) {
       val result = pageInspectionService.fromDocument(doc)
-      item.title = arrayOf(result.valueOf(PageInspection.TITLE), article.title, "no-title-available").firstNotNullOfOrNull { StringUtils.trimToNull(it) }!!
-      item.text = arrayOf(result.valueOf(PageInspection.DESCRIPTION), StringUtils.abbreviate(article.textContent, "...", 150), "").firstNotNullOfOrNull{ StringUtils.trimToNull(it) }
+      item.title = arrayOf(
+        result.valueOf(PageInspection.TITLE),
+        article.title,
+        "no-title-available"
+      ).firstNotNullOfOrNull { StringUtils.trimToNull(it) }!!
+      item.text = arrayOf(
+        result.valueOf(PageInspection.DESCRIPTION),
+        StringUtils.abbreviate(article.textContent, "...", 150),
+        ""
+      ).firstNotNullOfOrNull { StringUtils.trimToNull(it) }
       item.language = result.valueOf(PageInspection.LANG)
       item.imageUrl = result.valueOf(PageInspection.IMAGE_URL)
       item

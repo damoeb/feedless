@@ -6,11 +6,10 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 
-@Service
+//@Service
 @Profile(AppProfiles.saas)
 class GithubService {
   private val githubApiUrl = "https://api.github.com"

@@ -10,10 +10,13 @@ import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.secrets} & ${AppLayer.service}")
 class UserSecretService(
   private val userSecretDAO: UserSecretDAO,
@@ -22,6 +25,7 @@ class UserSecretService(
 
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
 
+  @Transactional
   suspend fun createUserSecret(user: UserEntity): UserSecretEntity {
     val token = tokenProvider.createJwtForApi(user)
     val k = UserSecretEntity()
@@ -35,6 +39,7 @@ class UserSecretService(
     }
   }
 
+  @Transactional
   suspend fun deleteUserSecret(user: UserEntity, uuid: UUID) {
     withContext(Dispatchers.IO) {
       val secret = userSecretDAO.findById(uuid).orElseThrow()
@@ -46,18 +51,21 @@ class UserSecretService(
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecretEntity? {
     return withContext(Dispatchers.IO) {
       userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
     }
   }
 
+  @Transactional
   suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
     withContext(Dispatchers.IO) {
       userSecretDAO.updateLastUsed(id, date)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByOwnerId(userId: UUID): List<UserSecretEntity> {
     return withContext(Dispatchers.IO) {
       userSecretDAO.findAllByOwnerId(userId)

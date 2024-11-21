@@ -21,9 +21,12 @@ import org.migor.feedless.util.CryptUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
 class MailAuthResolver(
   private val mailAuthenticationService: MailAuthenticationService,

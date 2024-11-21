@@ -13,12 +13,15 @@ import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.JtsUtil
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
 class ReportService(
   val reportDAO: ReportDAO,
@@ -26,6 +29,7 @@ class ReportService(
   val segmentationDAO: SegmentationDAO,
 ) {
 
+  @Transactional
   suspend fun createReport(repositoryId: String, segment: SegmentInput, currentUserId: UUID?): ReportEntity {
     val report = ReportEntity()
 
@@ -41,7 +45,7 @@ class ReportService(
       segmentation.contentSegmentLatLon = it.near.toPoint()
       segmentation.contentSegmentLatLonDistance = it.distanceKm
     }
-    val interval = when(segment.`when`.scheduled.interval) {
+    val interval = when (segment.`when`.scheduled.interval) {
       IntervalUnit.DAY -> ChronoUnit.DAYS
       IntervalUnit.MONTH -> ChronoUnit.MONTHS
       IntervalUnit.WEEK -> ChronoUnit.WEEKS
@@ -76,9 +80,21 @@ class ReportService(
     TODO("Not yet implemented")
   }
 
+  @Transactional
   suspend fun deleteReport(reportId: String, currentUser: UserEntity) {
     withContext(Dispatchers.IO) {
       reportDAO.deleteById(UUID.fromString(reportId))
+    }
+  }
+
+  @Transactional
+  suspend fun updateReportById(reportId: UUID, authorize: Boolean) {
+    withContext(Dispatchers.IO) {
+      reportDAO.findById(reportId).orElseThrow()?.let {
+        it.authorized = authorize
+        it.authorizedAt = LocalDateTime.now()
+        reportDAO.save(it)
+      }
     }
   }
 }

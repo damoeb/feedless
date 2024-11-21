@@ -4,6 +4,7 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
 import org.migor.feedless.actions.ExtractXpathActionEntity
@@ -29,13 +30,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-@Transactional
 class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
@@ -77,21 +79,32 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
         request.actions = mutableListOf(fetchAction)
       }
 
-      val scrapeOutput = scrapeService.scrape(request, logCollector)
+      try {
+        val scrapeOutput = scrapeService.scrape(request, logCollector)
 
-      if (scrapeOutput.outputs.isNotEmpty()) {
-        val lastOutput = scrapeOutput.outputs.last()
-        val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-        if (params.org_feedless_fulltext.readability || params.org_feedless_fulltext.summary) {
-          logCollector.log("[$corrId] convert to readability/summary")
-          val readability = webToArticleTransformer.fromHtml(html, document.url.replace(Regex("#[^/]+$"), ""), params.org_feedless_fulltext.summary)
-          document.html = readability.html
-          document.text = StringUtils.trimToEmpty(readability.text)
-          log.debug("${document.id} title ${document.title} -> ${readability.title}")
-          document.title = readability.title
-        } else {
-          document.html = html
-          document.title = HtmlUtil.parseHtml(html, document.url).title()
+        if (scrapeOutput.outputs.isNotEmpty()) {
+          val lastOutput = scrapeOutput.outputs.last()
+          val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+          if (params.org_feedless_fulltext.readability || params.org_feedless_fulltext.summary) {
+            logCollector.log("[$corrId] convert to readability/summary")
+            val readability = webToArticleTransformer.fromHtml(
+              html,
+              document.url.replace(Regex("#[^/]+$"), ""),
+              params.org_feedless_fulltext.summary
+            )
+            document.html = readability.html
+            document.text = StringUtils.trimToEmpty(readability.text)
+            log.debug("${document.id} title ${document.title} -> ${readability.title}")
+            document.title = readability.title
+          } else {
+            document.html = html
+            document.title = HtmlUtil.parseHtml(html, document.url).title()
+          }
+        }
+      } catch (e: Exception) {
+        if (e !is SiteNotFoundException) {
+          document.url = ""
+          throw e
         }
       }
       document

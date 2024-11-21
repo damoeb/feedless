@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.MalformedURLException
@@ -37,6 +39,7 @@ import kotlin.coroutines.coroutineContext
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class HttpService(
   private val propertyService: PropertyService
 ) {
@@ -169,7 +172,7 @@ class HttpService(
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
 //          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          in 400.. 499 -> throw SiteNotFoundException(response.uri.toUrl())
+          in 400..499 -> throw SiteNotFoundException(response.uri.toUrl())
           in 500..599 -> throw ResumableHarvestException(response.uri.toUrl(), Duration.ofHours(5))
           else -> throw FatalHarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
@@ -179,12 +182,12 @@ class HttpService(
       response
     } catch (e: Exception) {
       if (e is NullPointerException) {
-        e.printStackTrace()
+        log.error(e.message, e)
       }
       if (e is UnknownHostException || e is ConnectException || e is TimeoutException || e is ExecutionException) {
         throw ResumableHarvestException("${e.message}", Duration.ofMinutes(5))
       } else {
-        if (e is ResumableHarvestException) {
+        if (e is ResumableHarvestException || e is FatalHarvestException) {
           throw e
         } else {
           throw FatalHarvestException("${e.message}")

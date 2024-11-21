@@ -17,10 +17,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class ConditionalTagPlugin : MapEntityPlugin {
 

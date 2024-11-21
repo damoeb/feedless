@@ -8,11 +8,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
 import java.net.URL
 import java.util.*
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 @ConfigurationProperties("app")
 class PropertyService {

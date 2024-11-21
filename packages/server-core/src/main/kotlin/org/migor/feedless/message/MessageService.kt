@@ -2,10 +2,13 @@ package org.migor.feedless.message
 
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class MessageService {
 
   private val topics: MutableMap<String, Sinks.Many<JsonItem>> = mutableMapOf()

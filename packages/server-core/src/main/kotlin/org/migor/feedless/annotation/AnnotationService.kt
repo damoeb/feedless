@@ -12,6 +12,7 @@ import org.migor.feedless.generated.types.TextAnnotationInput
 import org.migor.feedless.user.UserEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -22,6 +23,7 @@ class AnnotationService(
   val textAnnotationDAO: TextAnnotationDAO
 ) {
 
+  @Transactional
   suspend fun createAnnotation(data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
     return data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set, user = user) }
       ?: data.annotation.text?.let { createTextAnnotation(data.where, it, user) }
@@ -30,6 +32,7 @@ class AnnotationService(
       ?: throw IllegalArgumentException("Insufficient data for annotation")
   }
 
+  @Transactional
   suspend fun deleteAnnotation(data: DeleteAnnotationInput, currentUser: UserEntity) {
     withContext(Dispatchers.IO) {
       val vote = annotationDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
@@ -121,24 +124,28 @@ class AnnotationService(
     return Pair(where.document?.id?.let { UUID.fromString(it) }, where.repository?.id?.let { UUID.fromString(it) })
   }
 
+  @Transactional(readOnly = true)
   suspend fun countUpVotesByRepositoryId(repositoryId: UUID): Int {
     return withContext(Dispatchers.IO) {
       voteDAO.countUpVotesIsTrueByRepositoryId(repositoryId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun countDownVotesByRepositoryId(repositoryId: UUID): Int {
     return withContext(Dispatchers.IO) {
       voteDAO.countDownVoteIsTrueByRepositoryId(repositoryId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllVotesByUserIdAndRepositoryId(userId: UUID, repositoryId: UUID): List<VoteEntity> {
     return withContext(Dispatchers.IO) {
       voteDAO.findAllByOwnerIdAndRepositoryId(userId, repositoryId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllVotesByUserIdAndDocumentId(userId: UUID, documentId: UUID): List<VoteEntity> {
     return withContext(Dispatchers.IO) {
       voteDAO.findAllByOwnerIdAndDocumentId(userId, documentId)

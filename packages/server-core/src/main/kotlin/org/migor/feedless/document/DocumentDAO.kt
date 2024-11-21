@@ -70,6 +70,10 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
         (d.contentHash = '' AND d.url = :url)
     )"""
   )
-  fun findFirstByContentHashOrUrlAndRepositoryId(@Param("contentHash") contentHash: String, @Param("url") url: String, @Param("repositoryId") repositoryId: UUID): DocumentEntity?
+  fun findFirstByContentHashOrUrlAndRepositoryId(
+    @Param("contentHash") contentHash: String,
+    @Param("url") url: String,
+    @Param("repositoryId") repositoryId: UUID
+  ): DocumentEntity?
 
 }

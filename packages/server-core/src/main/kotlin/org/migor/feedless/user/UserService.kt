@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
@@ -37,8 +38,8 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
-@Transactional
 class UserService {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
@@ -74,6 +75,7 @@ class UserService {
   @Autowired(required = false)
   private lateinit var telegramBotService: TelegramBotService
 
+  @Transactional
   suspend fun createUser(
     email: String?,
     githubId: String? = null,
@@ -126,18 +128,7 @@ class UserService {
     return savedUser
   }
 
-  private suspend fun linkGithubAccount(user: UserEntity, githubId: String) {
-    val githubLink = GithubConnectionEntity()
-    githubLink.userId = user.id
-    githubLink.githubId = githubId
-    githubLink.authorized = true
-    githubLink.authorizedAt = LocalDateTime.now()
-
-    withContext(Dispatchers.IO) {
-      githubConnectionDAO.save(githubLink)
-    }
-  }
-
+  @Transactional
   suspend fun createInboxRepository(user: UserEntity): RepositoryEntity {
     val r = RepositoryEntity()
     r.title = "Notifications"
@@ -160,18 +151,21 @@ class UserService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findByEmail(email: String): UserEntity? {
     return withContext(Dispatchers.IO) {
       userDAO.findByEmail(email)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findByGithubId(githubId: String): UserEntity? {
     return withContext(Dispatchers.IO) {
       userDAO.findByGithubId(githubId) ?: userDAO.findByEmail("$githubId@github.com")
     }
   }
 
+  @Transactional
   suspend fun updateUser(userId: UUID, data: UpdateCurrentUserInput) {
     val user = withContext(Dispatchers.IO) {
       userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
@@ -240,14 +234,14 @@ class UserService {
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun getAnonymousUser(): UserEntity {
     return withContext(Dispatchers.IO) {
       userDAO.findByAnonymousIsTrue()
     }
   }
 
-  private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
-
+  @Transactional
   suspend fun updateLegacyUser(user: UserEntity, githubId: String) {
     log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
 
@@ -268,13 +262,14 @@ class UserService {
     }
   }
 
-  private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"
+  @Transactional(readOnly = true)
   suspend fun findById(userId: UUID): Optional<UserEntity> {
     return withContext(Dispatchers.IO) {
       userDAO.findById(userId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun getConnectedAppByUserAndId(userId: UUID, connectedAppId: UUID): ConnectedAppEntity {
     return withContext(Dispatchers.IO) {
       connectedAppDAO.findByIdAndUserIdEquals(connectedAppId, userId)
@@ -283,6 +278,7 @@ class UserService {
     }
   }
 
+  @Transactional
   suspend fun updateConnectedApp(userId: UUID, connectedAppId: UUID, authorize: Boolean) {
     withContext(Dispatchers.IO) {
       val app =
@@ -302,9 +298,9 @@ class UserService {
         telegramBotService.showOptionsForKnownUser(app.chatId)
       }
     }
-
   }
 
+  @Transactional
   suspend fun deleteConnectedApp(currentUserId: UUID, connectedAppId: UUID) {
     withContext(Dispatchers.IO) {
       val app =
@@ -324,7 +320,22 @@ class UserService {
 
       connectedAppDAO.delete(app)
     }
+  }
 
+  private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"
+
+  private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+
+  private suspend fun linkGithubAccount(user: UserEntity, githubId: String) {
+    val githubLink = GithubConnectionEntity()
+    githubLink.userId = user.id
+    githubLink.githubId = githubId
+    githubLink.authorized = true
+    githubLink.authorizedAt = LocalDateTime.now()
+
+    withContext(Dispatchers.IO) {
+      githubConnectionDAO.save(githubLink)
+    }
   }
 }
 

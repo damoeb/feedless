@@ -28,14 +28,15 @@ import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
-@Transactional
 class OrderResolver {
 
   private val log = LoggerFactory.getLogger(OrderResolver::class.simpleName)

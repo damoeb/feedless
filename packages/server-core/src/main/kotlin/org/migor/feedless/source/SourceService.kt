@@ -25,14 +25,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.source} & ${AppLayer.service}")
-@Transactional
 class SourceService(
   private val sourcePipelineJobDAO: SourcePipelineJobDAO,
   private val sourceDAO: SourceDAO,
@@ -42,6 +43,7 @@ class SourceService(
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)
 
+  @Transactional
   suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
@@ -103,24 +105,33 @@ class SourceService(
     return newSource
   }
 
-  suspend fun findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId: UUID): List<SourceEntity> {
+  @Transactional(readOnly = true)
+  suspend fun findAllByRepositoryId(repositoryId: UUID): List<SourceEntity> {
     return withContext(Dispatchers.IO) {
-      sourceDAO.findAllByRepositoryIdOrderByCreatedAtDesc(repositoryId)
+      sourceDAO.findAllByRepositoryId(repositoryId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun existsByRepositoryIdAndDisabledTrue(repositoryId: UUID): Boolean {
     return withContext(Dispatchers.IO) {
       sourceDAO.existsByRepositoryIdAndDisabledTrue(repositoryId)
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun countDocumentsBySourceId(sourceId: UUID): Int {
     return withContext(Dispatchers.IO) {
       documentDAO.countBySourceId(sourceId)
     }
   }
 
+  @Transactional
+  suspend fun setErrorState(sourceId: UUID, erroneous: Boolean, message: String?) {
+    withContext(Dispatchers.IO) {
+      sourceDAO.setErrorState(sourceId, erroneous, message)
+    }
+  }
 }
 
 

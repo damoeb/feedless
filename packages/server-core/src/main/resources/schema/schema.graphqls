@@ -98,7 +98,7 @@ type Repository {
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
-  harvests: [Harvest!]!
+#  harvests: [Harvest!]!
 #  pulls: Int
   sunset: SunSetPolicy
   createdAt: Long!
@@ -1638,6 +1638,7 @@ input FulltextPluginParamsInput {
   readability: Boolean!
   summary: Boolean!
   inheritParams: Boolean!
+  onErrorRemove: Boolean
 }
 
 enum FeedlessPlugins {

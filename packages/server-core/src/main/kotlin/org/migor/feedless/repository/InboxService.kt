@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.AttachmentDAO
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
@@ -16,10 +15,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class InboxService {
   private val log = LoggerFactory.getLogger(InboxService::class.simpleName)
@@ -36,8 +38,6 @@ class InboxService {
   @Autowired
   private lateinit var userService: UserService
 
-  @Autowired
-  private lateinit var propertyService: PropertyService
 
 //  suspend fun createNotification(
 //    corrId: String,
@@ -72,6 +72,7 @@ class InboxService {
 //    }
 //  }
 
+  @Transactional
   suspend fun appendMessage(
     ownerId: UUID,
     document: DocumentEntity,

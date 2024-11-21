@@ -4,14 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.feedless.document.DocumentDAO
-import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.any
-import org.migor.feedless.repository.eq
-import org.migor.feedless.source.SourceDAO
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -21,22 +15,21 @@ import java.util.*
 
 class SourcePipelineJobExecutorTest {
 
-  private lateinit var sourceDAO: SourceDAO
-  private lateinit var repositoryDAO: RepositoryDAO
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
   private lateinit var sourcePipelineJobExecutor: SourcePipelineJobExecutor
+  private lateinit var sourcePipelineService: SourcePipelineService
+  private lateinit var repositoryService: RepositoryService
+  private lateinit var sourceService: SourceService
 
   @BeforeEach
   fun setUp() {
-    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
-    sourceDAO = mock(SourceDAO::class.java)
-    repositoryDAO = mock(RepositoryDAO::class.java)
+    sourcePipelineService = mock(SourcePipelineService::class.java)
+    repositoryService = mock(RepositoryService::class.java)
+    sourceService = mock(SourceService::class.java)
 
     sourcePipelineJobExecutor = SourcePipelineJobExecutor(
-      sourceDAO,
-      sourcePipelineJobDAO,
-      repositoryDAO,
-      mock(SourceService::class.java)
+      sourcePipelineService,
+      repositoryService,
+      sourceService,
     )
 
     val id1 = UUID.randomUUID()
@@ -47,7 +40,7 @@ class SourcePipelineJobExecutorTest {
       createSourcePipelineJob(id2),
       createSourcePipelineJob(id1)
     )
-    `when`(sourcePipelineJobDAO.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
+    `when`(sourcePipelineService.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
   }
 
   @Test
@@ -68,9 +61,9 @@ class SourcePipelineJobExecutorTest {
     `when`(job.id).thenReturn(jobId)
     `when`(job.sourceId).thenReturn(sourceId)
 
-    val source = mock(SourceEntity::class.java)
-
-    `when`(sourceDAO.findById(eq(sourceId))).thenReturn(Optional.of(source))
+//    val source = mock(SourceEntity::class.java)
+//
+//    `when`(sourceDAO.findById(eq(sourceId))).thenReturn(Optional.of(source))
 
     return job
   }

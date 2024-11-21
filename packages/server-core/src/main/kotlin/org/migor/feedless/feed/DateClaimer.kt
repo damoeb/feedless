@@ -3,6 +3,8 @@ package org.migor.feedless.feed
 import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -11,6 +13,7 @@ import java.util.*
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class DateClaimer {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)

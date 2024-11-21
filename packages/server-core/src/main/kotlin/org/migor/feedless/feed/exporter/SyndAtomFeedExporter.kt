@@ -29,9 +29,12 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.toLegacyDate
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class SyndAtomFeedExporter {
   fun toAtom(r: JsonFeed): String {
     val output = SyndFeedOutput()

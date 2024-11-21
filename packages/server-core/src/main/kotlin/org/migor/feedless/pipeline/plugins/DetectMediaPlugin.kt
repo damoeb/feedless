@@ -37,6 +37,7 @@ data class MediaItem(
 )
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class DetectMediaPlugin : MapEntityPlugin {
 

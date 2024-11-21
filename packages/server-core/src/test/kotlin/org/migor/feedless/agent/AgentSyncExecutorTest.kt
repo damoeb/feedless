@@ -11,6 +11,7 @@ class AgentSyncExecutorTest {
     val method = AgentSyncExecutor::class.java.declaredMethods.first { it.name == "executeSync" }
     assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
   }
+
   @Test
   fun `verify executeCleanup is annotated with scheduled`() {
     val method = AgentSyncExecutor::class.java.declaredMethods.first { it.name == "executeCleanup" }

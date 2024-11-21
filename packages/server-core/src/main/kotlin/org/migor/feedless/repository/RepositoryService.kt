@@ -56,6 +56,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLEncoder
@@ -72,8 +73,8 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
-@Transactional
 class RepositoryService(
   private val sourceDAO: SourceDAO,
 //  private var userDAO: UserDAO,
@@ -95,6 +96,7 @@ class RepositoryService(
 //  private lateinit var analyticsService: AnalyticsService
 
 
+  @Transactional
   suspend fun create(data: List<RepositoryCreateInput>): List<Repository> {
     log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
 
@@ -112,137 +114,8 @@ class RepositoryService(
     return data.map { createRepository(ownerId, it).toDto(true) }
   }
 
-  private suspend fun getActualUserOrDefaultUser(): UserEntity {
-    return coroutineContext.userIdOptional()?.let {
-      sessionService.user()
-    } ?: userService.getAnonymousUser().also { log.debug("[${coroutineContext.corrId()}] fallback to user anonymous") }
-  }
 
-  private suspend fun createRepository(
-    ownerId: UUID,
-    repoInput: RepositoryCreateInput
-  ): RepositoryEntity {
-    val repo = RepositoryEntity()
-
-    repo.shareKey = newCorrId(10)
-    repo.title = repoInput.title
-    repo.description = repoInput.description
-    repo.visibility = planConstraintsService.coerceVisibility(repoInput.visibility?.fromDto())
-    val product = sessionService.activeProductFromRequest()!!
-
-    planConstraintsService.auditSourcesMaxCountPerRepository(repoInput.sources.size, ownerId, product)
-    repo.ownerId = ownerId
-    repoInput.plugins?.let {
-      if (it.size > 5) {
-        throw BadRequestException("Too many plugins ${it.size}, limit 5")
-      }
-      repo.plugins = it.map { plugin -> plugin.fromDto() }
-    }
-    repo.shareKey = newCorrId(10)
-//    if (subInput.withShareKey) {
-//      newCorrId(10)
-//    } else {
-//      ""
-//    }
-
-    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
-
-    repo.sourcesSyncCron = repoInput.refreshCron?.let {
-      planConstraintsService.auditCronExpression(repoInput.refreshCron)
-    } ?: ""
-    repo.retentionMaxCapacity =
-      planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, ownerId, product)
-    repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
-      repoInput.retention?.maxAgeDays,
-      ownerId,
-      product
-    )
-    repo.product = repoInput.product.fromDto()
-
-    val saved = withContext(Dispatchers.IO) {
-      repositoryDAO.save(repo)
-    }
-
-    repo.sources = repoInput.sources.map { createSource(ownerId, it, repo) }.toMutableList()
-
-    repoInput.additionalSinks?.let { sink ->
-//      val owner = withContext(Dispatchers.IO) {
-//        userDAO.findById(ownerId).orElseThrow()
-//      }
-//      repo.mailForwards = sink.mapNotNull { it.email }
-//        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
-//        .toMutableList()
-    }
-
-    return saved
-  }
-
-//  private suspend fun createMailForwarder(
-//    corrId: String,
-//    email: String,
-//    sub: RepositoryEntity,
-//    owner: UserEntity,
-//    product: ProductCategory
-//  ): MailForwardEntity {
-//    val forward = MailForwardEntity()
-//    forward.email = email
-//    forward.authorized = email == owner.email
-//    forward.repositoryId = sub.id
-//
-//    return withContext(Dispatchers.IO) {
-//      mailForwardDAO.save(forward)
-//    }
-//  }
-
-  private suspend fun createSource(
-    ownerId: UUID,
-    sourceInput: SourceInput,
-    repository: RepositoryEntity
-  ): SourceEntity {
-    val entity = SourceEntity()
-    log.debug("[${coroutineContext.corrId()}] create source")
-    val source = sourceInput.fromDto()
-    planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
-//    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
-    entity.tags = source.tags
-    entity.title = sourceInput.title
-    entity.repositoryId = repository.id
-    sourceInput.latLng?.let {
-      entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
-    } ?: run {
-      entity.latLon = null
-    }
-
-    if (source.actions.isEmpty()) {
-      throw IllegalArgumentException("flow must not be empty")
-    }
-    val validator = Validation.buildDefaultValidatorFactory().validator
-    val invalidActions = source.actions.filter { validator.validate(it).isNotEmpty() }
-    if (invalidActions.isNotEmpty()) {
-      throw IllegalArgumentException("invalid actions $invalidActions")
-    }
-
-    if (validator.validate(entity).isNotEmpty()) {
-      throw IllegalArgumentException("invalid source")
-    }
-
-
-    val saved = withContext(Dispatchers.IO) {
-      sourceDAO.save(entity)
-    }
-
-    source.actions.forEachIndexed { index, scrapeAction ->
-      run {
-        scrapeAction.sourceId = entity.id
-        scrapeAction.pos = index
-      }
-    }
-    withContext(Dispatchers.IO) {
-      scrapeActionDAO.saveAll(source.actions)
-    }
-    return saved
-  }
-
+  @Transactional(readOnly = true)
   @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tag")
   suspend fun getFeedByRepositoryId(
     repositoryId: UUID,
@@ -301,6 +174,7 @@ class RepositoryService(
     return jsonFeed
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAll(
     offset: Int,
     pageSize: Int,
@@ -405,6 +279,7 @@ class RepositoryService(
     }.toList().filterNotNull()
   }
 
+  @Transactional(readOnly = true)
   suspend fun findById(repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
     val sub = withContext(Dispatchers.IO) {
       repositoryDAO.findByIdWithSources(repositoryId)
@@ -425,21 +300,23 @@ class RepositoryService(
     }
   }
 
+  @Transactional
   suspend fun delete(id: UUID) {
     withContext(Dispatchers.IO) {
       val sub = repositoryDAO.findById(id).orElseThrow()
       if (sub.ownerId != coroutineContext.userId()) {
         throw PermissionDeniedException("not authorized")
       }
+      log.info("[${coroutineContext.corrId()}] removing repository $id")
       repositoryDAO.delete(sub)
     }
   }
 
   suspend fun calculateScheduledNextAt(
-      cron: String,
-      ownerId: UUID,
-      product: Vertical,
-      after: LocalDateTime
+    cron: String,
+    ownerId: UUID,
+    product: Vertical,
+    after: LocalDateTime
   ): LocalDateTime {
     return planConstraintsService.coerceMinScheduledNextAt(
       LocalDateTime.now(),
@@ -449,13 +326,16 @@ class RepositoryService(
     )
   }
 
+  @Transactional
   suspend fun update(id: UUID, data: RepositoryUpdateDataInput): RepositoryEntity {
     val repository = withContext(Dispatchers.IO) {
       repositoryDAO.findByIdWithSources(id) ?: throw NotFoundException("Repository $id not found")
     }
+    val corrId = coroutineContext.corrId()
     if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("not authorized")
     }
+    log.info("[$corrId] update $id")
     repository.lastUpdatedAt = LocalDateTime.now()
     data.title?.set?.let { repository.title = it }
     data.description?.set?.let { repository.description = it }
@@ -549,20 +429,179 @@ class RepositoryService(
     }
   }
 
+  @Transactional(readOnly = true)
   fun countAll(userId: UUID?, product: Vertical): Int {
     return userId
       ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)
   }
 
-  fun getRepoTitleForFeedlessOpsNotifications(): String = "feedlessOpsNotifications"
-
+  @Transactional
   suspend fun updatePullsFromAnalytics(repositoryId: UUID, pulls: Int) {
     withContext(Dispatchers.IO) {
       val repository = repositoryDAO.findById(repositoryId).orElseThrow()
       repository.pullsPerMonth = pulls
       repository.lastPullSync = LocalDateTime.now()
       repositoryDAO.save(repository)
+    }
+  }
+
+  private suspend fun getActualUserOrDefaultUser(): UserEntity {
+    return coroutineContext.userIdOptional()?.let {
+      sessionService.user()
+    } ?: userService.getAnonymousUser().also { log.debug("[${coroutineContext.corrId()}] fallback to user anonymous") }
+  }
+
+  private suspend fun createRepository(
+    ownerId: UUID,
+    repoInput: RepositoryCreateInput
+  ): RepositoryEntity {
+    val repo = RepositoryEntity()
+
+    repo.shareKey = newCorrId(10)
+    repo.title = repoInput.title
+    repo.description = repoInput.description
+    repo.visibility = planConstraintsService.coerceVisibility(repoInput.visibility?.fromDto())
+    val product = sessionService.activeProductFromRequest()!!
+
+    planConstraintsService.auditSourcesMaxCountPerRepository(repoInput.sources.size, ownerId, product)
+    repo.ownerId = ownerId
+    repoInput.plugins?.let {
+      if (it.size > 5) {
+        throw BadRequestException("Too many plugins ${it.size}, limit 5")
+      }
+      repo.plugins = it.map { plugin -> plugin.fromDto() }
+    }
+    repo.shareKey = newCorrId(10)
+//    if (subInput.withShareKey) {
+//      newCorrId(10)
+//    } else {
+//      ""
+//    }
+
+    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
+
+    repo.sourcesSyncCron = repoInput.refreshCron?.let {
+      planConstraintsService.auditCronExpression(repoInput.refreshCron)
+    } ?: ""
+    repo.retentionMaxCapacity =
+      planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, ownerId, product)
+    repo.retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
+      repoInput.retention?.maxAgeDays,
+      ownerId,
+      product
+    )
+    repo.product = repoInput.product.fromDto()
+
+    val saved = withContext(Dispatchers.IO) {
+      repositoryDAO.save(repo)
+    }
+
+    repo.sources = repoInput.sources.map { createSource(ownerId, it, repo) }.toMutableList()
+
+//    repoInput.additionalSinks?.let { sink ->
+//      val owner = withContext(Dispatchers.IO) {
+//        userDAO.findById(ownerId).orElseThrow()
+//      }
+//      repo.mailForwards = sink.mapNotNull { it.email }
+//        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
+//        .toMutableList()
+//    }
+
+    return saved
+  }
+
+//  private suspend fun createMailForwarder(
+//    corrId: String,
+//    email: String,
+//    sub: RepositoryEntity,
+//    owner: UserEntity,
+//    product: ProductCategory
+//  ): MailForwardEntity {
+//    val forward = MailForwardEntity()
+//    forward.email = email
+//    forward.authorized = email == owner.email
+//    forward.repositoryId = sub.id
+//
+//    return withContext(Dispatchers.IO) {
+//      mailForwardDAO.save(forward)
+//    }
+//  }
+
+  private suspend fun createSource(
+    ownerId: UUID,
+    sourceInput: SourceInput,
+    repository: RepositoryEntity
+  ): SourceEntity {
+    val entity = SourceEntity()
+    log.info("[${coroutineContext.corrId()}] create source")
+    val source = sourceInput.fromDto()
+    planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
+//    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
+    entity.tags = source.tags
+    entity.title = sourceInput.title
+    entity.repositoryId = repository.id
+    sourceInput.latLng?.let {
+      entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
+    } ?: run {
+      entity.latLon = null
+    }
+
+    if (source.actions.isEmpty()) {
+      throw IllegalArgumentException("flow must not be empty")
+    }
+    val validator = Validation.buildDefaultValidatorFactory().validator
+    val invalidActions = source.actions.filter { validator.validate(it).isNotEmpty() }
+    if (invalidActions.isNotEmpty()) {
+      throw IllegalArgumentException("invalid actions $invalidActions")
+    }
+
+    if (validator.validate(entity).isNotEmpty()) {
+      throw IllegalArgumentException("invalid source")
+    }
+
+
+    val saved = withContext(Dispatchers.IO) {
+      sourceDAO.save(entity)
+    }
+
+    source.actions.forEachIndexed { index, scrapeAction ->
+      run {
+        scrapeAction.sourceId = entity.id
+        scrapeAction.pos = index
+      }
+    }
+    withContext(Dispatchers.IO) {
+      scrapeActionDAO.saveAll(source.actions)
+    }
+    return saved
+  }
+
+  @Transactional
+  suspend fun findBySourceId(sourceId: UUID): RepositoryEntity? {
+    return withContext(Dispatchers.IO) {
+      repositoryDAO.findBySourceId(sourceId)
+    }
+  }
+
+  @Transactional(readOnly = true)
+  fun findAllByVisibilityAndLastPullSyncBefore(
+    visibility: EntityVisibility,
+    now: LocalDateTime,
+    pageable: PageRequest
+  ): List<RepositoryEntity> {
+    return repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable)
+  }
+
+  @Transactional(readOnly = true)
+  fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageRequest): List<RepositoryEntity> {
+    return repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable)
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findByDocumentId(documentId: UUID): RepositoryEntity? {
+    return withContext(Dispatchers.IO) {
+      repositoryDAO.findByDocumentId(documentId)
     }
   }
 }

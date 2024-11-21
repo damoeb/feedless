@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
 import java.time.LocalDateTime
@@ -144,6 +146,7 @@ enum class ExtendContext(val value: String) {
  * - choosing context node may result in more rules
  */
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToFeedTransformer(
   @Autowired
@@ -568,7 +571,8 @@ class WebToFeedTransformer(
       currentElement = currentElement.parent()!!
     }
 
-    return if (xpath.isNotEmpty()) xpath.insert(0, "/").toString() else throw IllegalArgumentException("Cannot generate xpath")
+    return if (xpath.isNotEmpty()) xpath.insert(0, "/")
+      .toString() else throw IllegalArgumentException("Cannot generate xpath")
   }
 
   fun getElementIndex(element: Element): Int {

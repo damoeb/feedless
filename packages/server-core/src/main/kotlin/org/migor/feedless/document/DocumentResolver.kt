@@ -39,13 +39,14 @@ import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
-@Transactional
 class DocumentResolver(
   private val repositoryService: RepositoryService,
   private val sessionService: SessionService,

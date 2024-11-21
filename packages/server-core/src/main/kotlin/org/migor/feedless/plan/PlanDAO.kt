@@ -24,8 +24,8 @@ interface PlanDAO : JpaRepository<PlanEntity, UUID> {
   """
   )
   fun findActiveByUserAndProductIn(
-      @Param("userId") userId: UUID,
-      @Param("products") products: List<Vertical>,
-      @Param("now") date: LocalDateTime,
+    @Param("userId") userId: UUID,
+    @Param("products") products: List<Vertical>,
+    @Param("now") date: LocalDateTime,
   ): PlanEntity?
 }

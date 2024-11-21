@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
@@ -58,16 +59,16 @@ fun createRequestContext(): RequestContext {
 }
 
 class RequestContext(
-    var product: Vertical? = null,
-    val corrId: String? = newCorrId(),
-    var userId: UUID? = null
+  var product: Vertical? = null,
+  val corrId: String? = newCorrId(),
+  var userId: UUID? = null
 ) : AbstractCoroutineContextElement(RequestContext) {
   companion object Key : CoroutineContext.Key<RequestContext>
 }
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-@Transactional
 class SessionService {
 
   @Autowired
@@ -75,6 +76,7 @@ class SessionService {
 
   suspend fun isUser(): Boolean = StringUtils.isNotBlank(coroutineContext[RequestContext]!!.userId?.toString())
 
+  @Transactional(readOnly = true)
   suspend fun user(): UserEntity {
     val notFoundException = IllegalArgumentException("user not found")
     return coroutineContext.userIdOptional()

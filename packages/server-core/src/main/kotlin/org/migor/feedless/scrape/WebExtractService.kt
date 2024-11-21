@@ -15,10 +15,13 @@ import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import us.codecraft.xsoup.Xsoup
 import java.util.*
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebExtractService(private val dateClaimer: DateClaimer) {
   private val log = LoggerFactory.getLogger(WebExtractService::class.simpleName)

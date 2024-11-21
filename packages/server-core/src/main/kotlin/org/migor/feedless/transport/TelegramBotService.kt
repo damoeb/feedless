@@ -24,6 +24,8 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -32,6 +34,7 @@ import java.net.URI
 import java.time.Duration
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.telegram} & ${AppLayer.service} & ${AppProfiles.prod}")
 class TelegramBotService(
   @Value("\${app.telegram.bot.token}")
@@ -100,7 +103,7 @@ class TelegramBotService(
     }
   }
 
-//  @Scheduled(fixedDelay = 4000)
+  @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
     try {
       val url = "https://api.telegram.org/bot$botToken/getUpdates"
@@ -164,7 +167,7 @@ class TelegramBotService(
 
   private fun handleCommand(connection: TelegramConnectionEntity, update: Update, chatId: Long) {
     val command = update.message.text.lowercase().trim()
-    when(command) {
+    when (command) {
       "/start" -> welcomeNewUser(chatId, connection)
       else -> log.warn("Cannot handle command $command")
     }

@@ -192,11 +192,6 @@ class Seeder {
     return resolveOpsNotificationsRepo(repoTitleLegacyNotifications, root)
   }
 
-  private fun resolveFeedlessOpsNotificationsRepo(root: UserEntity): RepositoryEntity {
-    val repoTitleOpsNotifications = repositoryService.getRepoTitleForFeedlessOpsNotifications()
-    return resolveOpsNotificationsRepo(repoTitleOpsNotifications, root)
-  }
-
   private fun resolveOpsNotificationsRepo(repoTitle: String, root: UserEntity): RepositoryEntity {
     val repo = RepositoryEntity()
     repo.title = repoTitle

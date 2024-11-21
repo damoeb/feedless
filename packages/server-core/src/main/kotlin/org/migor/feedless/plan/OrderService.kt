@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -33,6 +34,7 @@ import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class OrderService {
 
@@ -53,6 +55,7 @@ class OrderService {
   @Autowired
   private lateinit var userDAO: UserDAO
 
+  @Transactional(readOnly = true)
   suspend fun findAll(data: OrdersInput): List<OrderEntity> {
     val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
     val currentUser = sessionService.user()
@@ -68,6 +71,7 @@ class OrderService {
     }
   }
 
+  @Transactional
   suspend fun upsert(
     where: OrderWhereUniqueInput?,
     create: OrderCreateInput?,
@@ -152,7 +156,7 @@ class OrderService {
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional
   suspend fun handlePaymentCallback(orderId: String): OrderEntity {
     return withContext(Dispatchers.IO) {
       val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()

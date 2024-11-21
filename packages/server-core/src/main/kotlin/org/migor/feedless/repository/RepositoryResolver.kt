@@ -8,25 +8,20 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.annotation.AnnotationService
-import org.migor.feedless.annotation.VoteEntity
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.Annotation
 import org.migor.feedless.generated.types.Annotations
-import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
-import org.migor.feedless.generated.types.Harvest
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -41,9 +36,8 @@ import org.migor.feedless.user.userIdOptional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -55,8 +49,8 @@ fun handleCursor(cursor: Cursor): Pair<Int, Int> {
 }
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
-@Transactional
 class RepositoryResolver {
 
   private val log = LoggerFactory.getLogger(RepositoryResolver::class.simpleName)
@@ -69,10 +63,6 @@ class RepositoryResolver {
 
   @Autowired
   private lateinit var annotationService: AnnotationService
-
-  @Autowired
-  private lateinit var harvestDAO: HarvestDAO
-
 
   @Throttled
   @DgsQuery
@@ -151,7 +141,7 @@ class RepositoryResolver {
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))
+      sourceService.findAllByRepositoryId(UUID.fromString(repository.id))
         .map { it.toScrapeRequest() }
     } else {
       emptyList()
@@ -166,21 +156,22 @@ class RepositoryResolver {
     sourceService.countDocumentsBySourceId(UUID.fromString(source.id))
   }
 
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
-  suspend fun harvests(
-    dfe: DgsDataFetchingEnvironment,
-  ): List<Harvest> = coroutineScope {
-    val repository: Repository = dfe.getSource()
-    if (repository.currentUserIsOwner) {
-      val harvests = withContext(Dispatchers.IO) {
-        val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
-        harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
-      }
-      harvests
-    } else {
-      emptyList()
-    }
-  }
+//  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
+//  suspend fun harvests(
+//    dfe: DgsDataFetchingEnvironment,
+//  ): List<Harvest> = coroutineScope {
+//    emptyList()
+//    val repository: Repository = dfe.getSource()
+//    if (repository.currentUserIsOwner) {
+//      val harvests = withContext(Dispatchers.IO) {
+//        val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+//        harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
+//      }
+//      harvests
+//    } else {
+//      emptyList()
+//    }
+//  }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.HasDisabledSources)
   suspend fun hasDisabledSources(
@@ -191,9 +182,9 @@ class RepositoryResolver {
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
-  suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = withContext(Dispatchers.IO) {
+  suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val repository: Repository = dfe.getSource()
-    sourceService.findAllByRepositoryIdOrderByCreatedAtDesc(UUID.fromString(repository.id))
+    sourceService.findAllByRepositoryId(UUID.fromString(repository.id))
       .mapNotNull { it.tags?.asList() }
       .flatten()
       .distinct()
@@ -216,21 +207,21 @@ class RepositoryResolver {
 
 }
 
-private fun VoteEntity.toDto(): Annotation {
-  val annotateBool = { value: Boolean ->
-    if (value) {
-      BoolAnnotation(value)
-    } else {
-      null
-    }
-  }
-  return Annotation(
-    id = id.toString(),
-    downVote = annotateBool(downVote),
-    flag = annotateBool(flag),
-    upVote = annotateBool(upVote)
-  )
-}
+//private fun VoteEntity.toDto(): Annotation {
+//  val annotateBool = { value: Boolean ->
+//    if (value) {
+//      BoolAnnotation(value)
+//    } else {
+//      null
+//    }
+//  }
+//  return Annotation(
+//    id = id.toString(),
+//    downVote = annotateBool(downVote),
+//    flag = annotateBool(flag),
+//    upVote = annotateBool(upVote)
+//  )
+//}
 
 private fun handlePageNumber(page: Int?): Int =
   page ?: 0

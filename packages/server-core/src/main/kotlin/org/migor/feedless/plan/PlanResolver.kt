@@ -16,10 +16,12 @@ import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class PlanResolver {
 
@@ -29,7 +31,6 @@ class PlanResolver {
   private lateinit var planService: PlanService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Plan)
-  @Transactional
   suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: Vertical): Plan? = coroutineScope {
     val user: User = dfe.getSource()!!
     planService.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))

@@ -6,11 +6,14 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class FeedExporter(
   private val jsonFeedExporter: JsonFeedExporter,
   private val atomFeedExporter: SyndAtomFeedExporter

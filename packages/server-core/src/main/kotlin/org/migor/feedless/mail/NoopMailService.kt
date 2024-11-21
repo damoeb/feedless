@@ -8,10 +8,12 @@ import org.migor.feedless.user.UserEntity
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.*
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Profile("${AppProfiles.mail} & ${AppLayer.service}")
+@Transactional(propagation = Propagation.NEVER)
+@Profile("!${AppProfiles.mail} & ${AppLayer.service}")
 @ConditionalOnBean(MailService::class)
 class NoopMailService : MailService {
 
@@ -28,9 +30,6 @@ class NoopMailService : MailService {
 
   override suspend fun createMimeMessage(): MimeMessage {
     throw IllegalArgumentException("not implemented")
-  }
-
-  override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
   }
 
 }

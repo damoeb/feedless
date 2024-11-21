@@ -20,6 +20,8 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.crypto.SecretKey
@@ -30,6 +32,7 @@ import kotlin.time.toDuration
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class TokenProvider(
   val propertyService: PropertyService,

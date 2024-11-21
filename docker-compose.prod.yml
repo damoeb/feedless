@@ -52,7 +52,6 @@ services:
       - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
       - APP_HOST=feedless-core:8080
       - APP_PRERENDER_TIMEOUT_MILLIS=${APP_PRERENDER_TIMEOUT_MILLIS}
-      - APP_HOST=feedless-core:8080
       - APP_SECURE=false
     logging:
       driver: json-file
@@ -115,6 +114,61 @@ services:
       - public
       - monitoring
       - puppeteer
+
+#  harvester:
+#    image: damoeb/feedless:core-latest
+#    restart: unless-stopped
+##    healthcheck:
+##      test: curl -f http://localhost:8080
+##      interval: 60s
+##      timeout: 10s
+##      retries: 10
+#    depends_on:
+#      - postgis
+#    ports:
+#      - "8082:8080"
+#    volumes:
+#      - ./feedless.pem:/usr/feedless/feedless.pem
+#      - ./debug/:/usr/feedless/debug/ # heap dump directory
+#    env_file:
+#      - .env
+#    environment:
+#      - APP_DATABASE_URL=jdbc:postgresql://postgis:5432/${POSTGRES_DB}
+#      - APP_ACTIVE_PROFILES=harvester
+#      - APP_PEM_FILE=./feedless.pem
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: 10m
+#    networks:
+#      - postgis
+#      - monitoring
+#      - puppeteer
+#
+#  harvester-agent:
+#    image: damoeb/feedless:agent-latest
+#    security_opt:
+#      - seccomp=./chrome.json
+#    restart: unless-stopped
+#    #    deploy:
+#    #      replicas: 2
+#    environment:
+#      - APP_EMAIL=${APP_ROOT_EMAIL}
+#      - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
+#      - APP_HOST=feedless-harvester:8080
+#      - APP_PRERENDER_TIMEOUT_MILLIS=${APP_PRERENDER_TIMEOUT_MILLIS}
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: 10m
+#    #    ports:
+#    #      - "3000:3000"
+#    #    healthcheck:
+#    #      test: curl -f https://localhost:3000 || exit 1
+#    networks:
+#      - puppeteer
+#      - monitoring
+
 
   loki:
     image: grafana/loki:2.5.0

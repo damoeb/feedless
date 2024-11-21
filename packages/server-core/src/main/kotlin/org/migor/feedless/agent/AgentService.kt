@@ -29,6 +29,8 @@ import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
@@ -46,6 +48,7 @@ class AgentResponse(private val scrapeResponse: String) : Serializable {
 }
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.service}")
 class AgentService(
   private val userSecretService: UserSecretService,
@@ -57,6 +60,7 @@ class AgentService(
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
 
+  @Transactional
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       CoroutineScope(RequestContext()).launch {
@@ -105,6 +109,74 @@ class AgentService(
     }
   }
 
+  suspend fun hasAgents(): Boolean = agentRefs.isNotEmpty()
+
+  //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
+  suspend fun prerender(source: SourceEntity): AgentResponse {
+    val corrId = coroutineContext.corrId()
+    return if (hasAgents()) {
+      val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
+      prerenderWithAgent(source, agentRef)
+        .toFuture()
+        .await()
+    } else {
+      log.warn("[$corrId] no agents present")
+      throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))
+    }
+  }
+
+  suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+    val corrId = coroutineContext.corrId()
+    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
+    pendingJobs[harvestJobId]?.let {
+      if (scrapeResponse.ok) {
+        it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
+      } else {
+        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
+      }
+      pendingJobs.remove(harvestJobId)
+    } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findAllByUserId(userId: UUID?): List<AgentEntity> {
+    return withContext(Dispatchers.IO) {
+      agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+    }
+  }
+
+  @Transactional(propagation = Propagation.SUPPORTS)
+  fun agentRefs(): ArrayList<AgentRef> {
+    return agentRefs
+  }
+
+  private suspend fun prerenderWithAgent(
+    source: SourceEntity,
+    agentRef: AgentRef
+  ): Mono<AgentResponse> {
+    val corrId = coroutineContext.corrId()
+    log.debug("[$corrId] preparing")
+    return Flux.create { emitter ->
+      try {
+        val agentJobId = UUID.randomUUID().toString()
+        agentRef.emitter.next(
+          AgentEvent(
+            callbackId = agentJobId,
+            corrId = corrId,
+            scrape = source.toDto()
+          )
+        )
+        log.info("[$corrId] submitted agent job $agentJobId")
+        pendingJobs[agentJobId] = emitter
+      } catch (e: Exception) {
+        log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)
+        emitter.error(e)
+      }
+    }
+      .timeout(Duration.ofSeconds(60))
+      .next()
+  }
+
   private suspend fun addAgent(agentRef: AgentRef) {
     val corrId = coroutineContext.corrId()
     agentRefs.add(agentRef)
@@ -140,72 +212,6 @@ class AgentService(
       }
     }
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
-  }
-
-  fun hasAgents(): Boolean = agentRefs.isNotEmpty()
-
-  //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
-  suspend fun prerender(source: SourceEntity): AgentResponse {
-    val corrId = coroutineContext.corrId()
-    return if (hasAgents()) {
-      val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      prerenderWithAgent(source, agentRef)
-        .toFuture()
-        .await()
-    } else {
-      log.warn("[$corrId] no agents present")
-      throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))
-    }
-  }
-
-  private suspend fun prerenderWithAgent(
-    source: SourceEntity,
-    agentRef: AgentRef
-  ): Mono<AgentResponse> {
-    val corrId = coroutineContext.corrId()
-    log.debug("[$corrId] preparing")
-    return Flux.create { emitter ->
-      try {
-        val harvestJobId = UUID.randomUUID().toString()
-        agentRef.emitter.next(
-          AgentEvent(
-            callbackId = harvestJobId,
-            corrId = corrId,
-            scrape = source.toDto()
-          )
-        )
-        log.debug("[$corrId] submitted agent job $harvestJobId")
-        pendingJobs[harvestJobId] = emitter
-      } catch (e: Exception) {
-        log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)
-        emitter.error(e)
-      }
-    }
-      .timeout(Duration.ofSeconds(60))
-      .next()
-  }
-
-  suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
-    val corrId = coroutineContext.corrId()
-    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
-    pendingJobs[harvestJobId]?.let {
-      if (scrapeResponse.ok) {
-        it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
-      } else {
-        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
-      }
-      pendingJobs.remove(harvestJobId)
-    } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
-  }
-
-  suspend fun findAllByUserId(userId: UUID?): List<AgentEntity> {
-    return withContext(Dispatchers.IO) {
-      agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
-    }
-  }
-
-  fun agentRefs(): ArrayList<AgentRef> {
-    return agentRefs
   }
 }
 

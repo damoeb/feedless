@@ -91,7 +91,7 @@ fun ProductEntity.toDTO(): Product {
     enterprise = selfHostingEnterprise,
     other = selfHostingOther,
     partOf = partOf?.toDto(),
-    featureGroupId = featureGroupId?.toString(),
+    featureGroupId = featureGroupId.toString(),
     prices = emptyList(),
   )
 }

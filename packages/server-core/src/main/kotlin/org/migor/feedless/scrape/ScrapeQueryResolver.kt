@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.api}")
 class ScrapeQueryResolver {
 
@@ -43,7 +44,6 @@ class ScrapeQueryResolver {
   @Throttled
   @DgsQuery
   @PreAuthorize("hasAnyAuthority('ANONYMOUS', 'READ', 'WRITE')")
-  @Transactional(propagation = Propagation.NEVER)
   suspend fun scrape(
     dfe: DataFetchingEnvironment,
     @InputArgument data: SourceInput,

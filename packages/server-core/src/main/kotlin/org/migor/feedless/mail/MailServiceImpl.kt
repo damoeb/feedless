@@ -1,25 +1,22 @@
 package org.migor.feedless.mail
 
 import jakarta.mail.internet.MimeMessage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.report.ReportDAO
 import org.migor.feedless.user.UserEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
-import java.util.*
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class MailServiceImpl : MailService {
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
@@ -29,9 +26,6 @@ class MailServiceImpl : MailService {
 
   @Autowired
   private lateinit var productService: ProductService
-
-  @Autowired
-  private lateinit var mailEnrollmentDAO: ReportDAO
 
   @Autowired
   private lateinit var templateService: TemplateService
@@ -97,16 +91,6 @@ class MailServiceImpl : MailService {
 
   override suspend fun createMimeMessage(): MimeMessage {
     return javaMailSender.createMimeMessage()
-  }
-
-  override suspend fun updateMailForwardById(mailForwardId: UUID, authorize: Boolean) {
-    withContext(Dispatchers.IO) {
-      mailEnrollmentDAO.findById(mailForwardId).orElseThrow()?.let {
-        it.authorized = authorize
-        it.authorizedAt = LocalDateTime.now()
-        mailEnrollmentDAO.save(it)
-      }
-    }
   }
 
 //  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {

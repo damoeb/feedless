@@ -29,8 +29,9 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   dependsOn(yarnInstallTask)
 
   inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+  inputs.files("../server-core/src/main/resources/schema/schema.graphqls", "generate-verticals-data.ts")
 
-  outputs.files("src/generated/graphql.ts", "all-verticals.json", "build/generate-verticals-data.js")
+  outputs.files("build/generate-verticals-data.js", "src/generated/graphql.ts", "all-verticals.json", "build/generate-verticals-data.js")
   outputs.dir("build/generated")
 }
 
@@ -69,7 +70,7 @@ val testTask = tasks.register<YarnTask>("test") {
 }
 
 val buildTask = tasks.register<YarnTask>("build") {
-  dependsOn(prepareTask, lintTask, testTask)
+  dependsOn(prepareTask, lintTask, testTask, codegenTask)
   args.set(listOf("build:prod"))
 
   inputs.property("nodejsVersion", findProperty("nodejsVersion"))

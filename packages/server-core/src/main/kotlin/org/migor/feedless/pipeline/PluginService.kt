@@ -9,8 +9,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class PluginService(
   private val entityPlugins: List<MapEntityPlugin>,
@@ -35,7 +38,13 @@ class PluginService(
     }
     val collidingIds = plugins.groupingBy { it.id() }.eachCount().filter { it.value > 1 }
     if (collidingIds.isNotEmpty()) {
-      throw IllegalArgumentException("plugin ids must be unique, the following are not: ${collidingIds.keys.joinToString(", ")} caused by ${plugins.filter { it.id() in collidingIds.keys }.map { it::class.simpleName }}")
+      throw IllegalArgumentException(
+        "plugin ids must be unique, the following are not: ${
+          collidingIds.keys.joinToString(
+            ", "
+          )
+        } caused by ${plugins.filter { it.id() in collidingIds.keys }.map { it::class.simpleName }}"
+      )
     }
   }
 

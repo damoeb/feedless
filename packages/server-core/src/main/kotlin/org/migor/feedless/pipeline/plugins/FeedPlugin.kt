@@ -25,10 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.nio.charset.StandardCharsets
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedPlugin : FragmentTransformerPlugin {
 
@@ -54,7 +57,7 @@ class FeedPlugin : FragmentTransformerPlugin {
 
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
 
-    val feed = if(FeedUtil.isFeed(data.contentType)) {
+    val feed = if (FeedUtil.isFeed(data.contentType)) {
       feedParserService.parseFeed(data)
     } else {
       webToFeedTransformer.getFeedBySelectors(

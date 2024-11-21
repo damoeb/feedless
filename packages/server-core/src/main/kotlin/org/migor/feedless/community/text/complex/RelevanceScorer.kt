@@ -8,10 +8,13 @@ import org.migor.feedless.community.text.simple.KeywordIntersectionScorer
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 data class RelevanceWeights(val context: Double)
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class RelevanceScorer(
   private val keywordIntersectionScorer: KeywordIntersectionScorer,

@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.common.CleanupExecutor
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.mail.OneTimePasswordDAO
-import org.migor.feedless.pipeline.DocumentPipelineJobDAO
-import org.migor.feedless.pipeline.SourcePipelineJobDAO
-import org.migor.feedless.repository.HarvestDAO
+import org.migor.feedless.mail.OneTimePasswordService
+import org.migor.feedless.pipeline.DocumentPipelineService
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.repository.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -19,33 +18,30 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
+import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CleanupExecutorTest {
 
-  private lateinit var oneTimePasswordDAO: OneTimePasswordDAO
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-  private lateinit var harvestDAO: HarvestDAO
+  private lateinit var oneTimePasswordService: OneTimePasswordService
+  private lateinit var sourcePipelineService: SourcePipelineService
   private lateinit var documentService: DocumentService
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-
+  private lateinit var documentPipelineService: DocumentPipelineService
   private lateinit var cleanupExecutor: CleanupExecutor
 
   @BeforeEach
   fun setUp() {
 
-    oneTimePasswordDAO = mock(OneTimePasswordDAO::class.java)
-    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
-    harvestDAO = mock(HarvestDAO::class.java)
+    oneTimePasswordService = mock(OneTimePasswordService::class.java)
+    sourcePipelineService = mock(SourcePipelineService::class.java)
     documentService = mock(DocumentService::class.java)
-    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
+    documentPipelineService = mock(DocumentPipelineService::class.java)
     cleanupExecutor = CleanupExecutor(
-      oneTimePasswordDAO,
-      sourcePipelineJobDAO,
-      harvestDAO,
+      Optional.of(oneTimePasswordService),
+      sourcePipelineService,
       documentService,
-      documentPipelineJobDAO
+      documentPipelineService
     )
   }
 
@@ -56,27 +52,21 @@ class CleanupExecutorTest {
   }
 
   @Test
-  fun `executeCleanup removes trailing harvests`() {
-    cleanupExecutor.executeCleanup()
-    verify(harvestDAO, times(1)).deleteAllTailingByRepositoryId()
-  }
-
-  @Test
   fun `executeCleanup removes oneTimePassword`() {
     cleanupExecutor.executeCleanup()
-    verify(oneTimePasswordDAO, times(1)).deleteAllByValidUntilBefore(any(LocalDateTime::class.java))
+    verify(oneTimePasswordService, times(1)).deleteAllByValidUntilBefore(any(LocalDateTime::class.java))
   }
 
   @Test
   fun `executeCleanup removes sourcePipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    verify(sourcePipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
+    verify(sourcePipelineService, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
   }
 
   @Test
   fun `executeCleanup removes documentPipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    verify(documentPipelineJobDAO, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
+    verify(documentPipelineService, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
   }
 
   @Test

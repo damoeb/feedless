@@ -20,7 +20,6 @@ import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
 import org.migor.feedless.generated.types.ItemFilterParamsInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
@@ -185,12 +184,14 @@ class DocumentServiceTest {
         inheritParams = false
       )
     )
-    `when`(fulltextPlugin.mapEntity(
-      eq(document),
-      any(RepositoryEntity::class.java),
-      any(PluginExecutionJsonEntity::class.java),
-      any(LogCollector::class.java),
-    )).thenAnswer {
+    `when`(
+      fulltextPlugin.mapEntity(
+        eq(document),
+        any(RepositoryEntity::class.java),
+        any(PluginExecutionJsonEntity::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenAnswer {
       val d = it.arguments[0] as DocumentEntity
       d.title = StringUtils.reverse(d.title)
       d

@@ -21,6 +21,8 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.InetAddress
 import java.util.*
 import javax.crypto.SecretKey
@@ -31,6 +33,7 @@ import kotlin.time.toDuration
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class AuthService : IAuthService {
   private lateinit var whitelistedIps: List<String>
@@ -63,6 +66,55 @@ class AuthService : IAuthService {
     resolveWhitelistedHosts()
   }
 
+  @Transactional(readOnly = true)
+  override suspend fun decodeToken(token: String): OAuth2AuthenticationToken {
+    val jwtToken = decodeJwt(token)
+    val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
+    val attributes = mapOf(
+      JwtParameterNames.USER_ID to userId
+    )
+    if (StringUtils.isNotBlank(userId) && withContext(Dispatchers.IO) { !userDAO.existsById(UUID.fromString(userId)) }) {
+      throw AccessDeniedException("user does not exist")
+    }
+    val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
+    val nameAttributeKey = JwtParameterNames.USER_ID
+    val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, nameAttributeKey)
+    val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
+    return OAuth2AuthenticationToken(
+      principal,
+      authorities,
+      authorizedClientRegistrationId
+    )
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
+    val rawToken = interceptTokenRaw(request)
+    return decodeToken(rawToken)
+  }
+
+  @Transactional(readOnly = true)
+  override fun interceptJwt(request: HttpServletRequest): Jwt {
+    val rawToken = interceptTokenRaw(request)
+    return decodeJwt(rawToken)
+  }
+
+  @Transactional(readOnly = true)
+  override suspend fun assertToken(request: HttpServletRequest) {
+    if (!isWhitelisted(request)) {
+      val rawToken = interceptTokenRaw(request)
+      decodeToken(rawToken)
+    }
+  }
+
+  fun isWhitelisted(request: HttpServletRequest): Boolean {
+//    val isWhitelisted = whitelistedIps.contains(request.remoteHost)
+//    log.info("isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
+    return whitelistedIps.contains(request.remoteHost)
+  }
+
+  // --
+
   private fun resolveWhitelistedHosts() {
     this.whitelistedIps = whitelistedHostsParam
       .trim()
@@ -92,28 +144,8 @@ class AuthService : IAuthService {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
 
-  fun getAuthorities(jwt: Jwt): List<String> {
+  private suspend fun getAuthorities(jwt: Jwt): List<String> {
     return jwt.getClaim(attrAuthorities) as List<String>
-  }
-
-  override suspend fun decodeToken(token: String): OAuth2AuthenticationToken {
-    val jwtToken = decodeJwt(token)
-    val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
-    val attributes = mapOf(
-      JwtParameterNames.USER_ID to userId
-    )
-    if (StringUtils.isNotBlank(userId) && withContext(Dispatchers.IO) { !userDAO.existsById(UUID.fromString(userId)) }) {
-      throw AccessDeniedException("user does not exist")
-    }
-    val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
-    val nameAttributeKey = JwtParameterNames.USER_ID
-    val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, nameAttributeKey)
-    val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
-    return OAuth2AuthenticationToken(
-      principal,
-      authorities,
-      authorizedClientRegistrationId
-    )
   }
 
   private fun getSecretKey(): SecretKey {
@@ -125,29 +157,6 @@ class AuthService : IAuthService {
       .withSecretKey(getSecretKey())
       .build()
       .decode(token)
-  }
-
-  suspend fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
-    val rawToken = interceptTokenRaw(request)
-    return decodeToken(rawToken)
-  }
-
-  override fun interceptJwt(request: HttpServletRequest): Jwt {
-    val rawToken = interceptTokenRaw(request)
-    return decodeJwt(rawToken)
-  }
-
-  override suspend fun assertToken(request: HttpServletRequest) {
-    if (!isWhitelisted(request)) {
-      val rawToken = interceptTokenRaw(request)
-      decodeToken(rawToken)
-    }
-  }
-
-  fun isWhitelisted(request: HttpServletRequest): Boolean {
-//    val isWhitelisted = whitelistedIps.contains(request.remoteHost)
-//    log.info("isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
-    return whitelistedIps.contains(request.remoteHost)
   }
 
   @Throws(AccessDeniedException::class)

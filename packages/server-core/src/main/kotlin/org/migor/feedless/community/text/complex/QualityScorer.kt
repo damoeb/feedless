@@ -13,6 +13,8 @@ import org.migor.feedless.community.text.simple.WordCountScorer
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 data class QualityWeights(
   val engagement: Double,
@@ -24,6 +26,7 @@ data class QualityWeights(
 )
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class QualityScorer(
   private val vocabularyScorer: VocabularyScorer,

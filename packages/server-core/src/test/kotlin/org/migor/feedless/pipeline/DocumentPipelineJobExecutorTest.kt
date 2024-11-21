@@ -4,41 +4,33 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.any
-import org.migor.feedless.repository.eq
-import org.migor.feedless.source.SourceDAO
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDateTime
 import java.util.*
 
 class DocumentPipelineJobExecutorTest {
 
-  private lateinit var documentDAO: DocumentDAO
-  private lateinit var repositoryDAO: RepositoryDAO
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
   private lateinit var documentPipelineJobExecutor: DocumentPipelineJobExecutor
+  private lateinit var documentPipelineService: DocumentPipelineService
+  private lateinit var repositoryService: RepositoryService
+  private lateinit var documentService: DocumentService
 
   @BeforeEach
   fun setUp() {
-    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
-    documentDAO = mock(DocumentDAO::class.java)
-    repositoryDAO = mock(RepositoryDAO::class.java)
+    documentPipelineService = mock(DocumentPipelineService::class.java)
+    repositoryService = mock(RepositoryService::class.java)
+    documentService = mock(DocumentService::class.java)
 
     documentPipelineJobExecutor = DocumentPipelineJobExecutor(
-      documentPipelineJobDAO,
-      documentDAO,
-      repositoryDAO,
-      mock(DocumentService::class.java),
+      documentPipelineService,
+      repositoryService,
+      documentService,
     )
 
     val repositoryId = UUID.randomUUID()
@@ -49,7 +41,7 @@ class DocumentPipelineJobExecutorTest {
       createDocumentPipelineJob(id2, repositoryId),
       createDocumentPipelineJob(id1, repositoryId)
     )
-    `when`(documentPipelineJobDAO.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(documentJobs)
+    `when`(documentPipelineService.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(documentJobs)
   }
 
   @Test
@@ -74,8 +66,8 @@ class DocumentPipelineJobExecutorTest {
     `when`(document.id).thenReturn(documentId)
     `when`(document.repositoryId).thenReturn(repositoryId)
 
-    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(mock(RepositoryEntity::class.java)))
-    `when`(documentDAO.findById(eq(documentId))).thenReturn(Optional.of(document))
+//    `when`(repositoryService.findById(eq(repositoryId))).thenReturn(Optional.of(mock(RepositoryEntity::class.java)))
+//    `when`(documentDAO.findById(eq(documentId))).thenReturn(Optional.of(document))
 
     return job
   }

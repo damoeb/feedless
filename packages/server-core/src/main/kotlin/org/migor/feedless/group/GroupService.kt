@@ -11,10 +11,12 @@ import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(readOnly = true)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
 class GroupService(
   private val userGroupAssignmentDAO: UserGroupAssignmentDAO,
@@ -25,6 +27,7 @@ class GroupService(
 
 //  fun getAdminGroupName(): String = "admin"
 
+  @Transactional
   suspend fun addUserToGroup(user: UserEntity, group: GroupEntity, role: RoleInGroup): UserGroupAssignmentEntity {
     val currentUserId = coroutineContext.userId()
 
@@ -40,6 +43,7 @@ class GroupService(
     }
   }
 
+  @Transactional
   suspend fun removeUserFromGroup(user: UserEntity, group: GroupEntity) {
     val currentUserId = coroutineContext.userId()
 
@@ -65,6 +69,7 @@ class GroupService(
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByUserId(userId: UUID): List<UserGroupAssignmentEntity> {
     return withContext(Dispatchers.IO) {
       userGroupAssignmentDAO.findAllByUserId(userId)

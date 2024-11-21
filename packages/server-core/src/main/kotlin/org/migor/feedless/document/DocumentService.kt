@@ -57,7 +57,6 @@ import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Profile("${AppProfiles.document} & ${AppLayer.service}")
-@Transactional
 class DocumentService(
   private val documentDAO: DocumentDAO,
   private val entityManager: EntityManager,
@@ -78,12 +77,14 @@ class DocumentService(
 //  private lateinit var mailForwardDAO: MailForwardDAO
 
 
+  @Transactional(readOnly = true)
   suspend fun findById(id: UUID): DocumentEntity? {
     return withContext(Dispatchers.IO) {
       documentDAO.findById(id).getOrNull()
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun findAllByRepositoryId(
     repositoryId: UUID,
     where: RecordsWhereInput? = null,
@@ -159,6 +160,7 @@ class DocumentService(
     return whereStatements
   }
 
+  @Transactional
   fun applyRetentionStrategyByCapacity() {
     repositoryDAO.findAllByLastUpdatedAtAfter(LocalDateTime.now().minusDays(1))
       .forEach { repository ->
@@ -178,6 +180,7 @@ class DocumentService(
       }
   }
 
+  @Transactional
   suspend fun applyRetentionStrategy(repositoryId: UUID) {
     val repository = withContext(Dispatchers.IO) {
       repositoryDAO.findById(repositoryId).orElseThrow()
@@ -223,9 +226,12 @@ class DocumentService(
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
+  @Transactional
   suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilterInput) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
-    val repository = withContext(Dispatchers.IO) { repositoryDAO.findById(repositoryId).orElseThrow() }
+    val repository = withContext(Dispatchers.IO) {
+      repositoryDAO.findById(repositoryId).orElseThrow()
+    }
     if (repository.ownerId != user.id) {
       throw PermissionDeniedException("current user ist not owner")
     }
@@ -245,6 +251,7 @@ class DocumentService(
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun getRecordFrequency(
     where: RecordsWhereInput,
     groupBy: RecordDateField,
@@ -281,11 +288,13 @@ class DocumentService(
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
-    val document = withContext(Dispatchers.IO) { documentDAO.findByIdWithSource(documentId) }
+    val document = withContext(Dispatchers.IO) {
+      documentDAO.findByIdWithSource(documentId)
+    }
     val logCollector = LogCollector()
 
     return document?.let {
@@ -398,12 +407,14 @@ class DocumentService(
     }
   }
 
+  @Transactional(readOnly = true)
   suspend fun countByRepositoryId(repositoryId: UUID): Long {
     return withContext(Dispatchers.IO) {
       documentDAO.countByRepositoryId(repositoryId)
     }
   }
 
+  @Transactional
   suspend fun createDocument(data: CreateRecordInput): DocumentEntity {
     val repositoryId = UUID.fromString(data.repositoryId.id)
 
@@ -425,6 +436,7 @@ class DocumentService(
     }
   }
 
+  @Transactional
   suspend fun updateDocument(data: RecordUpdateInput, where: RecordUniqueWhereInput): DocumentEntity {
     val document = withContext(Dispatchers.IO) {
       documentDAO.findById(UUID.fromString(where.id)).orElseThrow()
@@ -442,6 +454,13 @@ class DocumentService(
     document.updatedAt = LocalDateTime.now()
     return withContext(Dispatchers.IO) {
       documentDAO.save(document)
+    }
+  }
+
+  @Transactional
+  suspend fun deleteById(documentId: UUID) {
+    withContext(Dispatchers.IO) {
+      documentDAO.deleteById(documentId)
     }
   }
 

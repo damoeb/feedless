@@ -8,9 +8,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.util.FeedUtil
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.URL
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class NativeFeedLocator {
   suspend fun locateInDocument(document: Document, url: String): List<RemoteNativeFeedRef> {

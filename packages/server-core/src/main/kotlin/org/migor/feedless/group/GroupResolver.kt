@@ -16,13 +16,13 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
 class GroupResolver(
   private val groupService: GroupService
 ) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignment> = coroutineScope {
     val user: User = dfe.getSource()
     groupService.findAllByUserId(UUID.fromString(user.id))

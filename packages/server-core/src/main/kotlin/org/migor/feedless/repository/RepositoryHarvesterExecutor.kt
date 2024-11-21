@@ -13,39 +13,28 @@ import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
-class RepositoryHarvesterExecutor internal constructor() {
+class RepositoryHarvesterExecutor internal constructor(
+  private val licenseService: LicenseService,
+  private val analyticsService: AnalyticsService,
+  private val repositoryHarvester: RepositoryHarvester,
+  private val repositoryService: RepositoryService
+) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
 
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var licenseService: LicenseService
-
-  @Autowired
-  private lateinit var analyticsService: AnalyticsService
-
-  @Autowired
-  private lateinit var repositoryHarvester: RepositoryHarvester
-
-
-  @Autowired
-  private lateinit var repositoryService: RepositoryService
-
   @Scheduled(fixedDelay = 61000, initialDelay = 5000)
-  @Transactional
   fun syncPullCountForPublicRepos() {
     try {
       if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
@@ -54,7 +43,7 @@ class RepositoryHarvesterExecutor internal constructor() {
         LocalDateTime.now().minusDays(1)
         val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
         val repos =
-          repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(
+          repositoryService.findAllByVisibilityAndLastPullSyncBefore(
             EntityVisibility.isPublic,
             LocalDateTime.now(),
             pageable
@@ -91,13 +80,12 @@ class RepositoryHarvesterExecutor internal constructor() {
   }
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
-  @Transactional
   fun refreshSubscriptions() {
     try {
       if (!licenseService.isSelfHosted() || licenseService.hasValidLicenseOrLicenseNotNeeded()) {
         val corrId = newCorrId()
         val reposDue =
-          repositoryDAO.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
+          repositoryService.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
         log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
         if (reposDue.isNotEmpty()) {
           val semaphore = Semaphore(10)

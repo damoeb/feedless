@@ -102,7 +102,8 @@ internal class WebToFeedTransformerTest {
 
   @Test
   fun testRelativeXPath() = runTest {
-    val document = Jsoup.parse("""
+    val document = Jsoup.parse(
+      """
       <div>
         <ul>
           <li></li>
@@ -110,7 +111,8 @@ internal class WebToFeedTransformerTest {
           <li></li>
         </ul>
       </div>
-    """.trimIndent())
+    """.trimIndent()
+    )
 
     val root = document.select("div").first()!!
     val child = document.select("em").first()!!

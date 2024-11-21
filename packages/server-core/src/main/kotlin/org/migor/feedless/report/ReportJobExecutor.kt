@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.report} & ${AppLayer.scheduler}")
 @Transactional(propagation = Propagation.NEVER)
+@Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.report} & ${AppLayer.scheduler}")
 class ReportJobExecutor internal constructor(
   val reportDAO: ReportDAO,
   val reportService: ReportService
@@ -20,7 +20,6 @@ class ReportJobExecutor internal constructor(
   private val log = LoggerFactory.getLogger(ReportJobExecutor::class.simpleName)
 
   @Scheduled(fixedDelay = 60000, initialDelay = 20000)
-  @Transactional
   fun askForReportAuthorization() {
 
   }

@@ -18,22 +18,19 @@ import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.secrets} & ${AppLayer.api}")
-@Transactional
-class SecretsResolver {
-
-  @Autowired
-  private lateinit var userSecretService: UserSecretService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
+class SecretsResolver(
+  private val userSecretService: UserSecretService,
+  private val sessionService: SessionService,
+) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {

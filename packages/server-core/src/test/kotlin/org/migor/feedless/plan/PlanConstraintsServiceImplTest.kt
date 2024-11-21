@@ -264,10 +264,11 @@ class PlanConstraintsServiceImplTest {
       "4"
     ]
   )
-  fun `given scrapeSourceMaxCountTotalInt is defined, valid sourceCounts will pass`(sourceCount: Int) = runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
-    mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
-    service.auditRepositoryMaxCount(sourceCount, userId)
-  }
+  fun `given scrapeSourceMaxCountTotalInt is defined, valid sourceCounts will pass`(sourceCount: Int) =
+    runTest(context = RequestContext(userId = currentUserId, product = Vertical.feedless)) {
+      mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
+      service.auditRepositoryMaxCount(sourceCount, userId)
+    }
 
   @Test
   @Disabled

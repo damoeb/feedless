@@ -45,6 +45,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StringUtils
 import java.net.URI
 import java.net.URLEncoder
@@ -54,6 +56,7 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.legacyFeeds} & ${AppLayer.service}")
 class LegacyFeedService {
 
@@ -94,6 +97,7 @@ class LegacyFeedService {
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
+  @Transactional(readOnly = true)
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
   suspend fun getFeed(feedId: String, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
@@ -112,6 +116,7 @@ class LegacyFeedService {
     }
   }
 
+  @Transactional(propagation = Propagation.NEVER)
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
   suspend fun webToFeed(
     url: String,
@@ -189,6 +194,7 @@ class LegacyFeedService {
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
+  @Transactional(readOnly = true)
   suspend fun transformFeed(nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
     return if (legacySupport()) {
       appendNotifications(

@@ -18,7 +18,6 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.FulltextPluginParamsInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
 import org.migor.feedless.scrape.LogCollector

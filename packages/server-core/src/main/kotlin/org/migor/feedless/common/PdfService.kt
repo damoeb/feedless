@@ -4,6 +4,8 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.fit.pdfdom.PDFDomTree
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -12,6 +14,7 @@ import java.nio.charset.StandardCharsets
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class PdfService {
 
   private val log = LoggerFactory.getLogger(PdfService::class.simpleName)

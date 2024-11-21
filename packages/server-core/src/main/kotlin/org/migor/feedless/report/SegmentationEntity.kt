@@ -17,11 +17,8 @@ import org.hibernate.type.SqlTypes
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.IntervalUnit
-import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.repository.RepositoryEntity
 import org.springframework.context.annotation.Lazy
-import org.springframework.data.geo.Point
-import java.sql.Types
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*

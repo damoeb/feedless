@@ -5,6 +5,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import org.migor.feedless.util.JsonUtil
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 class PageInspection(
@@ -24,6 +26,7 @@ class PageInspection(
 }
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 class PageInspectionService {
   internal val title = PageInspection.TITLE
   internal val type = PageInspection.TYPE

@@ -25,6 +25,8 @@ import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
@@ -33,6 +35,7 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppProfiles.session} & ${AppLayer.service}")
 class MailAuthenticationService(
   private val tokenProvider: TokenProvider,
@@ -45,6 +48,7 @@ class MailAuthenticationService(
 ) {
   private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
 
+  @Transactional(readOnly = true)
   suspend fun authenticateUsingMail(data: AuthViaMailInput): Publisher<AuthenticationEvent> {
     val email = data.email
     log.debug("init user session for $email")

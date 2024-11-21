@@ -7,9 +7,12 @@ import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.mail.OneTimePasswordEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.FluxSink
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.repository}")
 class AuthWebsocketRepository : InMemorySinkRepository<String, AuthenticationEvent>() {
   fun pop(otp: OneTimePasswordEntity): FluxSink<AuthenticationEvent> {
