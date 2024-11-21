@@ -1,10 +1,17 @@
 import { NamedLatLon } from '../../types';
+import { isArray, omit } from 'lodash-es';
 
 export function getCachedLocations(): NamedLatLon[] {
   return locations;
 }
 
-const zg = [
+type PlacesLatLon = Pick<NamedLatLon, 'area' | 'lat' | 'lon'> & {
+  place: string[] | string;
+  zip: string;
+  language: string;
+};
+
+const zg: PlacesLatLon[] = [
   {
     place: 'Zug',
     zip: '6300',
@@ -375,7 +382,7 @@ const zg = [
   },
 ];
 // aargau
-const ag = [
+const ag: PlacesLatLon[] = [
   {
     place: 'Aarau',
     zip: '5000',
@@ -3050,7 +3057,7 @@ const ag = [
   },
 ];
 
-const sz = [
+const sz: PlacesLatLon[] = [
   {
     place: 'Bennau',
     zip: '8836',
@@ -3757,7 +3764,7 @@ const sz = [
   },
 ];
 
-const zh = [
+const zh: PlacesLatLon[] = [
   {
     place: 'Aeugst am Albis',
     zip: '8914',
@@ -4368,11 +4375,107 @@ const zh = [
   },
   {
     place: 'Zürich',
-    zip: '8052',
+    zip: '8000',
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
     lon: 8.5410422,
+  },
+  {
+    place: ['Kreis 1', 'Altstatt'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3737426,
+    lon: 8.5314372,
+  },
+  {
+    place: 'Kreis 2',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3459044,
+    lon: 8.4847271,
+  },
+  {
+    place: ['Kreis 3', 'Wiedikon'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3590426,
+    lon: 8.4869909,
+  },
+  {
+    place: ['Kreis 4', 'Aussersihl'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3797307,
+    lon: 8.5074714,
+  },
+  {
+    place: ['Kreis 5', 'Industriequartier'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3864881,
+    lon: 8.5090755,
+  },
+  {
+    place: 'Kreis 6',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3915057,
+    lon: 8.5285785,
+  },
+  {
+    place: 'Kreis 7',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3706847,
+    lon: 8.5663945,
+  },
+  {
+    place: ['Kreis 8', 'Riesbach'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3561465,
+    lon: 8.5546195,
+  },
+  {
+    place: 'Kreis 9',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.3816017,
+    lon: 8.4576195,
+  },
+  {
+    place: 'Kreis 10',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.4043385,
+    lon: 8.4816429,
+  },
+  {
+    place: 'Kreis 11',
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.4170126,
+    lon: 8.5044333,
+  },
+  {
+    place: ['Kreis 12', 'Schamendingen'],
+    zip: '8000',
+    area: 'ZH',
+    language: 'de',
+    lat: 47.4040751,
+    lon: 8.5542736,
   },
   {
     place: 'Glattbrugg',
@@ -4680,7 +4783,7 @@ const zh = [
   },
   {
     place: 'Zürich',
-    zip: '8052',
+    zip: '8000',
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
@@ -6816,12 +6919,21 @@ const zh = [
   },
 ];
 
-const locations: NamedLatLon[] = [...zh, ...ag].map((l) => {
-  const displayName = `CH ${l.zip}, ${l.place}`;
+const places: PlacesLatLon[] = [...zh, ...ag];
+const toNamedLatLon = (place: string, l: PlacesLatLon): NamedLatLon => {
+  const displayName = `${l.zip}, ${place}`;
   return {
-    ...l,
+    place,
+    ...omit(l, 'place'),
     countryCode: 'CH',
     displayName,
     index: displayName.toLowerCase().normalize(),
   };
+};
+const locations: NamedLatLon[] = places.flatMap((l: PlacesLatLon) => {
+  if (isArray(l.place)) {
+    return l.place.map((place) => toNamedLatLon(place, l));
+  } else {
+    return toNamedLatLon(l.place, l);
+  }
 });

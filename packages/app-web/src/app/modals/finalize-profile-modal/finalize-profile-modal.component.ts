@@ -13,7 +13,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlVertical } from '../../../generated/graphql';
 import { AppConfigService } from '../../services/app-config.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../services/product.service';

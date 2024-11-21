@@ -30,7 +30,6 @@ query listPublicRepositories($data: RepositoriesInput!) {
     lastUpdatedAt
     nextUpdateAt
     refreshCron
-    hasDisabledSources
     pullsPerMonth
     disabledFrom
     archived
@@ -55,14 +54,26 @@ fragment RepositoryFull on Repository {
   #    itemsIgnored
   #    logs
   #  }
-  sources {
+  sourcesCount
+  sources(data: $data) {
     ...SourceFragment
   }
 }
 
-query repositoryById($repository: RepositoryWhereInput!) {
+query repositoryById(
+  $repository: RepositoryWhereInput!
+  $sources: SourcesInput
+) {
   repository(data: $repository) {
-    ...RepositoryFull
+    ...RepositoryFragment
+    frequency(groupBy: createdAt) {
+      count
+      group
+    }
+    sourcesCount
+    sources(data: $sources) {
+      ...SourceFragment
+    }
     annotations {
       votes {
         id
@@ -80,8 +91,44 @@ query repositoryById($repository: RepositoryWhereInput!) {
   }
 }
 
-mutation updateRepository($data: RepositoryUpdateInput!) {
+query sourcesByRepository(
+  $repository: RepositoryWhereInput!
+  $sources: SourcesInput
+) {
+  repository(data: $repository) {
+    sources(data: $sources) {
+      ...SourceFragment
+    }
+  }
+}
+
+mutation updateRepository(
+  $data: RepositoryUpdateInput!
+  $sources: SourcesInput
+) {
   updateRepository(data: $data) {
-    ...RepositoryFull
+    ...RepositoryFragment
+    frequency(groupBy: createdAt) {
+      count
+      group
+    }
+    sourcesCount
+    sources(data: $sources) {
+      ...SourceFragment
+    }
+    annotations {
+      votes {
+        id
+        flag {
+          value
+        }
+        upVote {
+          value
+        }
+        downVote {
+          value
+        }
+      }
+    }
   }
 }

@@ -18,6 +18,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService
@@ -80,7 +81,7 @@ class ThrottleAspectTest {
       `when`(jwt.tokenValue).thenReturn("jwt")
       `when`(tokenProvider.createJwtForAnonymous()).thenReturn(jwt)
     }
-    `when`(authService.isWhitelisted(any(HttpServletRequest::class.java))).thenReturn(false)
+    `when`(authService.isWhitelisted(any2())).thenReturn(false)
 
     val webClient = WebClient.create("http://localhost:$port/graphql")
     this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)

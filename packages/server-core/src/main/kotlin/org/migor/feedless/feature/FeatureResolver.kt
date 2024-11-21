@@ -34,11 +34,11 @@ class FeatureResolver(
 //  private lateinit var sessionService: SessionService
 
   @Throttled
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.FeatureGroups)
   suspend fun featureGroups(
     dfe: DataFetchingEnvironment,
-    @InputArgument inherit: Boolean,
-    @InputArgument where: FeatureGroupWhereInput,
+    @InputArgument(DgsConstants.QUERY.FEATUREGROUPS_INPUT_ARGUMENT.Inherit) inherit: Boolean,
+    @InputArgument(DgsConstants.QUERY.FEATUREGROUPS_INPUT_ARGUMENT.Where) where: FeatureGroupWhereInput,
   ): List<FeatureGroup> =
     withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       log.debug("featureGroups inherit=$inherit where=$where")
@@ -56,7 +56,7 @@ class FeatureResolver(
   @DgsMutation(field = DgsConstants.MUTATION.UpdateFeatureValue)
   suspend fun updateFeatureValue(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: UpdateFeatureValueInput
+    @InputArgument(DgsConstants.MUTATION.UPDATEFEATUREVALUE_INPUT_ARGUMENT.Data) data: UpdateFeatureValueInput
   ): Boolean =
     withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       log.debug("updateFeature $data")

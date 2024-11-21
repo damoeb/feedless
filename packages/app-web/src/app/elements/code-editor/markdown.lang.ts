@@ -1,9 +1,4 @@
-import { LanguageDescription, LanguageSupport } from '@codemirror/language';
 import { InlineContext } from '@lezer/markdown';
-import { javascriptLanguage, jsxLanguage } from '@codemirror/lang-javascript';
-import { cssLanguage } from '@codemirror/lang-css';
-import { jsonLanguage } from '@codemirror/lang-json';
-import { htmlLanguage } from '@codemirror/lang-html';
 
 import { markdown } from '@codemirror/lang-markdown';
 

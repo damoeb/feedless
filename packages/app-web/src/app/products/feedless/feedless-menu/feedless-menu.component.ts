@@ -10,7 +10,6 @@ import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
 import { GqlVertical } from '../../../../generated/graphql';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-feedless-menu',

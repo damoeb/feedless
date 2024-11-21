@@ -8,6 +8,8 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Size
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
@@ -21,11 +23,13 @@ import java.util.*
 @Table(name = "t_report")
 open class ReportEntity : EntityWithUUID() {
 
-  @Column(nullable = false, name = "email")
+  @Email
+  @Column(nullable = false, name = "recipient_email")
   open lateinit var recipientEmail: String
 
-  @Column(nullable = false, name = "name")
-  @Convert(converter = EncryptionConverter::class)
+  @Size(min = 3, max = 50)
+  @Column(nullable = false, name = "recipient_name")
+//  @Convert(converter = EncryptionConverter::class)
   open lateinit var recipientName: String
 
   @Column(nullable = false, name = "authorized")

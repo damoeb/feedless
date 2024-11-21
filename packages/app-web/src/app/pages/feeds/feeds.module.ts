@@ -11,18 +11,18 @@ import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-
 import { TableModule } from '../../components/table/table.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonRow,
-  IonCol,
-  IonButtons,
+  IonBreadcrumbs,
   IonButton,
-  IonProgressBar,
-  IonList,
+  IonButtons,
+  IonChip,
+  IonCol,
+  IonContent,
   IonItem,
   IonLabel,
-  IonChip,
+  IonList,
+  IonProgressBar,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 @NgModule({

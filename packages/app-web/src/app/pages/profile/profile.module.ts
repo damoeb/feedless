@@ -7,16 +7,16 @@ import { ProfilePage } from './profile.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 import {
-  IonContent,
-  IonRow,
-  IonCol,
-  IonList,
-  IonLabel,
-  IonInput,
   IonButton,
-  IonItem,
+  IonCol,
+  IonContent,
   IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
   IonNote,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 @NgModule({

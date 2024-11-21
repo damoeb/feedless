@@ -247,7 +247,8 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     refreshCron = sourcesSyncCron,
     documentCount = 0,
     tags = tags.asList(),
-    hasDisabledSources = false,
+    sourcesCount = 0,
+    sourcesCountWithProblems = 0,
     currentUserIsOwner = currentUserIsOwner,
     pullsPerMonth = pullsPerMonth,
     annotations = null

@@ -18,7 +18,6 @@ import { LicenseService } from '../../services/license.service';
 import { GqlVertical } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-rss-builder-product-page',

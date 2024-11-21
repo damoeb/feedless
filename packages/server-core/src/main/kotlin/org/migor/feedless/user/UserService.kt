@@ -337,6 +337,13 @@ class UserService {
       githubConnectionDAO.save(githubLink)
     }
   }
+
+  @Transactional
+  suspend fun existsByEmail(email: String): Boolean {
+    return withContext(Dispatchers.IO) {
+      userDAO.existsByEmail(email)
+    }
+  }
 }
 
 fun CoroutineContext.corrId(): String? {

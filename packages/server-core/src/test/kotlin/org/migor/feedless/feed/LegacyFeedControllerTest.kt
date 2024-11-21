@@ -16,7 +16,9 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.anyOrNull
+import org.migor.feedless.repository.anyOrNull2
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -87,9 +89,9 @@ class LegacyFeedControllerTest {
 
     `when`(
       legacyFeedService.transformFeed(
-        any(String::class.java),
-        anyOrNull(String::class.java),
-        any(String::class.java),
+        any2(),
+        anyOrNull2(),
+        any2(),
       )
     ).thenReturn(mockFeed)
 
@@ -119,10 +121,10 @@ class LegacyFeedControllerTest {
 
     `when`(
       legacyFeedService.webToFeed(
-        any(String::class.java),
-        any(String::class.java),
-        any(String::class.java),
-        any(String::class.java),
+        any2(),
+        any2(),
+        any2(),
+        any2(),
         anyOrNull(String::class.java),
         any(Boolean::class.java),
         anyOrNull(String::class.java),
@@ -167,8 +169,8 @@ class LegacyFeedControllerTest {
 
     `when`(
       legacyFeedService.getFeed(
-        any(String::class.java),
-        any(String::class.java),
+        any2(),
+        any2(),
       )
     ).thenReturn(mockFeed)
 
@@ -192,7 +194,7 @@ class LegacyFeedControllerTest {
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
     val restTemplate = TestRestTemplate()
-    `when`(legacyFeedService.getRepository(any(String::class.java))).thenReturn(ResponseEntity.ok().build())
+    `when`(legacyFeedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)

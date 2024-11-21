@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
@@ -28,13 +29,13 @@ class UserSecretServiceTest {
     currentUserId = UUID.randomUUID()
     `when`(currentUser.id).thenReturn(currentUserId)
     userSecretDAO = mock(UserSecretDAO::class.java)
-    `when`(userSecretDAO.save(any(UserSecretEntity::class.java))).thenAnswer { it.arguments[0] }
+    `when`(userSecretDAO.save(any2())).thenAnswer { it.arguments[0] }
 
 
     tokenProvider = mock(TokenProvider::class.java)
     val jwt = mock(Jwt::class.java)
     `when`(jwt.tokenValue).thenReturn("jwt")
-    `when`(tokenProvider.createJwtForApi(any(UserEntity::class.java))).thenReturn(jwt)
+    `when`(tokenProvider.createJwtForApi(any2())).thenReturn(jwt)
 
     userSecretService = UserSecretService(userSecretDAO, tokenProvider)
 
@@ -44,14 +45,14 @@ class UserSecretServiceTest {
   fun `can create encrypted secret`() = runTest {
     userSecretService.createUserSecret(currentUser)
 
-    verify(userSecretDAO).save(any(UserSecretEntity::class.java))
+    verify(userSecretDAO).save(any2())
   }
 
   @Test
   fun `can create unencrypted secret`() = runTest {
     userSecretService.createUserSecret(currentUser)
 
-    verify(userSecretDAO).save(any(UserSecretEntity::class.java))
+    verify(userSecretDAO).save(any2())
   }
 
 
@@ -59,7 +60,7 @@ class UserSecretServiceTest {
   fun `others cannot delete his secret`() {
     val secret = mock(UserSecretEntity::class.java)
     `when`(secret.ownerId).thenReturn(UUID.randomUUID())
-    `when`(userSecretDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(secret))
+    `when`(userSecretDAO.findById(any2())).thenReturn(Optional.of(secret))
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest {

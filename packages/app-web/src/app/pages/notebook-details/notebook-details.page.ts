@@ -32,15 +32,14 @@ import { AppConfigService } from '../../services/app-config.service';
 import { AnnotationService } from '../../services/annotation.service';
 import { addIcons } from 'ionicons';
 import {
+  closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
+  ellipsisVerticalOutline,
   star,
   starOutline,
-  ellipsisVerticalOutline,
-  closeOutline,
   trashOutline,
 } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 type SearchResult = {
   id?: string;

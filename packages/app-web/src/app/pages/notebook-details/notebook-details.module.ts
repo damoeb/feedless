@@ -9,25 +9,25 @@ import { LoginButtonModule } from '../../components/login-button/login-button.mo
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 import {
-  IonSplitPane,
-  IonMenu,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonSearchbar,
-  IonList,
-  IonItem,
-  IonLabel,
+  IonButtons,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonText,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonMenu,
   IonPopover,
   IonProgressBar,
+  IonSearchbar,
+  IonSplitPane,
+  IonText,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

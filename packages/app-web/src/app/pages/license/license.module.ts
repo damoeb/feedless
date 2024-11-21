@@ -7,15 +7,15 @@ import { LicensePage } from './license.page';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
+  IonButton,
+  IonCol,
   IonContent,
-  IonList,
-  IonItem,
-  IonSpinner,
   IonIcon,
+  IonItem,
+  IonList,
   IonProgressBar,
   IonRow,
-  IonCol,
-  IonButton,
+  IonSpinner,
   IonTextarea,
 } from '@ionic/angular/standalone';
 

@@ -14,7 +14,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
 import { AppConfigService } from '../../services/app-config.service';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 type ViewMode = 'list' | 'table';
 
@@ -62,10 +61,14 @@ export class FeedsPage implements OnInit, OnDestroy {
   }
 
   getHealthColorForFeed(repository: Repository): BubbleColor {
-    if (repository.hasDisabledSources) {
+    if (repository.sourcesCount === repository.sourcesCountWithProblems) {
       return 'red';
     } else {
-      return 'green';
+      if (repository.sourcesCountWithProblems > 0) {
+        return 'orange';
+      } else {
+        return 'green';
+      }
     }
   }
 

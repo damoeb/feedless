@@ -6,18 +6,18 @@ import { RouterLink } from '@angular/router';
 import { DarkModeButtonModule } from '../../../components/dark-mode-button/dark-mode-button.module';
 import { MapModule } from '../../../components/map/map.module';
 import {
-  IonHeader,
-  IonToolbar,
   IonButton,
+  IonButtons,
+  IonHeader,
   IonIcon,
-  IonSearchbar,
+  IonInput,
+  IonItem,
+  IonList,
+  IonNote,
   IonSelect,
   IonSelectOption,
-  IonButtons,
-  IonList,
-  IonItem,
   IonTitle,
-  IonNote,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -31,7 +31,6 @@ import {
     IonToolbar,
     IonButton,
     IonIcon,
-    IonSearchbar,
     IonSelect,
     IonSelectOption,
     IonButtons,
@@ -39,6 +38,7 @@ import {
     IonItem,
     IonTitle,
     IonNote,
+    IonInput,
   ],
   declarations: [UpcomingHeaderComponent],
   exports: [UpcomingHeaderComponent],

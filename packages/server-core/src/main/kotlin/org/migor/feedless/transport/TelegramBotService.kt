@@ -1,8 +1,10 @@
 package org.migor.feedless.transport
 
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -32,6 +34,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import reactor.core.publisher.Flux
 import java.net.URI
 import java.time.Duration
+import java.util.*
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -246,6 +249,13 @@ class TelegramBotService(
       a
     } else {
       null
+    }
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findByUserIdAndAuthorizedIsTrue(ownerId: UUID): TelegramConnectionEntity? {
+    return withContext(Dispatchers.IO) {
+      telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(ownerId)
     }
   }
 

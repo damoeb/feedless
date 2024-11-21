@@ -26,10 +26,6 @@ import { GqlVertical } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { addIcons } from 'ionicons';
 import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
-import {
-  IonRouterLink,
-  IonRouterLinkWithHref,
-} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-profile-page',
@@ -243,6 +239,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         repositories.push(
           await this.repositoryService.getRepositoryById(
             repositoriesOnPage[index].id,
+            null,
           ),
         );
       }

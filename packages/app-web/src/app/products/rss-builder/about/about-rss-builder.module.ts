@@ -8,8 +8,8 @@ import { ImportOpmlModalModule } from '../../../modals/import-opml-modal/import-
 import { ProductHeaderModule } from '../../../components/product-header/product-header.module';
 import { ImportButtonModule } from '../../../components/import-button/import-button.module';
 import {
-  IonContent,
   IonButton,
+  IonContent,
   IonIcon,
   IonItem,
 } from '@ionic/angular/standalone';

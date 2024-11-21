@@ -8,36 +8,43 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
-  <p>Verpasse keine Veranstaltung mehr in deiner Umgebung!</p>
-  <ion-list>
-    <ion-item>
-      <ion-searchbar
-        [formControl]="formGroup.controls.name"
-        placeholder="Dein Name"
-        search-icon="body-outline"
-        style="--border-radius: 8px"
-      >
-      </ion-searchbar>
-    </ion-item>
-    <ion-item>
-      <ion-searchbar
-        [formControl]="formGroup.controls.email"
-        placeholder="Deine Email"
-        search-icon="mail-outline"
-        style="--border-radius: 8px"
-      >
-      </ion-searchbar>
-    </ion-item>
-  </ion-list>
-  <ion-list>
-    <ion-radio-group [formControl]="formGroup.controls.frequency">
-      <ion-item>
-        <ion-label>
-          Wie oft sollen wir dir eine Event-Übersicht schicken?
+<ion-content>
+  <p class="ion-padding">
+    Verpasse keine Veranstaltung mehr in deiner Umgebung
+    <strong>{{ location.displayName }}</strong
+    >! 100% kostenlos und sicher!
+  </p>
+  <ion-item style="--background: transparent">
+    <ion-input
+      [formControl]="formGroup.controls.name"
+      label="Dein Name"
+      labelPlacement="start"
+      errorText="Wie sollen wir dich ansprechen?"
+      placeholder="Hans Muster"
+    >
+    </ion-input>
+  </ion-item>
+  <ion-item style="--background: transparent">
+    <ion-input
+      [formControl]="formGroup.controls.email"
+      label="Deine Email"
+      labelPlacement="start"
+      errorText="Wohin sollen wir die Email senden?"
+      placeholder="mail@example.com"
+    >
+    </ion-input>
+  </ion-item>
+  <div>
+    <ion-radio-group
+      [formControl]="formGroup.controls.frequency"
+      class="ion-margin-top"
+    >
+      <ion-item style="--background: transparent; margin-top: 30px">
+        <ion-label color="medium">
+          Wie oft willst du eine Event-Übersicht erhalten?
         </ion-label>
       </ion-item>
-      <ion-item>
+      <ion-item style="--background: transparent">
         <ion-label>
           <ion-radio
             labelPlacement="end"
@@ -57,11 +64,33 @@
         </ion-label>
       </ion-item>
     </ion-radio-group>
-  </ion-list>
+  </div>
 </ion-content>
 <ion-footer>
-  <ion-item [button]="true" (click)="createMailSubscription()" color="primary">
-    Jetzt Gratis Abonnieren
-    <ion-icon name="send-outline" slot="end"></ion-icon>
-  </ion-item>
+  <ion-list>
+    <ion-item>
+      <ion-checkbox
+        labelPlacement="end"
+        [formControl]="formGroup.controls.acceptedTerms"
+      >
+        <ion-label class="ion-text-wrap">
+          Ich stimme den
+          <a href="" (click)="$event.stopPropagation()"
+            >Datenschutzrichtlinien und den AGBs</a
+          >
+          zu
+        </ion-label>
+      </ion-checkbox>
+    </ion-item>
+    <ion-button
+      color="primary"
+      class="ion-margin"
+      expand="block"
+      (click)="createMailSubscription()"
+      shape="round"
+    >
+      Jetzt Abonnieren
+      <ion-icon name="send-outline" slot="end"></ion-icon>
+    </ion-button>
+  </ion-list>
 </ion-footer>

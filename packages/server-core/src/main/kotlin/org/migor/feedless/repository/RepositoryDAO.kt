@@ -44,12 +44,12 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   fun countAllByVisibility(visibility: EntityVisibility): Int
   fun findByTitleAndOwnerId(title: String, ownerId: UUID): RepositoryEntity?
 
-  @Query(
-    """SELECT DISTINCT s FROM RepositoryEntity s
-    LEFT JOIN FETCH s.sources
-    WHERE s.id = :id"""
-  )
-  fun findByIdWithSources(@Param("id") id: UUID): RepositoryEntity?
+//  @Query(
+//    """SELECT DISTINCT s FROM RepositoryEntity s
+//    LEFT JOIN FETCH s.sources
+//    WHERE s.id = :id"""
+//  )
+//  fun findByIdWithSources(@Param("id") id: UUID): RepositoryEntity?
 
   fun findAllByVisibilityAndLastPullSyncBefore(
     public: EntityVisibility,

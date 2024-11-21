@@ -12,15 +12,15 @@ import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { FeedDetailsModule } from '../../components/feed-details/feed-details.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonText,
+  IonBreadcrumb,
+  IonBreadcrumbs,
   IonButton,
   IonContent,
-  IonBreadcrumbs,
-  IonBreadcrumb,
-  IonSpinner,
+  IonHeader,
   IonItem,
+  IonSpinner,
+  IonText,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

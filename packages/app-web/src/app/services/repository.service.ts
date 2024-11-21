@@ -21,11 +21,15 @@ import {
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
   GqlSourceInput,
+  GqlSourcesByRepositoryQuery,
+  GqlSourcesByRepositoryQueryVariables,
+  GqlSourcesInput,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
   ListPublicRepositories,
   ListRepositories,
   RepositoryById,
+  SourcesByRepository,
   UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
@@ -113,7 +117,10 @@ export class RepositoryService {
     document.body.removeChild(a);
   }
 
-  updateRepository(data: GqlRepositoryUpdateInput): Promise<RepositoryFull> {
+  updateRepository(
+    data: GqlRepositoryUpdateInput,
+    sources: GqlSourcesInput = null,
+  ): Promise<RepositoryFull> {
     return this.apollo
       .mutate<
         GqlUpdateRepositoryMutation,
@@ -122,6 +129,7 @@ export class RepositoryService {
         mutation: UpdateRepository,
         variables: {
           data,
+          sources,
         },
       })
       .then((response) => response.data!.updateRepository);
@@ -190,6 +198,7 @@ export class RepositoryService {
 
   async getRepositoryById(
     id: string,
+    sources: GqlSourcesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<RepositoryFull> {
     return this.apollo
@@ -202,9 +211,33 @@ export class RepositoryService {
               id,
             },
           },
+          sources,
         },
       })
       .then((response) => response.data.repository);
+  }
+
+  async getSourcesByRepository(
+    id: string,
+    sources: GqlSourcesInput,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<ArrayElement<RepositoryFull['sources']>[]> {
+    return this.apollo
+      .query<GqlSourcesByRepositoryQuery, GqlSourcesByRepositoryQueryVariables>(
+        {
+          query: SourcesByRepository,
+          fetchPolicy,
+          variables: {
+            repository: {
+              where: {
+                id,
+              },
+            },
+            sources,
+          },
+        },
+      )
+      .then((response) => response.data.repository.sources);
   }
 
   public toRepositoryInput(

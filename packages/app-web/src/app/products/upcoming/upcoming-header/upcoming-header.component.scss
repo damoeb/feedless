@@ -92,9 +92,12 @@
 }
 
 .suggestion {
-  margin-left: 200px;
-  @media screen and (max-width: 575px) {
-    margin-left: 140px;
+  margin-left: 170px;
+  @media screen and (min-width: 401px) and (max-width: 575px) {
+    margin-left: 100px;
+  }
+  @media screen and (max-width: 400px) {
+    margin-left: 80px;
   }
 
   color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));

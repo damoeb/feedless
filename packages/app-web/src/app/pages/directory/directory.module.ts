@@ -13,16 +13,16 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
 import {
-  IonHeader,
-  IonProgressBar,
-  IonContent,
-  IonRow,
-  IonItem,
-  IonList,
-  IonLabel,
-  IonChip,
   IonButton,
+  IonChip,
+  IonContent,
+  IonHeader,
   IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonProgressBar,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 @NgModule({

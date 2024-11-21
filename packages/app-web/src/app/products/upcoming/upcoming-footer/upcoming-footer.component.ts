@@ -1,18 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { NamedLatLon } from '../../../types';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { createEmailFormControl } from '../../../form-controls';
-import {
-  GqlFeedlessPlugins,
-  GqlIntervalUnit,
-} from '../../../../generated/graphql';
-import dayjs from 'dayjs';
-import { ReportService } from '../../../services/report.service';
 import { AlertController, ModalController } from '@ionic/angular/standalone';
 import { AppConfigService } from '../../../services/app-config.service';
 import { addIcons } from 'ionicons';
-import { sendOutline } from 'ionicons/icons';
-import { FinalizeProfileModalComponent } from '../../../modals/finalize-profile-modal/finalize-profile-modal.component';
+import { heart, sendOutline } from 'ionicons/icons';
 import {
   SubmitModalComponent,
   SubmitModalComponentProps,
@@ -29,18 +20,20 @@ export class UpcomingFooterComponent {
 
   constructor(
     private readonly modalCtrl: ModalController,
+    private readonly alertCtrl: AlertController,
     private readonly appConfigService: AppConfigService,
   ) {
-    addIcons({ sendOutline });
+    addIcons({ sendOutline, heart });
   }
 
   private getRepositoryId(): string {
     return this.appConfigService.customProperties.eventRepositoryId as any;
   }
 
-  async createMailSubscription(name: string = '', email: string = '') {
+  async createMailSubscription() {
     const componentProps: SubmitModalComponentProps = {
       repositoryId: this.getRepositoryId(),
+      location: this.location,
     };
     const modal = await this.modalCtrl.create({
       component: SubmitModalComponent,
@@ -50,5 +43,48 @@ export class UpcomingFooterComponent {
     });
     await modal.present();
     await modal.onDidDismiss();
+  }
+
+  async showAttribution() {
+    const alert = await this.alertCtrl.create({
+      header: 'Impressum',
+      backdropDismiss: false,
+      message:
+        'Dies ist ein privates Hobbyprojekt um den vielen kleinen Veranstaltungen mehr Sichtbarkeit zu geben und den Usern eine' +
+        'vereinfachte Möglichkeiten zu geben, diese nicht mehr zu verpassen.',
+      inputs: [
+        {
+          label: 'Betreiber',
+          attributes: {
+            readonly: true,
+          },
+          type: 'text',
+          value: this.appConfigService.customProperties.operatorName,
+        },
+        {
+          label: 'Adresse',
+          attributes: {
+            readonly: true,
+          },
+          type: 'text',
+          value: this.appConfigService.customProperties.operatorAddress,
+        },
+        {
+          label: 'Email',
+          attributes: {
+            readonly: true,
+          },
+          type: 'text',
+          value: this.appConfigService.customProperties.operatorEmail,
+        },
+      ],
+      buttons: [
+        {
+          role: 'cancel',
+          text: 'Schliessen',
+        },
+      ],
+    });
+    await alert.present();
   }
 }

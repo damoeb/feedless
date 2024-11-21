@@ -35,18 +35,19 @@ class MailAuthResolver(
 
   private val log = LoggerFactory.getLogger(MailAuthResolver::class.simpleName)
 
-  @DgsSubscription
-  suspend fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> = coroutineScope {
-    val corrId = CryptUtil.newCorrId()
-    log.debug("[$corrId] authViaMail ${data.product}")
-    authService.decodeToken(data.token)
-    mailAuthenticationService.authenticateUsingMail(data)
-  }
+  @DgsSubscription(field = DgsConstants.SUBSCRIPTION.AuthViaMail)
+  suspend fun authViaMail(@InputArgument(DgsConstants.SUBSCRIPTION.AUTHVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): Publisher<AuthenticationEvent> =
+    coroutineScope {
+      val corrId = CryptUtil.newCorrId()
+      log.debug("[$corrId] authViaMail ${data.product}")
+      authService.decodeToken(data.token)
+      mailAuthenticationService.authenticateUsingMail(data)
+    }
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.AuthConfirmCode)
   suspend fun authConfirmCode(
-    @InputArgument data: ConfirmAuthCodeInput,
+    @InputArgument(DgsConstants.MUTATION.AUTHCONFIRMCODE_INPUT_ARGUMENT.Data) data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
   ): Boolean = coroutineScope {
     log.debug("authConfirmCode")

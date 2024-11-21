@@ -6,12 +6,12 @@ import { ConnectAppPageRoutingModule } from './connect-app-routing.module';
 import { ConnectAppPage } from './connect-app.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonContent,
-  IonSpinner,
+  IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
-  IonButtons,
-  IonButton,
+  IonContent,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
 @NgModule({

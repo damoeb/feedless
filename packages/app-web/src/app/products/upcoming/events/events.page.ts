@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -22,14 +21,14 @@ import {
 import { getCachedLocations } from '../places';
 import { LatLon } from '../../../components/map/map.component';
 import { PageService, PageTags } from '../../../services/page.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import {
   homeRoute,
   parseDateFromUrl,
   parseLocationFromUrl,
 } from '../upcoming-product-routing.module';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
@@ -116,7 +115,6 @@ export class EventsPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly recordService: RecordService,
-    private readonly geoService: GeoService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly locationService: Location,
     private readonly pageService: PageService,
@@ -148,20 +146,12 @@ export class EventsPage implements OnInit, OnDestroy {
 
           await this.fetchEvents();
         } catch (e) {
-          const currentLocation = await firstValueFrom(
-            this.geoService.getCurrentLatLon(),
-          );
+          // todo save and retrieve last place window.localStorage.getItem('lastPlace')
+          // const currentLocation = await firstValueFrom(
+          //   this.geoService.getCurrentLatLon(),
+          // );
 
           this.headerComponent.fetchSuggestions('');
-
-          // console.log(currentLocation);
-          // this.location = {
-          //   lat: currentLocation.lat,
-          //   place: '',
-          //   lon: currentLocation.lon,
-          //   countryCode: currentLocation.countryCode,
-          //   area: currentLocation.area
-          // }
         } finally {
           this.loading = false;
         }
@@ -328,8 +318,6 @@ export class EventsPage implements OnInit, OnDestroy {
         return groupedPlaces;
       }, [] as PlaceByDistance[]);
 
-      console.log('this.placesByDistance', this.placesByDistance);
-
       this.pageService.setJsonLdData(this.createWebsiteSchema());
     } catch (e) {
       console.error(e);
@@ -359,8 +347,8 @@ export class EventsPage implements OnInit, OnDestroy {
       name: tags.title,
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
-      url: 'https://example.com/upcoming-events',
-      breadcrumb: createBreadcrumbsSchema(this.location),
+      url: location.href,
+      // breadcrumb: createBreadcrumbsSchema(this.location),
       mainEntity: {
         '@type': 'ItemList',
         itemListElement: this.placesByDistance

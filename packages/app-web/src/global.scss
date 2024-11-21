@@ -253,9 +253,19 @@ a {
     --width: 400px;
     --height: 400px;
   }
-  &.medium-modal {
-    --width: 500px;
-    --height: 500px;
+
+  @media only screen and (max-width: 700px) {
+    &.medium-modal {
+      --width: 100vw;
+      --height: 100vh;
+    }
+  }
+
+  @media screen and (min-width: 701px) {
+    &.medium-modal {
+      --width: 600px;
+      --height: 600px;
+    }
   }
 
   //& > * {
@@ -299,4 +309,8 @@ ion-accordion.accordion-expanded {
   hyphens: auto;
   //color: rgba(var(--app-foreground-rgb), 0.7);
   //text-align: justify;
+}
+
+.nowrap {
+  white-space: nowrap;
 }

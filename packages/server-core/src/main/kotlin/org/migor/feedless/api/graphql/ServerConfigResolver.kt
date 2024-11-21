@@ -12,6 +12,7 @@ import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.BuildInfo
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
@@ -50,14 +51,14 @@ class ServerConfigResolver {
   private lateinit var licenseService: LicenseService
 
   @Tracked
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.ServerSettings)
   @Cacheable(
     value = [CacheNames.SERVER_SETTINGS],
     keyGenerator = "cacheKeyGenerator"
   ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
   suspend fun serverSettings(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: ServerSettingsContextInput,
+    @InputArgument(DgsConstants.QUERY.SERVERSETTINGS_INPUT_ARGUMENT.Data) data: ServerSettingsContextInput,
   ): ServerSettings = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("serverSettings $data")
     val product = data.product.fromDto()

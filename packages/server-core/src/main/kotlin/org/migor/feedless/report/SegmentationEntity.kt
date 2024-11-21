@@ -28,7 +28,6 @@ import java.util.*
 open class SegmentationEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = "report_max_size")
-  @Min(1)
   open var size: Int = 0
 
   @Column(nullable = false, name = "time_segment__starting_at")
@@ -68,11 +67,10 @@ open class SegmentationEntity : EntityWithUUID() {
   open var repository: RepositoryEntity? = null
 }
 
-private fun ChronoUnit.toDto(): IntervalUnit {
-  return when (this) {
-    ChronoUnit.WEEKS -> IntervalUnit.WEEK
-    ChronoUnit.MONTHS -> IntervalUnit.MONTH
-    ChronoUnit.DAYS -> IntervalUnit.DAY
-    else -> throw IllegalArgumentException("Unsupported chronoUnit: $this")
-  }
-}
+//private fun ChronoUnit.toDto(): IntervalUnit {
+//  return when (this) {
+//    ChronoUnit.WEEKS -> IntervalUnit.WEEK
+//    ChronoUnit.MONTHS -> IntervalUnit.MONTH
+//    else -> throw IllegalArgumentException("Unsupported chronoUnit: $this")
+//  }
+//}

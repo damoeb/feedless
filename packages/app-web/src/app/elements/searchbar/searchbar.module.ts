@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { SearchbarComponent } from './searchbar.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  IonInput,
   IonButton,
   IonIcon,
+  IonInput,
   IonSpinner,
 } from '@ionic/angular/standalone';
 

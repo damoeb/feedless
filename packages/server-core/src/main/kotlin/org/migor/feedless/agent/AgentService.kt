@@ -27,6 +27,7 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -54,13 +55,13 @@ class AgentService(
   private val userSecretService: UserSecretService,
   private val tokenProvider: TokenProvider,
   private val agentDAO: AgentDAO,
-  private val meterRegistry: MeterRegistry
+  private val meterRegistry: MeterRegistry,
+  private val context: ApplicationContext
 ) {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
 
-  @Transactional
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       CoroutineScope(RequestContext()).launch {
@@ -86,7 +87,7 @@ class AgentService(
 
               emitter.onDispose {
                 CoroutineScope(Dispatchers.Default).launch {
-                  removeAgent(agentRef)
+                  context.getBean(AgentService::class.java).removeAgent(agentRef)
                 }
               }
               emitter.next(
@@ -98,7 +99,7 @@ class AgentService(
                   )
                 )
               )
-              addAgent(agentRef)
+              context.getBean(AgentService::class.java).addAgent(agentRef)
             }
           }
           ?: run {
@@ -177,7 +178,8 @@ class AgentService(
       .next()
   }
 
-  private suspend fun addAgent(agentRef: AgentRef) {
+  @Transactional
+  suspend fun addAgent(agentRef: AgentRef) {
     val corrId = coroutineContext.corrId()
     agentRefs.add(agentRef)
 
@@ -202,7 +204,8 @@ class AgentService(
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
-  private suspend fun removeAgent(agentRef: AgentRef) {
+  @Transactional
+  suspend fun removeAgent(agentRef: AgentRef) {
     val corrId = coroutineContext.corrId()
     agentRefs.remove(agentRef)
     log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")

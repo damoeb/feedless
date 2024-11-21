@@ -27,7 +27,6 @@ import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 import { omit } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;

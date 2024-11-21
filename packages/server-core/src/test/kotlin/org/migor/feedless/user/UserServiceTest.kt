@@ -11,6 +11,7 @@ import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.transport.TelegramBotService
 import org.mockito.InjectMocks
@@ -58,13 +59,13 @@ class UserServiceTest {
     `when`(user.id).thenReturn(userId)
 //    `when`(user.githubId).thenReturn(githubId)
     `when`(user.email).thenReturn("$githubId@github.com ")
-    `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(user))
+    `when`(userDAO.findById(any2())).thenReturn(Optional.of(user))
   }
 
   @Test
   fun `updateLegacyUser updates email address`() = runTest {
     // given
-    `when`(githubConnectionDAO.existsByUserId(any(UUID::class.java))).thenReturn(true)
+    `when`(githubConnectionDAO.existsByUserId(any2())).thenReturn(true)
 
     // when
     userService.updateLegacyUser(user, githubId)
@@ -100,7 +101,7 @@ class UserServiceTest {
     userService.updateUser(UUID.randomUUID(), data)
 
     verify(user).hasAcceptedTerms = true
-    verify(user).acceptedTermsAt = any(LocalDateTime::class.java)
+    verify(user).acceptedTermsAt = any2()
     verifyNoMoreInteractions(user)
     verify(userDAO).save(eq(user))
   }
@@ -137,7 +138,7 @@ class UserServiceTest {
     )
     userService.updateUser(UUID.randomUUID(), data)
 
-    verify(user).purgeScheduledFor = any(LocalDateTime::class.java)
+    verify(user).purgeScheduledFor = any2()
     verifyNoMoreInteractions(user)
     verify(userDAO).save(eq(user))
   }
@@ -170,7 +171,7 @@ class UserServiceTest {
     userService.updateLegacyUser(user, githubId)
 
     verify(githubConnectionDAO, times(1)).save(argThat { it.githubId == githubId })
-    verify(user, times(0)).email = any(String::class.java)
+    verify(user, times(0)).email = any2()
 
     verify(userDAO).save(eq(user))
   }
@@ -181,7 +182,7 @@ class UserServiceTest {
     val connectedApp = mock(ConnectedAppEntity::class.java)
     val connectedAppId = UUID.randomUUID()
     `when`(connectedApp.userId).thenReturn(UUID.randomUUID())
-    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
+    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any2(), eq(true))).thenReturn(connectedApp)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest {
@@ -205,13 +206,15 @@ class UserServiceTest {
   fun `deleting a telegram connection will work`() = runTest {
     val connectedApp = mock(TelegramConnectionEntity::class.java)
     val connectedAppId = UUID.randomUUID()
+    val telegramChatId: Long = 1234
     `when`(connectedApp.userId).thenReturn(userId)
-    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
+    `when`(connectedApp.chatId).thenReturn(telegramChatId)
+    `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any2(), eq(true))).thenReturn(connectedApp)
 
     userService.deleteConnectedApp(userId, connectedAppId)
 
     verify(connectedAppDAO).delete(eq(connectedApp))
-    verify(telegramBotService).sendMessage(any(Long::class.java), any(String::class.java))
+    verify(telegramBotService).sendMessage(eq(telegramChatId), any2())
   }
 
   @Test

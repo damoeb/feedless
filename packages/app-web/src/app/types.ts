@@ -42,6 +42,9 @@ export type VerticalAppConfig = {
   indexHtmlAddition?: string;
   product: GqlVertical;
   offlineSupport?: boolean;
+  operatorName?: string;
+  operatorEmail?: string;
+  operatorAddress?: string;
   [key: string | GqlVertical]: any | GqlVertical;
 };
 

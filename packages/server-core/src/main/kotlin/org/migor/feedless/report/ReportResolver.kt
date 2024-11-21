@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -34,18 +35,18 @@ class ReportResolver(
   @DgsMutation(field = DgsConstants.MUTATION.CreateReport)
   suspend fun createReport(
     dfe: DataFetchingEnvironment,
-    @InputArgument repositoryId: String,
-    @InputArgument segmentation: SegmentInput
+    @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.RepositoryId) repositoryId: String,
+    @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.Segmentation) segmentation: SegmentInput
   ): Report = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createReport")
-    reportService.createReport(repositoryId, segmentation, sessionService.userId()).toDto()
+    reportService.createReport(UUID.fromString(repositoryId), segmentation, sessionService.userId()).toDto()
   }
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteReport)
   suspend fun deleteReport(
     dfe: DataFetchingEnvironment,
-    @InputArgument reportId: String,
+    @InputArgument(DgsConstants.MUTATION.DELETEREPORT_INPUT_ARGUMENT.ReportId) reportId: String,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("deleteReport $reportId")
     reportService.deleteReport(reportId, sessionService.user())

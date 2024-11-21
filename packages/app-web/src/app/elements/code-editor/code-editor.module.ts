@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { CodeEditorComponent } from './code-editor.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  IonToolbar,
-  IonButtons,
   IonButton,
+  IonButtons,
   IonIcon,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

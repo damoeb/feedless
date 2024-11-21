@@ -96,7 +96,7 @@ class SessionResolver {
   @DgsMutation(field = DgsConstants.MUTATION.AuthUser)
   suspend fun authUser(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: AuthUserInput,
+    @InputArgument(DgsConstants.MUTATION.AUTHUSER_INPUT_ARGUMENT.Data) data: AuthUserInput,
   ): Authentication = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("authUser")
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {

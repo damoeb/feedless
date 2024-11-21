@@ -4,18 +4,18 @@ import { FinalizeProfileModalComponent } from './finalize-profile-modal.componen
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import {
-  IonContent,
-  IonList,
-  IonRow,
-  IonCol,
-  IonLabel,
-  IonInput,
-  IonNote,
-  IonCheckbox,
-  IonToolbar,
-  IonButtons,
   IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonCol,
+  IonContent,
+  IonInput,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonRow,
   IonSpinner,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

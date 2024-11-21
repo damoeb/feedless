@@ -24,6 +24,7 @@ import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -157,7 +158,13 @@ fun Selectors.fromDto(): GenericFeedSelectors = GenericFeedSelectors(
 fun SourceInput.fromDto(): SourceEntity {
   val source = SourceEntity()
   source.title = title
-  source.actions = flow.sequence.mapNotNull {
+  source.latLon = latLng?.let { JtsUtil.createPoint(it.lat, it.lon) }
+  source.actions = flow.fromDto()
+  return source
+}
+
+fun ScrapeFlowInput.fromDto(): MutableList<ScrapeActionEntity> {
+  return sequence.mapNotNull {
     it.fetch?.let { toFetchAction(it) } ?: it.waitFor?.let { toWaitAction(it) } ?: it.header?.let { toHeaderAction(it) }
     ?: it.purge?.let { toDomAction(DomEventType.purge, it.value) } ?: it.type?.let {
       toDomAction(
@@ -172,7 +179,6 @@ fun SourceInput.fromDto(): SourceEntity {
       null
     }
   }.toMutableList()
-  return source
 }
 
 fun toClickAction(it: DOMElementInput): ScrapeActionEntity? {

@@ -26,7 +26,7 @@ import {
   showTooltip,
   Tooltip,
 } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, historyKeymap } from '@codemirror/commands';
 import {
   bracketMatching,
   foldGutter,
@@ -65,9 +65,7 @@ import { json } from '@codemirror/lang-json';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { addIcons } from 'ionicons';
-import { listOutline, linkOutline } from 'ionicons/icons';
-import { markdown } from '@codemirror/lang-markdown';
-import { javascript } from '@codemirror/lang-javascript';
+import { linkOutline, listOutline } from 'ionicons/icons';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];

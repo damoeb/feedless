@@ -4,10 +4,10 @@ import { FeedlessMenuComponent } from './feedless-menu.component';
 import { RouterModule } from '@angular/router';
 import { BubbleModule } from '../../../components/bubble/bubble.module';
 import {
+  IonChip,
+  IonItem,
   IonList,
   IonMenuToggle,
-  IonItem,
-  IonChip,
 } from '@ionic/angular/standalone';
 
 @NgModule({

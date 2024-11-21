@@ -1,5 +1,11 @@
 package org.migor.feedless.source
 
+import com.linecorp.kotlinjdsl.dsl.jpql.jpql
+import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
+import jakarta.persistence.EntityManager
+import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -13,17 +19,29 @@ import org.migor.feedless.actions.ExtractBoundingBoxActionEntity
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
+import org.migor.feedless.actions.ScrapeActionDAO
+import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.SourceOrderByInput
+import org.migor.feedless.generated.types.SourceUpdateInput
+import org.migor.feedless.generated.types.SourcesWhereInput
 import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
+import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
+import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -37,8 +55,11 @@ import kotlin.coroutines.coroutineContext
 class SourceService(
   private val sourcePipelineJobDAO: SourcePipelineJobDAO,
   private val sourceDAO: SourceDAO,
-  private val repositoryHarvester: RepositoryHarvester,
-  private val documentDAO: DocumentDAO
+  @Lazy private val repositoryHarvester: RepositoryHarvester,
+  private val documentDAO: DocumentDAO,
+  private val entityManager: EntityManager,
+  private val planConstraintsService: PlanConstraintsService,
+  private val scrapeActionDAO: ScrapeActionDAO
 ) {
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)
@@ -106,16 +127,10 @@ class SourceService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByRepositoryId(repositoryId: UUID): List<SourceEntity> {
+  suspend fun countProblematicSourcesByRepositoryId(repositoryId: UUID): Int {
     return withContext(Dispatchers.IO) {
-      sourceDAO.findAllByRepositoryId(repositoryId)
-    }
-  }
-
-  @Transactional(readOnly = true)
-  suspend fun existsByRepositoryIdAndDisabledTrue(repositoryId: UUID): Boolean {
-    return withContext(Dispatchers.IO) {
-      sourceDAO.existsByRepositoryIdAndDisabledTrue(repositoryId)
+//      sourceDAO.countByRepositoryIdAndDisabledTrue(repositoryId)
+      sourceDAO.countByRepositoryIdAndLastRecordsRetrieved(repositoryId, 0)
     }
   }
 
@@ -132,6 +147,165 @@ class SourceService(
       sourceDAO.setErrorState(sourceId, erroneous, message)
     }
   }
+
+  @Transactional
+  suspend fun save(source: SourceEntity): SourceEntity {
+    return withContext(Dispatchers.IO) {
+      sourceDAO.save(source)
+    }
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun countAllByRepositoryId(id: UUID): Long {
+    return withContext(Dispatchers.IO) {
+      sourceDAO.countByRepositoryId(id)
+    }
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findAllByRepositoryIdFiltered(
+    repositoryId: UUID,
+    pageable: Pageable,
+    where: SourcesWhereInput? = null,
+    orderBy: SourceOrderByInput? = null
+  ): List<SourceEntity> {
+    val whereStatements = mutableListOf<Predicatable>()
+    val query = jpql {
+      where?.let {
+        it.id?.let {
+          it.eq?.let {
+            whereStatements.add(path(SourceEntity::id).eq(UUID.fromString(it)))
+          }
+          it.`in`?.let {
+            whereStatements.add(path(SourceEntity::id).`in`(it.map { UUID.fromString(it) }))
+          }
+        }
+      }
+
+      select(path(SourceEntity::id))
+        .from(entity(SourceEntity::class))
+        .whereAnd(
+          path(SourceEntity::repositoryId).eq(repositoryId),
+//            path(DocumentEntity::status).`in`(status),
+//            path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
+          *whereStatements.toTypedArray()
+        )
+        .orderBy(
+          orderBy?.lastRecordsRetrieved?.let {
+            path(SourceEntity::lastRecordsRetrieved).desc()
+          }
+        )
+    }
+
+    val context = JpqlRenderContext()
+
+    return withContext(Dispatchers.IO) {
+      val q = entityManager.createQuery(query, context)
+      q.setMaxResults(pageable.pageSize)
+      q.setFirstResult(pageable.pageSize * pageable.pageNumber)
+      sourceDAO.findAllWithActionsByIdIn(q.resultList).sortedBy { it.lastRecordsRetrieved }
+    }
+  }
+
+  @Transactional
+  suspend fun createSources(ownerId: UUID, sourceInputs: List<SourceInput>, repository: RepositoryEntity) {
+    log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
+
+    // todo assert is owner
+
+    withContext(Dispatchers.IO) {
+      sourceInputs.map { it.fromDto() }
+        .map { source: SourceEntity ->
+          planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
+//        planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
+
+          if (source.actions.isEmpty()) {
+            throw IllegalArgumentException("flow must not be empty")
+          }
+          val validator = Validation.buildDefaultValidatorFactory().validator
+          val invalidActions = source.actions.filter { validator.validate(it).isNotEmpty() }
+          if (invalidActions.isNotEmpty()) {
+            throw IllegalArgumentException("invalid actions $invalidActions")
+          }
+
+          source.repositoryId = repository.id
+
+          if (validator.validate(source).isNotEmpty()) {
+            throw IllegalArgumentException("invalid source")
+          }
+
+          val actions = source.actions.mapIndexed { index, scrapeAction ->
+            scrapeAction.sourceId = source.id
+            scrapeAction.pos = index
+            scrapeAction
+          }
+
+          source.actions = mutableListOf()
+          sourceDAO.save(source)
+          scrapeActionDAO.saveAll(actions)
+        }
+    }
+
+  }
+
+  @Transactional
+  suspend fun updateSources(repository: RepositoryEntity, updateInputs: List<SourceUpdateInput>) {
+    log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
+
+    withContext(Dispatchers.IO) {
+    val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repository.id, updateInputs.map { UUID.fromString(it.where.id) })
+
+    if (sources.size != updateInputs.size) {
+      throw IllegalArgumentException("no permissions")
+    }
+
+      updateInputs.map { sourceUpdate ->
+        val source = sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }!!
+        sourceUpdate.data.tags?.let {
+          source.tags = sourceUpdate.data.tags.set.toTypedArray()
+        }
+        sourceUpdate.data.latLng?.let { point ->
+          point.set?.let {
+            source.latLon = JtsUtil.createPoint(it.lat, it.lon)
+          } ?: run { source.latLon = null }
+        }
+        sourceUpdate.data.disabled?.let { disabled ->
+          source.disabled = disabled.set
+          source.errorsInSuccession = 0
+        }
+
+        sourceUpdate.data.flow?.let { flow ->
+          // remove old actions
+          val oldActions = scrapeActionDAO.findAllBySourceId(source.id)
+          scrapeActionDAO.deleteAll(oldActions)
+
+          flow.set?.let {
+            // append new actions
+            val actions = flow.set.fromDto().mapIndexed { index, scrapeAction ->
+              scrapeAction.sourceId = source.id
+              scrapeAction.pos = index
+              scrapeAction
+            }
+            scrapeActionDAO.saveAll(actions)
+          }
+        }
+
+        source.actions = mutableListOf()
+        sourceDAO.save(source)
+
+      }
+    }
+  }
+
+  @Transactional
+  suspend fun deleteAllById(repositoryId: UUID, sourceIds: List<UUID>) {
+    log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
+    withContext(Dispatchers.IO) {
+      val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
+      sourceDAO.deleteAllById(sources.map { it.id })
+    }
+  }
+
 }
 
 

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
@@ -29,7 +30,7 @@ class CitationScorerTest {
       val parent = mock(CommentEntity::class.java)
       Mockito.`when`(parent.text)
         .thenReturn("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
-      Mockito.`when`(commentGraphService.getParent(any(CommentEntity::class.java))).thenReturn(parent)
+      Mockito.`when`(commentGraphService.getParent(any2())).thenReturn(parent)
     }
   }
 

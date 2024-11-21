@@ -3,6 +3,8 @@ package org.migor.feedless.source
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
@@ -56,6 +58,9 @@ open class SourceEntity : EntityWithUUID() {
   @Column(nullable = false, name = "is_disabled")
   open var disabled: Boolean = false
 
+  @Column(nullable = false, name = "last_records_retrieved")
+  open var lastRecordsRetrieved: Int = 0
+
   @Column(nullable = false, name = "errors_in_succession")
   open var errorsInSuccession: Int = 0
 
@@ -101,6 +106,7 @@ fun SourceEntity.toDto(): Source {
     },
     title = title,
     recordCount = 0,
+    lastRecordsRetrieved = lastRecordsRetrieved,
     flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

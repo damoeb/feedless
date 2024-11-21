@@ -1,9 +1,8 @@
-<ion-footer>
+<ion-footer [translucent]="true" collapse="fade" class="ion-no-border">
   <div class="events">
-    <div appDev style="align-self: center">
+    <div appDev style="align-self: center" *ngIf="location">
       <ion-button
         color="primary"
-        size="large"
         shape="round"
         (click)="createMailSubscription()"
       >
@@ -11,11 +10,16 @@
         <ion-icon name="send-outline" slot="end"></ion-icon>
       </ion-button>
     </div>
-    <ul style="list-style: none">
-      <li><a>Events melden</a></li>
-      <li><a>Unterstütze uns</a></li>
-      <li><a routerLink="/events/in/CH">Sitemap</a></li>
-      <li><a href="">Impressum</a></li>
-    </ul>
+    <div style="padding-top: 5px; opacity: 0.5; text-align: center">
+      <ion-button fill="empty">
+        <ion-icon name="heart" style="color: red"></ion-icon> aus dem Aargau
+      </ion-button>
+      <ion-button fill="empty" href="mailto:markus@lokale.events">
+        Kontakt
+      </ion-button>
+      <ion-button (click)="showAttribution()" fill="empty">
+        Impressum
+      </ion-button>
+    </div>
   </div>
 </ion-footer>

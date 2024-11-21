@@ -7,23 +7,23 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { InteractiveWebsiteModule } from '../../components/interactive-website/interactive-website.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
+  IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  IonCol,
   IonContent,
   IonGrid,
-  IonRow,
-  IonCol,
-  IonAccordionGroup,
-  IonAccordion,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
+  IonRadio,
+  IonRadioGroup,
+  IonReorder,
   IonReorderGroup,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonButton,
-  IonIcon,
-  IonReorder,
-  IonRadioGroup,
-  IonRadio,
 } from '@ionic/angular/standalone';
 
 @NgModule({

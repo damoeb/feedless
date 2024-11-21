@@ -65,7 +65,7 @@
 //  @BeforeEach
 //  fun setUp() {
 //    `when`(repositoryDAO.findPage(
-//      any(Pageable::class.java),
+//      any2(),
 //      Mockito.argThat { lambda: (Jpql) -> JpqlQueryable<SelectQuery<RepositoryEntity>> ->
 //        true
 //      }
@@ -81,7 +81,7 @@
 ////
 ////      Mockito.`when`(
 ////        documentService.findById(
-////          any(UUID::class.java),
+////          any2(),
 ////        )
 ////      ).thenReturn(mockDocument)
 ////    }

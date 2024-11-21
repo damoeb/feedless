@@ -5,13 +5,13 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CodeEditorModalComponent } from './code-editor-modal.component';
 import { CodeEditorModule } from '../../elements/code-editor/code-editor.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

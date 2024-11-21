@@ -18,6 +18,7 @@ import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.GenericFeedRule
@@ -86,7 +87,7 @@ class FeedsPluginTest {
     mockFeed.publishedAt = LocalDateTime.now()
     mockFeed.items = emptyList()
 
-    `when`(feedParserService.parseFeed(any(HttpResponse::class.java)))
+    `when`(feedParserService.parseFeed(any2()))
       .thenReturn(mockFeed)
 
     // when
@@ -124,9 +125,7 @@ class FeedsPluginTest {
     )
     `when`(
       genericFeedLocator.locateInDocument(
-        any(Document::class.java), any(String::class.java), any(
-          GenericFeedParserOptions::class.java
-        )
+        any2(), any2(), any2()
       )
     )
       .thenReturn(listOf(mockGenericFeed))

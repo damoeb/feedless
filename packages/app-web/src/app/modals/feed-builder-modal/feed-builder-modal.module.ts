@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FeedBuilderModalComponent } from './feed-builder-modal.component';
 import { FeedBuilderModule } from '../../components/feed-builder/feed-builder.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

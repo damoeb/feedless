@@ -7,11 +7,11 @@ import { AgentsPage } from './agents.page';
 import { AgentsModule } from '../../components/agents/agents.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonRow,
+  IonBreadcrumbs,
   IonCol,
+  IonContent,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 @NgModule({

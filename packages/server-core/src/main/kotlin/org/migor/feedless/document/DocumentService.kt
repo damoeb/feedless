@@ -43,7 +43,6 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -56,6 +55,7 @@ import kotlin.jvm.optionals.getOrNull
 
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.document} & ${AppLayer.service}")
 class DocumentService(
   private val documentDAO: DocumentDAO,
@@ -64,7 +64,7 @@ class DocumentService(
   private val planConstraintsService: PlanConstraintsService,
   private val documentPipelineJobDAO: DocumentPipelineJobDAO,
   private val pluginService: PluginService,
-  private val permissionService: PermissionService
+  private val permissionService: PermissionService,
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
@@ -92,29 +92,35 @@ class DocumentService(
     status: ReleaseStatus = ReleaseStatus.released,
     tag: String? = null,
     pageable: Pageable,
-    shareKey: String? = null,
     ignoreVisibility: Boolean = false
-  ): Page<DocumentEntity?> {
-    return withContext(Dispatchers.IO) {
-      documentDAO.findPage(pageable) {
-        val whereStatements = prepareWhereStatements(where)
+  ): List<DocumentEntity> {
+    val query = jpql {
+      val whereStatements = prepareWhereStatements(where)
 
-        select(
-          entity(DocumentEntity::class),
-        ).from(
-          entity(DocumentEntity::class),
+      select(
+        path(DocumentEntity::id),
+      ).from(
+        entity(DocumentEntity::class),
+      )
+        .whereAnd(
+          path(DocumentEntity::repositoryId).eq(repositoryId),
+          path(DocumentEntity::status).`in`(status),
+          path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
+          *whereStatements.toTypedArray()
+        ).orderBy(
+          orderBy?.let {
+            path(DocumentEntity::startingAt).asc().nullsLast()
+          } ?: path(DocumentEntity::publishedAt).desc()
         )
-          .whereAnd(
-            path(DocumentEntity::repositoryId).eq(repositoryId),
-            path(DocumentEntity::status).`in`(status),
-            path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
-            *whereStatements.toTypedArray()
-          ).orderBy(
-            orderBy?.let {
-              path(DocumentEntity::startingAt).asc().nullsLast()
-            } ?: path(DocumentEntity::publishedAt).desc()
-          )
-      }
+    }
+
+    val context = JpqlRenderContext()
+
+    return withContext(Dispatchers.IO) {
+      val q = entityManager.createQuery(query, context)
+      q.setMaxResults(pageable.pageSize)
+      q.setFirstResult(pageable.pageSize * pageable.pageNumber)
+      documentDAO.findAllWithAttachmentsByIdIn(q.resultList)
     }
   }
 
@@ -226,28 +232,29 @@ class DocumentService(
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilterInput) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
-    val repository = withContext(Dispatchers.IO) {
-      repositoryDAO.findById(repositoryId).orElseThrow()
-    }
-    if (repository.ownerId != user.id) {
-      throw PermissionDeniedException("current user ist not owner")
-    }
 
-    if (documentIds.`in` != null) {
-      withContext(Dispatchers.IO) {
-        documentDAO.deleteAllByRepositoryIdAndIdIn(repositoryId, documentIds.`in`.map { UUID.fromString(it) })
+    withContext(Dispatchers.IO) {
+      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      if (repository.ownerId != user.id) {
+        throw PermissionDeniedException("current user ist not owner")
       }
-    } else {
-      if (documentIds.eq != null) {
-        withContext(Dispatchers.IO) {
-          documentDAO.deleteAllByRepositoryIdAndId(repositoryId, UUID.fromString(documentIds.eq))
+
+      val documents = documentDAO
+        .findAllByRepositoryIdAndIdIn(repositoryId, if (documentIds.`in` != null) {
+          documentIds.`in`.map { UUID.fromString(it) }
+        } else {
+          if (documentIds.eq != null) {
+            listOf(UUID.fromString(documentIds.eq))
+          } else {
+            throw IllegalArgumentException("operation not supported")
+          }
         }
-      } else {
-        throw IllegalArgumentException("operation not supported")
-      }
+      )
+
+      documentDAO.deleteAllById(documents.map { it.id });
     }
   }
 
@@ -461,6 +468,24 @@ class DocumentService(
   suspend fun deleteById(documentId: UUID) {
     withContext(Dispatchers.IO) {
       documentDAO.deleteById(documentId)
+    }
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findFirstByContentHashOrUrlAndRepositoryId(
+    contentHash: String,
+    url: String,
+    repositoryId: UUID
+  ): DocumentEntity? {
+    return withContext(Dispatchers.IO) {
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
+    }
+  }
+
+  @Transactional
+  suspend fun saveAll(documents: List<DocumentEntity>): List<DocumentEntity> {
+    return withContext(Dispatchers.IO) {
+      documentDAO.saveAll(documents)
     }
   }
 

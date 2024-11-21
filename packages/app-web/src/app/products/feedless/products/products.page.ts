@@ -15,7 +15,6 @@ import {
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-feedless-products-page',

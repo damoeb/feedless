@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
 import org.migor.feedless.session.RequestContext
@@ -40,13 +41,13 @@ class GroupServiceTest {
 
     currentUser = mock(UserEntity::class.java)
     `when`(currentUser.id).thenReturn(currentUserId)
-    `when`(userDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(currentUser))
+    `when`(userDAO.findById(any2())).thenReturn(Optional.of(currentUser))
 
     group = mock(GroupEntity::class.java)
     `when`(group.id).thenReturn(groupId)
 
     groupService = GroupService(userGroupAssignmentDAO, userDAO)
-    `when`(userGroupAssignmentDAO.save(any(UserGroupAssignmentEntity::class.java))).thenAnswer { it.arguments[0] }
+    `when`(userGroupAssignmentDAO.save(any2())).thenAnswer { it.arguments[0] }
   }
 
   @ParameterizedTest
@@ -173,7 +174,7 @@ class GroupServiceTest {
   private fun mockUserRoleForGroup(userId: UUID, role: RoleInGroup): UserGroupAssignmentEntity {
     val assignment = mock(UserGroupAssignmentEntity::class.java)
     `when`(assignment.role).thenReturn(role)
-    `when`(userGroupAssignmentDAO.findByUserIdAndGroupId(eq(userId), any(UUID::class.java))).thenReturn(assignment)
+    `when`(userGroupAssignmentDAO.findByUserIdAndGroupId(eq(userId), any2())).thenReturn(assignment)
     return assignment
   }
 

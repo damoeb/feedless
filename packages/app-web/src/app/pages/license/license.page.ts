@@ -17,9 +17,9 @@ import { LocalizedLicense } from '../../graphql/types';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import {
-  timeOutline,
-  checkmarkDoneOutline,
   alertOutline,
+  checkmarkDoneOutline,
+  timeOutline,
 } from 'ionicons/icons';
 
 @Component({

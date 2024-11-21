@@ -89,7 +89,7 @@ class SourcePipelineJobExecutor internal constructor(
       sourceService.processSourcePipeline(sourceId, jobs)
     } catch (t: Throwable) {
       if (t !is ResumableHarvestException) {
-        log.error("[$corrId] processDocumentPlugins fatal failure", t)
+        log.error("[$corrId] processDocumentPlugins fatal failure ${t.message}")
         sourceService.setErrorState(sourceId, true, t.message)
       }
     }

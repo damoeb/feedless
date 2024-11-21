@@ -14,6 +14,7 @@ import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.Selectors
 import org.migor.feedless.scrape.WebToFeedTransformer
@@ -75,10 +76,10 @@ class FeedPluginTest {
     )
     `when`(
       webToFeedTransformer.getFeedBySelectors(
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URI::class.java),
-        any(LogCollector::class.java),
+        any2(),
+        any2(),
+        any2(),
+        any2(),
       )
     ).thenReturn(jsonFeed)
     val httpResponse = HttpResponse(
@@ -94,13 +95,13 @@ class FeedPluginTest {
 
     // then
     verify(feedParserService, times(0))
-      .parseFeed(any(HttpResponse::class.java))
+      .parseFeed(any2())
     verify(webToFeedTransformer, times(1))
       .getFeedBySelectors(
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URI::class.java),
-        any(LogCollector::class.java)
+        any2(),
+        any2(),
+        any2(),
+        any2()
       )
   }
 
@@ -108,7 +109,7 @@ class FeedPluginTest {
   fun `extracts native feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(PluginExecutionJsonEntity(org_feedless_feed = FeedParamsInput()))
-    `when`(feedParserService.parseFeed(any(HttpResponse::class.java))).thenReturn(jsonFeed)
+    `when`(feedParserService.parseFeed(any2())).thenReturn(jsonFeed)
     val httpResponse = HttpResponse(
       contentType = "application/rss+xml",
       url = "https://example.org",
@@ -121,13 +122,13 @@ class FeedPluginTest {
 
     // then
     verify(feedParserService, times(1))
-      .parseFeed(any(HttpResponse::class.java))
+      .parseFeed(any2())
     verify(webToFeedTransformer, times(0))
       .getFeedBySelectors(
-        any(Selectors::class.java),
-        any(Document::class.java),
-        any(URI::class.java),
-        any(LogCollector::class.java)
+        any2(),
+        any2(),
+        any2(),
+        any2()
       )
   }
 }

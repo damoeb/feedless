@@ -8,12 +8,12 @@ import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { FeedlessHeaderModule } from '../../../components/feedless-header/feedless-header.module';
 import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if-prod.module';
 import {
+  IonBadge,
   IonContent,
+  IonIcon,
+  IonItem,
   IonList,
   IonListHeader,
-  IonItem,
-  IonIcon,
-  IonBadge,
 } from '@ionic/angular/standalone';
 
 @NgModule({

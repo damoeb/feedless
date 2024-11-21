@@ -37,9 +37,9 @@ class ProductResolver {
 //  lateinit var featureService: FeatureService
 
   @Throttled
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.Products)
   suspend fun products(
-    @InputArgument data: ProductsWhereInput
+    @InputArgument(DgsConstants.QUERY.PRODUCTS_INPUT_ARGUMENT.Data) data: ProductsWhereInput
   ): List<Product> {
     log.debug("products $data")
     return productService.findAll(data).map { it.toDTO() }

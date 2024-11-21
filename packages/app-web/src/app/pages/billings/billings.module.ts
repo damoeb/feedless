@@ -8,12 +8,12 @@ import { HistogramModule } from '../../components/histogram/histogram.module';
 import { ImportButtonModule } from '../../components/import-button/import-button.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonContent,
-  IonRow,
   IonCol,
-  IonList,
+  IonContent,
   IonItem,
   IonLabel,
+  IonList,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 @NgModule({

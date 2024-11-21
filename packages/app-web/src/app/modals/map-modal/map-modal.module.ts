@@ -5,13 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { MapModule } from '../../components/map/map.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

@@ -54,7 +54,7 @@ class SecretsResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteUserSecret(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: DeleteUserSecretInput,
+    @InputArgument(DgsConstants.MUTATION.DELETEUSERSECRET_INPUT_ARGUMENT.Data) data: DeleteUserSecretInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     userSecretService.deleteUserSecret(
       sessionService.user(),

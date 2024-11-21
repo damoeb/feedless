@@ -17,7 +17,6 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { LocalizedLicense } from '../../../graphql/types';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-about-rss-builder',

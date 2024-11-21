@@ -7,16 +7,16 @@ import { LoginPage } from './login.page';
 import { EmailLoginModule } from '../../components/email-login/email-login.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonContent,
-  IonSpinner,
-  IonCardContent,
-  IonList,
-  IonItem,
-  IonInput,
-  IonLabel,
-  IonCard,
   IonButton,
+  IonCard,
+  IonCardContent,
+  IonContent,
   IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
 @NgModule({

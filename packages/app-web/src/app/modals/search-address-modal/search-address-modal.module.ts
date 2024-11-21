@@ -5,16 +5,16 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
-  IonList,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
+  IonList,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

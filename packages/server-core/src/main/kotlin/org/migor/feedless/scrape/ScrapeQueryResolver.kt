@@ -13,6 +13,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
+import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.Record
@@ -42,11 +43,11 @@ class ScrapeQueryResolver {
   private lateinit var scrapeService: ScrapeService
 
   @Throttled
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.Scrape)
   @PreAuthorize("hasAnyAuthority('ANONYMOUS', 'READ', 'WRITE')")
   suspend fun scrape(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: SourceInput,
+    @InputArgument(DgsConstants.QUERY.SCRAPE_INPUT_ARGUMENT.Data) data: SourceInput,
   ): ScrapeResponse = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("scrape $data")
     val scrapeRequest = data.fromDto()

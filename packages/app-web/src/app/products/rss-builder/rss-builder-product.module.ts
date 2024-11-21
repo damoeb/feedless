@@ -12,14 +12,14 @@ import { AgentsButtonModule } from '../../components/agents-button/agents-button
 import { RepositoriesButtonModule } from '../../components/repositories-button/repositories-button.module';
 import { NotificationsButtonModule } from '../../components/notifications-button/notifications-button.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonMenuButton,
   IonRouterOutlet,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

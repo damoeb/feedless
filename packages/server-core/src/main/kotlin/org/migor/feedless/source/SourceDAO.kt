@@ -1,5 +1,6 @@
 package org.migor.feedless.source
 
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
@@ -12,15 +13,15 @@ import java.util.*
 
 @Repository
 @Profile("${AppProfiles.source} & ${AppLayer.repository}")
-interface SourceDAO : JpaRepository<SourceEntity, UUID> {
+interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor {
 
-  @Query(
-    """SELECT DISTINCT s FROM SourceEntity s
-    LEFT JOIN FETCH s.actions
-    WHERE s.repositoryId = :id
-    ORDER BY s.title"""
-  )
-  fun findAllByRepositoryId(@Param("id") id: UUID): List<SourceEntity>
+//  @Query(
+//    """SELECT DISTINCT s FROM SourceEntity s
+//    LEFT JOIN FETCH s.actions
+//    WHERE s.repositoryId = :id
+//    ORDER BY s.title"""
+//  )
+//  fun findAllByRepositoryId(@Param("id") id: UUID, pageable: Pageable): Page<SourceEntity>
 
   @Modifying
   @Query(
@@ -37,7 +38,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
     @Param("errorMessage") errorMessage: String? = null
   )
 
-  fun existsByRepositoryIdAndDisabledTrue(id: UUID): Boolean
+  fun countByRepositoryIdAndLastRecordsRetrieved(repositoryId: UUID, count: Int): Int
 
   @Query(
     """SELECT s FROM SourceEntity s
@@ -45,4 +46,15 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID> {
     WHERE s.id = :id"""
   )
   fun findByIdWithActions(@Param("id") sourceId: UUID): SourceEntity?
+  fun countByRepositoryId(id: UUID): Long
+
+  @Query(
+    """SELECT s FROM SourceEntity s
+    LEFT JOIN FETCH s.actions
+    WHERE s.id in (:ids)"""
+  )
+  fun findAllWithActionsByIdIn(@Param("ids") ids: List<UUID>): List<SourceEntity>
+
+  fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, sourceIds: List<UUID>): List<SourceEntity>
+
 }

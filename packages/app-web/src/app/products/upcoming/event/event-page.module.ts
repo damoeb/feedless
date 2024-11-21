@@ -5,15 +5,15 @@ import { EventRoutingModule } from './event-routing.module';
 import { UpcomingHeaderModule } from '../upcoming-header/upcoming-header.module';
 import { UpcomingFooterModule } from '../upcoming-footer/upcoming-footer.module';
 import {
-  IonContent,
-  IonSpinner,
-  IonToolbar,
-  IonButtons,
+  IonBadge,
   IonButton,
+  IonButtons,
+  IonContent,
+  IonFooter,
   IonIcon,
   IonNote,
-  IonBadge,
-  IonFooter,
+  IonSpinner,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

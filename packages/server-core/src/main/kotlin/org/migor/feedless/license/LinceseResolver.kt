@@ -41,7 +41,7 @@ class LinceseResolver {
   @DgsMutation(field = DgsConstants.MUTATION.UpdateLicense)
   suspend fun updateLicense(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: UpdateLicenseInput,
+    @InputArgument(DgsConstants.MUTATION.UPDATELICENSE_INPUT_ARGUMENT.Data) data: UpdateLicenseInput,
   ): LocalizedLicense = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("updateLicense")
 

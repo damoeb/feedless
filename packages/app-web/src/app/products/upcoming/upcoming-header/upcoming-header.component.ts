@@ -14,7 +14,6 @@ import {
   VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
 import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
-import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
   clone,
   compact,
@@ -22,16 +21,9 @@ import {
   DebouncedFunc,
   isUndefined,
 } from 'lodash-es';
-import { GetElementType } from '../../../graphql/types';
 import { LatLon } from '../../../components/map/map.component';
-import {
-  FindEvents,
-  GqlFindEventsQuery,
-  GqlFindEventsQueryVariables,
-} from '../../../../generated/graphql';
 import { FormControl } from '@angular/forms';
-import { debounce, interval, Subscription } from 'rxjs';
-import { ApolloClient } from '@apollo/client/core';
+import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
 import { Router } from '@angular/router';
 import { getCachedLocations } from '../places';
@@ -61,8 +53,6 @@ type Years = {
   [year: number]: Months;
 };
 
-type LocalizedEvent = GetElementType<GqlFindEventsQuery['recordsFrequency']>;
-
 type SiteLocale = 'de' | 'en';
 
 type ExpandableSection = 'map' | 'calendar' | 'suggestions';
@@ -77,11 +67,11 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};
   productConfig: VerticalSpecWithRoutes;
   locationFc = new FormControl<string>('');
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   protected currentDate: Dayjs;
   protected currentLatLon: LatLon;
-  protected zhLatLon: LatLon = [47.3744489, 8.5410422];
-  protected now = dayjs();
+  protected readonly zhLatLon: LatLon = [47.3744489, 8.5410422];
+  protected readonly now = dayjs();
 
   @Input({ required: true })
   date: Dayjs;
@@ -119,7 +109,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     private readonly changeRef: ChangeDetectorRef,
     // private readonly apollo: ApolloClient<any>,
     private readonly router: Router,
-    private readonly openStreetMapService: OpenStreetMapService,
+    // private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
   ) {
     dayjs.extend(weekday);
@@ -442,10 +432,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     return units.every((unit) => a.isSame(b, unit));
   }
 
-  private getRepositoryId(): string {
-    return this.appConfigService.customProperties.eventRepositoryId as any;
-  }
-
   handlePositionChange(latLon: number[]) {}
 
   // formatToRelativeDay(inputDate: Dayjs, suffix: string = '') {
@@ -468,22 +454,37 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       if (this.currentDate.year() != dayjs().year()) {
         return this.formatDate(this.currentDate, 'D.MM.YYYY');
       } else {
-        return this.formatDate(this.currentDate, 'D.MM');
+        return this.formatDate(this.currentDate, 'D.MM.YY');
       }
     }
   }
 
   getWeekday(): string {
     if (this.currentDate) {
-      return [
-        'Sonntag',
-        'Montag',
-        'Dienstag',
-        'Mittwoch',
-        'Donnerstag',
-        'Freitag',
-        'Samstag',
-      ][this.currentDate.day()];
+      const now = dayjs()
+        .set('hours', this.currentDate.hour())
+        .set('minutes', this.currentDate.minute())
+        .set('seconds', this.currentDate.second())
+        .set('milliseconds', this.currentDate.millisecond());
+      const diffInHours = this.currentDate.diff(now, 'day');
+      switch (diffInHours) {
+        case 0:
+          return 'Heute';
+        case -1:
+          return 'Gestern';
+        case 1:
+          return 'Morgen';
+        default:
+          return [
+            'Sonntag',
+            'Montag',
+            'Dienstag',
+            'Mittwoch',
+            'Donnerstag',
+            'Freitag',
+            'Samstag',
+          ][this.currentDate.day()];
+      }
     }
   }
 

@@ -2,10 +2,10 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReaderMenuComponent } from './reader-menu.component';
 import {
-  IonList,
-  IonListHeader,
   IonItem,
   IonLabel,
+  IonList,
+  IonListHeader,
 } from '@ionic/angular/standalone';
 
 @NgModule({

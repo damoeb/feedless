@@ -8,12 +8,12 @@ import {
 } from '@angular/core';
 import {
   GqlFeedlessPlugins,
-  GqlHarvest,
-  GqlVertical,
   GqlRecordField,
-  GqlVisibility,
   GqlRepositoryCreateInput,
+  GqlSortOrder,
   GqlSourceInput,
+  GqlVertical,
+  GqlVisibility,
 } from '../../../generated/graphql';
 import {
   Annotation,
@@ -43,34 +43,33 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isArray, isUndefined, sortBy, uniq, without } from 'lodash-es';
+import { isUndefined, sortBy, uniq, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
-import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { FetchPolicy } from '@apollo/client/core';
 import { addIcons } from 'ionicons';
 import {
-  closeOutline,
   addOutline,
-  listOutline,
-  pulseOutline,
-  gitBranchOutline,
-  flagOutline,
-  starOutline,
-  star,
-  logoRss,
-  settingsOutline,
-  codeOutline,
+  closeOutline,
   cloudDownloadOutline,
-  trashOutline,
-  refreshOutline,
-  pencilOutline,
-  locationOutline,
   cloudUploadOutline,
+  codeOutline,
+  flagOutline,
+  gitBranchOutline,
+  listOutline,
+  locationOutline,
+  logoRss,
+  pencilOutline,
+  pulseOutline,
+  refreshOutline,
+  settingsOutline,
+  star,
+  starOutline,
+  trashOutline,
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
@@ -110,7 +109,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected playDocument: Record;
   private currentUserId: string;
   private subscriptions: Subscription[] = [];
-  currentPage: number;
+  currentDocumentsPage: number;
+  currentSourcesPage: number = 0;
+  sources: ArrayElement<RepositoryFull['sources']>[];
+
   fromNow = relativeTimeOrElse;
 
   protected loading: boolean;
@@ -127,7 +129,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   private seed = Math.random();
   sourcesModalId: string = `open-sources-modal-${this.seed}`;
-  harvestsModalId: string = `open-harvests-modal-${this.seed}`;
+  // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
 
   constructor(
@@ -207,8 +209,14 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
     this.repository = await this.repositoryService.getRepositoryById(
       this.repositoryId,
+      {
+        cursor: {
+          page: this.currentSourcesPage,
+        },
+      },
       fetchPolicy,
     );
+    this.sources = this.repository.sources;
     if (this.repository.product === GqlVertical.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
@@ -245,10 +253,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.popoverCtrl.dismiss();
   }
 
-  hasErrors(): boolean {
-    return this.repository?.sources?.some((s) => s.disabled);
-  }
-
   dismissModal() {
     this.modalCtrl.dismiss();
   }
@@ -256,7 +260,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   getHealthColorForSource(
     source: ArrayElement<RepositoryFull['sources']>,
   ): BubbleColor {
-    if (source.disabled) {
+    if (source.disabled || source.lastRecordsRetrieved === 0) {
       return 'red';
     } else {
       return 'green';
@@ -264,7 +268,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   protected async fetchPage(page: number = 0) {
-    this.currentPage = page;
+    this.currentDocumentsPage = page;
     this.selectAllFc.setValue(false);
     this.loading = true;
     this.changeRef.detectChanges();
@@ -375,7 +379,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
     const { latLng } = source;
-    return latLng ? `(${latLng.lat},${latLng.lon})` : 'Localize Source';
+    return latLng
+      ? `(${latLng.lat.toFixed(4)},${latLng.lon.toFixed(4)})`
+      : 'Localize Source';
   }
 
   async deleteSource(source: RepositorySource) {
@@ -405,6 +411,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
               },
             });
             this.assessIsOwner();
+            this.fetchSources(this.currentSourcesPage, 'network-only');
             this.changeRef.detectChanges();
           },
         },
@@ -442,6 +449,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           },
         },
       });
+      this.fetchSources(this.currentSourcesPage, 'network-only');
       this.changeRef.detectChanges();
     }
   }
@@ -471,6 +479,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
+    this.fetchSources(this.currentSourcesPage, 'network-only');
     this.changeRef.detectChanges();
   }
 
@@ -488,17 +497,38 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           console.warn('not implemented');
         }
         if (data?.feed) {
+          data.feed.source.flow;
           this.repository = await this.repositoryService.updateRepository({
             where: {
               id: this.repository.id,
             },
             data: {
               sources: {
-                add: [data.feed.source],
-                remove: source ? [source.id] : [],
+                update: [
+                  {
+                    where: {
+                      id: source.id,
+                    },
+                    data: {
+                      latLng: {
+                        set: data.feed.source.latLng,
+                      },
+                      tags: {
+                        set: data.feed.source.tags,
+                      },
+                      title: {
+                        set: data.feed.source.title,
+                      },
+                      flow: {
+                        set: data.feed.source.flow,
+                      },
+                    },
+                  },
+                ],
               },
             },
           });
+          this.fetchSources(this.currentSourcesPage, 'network-only');
           this.changeRef.detectChanges();
         }
       },
@@ -536,7 +566,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     });
     this.documents = without(this.documents, ...selected);
     this.selectAllFc.setValue(false);
-    this.fetchPage(this.currentPage);
+    this.fetchPage(this.currentDocumentsPage);
     this.changeRef.detectChanges();
   }
 
@@ -590,25 +620,21 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
-  //   return new Date(date);
+  // openLogsModal(
+  //   harvest: Pick<
+  //     GqlHarvest,
+  //     'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'
+  //   >,
+  // ) {
+  //   const props: CodeEditorModalComponentProps = {
+  //     title: 'Log Output',
+  //     contentType: 'text',
+  //     readOnly: true,
+  //     controls: false,
+  //     text: harvest.logs,
+  //   };
+  //   return this.modalService.openCodeEditorModal(props);
   // }
-
-  openLogsModal(
-    harvest: Pick<
-      GqlHarvest,
-      'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'
-    >,
-  ) {
-    const props: CodeEditorModalComponentProps = {
-      title: 'Log Output',
-      contentType: 'text',
-      readOnly: true,
-      controls: false,
-      text: harvest.logs,
-    };
-    return this.modalService.openCodeEditorModal(props);
-  }
 
   async setDisabledForSource(source: RepositorySource, isDisabled: boolean) {
     this.repository = await this.repositoryService.updateRepository({
@@ -632,6 +658,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
+    this.fetchSources(this.currentSourcesPage, 'network-only');
     this.changeRef.detectChanges();
   }
 
@@ -727,7 +754,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
 
     if (selected.length > 0) {
-      this.repository = await this.repositoryService.updateRepository({
+      await this.repositoryService.updateRepository({
         where: {
           id: this.repository.id,
         },
@@ -737,6 +764,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           },
         },
       });
+
+      this.fetchSources(this.currentSourcesPage, 'network-only');
       this.changeRef.detectChanges();
 
       const toast = await this.toastCtrl.create({
@@ -747,5 +776,19 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
       await toast.present();
     }
+  }
+
+  async fetchSources(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
+    this.currentSourcesPage = page;
+    this.sources = await this.repositoryService.getSourcesByRepository(
+      this.repositoryId,
+      {
+        cursor: {
+          page,
+        },
+      },
+      fetchPolicy,
+    );
+    this.changeRef.detectChanges();
   }
 }

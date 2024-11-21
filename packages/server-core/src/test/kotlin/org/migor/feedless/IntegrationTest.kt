@@ -169,17 +169,15 @@ class IntegrationTest {
 
   @Test
   fun `given where is null, findAll filters repoId and status`() = runTest {
-    val page = documentService.findAllByRepositoryId(
+    val documents = documentService.findAllByRepositoryId(
       repository.id,
       null,
       null,
       ReleaseStatus.released,
       null,
       PageRequest.of(0, 10),
-      null,
       false
     )
-    val documents = page.toList()
     assertThat(documents.size).isEqualTo(1)
   }
 

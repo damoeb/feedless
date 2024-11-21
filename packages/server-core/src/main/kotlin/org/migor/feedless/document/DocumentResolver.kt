@@ -58,10 +58,10 @@ class DocumentResolver(
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
 
   @Throttled
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.Record)
   suspend fun record(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: RecordWhereInput,
+    @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
   ): Record = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("record $data")
     permissionService.canReadDocument(UUID.fromString(data.where.id))
@@ -77,15 +77,15 @@ class DocumentResolver(
   @DgsQuery(field = DgsConstants.QUERY.Records)
   suspend fun records(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: RecordsInput,
+    @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
   ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("records $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
-    val repository = repositoryService.findById(repositoryId)
+    val repository = repositoryService.findById(repositoryId).orElseThrow()
     val pageable = toPageRequest(data.cursor.page, data.cursor.pageSize ?: 10)
-    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).mapNotNull {
-      it?.toDto(
+    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).map {
+      it.toDto(
         propertyService
       )
     }.toList()
@@ -101,7 +101,7 @@ class DocumentResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: DeleteRecordsInput,
+    @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     documentService.deleteDocuments(
       sessionService.user(),
@@ -115,7 +115,7 @@ class DocumentResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
-    @InputArgument records: List<CreateRecordInput>,
+    @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
   ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     records.map { documentService.createDocument(it).toDto(propertyService) }
   }
@@ -124,7 +124,7 @@ class DocumentResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun updateRecord(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: UpdateRecordInput,
+    @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     documentService.updateDocument(data.data, data.where).toDto(propertyService)
     true
@@ -132,8 +132,8 @@ class DocumentResolver(
 
   @DgsQuery(field = DgsConstants.QUERY.RecordsFrequency)
   suspend fun recordsFrequency(
-    @InputArgument where: RecordsWhereInput,
-    @InputArgument groupBy: RecordDateField,
+    @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInput,
+    @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
   ): List<RecordFrequency> = coroutineScope {
     documentService.getRecordFrequency(where, groupBy)
   }

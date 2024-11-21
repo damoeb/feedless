@@ -28,6 +28,7 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.util.toLegacyDate
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -36,6 +37,9 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(propagation = Propagation.NEVER)
 class SyndAtomFeedExporter {
+
+  private val log = LoggerFactory.getLogger(SyndAtomFeedExporter::class.simpleName)
+
   fun toAtom(r: JsonFeed): String {
     val output = SyndFeedOutput()
     val feed = output.outputString(toSyndFeed(r))

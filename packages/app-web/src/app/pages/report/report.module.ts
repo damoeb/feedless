@@ -10,7 +10,7 @@ import { PaginationModule } from '../../components/pagination/pagination.module'
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import { TableModule } from '../../components/table/table.module';
 import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
-import { IonContent, IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonCol, IonContent, IonRow } from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [

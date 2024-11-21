@@ -14,6 +14,7 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
 import org.migor.feedless.user.TelegramConnectionDAO
@@ -73,8 +74,8 @@ class TelegramBotServiceTest {
     )
 
 
-    `when`(systemSettingsDAO.save(any(SystemSettingsEntity::class.java))).thenAnswer { it.arguments[0] as SystemSettingsEntity }
-    `when`(systemSettingsDAO.findByName(any(String::class.java))).thenReturn(null)
+    `when`(systemSettingsDAO.save(any2())).thenAnswer { it.arguments[0] as SystemSettingsEntity }
+    `when`(systemSettingsDAO.findByName(any2())).thenReturn(null)
   }
 
   @Test
@@ -84,12 +85,12 @@ class TelegramBotServiceTest {
 
   @Test
   fun `given lastUpdateId is not stored, when initialized it gets set and saved`() {
-    `when`(systemSettingsDAO.findByName(any(String::class.java))).thenReturn(null)
+    `when`(systemSettingsDAO.findByName(any2())).thenReturn(null)
 
     telegramBotService.onInit()
 
     assertThat(telegramBotService.lastUpdateId).isEqualTo(Int.MAX_VALUE)
-    verify(systemSettingsDAO, times(1)).save(any(SystemSettingsEntity::class.java))
+    verify(systemSettingsDAO, times(1)).save(any2())
   }
 
   @Test
@@ -97,12 +98,12 @@ class TelegramBotServiceTest {
     val mockSetting = SystemSettingsEntity()
     mockSetting.valueInt = 15243
     mockSetting.name = "tg-last-updated-id"
-    `when`(systemSettingsDAO.findByName(any(String::class.java))).thenReturn(mockSetting)
+    `when`(systemSettingsDAO.findByName(any2())).thenReturn(mockSetting)
 
     telegramBotService.onInit()
 
     assertThat(telegramBotService.lastUpdateId).isEqualTo(15243)
-    verify(systemSettingsDAO, times(0)).save(any(SystemSettingsEntity::class.java))
+    verify(systemSettingsDAO, times(0)).save(any2())
   }
 
   @Test
@@ -152,7 +153,7 @@ class TelegramBotServiceTest {
         )
       )
 
-    `when`(messageService.subscribe(any(String::class.java))).thenReturn(Flux.empty())
+    `when`(messageService.subscribe(any2())).thenReturn(Flux.empty())
 
     telegramBotService.onInit()
 
@@ -270,7 +271,7 @@ class TelegramBotServiceTest {
     telegramBotService.pollUpdates()
 
     // then
-    verify(inboxService).appendMessage(any(UUID::class.java), any(DocumentEntity::class.java))
+    verify(inboxService).appendMessage(any2(), any2())
   }
 
 }

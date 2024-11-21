@@ -18,18 +18,20 @@
         <span class="ion-hide-sm-down"> {{ getWeekday() }}, </span>
         {{ getLabelForCalendar() }}
       </ion-button>
-      <ion-searchbar
+      <ion-input
         (ionFocus)="expand = 'suggestions'"
         [formControl]="locationFc"
-        placeholder="Postleitzahl oder Ortschaft"
-        search-icon="location-outline"
+        fill="outline"
+        placeholder="PLZ oder Ortschaft"
         style="
           flex: 1;
-          --border-radius: 8px;
-          --box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
+          border-radius: 8px;
+          margin: 5px;
+          --border-color: var(--ion-color-primary);
+          box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
         "
       >
-      </ion-searchbar>
+      </ion-input>
       <ion-select
         [formControl]="perimeterFc"
         #perimeterCtrl

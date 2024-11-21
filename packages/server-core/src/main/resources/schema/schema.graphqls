@@ -111,11 +111,28 @@ type Repository {
   archived: Boolean!
   pullsPerMonth: Int!
   currentUserIsOwner: Boolean!
-  hasDisabledSources: Boolean!
+  sourcesCount: Int!
+  sourcesCountWithProblems: Int!
   frequency(groupBy: RecordDateField!): [RecordFrequency!]
   plugins: [PluginExecution!]
   retention: Retention!
-  sources: [Source!]
+  sources(data: SourcesInput): [Source!]
+}
+
+input SourcesInput {
+  cursor: Cursor!
+  where: SourcesWhereInput
+  orderBy: SourceOrderByInput
+}
+
+input SourcesWhereInput {
+  id: StringFilterInput
+}
+
+input SourceOrderByInput {
+  title: SortOrder
+  status: SortOrder
+  lastRecordsRetrieved: SortOrder
 }
 
 type Harvest {
@@ -868,7 +885,7 @@ input NetworkRequestInput {
 }
 
 enum IntervalUnit {
-  DAY
+#  DAY
   WEEK
   MONTH
 }
@@ -1548,7 +1565,12 @@ input SourceUpdateDataInput {
   tags: StringArrayUpdateOperationsInput
   title: StringUpdateOperationsInput
   latLng: NullableUpdateGeoPointInput
+  flow: NullableUpdateFlowInput
   disabled: BoolUpdateOperationsInput
+}
+
+input NullableUpdateFlowInput {
+  set: ScrapeFlowInput
 }
 
 input NullableUpdateGeoPointInput {
@@ -1664,6 +1686,7 @@ type Source {
   title: String!
   flow: ScrapeFlow!
   disabled: Boolean
+  lastRecordsRetrieved: Int
   latLng: GeoPoint
   tags: [String!]
   recordCount: Int

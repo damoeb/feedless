@@ -48,4 +48,18 @@ class DocumentPipelineService internal constructor(
   fun deleteAllByCreatedAtBefore(refDate: LocalDateTime) {
     documentPipelineJobDAO.deleteAllByCreatedAtBefore(refDate)
   }
+
+  @Transactional
+  suspend fun saveAll(jobs: List<DocumentPipelineJobEntity>): List<DocumentPipelineJobEntity> {
+    return withContext(Dispatchers.IO) {
+      documentPipelineJobDAO.saveAll(jobs)
+    }
+  }
+
+  @Transactional
+  suspend fun deleteAllByDocumentIdIn(jobs: List<UUID>) {
+    withContext(Dispatchers.IO) {
+      documentPipelineJobDAO.deleteAllByDocumentIdIn(jobs)
+    }
+  }
 }

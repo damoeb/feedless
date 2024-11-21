@@ -4,18 +4,18 @@ import { SelectionModalComponent } from './selection-modal.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
+  IonCheckbox,
   IonContent,
-  IonList,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
-  IonCheckbox,
+  IonList,
   IonNote,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { PlayerModule } from '../../components/player/player.module';
 

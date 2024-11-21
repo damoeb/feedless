@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -93,7 +94,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(name = "tags", columnDefinition = "text[]")
   open var tags: Array<String>? = emptyArray()
 
-  @Lazy
+  @Basic(fetch = FetchType.LAZY)
   @Column(columnDefinition = "bytea", name = "content_raw")
   open var raw: ByteArray? = null
 

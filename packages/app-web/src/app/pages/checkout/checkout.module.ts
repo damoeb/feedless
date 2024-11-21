@@ -6,20 +6,20 @@ import { CheckoutPageRoutingModule } from './checkout-routing.module';
 import { CheckoutPage } from './checkout.page';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
-  IonContent,
-  IonSpinner,
-  IonList,
-  IonItem,
-  IonRow,
-  IonCol,
-  IonInput,
   IonButton,
-  IonListHeader,
+  IonCheckbox,
+  IonCol,
+  IonContent,
+  IonInput,
+  IonItem,
   IonLabel,
+  IonList,
+  IonListHeader,
   IonNote,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonCheckbox,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
 @NgModule({

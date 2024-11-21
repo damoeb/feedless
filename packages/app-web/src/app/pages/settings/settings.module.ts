@@ -7,15 +7,15 @@ import { SettingsPage } from './settings.page';
 import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
 import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
 import {
+  IonCheckbox,
   IonContent,
-  IonList,
+  IonInput,
   IonItem,
-  IonSpinner,
+  IonLabel,
+  IonList,
   IonSelect,
   IonSelectOption,
-  IonLabel,
-  IonInput,
-  IonCheckbox,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
 @NgModule({

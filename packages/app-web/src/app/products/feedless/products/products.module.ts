@@ -6,12 +6,12 @@ import { ProductsPageRoutingModule } from './products-routing.module';
 import { ProductsPage } from './products.page';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonToolbar,
+  IonBreadcrumbs,
   IonButton,
+  IonContent,
   IonIcon,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

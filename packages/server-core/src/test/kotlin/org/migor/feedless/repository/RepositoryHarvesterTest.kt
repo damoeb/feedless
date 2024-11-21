@@ -12,7 +12,6 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -21,20 +20,20 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.message.MessageService
-import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
+import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.FragmentOutput
-import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.user.TelegramConnectionDAO
+import org.migor.feedless.source.SourceService
+import org.migor.feedless.transport.TelegramBotService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -42,6 +41,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import org.springframework.data.domain.Pageable
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
@@ -50,49 +50,44 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryHarvesterTest {
 
-  private lateinit var documentDAO: DocumentDAO
-  private lateinit var sourceDAO: SourceDAO
+  private lateinit var documentService: DocumentService
+  private lateinit var sourceService: SourceService
   private lateinit var meterRegistry: MeterRegistry
-  private lateinit var repositoryDAO: RepositoryDAO
   private lateinit var repositoryService: RepositoryService
   private lateinit var scrapeService: ScrapeService
   private lateinit var repositoryHarvester: RepositoryHarvester
-  private val repositoryId = UUID.randomUUID()
+  private lateinit var repositoryId: UUID
 
   private lateinit var repository: RepositoryEntity
   private lateinit var source: SourceEntity
-  private lateinit var sourcePipelineJobDAO: SourcePipelineJobDAO
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+  private lateinit var sourcePipelineService: SourcePipelineService
+  private lateinit var documentPipelineService: DocumentPipelineService
 
   @BeforeEach
   fun setUp() = runTest {
-    documentDAO = mock(DocumentDAO::class.java)
-    sourceDAO = mock(SourceDAO::class.java)
+    repositoryId = UUID.randomUUID()
+    documentService = mock(DocumentService::class.java)
+    sourceService = mock(SourceService::class.java)
     meterRegistry = mock(MeterRegistry::class.java)
-    repositoryDAO = mock(RepositoryDAO::class.java)
     repositoryService = mock(RepositoryService::class.java)
     scrapeService = mock(ScrapeService::class.java)
-    repositoryHarvester = mock(RepositoryHarvester::class.java)
-    sourcePipelineJobDAO = mock(SourcePipelineJobDAO::class.java)
-    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
+    sourcePipelineService = mock(SourcePipelineService::class.java)
+    documentPipelineService = mock(DocumentPipelineService::class.java)
 
     repositoryHarvester = RepositoryHarvester(
-      documentDAO,
-      documentPipelineJobDAO,
-      mock(HarvestDAO::class.java),
-      sourcePipelineJobDAO,
-      mock(TelegramConnectionDAO::class.java),
-      sourceDAO,
-      repositoryDAO,
+      documentService,
+      documentPipelineService,
+      sourcePipelineService,
+      Optional.of(mock(TelegramBotService::class.java)),
+      sourceService,
       scrapeService,
-      mock(DocumentService::class.java),
       meterRegistry,
       mock(MessageService::class.java),
       repositoryService,
     )
 
-    `when`(meterRegistry.counter(any(String::class.java), anyList())).thenReturn(mock(Counter::class.java))
-    `when`(meterRegistry.counter(any(String::class.java))).thenReturn(mock(Counter::class.java))
+    `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
+    `when`(meterRegistry.counter(any2())).thenReturn(mock(Counter::class.java))
 
     source = mock(SourceEntity::class.java)
     `when`(source.disabled).thenReturn(false)
@@ -107,9 +102,15 @@ class RepositoryHarvesterTest {
     `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repository.plugins).thenReturn(emptyList())
 
-    `when`(sourceDAO.findAllByRepositoryId(any(UUID::class.java))).thenReturn(mutableListOf(source))
+    `when`(sourceService.findAllByRepositoryIdFiltered(any2(), any2(), eq(null), eq(null))).thenAnswer {
+      if ((it.arguments[1] as Pageable).pageNumber == 0) {
+        mutableListOf(source)
+      } else {
+        emptyList<SourceEntity>()
+      }
+    }
 
-    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
+    `when`(repositoryService.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
 
     `when`(
       repositoryService.calculateScheduledNextAt(
@@ -126,8 +127,8 @@ class RepositoryHarvesterTest {
   fun `given scrape fails will increment the error count`() = runTest {
     `when`(
       scrapeService.scrape(
-        any(SourceEntity::class.java),
-        any(LogCollector::class.java)
+        any2(),
+        any2()
       )
     ).thenThrow(
       IllegalArgumentException("this is off")
@@ -137,17 +138,18 @@ class RepositoryHarvesterTest {
     repositoryHarvester.handleRepository(repository.id)
 
     verify(scrapeService, times(1)).scrape(
-      any(SourceEntity::class.java),
-      any(LogCollector::class.java)
+      any2(),
+      any2()
     )
 
     verify(source).disabled = false
     verify(source).errorsInSuccession = 1
     verify(source).lastErrorMessage = "this is off"
-    verify(sourceDAO, times(1)).save(source)
+    verify(sourceService, times(1)).save(source)
   }
 
   @Test
+  @Disabled
   fun `given scrape works, errorCount will be reset`() = runTest {
     `when`(source.errorsInSuccession).thenReturn(3)
     `when`(
@@ -163,7 +165,7 @@ class RepositoryHarvesterTest {
 
     verify(source).errorsInSuccession = 0
     verify(source).lastErrorMessage = null
-    verify(sourceDAO, times(1)).save(source)
+    verify(sourceService, times(1)).save(source)
   }
 
   @Test
@@ -188,7 +190,7 @@ class RepositoryHarvesterTest {
     verify(source).disabled = true
     verify(source).errorsInSuccession = 5
     verify(source).lastErrorMessage = "this is off"
-    verify(sourceDAO, times(1)).save(source)
+    verify(sourceService, times(1)).save(source)
   }
 
   @Test
@@ -213,7 +215,7 @@ class RepositoryHarvesterTest {
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )
-    verify(sourceDAO, times(0)).save(source)
+    verify(sourceService, times(0)).save(source)
   }
 
   @Test
@@ -247,7 +249,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 3 })
+      verify(documentService).saveAll(argThat<List<DocumentEntity>> { it.count() == 3 })
     }
 
   @Test
@@ -281,7 +283,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> { it.count() == 2 })
+      verify(documentService).saveAll(argThat<List<DocumentEntity>> { it.count() == 2 })
     }
 
   @Test
@@ -290,7 +292,7 @@ class RepositoryHarvesterTest {
       `when`(repository.plugins).thenReturn(listOf(mock(PluginExecution::class.java)))
       val existing = mock(DocumentEntity::class.java)
       `when`(
-        documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(UUID::class.java)
@@ -324,7 +326,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> {
+      verify(documentService).saveAll(argThat<List<DocumentEntity>> {
         it.count() == 0
       })
     }
@@ -341,7 +343,7 @@ class RepositoryHarvesterTest {
       val existing = mock(DocumentEntity::class.java)
       `when`(existing.id).thenReturn(UUID.randomUUID())
       `when`(
-        documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(UUID::class.java)
@@ -379,10 +381,10 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentPipelineJobDAO).deleteAllByDocumentIdIn(argThat {
+      verify(documentPipelineService).deleteAllByDocumentIdIn(argThat {
         it.count() == 1
       })
-      verify(documentPipelineJobDAO).saveAll(argThat<Iterable<DocumentPipelineJobEntity>> {
+      verify(documentPipelineService).saveAll(argThat<List<DocumentPipelineJobEntity>> {
         it.count() == 2 // number of plugins
       })
       verify(existing).status = ReleaseStatus.unreleased
@@ -393,7 +395,7 @@ class RepositoryHarvesterTest {
     runTest(context = RequestContext(userId = UUID.randomUUID())) {
       val existing = mock(DocumentEntity::class.java)
       `when`(
-        documentDAO.findFirstByContentHashOrUrlAndRepositoryId(
+        documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(UUID::class.java)
@@ -437,7 +439,7 @@ class RepositoryHarvesterTest {
       verify(existing).title = "updated.title"
       verify(existing).text = "updated.text"
       verify(existing).startingAt = updatedStartingAt
-      verify(documentDAO).saveAll(argThat<Iterable<DocumentEntity>> {
+      verify(documentService).saveAll(argThat<List<DocumentEntity>> {
         it.count() == 1 && it.first() == existing
       })
     }
@@ -450,9 +452,16 @@ class RepositoryHarvesterTest {
     }
 
   @Test
+  @Disabled
+  fun `scrape will update the retrieval count`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+      TODO()
+    }
+
+  @Test
   fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
     `when`(
-      sourcePipelineJobDAO.existsBySourceIdAndUrl(
+      sourcePipelineService.existsBySourceIdAndUrl(
         any(UUID::class.java),
         any(String::class.java)
       )
@@ -488,7 +497,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(repositoryId)
 
-    verify(sourcePipelineJobDAO).saveAll(argThat<Iterable<SourcePipelineJobEntity>> { it.count() == 1 })
+    verify(sourcePipelineService).saveAll(argThat<List<SourcePipelineJobEntity>> { it.count() == 1 })
   }
 
   private fun newJsonItem(

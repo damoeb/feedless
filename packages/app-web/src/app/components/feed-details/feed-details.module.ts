@@ -38,6 +38,7 @@ import {
   IonSegmentButton,
   IonCheckbox,
   ModalController,
+  IonFooter,
 } from '@ionic/angular/standalone';
 import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
 
@@ -76,6 +77,7 @@ import { SelectionModalModule } from '../../modals/selection-modal/selection-mod
     IonNote,
     IonText,
     IonBadge,
+    IonFooter,
     IonPopover,
     IonCol,
     IonSegment,

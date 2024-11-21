@@ -11,6 +11,7 @@ import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.TokenizerService
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
@@ -42,7 +43,7 @@ class EngagementScorerTest {
   )
   fun scoreEngagement(repliesCount: Int, expected: Double) = runTest {
     val comment = mock(CommentEntity::class.java)
-    Mockito.`when`(commentGraphService.getReplyCount(any(CommentEntity::class.java))).thenReturn(repliesCount)
+    Mockito.`when`(commentGraphService.getReplyCount(any2())).thenReturn(repliesCount)
     assertThat(scorer.score(comment)).isCloseTo(expected, within(0.01))
   }
 }

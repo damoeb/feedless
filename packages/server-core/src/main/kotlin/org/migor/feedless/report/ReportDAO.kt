@@ -11,5 +11,4 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.report} & ${AppLayer.repository}")
 interface ReportDAO : JpaRepository<ReportEntity, UUID> {
-  fun findAllPendingBatched(now: LocalDateTime): List<ReportEntity>
 }

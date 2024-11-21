@@ -15,11 +15,13 @@ import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
+@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
 class FeatureService(
   private val sessionService: SessionService,

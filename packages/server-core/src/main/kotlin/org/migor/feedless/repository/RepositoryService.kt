@@ -1,7 +1,6 @@
 package org.migor.feedless.repository
 
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
-import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
@@ -12,8 +11,6 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
-import org.migor.feedless.actions.ScrapeActionDAO
-import org.migor.feedless.api.fromDto
 import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
@@ -34,27 +31,25 @@ import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceDAO
-import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
 import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Profile
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -76,7 +71,6 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryService(
-  private val sourceDAO: SourceDAO,
 //  private var userDAO: UserDAO,
   private var repositoryDAO: RepositoryDAO,
   private var sessionService: SessionService,
@@ -84,7 +78,8 @@ class RepositoryService(
   private var planConstraintsService: PlanConstraintsService,
   private var documentService: DocumentService,
   private var propertyService: PropertyService,
-  private var scrapeActionDAO: ScrapeActionDAO
+  private var sourceService: SourceService,
+  private var context: ApplicationContext,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
@@ -114,38 +109,29 @@ class RepositoryService(
     return data.map { createRepository(ownerId, it).toDto(true) }
   }
 
-
-  @Transactional(readOnly = true)
   @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tag")
   suspend fun getFeedByRepositoryId(
     repositoryId: UUID,
     page: Int,
     tag: String? = null,
-    shareKey: String? = null
   ): JsonFeed {
-    val repository = findById(repositoryId, shareKey)
+    val repository = context.getBean(RepositoryService::class.java).findById(repositoryId).orElseThrow()
 
     val pageSize = 11
     val pageable = toPageRequest(page, pageSize)
     val items = try {
-      val pageResult = withContext(Dispatchers.IO) {
-        documentService.findAllByRepositoryId(
-          repositoryId,
-          status = ReleaseStatus.released,
-          tag = tag,
-          pageable = pageable,
-          shareKey = shareKey
-        )
-      }
-      pageResult.mapNotNull { it?.toJsonItem(propertyService, repository.visibility) }.toList()
+      documentService.findAllByRepositoryId(
+        repositoryId,
+        status = ReleaseStatus.released,
+        tag = tag,
+        pageable = pageable,
+      ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
       val corrId = coroutineContext.corrId()
       log.error("[$corrId] empty result", e)
       emptyList()
     }
-
-    val tags = repository.sources.mapNotNull { it.tags?.asList() }.flatten().distinct()
 
     val title = if (repository.visibility === EntityVisibility.isPublic) {
       repository.title
@@ -155,7 +141,7 @@ class RepositoryService(
 
     val jsonFeed = JsonFeed()
     jsonFeed.id = "repository:${repositoryId}"
-    jsonFeed.tags = tags
+//    jsonFeed.tags = tags
     jsonFeed.title = title
     jsonFeed.description = repository.description
     jsonFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
@@ -165,9 +151,9 @@ class RepositoryService(
     jsonFeed.page = page
     jsonFeed.expired = false
     val urlBuilder = UriComponentsBuilder.fromHttpUrl("${propertyService.apiGatewayUrl}/f/${repositoryId}/atom")
-    if (shareKey != null) {
-      urlBuilder.queryParam("skey", shareKey)
-    }
+//    if (shareKey != null) {
+//      urlBuilder.queryParam("skey", shareKey)
+//    }
     jsonFeed.feedUrl = urlBuilder.build().toUri().toString()
     jsonFeed.isLast = items.size < pageSize
 
@@ -176,13 +162,10 @@ class RepositoryService(
 
   @Transactional(readOnly = true)
   suspend fun findAll(
-    offset: Int,
-    pageSize: Int,
+    pageable: Pageable,
     where: RepositoriesWhereInput?,
     userId: UUID?
   ): List<RepositoryEntity> {
-    val pageable =
-      PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
     log.debug("userId=$userId")
 
     return withContext(Dispatchers.IO) {
@@ -280,25 +263,32 @@ class RepositoryService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
-    val sub = withContext(Dispatchers.IO) {
-      repositoryDAO.findByIdWithSources(repositoryId)
-        ?: throw NotFoundException("Repository $repositoryId not found")
-    }
-    return if (sub.visibility === EntityVisibility.isPublic) {
-      sub
-    } else {
-//      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
-      sub
-//      } else {
-//        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
-//          sub
-//        } else {
-//          throw PermissionDeniedException("unauthorized ($corrId)")
-//        }
-//      }
+  suspend fun findById(repositoryId: UUID): Optional<RepositoryEntity> {
+    return withContext(Dispatchers.IO) {
+      repositoryDAO.findById(repositoryId)
     }
   }
+
+//  @Transactional(readOnly = true)
+//  suspend fun findByIdWithSources(repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
+//    val sub = withContext(Dispatchers.IO) {
+//      repositoryDAO.findById(repositoryId).orElseThrow()
+//        ?: throw NotFoundException("Repository $repositoryId not found")
+//    }
+//    return if (sub.visibility === EntityVisibility.isPublic) {
+//      sub
+//    } else {
+////      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
+//      sub
+////      } else {
+////        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
+////          sub
+////        } else {
+////          throw PermissionDeniedException("unauthorized ($corrId)")
+////        }
+////      }
+//    }
+//  }
 
   @Transactional
   suspend fun delete(id: UUID) {
@@ -326,11 +316,8 @@ class RepositoryService(
     )
   }
 
-  @Transactional
-  suspend fun update(id: UUID, data: RepositoryUpdateDataInput): RepositoryEntity {
-    val repository = withContext(Dispatchers.IO) {
-      repositoryDAO.findByIdWithSources(id) ?: throw NotFoundException("Repository $id not found")
-    }
+  suspend fun updateRepository(id: UUID, data: RepositoryUpdateDataInput): RepositoryEntity {
+    val repository = context.getBean(RepositoryService::class.java).findById(id).orElseThrow { NotFoundException("Repository $id not found") }
     val corrId = coroutineContext.corrId()
     if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("not authorized")
@@ -386,47 +373,22 @@ class RepositoryService(
         documentService.applyRetentionStrategy(repository.id)
       }
     }
+
+
+
     data.sources?.let {
       it.add?.let {
-        repository.sources.addAll(it.map { createSource(repository.ownerId, it, repository) })
+        sourceService.createSources(repository.ownerId, it, repository)
       }
       it.update?.let {
-        val sources: List<SourceEntity> = it.mapNotNull { sourceUpdate ->
-          run {
-            val source = repository.sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }
-            sourceUpdate.data.tags?.let {
-              source?.tags = sourceUpdate.data.tags.set.toTypedArray()
-            }
-            sourceUpdate.data.latLng?.let { point ->
-              point.set?.let {
-                source?.latLon = JtsUtil.createPoint(it.lat, it.lon)
-              } ?: run { source?.latLon = null }
-            }
-            sourceUpdate.data.disabled?.let { disabled ->
-              source?.disabled = disabled.set
-              source?.errorsInSuccession = 0
-            }
-
-            source
-          }
-        }
-
-        withContext(Dispatchers.IO) {
-          sourceDAO.saveAll(sources)
-        }
+        sourceService.updateSources(repository, it)
       }
       it.remove?.let {
-        val deleteIds = it.map { UUID.fromString(it) }
-        withContext(Dispatchers.IO) {
-          sourceDAO.deleteAllById(deleteIds.filter { id -> repository.sources.any { it.id == id } }.toMutableList())
-        }
-        repository.sources =
-          repository.sources.filter { source -> deleteIds.none { it == source.id } }.toMutableList()
+        sourceService.deleteAllById(repository.id, it.map { UUID.fromString(it) })
       }
     }
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.save(repository)
-    }
+
+    return context.getBean(RepositoryService::class.java).save(repository)
   }
 
   @Transactional(readOnly = true)
@@ -497,7 +459,8 @@ class RepositoryService(
       repositoryDAO.save(repo)
     }
 
-    repo.sources = repoInput.sources.map { createSource(ownerId, it, repo) }.toMutableList()
+    sourceService.createSources(ownerId, repoInput.sources, repo)
+
 
 //    repoInput.additionalSinks?.let { sink ->
 //      val owner = withContext(Dispatchers.IO) {
@@ -528,55 +491,6 @@ class RepositoryService(
 //    }
 //  }
 
-  private suspend fun createSource(
-    ownerId: UUID,
-    sourceInput: SourceInput,
-    repository: RepositoryEntity
-  ): SourceEntity {
-    val entity = SourceEntity()
-    log.info("[${coroutineContext.corrId()}] create source")
-    val source = sourceInput.fromDto()
-    planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
-//    planConstraintsService.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
-    entity.tags = source.tags
-    entity.title = sourceInput.title
-    entity.repositoryId = repository.id
-    sourceInput.latLng?.let {
-      entity.latLon = JtsUtil.createPoint(it.lat, it.lon)
-    } ?: run {
-      entity.latLon = null
-    }
-
-    if (source.actions.isEmpty()) {
-      throw IllegalArgumentException("flow must not be empty")
-    }
-    val validator = Validation.buildDefaultValidatorFactory().validator
-    val invalidActions = source.actions.filter { validator.validate(it).isNotEmpty() }
-    if (invalidActions.isNotEmpty()) {
-      throw IllegalArgumentException("invalid actions $invalidActions")
-    }
-
-    if (validator.validate(entity).isNotEmpty()) {
-      throw IllegalArgumentException("invalid source")
-    }
-
-
-    val saved = withContext(Dispatchers.IO) {
-      sourceDAO.save(entity)
-    }
-
-    source.actions.forEachIndexed { index, scrapeAction ->
-      run {
-        scrapeAction.sourceId = entity.id
-        scrapeAction.pos = index
-      }
-    }
-    withContext(Dispatchers.IO) {
-      scrapeActionDAO.saveAll(source.actions)
-    }
-    return saved
-  }
-
   @Transactional
   suspend fun findBySourceId(sourceId: UUID): RepositoryEntity? {
     return withContext(Dispatchers.IO) {
@@ -604,6 +518,13 @@ class RepositoryService(
       repositoryDAO.findByDocumentId(documentId)
     }
   }
+
+  @Transactional
+  suspend fun save(repository: RepositoryEntity): RepositoryEntity {
+    return withContext(Dispatchers.IO) {
+      repositoryDAO.save(repository)
+    }
+  }
 }
 
 private fun Visibility.fromDto(): EntityVisibility {
@@ -613,7 +534,7 @@ private fun Visibility.fromDto(): EntityVisibility {
   }
 }
 
-private fun PluginExecutionInput.fromDto(): PluginExecution {
+fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params.toEntity())
 }
 

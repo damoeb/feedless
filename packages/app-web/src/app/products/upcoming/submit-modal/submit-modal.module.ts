@@ -3,24 +3,25 @@ import { CommonModule } from '@angular/common';
 import { SubmitModalComponent } from './submit-modal.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
+  IonCheckbox,
+  IonCol,
   IonContent,
-  IonList,
+  IonFooter,
+  IonHeader,
+  IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
-  IonRow,
-  IonCol,
-  IonInput,
+  IonList,
   IonNote,
   IonRadio,
   IonRadioGroup,
+  IonRow,
   IonSearchbar,
-  IonFooter,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -48,6 +49,7 @@ import {
     IonRadioGroup,
     IonSearchbar,
     IonFooter,
+    IonCheckbox,
   ],
 })
 export class SubmitModalModule {}

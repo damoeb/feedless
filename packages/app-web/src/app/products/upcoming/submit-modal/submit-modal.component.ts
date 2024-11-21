@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import { AlertController, ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   bodyOutline,
@@ -16,31 +16,39 @@ import {
 } from '../../../../generated/graphql';
 import dayjs from 'dayjs';
 import { ReportService } from '../../../services/report.service';
+import { NamedLatLon } from '../../../types';
 
 export interface SubmitModalComponentProps {
   repositoryId: string;
+  location: NamedLatLon;
 }
 
 type ReportFrequency = 'week' | 'month';
 
 @Component({
-  selector: 'app-tags-modal',
+  selector: 'app-submit-modal',
   templateUrl: './submit-modal.component.html',
   styleUrls: ['./submit-modal.component.scss'],
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {
   repositoryId: string;
+  location: NamedLatLon;
   reportFrequencyWeek: ReportFrequency = 'week';
   reportFrequencyMonth: ReportFrequency = 'month';
 
   protected formGroup = new FormGroup({
     frequency: new FormControl<ReportFrequency>('week'),
+    acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
     email: createEmailFormControl(''),
-    name: new FormControl<string>('', Validators.minLength(3)),
+    name: new FormControl<string>('', [
+      Validators.minLength(3),
+      Validators.required,
+    ]),
   });
 
   constructor(
     private readonly modalCtrl: ModalController,
+    private readonly alertCtrl: AlertController,
     private readonly reportService: ReportService,
   ) {
     addIcons({
@@ -64,8 +72,8 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
           latLng: {
             distanceKm: 10,
             near: {
-              lat: 0, // todo this.location.lat,
-              lon: 0, // todo this.location.lon,
+              lat: this.location.lat,
+              lon: this.location.lon,
             },
           },
         },
@@ -88,6 +96,19 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
           },
         },
       });
+      await this.modalCtrl.dismiss();
+      const alert = await this.alertCtrl.create({
+        header: 'Email Abo erstellt!',
+        backdropDismiss: true,
+        message: `Du solltest in kürze eine Bestätigungmail erhalten.`,
+        buttons: [
+          {
+            text: 'OK',
+            role: 'confirm',
+          },
+        ],
+      });
+      await alert.present();
     }
   }
 }

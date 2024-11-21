@@ -90,6 +90,7 @@ fragment SourceFragment on Source {
   }
   lastErrorMessage
   recordCount
+  lastRecordsRetrieved
   title
   flow {
     ...ScrapeFlowFragment
@@ -118,7 +119,8 @@ fragment RepositoryFragment on Repository {
     upVotes
   }
   refreshCron
-  hasDisabledSources
+  sourcesCount
+  sourcesCountWithProblems
   shareKey
   disabledFrom
   archived

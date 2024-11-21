@@ -15,5 +15,7 @@ open class ResumableHarvestException(message: String, val nextRetryAfter: Durati
 class HostOverloadingException(message: String, waitForRefill: Duration) :
   ResumableHarvestException(message, waitForRefill)
 
+class NoItemsRetrievedException : RuntimeException("no items retireved")
+
 class TemporaryServerException(message: String, waitForRefill: Duration) :
   ResumableHarvestException(message, waitForRefill)

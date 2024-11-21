@@ -43,7 +43,7 @@ class AnnotationResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun createAnnotation(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: CreateAnnotationInput
+    @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
   ): Annotation = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createAnnotation $data")
     annotationService.createAnnotation(data, sessionService.user()).toDto()
@@ -54,7 +54,7 @@ class AnnotationResolver(
   @PreAuthorize("hasAuthority('USER')")
   suspend fun deleteAnnotation(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: DeleteAnnotationInput,
+    @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("deleteAnnotation $data")
     annotationService.deleteAnnotation(data, sessionService.user())

@@ -13,54 +13,61 @@ import org.migor.feedless.util.JsonUtil
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-class FeedGeneratorTest {
-
-  @Test
-  @Disabled
-  fun `generated feed and parsed feed is identical`() = runTest {
-    val url = "https://foo.bar"
-
-    val feed = JsonFeed()
-    feed.id = "id"
-    feed.title = "feed title"
+fun createJsonFeed(url: String): JsonFeed {
+  val feed = JsonFeed()
+  feed.id = "id"
+  feed.title = "feed title"
 //    expectedFeed.favicon = ""
-    feed.description = "description"
+  feed.description = "description"
 //    expectedFeed.authors = emptyList()
-    feed.websiteUrl = "http://websiteUrl"
-    feed.imageUrl = "http://imageUrl"
-    feed.language = "language"
-    feed.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
-    feed.links = emptyList()
-    feed.feedUrl = url
-    feed.expired = false
-    feed.tags = listOf("tag1", "tag2")
+  feed.websiteUrl = "http://websiteUrl"
+  feed.imageUrl = "http://imageUrl"
+  feed.language = "language"
+  feed.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+  feed.links = emptyList()
+  feed.feedUrl = url
+  feed.expired = false
+  feed.tags = listOf("tag1", "tag2")
 
-    val item = JsonItem()
-    item.id = "id"
-    item.title = "title"
-    item.url = "http://item-url"
-    item.tags = emptyList()
+
+
+  val item = JsonItem()
+  item.id = "id"
+  item.title = "title"
+  item.url = "http://item-url"
+  item.tags = emptyList()
 //    item.authors = emptyList()
-    item.text = "contentText"
-    item.rawBase64 = "base64-image-data"
-    item.rawMimeType = "image/png"
-    item.html = "<div>foo</div>"
+  item.text = "contentText"
+  item.rawBase64 = "base64-image-data"
+  item.rawMimeType = "image/png"
+  item.html = "<div>foo</div>"
 //    item.imageUrl = "imageUrl"
 //    item.bannerImage = "bannerImage"
 //    item.language = "language"
 //    item.authors = emptyList()
 //    item.attachments = emptyList()
-    item.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+  item.publishedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)
 //    item.modifiedAt = DateUtils.truncate(Date(), Calendar.MILLISECOND)
 //    item.startingAt = Date()
-    val latLng = JsonPoint()
-    latLng.x = 1.1
-    latLng.y = 2.2
-    item.latLng = latLng
+  val latLng = JsonPoint()
+  latLng.x = 1.1
+  latLng.y = 2.2
+  item.latLng = latLng
 
-    feed.items = listOf(item)
-    feed.page = 104
+  feed.items = listOf(item)
+  feed.page = 104
 
+  return feed
+}
+
+class SyndAtomFeedExporterTest {
+
+  @Test
+  @Disabled
+  fun `generated feed and parsed feed is identical`() = runTest {
+
+    val url = "https://foo.bar"
+    val feed = createJsonFeed(url)
 
     val exporter = SyndAtomFeedExporter()
 //    exporter.commit = "foo-commit-id"

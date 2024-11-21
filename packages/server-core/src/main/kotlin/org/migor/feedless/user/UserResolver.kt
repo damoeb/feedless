@@ -84,7 +84,7 @@ class UserResolver {
   @PreAuthorize("hasAuthority('USER')")
   suspend fun connectedApp(
     dfe: DataFetchingEnvironment,
-    @InputArgument id: String,
+    @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,
   ): ConnectedApp = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.info("connectedApp ${coroutineContext.userId()} ")
     userService.getConnectedAppByUserAndId(coroutineContext.userId(), UUID.fromString(id)).toDto()

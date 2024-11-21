@@ -45,4 +45,18 @@ class SourcePipelineService internal constructor(
   fun deleteAllByCreatedAtBefore(refDate: LocalDateTime) {
     sourcePipelineJobDAO.deleteAllByCreatedAtBefore(refDate)
   }
+
+  @Transactional(readOnly = true)
+  suspend fun existsBySourceIdAndUrl(id: UUID, url: String): Boolean {
+    return withContext(Dispatchers.IO) {
+      sourcePipelineJobDAO.existsBySourceIdAndUrl(id, url)
+    }
+  }
+
+  @Transactional
+  suspend fun saveAll(jobs: List<SourcePipelineJobEntity>): List<SourcePipelineJobEntity> {
+    return withContext(Dispatchers.IO) {
+      sourcePipelineJobDAO.saveAll(jobs)
+    }
+  }
 }

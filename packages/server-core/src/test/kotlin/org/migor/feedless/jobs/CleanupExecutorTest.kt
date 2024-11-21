@@ -10,6 +10,7 @@ import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -54,19 +55,19 @@ class CleanupExecutorTest {
   @Test
   fun `executeCleanup removes oneTimePassword`() {
     cleanupExecutor.executeCleanup()
-    verify(oneTimePasswordService, times(1)).deleteAllByValidUntilBefore(any(LocalDateTime::class.java))
+    verify(oneTimePasswordService, times(1)).deleteAllByValidUntilBefore(any2())
   }
 
   @Test
   fun `executeCleanup removes sourcePipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    verify(sourcePipelineService, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
+    verify(sourcePipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
   }
 
   @Test
   fun `executeCleanup removes documentPipelineJobs`() {
     cleanupExecutor.executeCleanup()
-    verify(documentPipelineService, times(1)).deleteAllByCreatedAtBefore(any(LocalDateTime::class.java))
+    verify(documentPipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
   }
 
   @Test

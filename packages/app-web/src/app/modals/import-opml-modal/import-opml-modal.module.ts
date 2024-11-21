@@ -4,19 +4,19 @@ import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ImportOpmlModalComponent } from './import-opml-modal.component';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonList,
-  IonItem,
+  IonButtons,
   IonCheckbox,
-  IonLabel,
+  IonContent,
   IonFooter,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
   IonNote,
+  IonTitle,
+  IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
 

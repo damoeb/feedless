@@ -14,12 +14,11 @@ import { IonPopover } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';
 import {
-  listOutline,
   chevronForwardOutline,
   eyeOutline,
   gitNetworkOutline,
+  listOutline,
 } from 'ionicons/icons';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-about-feedless-page',

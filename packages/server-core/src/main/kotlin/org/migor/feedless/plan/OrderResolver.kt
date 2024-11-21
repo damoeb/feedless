@@ -47,10 +47,10 @@ class OrderResolver {
   @Autowired
   lateinit var licenseService: LicenseService
 
-  @DgsQuery
+  @DgsQuery(field = DgsConstants.QUERY.Orders)
   suspend fun orders(
     dfe: DataFetchingEnvironment,
-    @InputArgument data: OrdersInput
+    @InputArgument(DgsConstants.QUERY.ORDERS_INPUT_ARGUMENT.Data) data: OrdersInput
   ): List<Order> =
     withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       log.debug("orders $data")
@@ -59,7 +59,7 @@ class OrderResolver {
 
   @DgsMutation(field = DgsConstants.MUTATION.UpsertOrder)
   suspend fun upsertOrder(
-    @InputArgument data: UpsertOrderInput,
+    @InputArgument(DgsConstants.MUTATION.UPSERTORDER_INPUT_ARGUMENT.Data) data: UpsertOrderInput,
   ): Order =
     coroutineScope {
       log.debug("upsertOrder $data")

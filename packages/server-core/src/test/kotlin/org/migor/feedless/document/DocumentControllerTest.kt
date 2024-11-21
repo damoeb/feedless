@@ -13,6 +13,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
@@ -85,7 +86,7 @@ class DocumentControllerTest {
 
   @Test
   fun `redirect with source param`() = runTest {
-    `when`(documentService.findById(any(UUID::class.java))).thenReturn(document)
+    `when`(documentService.findById(any2())).thenReturn(document)
 
     val params = mapOf(
       "source" to "https://heise.de/some-feed.xml",
@@ -97,7 +98,7 @@ class DocumentControllerTest {
 
   @Test
   fun `redirect without source param`() = runTest {
-    `when`(documentService.findById(any(UUID::class.java))).thenReturn(document)
+    `when`(documentService.findById(any2())).thenReturn(document)
     val response = template.getForEntity("/article/${document.id}", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
     assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(actualDocumentUrl)

@@ -6,8 +6,8 @@ import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,
-  GqlVertical,
   GqlScrapeActionInput,
+  GqlVertical,
   GqlVisibility,
 } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';

@@ -6,20 +6,20 @@ import { EmbeddedImageModule } from '../../components/embedded-image/embedded-im
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 import { InteractiveWebsiteModule } from '../../components/interactive-website/interactive-website.module';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
-  IonRow,
-  IonList,
+  IonFooter,
+  IonHeader,
+  IonIcon,
   IonItem,
+  IonLabel,
+  IonList,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonLabel,
-  IonFooter,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @NgModule({

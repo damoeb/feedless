@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
+@Transactional(propagation = Propagation.SUPPORTS)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class GenericFeedLocator(
   private val webToFeedTransformer: WebToFeedTransformer

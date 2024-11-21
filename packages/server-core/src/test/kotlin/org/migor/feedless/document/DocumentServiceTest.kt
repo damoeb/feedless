@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
@@ -36,6 +37,7 @@ import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.any
+import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
@@ -49,6 +51,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
@@ -68,6 +71,7 @@ class DocumentServiceTest {
   private lateinit var pluginService: PluginService
   private lateinit var filterPlugin: CompositeFilterPlugin
   private lateinit var fulltextPlugin: FulltextPlugin
+  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
   private lateinit var documentId: UUID
   private lateinit var document: DocumentEntity
 
@@ -93,13 +97,14 @@ class DocumentServiceTest {
       plugins = listOf(filterPlugin, fulltextPlugin)
     )
 //    `when`(pluginService.resolveById<FilterEntityPlugin>(eq(FeedlessPlugins.org_feedless_filter.name))).thenReturn(filterPlugin)
+    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
 
     documentService = DocumentService(
       documentDAO,
       mock(EntityManager::class.java),
       repositoryDAO,
       planConstraintsService,
-      mock(DocumentPipelineJobDAO::class.java),
+      documentPipelineJobDAO,
       pluginService,
       permissionService,
     )
@@ -141,8 +146,7 @@ class DocumentServiceTest {
       )
     )
     verify(filterPlugin).matches(
-      any(JsonItem::class.java), any(CompositeFieldFilterParamsInput::class.java),
-      any(Int::class.java)
+      any2(), any2(), any(Int::class.java)
     )
     verify(documentDAO).delete(eq(document))
   }
@@ -187,9 +191,9 @@ class DocumentServiceTest {
     `when`(
       fulltextPlugin.mapEntity(
         eq(document),
-        any(RepositoryEntity::class.java),
-        any(PluginExecutionJsonEntity::class.java),
-        any(LogCollector::class.java),
+        any2(),
+        any2(),
+        any2(),
       )
     ).thenAnswer {
       val d = it.arguments[0] as DocumentEntity
@@ -217,9 +221,29 @@ class DocumentServiceTest {
   }
 
   @Test
-  @Disabled
-  fun `processDocumentPlugins will save document when execution gets delayed`() {
-    TODO()
+  fun `processDocumentPlugins will save document when execution gets delayed`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val job = mock(DocumentPipelineJobEntity::class.java)
+    `when`(job.pluginId).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
+    `when`(job.executorParams).thenReturn(PluginExecutionJsonEntity())
+    `when`(
+      fulltextPlugin.mapEntity(
+        any(DocumentEntity::class.java),
+        any(RepositoryEntity::class.java),
+        any(PluginExecutionJsonEntity::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
+    assertThat(job.coolDownUntil).isNull()
+
+    // when
+    documentService.processDocumentPlugins(
+      documentId, listOf(job)
+    )
+
+    // then
+    verify(job).coolDownUntil != null
+    documentPipelineJobDAO.save(job)
+    documentDAO.save(document)
   }
 
   @Test

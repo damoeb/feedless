@@ -7,17 +7,17 @@ import { EventsRoutingModule } from './events-routing.module';
 import { UpcomingHeaderModule } from '../upcoming-header/upcoming-header.module';
 import { UpcomingFooterModule } from '../upcoming-footer/upcoming-footer.module';
 import {
-  IonContent,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonSpinner,
-  IonNote,
-  IonFooter,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonCardTitle,
+  IonContent,
+  IonFooter,
+  IonIcon,
+  IonNote,
+  IonSpinner,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if-prod.module';
 

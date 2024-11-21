@@ -46,8 +46,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
 
   fun countByRepositoryId(id: UUID): Long
 
-  fun deleteAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>)
-  fun deleteAllByRepositoryIdAndId(repositoryId: UUID, fromString: UUID?)
+  fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>): List<DocumentEntity>
   fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity>
 
 
@@ -75,5 +74,13 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
     @Param("url") url: String,
     @Param("repositoryId") repositoryId: UUID
   ): DocumentEntity?
+
+
+  @Query(
+    """SELECT d FROM DocumentEntity d
+       LEFT JOIN FETCH d.attachments
+    WHERE d.id in (:ids)"""
+  )
+  fun findAllWithAttachmentsByIdIn(ids: List<UUID>): List<DocumentEntity>
 
 }

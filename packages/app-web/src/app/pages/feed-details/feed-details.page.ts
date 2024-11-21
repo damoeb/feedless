@@ -13,7 +13,6 @@ import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { AppConfigService } from '../../services/app-config.service';
-import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -64,6 +63,11 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
     try {
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
+        {
+          cursor: {
+            page: 0,
+          },
+        },
       );
       this.appConfig.setPageTitle(this.repository.title);
       this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;

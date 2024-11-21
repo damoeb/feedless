@@ -11,13 +11,13 @@ class ReportResolverTest {
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  @Disabled
   fun `report can be created without authorization`() {
     // todo test
   }
 
   @Test
-  @Disabled("Not implemented yet")
+  @Disabled
   fun `report can be deleted without authorization`() {
     // todo test
   }

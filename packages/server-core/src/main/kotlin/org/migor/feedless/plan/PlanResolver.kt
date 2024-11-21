@@ -31,7 +31,8 @@ class PlanResolver {
   private lateinit var planService: PlanService
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Plan)
-  suspend fun plan(dfe: DgsDataFetchingEnvironment, @InputArgument product: Vertical): Plan? = coroutineScope {
+  suspend fun plan(dfe: DgsDataFetchingEnvironment,
+                   @InputArgument(DgsConstants.USER.PLAN_INPUT_ARGUMENT.Product) product: Vertical): Plan? = coroutineScope {
     val user: User = dfe.getSource()!!
     planService.findActiveByUserAndProductIn(UUID.fromString(user.id), listOf(product.fromDto()))
       ?.toDto()
