@@ -338,6 +338,7 @@ export const mocks: Mocks = {
     frequency: [],
     sourcesCountWithProblems: 0,
     currentUserIsOwner: false,
+    pushNotificationsMuted: false,
     pullsPerMonth: 0,
     refreshCron: '',
     plugins: [],

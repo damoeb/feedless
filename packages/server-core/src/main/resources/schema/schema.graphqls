@@ -111,6 +111,7 @@ type Repository {
   archived: Boolean!
   pullsPerMonth: Int!
   currentUserIsOwner: Boolean!
+  pushNotificationsMuted: Boolean!
   sourcesCount: Int!
   sourcesCountWithProblems: Int!
   frequency(groupBy: RecordDateField!): [RecordFrequency!]

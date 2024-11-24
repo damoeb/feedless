@@ -250,6 +250,7 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     sourcesCount = 0,
     sourcesCountWithProblems = 0,
     currentUserIsOwner = currentUserIsOwner,
+    pushNotificationsMuted = pushNotificationsMuted,
     pullsPerMonth = pullsPerMonth,
     annotations = null
   )

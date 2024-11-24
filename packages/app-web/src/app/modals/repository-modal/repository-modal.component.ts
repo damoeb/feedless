@@ -353,6 +353,7 @@ export class RepositoryModalComponent
       applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),
+      enablePushNotifications: !this.repository.pushNotificationsMuted,
       maxAgeDays: retention?.maxAgeDays || null,
       maxCapacity: retention?.maxCapacity || null,
     });

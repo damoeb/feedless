@@ -23,6 +23,17 @@
       *ngIf="repository.visibility === GqlVisibility.IsPublic"
       >Public
     </ion-chip>
+
+    <ion-chip
+      (click)="editRepository(['notifications'])"
+      *ngIf="!repository.pushNotificationsMuted"
+      >Push Notifications
+    </ion-chip>
+    <ion-chip
+      (click)="editRepository(['notifications'])"
+      *ngIf="repository.pushNotificationsMuted"
+      >No Notifications
+    </ion-chip>
   </ion-row>
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
     <ion-buttons slot="end">

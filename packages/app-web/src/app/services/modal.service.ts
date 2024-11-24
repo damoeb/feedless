@@ -51,6 +51,7 @@ export enum ModalName {
 })
 export class ModalService {
   private readonly unfinishedWizardKey = 'unfinished-wizard';
+  private isModalOpen = false;
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -185,15 +186,23 @@ export class ModalService {
   }
 
   async openRepositoryEditor(componentProps: RepositoryModalComponentProps) {
-    await this.updateUrlParams(ModalName.editRepository);
-    const modal = await this.modalCtrl.create({
-      component: RepositoryModalComponent,
-      componentProps,
-    });
+    if (this.isModalOpen) {
+      return;
+    }
+    try {
+      this.isModalOpen = true;
+      await this.updateUrlParams(ModalName.editRepository);
+      const modal = await this.modalCtrl.create({
+        component: RepositoryModalComponent,
+        componentProps,
+      });
 
-    await modal.present();
-    await modal.onDidDismiss();
-    await this.updateUrlParams();
+      await modal.present();
+      await modal.onDidDismiss();
+    } finally {
+      await this.updateUrlParams();
+      this.isModalOpen = false;
+    }
   }
 
   async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {

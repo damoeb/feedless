@@ -15,6 +15,7 @@ describe('SubmitModalComponent', () => {
 
     fixture = TestBed.createComponent(SubmitModalComponent);
     component = fixture.componentInstance;
+    component.location = {} as any;
     fixture.detectChanges();
   });
 
