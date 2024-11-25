@@ -1,4 +1,17 @@
 <ion-header style="box-shadow: none">
+  <div
+    style="
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 100px;
+      transition: height linear;
+    "
+    *ngIf="!location"
+  >
+    <h1><em>Lokale</em>.Events</h1>
+    <p>„Entdecke die kleinen Schätze deiner Heimat“</p>
+  </div>
   <ion-toolbar style="--background: transparent">
     <div
       style="
@@ -9,64 +22,68 @@
         display: flex;
       "
     >
-      <ion-button
-        [color]="expand == 'calendar' ? 'primary' : 'light'"
-        aria-label="Datum"
-        (click)="expand == 'calendar' ? (expand = null) : (expand = 'calendar')"
-      >
-        <ion-icon name="calendar-outline" slot="start"></ion-icon>
-        <span class="ion-hide-sm-down"> {{ getWeekday() }}, </span>
-        {{ getLabelForCalendar() }}
-      </ion-button>
-      <ion-input
-        (ionFocus)="expand = 'suggestions'"
-        [formControl]="locationFc"
-        fill="outline"
-        placeholder="PLZ oder Ortschaft"
-        style="
-          flex: 1;
-          border-radius: 8px;
-          margin: 5px;
-          --border-color: var(--ion-color-primary);
-          box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
-        "
-      >
-      </ion-input>
-      <ion-select
-        [formControl]="perimeterFc"
-        #perimeterCtrl
-        interface="action-sheet"
-        class="hidden"
-        aria-label="Umkreis"
-      >
-        <ion-select-option [value]="5">+5 Km</ion-select-option>
-        <ion-select-option [value]="10">+10 Km</ion-select-option>
-        <ion-select-option [value]="20">+20 Km</ion-select-option>
-        <ion-select-option [value]="30">+30 Km</ion-select-option>
-      </ion-select>
-      <ion-button
-        color="light"
-        aria-label="Umkreis konfigurieren"
-        title="Umkreis konfigurieren"
-        (click)="perimeterCtrl.open($event)"
-      >
-        +{{ perimeterFc.value }} Km
-      </ion-button>
-      <!--      <ion-button-->
-      <!--        color="light"-->
-      <!--        aria-label="Karte anzeigen"-->
-      <!--        (click)="showMap = !showMap"-->
-      <!--      >-->
-      <!--        <ion-icon name="map-outline" slot="start"></ion-icon>-->
-      <!--        Karte-->
-      <!--      </ion-button>-->
-      <!--      <ion-button-->
-      <!--        color="light"-->
-      <!--        aria-label="Kategorien filtern"-->
-      <!--        (click)="showFilters = !showFilters"-->
-      <!--      >-->
-      <!--        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>-->
-      <!--      </ion-button>-->
+      <div style="display: flex; flex: 1">
+        <ion-button
+          [color]="expand == 'calendar' ? 'primary' : 'light'"
+          aria-label="Datum"
+          (click)="
+            expand == 'calendar' ? (expand = null) : (expand = 'calendar')
+          "
+        >
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          <span class="ion-hide-sm-down"> {{ getWeekday() }}, </span>
+          {{ getLabelForCalendar() }}
+        </ion-button>
+        <ion-input
+          (ionFocus)="expand = 'suggestions'"
+          [formControl]="locationFc"
+          fill="outline"
+          placeholder="PLZ oder Ortschaft"
+          style="
+            flex: 1;
+            border-radius: 8px;
+            margin: 5px;
+            --border-color: var(--ion-color-primary);
+            box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
+          "
+        >
+        </ion-input>
+        <ion-select
+          [formControl]="perimeterFc"
+          #perimeterCtrl
+          interface="action-sheet"
+          class="hidden"
+          aria-label="Umkreis"
+        >
+          <ion-select-option [value]="5">+5 Km</ion-select-option>
+          <ion-select-option [value]="10">+10 Km</ion-select-option>
+          <ion-select-option [value]="20">+20 Km</ion-select-option>
+          <ion-select-option [value]="30">+30 Km</ion-select-option>
+        </ion-select>
+        <ion-button
+          color="light"
+          aria-label="Umkreis konfigurieren"
+          title="Umkreis konfigurieren"
+          (click)="perimeterCtrl.open($event)"
+        >
+          +{{ perimeterFc.value }} Km
+        </ion-button>
+        <!--      <ion-button-->
+        <!--        color="light"-->
+        <!--        aria-label="Karte anzeigen"-->
+        <!--        (click)="showMap = !showMap"-->
+        <!--      >-->
+        <!--        <ion-icon name="map-outline" slot="start"></ion-icon>-->
+        <!--        Karte-->
+        <!--      </ion-button>-->
+        <!--      <ion-button-->
+        <!--        color="light"-->
+        <!--        aria-label="Kategorien filtern"-->
+        <!--        (click)="showFilters = !showFilters"-->
+        <!--      >-->
+        <!--        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>-->
+        <!--      </ion-button>-->
+      </div>
     </div>
 
     <div
@@ -94,16 +111,16 @@
     <ng-container *ngIf="expand === 'suggestions'">
       <ion-list
         class="ion-margin-bottom"
-        style="max-height: 20vh; overflow-y: auto"
+        style="max-height: 20vh; overflow-y: hidden"
       >
-        <!--      <ion-item-->
-        <!--        (click)="getCurrentLocation()"-->
-        <!--        *ngIf="!locationNotAvailable"-->
-        <!--        [button]="true"-->
-        <!--      >-->
-        <!--        <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>-->
-        <!--        Your Location-->
-        <!--      </ion-item>-->
+        <!--        <ion-item-->
+        <!--          (click)="getCurrentLocation()"-->
+        <!--          *ngIf="!locationNotAvailable"-->
+        <!--          [button]="true"-->
+        <!--        >-->
+        <!--          <ion-icon class="ion-margin-end" name="locate-outline"></ion-icon>-->
+        <!--          Your Location-->
+        <!--        </ion-item>-->
         <ion-item *ngIf="locationSuggestions.length === 0">
           <span class="suggestion">
             Tippe deine Ortschaft oder Postleitzahl
@@ -119,13 +136,12 @@
           <span class="suggestion" [innerHTML]="location.displayName"></span>
         </ion-item>
       </ion-list>
-      {{ currentLatLon | json }}
-      <app-map
-        [position]="getCurrentLatLon()"
-        style="height: 200px; border-radius: 8px; overflow: hidden"
-        (positionChange)="handlePositionChange($event)"
-        [perimeter]="perimeterFc.value"
-      ></app-map>
+      <!--      <app-map-->
+      <!--        [position]="getCurrentLatLon()"-->
+      <!--        style="height: 200px; border-radius: 8px; overflow: hidden"-->
+      <!--        (positionChange)="handlePositionChange($event)"-->
+      <!--        [perimeter]="perimeterFc.value"-->
+      <!--      ></app-map>-->
     </ng-container>
 
     <ng-container *ngIf="expand === 'calendar'">

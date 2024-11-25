@@ -9,7 +9,7 @@ import {
 import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
-import { groupBy, sortBy, unionBy } from 'lodash-es';
+import { groupBy, sortBy, unionBy, uniqBy } from 'lodash-es';
 import { RecordService } from '../../../services/record.service';
 import { Record } from '../../../graphql/types';
 import {
@@ -33,6 +33,7 @@ import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
   arrowForwardOutline,
+  save,
   sendOutline,
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
@@ -125,6 +126,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    this.pageService.setMetaTags(this.getPageTags());
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         try {
@@ -132,6 +134,8 @@ export class EventsPage implements OnInit, OnDestroy {
             this.activatedRoute,
             this.openStreetMapService,
           );
+          this.saveLocation(this.location);
+
           this.latLon = [this.location.lat, this.location.lon];
 
           const { perimeter } =
@@ -165,18 +169,34 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private getPageTags(): PageTags {
-    return {
-      title: `Events in ${this.location.displayName}, ${this.location.area} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
-      description: `Erfahre alles über aktuelle Veranstaltungen in ${this.location.displayName}, ${this.location.area}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${this.location.displayName}, ${this.location.area} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
-      publisher: 'upcoming',
-      category: '',
-      url: document.location.href,
-      region: this.location.area,
-      place: this.location.displayName,
-      lang: 'de',
-      publishedAt: dayjs(),
-      position: [this.location.lat, this.location.lon],
-    };
+    const location = this.location;
+    if (location) {
+      return {
+        title: `Events in ${location.displayName}, ${location.area} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
+        description: `Erfahre alles über aktuelle Veranstaltungen in ${location.displayName}, ${location.area}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${location.displayName}, ${location.area} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
+        publisher: 'upcoming',
+        category: '',
+        url: document.location.href,
+        region: location.area,
+        place: location.displayName,
+        lang: 'de',
+        publishedAt: dayjs(),
+        position: [location.lat, location.lon],
+      };
+    } else {
+      return {
+        title: `lokale.events | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
+        description: `Erfahre alles über aktuelle Veranstaltungen in deiner Umgebung. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke. Ideal für Einheimische, Familien und Besucher.`,
+        publisher: 'upcoming',
+        category: '',
+        url: document.location.href,
+        // region: location.area,
+        // place: location.displayName,
+        lang: 'de',
+        publishedAt: dayjs(),
+        // position: [location.lat, location.lon],
+      };
+    }
   }
 
   ngOnDestroy(): void {
@@ -446,4 +466,19 @@ export class EventsPage implements OnInit, OnDestroy {
     this.locationService.replaceState(url);
     await this.fetchEvents();
   }
+
+  private saveLocation(location: Nullable<NamedLatLon>) {
+    const savedLocations: NamedLatLon[] = JSON.parse(
+      localStorage.getItem('savedLocations') || '[]',
+    );
+    const locations = uniqBy(
+      [location, ...savedLocations],
+      (l) => `${l.lat}:${l.lon}`,
+    ).filter((_, index) => index < 5);
+    localStorage.setItem('savedLocations', JSON.stringify(locations));
+  }
+}
+
+export function getSavedLocations(): NamedLatLon[] {
+  return JSON.parse(localStorage.getItem('savedLocations') || '[]');
 }

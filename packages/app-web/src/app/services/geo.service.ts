@@ -62,16 +62,16 @@ export class GeoService {
     return this.currentPosition.asObservable();
   }
 
-  // getLocationFromBrowser() {
-  //   new Promise<GeolocationPosition>((resolve, reject) => {
-  //     navigator.geolocation.getCurrentPosition(resolve, reject);
-  //   })
-  //     .then((response) =>
-  //       this.openStreetMapService.reverseSearch(
-  //         response.coords.latitude,
-  //         response.coords.longitude,
-  //       ),
-  //     )
-  //     .then(this.currentPosition.next);
-  // }
+  requestLocationFromBrowser() {
+    new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    })
+      .then((response) =>
+        this.openStreetMapService.reverseSearch(
+          response.coords.latitude,
+          response.coords.longitude,
+        ),
+      )
+      .then(this.currentPosition.next);
+  }
 }

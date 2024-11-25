@@ -1,13 +1,27 @@
-<ion-footer [translucent]="true" collapse="fade" class="ion-no-border">
+<ion-footer [translucent]="true" class="ion-no-border">
   <div class="events">
-    <div appDev style="align-self: center" *ngIf="location">
+    <div appDev
+         style="align-self: center"
+         *ngIf="location">
       <ion-button
         color="primary"
         shape="round"
+        class="pulsating-shadow"
         (click)="createMailSubscription()"
       >
-        Jetzt Events als E-Mail abonnieren!
+        Event-Alerts per E-Mail
         <ion-icon name="send-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+    <div style="align-self: center" *ngIf="!location">
+      <ion-button
+        appDev
+        color="primary"
+        shape="round"
+        (click)="useUsersPosition()"
+      >
+        <ion-icon name="locate-outline" slot="start"></ion-icon>
+        Aktueller Standort
       </ion-button>
     </div>
     <div style="padding-top: 5px; opacity: 0.5; text-align: center">

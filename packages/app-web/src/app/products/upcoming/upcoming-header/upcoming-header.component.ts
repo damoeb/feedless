@@ -20,6 +20,7 @@ import {
   debounce as debounceLD,
   DebouncedFunc,
   isUndefined,
+  uniqBy,
 } from 'lodash-es';
 import { LatLon } from '../../../components/map/map.component';
 import { FormControl } from '@angular/forms';
@@ -36,6 +37,7 @@ import {
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
 import { homeRoute } from '../upcoming-product-routing.module';
+import { getSavedLocations } from '../events/events.page';
 
 type Day = {
   day: Dayjs | null;
@@ -230,13 +232,22 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   async fetchSuggestions(query: string) {
     const tokens = compact(query.toLowerCase().trim().normalize().split(' '));
     const matchHighlighter = this.highlightTokens(tokens);
-    const staticMatches = getCachedLocations()
-      .filter((p) => tokens.every((token) => p.index.indexOf(token) > -1))
-      .filter((_, index) => index < 6);
+    this.expand = 'suggestions';
+    let suggestions = getCachedLocations().filter((p) =>
+      tokens.every((token) => p.index.indexOf(token) > -1),
+    );
+
+    if (query.length === 0) {
+      suggestions = uniqBy(
+        [...getSavedLocations(), ...suggestions],
+        (l) => `${l.lat}:${l.lon}`,
+      );
+    }
 
     // if (staticMatches.length > 0) {
-    this.locationSuggestions = matchHighlighter(staticMatches);
-    this.expand = 'suggestions';
+    this.locationSuggestions = matchHighlighter(
+      suggestions.filter((_, index) => index < 6),
+    );
     this.changeRef.detectChanges();
     // } else {
     // return matchHighlighter(
@@ -432,8 +443,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     return units.every((unit) => a.isSame(b, unit));
   }
 
-  handlePositionChange(latLon: number[]) {}
-
   // formatToRelativeDay(inputDate: Dayjs, suffix: string = '') {
   //   const today = dayjs();
   //
@@ -502,13 +511,5 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           day: parseInt(this.currentDate.locale(this.locale).format('DD')),
         }).$
     );
-  }
-
-  getCurrentLatLon() {
-    if (this.location) {
-      return [this.location.lat, this.location.lon];
-    } else {
-      return this.zhLatLon;
-    }
   }
 }

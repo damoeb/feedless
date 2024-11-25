@@ -11,9 +11,9 @@ export type PageTags = {
   publisher: string;
   category?: string;
   url: string;
-  region: string;
-  place: string;
-  position: LatLon;
+  region?: string;
+  place?: string;
+  position?: LatLon;
   publishedAt: Dayjs;
   startingAt?: Dayjs;
 };
@@ -76,18 +76,23 @@ export class PageService {
   }
 
   private setGeoTags(options: PageTags) {
-    this.addMetaTags([
-      { name: 'geo.region', content: options.region },
-      { name: 'geo.placename', content: options.place },
-      {
+    const geoTags = [];
+    if (options.region) {
+      geoTags.push({ name: 'geo.region', content: options.region });
+    }
+    if (options.place) {
+      geoTags.push({ name: 'geo.placename', content: options.place });
+    }
+    if (options.position?.length == 2) {
+      geoTags.push({
         name: 'geo.position',
-        content: `${options.position[0]};${options.position[1]}`,
-      }, // '40.7128;-74.0060'
-      {
+        content: `${options.position[0]};${options.position[1]}`, // '40.7128;-74.0060'
+      });
+      geoTags.push({
         name: 'ICBM',
-        content: `${options.position[0]}, ${options.position[1]}`,
-      }, // '40.7128, -74.0060'
-    ]);
+        content: `${options.position[0]}, ${options.position[1]}`, // '40.7128, -74.0060'
+      });
+    }
   }
 
   private addMetaTags(definitions: MetaDefinition[]) {

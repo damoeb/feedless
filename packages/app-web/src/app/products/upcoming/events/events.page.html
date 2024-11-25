@@ -7,11 +7,6 @@
 ></app-upcoming-header>
 <ion-content>
   <div class="events">
-    <ng-container *ngIf="!location">
-      <h3 style="flex: 1; align-content: center; align-self: center">
-        Wähle deinen Ort um Veranstaltungen zu sehen
-      </h3>
-    </ng-container>
     <ng-container *ngIf="location">
       <h1
         class="ion-padding-horizontal"
@@ -50,9 +45,13 @@
         <ng-container *ngIf="date">
           <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
           <div *ngIf="!loadingDay">
-            <p *ngIf="placesByDistance.length === 0" class="ion-text-center">
-              Keine Veranstaltungen gefunden.
-            </p>
+            <div *ngIf="placesByDistance.length === 0" class="ion-text-center">
+              <p>Keine Veranstaltungen gefunden.</p>
+              <p>
+                <a href="mailto:markus@lokale.events">Schick uns einen Link</a>,
+                wir fügen deine lokalen Events hinzu!
+              </p>
+            </div>
             <div *ngFor="let placesGroup of placesByDistance">
               <ng-container *ngFor="let place of placesGroup.places">
                 <h2 class="ion-padding-top">

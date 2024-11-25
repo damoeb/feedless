@@ -5,6 +5,14 @@ export function getCachedLocations(): NamedLatLon[] {
   return locations;
 }
 
+// export function coerceLocation(): NamedLatLon {
+//   return getCachedLocations().find(
+//     (place) =>
+//       roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
+//       roundLatLon(place.lon) == roundLatLon(latLon.lon),
+//   )
+// }
+
 type PlacesLatLon = Pick<NamedLatLon, 'area' | 'lat' | 'lon'> & {
   place: string[] | string;
   zip: string;
@@ -6919,7 +6927,7 @@ const zh: PlacesLatLon[] = [
   },
 ];
 
-const places: PlacesLatLon[] = [...zh, ...ag];
+const places: PlacesLatLon[] = [...zh, ...ag, ...zg, ...sz];
 const toNamedLatLon = (place: string, l: PlacesLatLon): NamedLatLon => {
   const displayName = `${l.zip}, ${place}`;
   return {
