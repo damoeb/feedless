@@ -12,11 +12,11 @@ import { AuthService } from '../../services/auth.service';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
-    selector: 'app-agents-button',
-    templateUrl: './agents-button.component.html',
-    styleUrls: ['./agents-button.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-agents-button',
+  templateUrl: './agents-button.component.html',
+  styleUrls: ['./agents-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AgentsButtonComponent implements OnInit, OnDestroy {
   agentCount: number = 0;

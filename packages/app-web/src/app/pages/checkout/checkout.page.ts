@@ -287,11 +287,11 @@ type PaymentOption = {
 };
 
 @Component({
-    selector: 'app-checkout-page',
-    templateUrl: './checkout.page.html',
-    styleUrls: ['./checkout.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-checkout-page',
+  templateUrl: './checkout.page.html',
+  styleUrls: ['./checkout.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CheckoutPage implements OnInit, OnDestroy {
   product: VerticalSpecWithRoutes;

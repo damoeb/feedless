@@ -33,11 +33,11 @@ type ProductWithFeatureGroups = Product & {
 };
 
 @Component({
-    selector: 'app-pricing',
-    templateUrl: './pricing.component.html',
-    styleUrls: ['./pricing.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-pricing',
+  templateUrl: './pricing.component.html',
+  styleUrls: ['./pricing.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PricingComponent implements OnInit {
   targetGroupFc = new FormControl<TargetGroup>('individual');

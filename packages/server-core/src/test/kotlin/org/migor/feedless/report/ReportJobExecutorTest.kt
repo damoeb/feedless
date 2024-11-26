@@ -12,6 +12,12 @@ class ReportJobExecutorTest {
 
   @Test
   @Disabled
+  fun `only process reports that have permissions for the repository`() {
+// todo test
+  }
+
+  @Test
+  @Disabled
   fun `will ask for authorization to send report`() {
 // todo test
   }

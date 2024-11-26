@@ -13,10 +13,10 @@ export interface FeedBuilderModalComponentProps {
 }
 
 @Component({
-    selector: 'app-feed-builder-modal',
-    templateUrl: './feed-builder-modal.component.html',
-    styleUrls: ['./feed-builder-modal.component.scss'],
-    standalone: false
+  selector: 'app-feed-builder-modal',
+  templateUrl: './feed-builder-modal.component.html',
+  styleUrls: ['./feed-builder-modal.component.scss'],
+  standalone: false,
 })
 export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps

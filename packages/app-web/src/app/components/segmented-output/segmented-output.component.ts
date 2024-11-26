@@ -22,10 +22,10 @@ export type SegmentedOutput = {
 };
 
 @Component({
-    selector: 'app-segmented-output',
-    templateUrl: './segmented-output.component.html',
-    styleUrls: ['./segmented-output.component.scss'],
-    standalone: false
+  selector: 'app-segmented-output',
+  templateUrl: './segmented-output.component.html',
+  styleUrls: ['./segmented-output.component.scss'],
+  standalone: false,
 })
 export class SegmentedOutputComponent implements OnInit {
   @Input({ required: true })

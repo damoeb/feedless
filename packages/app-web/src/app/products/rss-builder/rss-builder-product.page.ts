@@ -20,11 +20,11 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-rss-builder-product-page',
-    templateUrl: './rss-builder-product.page.html',
-    styleUrls: ['./rss-builder-product.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-rss-builder-product-page',
+  templateUrl: './rss-builder-product.page.html',
+  styleUrls: ['./rss-builder-product.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;

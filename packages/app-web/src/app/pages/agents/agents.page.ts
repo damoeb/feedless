@@ -2,10 +2,10 @@ import { Component } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-    selector: 'app-agents-page',
-    templateUrl: './agents.page.html',
-    styleUrls: ['./agents.page.scss'],
-    standalone: false
+  selector: 'app-agents-page',
+  templateUrl: './agents.page.html',
+  styleUrls: ['./agents.page.scss'],
+  standalone: false,
 })
 export class AgentsPage {
   constructor(appConfigService: AppConfigService) {

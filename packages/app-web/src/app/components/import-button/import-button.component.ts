@@ -15,11 +15,11 @@ import { GqlRepositoryCreateInput } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 
 @Component({
-    selector: 'app-import-button',
-    templateUrl: './import-button.component.html',
-    styleUrls: ['./import-button.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-import-button',
+  templateUrl: './import-button.component.html',
+  styleUrls: ['./import-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ImportButtonComponent {
   @Input()

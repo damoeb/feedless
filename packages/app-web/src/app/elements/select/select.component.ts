@@ -10,17 +10,17 @@ export interface KeyLabelOption<T> {
 }
 
 @Component({
-    selector: 'app-select',
-    templateUrl: './select.component.html',
-    styleUrls: ['./select.component.scss'],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => SelectComponent),
-            multi: true,
-        },
-    ],
-    standalone: false
+  selector: 'app-select',
+  templateUrl: './select.component.html',
+  styleUrls: ['./select.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => SelectComponent),
+      multi: true,
+    },
+  ],
+  standalone: false,
 })
 export class SelectComponent<T>
   extends ControlValueAccessorDirective<T>

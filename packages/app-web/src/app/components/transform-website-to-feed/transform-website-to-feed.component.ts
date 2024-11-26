@@ -46,11 +46,11 @@ export type TypedFormControls<TControl> = {
 export type ComponentStatus = 'valid' | 'invalid';
 
 @Component({
-    selector: 'app-transform-website-to-feed',
-    templateUrl: './transform-website-to-feed.component.html',
-    styleUrls: ['./transform-website-to-feed.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-transform-website-to-feed',
+  templateUrl: './transform-website-to-feed.component.html',
+  styleUrls: ['./transform-website-to-feed.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   protected readonly CUSTOM_HASH = 'custom-hash';

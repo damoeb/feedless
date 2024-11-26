@@ -26,10 +26,10 @@ export interface SubmitModalComponentProps {
 type ReportFrequency = 'week' | 'month';
 
 @Component({
-    selector: 'app-submit-modal',
-    templateUrl: './submit-modal.component.html',
-    styleUrls: ['./submit-modal.component.scss'],
-    standalone: false
+  selector: 'app-submit-modal',
+  templateUrl: './submit-modal.component.html',
+  styleUrls: ['./submit-modal.component.scss'],
+  standalone: false,
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {
   repositoryId: string;
@@ -66,6 +66,9 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
   }
 
   async createMailSubscription() {
+    Object.values<FormControl>(this.formGroup.controls).forEach((fc) =>
+      fc.markAllAsTouched(),
+    );
     if (this.formGroup.valid) {
       await this.reportService.createReport(this.repositoryId, {
         what: {
@@ -99,9 +102,9 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
       });
       await this.modalCtrl.dismiss();
       const alert = await this.alertCtrl.create({
-        header: 'Email Abo erstellt!',
+        header: 'Gratis Email-Abo erstellt!',
         backdropDismiss: true,
-        message: `Du solltest in kürze eine Bestätigungmail erhalten.`,
+        message: `Wir senden dir bald eine Bestätigungmail.`,
         buttons: [
           {
             text: 'OK',

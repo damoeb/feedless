@@ -9,18 +9,18 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
 import { KeyValue } from '@angular/common';
 
 @Component({
-    selector: 'app-fetch-rate-accordion',
-    templateUrl: './fetch-rate-accordion.component.html',
-    styleUrls: ['./fetch-rate-accordion.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => FetchRateAccordionComponent),
-            multi: true,
-        },
-    ],
-    standalone: false
+  selector: 'app-fetch-rate-accordion',
+  templateUrl: './fetch-rate-accordion.component.html',
+  styleUrls: ['./fetch-rate-accordion.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => FetchRateAccordionComponent),
+      multi: true,
+    },
+  ],
+  standalone: false,
 })
 export class FetchRateAccordionComponent
   extends ControlValueAccessorDirective<string>

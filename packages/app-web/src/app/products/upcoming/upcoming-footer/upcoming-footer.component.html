@@ -1,15 +1,13 @@
 <ion-footer [translucent]="true" class="ion-no-border">
   <div class="events">
-    <div appDev
-         style="align-self: center"
-         *ngIf="location">
+    <div style="align-self: center" *ngIf="location">
       <ion-button
         color="primary"
         shape="round"
         class="pulsating-shadow"
         (click)="createMailSubscription()"
       >
-        Event-Alerts per E-Mail
+        Veranstaltungskalender per E-Mail
         <ion-icon name="send-outline" slot="end"></ion-icon>
       </ion-button>
     </div>
@@ -25,7 +23,7 @@
       </ion-button>
     </div>
     <div style="padding-top: 5px; opacity: 0.5; text-align: center">
-      <ion-button fill="empty">
+      <ion-button fill="empty" routerLink="/ueber-uns">
         <ion-icon name="heart" style="color: red"></ion-icon> aus dem Aargau
       </ion-button>
       <ion-button fill="empty" href="mailto:markus@lokale.events">

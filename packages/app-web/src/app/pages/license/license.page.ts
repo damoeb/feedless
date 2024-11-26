@@ -23,11 +23,11 @@ import {
 } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-license-page',
-    templateUrl: './license.page.html',
-    styleUrls: ['./license.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-license-page',
+  templateUrl: './license.page.html',
+  styleUrls: ['./license.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;

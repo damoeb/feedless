@@ -22,11 +22,11 @@ import { removeOutline, addOutline } from 'ionicons/icons';
 type ViewMode = 'markup' | 'image';
 
 @Component({
-    selector: 'app-interactive-website',
-    templateUrl: './interactive-website.component.html',
-    styleUrls: ['./interactive-website.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-interactive-website',
+  templateUrl: './interactive-website.component.html',
+  styleUrls: ['./interactive-website.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input({ required: true })

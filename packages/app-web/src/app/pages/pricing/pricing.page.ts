@@ -14,11 +14,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../graphql/types';
 
 @Component({
-    selector: 'app-pricing-page',
-    templateUrl: './pricing.page.html',
-    styleUrls: ['./pricing.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-pricing-page',
+  templateUrl: './pricing.page.html',
+  styleUrls: ['./pricing.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PricingPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

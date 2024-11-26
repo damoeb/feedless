@@ -10,9 +10,12 @@
     *ngIf="!location"
   >
     <h1><em>Lokale</em>.Events</h1>
-    <p>„Entdecke die kleinen Schätze deiner Heimat“</p>
+    <p>
+      „Deine Region steckt voller Überraschungen – entdecke, wie viel mehr in
+      ihr steckt!“
+    </p>
   </div>
-  <ion-toolbar style="--background: transparent">
+  <ion-toolbar>
     <div
       style="
         max-width: 700px;
@@ -23,16 +26,8 @@
       "
     >
       <div style="display: flex; flex: 1">
-        <ion-button
-          [color]="expand == 'calendar' ? 'primary' : 'light'"
-          aria-label="Datum"
-          (click)="
-            expand == 'calendar' ? (expand = null) : (expand = 'calendar')
-          "
-        >
-          <ion-icon name="calendar-outline" slot="start"></ion-icon>
-          <span class="ion-hide-sm-down"> {{ getWeekday() }}, </span>
-          {{ getLabelForCalendar() }}
+        <ion-button color="light" aria-label="lokale.events">
+          <strong>lokale</strong><em>.events</em>
         </ion-button>
         <ion-input
           (ionFocus)="expand = 'suggestions'"
@@ -52,6 +47,7 @@
           [formControl]="perimeterFc"
           #perimeterCtrl
           interface="action-sheet"
+          [interfaceOptions]="perimeterOptions"
           class="hidden"
           aria-label="Umkreis"
         >
@@ -142,108 +138,6 @@
       <!--        (positionChange)="handlePositionChange($event)"-->
       <!--        [perimeter]="perimeterFc.value"-->
       <!--      ></app-map>-->
-    </ng-container>
-
-    <ng-container *ngIf="expand === 'calendar'">
-      <div class="calendar ion-margin-top">
-        <ion-toolbar style="--background: transparent">
-          <ion-buttons slot="start">
-            <ion-button
-              [title]="
-                formatDate(currentDate.subtract(1, 'month'), 'MMMM YYYY')
-              "
-              (click)="goToDateRelative(-1, 'month')"
-            >
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-
-          <ion-title class="ion-text-center">
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              "
-            >
-              {{ formatDate(currentDate, "MMMM") }}
-              {{ formatDate(currentDate, "YYYY") }}
-
-              <ion-button
-                (click)="changeMonth(now)"
-                *ngIf="!isSame(currentDate, now, ['month'])"
-                class="ion-margin-start"
-                color="dark"
-                size="small"
-                >Heute
-              </ion-button>
-            </div>
-          </ion-title>
-
-          <ion-buttons slot="end">
-            <ion-button
-              [title]="formatDate(currentDate.add(1, 'month'), 'MMMM YYYY')"
-              (click)="goToDateRelative(1, 'month')"
-            >
-              <ion-icon name="chevron-forward-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-
-        <div *ngFor="let year of years | keyvalue" class="calendar__body">
-          <ng-container *ngFor="let month of year.value | keyvalue">
-            <div
-              *ngFor="let day of filterFirstWeek(month.value)"
-              class="day day--no-header no-background ion-text-center ion-text-uppercase"
-            >
-              {{ formatDate(day.day, "ddd") }}
-            </div>
-            <div
-              *ngFor="let day of month.value"
-              [ngClass]="{
-                'day--today': day.today,
-                'day--other': day.otherMonth,
-                'no-background': day.otherMonth,
-                'day--active': isSame(day.day, currentDate, [
-                  'month',
-                  'year',
-                  'day',
-                ]),
-                'day--past': day.past,
-              }"
-              class="day"
-            >
-              <a
-                (click)="changeDate(day.day)"
-                [title]="
-                  'Veranstaltungen nahe ' +
-                  this.location.displayName +
-                  ' am ' +
-                  formatDate(day.day, 'DD.MM')
-                "
-                href="javascript:void(0)"
-              >
-                <time [attr.datetime]="formatDate(day.day, 'YYYY-MM-DD')">
-                  <div class="ion-text-center">
-                    <span *ngIf="day.printMonth">
-                      {{ formatDate(day.day, "MMM") }}
-                    </span>
-                    <span class="date">
-                      {{ formatDate(day.day, "D") }}
-                    </span>
-                  </div>
-                  <!--                  <div-->
-                  <!--                    class="ion-text-center"-->
-                  <!--                    style="color: var(&#45;&#45;ion-color-danger)"-->
-                  <!--                  >-->
-                  <!--                    <span *ngIf="hasEvents(day.day)"> &#9679; </span>-->
-                  <!--                  </div>-->
-                </time>
-              </a>
-            </div>
-          </ng-container>
-        </div>
-      </div>
     </ng-container>
 
     <!--    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">-->

@@ -12,10 +12,10 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-searchbar',
-    templateUrl: './searchbar.component.html',
-    styleUrls: ['./searchbar.component.scss'],
-    standalone: false
+  selector: 'app-searchbar',
+  templateUrl: './searchbar.component.html',
+  styleUrls: ['./searchbar.component.scss'],
+  standalone: false,
 })
 export class SearchbarComponent implements OnInit, OnChanges {
   @Input()

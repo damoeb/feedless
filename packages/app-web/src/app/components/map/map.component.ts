@@ -16,11 +16,11 @@ import {
 export type LatLon = number[];
 
 @Component({
-    selector: 'app-map',
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.scss'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class MapComponent implements AfterViewInit, OnChanges {
   @ViewChild('map')

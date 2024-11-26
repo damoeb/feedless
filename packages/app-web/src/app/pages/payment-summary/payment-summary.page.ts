@@ -12,11 +12,11 @@ import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-    selector: 'app-payment-summary-page',
-    templateUrl: './payment-summary.page.html',
-    styleUrls: ['./payment-summary.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-payment-summary-page',
+  templateUrl: './payment-summary.page.html',
+  styleUrls: ['./payment-summary.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PaymentSummaryPage implements OnInit, OnDestroy {
   protected order: Order;

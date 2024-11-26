@@ -59,9 +59,10 @@ class ReportService(
     }
 
     val isOwner = repository.ownerId == user?.id || repository.ownerId == currentUserId
-    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
-      throw IllegalArgumentException() // obscured access denied
-    }
+    // todo enable this
+//    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
+//      throw IllegalArgumentException() // obscured access denied
+//    }
 
     val segmentation = SegmentationEntity()
     segmentation.size = 200

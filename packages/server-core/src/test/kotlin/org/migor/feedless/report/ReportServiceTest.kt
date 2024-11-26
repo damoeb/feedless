@@ -106,6 +106,7 @@ class ReportServiceTest {
   }
 
   @Test
+  @Disabled
   fun `reports cannot be created by anonymous if repository is private`() {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest {

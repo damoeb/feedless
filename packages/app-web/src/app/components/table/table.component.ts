@@ -10,11 +10,11 @@ import { Subscription } from 'rxjs';
 import { intersection, sortedUniqBy } from 'lodash-es';
 
 @Component({
-    selector: 'app-table',
-    templateUrl: './table.component.html',
-    styleUrls: ['./table.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-table',
+  templateUrl: './table.component.html',
+  styleUrls: ['./table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TableComponent<T> implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

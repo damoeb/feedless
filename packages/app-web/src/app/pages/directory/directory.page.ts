@@ -17,11 +17,11 @@ import { trendingDownOutline } from 'ionicons/icons';
 type ViewMode = 'list' | 'grid';
 
 @Component({
-    selector: 'app-feeds-page',
-    templateUrl: './directory.page.html',
-    styleUrls: ['./directory.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-feeds-page',
+  templateUrl: './directory.page.html',
+  styleUrls: ['./directory.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class DirectoryPage implements OnInit {
   loading = false;

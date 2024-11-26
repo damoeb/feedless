@@ -21,11 +21,11 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-change-tracker-product-page',
-    templateUrl: './change-tracker-product.page.html',
-    styleUrls: ['./change-tracker-product.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-change-tracker-product-page',
+  templateUrl: './change-tracker-product.page.html',
+  styleUrls: ['./change-tracker-product.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

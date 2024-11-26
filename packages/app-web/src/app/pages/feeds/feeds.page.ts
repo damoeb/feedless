@@ -18,11 +18,11 @@ import { AppConfigService } from '../../services/app-config.service';
 type ViewMode = 'list' | 'table';
 
 @Component({
-    selector: 'app-feeds-page',
-    templateUrl: './feeds.page.html',
-    styleUrls: ['./feeds.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-feeds-page',
+  templateUrl: './feeds.page.html',
+  styleUrls: ['./feeds.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FeedsPage implements OnInit, OnDestroy {
   loading = false;

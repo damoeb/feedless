@@ -11,11 +11,11 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-    selector: 'app-payment-page',
-    templateUrl: './payment.page.html',
-    styleUrls: ['./payment.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-payment-page',
+  templateUrl: './payment.page.html',
+  styleUrls: ['./payment.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PaymentPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

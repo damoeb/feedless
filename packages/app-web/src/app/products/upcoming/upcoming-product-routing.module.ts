@@ -5,29 +5,37 @@ import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { NamedLatLon } from '../../types';
 import { intParser, route } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/build/parser';
+import { AboutUsPage } from './about-us/about-us.page';
 
 export const perimeterUnit = 'Km';
 
 export function parseDateFromUrl(params: Params): Dayjs {
   const { year, month, day } =
-    homeRoute.children.countryCode.children.region.children.events.parseParams(
+    homeRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
       params as any,
     );
-  return dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
+  const date = dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
+  if (date?.isValid()) {
+    return date;
+  } else {
+    return dayjs();
+  }
 }
 
 export async function parseLocationFromUrl(
   activatedRoute: ActivatedRoute,
   openStreetMapService: OpenStreetMapService,
 ): Promise<NamedLatLon> {
-  const { countryCode } = homeRoute.children.countryCode.parseParams(
-    activatedRoute.snapshot.params as any,
-  );
-  const { region } = homeRoute.children.countryCode.children.region.parseParams(
-    activatedRoute.snapshot.params as any,
-  );
+  const { countryCode } =
+    homeRoute.children.events.children.countryCode.parseParams(
+      activatedRoute.snapshot.params as any,
+    );
+  const { region } =
+    homeRoute.children.events.children.countryCode.children.region.parseParams(
+      activatedRoute.snapshot.params as any,
+    );
   const { place } =
-    homeRoute.children.countryCode.children.region.children.events.parseParams(
+    homeRoute.children.events.children.countryCode.children.region.children.place.parseParams(
       activatedRoute.snapshot.params as any,
     );
 
@@ -59,28 +67,43 @@ export const strParser: Parser<string> = {
 };
 
 export const homeRoute = route(
-  'events/in',
+  '',
   {},
   {
-    countryCode: route(
-      ':countryCode',
-      { countryCode: upperCaseStringParser },
+    agb: route('agb', {}, {}),
+    about: route('ueber-uns', {}, {}),
+    events: route(
+      'events/in',
+      {},
       {
-        region: route(
-          ':region',
-          { region: strParser },
+        countryCode: route(
+          ':countryCode',
+          { countryCode: upperCaseStringParser },
           {
-            events: route(
-              ':place/am/:year/:month/:day/innerhalb/:perimeter',
+            region: route(
+              ':region',
+              { region: strParser },
               {
-                place: strParser,
-                year: intParser,
-                month: intParser,
-                day: intParser,
-                perimeter: perimeterParser,
-              },
-              {
-                eventId: route(':eventId', { eventId: strParser }, {}),
+                place: route(
+                  ':place',
+                  {
+                    place: strParser,
+                  },
+                  {
+                    dateTime: route(
+                      'am/:year/:month/:day/innerhalb/:perimeter',
+                      {
+                        year: intParser,
+                        month: intParser,
+                        day: intParser,
+                        perimeter: perimeterParser,
+                      },
+                      {
+                        eventId: route(':eventId', { eventId: strParser }, {}),
+                      },
+                    ),
+                  },
+                ),
               },
             ),
           },
@@ -94,11 +117,17 @@ const routes: Routes = [
   {
     path: homeRoute.template,
     children: [
-      // {
-      //   path: '',
-      // },
       {
-        path: homeRoute.children.countryCode.template,
+        path: homeRoute.children.about.template,
+        component: AboutUsPage,
+      },
+      {
+        path: '',
+        loadChildren: () =>
+          import('./events/events-page.module').then((m) => m.EventsPageModule),
+      },
+      {
+        path: homeRoute.children.events.template,
         children: [
           {
             path: '',
@@ -108,8 +137,7 @@ const routes: Routes = [
               ),
           },
           {
-            // path: 'events/in/:state',
-            path: homeRoute.children.countryCode.children.region.template,
+            path: homeRoute.children.events.children.countryCode.template,
             children: [
               {
                 path: '',
@@ -119,9 +147,9 @@ const routes: Routes = [
                   ),
               },
               {
-                // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
-                path: homeRoute.children.countryCode.children.region.children
-                  .events.template,
+                // path: 'events/in/:state',
+                path: homeRoute.children.events.children.countryCode.children
+                  .region.template,
                 children: [
                   {
                     path: '',
@@ -131,13 +159,43 @@ const routes: Routes = [
                       ),
                   },
                   {
-                    // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
-                    path: homeRoute.children.countryCode.children.region
-                      .children.events.children.eventId.template,
-                    loadChildren: () =>
-                      import('./event/event-page.module').then(
-                        (m) => m.EventPageModule,
-                      ),
+                    // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
+                    path: homeRoute.children.events.children.countryCode
+                      .children.region.children.place.template,
+                    children: [
+                      {
+                        path: '',
+                        loadChildren: () =>
+                          import('./events/events-page.module').then(
+                            (m) => m.EventsPageModule,
+                          ),
+                      },
+                      {
+                        // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
+                        path: homeRoute.children.events.children.countryCode
+                          .children.region.children.place.children.dateTime
+                          .template,
+                        children: [
+                          {
+                            path: '',
+                            loadChildren: () =>
+                              import('./events/events-page.module').then(
+                                (m) => m.EventsPageModule,
+                              ),
+                          },
+                          {
+                            // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
+                            path: homeRoute.children.events.children.countryCode
+                              .children.region.children.place.children.dateTime
+                              .children.eventId.template,
+                            loadChildren: () =>
+                              import('./event/event-page.module').then(
+                                (m) => m.EventPageModule,
+                              ),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
@@ -147,10 +205,10 @@ const routes: Routes = [
       },
     ],
   },
-  {
-    path: '**',
-    redirectTo: '',
-  },
+  // {
+  //   path: '**',
+  //   redirectTo: ''
+  // }
 ];
 
 @NgModule({

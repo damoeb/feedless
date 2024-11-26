@@ -15,11 +15,11 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-login-page',
-    templateUrl: './login.page.html',
-    styleUrls: ['./login.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-login-page',
+  templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LoginPage implements OnInit, OnDestroy {
   showMailLogin: boolean;

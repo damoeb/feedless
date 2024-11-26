@@ -10,10 +10,10 @@ export interface MapModalComponentProps {
 }
 
 @Component({
-    selector: 'app-map-modal',
-    templateUrl: './map-modal.component.html',
-    styleUrls: ['./map-modal.component.scss'],
-    standalone: false
+  selector: 'app-map-modal',
+  templateUrl: './map-modal.component.html',
+  styleUrls: ['./map-modal.component.scss'],
+  standalone: false,
 })
 export class MapModalComponent implements MapModalComponentProps {
   position: LatLon;

@@ -59,11 +59,11 @@ type NoteReferences = {
 };
 
 @Component({
-    selector: 'app-notebook-details-page',
-    templateUrl: './notebook-details.page.html',
-    styleUrls: ['./notebook-details.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-notebook-details-page',
+  templateUrl: './notebook-details.page.html',
+  styleUrls: ['./notebook-details.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   busy = false;

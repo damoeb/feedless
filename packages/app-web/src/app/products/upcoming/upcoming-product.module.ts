@@ -12,6 +12,9 @@ import { MapModalModule } from '../../modals/map-modal/map-modal.module';
 // import dayjs from 'dayjs';
 import { EventsPageModule } from './events/events-page.module';
 import { EventPageModule } from './event/event-page.module';
+import { AboutUsPage } from './about-us/about-us.page';
+import { TermsPage } from './terms/terms.page';
+import { IonContent, IonHeader } from '@ionic/angular/standalone';
 
 // export function createTranslateLoader(http: HttpClient) {
 //   return new TranslateHttpLoader(http, './assets/i18n/upcoming/', '.json');
@@ -27,6 +30,7 @@ import { EventPageModule } from './event/event-page.module';
     BubbleModule,
     MapModule,
     MapModalModule,
+    IonContent,
     // TranslateModule.forRoot({
     //   isolate: true,
     //   extend: false,
@@ -39,7 +43,10 @@ import { EventPageModule } from './event/event-page.module';
     ReactiveFormsModule,
     EventsPageModule,
     EventPageModule,
+    IonHeader,
   ],
+  declarations: [AboutUsPage, TermsPage],
+  exports: [AboutUsPage, TermsPage],
 })
 export class UpcomingProductModule {
   // constructor(translateService: TranslateService) {

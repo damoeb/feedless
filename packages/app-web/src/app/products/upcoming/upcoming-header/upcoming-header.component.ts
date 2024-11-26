@@ -26,7 +26,7 @@ import { LatLon } from '../../../components/map/map.component';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { getCachedLocations } from '../places';
 import { addIcons } from 'ionicons';
 import {
@@ -36,8 +36,12 @@ import {
   locationOutline,
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
-import { homeRoute } from '../upcoming-product-routing.module';
+import {
+  homeRoute,
+  parseLocationFromUrl,
+} from '../upcoming-product-routing.module';
 import { getSavedLocations } from '../events/events.page';
+import { OpenStreetMapService } from '../../../services/open-street-map.service';
 
 type Day = {
   day: Dayjs | null;
@@ -60,11 +64,11 @@ type SiteLocale = 'de' | 'en';
 type ExpandableSection = 'map' | 'calendar' | 'suggestions';
 
 @Component({
-    selector: 'app-upcoming-header',
-    templateUrl: './upcoming-header.component.html',
-    styleUrls: ['./upcoming-header.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-upcoming-header',
+  templateUrl: './upcoming-header.component.html',
+  styleUrls: ['./upcoming-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};
@@ -112,8 +116,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     private readonly changeRef: ChangeDetectorRef,
     // private readonly apollo: ApolloClient<any>,
     private readonly router: Router,
-    // private readonly openStreetMapService: OpenStreetMapService,
+    private readonly openStreetMapService: OpenStreetMapService,
     private readonly appConfigService: AppConfigService,
+    private readonly activatedRoute: ActivatedRoute,
   ) {
     dayjs.extend(weekday);
     this.fetchEventOverviewDebounced = debounceLD(
@@ -257,9 +262,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     // }
   }
 
-  formatDate(date: Dayjs, format: string) {
-    return date?.locale(this.locale)?.format(format);
-  }
+  // formatDate(date: Dayjs, format: string) {
+  //   return date?.locale(this.locale)?.format(format);
+  // }
 
   private fillCalendar(date: Dayjs) {
     this.years = {};
@@ -324,9 +329,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  goToDateRelative(value: number, unit: ManipulateType) {
-    this.changeMonth(this.currentDate.add(value, unit));
-  }
+  // goToDateRelative(value: number, unit: ManipulateType) {
+  //   this.changeMonth(this.currentDate.add(value, unit));
+  // }
 
   // hasEvents(day: Dayjs): boolean {
   //   const freq = this.eventsOfMonth.find((event) =>
@@ -389,9 +394,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.changeRef.detectChanges();
   }
 
-  filterFirstWeek(days: Day[]): Day[] {
-    return days.filter((day) => day.isFirstWeek);
-  }
+  // filterFirstWeek(days: Day[]): Day[] {
+  //   return days.filter((day) => day.isFirstWeek);
+  // }
 
   async changeLocation(location: NamedLatLon, triggerUrlUpdate = true) {
     this.expand = null;
@@ -424,24 +429,27 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   private async patchUrl() {
     console.log('patchUrl');
+    const { countryCode, area, place } = await parseLocationFromUrl(
+      this.activatedRoute,
+      this.openStreetMapService,
+    );
     const url = homeRoute({})
-      .countryCode({ countryCode: this.currentLocation.countryCode })
+      .events({})
+      .countryCode({ countryCode })
       .region({
-        region: this.currentLocation.area,
+        region: area,
       })
-      .events({
+      .place({
+        place,
+      })
+      .dateTime({
         perimeter: this.perimeterFc.value,
-        place: this.currentLocation.place,
         year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
         month: parseInt(this.currentDate.locale(this.locale).format('MM')),
         day: parseInt(this.currentDate.locale(this.locale).format('DD')),
       }).$;
 
     await this.router.navigateByUrl(url, { replaceUrl: true });
-  }
-
-  isSame(a: Dayjs, b: Dayjs, units: OpUnitType[]) {
-    return units.every((unit) => a.isSame(b, unit));
   }
 
   // formatToRelativeDay(inputDate: Dayjs, suffix: string = '') {
@@ -458,54 +466,32 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   }
   //   return '';
   // }
+  perimeterOptions = {
+    header: 'Umkreissuche',
+    translucent: true,
+  };
 
-  getLabelForCalendar(): string {
-    if (this.currentDate) {
-      if (this.currentDate.year() != dayjs().year()) {
-        return this.formatDate(this.currentDate, 'D.MM.YYYY');
-      } else {
-        return this.formatDate(this.currentDate, 'D.MM.YY');
-      }
-    }
-  }
-
-  getWeekday(): string {
-    if (this.currentDate) {
-      const now = dayjs()
-        .set('hours', this.currentDate.hour())
-        .set('minutes', this.currentDate.minute())
-        .set('seconds', this.currentDate.second())
-        .set('milliseconds', this.currentDate.millisecond());
-      const diffInHours = this.currentDate.diff(now, 'day');
-      switch (diffInHours) {
-        case 0:
-          return 'Heute';
-        case -1:
-          return 'Gestern';
-        case 1:
-          return 'Morgen';
-        default:
-          return [
-            'Sonntag',
-            'Montag',
-            'Dienstag',
-            'Mittwoch',
-            'Donnerstag',
-            'Freitag',
-            'Samstag',
-          ][this.currentDate.day()];
-      }
-    }
-  }
+  // getLabelForCalendar(): string {
+  //   if (this.currentDate) {
+  //     if (this.currentDate.year() != dayjs().year()) {
+  //       return this.formatDate(this.currentDate, 'D.MM.YYYY');
+  //     } else {
+  //       return this.formatDate(this.currentDate, 'D.MM.YY');
+  //     }
+  //   }
+  // }
 
   getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
     return (
       '/' +
       homeRoute({})
+        .events({})
         .countryCode({ countryCode })
         .region({ region: area })
-        .events({
+        .place({
           place,
+        })
+        .dateTime({
           perimeter: this.perimeter,
           year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
           month: parseInt(this.currentDate.locale(this.locale).format('MM')),

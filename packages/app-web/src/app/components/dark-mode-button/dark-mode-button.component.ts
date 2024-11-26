@@ -5,10 +5,10 @@ import { addIcons } from 'ionicons';
 import { sunnyOutline, moonOutline } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-dark-mode-button',
-    templateUrl: './dark-mode-button.component.html',
-    styleUrls: ['./dark-mode-button.component.scss'],
-    standalone: false
+  selector: 'app-dark-mode-button',
+  templateUrl: './dark-mode-button.component.html',
+  styleUrls: ['./dark-mode-button.component.scss'],
+  standalone: false,
 })
 export class DarkModeButtonComponent implements OnInit, OnDestroy {
   darkMode: boolean;

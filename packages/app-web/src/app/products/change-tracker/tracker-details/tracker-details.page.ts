@@ -12,11 +12,11 @@ import { ModalController } from '@ionic/angular/standalone';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
-    selector: 'app-tracker-details-page',
-    templateUrl: './tracker-details.page.html',
-    styleUrls: ['./tracker-details.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-tracker-details-page',
+  templateUrl: './tracker-details.page.html',
+  styleUrls: ['./tracker-details.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TrackerDetailsPage implements OnInit, OnDestroy {
   busy = false;

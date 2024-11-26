@@ -13,11 +13,11 @@ import { isUndefined } from 'lodash-es';
 import { CodeEditorComponent } from '../../elements/code-editor/code-editor.component';
 
 @Component({
-    selector: 'app-text-diff',
-    templateUrl: './text-diff.component.html',
-    styleUrls: ['./text-diff.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-text-diff',
+  templateUrl: './text-diff.component.html',
+  styleUrls: ['./text-diff.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TextDiffComponent implements OnInit {
   @Input({ required: true })

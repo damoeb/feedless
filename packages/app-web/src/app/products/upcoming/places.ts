@@ -1128,14 +1128,6 @@ const ag: PlacesLatLon[] = [
     lon: 8.3595132,
   },
   {
-    place: 'Wohlen AG',
-    zip: '5610',
-    area: 'AG',
-    language: 'de',
-    lat: 47.3504945,
-    lon: 8.2786906,
-  },
-  {
     place: 'Anglikon',
     zip: '5611',
     area: 'AG',
@@ -4398,7 +4390,7 @@ const zh: PlacesLatLon[] = [
     lon: 8.5314372,
   },
   {
-    place: 'Kreis 2',
+    place: ['Kreis 2', 'Wollishofen', 'Enge', 'Laimbach'],
     zip: '8000',
     area: 'ZH',
     language: 'de',
@@ -6270,14 +6262,6 @@ const zh: PlacesLatLon[] = [
     lon: 8.4382157,
   },
   {
-    place: 'Dietikon',
-    zip: '8953',
-    area: 'ZH',
-    language: 'de',
-    lat: 47.4050746,
-    lon: 8.4030765,
-  },
-  {
     place: 'Fahrweid',
     zip: '8951',
     area: 'ZH',
@@ -6316,14 +6300,6 @@ const zh: PlacesLatLon[] = [
     language: 'de',
     lat: 47.384708,
     lon: 8.4259004,
-  },
-  {
-    place: 'Schlieren',
-    zip: '8952',
-    area: 'ZH',
-    language: 'de',
-    lat: 47.3965147,
-    lon: 8.4444861,
   },
   {
     place: 'Uitikon Waldegg',

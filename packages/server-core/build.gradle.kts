@@ -122,7 +122,10 @@ dependencies {
 
   // monitoring
   implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+  // mail
   implementation("org.springframework.boot:spring-boot-starter-mail")
+  implementation("com.mailgun:mailgun-java:1.1.3")
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
@@ -166,7 +169,6 @@ dependencies {
   testImplementation("io.jenetics:jenetics:7.2.0")
   implementation("org.languagetool:language-en:6.4")
   implementation("org.languagetool:language-de:6.4")
-
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")

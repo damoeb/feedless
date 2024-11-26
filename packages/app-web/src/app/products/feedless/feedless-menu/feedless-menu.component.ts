@@ -12,11 +12,11 @@ import { AuthService } from '../../../services/auth.service';
 import { GqlVertical } from '../../../../generated/graphql';
 
 @Component({
-    selector: 'app-feedless-menu',
-    templateUrl: './feedless-menu.component.html',
-    styleUrls: ['./feedless-menu.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-feedless-menu',
+  templateUrl: './feedless-menu.component.html',
+  styleUrls: ['./feedless-menu.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FeedlessMenuComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

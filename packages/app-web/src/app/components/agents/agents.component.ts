@@ -13,11 +13,11 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { compact } from 'lodash-es';
 
 @Component({
-    selector: 'app-agents',
-    templateUrl: './agents.component.html',
-    styleUrls: ['./agents.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-agents',
+  templateUrl: './agents.component.html',
+  styleUrls: ['./agents.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AgentsComponent implements OnInit, OnDestroy {
   agents: Agent[] = [];

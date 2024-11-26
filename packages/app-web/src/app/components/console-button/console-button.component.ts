@@ -4,11 +4,11 @@ import { ModalService } from '../../services/modal.service';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 
 @Component({
-    selector: 'app-console-button',
-    templateUrl: './console-button.component.html',
-    styleUrls: ['./console-button.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-console-button',
+  templateUrl: './console-button.component.html',
+  styleUrls: ['./console-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ConsoleButtonComponent {
   @Input()

@@ -3,6 +3,7 @@ import { VerticalSpec, allVerticals } from './src/app/all-verticals';
 import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { VerticalAppConfig } from './src/app/types';
+import { Readable } from 'node:stream';
 
 class AppsDataGenerator {
   constructor(buildFolder: string) {
@@ -34,6 +35,14 @@ class AppsDataGenerator {
     const domain = `https://${app.domain}/`;
     const lastMod = new Date().toISOString();
 
+    const links = app.links
+      .filter((l) => l.allow)
+      .map((l) => ({
+        url: l.url,
+        changefreq: 'weekly',
+        lastmod: lastMod,
+        priority: 0.3,
+      }));
     const smStream = new SitemapStream({
       hostname: domain,
       lastmodDateOnly: false,
@@ -45,18 +54,18 @@ class AppsDataGenerator {
       },
     });
 
-    streamToPromise(smStream).then((sitemap) =>
+    streamToPromise(Readable.from(links).pipe(smStream)).then((sitemap) =>
       this.writeFile(join(outDir, `sitemap.xml`), String(sitemap)),
     );
 
-    const mainPage: SitemapItemLoose = {
-      url: domain,
-      lastmod: lastMod,
-      priority: 0.8,
-    };
-    smStream.write(mainPage);
-
-    smStream.end();
+    // const mainPage: SitemapItemLoose = {
+    //   url: domain,
+    //   lastmod: lastMod,
+    //   priority: 0.8,
+    // };
+    // smStream.write(mainPage);
+    //
+    // smStream.end();
   }
 
   private generateAppConfig(app: VerticalSpec, outDir: string) {

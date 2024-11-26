@@ -7,7 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs, OpUnitType } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import { groupBy, sortBy, unionBy, uniqBy } from 'lodash-es';
 import { RecordService } from '../../../services/record.service';
@@ -29,15 +29,14 @@ import {
   parseLocationFromUrl,
 } from '../upcoming-product-routing.module';
 import { Subscription } from 'rxjs';
+import 'dayjs/locale/de';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
   arrowForwardOutline,
-  save,
   sendOutline,
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
-import { GeoService } from '../../../services/geo.service';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 
 type Distance2Events = { [distance: string]: Record[] };
@@ -93,18 +92,20 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
 }
 
 @Component({
-    selector: 'app-events-page',
-    templateUrl: './events.page.html',
-    styleUrls: ['./events.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-events-page',
+  templateUrl: './events.page.html',
+  styleUrls: ['./events.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EventsPage implements OnInit, OnDestroy {
   date: Dayjs = dayjs();
+  now: Dayjs = dayjs();
   perimeter: number = 10;
   latLon: Nullable<LatLon>;
   location: Nullable<NamedLatLon>;
   loading: boolean = true;
+  dateWindow: Dayjs[] = [];
   private subscriptions: Subscription[] = [];
 
   @ViewChild('header')
@@ -140,16 +141,18 @@ export class EventsPage implements OnInit, OnDestroy {
           this.latLon = [this.location.lat, this.location.lon];
 
           const { perimeter } =
-            homeRoute.children.countryCode.children.region.children.events.parseParams(
+            homeRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
               params as any,
             );
-          this.perimeter = perimeter;
-          this.date = parseDateFromUrl(params);
+
+          this.perimeter = perimeter || 10;
+          this.changeDate(parseDateFromUrl(params));
+
           this.changeRef.detectChanges();
 
           this.pageService.setMetaTags(this.getPageTags());
 
-          await this.fetchEvents();
+          await this.fetchEvents(this.date);
         } catch (e) {
           // todo save and retrieve last place window.localStorage.getItem('lastPlace')
           // const currentLocation = await firstValueFrom(
@@ -262,13 +265,13 @@ export class EventsPage implements OnInit, OnDestroy {
     });
   }
 
-  private async fetchEvents() {
+  private async fetchEvents(date: Dayjs) {
     try {
       this.loadingDay = true;
       this.placesByDistance = [];
       this.changeRef.detectChanges();
 
-      const events = await this.fetchEventOfDay(this.date.clone());
+      const events = await this.fetchEventOfDay(date.clone());
       this.eventCount = events.length;
 
       const places: NamedLatLon[] = await Promise.all(
@@ -369,7 +372,7 @@ export class EventsPage implements OnInit, OnDestroy {
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
       url: location.href,
-      // breadcrumb: createBreadcrumbsSchema(this.location),
+      breadcrumb: createBreadcrumbsSchema(this.location),
       mainEntity: {
         '@type': 'ItemList',
         itemListElement: this.placesByDistance
@@ -402,10 +405,11 @@ export class EventsPage implements OnInit, OnDestroy {
     return (
       '/' +
       homeRoute({})
+        .events({})
         .countryCode({ countryCode })
         .region({ region })
-        .events({
-          place,
+        .place({ place })
+        .dateTime({
           perimeter: this.perimeter,
           year,
           month,
@@ -432,16 +436,17 @@ export class EventsPage implements OnInit, OnDestroy {
     if (location) {
       const { countryCode, area, place } = location;
       const { year, month, day } =
-        homeRoute.children.countryCode.children.region.children.events.parseParams(
+        homeRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
           this.activatedRoute.snapshot.params as any,
         );
       return (
         '/' +
         homeRoute({})
+          .events({})
           .countryCode({ countryCode })
           .region({ region: area })
-          .events({
-            place,
+          .place({ place })
+          .dateTime({
             perimeter: this.perimeter,
             year,
             month,
@@ -451,13 +456,20 @@ export class EventsPage implements OnInit, OnDestroy {
     }
   }
 
-  async changeDate(change: number) {
-    this.date = this.date.add(change, 'day');
+  async changeDate(date: Dayjs) {
+    this.date = date;
+    this.createDateWindow(this.date);
+    this.patchUrlInAddressBar();
+    await this.fetchEvents(this.date);
+  }
+
+  patchUrlInAddressBar() {
     const url = homeRoute({})
+      .events({})
       .countryCode({ countryCode: this.location.countryCode })
       .region({ region: this.location.area })
-      .events({
-        place: this.location.place,
+      .place({ place: this.location.place })
+      .dateTime({
         perimeter: 10,
         year: parseInt(this.date.format('YYYY')),
         month: parseInt(this.date.format('MM')),
@@ -465,7 +477,6 @@ export class EventsPage implements OnInit, OnDestroy {
       }).$;
 
     this.locationService.replaceState(url);
-    await this.fetchEvents();
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
@@ -477,6 +488,70 @@ export class EventsPage implements OnInit, OnDestroy {
       (l) => `${l.lat}:${l.lon}`,
     ).filter((_, index) => index < 5);
     localStorage.setItem('savedLocations', JSON.stringify(locations));
+  }
+
+  private createDateWindow(date: Dayjs) {
+    // if (!this.dateWindow.some(otherDate => this.isSame(otherDate, date, ['date', 'month', 'year']))) {
+    this.dateWindow = [
+      date.subtract(1, 'day'),
+      date,
+      date.add(1, 'day'),
+      date.add(2, 'day'),
+      date.add(3, 'day'),
+      date.add(4, 'day'),
+      date.add(5, 'day'),
+    ];
+    this.changeRef.detectChanges();
+    // }
+  }
+
+  isToday(day: Dayjs): boolean {
+    return this.isSame(day, dayjs(), ['day', 'month', 'year']);
+  }
+
+  isPast(day: Dayjs): boolean {
+    return day.isBefore(
+      dayjs()
+        .set('hours', 0)
+        .set('minutes', 0)
+        .set('seconds', 0)
+        .set('milliseconds', 0),
+    );
+  }
+
+  getWeekday(date: Dayjs): string {
+    if (date) {
+      const now = dayjs()
+        .set('hours', date.hour())
+        .set('minutes', date.minute())
+        .set('seconds', date.second())
+        .set('milliseconds', date.millisecond());
+      const diffInHours = date.diff(now, 'day');
+      switch (diffInHours) {
+        case 0:
+          return 'Heute';
+        case -1:
+          return 'Gestern';
+        case 1:
+          return 'Morgen';
+        default:
+          return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.day()];
+      }
+    }
+  }
+
+  protected isSame(a: dayjs.Dayjs, b: dayjs.Dayjs, units: dayjs.OpUnitType[]) {
+    return units.every((unit) => a.isSame(b, unit));
+  }
+
+  moveCalendarWindow(days: number) {
+    this.createDateWindow(this.dateWindow[0].add(days, 'days'));
+  }
+
+  isDateInCalendar(date: Dayjs) {
+    return this.dateWindow.some((d) =>
+      this.isSame(date, d, ['year', 'month', 'day']),
+    );
   }
 }
 

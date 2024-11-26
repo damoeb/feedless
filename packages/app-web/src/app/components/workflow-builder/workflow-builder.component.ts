@@ -7,11 +7,11 @@ import { addIcons } from 'ionicons';
 import { removeOutline, addOutline, ellipse } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-workflow-builder',
-    templateUrl: './workflow-builder.component.html',
-    styleUrls: ['./workflow-builder.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-workflow-builder',
+  templateUrl: './workflow-builder.component.html',
+  styleUrls: ['./workflow-builder.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class WorkflowBuilderComponent {
   scaleFactor: number = 0.7;

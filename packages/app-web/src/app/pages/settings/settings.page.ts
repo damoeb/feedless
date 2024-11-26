@@ -16,11 +16,11 @@ import { AppConfigService } from '../../services/app-config.service';
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
 @Component({
-    selector: 'app-settings-page',
-    templateUrl: './settings.page.html',
-    styleUrls: ['./settings.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-settings-page',
+  templateUrl: './settings.page.html',
+  styleUrls: ['./settings.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SettingsPage implements OnInit {
   loading = true;

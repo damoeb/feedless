@@ -5,10 +5,10 @@ import { addIcons } from 'ionicons';
 import { notificationsOutline } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-notifications-button',
-    templateUrl: './notifications-button.component.html',
-    styleUrls: ['./notifications-button.component.scss'],
-    standalone: false
+  selector: 'app-notifications-button',
+  templateUrl: './notifications-button.component.html',
+  styleUrls: ['./notifications-button.component.scss'],
+  standalone: false,
 })
 export class NotificationsButtonComponent implements OnInit, OnDestroy {
   notificationRepositoryId: string;

@@ -8,122 +8,198 @@
 <ion-content>
   <div class="events">
     <ng-container *ngIf="location">
-      <h1
-        class="ion-padding-horizontal"
-        style="font-size: 1.2rem; font-weight: bold"
-      >
-        Veranstaltungen in {{location?.displayName}}
-      </h1>
+      <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
+      <!--        <ion-buttons slot="start">-->
+      <!--          <ion-button-->
+      <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+      <!--                    formatDate(date?.subtract(1, 'day'), 'DD.MM')"-->
+      <!--            (click)="changeDate(-1)"-->
+      <!--          >-->
+      <!--            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>-->
+      <!--            vorheriger Tag-->
+      <!--          </ion-button>-->
+      <!--        </ion-buttons>-->
+      <!--        <ion-buttons slot="end">-->
+      <!--          <ion-button-->
+      <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+      <!--                    formatDate(date?.add(1, 'day'), 'DD.MM')"-->
+      <!--            (click)="changeDate(+1)"-->
+      <!--          >-->
+      <!--            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>-->
+      <!--            nächster Tag-->
+      <!--          </ion-button>-->
+      <!--        </ion-buttons>-->
+      <!--      </ion-toolbar>-->
 
-      <ion-toolbar style="--background: transparent">
-        <ion-buttons slot="start">
-          <ion-button
-            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +
-                    formatDate(date?.subtract(1, 'day'), 'DD.MM')"
-            (click)="changeDate(-1)"
-          >
-            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
-            vorheriger Tag
-          </ion-button>
-        </ion-buttons>
-        <ion-buttons slot="end">
-          <ion-button
-            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +
-                    formatDate(date?.add(1, 'day'), 'DD.MM')"
-            (click)="changeDate(+1)"
-          >
-            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-            nächster Tag
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-
-      <div
-        class="ion-padding-horizontal ion-margin-bottom"
-        style="min-height: 50vh"
-      >
+      <div class="ion-margin-bottom" style="min-height: 50vh">
         <ng-container *ngIf="date">
-          <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
-          <div *ngIf="!loadingDay">
-            <div *ngIf="placesByDistance.length === 0" class="ion-text-center">
-              <p>Keine Veranstaltungen gefunden.</p>
-              <p>
-                <a href="mailto:markus@lokale.events">Schick uns einen Link</a>,
-                wir fügen deine lokalen Events hinzu!
-              </p>
+          <div class="calendar ion-margin-top">
+            <div class="calendar-row">
+              <div style="font-size: 2rem; align-content: center">
+                <ion-button
+                  size="expand"
+                  color="light"
+                  (click)="moveCalendarWindow(-3)"
+                >
+                  <ion-icon
+                    name="arrow-back-outline"
+                    slot="icon-only"
+                  ></ion-icon>
+                </ion-button>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex: 1;
+                  column-gap: 0.5rem;
+                  justify-content: center;
+                "
+              >
+                @for (d of dateWindow; track d.toISOString(); let i = $index) {
+                <div
+                  class="calendar-day"
+                  (click)="changeDate(d)"
+                  [ngClass]="{
+                              past: isPast(d),
+                              active: isSame(date, d, ['day', 'month', 'year']),
+                            }"
+                >
+                  <div>{{ getWeekday(d) }}</div>
+                  <h3 style="font-size: 1.5rem">{{ formatDate(d, "D") }}</h3>
+                  <div class="nowrap" *ngIf="i == 0 || d.date() === 1">
+                    {{ formatDate(d, "MMM YY") }}
+                  </div>
+                </div>
+                }
+              </div>
+              <div style="font-size: 2rem; align-content: center">
+                <ion-button
+                  size="expand"
+                  color="light"
+                  (click)="moveCalendarWindow(3)"
+                >
+                  <ion-icon
+                    name="arrow-forward-outline"
+                    slot="icon-only"
+                  ></ion-icon>
+                </ion-button>
+              </div>
             </div>
-            <div *ngFor="let placesGroup of placesByDistance">
-              <ng-container *ngFor="let place of placesGroup.places">
-                <h2 class="ion-padding-top">
-                  <a
-                    [routerLink]="getPlaceUrl(place.place)"
-                    [title]="'Wechsle nach ' + place.place.place"
-                    style="color: var(--ion-color-dark)"
-                  >
-                    {{ place.place.place }}</a
-                  >
-                  <ion-note
-                    *ngIf="placesGroup?.distance && placesGroup.distance > 0"
-                  >
-                    ~ {{ placesGroup.distance }} Km entfernt
-                  </ion-note>
-                </h2>
-                <ul class="ion-no-padding">
-                  <li
-                    *ngFor="let event of place.events"
-                    class="ion-margin-bottom ion-margin-start"
-                  >
-                    <article itemscope itemtype="https://schema.org/Event">
-                      <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
-                      <header>
-                        <h3 itemprop="title">
-                          <!--                          <a [routerLink]="getEventUrl(event)">-->
-                          <span *ngIf="!event.url"> {{ event.title }} </span>
-                          <a
-                            *ngIf="event.url"
-                            [href]="event.url"
-                            target="_blank"
-                          >
-                            {{ event.title }}
-                          </a>
-                          <!--                    <ion-badge color="warning">Kinder</ion-badge>-->
-                        </h3>
-                        <!--                  <ion-note>{{ event.url }}</ion-note>-->
-                        <!--                  <p itemprop="description">-->
-                        <!--                    {{ event.text }}-->
-                        <!--                  </p>-->
-                      </header>
+            <div style="justify-self: center" *ngIf="!isDateInCalendar(date)">
+              <ion-button size="small" (click)="changeDate(now)"
+                >Heute anzeigen</ion-button
+              >
+            </div>
+          </div>
 
-                      <!--                  <section>-->
-                      <!--                    <h2>Event Details</h2>-->
-                      <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
-                      <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
-                      <!--                  </section>-->
+          <div class="ion-padding-horizontal">
+            <h1 style="font-size: 1.8rem; font-weight: bold">
+              Veranstaltungen in {{ location?.displayName }}
+            </h1>
+            <div>
+              {{getWeekday(date)}}, {{ formatDate(date, 'DD.MM.YYYY') }}
+              <ion-badge color="danger" *ngIf="isPast(date)"
+                >Datum in Vergangenheit</ion-badge
+              >
+            </div>
 
-                      <!--                  <section>-->
-                      <!--                    <h2>Location</h2>-->
-                      <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
-                      <!--                      <span itemprop="name">Zurich Music Hall</span>-->
-                      <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
-                      <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
-                      <!--                        <meta itemprop="latitude" content="47.3769">-->
-                      <!--                        <meta itemprop="longitude" content="8.5417">-->
-                      <!--                      </div>-->
-                      <!--                    </address>-->
-                      <!--                  </section>-->
+            <ion-spinner *ngIf="loadingDay" name="dots"></ion-spinner>
+            <div
+              *ngIf="!loadingDay"
+              style="display: flex"
+              [ngClass]="{'past-events': isPast(date)}"
+            >
+              <div>
+                <div
+                  *ngIf="placesByDistance.length === 0"
+                  style="font-size: 1.2rem"
+                  class="ion-text-center"
+                >
+                  <p>Leider keine Veranstaltungen gefunden</p>
+                  <p class="ion-margin-top">
+                    Hast du Vorschläge?
+                    <a href="mailto:markus@lokale.events?subject=Links"
+                      >Schick uns gerne Links</a
+                    >
+                    zu spannenden Events!
+                  </p>
+                </div>
+                <div *ngFor="let placesGroup of placesByDistance">
+                  <ng-container *ngFor="let place of placesGroup.places">
+                    <h2 class="ion-padding-top">
+                      <a
+                        [routerLink]="getPlaceUrl(place.place)"
+                        [title]="'Wechsle nach ' + place.place.place"
+                        style="color: var(--ion-color-dark)"
+                      >
+                        {{ place.place.place }}</a
+                      >
+                      <ion-note
+                        *ngIf="placesGroup?.distance && placesGroup.distance > 0"
+                      >
+                        ~ {{ placesGroup.distance }} Km entfernt
+                      </ion-note>
+                    </h2>
+                    <ul class="ion-no-padding">
+                      <li
+                        *ngFor="let event of place.events"
+                        class="ion-margin-bottom ion-margin-start"
+                      >
+                        <article itemscope itemtype="https://schema.org/Event">
+                          <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+                          <header>
+                            <h3 itemprop="title">
+                              <!--                          <a [routerLink]="getEventUrl(event)">-->
+                              <span *ngIf="!event.url">
+                                {{ event.title }}
+                              </span>
+                              <a
+                                *ngIf="event.url"
+                                [href]="event.url"
+                                target="_blank"
+                              >
+                                {{ event.title }}
+                              </a>
+                              <!--                    <ion-badge color="warning">Kinder</ion-badge>-->
+                            </h3>
+                            <!--                  <ion-note>{{ event.url }}</ion-note>-->
+                            <!--                  <p itemprop="description">-->
+                            <!--                    {{ event.text }}-->
+                            <!--                  </p>-->
+                          </header>
 
-                      <!--                  <footer>-->
-                      <!--                    <p>-->
-                      <!--                      For tickets, visit our-->
-                      <!--                      <a href="https://example.com/tickets"-->
-                      <!--                        >official ticket page</a-->
-                      <!--                      >.-->
-                      <!--                    </p>-->
-                      <!--                  </footer>-->
-                    </article>
-                  </li>
-                </ul>
-              </ng-container>
+                          <!--                  <section>-->
+                          <!--                    <h2>Event Details</h2>-->
+                          <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
+                          <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
+                          <!--                  </section>-->
+
+                          <!--                  <section>-->
+                          <!--                    <h2>Location</h2>-->
+                          <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
+                          <!--                      <span itemprop="name">Zurich Music Hall</span>-->
+                          <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+                          <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
+                          <!--                        <meta itemprop="latitude" content="47.3769">-->
+                          <!--                        <meta itemprop="longitude" content="8.5417">-->
+                          <!--                      </div>-->
+                          <!--                    </address>-->
+                          <!--                  </section>-->
+
+                          <!--                  <footer>-->
+                          <!--                    <p>-->
+                          <!--                      For tickets, visit our-->
+                          <!--                      <a href="https://example.com/tickets"-->
+                          <!--                        >official ticket page</a-->
+                          <!--                      >.-->
+                          <!--                    </p>-->
+                          <!--                  </footer>-->
+                        </article>
+                      </li>
+                    </ul>
+                  </ng-container>
+                </div>
+              </div>
             </div>
           </div>
         </ng-container>

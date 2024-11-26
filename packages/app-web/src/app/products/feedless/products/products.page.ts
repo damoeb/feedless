@@ -17,12 +17,12 @@ import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-feedless-products-page',
-    templateUrl: './products.page.html',
-    styleUrls: ['./products.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'app-feedless-products-page',
+  templateUrl: './products.page.html',
+  styleUrls: ['./products.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ProductsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

@@ -19,11 +19,11 @@ import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
 
 @Component({
-    selector: 'app-about-rss-builder',
-    templateUrl: './about-rss-builder.page.html',
-    styleUrls: ['./about-rss-builder.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-about-rss-builder',
+  templateUrl: './about-rss-builder.page.html',
+  styleUrls: ['./about-rss-builder.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AboutRssBuilderPage implements OnInit {
   @ViewChild('opmlPicker')

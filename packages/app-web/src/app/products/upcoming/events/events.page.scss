@@ -3,3 +3,40 @@
 ion-content::part(scroll) {
   display: flex;
 }
+
+.calendar-row {
+  display: flex;
+  column-gap: 0.5rem;
+}
+
+.calendar-day {
+  flex: 1;
+  max-width: 130px;
+  padding: 1rem;
+  border-radius: 8px;
+  align-items: baseline;
+  cursor: pointer;
+  //color: var(--ion-color-medium);
+  div {
+    opacity: 0.7;
+  }
+
+  &.past {
+    color: var(--ion-color-medium);
+    opacity: 0.5;
+  }
+  &.active {
+    color: var(--ion-color-primary);
+    //background: var(--ion-color-light);
+  }
+}
+
+h2 {
+  ion-note {
+    font-weight: normal;
+  }
+}
+
+.past-events {
+  filter: grayscale(1);
+}

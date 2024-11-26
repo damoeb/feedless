@@ -12,7 +12,8 @@ import { AppConfigService } from './services/app-config.service';
   imports: [CommonModule],
   providers: [
     provideAppInitializer(() => {
-        const initializerFn = ((
+      const initializerFn = (
+        (
           serverConfig: ServerConfigService,
           appConfigService: AppConfigService,
         ) =>
@@ -22,9 +23,10 @@ import { AppConfigService } from './services/app-config.service';
           );
           // todo remove
           await serverConfig.fetchServerSettings();
-        })(inject(ServerConfigService), inject(AppConfigService));
-        return initializerFn();
-      }),
+        }
+      )(inject(ServerConfigService), inject(AppConfigService));
+      return initializerFn();
+    }),
     provideHttpClient(withInterceptorsFromDi()),
   ],
 })

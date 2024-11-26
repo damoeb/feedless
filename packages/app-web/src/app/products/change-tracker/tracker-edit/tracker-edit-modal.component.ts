@@ -25,11 +25,11 @@ type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
 export interface TrackerEditModalComponentProps {}
 
 @Component({
-    selector: 'app-tracker-edit-page',
-    templateUrl: './tracker-edit-modal.component.html',
-    styleUrls: ['./tracker-edit-modal.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-tracker-edit-page',
+  templateUrl: './tracker-edit-modal.component.html',
+  styleUrls: ['./tracker-edit-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TrackerEditModalComponent
   implements TrackerEditModalComponentProps, OnInit, OnDestroy

@@ -17,10 +17,10 @@ export type StringFeatureGroup = {
 };
 
 @Component({
-    selector: 'app-plan-column',
-    templateUrl: './plan-column.component.html',
-    styleUrls: ['./plan-column.component.scss'],
-    standalone: false
+  selector: 'app-plan-column',
+  templateUrl: './plan-column.component.html',
+  styleUrls: ['./plan-column.component.scss'],
+  standalone: false,
 })
 export class PlanColumnComponent {
   @Input()

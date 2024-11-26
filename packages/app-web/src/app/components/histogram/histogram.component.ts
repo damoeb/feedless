@@ -5,10 +5,10 @@ import { sumBy, times } from 'lodash-es';
 import { scaleLinear } from 'd3-scale';
 
 @Component({
-    selector: 'app-histogram',
-    templateUrl: './histogram.component.html',
-    styleUrls: ['./histogram.component.scss'],
-    standalone: false
+  selector: 'app-histogram',
+  templateUrl: './histogram.component.html',
+  styleUrls: ['./histogram.component.scss'],
+  standalone: false,
 })
 export class HistogramComponent implements OnInit {
   @Input({ required: true })

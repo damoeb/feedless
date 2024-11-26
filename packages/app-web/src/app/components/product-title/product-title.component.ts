@@ -12,11 +12,11 @@ import {
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-product-title',
-    templateUrl: './product-title.component.html',
-    styleUrls: ['./product-title.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-product-title',
+  templateUrl: './product-title.component.html',
+  styleUrls: ['./product-title.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ProductTitleComponent implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

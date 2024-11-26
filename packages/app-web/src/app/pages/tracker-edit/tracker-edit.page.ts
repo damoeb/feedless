@@ -43,11 +43,11 @@ type Email = string;
 type Screen = 'area' | 'page' | 'element';
 
 @Component({
-    selector: 'app-tracker-edit-page',
-    templateUrl: './tracker-edit.page.html',
-    styleUrls: ['./tracker-edit.page.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-tracker-edit-page',
+  templateUrl: './tracker-edit.page.html',
+  styleUrls: ['./tracker-edit.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TrackerEditPage
   extends InteractiveWebsiteController

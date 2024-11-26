@@ -7,6 +7,7 @@ import { EventsRoutingModule } from './events-routing.module';
 import { UpcomingHeaderModule } from '../upcoming-header/upcoming-header.module';
 import { UpcomingFooterModule } from '../upcoming-footer/upcoming-footer.module';
 import {
+  IonBadge,
   IonButton,
   IonButtons,
   IonCard,
@@ -16,6 +17,7 @@ import {
   IonFooter,
   IonIcon,
   IonInput,
+  IonItem,
   IonNote,
   IonSpinner,
   IonToolbar,
@@ -43,6 +45,8 @@ import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if
     IonCardTitle,
     RemoveIfProdModule,
     IonInput,
+    IonBadge,
+    IonItem,
   ],
   declarations: [EventsPage],
   exports: [EventsPage],
