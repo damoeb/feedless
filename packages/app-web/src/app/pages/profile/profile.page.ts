@@ -28,10 +28,11 @@ import { addIcons } from 'ionicons';
 import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-profile-page',
-  templateUrl: './profile.page.html',
-  styleUrls: ['./profile.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-profile-page',
+    templateUrl: './profile.page.html',
+    styleUrls: ['./profile.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ProfilePage implements OnInit, OnDestroy {
   protected secrets: UserSecret[] = [];

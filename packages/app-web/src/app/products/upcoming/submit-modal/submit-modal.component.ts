@@ -26,9 +26,10 @@ export interface SubmitModalComponentProps {
 type ReportFrequency = 'week' | 'month';
 
 @Component({
-  selector: 'app-submit-modal',
-  templateUrl: './submit-modal.component.html',
-  styleUrls: ['./submit-modal.component.scss'],
+    selector: 'app-submit-modal',
+    templateUrl: './submit-modal.component.html',
+    styleUrls: ['./submit-modal.component.scss'],
+    standalone: false
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {
   repositoryId: string;

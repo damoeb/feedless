@@ -11,10 +11,11 @@ import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-report-page',
-  templateUrl: './report.page.html',
-  styleUrls: ['./report.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-report-page',
+    templateUrl: './report.page.html',
+    styleUrls: ['./report.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ReportPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

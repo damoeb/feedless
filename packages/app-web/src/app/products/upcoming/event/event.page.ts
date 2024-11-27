@@ -24,10 +24,11 @@ import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../../types';
 
 @Component({
-  selector: 'app-event-page',
-  templateUrl: './event.page.html',
-  styleUrls: ['./event.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-event-page',
+    templateUrl: './event.page.html',
+    styleUrls: ['./event.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class EventPage implements OnInit, OnDestroy {
   loading: boolean = true;

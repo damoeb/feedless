@@ -20,9 +20,10 @@ import { homeRoute } from '../upcoming-product-routing.module';
 import dayjs from 'dayjs';
 
 @Component({
-  selector: 'app-upcoming-footer',
-  templateUrl: './upcoming-footer.component.html',
-  styleUrls: ['./upcoming-footer.component.scss'],
+    selector: 'app-upcoming-footer',
+    templateUrl: './upcoming-footer.component.html',
+    styleUrls: ['./upcoming-footer.component.scss'],
+    standalone: false
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {
   @Input()

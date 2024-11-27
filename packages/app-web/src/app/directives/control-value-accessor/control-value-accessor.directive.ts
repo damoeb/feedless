@@ -12,7 +12,8 @@ import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 
 // source https://github.com/DevBySeb/DevBySeb/pull/3/files#diff-7f95321ed3e891b3a7308fb1c46eacfd2007f9aec2da0b47d430a80c9aa2e6cd
 @Directive({
-  selector: '[appControlValueAccessor]',
+    selector: '[appControlValueAccessor]',
+    standalone: false
 })
 export class ControlValueAccessorDirective<T>
   implements ControlValueAccessor, OnInit

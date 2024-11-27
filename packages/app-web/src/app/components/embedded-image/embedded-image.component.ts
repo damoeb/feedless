@@ -42,10 +42,11 @@ interface Box {
 }
 
 @Component({
-  selector: 'app-embedded-image',
-  templateUrl: './embedded-image.component.html',
-  styleUrls: ['./embedded-image.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-embedded-image',
+    templateUrl: './embedded-image.component.html',
+    styleUrls: ['./embedded-image.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class EmbeddedImageComponent
   implements AfterViewInit, OnDestroy, OnInit

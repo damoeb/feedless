@@ -49,10 +49,11 @@ export type FulltextTransformer = 'none' | 'summary' | 'readability';
 export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
 
 @Component({
-  selector: 'app-repository-modal',
-  templateUrl: './repository-modal.component.html',
-  styleUrls: ['./repository-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-repository-modal',
+    templateUrl: './repository-modal.component.html',
+    styleUrls: ['./repository-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RepositoryModalComponent
   implements RepositoryModalComponentProps, OnInit

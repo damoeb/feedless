@@ -32,10 +32,11 @@ import { getFirstFetchUrlLiteral } from '../../components/interactive-website/so
 export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 
 @Component({
-  selector: 'app-feed-builder-page',
-  templateUrl: './feed-builder.page.html',
-  styleUrls: ['./feed-builder.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feed-builder-page',
+    templateUrl: './feed-builder.page.html',
+    styleUrls: ['./feed-builder.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
   loading = false;

@@ -50,11 +50,12 @@ export interface ReaderOptions {
 }
 
 @Component({
-  selector: 'app-reader-product-page',
-  templateUrl: './reader-product.page.html',
-  styleUrls: ['./reader-product.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
+    selector: 'app-reader-product-page',
+    templateUrl: './reader-product.page.html',
+    styleUrls: ['./reader-product.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class ReaderProductPage implements OnInit, OnDestroy {
   url: string;

@@ -2,7 +2,8 @@ import { Directive, ElementRef, Renderer2, OnInit } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 @Directive({
-  selector: '[appDev]',
+    selector: '[appDev]',
+    standalone: false
 })
 export class RemoveIfProdDirective implements OnInit {
   constructor(

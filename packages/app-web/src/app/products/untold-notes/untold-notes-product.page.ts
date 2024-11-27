@@ -13,10 +13,11 @@ import {
 } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-untold-notes-product-page',
-  templateUrl: './untold-notes-product.page.html',
-  styleUrls: ['./untold-notes-product.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-untold-notes-product-page',
+    templateUrl: './untold-notes-product.page.html',
+    styleUrls: ['./untold-notes-product.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UntoldNotesProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;

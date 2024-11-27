@@ -21,10 +21,11 @@ import {
 } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-about-feedless-page',
-  templateUrl: './about-feedless.page.html',
-  styleUrls: ['./about-feedless.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-about-feedless-page',
+    templateUrl: './about-feedless.page.html',
+    styleUrls: ['./about-feedless.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AboutFeedlessPage implements OnInit {
   @ViewChild('createOptions')

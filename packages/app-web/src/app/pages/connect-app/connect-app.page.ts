@@ -12,10 +12,11 @@ import {
 import { ToastController } from '@ionic/angular/standalone';
 
 @Component({
-  selector: 'app-connect-app-page',
-  templateUrl: './connect-app.page.html',
-  styleUrls: ['./connect-app.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-connect-app-page',
+    templateUrl: './connect-app.page.html',
+    styleUrls: ['./connect-app.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ConnectAppPage implements OnInit {
   loading: boolean = false;

@@ -8,9 +8,10 @@ import { playOutline } from 'ionicons/icons';
 type Enclosure = GetElementType<Record['attachments']>;
 
 @Component({
-  selector: 'app-player',
-  templateUrl: './player.component.html',
-  styleUrls: ['./player.component.scss'],
+    selector: 'app-player',
+    templateUrl: './player.component.html',
+    styleUrls: ['./player.component.scss'],
+    standalone: false
 })
 export class PlayerComponent {
   @Input({ required: true })

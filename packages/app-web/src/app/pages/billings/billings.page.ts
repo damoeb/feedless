@@ -10,10 +10,11 @@ import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-billings-page',
-  templateUrl: './billings.page.html',
-  styleUrls: ['./billings.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-billings-page',
+    templateUrl: './billings.page.html',
+    styleUrls: ['./billings.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class BillingsPage implements OnInit {
   busy = false;

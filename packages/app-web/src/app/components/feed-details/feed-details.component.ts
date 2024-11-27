@@ -86,10 +86,11 @@ type Pair<A, B> = {
 };
 
 @Component({
-  selector: 'app-feed-details',
-  templateUrl: './feed-details.component.html',
-  styleUrls: ['./feed-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feed-details',
+    templateUrl: './feed-details.component.html',
+    styleUrls: ['./feed-details.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input({ required: true })

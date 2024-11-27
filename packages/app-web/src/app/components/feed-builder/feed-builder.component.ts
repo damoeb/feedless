@@ -89,10 +89,11 @@ export type FeedWithRequest = {
 };
 
 @Component({
-  selector: 'app-feed-builder',
-  templateUrl: './feed-builder.component.html',
-  styleUrls: ['./feed-builder.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feed-builder',
+    templateUrl: './feed-builder.component.html',
+    styleUrls: ['./feed-builder.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {
   url: string;

@@ -12,10 +12,11 @@ import {
 } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-workflow-builder-page',
-  templateUrl: './workflow-builder.page.html',
-  styleUrls: ['./workflow-builder.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-workflow-builder-page',
+    templateUrl: './workflow-builder.page.html',
+    styleUrls: ['./workflow-builder.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class WorkflowBuilderPage implements OnInit, OnDestroy {
   loading = false;

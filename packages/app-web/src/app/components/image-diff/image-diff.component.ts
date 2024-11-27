@@ -19,10 +19,11 @@ type ImageSize = {
 };
 
 @Component({
-  selector: 'app-image-diff',
-  templateUrl: './image-diff.component.html',
-  styleUrls: ['./image-diff.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-image-diff',
+    templateUrl: './image-diff.component.html',
+    styleUrls: ['./image-diff.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {
   @Input({ required: true })

@@ -30,9 +30,10 @@ type GeneralFilterParams = ArrayElement<
 >;
 
 @Component({
-  selector: 'app-filter-feed-accordion',
-  templateUrl: './filter-items-accordion.component.html',
-  styleUrls: ['./filter-items-accordion.component.scss'],
+    selector: 'app-filter-feed-accordion',
+    templateUrl: './filter-items-accordion.component.html',
+    styleUrls: ['./filter-items-accordion.component.scss'],
+    standalone: false
 })
 export class FilterItemsAccordionComponent implements OnInit {
   formFg = new FormGroup({

@@ -19,10 +19,11 @@ import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
 
 @Component({
-  selector: 'app-finalize-profile-modal',
-  templateUrl: './finalize-profile-modal.component.html',
-  styleUrls: ['./finalize-profile-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-finalize-profile-modal',
+    templateUrl: './finalize-profile-modal.component.html',
+    styleUrls: ['./finalize-profile-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FinalizeProfileModalComponent implements OnInit {
   loading = false;

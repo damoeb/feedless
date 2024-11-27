@@ -16,11 +16,12 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 
 @Component({
-  selector: 'app-reader',
-  templateUrl: './reader.component.html',
-  styleUrls: ['./reader.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-reader',
+    templateUrl: './reader.component.html',
+    styleUrls: ['./reader.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ReaderComponent implements OnChanges {
   @Input()

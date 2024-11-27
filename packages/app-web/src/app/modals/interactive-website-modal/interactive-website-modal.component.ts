@@ -19,10 +19,11 @@ export type InteractiveWebsiteModalComponentProps = {
 };
 
 @Component({
-  selector: 'app-interactive-website-modal',
-  templateUrl: './interactive-website-modal.component.html',
-  styleUrls: ['./interactive-website-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-interactive-website-modal',
+    templateUrl: './interactive-website-modal.component.html',
+    styleUrls: ['./interactive-website-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InteractiveWebsiteModalComponent
   extends InteractiveWebsiteController

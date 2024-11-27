@@ -10,10 +10,11 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 
 @Component({
-  selector: 'app-about-page-change-tracker',
-  templateUrl: './about-pc-tracker.page.html',
-  styleUrls: ['./about-pc-tracker.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-about-page-change-tracker',
+    templateUrl: './about-pc-tracker.page.html',
+    styleUrls: ['./about-pc-tracker.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AboutPcTrackerPage {
   @ViewChild('opmlPicker')

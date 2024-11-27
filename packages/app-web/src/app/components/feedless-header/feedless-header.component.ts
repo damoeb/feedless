@@ -12,9 +12,10 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { SessionService } from '../../services/session.service';
 
 @Component({
-  selector: 'app-feedless-header',
-  templateUrl: './feedless-header.component.html',
-  styleUrls: ['./feedless-header.component.scss'],
+    selector: 'app-feedless-header',
+    templateUrl: './feedless-header.component.html',
+    styleUrls: ['./feedless-header.component.scss'],
+    standalone: false
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {
   protected productConfig: VerticalSpecWithRoutes;

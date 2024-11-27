@@ -8,9 +8,10 @@ import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-email-login',
-  templateUrl: './email-login.component.html',
-  styleUrls: ['./email-login.component.scss'],
+    selector: 'app-email-login',
+    templateUrl: './email-login.component.html',
+    styleUrls: ['./email-login.component.scss'],
+    standalone: false
 })
 export class EmailLoginComponent implements OnDestroy {
   mode: 'enterMail' | 'enterConfirmationCode' | 'finalized' = 'enterMail';

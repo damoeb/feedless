@@ -48,10 +48,11 @@ interface IframeMessage {
 }
 
 @Component({
-  selector: 'app-embedded-markup',
-  templateUrl: './embedded-markup.component.html',
-  styleUrls: ['./embedded-markup.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-embedded-markup',
+    templateUrl: './embedded-markup.component.html',
+    styleUrls: ['./embedded-markup.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class EmbeddedMarkupComponent
   implements OnInit, AfterViewInit, OnChanges, OnDestroy

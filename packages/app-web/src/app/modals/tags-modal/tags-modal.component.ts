@@ -9,9 +9,10 @@ export interface TagsModalComponentProps {
 }
 
 @Component({
-  selector: 'app-tags-modal',
-  templateUrl: './tags-modal.component.html',
-  styleUrls: ['./tags-modal.component.scss'],
+    selector: 'app-tags-modal',
+    templateUrl: './tags-modal.component.html',
+    styleUrls: ['./tags-modal.component.scss'],
+    standalone: false
 })
 export class TagsModalComponent implements TagsModalComponentProps {
   tags: string[] = [];

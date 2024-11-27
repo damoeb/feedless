@@ -8,9 +8,10 @@ import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
 
 @Component({
-  selector: 'app-search-address-modal',
-  templateUrl: './search-address-modal.component.html',
-  styleUrls: ['./search-address-modal.component.scss'],
+    selector: 'app-search-address-modal',
+    templateUrl: './search-address-modal.component.html',
+    styleUrls: ['./search-address-modal.component.scss'],
+    standalone: false
 })
 export class SearchAddressModalComponent {
   matches: NamedLatLon[];

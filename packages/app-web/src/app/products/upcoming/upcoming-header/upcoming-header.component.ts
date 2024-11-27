@@ -60,10 +60,11 @@ type SiteLocale = 'de' | 'en';
 type ExpandableSection = 'map' | 'calendar' | 'suggestions';
 
 @Component({
-  selector: 'app-upcoming-header',
-  templateUrl: './upcoming-header.component.html',
-  styleUrls: ['./upcoming-header.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-upcoming-header',
+    templateUrl: './upcoming-header.component.html',
+    styleUrls: ['./upcoming-header.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};

@@ -12,10 +12,11 @@ import {
 } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-notebook-page',
-  templateUrl: './notebooks.page.html',
-  styleUrls: ['./notebooks.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-notebook-page',
+    templateUrl: './notebooks.page.html',
+    styleUrls: ['./notebooks.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NotebooksPage implements OnInit, OnDestroy {
   loading = false;

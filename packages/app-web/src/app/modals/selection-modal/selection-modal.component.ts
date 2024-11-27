@@ -24,9 +24,10 @@ type EntityWithFormControl<T> = {
 };
 
 @Component({
-  selector: 'app-tags-modal',
-  templateUrl: './selection-modal.component.html',
-  styleUrls: ['./selection-modal.component.scss'],
+    selector: 'app-tags-modal',
+    templateUrl: './selection-modal.component.html',
+    styleUrls: ['./selection-modal.component.scss'],
+    standalone: false
 })
 export class SelectionModalComponent<T>
   implements SelectionModalComponentProps<T>, OnInit

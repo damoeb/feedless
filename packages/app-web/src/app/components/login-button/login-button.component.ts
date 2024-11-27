@@ -20,10 +20,11 @@ import {
 } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-login-button',
-  templateUrl: './login-button.component.html',
-  styleUrls: ['./login-button.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-login-button',
+    templateUrl: './login-button.component.html',
+    styleUrls: ['./login-button.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
   authorization: Authentication;

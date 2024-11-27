@@ -15,10 +15,11 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
-  selector: 'app-feed-details-page',
-  templateUrl: './feed-details.page.html',
-  styleUrls: ['./feed-details.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feed-details-page',
+    templateUrl: './feed-details.page.html',
+    styleUrls: ['./feed-details.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = true;

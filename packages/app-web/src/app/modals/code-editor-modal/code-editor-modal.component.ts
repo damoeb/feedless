@@ -13,9 +13,10 @@ export interface CodeEditorModalComponentProps {
 }
 
 @Component({
-  selector: 'app-code-editor-modal',
-  templateUrl: './code-editor-modal.component.html',
-  styleUrls: ['./code-editor-modal.component.scss'],
+    selector: 'app-code-editor-modal',
+    templateUrl: './code-editor-modal.component.html',
+    styleUrls: ['./code-editor-modal.component.scss'],
+    standalone: false
 })
 export class CodeEditorModalComponent
   implements OnInit, CodeEditorModalComponentProps

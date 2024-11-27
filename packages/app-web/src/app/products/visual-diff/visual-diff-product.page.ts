@@ -18,10 +18,11 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
-  selector: 'app-visual-diff-product-page',
-  templateUrl: './visual-diff-product.page.html',
-  styleUrls: ['./visual-diff-product.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-visual-diff-product-page',
+    templateUrl: './visual-diff-product.page.html',
+    styleUrls: ['./visual-diff-product.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

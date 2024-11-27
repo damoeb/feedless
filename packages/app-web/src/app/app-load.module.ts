@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { NgModule, inject, provideAppInitializer } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   provideHttpClient,
@@ -11,10 +11,8 @@ import { AppConfigService } from './services/app-config.service';
   declarations: [],
   imports: [CommonModule],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory:
-        (
+    provideAppInitializer(() => {
+        const initializerFn = ((
           serverConfig: ServerConfigService,
           appConfigService: AppConfigService,
         ) =>
@@ -24,10 +22,9 @@ import { AppConfigService } from './services/app-config.service';
           );
           // todo remove
           await serverConfig.fetchServerSettings();
-        },
-      deps: [ServerConfigService, AppConfigService],
-      multi: true,
-    },
+        })(inject(ServerConfigService), inject(AppConfigService));
+        return initializerFn();
+      }),
     provideHttpClient(withInterceptorsFromDi()),
   ],
 })

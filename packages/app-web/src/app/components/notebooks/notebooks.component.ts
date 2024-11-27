@@ -12,10 +12,11 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-notebook-builder',
-  templateUrl: './notebooks.component.html',
-  styleUrls: ['./notebooks.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-notebook-builder',
+    templateUrl: './notebooks.component.html',
+    styleUrls: ['./notebooks.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
   busy = false;

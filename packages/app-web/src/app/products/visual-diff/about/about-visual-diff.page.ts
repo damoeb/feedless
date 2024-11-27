@@ -5,10 +5,11 @@ import '@justinribeiro/lite-youtube';
 import { fixUrl } from '../../../app.module';
 
 @Component({
-  selector: 'app-about-visual-diff',
-  templateUrl: './about-visual-diff.page.html',
-  styleUrls: ['./about-visual-diff.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-about-visual-diff',
+    templateUrl: './about-visual-diff.page.html',
+    styleUrls: ['./about-visual-diff.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AboutVisualDiffPage {
   constructor(private readonly router: Router) {}

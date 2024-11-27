@@ -27,9 +27,10 @@ type FcOutline = {
 };
 
 @Component({
-  selector: 'app-import-opml',
-  templateUrl: './import-opml-modal.component.html',
-  styleUrls: ['./import-opml-modal.component.scss'],
+    selector: 'app-import-opml',
+    templateUrl: './import-opml-modal.component.html',
+    styleUrls: ['./import-opml-modal.component.scss'],
+    standalone: false
 })
 export class ImportOpmlModalComponent
   implements OnInit, ImportOpmlModalComponentProps

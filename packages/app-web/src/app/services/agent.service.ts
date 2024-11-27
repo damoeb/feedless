@@ -7,12 +7,12 @@ import {
 } from '../../generated/graphql';
 import { GetElementType } from '../graphql/types';
 import { Observable, of, switchMap } from 'rxjs';
-import Zen from 'zen-observable-ts';
+import { Observable as ZenObservable } from 'zen-observable-ts';
 import { AuthService } from './auth.service';
 
 export type Agent = GetElementType<GqlAgentsQuery['agents']>;
 
-export const zenToRx = <T>(zenObservable: Zen.Observable<T>): Observable<T> =>
+export const zenToRx = <T>(zenObservable: ZenObservable<T>): Observable<T> =>
   new Observable((observer) => zenObservable.subscribe(observer));
 
 @Injectable({

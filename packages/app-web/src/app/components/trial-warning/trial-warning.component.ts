@@ -8,9 +8,10 @@ import { Subscription } from 'rxjs';
 import { IonRouterLink } from '@ionic/angular/standalone';
 
 @Component({
-  selector: 'app-trial-warning',
-  templateUrl: './trial-warning.component.html',
-  styleUrls: ['./trial-warning.component.scss'],
+    selector: 'app-trial-warning',
+    templateUrl: './trial-warning.component.html',
+    styleUrls: ['./trial-warning.component.scss'],
+    standalone: false
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {
   license: GqlServerSettingsQuery['serverSettings']['license'];

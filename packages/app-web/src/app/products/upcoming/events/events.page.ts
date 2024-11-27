@@ -93,10 +93,11 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
 }
 
 @Component({
-  selector: 'app-events-page',
-  templateUrl: './events.page.html',
-  styleUrls: ['./events.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-events-page',
+    templateUrl: './events.page.html',
+    styleUrls: ['./events.page.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class EventsPage implements OnInit, OnDestroy {
   date: Dayjs = dayjs();

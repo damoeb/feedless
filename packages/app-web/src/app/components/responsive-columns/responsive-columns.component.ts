@@ -10,10 +10,11 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-responsive-columns',
-  templateUrl: './responsive-columns.component.html',
-  styleUrls: ['./responsive-columns.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-responsive-columns',
+    templateUrl: './responsive-columns.component.html',
+    styleUrls: ['./responsive-columns.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ResponsiveColumnsComponent implements AfterViewInit {
   @ViewChild('scrollpane')

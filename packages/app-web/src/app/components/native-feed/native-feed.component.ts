@@ -11,10 +11,11 @@ import { last } from 'lodash-es';
 import { Record } from '../../graphql/types';
 
 @Component({
-  selector: 'app-native-feed',
-  templateUrl: './native-feed.component.html',
-  styleUrls: ['./native-feed.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-native-feed',
+    templateUrl: './native-feed.component.html',
+    styleUrls: ['./native-feed.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NativeFeedComponent implements OnInit {
   @Input({ required: true })
