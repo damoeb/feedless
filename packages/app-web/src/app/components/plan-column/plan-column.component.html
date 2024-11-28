@@ -17,37 +17,32 @@
                 @if (feature.subtitle) {
                   <span class="feature__subtitle"
                     >({{ feature.subtitle }})</span
-                    >
+                  >
+                }
+              </ion-col>
+              <ion-col class="feature__value" size="2">
+                @if (feature.valueHtml) {
+                  <div [innerHTML]="feature.valueHtml"></div>
+                }
+                @if (feature.valueBool) {
+                  @if (feature.valueBool.value) {
+                    <ion-icon
+                      color="success"
+                      name="checkmark-outline"
+                    ></ion-icon>
                   }
-                </ion-col>
-                <ion-col class="feature__value" size="2">
-                  @if (feature.valueHtml) {
-                    <div
-                      [innerHTML]="feature.valueHtml"
-                    ></div>
+                  @if (!feature.valueBool.value) {
+                    <ion-icon color="danger" name="close-outline"></ion-icon>
                   }
-                  @if (feature.valueBool) {
-                    @if (feature.valueBool.value) {
-                      <ion-icon
-                        color="success"
-                        name="checkmark-outline"
-                      ></ion-icon>
-                    }
-                    @if (!feature.valueBool.value) {
-                      <ion-icon
-                        color="danger"
-                        name="close-outline"
-                      ></ion-icon>
-                    }
-                  }
-                </ion-col>
-              </ion-row>
-            }
+                }
+              </ion-col>
+            </ion-row>
           }
         }
-      </div>
-    }
-    <div class="plan__action ion-margin-top">
-      <ng-content select="[planAction]"></ng-content>
+      }
     </div>
+  }
+  <div class="plan__action ion-margin-top">
+    <ng-content select="[planAction]"></ng-content>
   </div>
+</div>

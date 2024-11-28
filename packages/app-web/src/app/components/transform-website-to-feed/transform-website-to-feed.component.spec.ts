@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { ScrapeResponse } from '../../graphql/types';
@@ -41,47 +41,12 @@ import { ScrapeService } from '../../services/scrape.service';
 //   genericFeeds: [],
 // };
 
-const feedResponse: ScrapeResponse = {
-  ok: true,
-  logs: [],
-  outputs: [
-    {
-      index: 0,
-      response: {
-        fetch: {
-          data: '',
-          debug: {
-            corrId: null,
-            console: [],
-            cookies: [],
-            contentType: 'application/rss+xml; charset=UTF-8',
-            statusCode: 200,
-            screenshot: null,
-            // html: '',
-            // metrics: {
-            //   queue: 0,
-            //   render: 239,
-            //   // '__typename': 'ScrapeDebugTimes'
-            // },
-            viewport: {
-              width: 1,
-              height: 1,
-              isLandscape: false,
-              isMobile: false,
-            },
-            // '__typename': 'ScrapeDebugResponse'
-          },
-        },
-      },
-    },
-  ],
-};
 describe('TransformWebsiteToFeedComponent', () => {
   let component: TransformWebsiteToFeedComponent;
   let fixture: ComponentFixture<TransformWebsiteToFeedComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
@@ -100,7 +65,7 @@ describe('TransformWebsiteToFeedComponent', () => {
     );
     // component.scrapeResponse = feedResponse;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

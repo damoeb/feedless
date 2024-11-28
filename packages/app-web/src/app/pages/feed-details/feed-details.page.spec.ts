@@ -5,16 +5,15 @@ import {
   mockPlugins,
   mockRepository,
 } from '../../app-test.module';
-import { FeedDetailsPageModule } from './feed-details.module';
 
 describe('FeedDetailsPage', () => {
   let component: FeedDetailsPage;
   let fixture: ComponentFixture<FeedDetailsPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FeedDetailsPageModule,
+        FeedDetailsPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockPlugins(apolloMockController);
@@ -29,7 +28,7 @@ describe('FeedDetailsPage', () => {
     component.repository = {} as any;
     // component.documents = [];
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

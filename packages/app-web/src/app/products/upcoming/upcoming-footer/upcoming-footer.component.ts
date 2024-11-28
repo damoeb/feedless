@@ -1,29 +1,21 @@
-import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
 import { NamedLatLon } from '../../../types';
 import {
   AlertController,
-  ModalController,
-  IonFooter,
   IonButton,
+  IonFooter,
   IonIcon,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { AppConfigService } from '../../../services/app-config.service';
 import { addIcons } from 'ionicons';
-import {
-  alert,
-  heart,
-  locateOutline,
-  pinOutline,
-  sendOutline,
-} from 'ionicons/icons';
+import { heart, locateOutline, sendOutline } from 'ionicons/icons';
 import {
   SubmitModalComponent,
   SubmitModalComponentProps,
 } from '../submit-modal/submit-modal.component';
 import { GeoService } from '../../../services/geo.service';
 import { Subscription } from 'rxjs';
-import { homeRoute } from '../upcoming-product-routing.module';
-import dayjs from 'dayjs';
 
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 import { RouterLink } from '@angular/router';
@@ -32,13 +24,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [
-    IonFooter,
-    IonButton,
-    IonIcon,
-    RemoveIfProdDirective,
-    RouterLink
-],
+  imports: [IonFooter, IonButton, IonIcon, RemoveIfProdDirective, RouterLink],
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {

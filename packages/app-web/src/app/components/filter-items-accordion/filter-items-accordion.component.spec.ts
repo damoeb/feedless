@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FilterItemsAccordionComponent } from './filter-items-accordion.component';
-import { FilterItemsAccordionModule } from './filter-items-accordion.module';
 import {
   ApolloMockController,
   AppTestModule,

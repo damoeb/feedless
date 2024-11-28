@@ -1,18 +1,23 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonContent,
-  IonRow,
   IonCol,
-  IonList,
+  IonContent,
   IonItem,
   IonLabel,
+  IonList,
+  IonRow,
 } from '@ionic/angular/standalone';
-
 
 @Component({
   selector: 'app-billings-page',
@@ -26,8 +31,8 @@ import {
     IonCol,
     IonList,
     IonItem,
-    IonLabel
-],
+    IonLabel,
+  ],
   standalone: true,
 })
 export class BillingsPage implements OnInit {

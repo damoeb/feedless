@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SelectionModalComponent } from './selection-modal.component';
-import { SelectionModalModule } from './selection-modal.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('SelectionModalComponent', () => {
@@ -10,7 +9,7 @@ describe('SelectionModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SelectionModalModule, AppTestModule.withDefaults()],
+      imports: [SelectionModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectionModalComponent<string>);

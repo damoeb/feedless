@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlServerSettingsQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';

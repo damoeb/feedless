@@ -1,8 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
 import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
-
 
 @Component({
   selector: 'app-responsive-columns',

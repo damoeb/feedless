@@ -1,4 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, viewChild, viewChildren } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  viewChild,
+  viewChildren,
+} from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { Repository } from '../../graphql/types';
 import {
@@ -11,25 +22,25 @@ import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { debounce as debounceFn, DebouncedFunc, isNull, omit } from 'lodash-es';
 import {
   AlertController,
-  IonSearchbar,
-  IonSplitPane,
-  IonMenu,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
+  IonButtons,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonText,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonMenu,
   IonPopover,
   IonProgressBar,
+  IonSearchbar,
+  IonSplitPane,
+  IonText,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { Completion } from '@codemirror/autocomplete';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -104,8 +115,8 @@ type NoteReferences = {
     IonText,
     IonPopover,
     CodeEditorComponent,
-    IonProgressBar
-],
+    IonProgressBar,
+  ],
   standalone: true,
 })
 export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {

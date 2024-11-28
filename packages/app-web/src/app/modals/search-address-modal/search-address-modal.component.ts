@@ -1,16 +1,16 @@
 import { Component, inject } from '@angular/core';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
-  IonList,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
+  IonList,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { ModalCancel } from '../../app.module';
 import { OpenStreetMapService } from '../../services/open-street-map.service';
@@ -19,7 +19,6 @@ import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-
 
 @Component({
   selector: 'app-search-address-modal',
@@ -36,8 +35,8 @@ import { SearchbarComponent } from '../../elements/searchbar/searchbar.component
     SearchbarComponent,
     IonList,
     IonItem,
-    IonLabel
-],
+    IonLabel,
+  ],
   standalone: true,
 })
 export class SearchAddressModalComponent {

@@ -1,20 +1,20 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonList,
-  IonItem,
+  IonButtons,
   IonCheckbox,
-  IonLabel,
+  IonContent,
   IonFooter,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
   IonNote,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import {
   FormControl,
@@ -32,7 +32,6 @@ import {
 } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -66,8 +65,8 @@ type FcOutline = {
     ReactiveFormsModule,
     IonLabel,
     IonFooter,
-    IonNote
-],
+    IonNote,
+  ],
   standalone: true,
 })
 export class ImportOpmlModalComponent

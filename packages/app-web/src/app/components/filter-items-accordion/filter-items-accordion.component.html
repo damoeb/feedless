@@ -1,16 +1,10 @@
 @if (!hideIfEmpty() || hasFilters()) {
-  <ion-accordion
-    [disabled]="disabled()"
-    toggleIconSlot="start"
-    value="filter"
-    >
+  <ion-accordion [disabled]="disabled()" toggleIconSlot="start" value="filter">
     <ion-item slot="header">
       <ion-label [color]="hasCompositeFilters() ? 'dark' : 'medium'">
         {{ labelPrefix() }} Filters
         @if (countValidFilters() > 0) {
-          <ion-chip
-            >{{ countValidFilters() }}
-          </ion-chip>
+          <ion-chip>{{ countValidFilters() }} </ion-chip>
         }
         <ion-note>Remove feed items</ion-note>
       </ion-label>
@@ -30,7 +24,7 @@
             class="ion-text-left"
             id="applyFiltersLast__label"
             style="flex: 9"
-            >
+          >
             Run Filter last
           </ion-label>
         </ion-item>
@@ -39,19 +33,25 @@
         <div
           class="flex__column ion-align-items-center ion-margin-horizontal"
           style="column-gap: 5px; row-gap: 10px"
-          >
+        >
           @if (i > 0) {
             <ion-text class="ion-margin-vertical">and</ion-text>
           }
           <div class="flex__row">
             <div class="flex__column" style="row-gap: 5px">
-              <div class="flex__row ion-align-items-center" style="column-gap: 7px">
+              <div
+                class="flex__row ion-align-items-center"
+                style="column-gap: 7px"
+              >
                 <ion-select
                   [formControl]="filter.controls.type"
-                  [interfaceOptions]="{ subHeader: 'Filter Type', size: 'auto' }"
+                  [interfaceOptions]="{
+                    subHeader: 'Filter Type',
+                    size: 'auto',
+                  }"
                   fill="outline"
                   interface="popover"
-                  >
+                >
                   <ion-select-option [value]="FilterTypeInclude"
                     >include
                   </ion-select-option>
@@ -65,7 +65,7 @@
                   [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
                   fill="outline"
                   interface="popover"
-                  >
+                >
                   <ion-select-option [value]="FilterFieldLink"
                     >link
                   </ion-select-option>
@@ -81,14 +81,15 @@
                   [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
                   fill="outline"
                   interface="popover"
-                  >
+                >
                   <ion-select-option [value]="GqlStringFilterOperator.Contains"
                     >contains
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.Matches"
                     >matches
                   </ion-select-option>
-                  <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
+                  <ion-select-option
+                    [value]="GqlStringFilterOperator.StartsWidth"
                     >starts with
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
@@ -114,7 +115,7 @@
         [color]="filters.length == 0 ? 'primary' : undefined"
         [disabled]="filters.length >= 10"
         class="ion-margin-top"
-        >
+      >
         Add Filter
         <ion-icon name="add-outline" slot="end"></ion-icon>
       </ion-item>
@@ -127,7 +128,7 @@
     [disabled]="disabled()"
     toggleIconSlot="start"
     value="filter-expression"
-    >
+  >
     <ion-item slot="header">
       <ion-label [color]="hasFilterExpression() ? 'dark' : 'medium'">
         {{ labelPrefix() }} Expert Filters
@@ -139,26 +140,26 @@
           Your logical filter expression
           <!--        <ion-note>-->
           <!--          <a href="https://github.com/code4craft/xsoup" target="_blank"-->
-        <!--          >syntax reference</a-->
-        <!--          >-->
-      <!--        </ion-note>-->
-    </ion-label>
-  </ion-item>
-  <div class="ion-margin-horizontal ion-margin-bottom">
-    <ion-textarea
-      [formControl]="formFg.controls.filterExpression"
-      fill="outline"
-      rows="5"
-      style="font-family: monospace"
-    ></ion-textarea>
-    <!--      todo code editor needs to support formControl-->
-    <!--      <app-code-editor-->
-    <!--        [text]="formFg.value.filterExpression"-->
-    <!--        (textChange)="handleFilterExpressionChange($event)"-->
-    <!--        [markdownControls]="false"-->
-    <!--      >-->
-  <!--      </app-code-editor>-->
-</div>
-</div>
-</ion-accordion>
+          <!--          >syntax reference</a-->
+          <!--          >-->
+          <!--        </ion-note>-->
+        </ion-label>
+      </ion-item>
+      <div class="ion-margin-horizontal ion-margin-bottom">
+        <ion-textarea
+          [formControl]="formFg.controls.filterExpression"
+          fill="outline"
+          rows="5"
+          style="font-family: monospace"
+        ></ion-textarea>
+        <!--      todo code editor needs to support formControl-->
+        <!--      <app-code-editor-->
+        <!--        [text]="formFg.value.filterExpression"-->
+        <!--        (textChange)="handleFilterExpressionChange($event)"-->
+        <!--        [markdownControls]="false"-->
+        <!--      >-->
+        <!--      </app-code-editor>-->
+      </div>
+    </div>
+  </ion-accordion>
 }

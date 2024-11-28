@@ -15,16 +15,16 @@
       {{ after.title }}
     </div>
     <img-comparison-slider style="width: auto; margin: auto">
-    <img
-      [src]="'data:image/png;base64, ' + before.rawBase64"
-      alt=""
-      slot="first"
+      <img
+        [src]="'data:image/png;base64, ' + before.rawBase64"
+        alt=""
+        slot="first"
       />
-    <img [src]="safeDiffImageUrl" alt="" slot="second" />
-  </img-comparison-slider>
-  <div>After</div>
-  <img [src]="'data:image/png;base64, ' + after.rawBase64" alt="" />
-  <div>Before</div>
-  <img [src]="'data:image/png;base64, ' + before.rawBase64" alt="" />
-</div>
+      <img [src]="safeDiffImageUrl" alt="" slot="second" />
+    </img-comparison-slider>
+    <div>After</div>
+    <img [src]="'data:image/png;base64, ' + after.rawBase64" alt="" />
+    <div>Before</div>
+    <img [src]="'data:image/png;base64, ' + before.rawBase64" alt="" />
+  </div>
 }

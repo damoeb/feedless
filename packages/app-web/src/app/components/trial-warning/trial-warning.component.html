@@ -4,7 +4,7 @@
       color="primary"
       routerLink="/license"
       routerLinkActive="hidden"
-      >
+    >
       <ion-text class="ion-margin-horizontal">
         <strong>Your Trial Period</strong> ends in {{ trialEndIn }}
       </ion-text>
@@ -13,17 +13,13 @@
         color="dark"
         routerLink="/license"
         slot="end"
-        >
+      >
         Activate
       </ion-button>
     </ion-toolbar>
   }
   @if (!isTrialPeriod() && !license?.isValid) {
-    <ion-toolbar
-      color="danger"
-      routerLink="/license"
-      routerLinkActive="hidden"
-      >
+    <ion-toolbar color="danger" routerLink="/license" routerLinkActive="hidden">
       <ion-text class="ion-margin-horizontal">
         <strong>Trial Period ended</strong>.
       </ion-text>
@@ -32,7 +28,7 @@
         color="dark"
         routerLink="/license"
         slot="end"
-        >
+      >
         Activate
       </ion-button>
     </ion-toolbar>

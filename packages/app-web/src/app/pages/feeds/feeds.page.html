@@ -16,74 +16,65 @@
           <!--                      (click)="viewMode = viewModeTable"-->
           <!--                      [color]="viewMode === viewModeTable ? 'dark' : 'medium'">-->
           <!--            Table-->
-        <!--          </ion-button>-->
-        <!--          <ion-text color="medium">|</ion-text>-->
-        <!--          <ion-button title="list"-->
-        <!--                      (click)="viewMode = viewModeList"-->
-        <!--                      [color]="viewMode === viewModeList ? 'dark' : 'medium'">-->
-        <!--            List-->
-      <!--          </ion-button>-->
+          <!--          </ion-button>-->
+          <!--          <ion-text color="medium">|</ion-text>-->
+          <!--          <ion-button title="list"-->
+          <!--                      (click)="viewMode = viewModeList"-->
+          <!--                      [color]="viewMode === viewModeList ? 'dark' : 'medium'">-->
+          <!--            List-->
+          <!--          </ion-button>-->
 
-      <app-import-button></app-import-button>
-      <ion-button color="primary" fill="solid" routerLink="/feed-builder">
-        Create Feed
-      </ion-button>
-    </ion-buttons>
-  </ion-col>
-</ion-row>
+          <app-import-button></app-import-button>
+          <ion-button color="primary" fill="solid" routerLink="/feed-builder">
+            Create Feed
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
 
-@if (loading) {
-  <ion-progress-bar
-    color="medium"
-    type="indeterminate"
-  ></ion-progress-bar>
-}
-
-@if (!loading) {
-  @if (viewMode === viewModeTable && repositories) {
+    @if (loading) {
+    <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
+    } @if (!loading) { @if (viewMode === viewModeTable && repositories) {
     <app-table
       [columns]="['title', 'lastUpdatedAt']"
       [rows]="repositories"
     ></app-table>
-  }
-  @if (viewMode === viewModeList) {
+    } @if (viewMode === viewModeList) {
     <ion-list style="border-radius: 8px">
       @if (repositories?.length === 0) {
-        <ion-item>
-          <p><em>Empty</em></p>
-        </ion-item>
-      }
-      @for (feed of repositories; track feed) {
-        <ion-item lines="inset">
-          <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
-          <ion-label>
-            <h2>
-              <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge">
-                {{ feed.title }}
-              </a>
-              @if (isPrivate(feed)) {
-                <ion-chip>Private</ion-chip>
-              }
-            </h2>
-            <p>{{ feed.description }}</p>
-            <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
-          </ion-label>
-          <div class="ion-margin-end" style="position: relative">
-            <app-histogram
-              [data]="feed.frequency"
-              class="ion-margin-end"
-            ></app-histogram>
-          </div>
-        </ion-item>
+      <ion-item>
+        <p><em>Empty</em></p>
+      </ion-item>
+      } @for (feed of repositories; track feed) {
+      <ion-item lines="inset">
+        <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
+        <ion-label>
+          <h2>
+            <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge">
+              {{ feed.title }}
+            </a>
+            @if (isPrivate(feed)) {
+            <ion-chip>Private</ion-chip>
+            }
+          </h2>
+          <p>{{ feed.description }}</p>
+          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
+        </ion-label>
+        <div class="ion-margin-end" style="position: relative">
+          <app-histogram
+            [data]="feed.frequency"
+            class="ion-margin-end"
+          ></app-histogram>
+        </div>
+      </ion-item>
       }
     </ion-list>
-  }
-}
+    } }
 
-<app-pagination
-  (pageChange)="fetchFeeds($event)"
-  [currentPage]="currentPage"
-  [isLastPage]="isLastPage"
-></app-pagination>
-</div>
+    <app-pagination
+      (pageChange)="fetchFeeds($event)"
+      [currentPage]="currentPage"
+      [isLastPage]="isLastPage"
+    ></app-pagination>
+  </div>
 </ion-content>

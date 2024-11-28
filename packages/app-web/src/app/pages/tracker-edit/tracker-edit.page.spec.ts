@@ -5,17 +5,16 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '../../app-test.module';
-import { TrackerEditPageModule } from './tracker-edit.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('SubscriptionEditPage', () => {
+describe('TrackerEditPage', () => {
   let component: TrackerEditPage;
   let fixture: ComponentFixture<TrackerEditPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [TrackerEditPageModule, AppTestModule.withDefaults()],
+      imports: [TrackerEditPage, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

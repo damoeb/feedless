@@ -5,8 +5,8 @@ import { AppConfigService } from './app-config.service';
 describe('AppConfigService', () => {
   let service: AppConfigService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({});
     service = TestBed.inject(AppConfigService);
   });
 

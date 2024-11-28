@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
@@ -6,17 +13,18 @@ import { Subscription } from 'rxjs';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
-  SidemenuBreakpoint,
 } from './services/app-config.service';
 import { GqlVertical } from '../generated/graphql';
 import { kebabCase } from 'lodash-es';
+import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [IonApp, IonRouterOutlet],
+  standalone: true,
 })
 export class AppComponent implements OnDestroy, OnInit {
   private readonly activatedRoute = inject(ActivatedRoute);

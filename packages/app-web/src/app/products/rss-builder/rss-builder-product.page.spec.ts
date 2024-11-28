@@ -6,7 +6,6 @@ import {
   mockScrape,
   mockServerSettings,
 } from '../../app-test.module';
-import { RssBuilderProductModule } from './rss-builder-product.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
@@ -15,10 +14,10 @@ describe('RssBuilderProductPage', () => {
   let component: RssBuilderProductPage;
   let fixture: ComponentFixture<RssBuilderProductPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RssBuilderProductModule,
+        RssBuilderProductPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockScrape(apolloMockController),
@@ -36,7 +35,7 @@ describe('RssBuilderProductPage', () => {
     fixture = TestBed.createComponent(RssBuilderProductPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

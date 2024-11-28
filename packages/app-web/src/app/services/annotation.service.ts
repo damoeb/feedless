@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   CreateAnnotation,
   DeleteAnnotation,
@@ -22,7 +22,6 @@ export class AnnotationService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
-
 
   async createAnnotation(
     data: GqlCreateAnnotationInput,

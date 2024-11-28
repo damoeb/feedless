@@ -1,9 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  inject,
+  Input,
+  input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
-import dayjs, { Dayjs, ManipulateType, OpUnitType } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   clone,
   compact,
@@ -26,22 +38,19 @@ import {
   locationOutline,
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
-import {
-  homeRoute,
-  parseLocationFromUrl,
-} from '../upcoming-product-routing.module';
+import { homeRoute, parseLocationFromUrl } from '../upcoming-product-routes';
 import { getSavedLocations } from '../events/events.page';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
-  IonHeader,
-  IonToolbar,
   IonButton,
+  IonButtons,
+  IonHeader,
   IonInput,
+  IonItem,
+  IonList,
   IonSelect,
   IonSelectOption,
-  IonButtons,
-  IonList,
-  IonItem,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
@@ -84,8 +93,8 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     DarkModeButtonComponent,
     IonList,
     IonItem,
-    RouterLink
-],
+    RouterLink,
+  ],
   standalone: true,
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {

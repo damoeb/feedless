@@ -1,9 +1,6 @@
 <ion-header [translucent]="true">
   @if (session?.user?.purgeScheduledFor) {
-    <ion-toolbar
-      color="danger"
-      style="padding-right: 5px; padding-left: 5px"
-      >
+    <ion-toolbar color="danger" style="padding-right: 5px; padding-left: 5px">
       <ion-label>
         This account is scheduled to be deleted in
         {{ fromNow(session.user?.purgeScheduledFor) }}
@@ -45,8 +42,8 @@
       <app-dark-mode-button></app-dark-mode-button>
       <!--      <ion-button routerLink="/plans">-->
       <!--        <ion-label> Pricing </ion-label>-->
-    <!--      </ion-button>-->
-    <app-login-button></app-login-button>
-  </ion-buttons>
-</ion-toolbar>
+      <!--      </ion-button>-->
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>

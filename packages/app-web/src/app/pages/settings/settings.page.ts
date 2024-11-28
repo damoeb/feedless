@@ -1,25 +1,30 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { dateFormat } from '../../services/session.service';
 import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
 import { Feature, FeatureGroup } from '../../graphql/types';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  ToastController,
+  IonCheckbox,
   IonContent,
-  IonList,
+  IonInput,
   IonItem,
-  IonSpinner,
+  IonLabel,
+  IonList,
   IonSelect,
   IonSelectOption,
-  IonLabel,
-  IonInput,
-  IonCheckbox,
+  IonSpinner,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { sortBy } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -40,8 +45,8 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
     IonSelectOption,
     IonLabel,
     IonInput,
-    IonCheckbox
-],
+    IonCheckbox,
+  ],
   standalone: true,
 })
 export class SettingsPage implements OnInit {

@@ -9,7 +9,7 @@
   [showBackdrop]="true"
   alignment="start"
   side="bottom"
-  >
+>
   <ng-template>
     <ion-content>
       @if (!hideFilter()) {
@@ -29,11 +29,11 @@
           <ion-item
             (click)="pick(option)"
             [button]="true"
-          [ngClass]="{
-            '--focus': i === indexInFocus,
-            '--selected': option === currentValue,
-          }"
-            >
+            [ngClass]="{
+              '--focus': i === indexInFocus,
+              '--selected': option === currentValue,
+            }"
+          >
             <ion-label>
               {{ label(option) }}
             </ion-label>
@@ -49,6 +49,6 @@
   [color]="color()"
   [disabled]="disabled()"
   [ngClass]="{ error: error() }"
-  >
+>
   <ng-content></ng-content>
 </ion-button>

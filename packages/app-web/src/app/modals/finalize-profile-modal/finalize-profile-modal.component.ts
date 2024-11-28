@@ -1,18 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
-  ModalController,
-  IonContent,
-  IonList,
-  IonRow,
-  IonCol,
-  IonLabel,
-  IonInput,
-  IonNote,
-  IonCheckbox,
-  IonToolbar,
-  IonButtons,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import {
   IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonCol,
+  IonContent,
+  IonInput,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonRow,
   IonSpinner,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import {
   needsPlanSubscription,
@@ -21,9 +27,9 @@ import {
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
@@ -32,7 +38,6 @@ import { AppConfigService } from '../../services/app-config.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
-
 
 @Component({
   selector: 'app-finalize-profile-modal',
@@ -53,8 +58,8 @@ import { Product } from '../../graphql/types';
     IonToolbar,
     IonButtons,
     IonButton,
-    IonSpinner
-],
+    IonSpinner,
+  ],
   standalone: true,
 })
 export class FinalizeProfileModalComponent implements OnInit {

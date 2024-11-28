@@ -1,21 +1,29 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { GqlSourceInput } from '../../../generated/graphql';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
-  IonRow,
-  IonList,
+  IonFooter,
+  IonHeader,
+  IonIcon,
   IonItem,
+  IonLabel,
+  IonList,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonLabel,
-  IonFooter,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ScrapeService } from '../../services/scrape.service';
@@ -23,7 +31,7 @@ import { InteractiveWebsiteController } from './interactive-website-controller';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
-import { NgClass, JsonPipe } from '@angular/common';
+import { JsonPipe, NgClass } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export type InteractiveWebsiteModalComponentProps = {
@@ -54,8 +62,8 @@ export type InteractiveWebsiteModalComponentProps = {
     IonSelectOption,
     IonLabel,
     IonFooter,
-    JsonPipe
-],
+    JsonPipe,
+  ],
   standalone: true,
 })
 export class InteractiveWebsiteModalComponent

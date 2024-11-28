@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ElementRef,
+  inject,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -11,8 +20,8 @@ import { LocalizedLicense } from '../../../graphql/types';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
 import {
-  IonContent,
   IonButton,
+  IonContent,
   IonIcon,
   IonItem,
 } from '@ionic/angular/standalone';
@@ -36,8 +45,8 @@ import { ImportButtonComponent } from '../../../components/import-button/import-
     IonIcon,
     ImportButtonComponent,
     IonItem,
-    DatePipe
-],
+    DatePipe,
+  ],
   standalone: true,
 })
 export class AboutRssBuilderPage implements OnInit {
@@ -48,7 +57,8 @@ export class AboutRssBuilderPage implements OnInit {
   private readonly appConfigService = inject(AppConfigService);
   readonly serverConfig = inject(ServerConfigService);
 
-  readonly opmlPickerElement = viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
+  readonly opmlPickerElement =
+    viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
 
   protected readonly dateFormat = dateFormat;
   protected license: LocalizedLicense;

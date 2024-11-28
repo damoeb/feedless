@@ -1,10 +1,16 @@
-import { Component, Input, OnDestroy, OnInit, inject, input } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+} from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { sunnyOutline, moonOutline } from 'ionicons/icons';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
-
 
 @Component({
   selector: 'app-dark-mode-button',

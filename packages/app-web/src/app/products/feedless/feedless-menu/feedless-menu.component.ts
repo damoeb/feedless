@@ -1,14 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
 import { GqlVertical } from '../../../../generated/graphql';
 import {
+  IonChip,
+  IonItem,
   IonList,
   IonMenuToggle,
-  IonItem,
-  IonChip,
 } from '@ionic/angular/standalone';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -26,8 +33,8 @@ import { BubbleComponent } from '../../../components/bubble/bubble.component';
     RouterLink,
     RouterLinkActive,
     IonChip,
-    BubbleComponent
-],
+    BubbleComponent,
+  ],
   standalone: true,
 })
 export class FeedlessMenuComponent implements OnInit, OnDestroy {

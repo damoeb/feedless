@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { LatLon, MapComponent } from '../../components/map/map.component';
 import { addIcons } from 'ionicons';

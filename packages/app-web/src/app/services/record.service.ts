@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   CreateRecords,
   DeleteRecordsById,
@@ -29,7 +29,6 @@ import type { DefaultContext } from '@apollo/client/core/types';
 })
 export class RecordService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
-
 
   findAllByRepositoryId(
     data: GqlRecordsInput,

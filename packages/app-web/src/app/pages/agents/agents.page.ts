@@ -2,11 +2,11 @@ import { Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonRow,
+  IonBreadcrumbs,
   IonCol,
+  IonContent,
+  IonRow,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { AgentsComponent } from '../../components/agents/agents.component';

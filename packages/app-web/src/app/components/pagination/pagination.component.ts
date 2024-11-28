@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  input,
   output,
-  input
 } from '@angular/core';
-import { IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
-
+import { IonButton, IonButtons, IonToolbar } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-pagination',

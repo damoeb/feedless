@@ -18,7 +18,7 @@ describe('RepositoriesButtonComponent', () => {
   let component: RepositoriesButtonComponent;
   let fixture: ComponentFixture<RepositoriesButtonComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         RepositoriesButtonComponent,
@@ -46,7 +46,7 @@ describe('RepositoriesButtonComponent', () => {
     fixture = TestBed.createComponent(RepositoriesButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

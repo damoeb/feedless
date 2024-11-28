@@ -8,15 +8,15 @@ describe('EmptyRepositoryComponent', () => {
   let component: EmptyRepositoryComponent;
   let fixture: ComponentFixture<EmptyRepositoryComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [EmptyRepositoryComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmptyRepositoryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

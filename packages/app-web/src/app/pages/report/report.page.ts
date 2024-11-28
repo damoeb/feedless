@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-import { IonContent, IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonCol, IonContent, IonRow } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-report-page',

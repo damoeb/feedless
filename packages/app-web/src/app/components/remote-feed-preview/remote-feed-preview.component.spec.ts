@@ -7,8 +7,8 @@ describe('RemoteFeedPreviewComponent', () => {
   let component: RemoteFeedPreviewComponent;
   let fixture: ComponentFixture<RemoteFeedPreviewComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults(), RemoteFeedPreviewComponent],
     }).compileComponents();
 

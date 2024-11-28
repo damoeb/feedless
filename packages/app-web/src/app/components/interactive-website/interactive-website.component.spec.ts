@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { InteractiveWebsiteComponent } from './interactive-website.component';
-import { InteractiveWebsiteModule } from './interactive-website.module';
 import { AppTestModule, mockScrape } from '../../app-test.module';
 import { SourceBuilder } from './source-builder';
 import { ScrapeService } from '../../services/scrape.service';
@@ -10,8 +9,8 @@ describe('InteractiveWebsiteComponent', () => {
   let component: InteractiveWebsiteComponent;
   let fixture: ComponentFixture<InteractiveWebsiteComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         InteractiveWebsiteComponent,
         AppTestModule.withDefaults({

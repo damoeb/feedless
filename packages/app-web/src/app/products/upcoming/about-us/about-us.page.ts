@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { IonHeader, IonContent } from '@ionic/angular/standalone';
+import { IonContent, IonHeader } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./about-us.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonHeader, IonContent, RouterLink],
+  standalone: true,
 })
 export class AboutUsPage {
   constructor() {}

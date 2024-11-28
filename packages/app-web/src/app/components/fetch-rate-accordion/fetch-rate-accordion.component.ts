@@ -36,8 +36,8 @@ import {
     IonSelect,
     FormsModule,
     ReactiveFormsModule,
-    IonSelectOption
-],
+    IonSelectOption,
+  ],
   standalone: true,
 })
 export class FetchRateAccordionComponent

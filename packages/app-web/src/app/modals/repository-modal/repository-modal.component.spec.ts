@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RepositoryModalComponent } from './repository-modal.component';
-import { RepositoryModalModule } from './repository-modal.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -17,7 +16,7 @@ describe('RepositoryModalComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), RepositoryModalModule],
+      imports: [AppTestModule.withDefaults(), RepositoryModalComponent],
     }).compileComponents();
 
     await mockServerSettings(

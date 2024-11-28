@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ProductHeadlineComponent } from './product-headline.component';
-import { ProductHeadlineModule } from './product-headline.module';
 
 describe('ProductHeadlineComponent', () => {
   let component: ProductHeadlineComponent;
   let fixture: ComponentFixture<ProductHeadlineComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [ProductHeadlineComponent],
     }).compileComponents();
 

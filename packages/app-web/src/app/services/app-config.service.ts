@@ -1,11 +1,11 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
 import { GqlVertical } from '../../generated/graphql';
 import { ReplaySubject } from 'rxjs';
 import { marked } from 'marked';
-import { VerticalSpec, allVerticals, VerticalId } from '../all-verticals';
+import { allVerticals, VerticalId, VerticalSpec } from '../all-verticals';
 import { omit } from 'lodash-es';
 import { VerticalAppConfig } from '../types';
 
@@ -48,8 +48,8 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/reader/reader-product.module').then(
-              (m) => m.ReaderProductModule,
+            import('../products/reader/reader-product.routes').then(
+              (m) => m.READER_ROUTES,
             ),
         },
       ],
@@ -60,8 +60,8 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/upcoming/upcoming-product.module').then(
-              (m) => m.UpcomingProductModule,
+            import('../products/upcoming/upcoming-product-routes').then(
+              (m) => m.UPCOMING_ROUTES,
             ),
         },
       ],
@@ -73,8 +73,8 @@ export class AppConfigService {
           path: '',
           loadChildren: () =>
             import(
-              '../products/change-tracker/change-tracker-product.module'
-            ).then((m) => m.ChangeTrackerProductModule),
+              '../products/change-tracker/change-tracker-product.routes'
+            ).then((m) => m.CHANGE_TRACKER_ROUTES),
         },
       ],
     },
@@ -88,8 +88,8 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/rss-builder/rss-builder-product.module').then(
-              (m) => m.RssBuilderProductModule,
+            import('../products/rss-builder/rss-builder-product.routes').then(
+              (m) => m.RSS_BUILDER_ROUTES,
             ),
         },
       ],
@@ -104,8 +104,8 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/untold-notes/untold-notes-product.module').then(
-              (m) => m.UntoldNotesProductModule,
+            import('../products/untold-notes/untold-notes-product.routes').then(
+              (m) => m.UNTOLD_NOTES_ROUTES,
             ),
         },
       ],
@@ -120,8 +120,8 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/feedless/feedless-product.module').then(
-              (m) => m.FeedlessProductModule,
+            import('../products/feedless/feedless-product.routes').then(
+              (m) => m.FEEDLESS_ROUTES,
             ),
         },
       ],
@@ -137,8 +137,8 @@ export class AppConfigService {
           path: '',
           // canMatch: [() => true],
           loadChildren: () =>
-            import('../products/visual-diff/visual-diff-product.module').then(
-              (m) => m.VisualDiffProductModule,
+            import('../products/visual-diff/visual-diff-product-routes').then(
+              (m) => m.VISUAL_DIFF_ROUTES,
             ),
         },
       ],

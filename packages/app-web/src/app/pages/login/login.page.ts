@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
@@ -9,16 +16,16 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonContent,
-  IonSpinner,
-  IonCardContent,
-  IonList,
-  IonItem,
-  IonInput,
-  IonLabel,
-  IonCard,
   IonButton,
+  IonCard,
+  IonCardContent,
+  IonContent,
   IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
 import { FormsModule } from '@angular/forms';
@@ -42,8 +49,8 @@ import { EmailLoginComponent } from '../../components/email-login/email-login.co
     EmailLoginComponent,
     IonCard,
     IonButton,
-    IonIcon
-],
+    IonIcon,
+  ],
   standalone: true,
 })
 export class LoginPage implements OnInit, OnDestroy {

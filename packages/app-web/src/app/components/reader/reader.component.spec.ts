@@ -7,8 +7,8 @@ describe('ReaderComponent', () => {
   let component: ReaderComponent;
   let fixture: ComponentFixture<ReaderComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ReaderComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
@@ -16,7 +16,7 @@ describe('ReaderComponent', () => {
     component = fixture.componentInstance;
     component.html = '';
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

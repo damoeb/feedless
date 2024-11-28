@@ -1,6 +1,6 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { isNull, isUndefined } from 'lodash-es';
-import { GqlVertical, GqlUpsertOrderMutation } from '../generated/graphql';
+import { GqlUpsertOrderMutation, GqlVertical } from '../generated/graphql';
 
 export type Nullable<T> = T | null | undefined;
 

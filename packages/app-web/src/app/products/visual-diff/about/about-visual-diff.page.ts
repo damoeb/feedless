@@ -18,7 +18,6 @@ import { SearchbarComponent } from '../../../elements/searchbar/searchbar.compon
 export class AboutVisualDiffPage {
   private readonly router = inject(Router);
 
-
   async handleQuery(url: string) {
     try {
       await this.router.navigate(['/tracker'], {

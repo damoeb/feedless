@@ -19,143 +19,134 @@
             Some errors can be resolved by
             <a (click)="showInteractiveWebsiteModal()" href="javascript:void(0)"
               >enabling JavaScript</a
-              >
-            </p>
+            >
+          </p>
+        }
+      </ion-toolbar>
+    </div>
+  }
+
+  <div class="flex">
+    @if (loading) {
+      <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
+    }
+
+    @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {
+      <div class="ion-padding" style="width: 100%">
+        <p>Remix existing feeds</p>
+        <ion-list>
+          @for (r of repositories; track r) {
+            <ion-item (click)="remix(r)" [button]="true">
+              {{ r.title }}
+            </ion-item>
           }
-        </ion-toolbar>
+        </ion-list>
       </div>
     }
 
-    <div class="flex">
-      @if (loading) {
-        <ion-progress-bar
-          color="medium"
-          type="indeterminate"
-        ></ion-progress-bar>
-      }
-
-      @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {
-        <div
-          class="ion-padding"
-          style="width: 100%"
-          >
-          <p>Remix existing feeds</p>
-          <ion-list>
-            @for (r of repositories; track r) {
-              <ion-item
-                (click)="remix(r)"
-                [button]="true"
-                >
-                {{ r.title }}
-              </ion-item>
-            }
-          </ion-list>
-        </div>
-      }
-
-      @if (sourceBuilder && sourceBuilder.response) {
-        <app-transform-website-to-feed
-          #webToFeedTransformer
-          (selectedFeedChange)="selectedFeed = $event"
-          (statusChange)="hasValidFeed = $event === 'valid'"
-          [sourceBuilder]="sourceBuilder"
-          >
-          <ion-item
-            (click)="showInteractiveWebsiteModal()"
-            [button]="true"
-            beforeFeedsSlot
-            class="cy-enable-js-button"
+    @if (sourceBuilder && sourceBuilder.response) {
+      <app-transform-website-to-feed
+        #webToFeedTransformer
+        (selectedFeedChange)="selectedFeed = $event"
+        (statusChange)="hasValidFeed = $event === 'valid'"
+        [sourceBuilder]="sourceBuilder"
+      >
+        <ion-item
+          (click)="showInteractiveWebsiteModal()"
+          [button]="true"
+          beforeFeedsSlot
+          class="cy-enable-js-button"
+        >
+          @if (!needsJavaScript()) {
+            <ion-label color="medium"> Use JavaScript </ion-label>
+          }
+          @if (needsJavaScript()) {
+            <ion-label color="primary"> Using JavaScript </ion-label>
+          }
+          <ion-icon
+            color="warning"
+            name="logo-javascript"
+            slot="end"
+          ></ion-icon>
+        </ion-item>
+        <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
+          <ion-item slot="header">
+            <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'">
+              Metadata</ion-label
             >
-            @if (!needsJavaScript()) {
-              <ion-label color="medium">
-                Use JavaScript
-              </ion-label>
-            }
-            @if (needsJavaScript()) {
-              <ion-label color="primary">
-                Using JavaScript
-              </ion-label>
-            }
-            <ion-icon color="warning" name="logo-javascript" slot="end"></ion-icon>
           </ion-item>
-          <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
-            <ion-item slot="header">
-              <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'">
-                Metadata</ion-label
-                >
-              </ion-item>
-              <ion-list class="ion-no-padding" slot="content">
-                <ion-item (click)="showTagsModal()" [button]="true">
-                  <ion-label>
-                    Tags
-                    @if (tags.length > 0) {
-                      <ion-note>{{ getTagsString() }}</ion-note>
-                    }
-                  </ion-label>
-                </ion-item>
-                <ion-item (click)="showLocationPickerModal()" [button]="true">
-                  <ion-label>
-                    Geo Tag
-                    @if (!geoLocation) {
-                      <ion-note>None</ion-note>
-                    }
-                    @if (geoLocation) {
-                      <ion-note
-                        >({{ geoLocation.lat }}/{{ geoLocation.lon }})
-                      </ion-note>
-                    }
-                  </ion-label>
-                </ion-item>
-              </ion-list>
-            </ion-accordion>
-            <app-filter-feed-accordion
-              (filterChange)="onFilterChange($event)"
-              [advanced]="false"
-              [disabled]="!hasValidFeed"
-              [filterPlugin]="getFilterPlugin()"
-              afterFeedsSlot
-              labelPrefix=""
-            ></app-filter-feed-accordion>
-            <!--      <app-fetch-rate-accordion afterFeedsSlot *ngIf="!hideCustomizeFeed"></app-fetch-rate-accordion>-->
-            <!--      <ion-item-->
-            <!--        *ngIf="selectedFeed?.nativeFeed"-->
-            <!--        [button]="true"-->
-            <!--        topSlot-->
-            <!--      >-->
-            <!--        <ion-checkbox slot="start"></ion-checkbox>-->
-            <!--        <ion-label>-->
-            <!--          Inherit categories-->
-          <!--        </ion-label>-->
-          <!--        <ion-icon-->
-          <!--          name="link-outline"-->
-          <!--          color="primary"-->
-          <!--          slot="end"-->
+          <ion-list class="ion-no-padding" slot="content">
+            <ion-item (click)="showTagsModal()" [button]="true">
+              <ion-label>
+                Tags
+                @if (tags.length > 0) {
+                  <ion-note>{{ getTagsString() }}</ion-note>
+                }
+              </ion-label>
+            </ion-item>
+            <ion-item (click)="showLocationPickerModal()" [button]="true">
+              <ion-label>
+                Geo Tag
+                @if (!geoLocation) {
+                  <ion-note>None</ion-note>
+                }
+                @if (geoLocation) {
+                  <ion-note
+                    >({{ geoLocation.lat }}/{{ geoLocation.lon }})
+                  </ion-note>
+                }
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-accordion>
+        <app-filter-feed-accordion
+          (filterChange)="onFilterChange($event)"
+          [advanced]="false"
+          [disabled]="!hasValidFeed"
+          [filterPlugin]="getFilterPlugin()"
+          afterFeedsSlot
+          labelPrefix=""
+        ></app-filter-feed-accordion>
+        <!--      <app-fetch-rate-accordion afterFeedsSlot *ngIf="!hideCustomizeFeed"></app-fetch-rate-accordion>-->
+        <!--      <ion-item-->
+        <!--        *ngIf="selectedFeed?.nativeFeed"-->
+        <!--        [button]="true"-->
+        <!--        topSlot-->
+        <!--      >-->
+        <!--        <ion-checkbox slot="start"></ion-checkbox>-->
+        <!--        <ion-label>-->
+        <!--          Inherit categories-->
+        <!--        </ion-label>-->
+        <!--        <ion-icon-->
+        <!--          name="link-outline"-->
+        <!--          color="primary"-->
+        <!--          slot="end"-->
         <!--        ></ion-icon>-->
-      <!--      </ion-item>-->
-      <ion-list bottomSlot>
-        @if (!hideCustomizeFeed()) {
+        <!--      </ion-item>-->
+        <ion-list bottomSlot>
+          @if (!hideCustomizeFeed()) {
+            <ion-item
+              (click)="createOrRefineFeed(true)"
+              [button]="true"
+              [disabled]="!hasValidFeed"
+            >
+              <ion-label> Advanced Options</ion-label>
+              <ion-icon name="settings-outline" slot="end"></ion-icon>
+            </ion-item>
+          }
           <ion-item
-            (click)="createOrRefineFeed(true)"
+            (click)="createOrRefineFeed(false)"
             [button]="true"
             [disabled]="!hasValidFeed"
-            >
-            <ion-label> Advanced Options</ion-label>
-            <ion-icon name="settings-outline" slot="end"></ion-icon>
-          </ion-item>
-        }
-        <ion-item
-          (click)="createOrRefineFeed(false)"
-          [button]="true"
-          [disabled]="!hasValidFeed"
-          color="primary"
+            color="primary"
           >
-          <ion-label>
-            {{ submitButtonText() }}
-          </ion-label>
-          <ion-icon name="checkmark-outline" slot="end"></ion-icon>
-        </ion-item>
-      </ion-list>
-    </app-transform-website-to-feed>
-  }
-</div>
+            <ion-label>
+              {{ submitButtonText() }}
+            </ion-label>
+            <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+          </ion-item>
+        </ion-list>
+      </app-transform-website-to-feed>
+    }
+  </div>
 </div>

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LicensePage } from './license.page';
-import { LicensePageModule } from './license.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -15,10 +14,10 @@ describe('LicencePage', () => {
   let component: LicensePage;
   let fixture: ComponentFixture<LicensePage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        LicensePageModule,
+        LicensePage,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
@@ -32,7 +31,7 @@ describe('LicencePage', () => {
     );
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

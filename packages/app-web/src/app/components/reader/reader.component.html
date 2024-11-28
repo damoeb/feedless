@@ -1,8 +1,5 @@
 @if (hasReadability()) {
-  <div
-    [ngClass]="{ 'reader--hide-images': !showImages() }"
-    class="reader"
-    >
+  <div [ngClass]="{ 'reader--hide-images': !showImages() }" class="reader">
     <ion-row>
       <ion-col [innerHTML]="content" size="12"></ion-col>
     </ion-row>

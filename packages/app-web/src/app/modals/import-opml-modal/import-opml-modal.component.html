@@ -31,15 +31,13 @@
       </ion-item>
       <ion-list>
         @for (outlineChild of outlineRoot.outlines; track outlineChild) {
-          <ion-item
-            class="ion-padding-start"
-            >
+          <ion-item class="ion-padding-start">
             @if (outlineChild.xmlUrl) {
               <ion-checkbox
                 [formControl]="outlineChild.fc"
                 label-placement="end"
                 slot="start"
-                >
+              >
                 <p>{{ outlineChild.title }}</p>
                 <p>{{ outlineChild.xmlUrl }}</p>
               </ion-checkbox>
@@ -61,7 +59,7 @@
         [formControl]="formFg.controls.applyFulltextPlugin"
         justify="start"
         labelPlacement="end"
-        >
+      >
         Fulltext
         <ion-note class="ion-padding-horizontal"
           >Fetch Fulltext for every Item (static only)
@@ -73,7 +71,7 @@
         [formControl]="formFg.controls.applyPrivacyPlugin"
         justify="start"
         labelPlacement="end"
-        >
+      >
         Privacy & Robustness
         <ion-note class="ion-padding-horizontal"
           >Inlines images (base64) and unwinds tracking urls

@@ -18,29 +18,29 @@
         referrerpolicy="no-referrer"
         target="_blank"
         >{{ feedItem.url }}</a
-        >
+      >
+    </p>
+    <p class="cy-remote-feed__date-published">
+      Published
+      {{ toDate(feedItem.publishedAt) | date: dateFormat }}
+    </p>
+    @if (feedItem.tags?.length > 0) {
+      <p>
+        @for (tag of feedItem.tags; track tag) {
+          <ion-chip>{{ tag }}</ion-chip>
+        }
       </p>
-      <p class="cy-remote-feed__date-published">
-        Published
-        {{ toDate(feedItem.publishedAt) | date: dateFormat }}
+    }
+    @if (feedItem.startingAt) {
+      <p>
+        Starting
+        {{ toDate(feedItem.startingAt) | date: dateFormat }}
       </p>
-      @if (feedItem.tags?.length > 0) {
-        <p>
-          @for (tag of feedItem.tags; track tag) {
-            <ion-chip>{{ tag }}</ion-chip>
-          }
-        </p>
-      }
-      @if (feedItem.startingAt) {
-        <p>
-          Starting
-          {{ toDate(feedItem.startingAt) | date: dateFormat }}
-        </p>
-      }
-      <p class="cy-remote-feed__body ion-text-wrap">
-        {{ feedItem.text }}
-      </p>
+    }
+    <p class="cy-remote-feed__body ion-text-wrap">
+      {{ feedItem.text }}
+    </p>
 
-      <app-player [document]="feedItem"></app-player>
-    </ion-label>
-  </ion-item>
+    <app-player [document]="feedItem"></app-player>
+  </ion-label>
+</ion-item>

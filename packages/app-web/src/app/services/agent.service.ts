@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import {
   Agents,
@@ -21,7 +21,6 @@ export const zenToRx = <T>(zenObservable: ZenObservable<T>): Observable<T> =>
 export class AgentService {
   private readonly authService = inject(AuthService);
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
-
 
   getAgents(): Observable<Array<Agent>> {
     return this.authService.authorizationChange().pipe(

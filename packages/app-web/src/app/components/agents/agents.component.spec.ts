@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsComponent } from './agents.component';
-import { AgentsModule } from './agents.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -19,10 +18,10 @@ describe('AgentsComponent', () => {
   let component: AgentsComponent;
   let fixture: ComponentFixture<AgentsComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        AgentsModule,
+        AgentsComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController
@@ -47,7 +46,7 @@ describe('AgentsComponent', () => {
     fixture = TestBed.createComponent(AgentsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

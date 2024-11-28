@@ -5,7 +5,7 @@
         [multiple]="true"
         [value]="['feeds', 'custom']"
         style="position: absolute; width: 100%; padding-bottom: 150px"
-        >
+      >
         <ng-content select="[beforeFeedsSlot]"></ng-content>
         <ion-accordion value="feeds">
           <ion-item slot="header">
@@ -18,11 +18,11 @@
                   <ion-item
                     (click)="pickNativeFeed(nativeFeed)"
                     [button]="true"
-                  [color]="
-                    currentNativeFeed === nativeFeed ? 'primary' : undefined
-                  "
+                    [color]="
+                      currentNativeFeed === nativeFeed ? 'primary' : undefined
+                    "
                     class="feed"
-                    >
+                  >
                     <ion-label> Native {{ nativeFeed?.title }}</ion-label>
                     <ion-icon name="chevron-forward"></ion-icon>
                   </ion-item>
@@ -32,12 +32,12 @@
                   <ion-item
                     (click)="pickGenericFeed(genericFeed)"
                     [button]="true"
-                  [color]="
-                    currentGenericFeed?.hash === genericFeed.hash
-                      ? 'primary'
-                      : undefined
-                  "
-                    >
+                    [color]="
+                      currentGenericFeed?.hash === genericFeed.hash
+                        ? 'primary'
+                        : undefined
+                    "
+                  >
                     <ion-label
                       >Generic with {{ genericFeed.count }} items
                       @if (genericFeed.selectors.dateXPath) {
@@ -56,18 +56,15 @@
           </div>
         </ion-accordion>
         @if (sourceBuilder.hasFetchActionReturnedHtml()) {
-          <ion-accordion
-            toggleIconSlot="start"
-            value="custom"
-            >
+          <ion-accordion toggleIconSlot="start" value="custom">
             <ion-item
-            [color]="
-              selectedFeed?.genericFeed?.hash == CUSTOM_HASH
-                ? 'primary'
-                : undefined
-            "
+              [color]="
+                selectedFeed?.genericFeed?.hash == CUSTOM_HASH
+                  ? 'primary'
+                  : undefined
+              "
               slot="header"
-              >
+            >
               <ion-label><strong>Customize Feed</strong></ion-label>
             </ion-item>
             <div slot="content">
@@ -91,201 +88,201 @@
                   placeholder="relative xpath from context"
                 ></ion-input>
                 <ion-button
-                (click)="
-                  pickElementWithin(
-                    genFeedXpathsFg.value.contextXPath,
-                    genFeedXpathsFg.controls.linkXPath
-                  )
-                "
+                  (click)="
+                    pickElementWithin(
+                      genFeedXpathsFg.value.contextXPath,
+                      genFeedXpathsFg.controls.linkXPath
+                    )
+                  "
                   color="light"
                   slot="end"
-                  >
+                >
                   <ion-icon name="search-outline"></ion-icon>
                 </ion-button>
               </ion-item>
               <ion-item>
                 <ion-note
-                  >The URL will be used to avoid duplicate feed items. If the URL
-                  isn't available, the title will be used instead.</ion-note
-                  >
-                </ion-item>
-                <!--        <ion-item>-->
-                <!--          <ion-select-->
-                <!--            [formControl]="formGroup.controls.extendContext"-->
-                <!--            [required]="true"-->
-                <!--            label="Extend Context"-->
-                <!--            labelPlacement="stacked"-->
-                <!--            name="extendContext"-->
-                <!--          >-->
-                <!--            <ion-select-option-->
-                <!--              *ngFor="let extendContextOption of getExtendContextOptions()"-->
-                <!--              [value]="extendContextOption.value"-->
-                <!--            >-->
-                <!--              + {{ extendContextOption.label }}-->
+                  >The URL will be used to avoid duplicate feed items. If the
+                  URL isn't available, the title will be used instead.</ion-note
+                >
+              </ion-item>
+              <!--        <ion-item>-->
+              <!--          <ion-select-->
+              <!--            [formControl]="formGroup.controls.extendContext"-->
+              <!--            [required]="true"-->
+              <!--            label="Extend Context"-->
+              <!--            labelPlacement="stacked"-->
+              <!--            name="extendContext"-->
+              <!--          >-->
+              <!--            <ion-select-option-->
+              <!--              *ngFor="let extendContextOption of getExtendContextOptions()"-->
+              <!--              [value]="extendContextOption.value"-->
+              <!--            >-->
+              <!--              + {{ extendContextOption.label }}-->
               <!--            </ion-select-option>-->
-            <!--          </ion-select>-->
-          <!--        </ion-item>-->
-          <ion-item>
-            <ion-input
-              [formControl]="genFeedXpathsFg.controls.dateXPath"
-              color="primary"
-              label="Item Date"
-              labelPlacement="stacked"
-              name="dateXPath"
-              placeholder="relative xpath from context"
-            ></ion-input>
-            <ion-button
-                (click)="
-                  pickElementWithin(
-                    genFeedXpathsFg.value.contextXPath,
-                    genFeedXpathsFg.controls.dateXPath
-                  )
-                "
-              color="light"
-              slot="end"
-              >
-              <ion-icon name="search-outline"></ion-icon>
-            </ion-button>
-          </ion-item>
-          @if (genFeedXpathsFg.value.dateXPath) {
-            <ion-item>
-              <ion-checkbox
-                [formControl]="genFeedXpathsFg.controls.dateIsStartOfEvent"
-                labelPlacement="end"
-                name="dateIsStartOfEvent"
-                >Item Date is Start Date (Event)
-              </ion-checkbox>
-            </ion-item>
-          }
-          <ion-item>
-            <ion-note>
-              Either datetime elements or date string will be parsed/guessed
-            </ion-note>
-          </ion-item>
-          <ion-item>
-            <ion-input
-              [formControl]="genFeedXpathsFg.controls.paginationXPath"
-              color="primary"
-              label="Pagination"
-              labelPlacement="stacked"
-              name="paginationXPath"
-              placeholder="xpath from root"
-            ></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-note>
-              Links from pagination element will be followed and parsed as a
-              feed.
-            </ion-note>
-          </ion-item>
-          <ion-item>
-            <ion-label class="ion-text-right" color="medium">
-              <ion-note>
-                <a href="https://github.com/code4craft/xsoup" target="_blank"
-                  >xpath syntax reference</a
-                  >
+              <!--          </ion-select>-->
+              <!--        </ion-item>-->
+              <ion-item>
+                <ion-input
+                  [formControl]="genFeedXpathsFg.controls.dateXPath"
+                  color="primary"
+                  label="Item Date"
+                  labelPlacement="stacked"
+                  name="dateXPath"
+                  placeholder="relative xpath from context"
+                ></ion-input>
+                <ion-button
+                  (click)="
+                    pickElementWithin(
+                      genFeedXpathsFg.value.contextXPath,
+                      genFeedXpathsFg.controls.dateXPath
+                    )
+                  "
+                  color="light"
+                  slot="end"
+                >
+                  <ion-icon name="search-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+              @if (genFeedXpathsFg.value.dateXPath) {
+                <ion-item>
+                  <ion-checkbox
+                    [formControl]="genFeedXpathsFg.controls.dateIsStartOfEvent"
+                    labelPlacement="end"
+                    name="dateIsStartOfEvent"
+                    >Item Date is Start Date (Event)
+                  </ion-checkbox>
+                </ion-item>
+              }
+              <ion-item>
+                <ion-note>
+                  Either datetime elements or date string will be parsed/guessed
                 </ion-note>
-              </ion-label>
-            </ion-item>
-          </div>
-        </ion-accordion>
-      }
-      <ng-content select="[afterFeedsSlot]"></ng-content>
-    </ion-accordion-group>
+              </ion-item>
+              <ion-item>
+                <ion-input
+                  [formControl]="genFeedXpathsFg.controls.paginationXPath"
+                  color="primary"
+                  label="Pagination"
+                  labelPlacement="stacked"
+                  name="paginationXPath"
+                  placeholder="xpath from root"
+                ></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-note>
+                  Links from pagination element will be followed and parsed as a
+                  feed.
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label class="ion-text-right" color="medium">
+                  <ion-note>
+                    <a
+                      href="https://github.com/code4craft/xsoup"
+                      target="_blank"
+                      >xpath syntax reference</a
+                    >
+                  </ion-note>
+                </ion-label>
+              </ion-item>
+            </div>
+          </ion-accordion>
+        }
+        <ng-content select="[afterFeedsSlot]"></ng-content>
+      </ion-accordion-group>
+    </div>
+
+    <ion-list class="marked-border-top">
+      <ion-item
+        (click)="fetchFeedPreview(true)"
+        [button]="true"
+        [disabled]="!selectedFeed"
+      >
+        Preview Feed
+        @if (shouldRefresh && selectedFeed) {
+          <app-bubble color="red"></app-bubble>
+        }
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-item>
+      <ng-content select="[bottomSlot]"></ng-content>
+    </ion-list>
   </div>
 
-  <ion-list class="marked-border-top">
-    <ion-item
-      (click)="fetchFeedPreview(true)"
-      [button]="true"
-      [disabled]="!selectedFeed"
+  <div class="flex__column" right style="flex: 2; position: relative">
+    @if (sourceBuilder) {
+      <app-interactive-website
+        #interactiveWebsite
+        (segmentChange)="handleSegmentChange($event)"
+        [sourceBuilder]="sourceBuilder"
+        style="flex: 1; display: flex"
       >
-      Preview Feed
-      @if (shouldRefresh && selectedFeed) {
-        <app-bubble
-          color="red"
-        ></app-bubble>
-      }
-      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-    </ion-item>
-    <ng-content select="[bottomSlot]"></ng-content>
-  </ion-list>
-</div>
-
-<div class="flex__column" right style="flex: 2; position: relative">
-  @if (sourceBuilder) {
-    <app-interactive-website
-      #interactiveWebsite
-      (segmentChange)="handleSegmentChange($event)"
-      [sourceBuilder]="sourceBuilder"
-      style="flex: 1; display: flex"
-      >
-      <ion-segment-button [disabled]="!selectedFeed" segmentButton value="feed">
-        <div>
-          Feed
-          @if (shouldRefresh && selectedFeed && !loadingFeedPreview) {
-            <app-bubble
-              color="red"
-              style="position: absolute; top: 10px"
-            ></app-bubble>
-          }
-        </div>
-      </ion-segment-button>
-      @if (selectedFeed && activeSegment === 'feed') {
-        <div
-          class="flex__column"
-          segmentBody
-          style="position: relative"
-          >
-          @if (loadingFeedPreview) {
-            <ion-progress-bar
-              color="medium"
-              type="indeterminate"
-            ></ion-progress-bar>
-          }
-          @if (shouldRefresh && !loadingFeedPreview) {
-            <div
-          style="
-            position: absolute;
-            display: flex;
-            left: 0;
-            top: 0;
-            z-index: 1001;
-            height: 100%;
-            width: 100%;
-            background: rgba(var(--app-background-rgb), 0.4);
-          "
+        <ion-segment-button
+          [disabled]="!selectedFeed"
+          segmentButton
+          value="feed"
+        >
+          <div>
+            Feed
+            @if (shouldRefresh && selectedFeed && !loadingFeedPreview) {
+              <app-bubble
+                color="red"
+                style="position: absolute; top: 10px"
+              ></app-bubble>
+            }
+          </div>
+        </ion-segment-button>
+        @if (selectedFeed && activeSegment === "feed") {
+          <div class="flex__column" segmentBody style="position: relative">
+            @if (loadingFeedPreview) {
+              <ion-progress-bar
+                color="medium"
+                type="indeterminate"
+              ></ion-progress-bar>
+            }
+            @if (shouldRefresh && !loadingFeedPreview) {
+              <div
+                style="
+                  position: absolute;
+                  display: flex;
+                  left: 0;
+                  top: 0;
+                  z-index: 1001;
+                  height: 100%;
+                  width: 100%;
+                  background: rgba(var(--app-background-rgb), 0.4);
+                "
               >
-              <div style="margin: auto">
-                <ion-button (click)="fetchFeedPreview(false)" size="small">
-                  <ion-label>
-                    <ion-icon name="refresh-outline" slot="start"></ion-icon>
-                    Refresh Feed
-                  </ion-label>
-                </ion-button>
+                <div style="margin: auto">
+                  <ion-button (click)="fetchFeedPreview(false)" size="small">
+                    <ion-label>
+                      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                      Refresh Feed
+                    </ion-label>
+                  </ion-button>
+                </div>
               </div>
-            </div>
-          }
-          @if (!feedItems) {
-            <ion-spinner name="dots"></ion-spinner>
-          }
-          @if (feedItems) {
-            <app-remote-feed-preview
-              [items]="feedItems"
-              [noMetaColumn]="true"
-              class="flex"
-            ></app-remote-feed-preview>
-            <app-console-button [logs]="feedLogs"></app-console-button>
-          }
-        </div>
-      }
-    </app-interactive-website>
-  }
-  @if (busy) {
-    <div class="overlay">
-      <div class="overlay__background"></div>
-      <ion-spinner name="dots"></ion-spinner>
-    </div>
-  }
-</div>
+            }
+            @if (!feedItems) {
+              <ion-spinner name="dots"></ion-spinner>
+            }
+            @if (feedItems) {
+              <app-remote-feed-preview
+                [items]="feedItems"
+                [noMetaColumn]="true"
+                class="flex"
+              ></app-remote-feed-preview>
+              <app-console-button [logs]="feedLogs"></app-console-button>
+            }
+          </div>
+        }
+      </app-interactive-website>
+    }
+    @if (busy) {
+      <div class="overlay">
+        <div class="overlay__background"></div>
+        <ion-spinner name="dots"></ion-spinner>
+      </div>
+    }
+  </div>
 </app-responsive-columns>

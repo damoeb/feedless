@@ -14,110 +14,97 @@
       </ion-item>
 
       @if (loading) {
-        <ion-spinner name="dots"></ion-spinner>
+      <ion-spinner name="dots"></ion-spinner>
+      } @if (!loading) { @if (license.isValid && !license.isTrial) {
+      <ion-item color="success">
+        <p>No License needed, its now Apache 2</p>
+      </ion-item>
       }
-
-      @if (!loading) {
-        @if (license.isValid && !license.isTrial) {
-          <ion-item color="success">
-            <p>No License needed, its now Apache 2</p>
-          </ion-item>
-        }
-        <div style="position: relative">
-          @if (license.isValid && license.isTrial && !license.isLocated) {
-            <ion-item
-              style="--background: transparent"
-              >
-              <ion-icon name="time-outline" slot="start"></ion-icon>
-              <p>
-                Trial period remaining {{ fromNow(license.trialUntil) }} (until {{
-                license.trialUntil | date: dateFormat }})
-              </p>
-            </ion-item>
-          }
-          <ion-progress-bar
-            [value]="getRelativeTrialDaysLeft()"
-            color="success"
-            style="
-              height: 100%;
-              position: absolute;
-              width: 100%;
-              opacity: 0.5;
-              top: 0;
-            "
-          ></ion-progress-bar>
-        </div>
-        @if (!license.isLocated) {
-          @if (!license.isValid) {
-            <ion-item color="warning">
-              <p>No License found</p>
-            </ion-item>
-          }
-        }
-        @if (license.isLocated) {
-          @if (license.isValid) {
-            <ion-item color="success">
-              <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
-              <p>Licenced to <strong>{{ license.data?.name }}</strong></p>
-            </ion-item>
-          }
-          @if (!license.isValid) {
-            <ion-item color="warning">
-              <ion-icon name="alert-outline" slot="start"></ion-icon>
-              <p>{{ license.data?.name }}</p>
-              <p>License is invalid</p>
-            </ion-item>
-          }
-        }
-        <ion-item class="ion-margin-top">
-          <h3>Get License Key</h3>
-        </ion-item>
-        <ion-item>
+      <div style="position: relative">
+        @if (license.isValid && license.isTrial && !license.isLocated) {
+        <ion-item style="--background: transparent">
+          <ion-icon name="time-outline" slot="start"></ion-icon>
           <p>
-            You can buy a license key that is valid for the current major
-            release, so it includes all minor and patch releases. There will be
-            at most one major release per year.
+            Trial period remaining {{ fromNow(license.trialUntil) }} (until {{
+            license.trialUntil | date: dateFormat }})
           </p>
         </ion-item>
-        <ion-row>
-          <ion-col style="padding: 10px">
-            <ion-button [href]="buyRssProxyUrl" color="primary">
-              Buy a License Key on feedless.org
-            </ion-button>
-          </ion-col>
-        </ion-row>
-        @if (!license.isValid || license.isTrial) {
-          <ion-item class="ion-margin-top">
-            <h3>Offline Activation</h3>
-          </ion-item>
-          <ion-item>
-            <p>
-              Paste the license key in here and you will see an immediate
-              response.
-            </p>
-          </ion-item>
-          <ion-item>
-            <ion-textarea
-              [autoGrow]="true"
-              [formControl]="licenseFc"
-              fill="outline"
-              placeholder="Your License Key"
-              rows="5"
-              style="--padding-start: 10px"
-            ></ion-textarea>
-          </ion-item>
-          <ion-row>
-            <ion-col style="padding: 10px">
-              <ion-button
-                (click)="applyLicense()"
-                [color]="licenseFc.value.length > 0 ? 'primary' : 'light'"
-                >
-                Activate Now
-              </ion-button>
-            </ion-col>
-          </ion-row>
         }
-      }
+        <ion-progress-bar
+          [value]="getRelativeTrialDaysLeft()"
+          color="success"
+          style="
+            height: 100%;
+            position: absolute;
+            width: 100%;
+            opacity: 0.5;
+            top: 0;
+          "
+        ></ion-progress-bar>
+      </div>
+      @if (!license.isLocated) { @if (!license.isValid) {
+      <ion-item color="warning">
+        <p>No License found</p>
+      </ion-item>
+      } } @if (license.isLocated) { @if (license.isValid) {
+      <ion-item color="success">
+        <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+        <p>Licenced to <strong>{{ license.data?.name }}</strong></p>
+      </ion-item>
+      } @if (!license.isValid) {
+      <ion-item color="warning">
+        <ion-icon name="alert-outline" slot="start"></ion-icon>
+        <p>{{ license.data?.name }}</p>
+        <p>License is invalid</p>
+      </ion-item>
+      } }
+      <ion-item class="ion-margin-top">
+        <h3>Get License Key</h3>
+      </ion-item>
+      <ion-item>
+        <p>
+          You can buy a license key that is valid for the current major release,
+          so it includes all minor and patch releases. There will be at most one
+          major release per year.
+        </p>
+      </ion-item>
+      <ion-row>
+        <ion-col style="padding: 10px">
+          <ion-button [href]="buyRssProxyUrl" color="primary">
+            Buy a License Key on feedless.org
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      @if (!license.isValid || license.isTrial) {
+      <ion-item class="ion-margin-top">
+        <h3>Offline Activation</h3>
+      </ion-item>
+      <ion-item>
+        <p>
+          Paste the license key in here and you will see an immediate response.
+        </p>
+      </ion-item>
+      <ion-item>
+        <ion-textarea
+          [autoGrow]="true"
+          [formControl]="licenseFc"
+          fill="outline"
+          placeholder="Your License Key"
+          rows="5"
+          style="--padding-start: 10px"
+        ></ion-textarea>
+      </ion-item>
+      <ion-row>
+        <ion-col style="padding: 10px">
+          <ion-button
+            (click)="applyLicense()"
+            [color]="licenseFc.value.length > 0 ? 'primary' : 'light'"
+          >
+            Activate Now
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      } }
     </ion-list>
   </div>
 </ion-content>

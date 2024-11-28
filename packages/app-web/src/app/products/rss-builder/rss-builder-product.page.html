@@ -1,53 +1,46 @@
 @if (!embedded) {
-  <ion-header [translucent]="true">
-    <app-trial-warning></app-trial-warning>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-menu-button></ion-menu-button>
-      </ion-buttons>
-      <div class="title">
-        <div routerLink="/" style="cursor: pointer">
-          <span [innerHtml]="productConfig?.titleHtml"></span>
-        </div>
-        <ion-buttons class="ion-margin-horizontal">
-          <app-repositories-button
-            link="/feeds"
-            name="Feeds"
-          ></app-repositories-button>
-          <app-agents-button></app-agents-button>
-        </ion-buttons>
+<ion-header [translucent]="true">
+  <app-trial-warning></app-trial-warning>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <div class="title">
+      <div routerLink="/" style="cursor: pointer">
+        <span [innerHtml]="productConfig?.titleHtml"></span>
       </div>
-      <ion-buttons slot="end">
-        @if (serverConfig.isSelfHosted()) {
-          <ion-button
-            href="https://gihub.com/damoeb/rss-proxy"
-            target="_blank"
-            >
-            <ion-icon name="logo-github" slot="start"></ion-icon>
-            <span class="ion-hide-md-down"> Documentation </span>
-          </ion-button>
-        }
-        <ion-button
-          color="primary"
-          fill="solid"
-          routerLink="/feed-builder"
-          routerLinkActive="hidden"
-          >
-          Create Feed
-        </ion-button>
-        @if (!serverConfig.isSelfHosted()) {
-          <ion-button
-            routerLink="/pricing/rss-proxy"
-            >
-            Pricing
-          </ion-button>
-        }
-        <app-notifications-button></app-notifications-button>
-        <app-dark-mode-button></app-dark-mode-button>
-        <app-login-button></app-login-button>
+      <ion-buttons class="ion-margin-horizontal">
+        <app-repositories-button
+          link="/feeds"
+          name="Feeds"
+        ></app-repositories-button>
+        <app-agents-button></app-agents-button>
       </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+    </div>
+    <ion-buttons slot="end">
+      @if (serverConfig.isSelfHosted()) {
+      <ion-button href="https://gihub.com/damoeb/rss-proxy" target="_blank">
+        <ion-icon name="logo-github" slot="start"></ion-icon>
+        <span class="ion-hide-md-down"> Documentation </span>
+      </ion-button>
+      }
+      <ion-button
+        color="primary"
+        fill="solid"
+        routerLink="/feed-builder"
+        routerLinkActive="hidden"
+      >
+        Create Feed
+      </ion-button>
+      @if (!serverConfig.isSelfHosted()) {
+      <ion-button routerLink="/pricing/rss-proxy"> Pricing </ion-button>
+      }
+      <app-notifications-button></app-notifications-button>
+      <app-dark-mode-button></app-dark-mode-button>
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 }
 
 <ion-content>

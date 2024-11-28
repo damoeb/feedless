@@ -1,15 +1,15 @@
-import { Map, Marker, marker, tileLayer, circle, Circle } from 'leaflet';
+import { circle, Circle, Map, Marker, marker, tileLayer } from 'leaflet';
 
 import {
   AfterViewInit,
   Component,
   ElementRef,
-  OnChanges,
-  SimpleChanges,
-  ViewEncapsulation,
-  output,
   input,
-  viewChild
+  OnChanges,
+  output,
+  SimpleChanges,
+  viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 
 export type LatLon = number[];

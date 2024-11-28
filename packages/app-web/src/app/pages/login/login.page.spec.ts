@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LoginPage } from './login.page';
-import { EmailLoginPageModule } from './login.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -15,10 +14,10 @@ describe('LoginPage', () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EmailLoginPageModule,
+        LoginPage,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
@@ -32,7 +31,7 @@ describe('LoginPage', () => {
     );
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

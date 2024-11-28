@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { NotebooksComponent } from './notebooks.component';
-import { NotebooksModule } from './notebooks.module';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
@@ -9,8 +8,8 @@ describe('NotebooksComponent', () => {
   let component: NotebooksComponent;
   let fixture: ComponentFixture<NotebooksComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         NotebooksComponent,
         AppTestModule.withDefaults({

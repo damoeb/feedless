@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, output, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject,
+  output,
+  input,
+} from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import {
@@ -65,8 +75,8 @@ type ViewMode = 'markup' | 'image';
     EmbeddedMarkupComponent,
     ConsoleButtonComponent,
     IonItem,
-    IonProgressBar
-],
+    IonProgressBar,
+  ],
   standalone: true,
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {

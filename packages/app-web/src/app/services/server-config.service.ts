@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   GqlFeatureName,
-  GqlVertical,
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
+  GqlVertical,
   ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';

@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
   GqlRepositoryCreateInput,
-  GqlSortOrder,
   GqlSourceInput,
   GqlVertical,
   GqlVisibility,
@@ -21,32 +28,32 @@ import {
 import { ModalName, ModalService } from '../../services/modal.service';
 import {
   AlertController,
+  IonBadge,
+  IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonChip,
+  IonCol,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonModal,
+  IonNote,
+  IonPopover,
+  IonRow,
+  IonSegment,
+  IonSegmentButton,
+  IonSpinner,
+  IonText,
+  IonTitle,
+  IonToolbar,
   ModalController,
   PopoverController,
   ToastController,
-  IonSpinner,
-  IonRow,
-  IonChip,
-  IonToolbar,
-  IonButtons,
-  IonModal,
-  IonHeader,
-  IonTitle,
-  IonButton,
-  IonIcon,
-  IonLabel,
-  IonContent,
-  IonList,
-  IonItem,
-  IonNote,
-  IonText,
-  IonFooter,
-  IonBadge,
-  IonPopover,
-  IonCol,
-  IonSegment,
-  IonSegmentButton,
-  IonCheckbox,
 } from '@ionic/angular/standalone';
 import {
   FeedOrRepository,
@@ -89,7 +96,7 @@ import {
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
-import { NgClass, DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { HistogramComponent } from '../histogram/histogram.component';
@@ -148,8 +155,8 @@ type Pair<A, B> = {
     TextDiffComponent,
     IonCheckbox,
     PlayerComponent,
-    DatePipe
-],
+    DatePipe,
+  ],
   standalone: true,
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {

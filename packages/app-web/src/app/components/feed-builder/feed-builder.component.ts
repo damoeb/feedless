@@ -1,26 +1,36 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, output, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  output,
+  viewChild,
+} from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
-  GqlVertical,
   GqlRemoteNativeFeed,
   GqlSourceInput,
   GqlTransientGenericFeed,
+  GqlVertical,
 } from '../../../generated/graphql';
 import {
   AlertController,
-  ModalController,
-  IonToolbar,
-  IonProgressBar,
-  IonList,
+  IonAccordion,
+  IonIcon,
   IonItem,
   IonLabel,
-  IonIcon,
-  IonAccordion,
+  IonList,
   IonNote,
+  IonProgressBar,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,9 +51,9 @@ import { RepositoryService } from '../../services/repository.service';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
 import {
+  checkmarkOutline,
   logoJavascript,
   settingsOutline,
-  checkmarkOutline,
 } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
@@ -107,8 +117,8 @@ export type FeedWithRequest = {
     IonIcon,
     IonAccordion,
     IonNote,
-    FilterItemsAccordionComponent
-],
+    FilterItemsAccordionComponent,
+  ],
   standalone: true,
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {
@@ -128,7 +138,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   loading = false;
 
-  readonly webToFeedTransformerComponent = viewChild<TransformWebsiteToFeedComponent>('webToFeedTransformer');
+  readonly webToFeedTransformerComponent =
+    viewChild<TransformWebsiteToFeedComponent>('webToFeedTransformer');
 
   readonly submitButtonText = input('Create Feed');
 
@@ -161,10 +172,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const source = this.source();
     if (source) {
       console.log('this.source', source);
-      this.sourceBuilder = SourceBuilder.fromSource(
-        source,
-        this.scrapeService,
-      );
+      this.sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
       this.url = this.sourceBuilder.getUrl();
       await this.scrapeUrl();
     }

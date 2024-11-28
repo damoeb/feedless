@@ -1,7 +1,7 @@
-import { Component, forwardRef, OnInit, input } from '@angular/core';
+import { Component, forwardRef, input, OnInit } from '@angular/core';
 import {
-  NG_VALUE_ACCESSOR,
   FormsModule,
+  NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';

@@ -8,35 +8,34 @@
     </ion-row>
     <ion-list class="ion-padding">
       @if (serverConfig.isSaas()) {
-        <ion-row>
-          <ion-col size="3">
-            <ion-label class="ion-padding">First Name</ion-label>
-          </ion-col>
-          <ion-col size="9">
-            <ion-input
-              [formControl]="formFg.controls.firstName"
-              aria-label="First Name"
-              fill="outline"
-              placeholder="Your first name"
-            ></ion-input>
-            <!--              <ion-note color="danger">Enter your name</ion-note>-->
-          </ion-col>
-        </ion-row>
-      }
-      @if (serverConfig.isSaas()) {
-        <ion-row>
-          <ion-col size="3">
-            <ion-label class="ion-padding">Last Name</ion-label>
-          </ion-col>
-          <ion-col size="9">
-            <ion-input
-              [formControl]="formFg.controls.lastName"
-              aria-label="Last Name"
-              fill="outline"
-              placeholder="Your last name"
-            ></ion-input>
-          </ion-col>
-        </ion-row>
+      <ion-row>
+        <ion-col size="3">
+          <ion-label class="ion-padding">First Name</ion-label>
+        </ion-col>
+        <ion-col size="9">
+          <ion-input
+            [formControl]="formFg.controls.firstName"
+            aria-label="First Name"
+            fill="outline"
+            placeholder="Your first name"
+          ></ion-input>
+          <!--              <ion-note color="danger">Enter your name</ion-note>-->
+        </ion-col>
+      </ion-row>
+      } @if (serverConfig.isSaas()) {
+      <ion-row>
+        <ion-col size="3">
+          <ion-label class="ion-padding">Last Name</ion-label>
+        </ion-col>
+        <ion-col size="9">
+          <ion-input
+            [formControl]="formFg.controls.lastName"
+            aria-label="Last Name"
+            fill="outline"
+            placeholder="Your last name"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
       }
       <ion-row>
         <ion-col size="3">
@@ -53,35 +52,29 @@
         </ion-col>
       </ion-row>
       @if (serverConfig.isSaas()) {
-        <ion-row>
-          <ion-col push="3" size="9">
-            @if (!formFg.value.emailVerified) {
-              <ion-label color="warning"
-                >Email not verified
-              </ion-label>
-            }
-            @if (formFg.value.emailVerified) {
-              <ion-label color="success"
-                >Email verified
-              </ion-label>
-            }
-          </ion-col>
-        </ion-row>
-      }
-      @if (serverConfig.isSaas()) {
-        <ion-row>
-          <ion-col size="3">
-            <ion-label class="ion-padding">Country</ion-label>
-          </ion-col>
-          <ion-col size="9">
-            <ion-input
-              [formControl]="formFg.controls.country"
-              aria-label="Country"
-              fill="outline"
-              placeholder="Your country of residence"
-            ></ion-input>
-          </ion-col>
-        </ion-row>
+      <ion-row>
+        <ion-col push="3" size="9">
+          @if (!formFg.value.emailVerified) {
+          <ion-label color="warning">Email not verified </ion-label>
+          } @if (formFg.value.emailVerified) {
+          <ion-label color="success">Email verified </ion-label>
+          }
+        </ion-col>
+      </ion-row>
+      } @if (serverConfig.isSaas()) {
+      <ion-row>
+        <ion-col size="3">
+          <ion-label class="ion-padding">Country</ion-label>
+        </ion-col>
+        <ion-col size="9">
+          <ion-input
+            [formControl]="formFg.controls.country"
+            aria-label="Country"
+            fill="outline"
+            placeholder="Your country of residence"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
       }
       <ion-row>
         <ion-col size="3">
@@ -98,197 +91,187 @@
     </ion-list>
 
     @if (serverConfig.isSaas()) {
-      <div appDev>
-        <ion-row class="ion-margin-top">
-          <ion-col size="8">
-            <h1 class="ion-no-margin">Current Plan</h1>
-          </ion-col>
-        </ion-row>
-        <ion-list>
-          @if (product) {
-            <ion-item
-              [button]="true"
-              color="primary"
-              routerLink="/pricing/feedless"
-              >
-              <ion-icon name="card-outline" slot="start"></ion-icon>
-              <ion-label>
-                <h3>{{ product.name }}</h3>
-                <p>{{ product.description }}</p>
-              </ion-label>
-            </ion-item>
-          }
-          <ion-item>
-            <ion-label>
-              <a routerLink="/pricing/feedless">
-                See plans or upgrade options
-              </a>
-            </ion-label>
-          </ion-item>
-          <!--      <ion-list-header> General</ion-list-header>-->
-          <!--      <ion-item>-->
-          <!--        <ion-select label="Feature State" value="stable">-->
-          <!--          <ion-select-option value="experimental"-->
-          <!--            >Experimental-->
+    <div appDev>
+      <ion-row class="ion-margin-top">
+        <ion-col size="8">
+          <h1 class="ion-no-margin">Current Plan</h1>
+        </ion-col>
+      </ion-row>
+      <ion-list>
+        @if (product) {
+        <ion-item
+          [button]="true"
+          color="primary"
+          routerLink="/pricing/feedless"
+        >
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description }}</p>
+          </ion-label>
+        </ion-item>
+        }
+        <ion-item>
+          <ion-label>
+            <a routerLink="/pricing/feedless"> See plans or upgrade options </a>
+          </ion-label>
+        </ion-item>
+        <!--      <ion-list-header> General</ion-list-header>-->
+        <!--      <ion-item>-->
+        <!--        <ion-select label="Feature State" value="stable">-->
+        <!--          <ion-select-option value="experimental"-->
+        <!--            >Experimental-->
         <!--          </ion-select-option>-->
         <!--          <ion-select-option value="beta">Beta</ion-select-option>-->
         <!--          <ion-select-option value="stable">Stable</ion-select-option>-->
-      <!--        </ion-select>-->
-    <!--      </ion-item>-->
-    <!--      <ion-list-header>-->
-    <!--        <a-->
-    <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
-    <!--          referrerpolicy="no-referrer"-->
-    <!--          target="_blank"-->
-  <!--          >Plugins</a-->
-<!--        ></ion-list-header-->
-<!--      >-->
-<!--      <ion-item>-->
-<!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-<!--      </ion-item>-->
-<!--      <ion-item *ngFor="let ref of plugins">-->
-<!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
-<!--          <span>{{ref.plugin.id}}</span>-->
-<!--          <ion-note class="ion-padding-start"-->
-<!--            >{{ref.plugin.description}}</ion-note-->
-<!--          >-->
-<!--        </ion-checkbox>-->
-<!--      </ion-item>-->
-<!--      <ion-item *ngFor="let plugin of plugins">-->
-<!--        <ion-checkbox [checked]="true" -->
-<!--                      [disabled]="true" -->
-<!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-<!--      </ion-item>-->
-<!--      <ion-row>-->
-<!--        <ion-col size="6">-->
-<!--          <ion-item>-->
-<!--            <ion-label>Plan</ion-label>-->
-<!--          </ion-item>-->
-<!--        </ion-col>-->
-<!--        <ion-col size="6">-->
-<!--          <ion-item color="primary">-->
-<!--            <ion-label>Free Plan</ion-label>-->
-<!--          </ion-item>-->
-<!--        </ion-col>-->
-<!--      </ion-row>-->
-<!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
-<!--      <ion-item (click)="importAny()" [button]="true">-->
-<!--        <ion-label>Import</ion-label>-->
-<!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
-<!--      </ion-item>-->
-<!--      <ion-item (click)="exportOPML()" [button]="true">-->
-<!--        <ion-label> Export OPML </ion-label>-->
-<!--      </ion-item>-->
-</ion-list>
-</div>
-}
-
-<ion-row class="ion-margin-top">
-  <ion-col size="8">
-    <h1 class="ion-no-margin">Your Data</h1>
-  </ion-col>
-</ion-row>
-<ion-list>
-  <ion-item [button]="true" (click)="downloadAllRepositories()">
-    <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
-    <ion-label>
-      <h3>Download Backup</h3>
-      <p>Repositories with sources. Can be used to later import</p>
-    </ion-label>
-  </ion-item>
-  <input
-    #filePicker
-    (change)="uploadRepositories($event)"
-    style="display: none"
-    accept="application/json"
-    type="file"
-    />
-  <ion-item [button]="true" appDev (click)="filePicker.click()">
-    <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
-    <ion-label>
-      <h3>Upload Backup</h3>
-      <p>Using a feedless json</p>
-    </ion-label>
-  </ion-item>
-</ion-list>
-
-<ion-row class="ion-margin-top">
-  <ion-col size="8">
-    <h1 class="ion-no-margin">Connected Apps</h1>
-  </ion-col>
-</ion-row>
-<ion-list>
-  <!--      <ion-item *ngIf="connectedApps.length === 0">-->
-  <!--        You can connect to Telegram or Github-->
-<!--      </ion-item>-->
-<ion-item>
-  <ion-label>
-    Github
-    <ion-note class="ion-margin-start">Used to login</ion-note>
-  </ion-label>
-
-  @if (hasConnectedApp('github')) {
-    <ion-button color="danger">
-      Connected
-    </ion-button>
-  }
-</ion-item>
-<ion-item>
-  <ion-label>
-    Telegram
-    <ion-note class="ion-margin-start"
-      >Used for push notifications
-    </ion-note>
-  </ion-label>
-
-  <ion-button color="dark" routerLink="/docs/telegram" size="small"
-    >Setup Instructions
-  </ion-button>
-
-  @if (hasConnectedApp('Telegram')) {
-    <ion-button
-      (click)="disconnectApp('Telegram')"
-      color="danger"
-      >
-      Disconnect
-    </ion-button>
-  }
-</ion-item>
-</ion-list>
-
-<div appDev>
-  <ion-row class="ion-margin-top">
-    <ion-col size="8">
-      <h1 class="ion-no-margin">Secrets</h1>
-    </ion-col>
-    <ion-col size="4">
-      <ion-button
-        (click)="createUserSecret()"
-        class="ion-float-end"
-        color="light"
-        fill="solid"
-        size="small"
-        >Create Secret
-      </ion-button>
-    </ion-col>
-  </ion-row>
-  <ion-list>
-    @if (secrets?.length > 0) {
-      <ion-row>
-        <ion-col size="6"></ion-col>
-        <ion-col size="2">Last Used</ion-col>
-        <ion-col size="2">Valid Until</ion-col>
-      </ion-row>
+        <!--        </ion-select>-->
+        <!--      </ion-item>-->
+        <!--      <ion-list-header>-->
+        <!--        <a-->
+        <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
+        <!--          referrerpolicy="no-referrer"-->
+        <!--          target="_blank"-->
+        <!--          >Plugins</a-->
+        <!--        ></ion-list-header-->
+        <!--      >-->
+        <!--      <ion-item>-->
+        <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item *ngFor="let ref of plugins">-->
+        <!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
+        <!--          <span>{{ref.plugin.id}}</span>-->
+        <!--          <ion-note class="ion-padding-start"-->
+        <!--            >{{ref.plugin.description}}</ion-note-->
+        <!--          >-->
+        <!--        </ion-checkbox>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item *ngFor="let plugin of plugins">-->
+        <!--        <ion-checkbox [checked]="true" -->
+        <!--                      [disabled]="true" -->
+        <!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+        <!--      </ion-item>-->
+        <!--      <ion-row>-->
+        <!--        <ion-col size="6">-->
+        <!--          <ion-item>-->
+        <!--            <ion-label>Plan</ion-label>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <!--        <ion-col size="6">-->
+        <!--          <ion-item color="primary">-->
+        <!--            <ion-label>Free Plan</ion-label>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <!--      </ion-row>-->
+        <!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
+        <!--      <ion-item (click)="importAny()" [button]="true">-->
+        <!--        <ion-label>Import</ion-label>-->
+        <!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
+        <!--      </ion-item>-->
+        <!--      <ion-item (click)="exportOPML()" [button]="true">-->
+        <!--        <ion-label> Export OPML </ion-label>-->
+        <!--      </ion-item>-->
+      </ion-list>
+    </div>
     }
-    @if (secrets?.length === 0) {
-      <ion-row>
-        <ion-col class="ion-padding-start" size="12">
-          <ion-note><em>No User Secrets defined</em></ion-note>
+
+    <ion-row class="ion-margin-top">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Your Data</h1>
+      </ion-col>
+    </ion-row>
+    <ion-list>
+      <ion-item [button]="true" (click)="downloadAllRepositories()">
+        <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3>Download Backup</h3>
+          <p>Repositories with sources. Can be used to later import</p>
+        </ion-label>
+      </ion-item>
+      <input
+        #filePicker
+        (change)="uploadRepositories($event)"
+        style="display: none"
+        accept="application/json"
+        type="file"
+      />
+      <ion-item [button]="true" appDev (click)="filePicker.click()">
+        <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3>Upload Backup</h3>
+          <p>Using a feedless json</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-row class="ion-margin-top">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Connected Apps</h1>
+      </ion-col>
+    </ion-row>
+    <ion-list>
+      <!--      <ion-item *ngIf="connectedApps.length === 0">-->
+      <!--        You can connect to Telegram or Github-->
+      <!--      </ion-item>-->
+      <ion-item>
+        <ion-label>
+          Github
+          <ion-note class="ion-margin-start">Used to login</ion-note>
+        </ion-label>
+
+        @if (hasConnectedApp('github')) {
+        <ion-button color="danger"> Connected </ion-button>
+        }
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          Telegram
+          <ion-note class="ion-margin-start"
+            >Used for push notifications
+          </ion-note>
+        </ion-label>
+
+        <ion-button color="dark" routerLink="/docs/telegram" size="small"
+          >Setup Instructions
+        </ion-button>
+
+        @if (hasConnectedApp('Telegram')) {
+        <ion-button (click)="disconnectApp('Telegram')" color="danger">
+          Disconnect
+        </ion-button>
+        }
+      </ion-item>
+    </ion-list>
+
+    <div appDev>
+      <ion-row class="ion-margin-top">
+        <ion-col size="8">
+          <h1 class="ion-no-margin">Secrets</h1>
+        </ion-col>
+        <ion-col size="4">
+          <ion-button
+            (click)="createUserSecret()"
+            class="ion-float-end"
+            color="light"
+            fill="solid"
+            size="small"
+            >Create Secret
+          </ion-button>
         </ion-col>
       </ion-row>
-    }
-    @for (secret of secrets; track secret) {
-      @if (secret.valueMasked) {
+      <ion-list>
+        @if (secrets?.length > 0) {
+        <ion-row>
+          <ion-col size="6"></ion-col>
+          <ion-col size="2">Last Used</ion-col>
+          <ion-col size="2">Valid Until</ion-col>
+        </ion-row>
+        } @if (secrets?.length === 0) {
+        <ion-row>
+          <ion-col class="ion-padding-start" size="12">
+            <ion-note><em>No User Secrets defined</em></ion-note>
+          </ion-col>
+        </ion-row>
+        } @for (secret of secrets; track secret) { @if (secret.valueMasked) {
         <ion-row>
           <ion-col class="ion-padding-start" size="6"
             >{{ secret.value }}
@@ -307,8 +290,7 @@
             </ion-button>
           </ion-col>
         </ion-row>
-      }
-      @if (!secret.valueMasked) {
+        } @if (!secret.valueMasked) {
         <ion-row>
           <ion-col class="ion-padding-start" size="8">
             <ion-input [readonly]="true" [value]="secret.value"></ion-input>
@@ -322,26 +304,25 @@
             </ion-button>
           </ion-col>
         </ion-row>
-      }
-    }
-  </ion-list>
-</div>
+        } }
+      </ion-list>
+    </div>
 
-<div style="color: var(--ion-color-danger)">
-  <ion-row style="margin-top: 100px">
-    <ion-col size="8">
-      <h1 class="ion-no-margin">Danger Zone</h1>
-    </ion-col>
-  </ion-row>
-  <ion-list style="border: 1px solid var(--ion-color-danger)">
-    <ion-item
-      (click)="deleteAccount()"
-      [button]="true"
-      style="--color: var(--ion-color-danger)"
-      >
-      Delete Account
-    </ion-item>
-  </ion-list>
-</div>
-</div>
+    <div style="color: var(--ion-color-danger)">
+      <ion-row style="margin-top: 100px">
+        <ion-col size="8">
+          <h1 class="ion-no-margin">Danger Zone</h1>
+        </ion-col>
+      </ion-row>
+      <ion-list style="border: 1px solid var(--ion-color-danger)">
+        <ion-item
+          (click)="deleteAccount()"
+          [button]="true"
+          style="--color: var(--ion-color-danger)"
+        >
+          Delete Account
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
 </ion-content>

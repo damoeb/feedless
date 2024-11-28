@@ -5,8 +5,8 @@ import { AppTestModule } from '../app-test.module';
 describe('UploadService', () => {
   let service: UploadService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults()],
     });
     service = TestBed.inject(UploadService);

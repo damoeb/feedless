@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import {

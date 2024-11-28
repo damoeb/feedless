@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { debounce, interval } from 'rxjs';
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { Location, NgClass } from '@angular/common';
 import {
@@ -20,24 +27,24 @@ import {
 } from '../../../generated/graphql';
 import {
   AlertController,
-  ItemReorderEventDetail,
+  IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  IonCol,
   IonContent,
   IonGrid,
-  IonRow,
-  IonCol,
-  IonAccordionGroup,
-  IonAccordion,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
+  IonRadio,
+  IonRadioGroup,
+  IonReorder,
   IonReorderGroup,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonButton,
-  IonIcon,
-  IonReorder,
-  IonRadioGroup,
-  IonRadio,
+  ItemReorderEventDetail,
 } from '@ionic/angular/standalone';
 import { RepositoryService } from '../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../app.module';
@@ -90,8 +97,8 @@ type Screen = 'area' | 'page' | 'element';
     IonIcon,
     IonReorder,
     IonRadioGroup,
-    IonRadio
-],
+    IonRadio,
+  ],
   standalone: true,
 })
 export class TrackerEditPage

@@ -5,7 +5,7 @@
   (keydown.enter)="$event.stopPropagation()"
   (keyup)="handleCtrlUp($event)"
   class="editor-wrapper"
-  >
+>
   <ng-content select="[controls]"></ng-content>
   @if (markdownControls()) {
     <ion-toolbar>
@@ -21,18 +21,18 @@
         </ion-button>
         <!--      <ion-button title="Attachment" *ngIf="isEnabled('attachment')">-->
         <!--        <ion-icon name="attach-outline"></ion-icon>-->
-      <!--      </ion-button>-->
-    </ion-buttons>
-    <!--    <ion-select *ngIf="isEnabled('code')">-->
-    <!--      <ion-select-option>HTML</ion-select-option>-->
-    <!--      <ion-select-option>Text</ion-select-option>-->
-    <!--      <ion-select-option>Markdown</ion-select-option>-->
-  <!--    </ion-select>-->
-</ion-toolbar>
-}
-<div
-  #editor
-  [ngClass]="{ 'editor--ctrl-pressed': ctrlPressed }"
-  class="editor"
-></div>
+        <!--      </ion-button>-->
+      </ion-buttons>
+      <!--    <ion-select *ngIf="isEnabled('code')">-->
+      <!--      <ion-select-option>HTML</ion-select-option>-->
+      <!--      <ion-select-option>Text</ion-select-option>-->
+      <!--      <ion-select-option>Markdown</ion-select-option>-->
+      <!--    </ion-select>-->
+    </ion-toolbar>
+  }
+  <div
+    #editor
+    [ngClass]="{ 'editor--ctrl-pressed': ctrlPressed }"
+    class="editor"
+  ></div>
 </div>

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FeedDetailsComponent } from './feed-details.component';
-import { FeedDetailsModule } from './feed-details.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -17,7 +16,7 @@ describe('FeedDetailsComponent', () => {
   let component: FeedDetailsComponent;
   let fixture: ComponentFixture<FeedDetailsComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         FeedDetailsComponent,
@@ -41,7 +40,7 @@ describe('FeedDetailsComponent', () => {
     component = fixture.componentInstance;
     component.repository = { retention: {}, sources: [], plugins: [] } as any;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

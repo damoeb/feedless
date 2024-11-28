@@ -1,17 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import {
-  ContentType,
   CodeEditorComponent,
+  ContentType,
 } from '../../elements/code-editor/code-editor.component';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';

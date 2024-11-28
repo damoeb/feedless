@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject, output, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  input,
+  OnInit,
+  output,
+} from '@angular/core';
 import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
@@ -6,24 +15,24 @@ import { FeatureGroup, Product } from '../../graphql/types';
 import {
   GqlFeatureName,
   GqlPricedProduct,
-  GqlVertical,
   GqlRecurringPaymentInterval,
+  GqlVertical,
 } from '../../../generated/graphql';
 import {
+  PlanColumnComponent,
   StringFeature,
   StringFeatureGroup,
-  PlanColumnComponent,
 } from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
 
 import {
+  IonButton,
+  IonCol,
+  IonLabel,
+  IonNote,
+  IonRow,
   IonSegment,
   IonSegmentButton,
-  IonLabel,
-  IonRow,
-  IonCol,
-  IonNote,
-  IonButton,
 } from '@ionic/angular/standalone';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
@@ -50,8 +59,8 @@ type ProductWithFeatureGroups = Product & {
     IonRow,
     IonCol,
     IonNote,
-    IonButton
-],
+    IonButton,
+  ],
   standalone: true,
 })
 export class PricingComponent implements OnInit {

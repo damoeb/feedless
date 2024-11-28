@@ -11,49 +11,44 @@
         </ion-item>
 
         @if (loading) {
-          <ion-spinner name="dots"></ion-spinner>
-        }
-
-        @if (!loading) {
-          <ion-list>
-            <ion-item>
-              <ion-select
-                [formControl]="featureGroupsFc"
-                label="Feature Group"
-                labelPlacement="start"
-                >
-                @for (group of featureGroups; track group) {
-                  <ion-select-option
-                    [value]="group"
-                    >
-                    {{ group.name }}
-                  </ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
-            @for (feature of features; track feature; let i = $index) {
-              <ion-item>
-                @if (feature.value.numVal) {
-                  <ion-label>{{ feature.name }}</ion-label>
-                  <ion-input
-                    [formControl]="feature.fc"
-                    aria-label=""
-                    type="number"
-                  ></ion-input>
-                }
-                @if (feature.value.boolVal) {
-                  <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
-                    {{ feature.name }}
-                  </ion-checkbox>
-                }
-                <!--              <ion-button slot="start" color="light" shape="round" *ngIf="featureGroupsFc.value.parentId">-->
-                <!--                <ion-icon name="close-outline"></ion-icon>-->
-              <!--              </ion-button>-->
-            </ion-item>
+        <ion-spinner name="dots"></ion-spinner>
+        } @if (!loading) {
+        <ion-list>
+          <ion-item>
+            <ion-select
+              [formControl]="featureGroupsFc"
+              label="Feature Group"
+              labelPlacement="start"
+            >
+              @for (group of featureGroups; track group) {
+              <ion-select-option [value]="group">
+                {{ group.name }}
+              </ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+          @for (feature of features; track feature; let i = $index) {
+          <ion-item>
+            @if (feature.value.numVal) {
+            <ion-label>{{ feature.name }}</ion-label>
+            <ion-input
+              [formControl]="feature.fc"
+              aria-label=""
+              type="number"
+            ></ion-input>
+            } @if (feature.value.boolVal) {
+            <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
+              {{ feature.name }}
+            </ion-checkbox>
+            }
+            <!--              <ion-button slot="start" color="light" shape="round" *ngIf="featureGroupsFc.value.parentId">-->
+            <!--                <ion-icon name="close-outline"></ion-icon>-->
+            <!--              </ion-button>-->
+          </ion-item>
           }
         </ion-list>
-      }
-    </ion-list>
+        }
+      </ion-list>
+    </div>
   </div>
-</div>
 </ion-content>

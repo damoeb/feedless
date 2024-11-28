@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { LicenseService } from '../../services/license.service';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
@@ -7,9 +14,9 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { environment } from '../../../environments/environment';
 import {
   FormControl,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
@@ -22,15 +29,15 @@ import {
 } from 'ionicons/icons';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
+  IonButton,
+  IonCol,
   IonContent,
-  IonList,
-  IonItem,
-  IonSpinner,
   IonIcon,
+  IonItem,
+  IonList,
   IonProgressBar,
   IonRow,
-  IonCol,
-  IonButton,
+  IonSpinner,
   IonTextarea,
 } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
@@ -54,8 +61,8 @@ import { DatePipe } from '@angular/common';
     IonTextarea,
     FormsModule,
     ReactiveFormsModule,
-    DatePipe
-],
+    DatePipe,
+  ],
   standalone: true,
 })
 export class LicensePage implements OnInit, OnDestroy {

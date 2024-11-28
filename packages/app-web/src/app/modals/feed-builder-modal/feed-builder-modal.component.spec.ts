@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FeedBuilderModalComponent } from './feed-builder-modal.component';
-import { FeedBuilderModalModule } from './feed-builder-modal.module';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
 import {
   GqlListPluginsQuery,
@@ -13,10 +12,10 @@ describe('FeedBuilderModalComponent', () => {
   let component: FeedBuilderModalComponent;
   let fixture: ComponentFixture<FeedBuilderModalComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
-        FeedBuilderModalModule,
+        FeedBuilderModalComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockRepositories(apolloMockController);

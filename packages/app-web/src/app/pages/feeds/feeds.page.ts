@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Record, Repository } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -13,18 +20,18 @@ import { FetchPolicy } from '@apollo/client/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonRow,
-  IonCol,
-  IonButtons,
+  IonBreadcrumbs,
   IonButton,
-  IonProgressBar,
-  IonList,
+  IonButtons,
+  IonChip,
+  IonCol,
+  IonContent,
   IonItem,
   IonLabel,
-  IonChip,
+  IonList,
+  IonProgressBar,
+  IonRow,
 } from '@ionic/angular/standalone';
 import { NgClass } from '@angular/common';
 import { ImportButtonComponent } from '../../components/import-button/import-button.component';
@@ -59,8 +66,8 @@ type ViewMode = 'list' | 'table';
     IonLabel,
     IonChip,
     HistogramComponent,
-    PaginationComponent
-],
+    PaginationComponent,
+  ],
   standalone: true,
 })
 export class FeedsPage implements OnInit, OnDestroy {

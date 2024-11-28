@@ -1,15 +1,14 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { NativeFeedComponent } from './native-feed.component';
-import { NativeFeedModule } from './native-feed.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('NativeFeedComponent', () => {
   let component: NativeFeedComponent;
   let fixture: ComponentFixture<NativeFeedComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [NativeFeedComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 

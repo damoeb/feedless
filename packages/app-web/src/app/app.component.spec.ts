@@ -12,30 +12,31 @@ import {
 } from '../generated/graphql';
 
 describe('AppComponent', () => {
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-    declarations: [AppComponent],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [
         RouterTestingModule.withRoutes([]),
         AppTestModule.withDefaults({
-            configurer: (apolloMockController) => apolloMockController
-                .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
-                .and.resolveOnce(async () => {
+          configurer: (apolloMockController) =>
+            apolloMockController
+              .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
+              .and.resolveOnce(async () => {
                 return {
-                    data: {
-                        session: {} as any,
-                    },
+                  data: {
+                    session: {} as any,
+                  },
                 };
-            }),
+              }),
         }),
-    ],
-}).compileComponents();
-  }));
+        AppComponent,
+      ],
+    }).compileComponents();
+  });
 
-  it('should create the app', waitForAsync(() => {
+  it('should create the app', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
-  }));
+  });
 });

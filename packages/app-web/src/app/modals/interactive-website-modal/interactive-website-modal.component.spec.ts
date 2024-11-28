@@ -5,7 +5,6 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '../../app-test.module';
-import { InteractiveWebsiteModalModule } from './interactive-website-modal.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -15,7 +14,7 @@ describe('InteractiveWebsiteModalComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [InteractiveWebsiteModalModule, AppTestModule.withDefaults()],
+      imports: [InteractiveWebsiteModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

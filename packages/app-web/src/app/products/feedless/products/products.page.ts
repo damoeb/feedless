@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -9,12 +17,12 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 import {
-  IonContent,
-  IonBreadcrumbs,
   IonBreadcrumb,
-  IonToolbar,
+  IonBreadcrumbs,
   IonButton,
+  IonContent,
   IonIcon,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 import { ProductHeadlineComponent } from '../../../components/product-headline/product-headline.component';
@@ -33,8 +41,8 @@ import { ProductHeadlineComponent } from '../../../components/product-headline/p
     ProductHeadlineComponent,
     IonToolbar,
     IonButton,
-    IonIcon
-],
+    IonIcon,
+  ],
   standalone: true,
 })
 export class ProductsPage implements OnInit, OnDestroy {

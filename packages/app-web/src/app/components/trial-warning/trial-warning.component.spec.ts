@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TrialWarningComponent } from './trial-warning.component';
-import { TrialWarningModule } from './trial-warning.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -16,7 +15,7 @@ describe('TrialWarningComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [TrialWarningModule, AppTestModule.withDefaults()],
+      imports: [TrialWarningComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

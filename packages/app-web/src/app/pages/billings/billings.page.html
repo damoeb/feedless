@@ -9,14 +9,13 @@
 
     <ion-list style="border-radius: 8px">
       @if (orders?.length === 0) {
-        <ion-item>
-          <p>You have no billings yet</p>
-        </ion-item>
-      }
-      @for (feed of orders; track feed) {
-        <ion-item lines="inset">
-          <ion-label> Billing</ion-label>
-        </ion-item>
+      <ion-item>
+        <p>You have no billings yet</p>
+      </ion-item>
+      } @for (feed of orders; track feed) {
+      <ion-item lines="inset">
+        <ion-label> Billing</ion-label>
+      </ion-item>
       }
     </ion-list>
   </div>

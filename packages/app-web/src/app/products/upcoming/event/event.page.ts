@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { RecordService } from '../../../services/record.service';
 import { Record } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
@@ -10,7 +17,7 @@ import { OpenStreetMapService } from '../../../services/open-street-map.service'
 import {
   parseDateFromUrl,
   parseLocationFromUrl,
-} from '../upcoming-product-routing.module';
+} from '../upcoming-product-routes';
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
@@ -19,14 +26,14 @@ import { NamedLatLon } from '../../../types';
 
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
-  IonContent,
-  IonSpinner,
-  IonToolbar,
-  IonButtons,
+  IonBadge,
   IonButton,
+  IonButtons,
+  IonContent,
   IonIcon,
   IonNote,
-  IonBadge,
+  IonSpinner,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 
@@ -46,8 +53,8 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
     IonIcon,
     IonNote,
     IonBadge,
-    UpcomingFooterComponent
-],
+    UpcomingFooterComponent,
+  ],
   standalone: true,
 })
 export class EventPage implements OnInit, OnDestroy {

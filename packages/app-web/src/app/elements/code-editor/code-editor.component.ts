@@ -1,4 +1,17 @@
-import { AfterViewInit, Component, ElementRef, forwardRef, Injector, OnChanges, SimpleChanges, ViewEncapsulation, inject, output, input, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  forwardRef,
+  inject,
+  Injector,
+  input,
+  OnChanges,
+  output,
+  SimpleChanges,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -54,10 +67,10 @@ import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
 import {
-  IonToolbar,
-  IonButtons,
   IonButton,
+  IonButtons,
   IonIcon,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
@@ -163,7 +176,9 @@ export class CodeEditorComponent
 
   readonly triggerQuery = output<string>();
 
-  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() => Promise.resolve([]));
+  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() =>
+    Promise.resolve([]),
+  );
 
   private editorView: EditorView;
   ctrlPressed: boolean;

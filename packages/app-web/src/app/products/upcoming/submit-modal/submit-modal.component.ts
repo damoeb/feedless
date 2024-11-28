@@ -1,22 +1,22 @@
 import { Component, inject } from '@angular/core';
 import {
   AlertController,
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonItem,
-  IonInput,
-  IonRadioGroup,
-  IonLabel,
-  IonRadio,
-  IonFooter,
-  IonList,
+  IonButtons,
   IonCheckbox,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonRadio,
+  IonRadioGroup,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -29,9 +29,9 @@ import {
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { createEmailFormControl } from '../../../form-controls';
 import {

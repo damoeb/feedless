@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';

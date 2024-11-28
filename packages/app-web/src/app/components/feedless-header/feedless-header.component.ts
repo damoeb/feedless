@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical } from '../../../generated/graphql';
 import {
@@ -40,8 +46,8 @@ import { LoginButtonComponent } from '../login-button/login-button.component';
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    LoginButtonComponent
-],
+    LoginButtonComponent,
+  ],
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {

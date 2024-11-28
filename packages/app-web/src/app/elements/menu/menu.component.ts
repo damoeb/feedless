@@ -1,14 +1,21 @@
-import { Component, OnInit, inject, output, input, viewChild } from '@angular/core';
 import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  viewChild,
+} from '@angular/core';
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonItem,
+  IonLabel,
+  IonList,
   IonPopover,
   IonSearchbar,
   PopoverController,
-  IonContent,
-  IonHeader,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonButton,
 } from '@ionic/angular/standalone';
 import { isFunction, isObject, isString } from 'lodash-es';
 import { NgClass } from '@angular/common';
@@ -47,8 +54,8 @@ export function labelProvider<T>(
     IonItem,
     NgClass,
     IonLabel,
-    IonButton
-],
+    IonButton,
+  ],
   standalone: true,
 })
 export class MenuComponent<T> implements OnInit {

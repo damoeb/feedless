@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
 import { AlertController } from '@ionic/angular/standalone';

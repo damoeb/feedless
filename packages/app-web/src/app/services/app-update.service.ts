@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { AlertController } from '@ionic/angular/standalone';
 import { filter, interval, throttle } from 'rxjs';

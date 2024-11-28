@@ -7,17 +7,16 @@
     </ion-breadcrumbs>
 
     @if (busy) {
-      <div>
-        <ion-spinner name="dots"></ion-spinner>
+    <div>
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+    } @if (!busy) {
+    <div style="margin-top: 50px">
+      <div class="flex__row">
+        <h2 style="flex: 1">{{ repository.title }}</h2>
+        <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
       </div>
-    }
-    @if (!busy) {
-      <div style="margin-top: 50px">
-        <div class="flex__row">
-          <h2 style="flex: 1">{{ repository.title }}</h2>
-          <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
-        </div>
-      </div>
+    </div>
     }
   </div>
 </ion-content>

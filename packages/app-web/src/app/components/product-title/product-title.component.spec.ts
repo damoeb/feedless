@@ -7,8 +7,8 @@ describe('ProductTitleComponent', () => {
   let component: ProductTitleComponent;
   let fixture: ComponentFixture<ProductTitleComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         ProductTitleComponent,
         AppTestModule.withDefaults({ mockAppConfig: false }),

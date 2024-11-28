@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { firstValueFrom, Observable, of, switchMap } from 'rxjs';
 import { CanActivate, Router, UrlTree } from '@angular/router';
@@ -9,7 +9,6 @@ import { CanActivate, Router, UrlTree } from '@angular/router';
 export class AuthGuardService implements CanActivate {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-
 
   canActivate(): Observable<boolean | UrlTree> {
     return this.authService.authorizationChange().pipe(

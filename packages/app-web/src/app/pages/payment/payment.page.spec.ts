@@ -1,19 +1,18 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PaymentPage } from './payment.page';
-import { PaymentPageModule } from './payment.module';
 import { AppTestModule } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
 
-describe('CheckoutPage', () => {
+describe('PaymentPage', () => {
   let component: PaymentPage;
   let fixture: ComponentFixture<PaymentPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        PaymentPageModule,
+        PaymentPage,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
@@ -25,7 +24,7 @@ describe('CheckoutPage', () => {
     fixture = TestBed.createComponent(PaymentPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

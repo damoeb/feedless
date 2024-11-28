@@ -5,7 +5,6 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '../../app-test.module';
-import { VisualDiffProductModule } from './visual-diff-product.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -13,9 +12,9 @@ describe('VisualDiffProductPage', () => {
   let component: VisualDiffProductPage;
   let fixture: ComponentFixture<VisualDiffProductPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VisualDiffProductModule, AppTestModule.withDefaults()],
+      imports: [VisualDiffProductPage, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
@@ -27,7 +26,7 @@ describe('VisualDiffProductPage', () => {
     fixture = TestBed.createComponent(VisualDiffProductPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

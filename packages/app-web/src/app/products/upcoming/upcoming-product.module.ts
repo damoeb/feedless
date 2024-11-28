@@ -1,20 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UpcomingProductRoutingModule } from './upcoming-product-routing.module';
-
-
-
-
-
+import { FormsModule } from '@angular/forms';
 
 // import { HttpClient } from '@angular/common/http';
 // import dayjs from 'dayjs';
-import { EventsPageModule } from './events/events-page.module';
-import { EventPageModule } from './event/event-page.module';
-import { AboutUsPage } from './about-us/about-us.page';
-import { TermsPage } from './terms/terms.page';
-import { IonContent, IonHeader } from '@ionic/angular/standalone';
+import { IonContent } from '@ionic/angular/standalone';
 
 // export function createTranslateLoader(http: HttpClient) {
 //   return new TranslateHttpLoader(http, './assets/i18n/upcoming/', '.json');
@@ -24,7 +14,6 @@ import { IonContent, IonHeader } from '@ionic/angular/standalone';
   imports: [
     CommonModule,
     FormsModule,
-    UpcomingProductRoutingModule,
     IonContent,
     // TranslateModule.forRoot({
     //   isolate: true,
@@ -35,14 +24,7 @@ import { IonContent, IonHeader } from '@ionic/angular/standalone';
     //     deps: [HttpClient],
     //   },
     // }),
-    ReactiveFormsModule,
-    EventsPageModule,
-    EventPageModule,
-    IonHeader,
-    AboutUsPage,
-    TermsPage,
-],
-  exports: [AboutUsPage, TermsPage],
+  ],
 })
 export class UpcomingProductModule {
   // constructor(translateService: TranslateService) {

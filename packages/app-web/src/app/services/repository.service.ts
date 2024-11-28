@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   CountRepositories,
   CreateRepositories,
@@ -52,7 +52,6 @@ export class RepositoryService {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
-
 
   async createRepositories(
     data: GqlRepositoryCreateInput[],

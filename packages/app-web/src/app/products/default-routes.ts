@@ -7,32 +7,30 @@ export const DefaultRoutes: Routes = [
   {
     path: 'login',
     loadChildren: () =>
-      import('../pages/login/login.module').then((m) => m.EmailLoginPageModule),
+      import('../pages/login/login.routes').then((m) => m.LOGIN_ROUTES),
   },
   {
     path: 'contact',
     loadChildren: () =>
-      import('../pages/contact/contact.module').then(
-        (m) => m.ContactPageModule,
-      ),
+      import('../pages/contact/contact.routes').then((m) => m.CONTACT_ROUTES),
   },
   {
     path: 'feeds/:feedId',
     loadChildren: () =>
-      import('../pages/feed-details/feed-details.module').then(
-        (m) => m.FeedDetailsPageModule,
+      import('../pages/feed-details/feed-details.routes').then(
+        (m) => m.FEED_DETAILS_ROUTES,
       ),
   },
   {
     path: 'feeds/:feedId/report',
     loadChildren: () =>
-      import('../pages/report/report.module').then((m) => m.ReportPageModule),
+      import('../pages/report/report.routes').then((m) => m.REPORT_ROUTES),
   },
   {
     path: 'notebook',
     loadChildren: () =>
-      import('../pages/notebook-details/notebook-details.module').then(
-        (m) => m.NotebookDetailsPageModule,
+      import('../pages/notebook-details/notebook-details.routes').then(
+        (m) => m.NOTEBOOK_DETAILS_ROUTES,
       ),
   },
   {
@@ -42,52 +40,52 @@ export const DefaultRoutes: Routes = [
       {
         path: 'directory',
         loadChildren: () =>
-          import('../pages/directory/directory.module').then(
-            (m) => m.DirectoryPageModule,
+          import('../pages/directory/directory.routes').then(
+            (m) => m.DIRECTORY_ROUTES,
           ),
       },
       {
         path: 'connect-app',
         canActivate: [AuthGuardService],
         loadChildren: () =>
-          import('../pages/connect-app/connect-app.module').then(
-            (m) => m.LinkAppPageModule,
+          import('../pages/connect-app/connect-app.routes').then(
+            (m) => m.CONNECT_APP_ROUTES,
           ),
       },
       {
         path: 'pricing',
         loadChildren: () =>
-          import('../pages/pricing/pricing.module').then(
-            (m) => m.PricingPageModule,
+          import('../pages/pricing/pricing.routes').then(
+            (m) => m.PRICING_ROUTES,
           ),
       },
       {
         path: 'billings',
         // canActivate: [IsRootGuardService],
         loadChildren: () =>
-          import('../pages/billings/billings.module').then(
-            (m) => m.BillingsPageModule,
+          import('../pages/billings/billings.routes').then(
+            (m) => m.BILLING_ROUTES,
           ),
       },
       {
         path: 'checkout',
         loadChildren: () =>
-          import('../pages/checkout/checkout.module').then(
-            (m) => m.CheckoutPageModule,
+          import('../pages/checkout/checkout.routes').then(
+            (m) => m.CHECKOUT_ROUTES,
           ),
       },
       {
         path: 'payment/summary',
         loadChildren: () =>
-          import('../pages/payment-summary/payment-summary.module').then(
-            (m) => m.PaymentSummaryPageModule,
+          import('../pages/payment-summary/payment-summary.routes').then(
+            (m) => m.PAYMENT_SUMMARY_ROUTES,
           ),
       },
       {
         path: 'payment',
         loadChildren: () =>
-          import('../pages/payment/payment.module').then(
-            (m) => m.PaymentPageModule,
+          import('../pages/payment/payment.routes').then(
+            (m) => m.PAYMENT_ROUTES,
           ),
       },
     ],
@@ -99,27 +97,25 @@ export const DefaultRoutes: Routes = [
       {
         path: 'agents',
         loadChildren: () =>
-          import('../pages/agents/agents.module').then(
-            (m) => m.AgentsPageModule,
-          ),
+          import('../pages/agents/agents.routes').then((m) => m.AGENTS_ROUTES),
       },
       {
         path: 'settings',
         loadChildren: () =>
-          import('../pages/settings/settings.module').then(
-            (m) => m.SettingsPageModule,
+          import('../pages/settings/settings.routes').then(
+            (m) => m.SETTINGS_ROUTES,
           ),
       },
       {
         path: 'feeds',
         loadChildren: () =>
-          import('../pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+          import('../pages/feeds/feeds.routes').then((m) => m.FEED_ROUTES),
       },
       {
         path: 'profile',
         loadChildren: () =>
-          import('../pages/profile/profile.module').then(
-            (m) => m.ProfilePageModule,
+          import('../pages/profile/profile.routes').then(
+            (m) => m.PROFILE_ROUTES,
           ),
       },
     ],
@@ -127,23 +123,19 @@ export const DefaultRoutes: Routes = [
   {
     path: 'docs',
     loadChildren: () =>
-      import('../pages/documents/documents.module').then(
-        (m) => m.DocumentsPageModule,
+      import('../pages/documents/documents.routes').then(
+        (m) => m.DOCUMENTS_ROUTES,
       ),
   },
   {
     path: 'privacy',
     loadChildren: () =>
-      import('../pages/privacy/privacy.module').then(
-        (m) => m.PrivacyPageModule,
-      ),
+      import('../pages/privacy/privacy.routes').then((m) => m.PRIVACY_ROUTES),
   },
   {
     path: 'license',
     // canActivate: [SelfHostingGuardService],
     loadChildren: () =>
-      import('../pages/license/license.module').then(
-        (m) => m.LicensePageModule,
-      ),
+      import('../pages/license/license.routes').then((m) => m.LICENSE_ROUTES),
   },
 ];

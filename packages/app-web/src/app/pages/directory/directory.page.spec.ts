@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { DirectoryPage } from './directory.page';
 import { AppTestModule } from '../../app-test.module';
-import { DirectoryPageModule } from './directory.module';
 import {
   GqlListPublicRepositoriesQuery,
   GqlListPublicRepositoriesQueryVariables,
@@ -12,10 +11,10 @@ describe('DirectoryPage', () => {
   let component: DirectoryPage;
   let fixture: ComponentFixture<DirectoryPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
-        DirectoryPageModule,
+        DirectoryPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController

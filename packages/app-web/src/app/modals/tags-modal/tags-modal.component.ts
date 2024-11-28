@@ -1,22 +1,21 @@
 import { Component, inject } from '@angular/core';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
-  IonList,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
+  IonList,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-
 
 export interface TagsModalComponentProps {
   tags: string[];
@@ -37,8 +36,8 @@ export interface TagsModalComponentProps {
     IonList,
     SearchbarComponent,
     IonItem,
-    IonLabel
-],
+    IonLabel,
+  ],
   standalone: true,
 })
 export class TagsModalComponent implements TagsModalComponentProps {

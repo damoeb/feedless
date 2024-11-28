@@ -11,10 +11,10 @@
       </p>
 
       @if (productConfig) {
-        <app-pricing
-          (selectionChange)="checkout($event)"
-          [vertical]="productConfig.product"
-        ></app-pricing>
+      <app-pricing
+        (selectionChange)="checkout($event)"
+        [vertical]="productConfig.product"
+      ></app-pricing>
       }
     </div>
   </div>

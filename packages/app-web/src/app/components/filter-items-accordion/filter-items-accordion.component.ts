@@ -70,8 +70,8 @@ type GeneralFilterParams = ArrayElement<
     IonInput,
     IonButton,
     IonIcon,
-    IonTextarea
-],
+    IonTextarea,
+  ],
   standalone: true,
 })
 export class FilterItemsAccordionComponent implements OnInit {

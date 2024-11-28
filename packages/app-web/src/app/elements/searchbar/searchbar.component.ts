@@ -1,26 +1,25 @@
 import {
   Component,
+  input,
   OnChanges,
   OnInit,
-  SimpleChanges,
   output,
-  input
+  SimpleChanges,
 } from '@angular/core';
 import {
   FormControl,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 import {
-  IonInput,
   IonButton,
   IonIcon,
+  IonInput,
   IonSpinner,
 } from '@ionic/angular/standalone';
-
 
 @Component({
   selector: 'app-searchbar',
@@ -32,8 +31,8 @@ import {
     ReactiveFormsModule,
     IonButton,
     IonIcon,
-    IonSpinner
-],
+    IonSpinner,
+  ],
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {

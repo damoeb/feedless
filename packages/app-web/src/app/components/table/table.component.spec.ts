@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TableComponent } from './table.component';
-import { TableModule } from './table.module';
 import { AppTestModule } from '../../app-test.module';
 
 xdescribe('TableComponent', () => {
   let component: TableComponent<any>;
   let fixture: ComponentFixture<TableComponent<any>>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [TableModule, AppTestModule.withDefaults()],
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TableComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableComponent);

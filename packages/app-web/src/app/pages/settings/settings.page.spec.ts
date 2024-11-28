@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SettingsPage } from './settings.page';
-import { SettingsPageModule } from './settings.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -15,10 +14,10 @@ xdescribe('SettingsPage', () => {
   let component: SettingsPage;
   let fixture: ComponentFixture<SettingsPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        SettingsPageModule,
+        SettingsPage,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],
@@ -32,7 +31,7 @@ xdescribe('SettingsPage', () => {
     );
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TrackerDetailsPage } from './tracker-details.page';
 import { AppTestModule } from '../../../app-test.module';
-import { TrackerDetailsPageModule } from './tracker-details.module';
 
 describe('TrackerDetailsPage', () => {
   let component: TrackerDetailsPage;
@@ -9,7 +8,7 @@ describe('TrackerDetailsPage', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [TrackerDetailsPageModule, AppTestModule.withDefaults()],
+      imports: [TrackerDetailsPage, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TrackerDetailsPage);

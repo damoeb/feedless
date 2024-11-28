@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import {
   CreateReport,
@@ -12,7 +12,6 @@ import {
 })
 export class ReportService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
-
 
   async createReport(
     repositoryId: string,

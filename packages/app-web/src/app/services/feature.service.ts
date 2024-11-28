@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   FeatureGroups,
   GqlFeatureGroupsQuery,
@@ -17,7 +17,6 @@ import { FeatureGroup } from '../graphql/types';
 })
 export class FeatureService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
-
 
   findAll(
     where: GqlFeatureGroupWhereInput,

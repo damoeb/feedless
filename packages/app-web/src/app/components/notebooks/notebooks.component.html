@@ -6,55 +6,50 @@
       referrerpolicy="no-referrer"
       target="_blank"
       >Luhmann's Zettelkasten</a
-      >
-      approach in the tradition of
-      <a
-        href="https://en.wikipedia.org/wiki/Notational_Velocity"
-        referrerpolicy="no-referrer"
-        target="_blank"
-        >Notational Velocity</a
-        >
-        and
-        <a
-          href="https://zettelkasten.de/the-archive/"
-          referrerpolicy="no-referrer"
-          target="_blank"
-          >The Archive</a
-          >. Untold Notes follows it's unopinionated approach and lifts it to an open
-          web platform.
-        </p>
+    >
+    approach in the tradition of
+    <a
+      href="https://en.wikipedia.org/wiki/Notational_Velocity"
+      referrerpolicy="no-referrer"
+      target="_blank"
+      >Notational Velocity</a
+    >
+    and
+    <a
+      href="https://zettelkasten.de/the-archive/"
+      referrerpolicy="no-referrer"
+      target="_blank"
+      >The Archive</a
+    >. Untold Notes follows it's unopinionated approach and lifts it to an open
+    web platform.
+  </p>
 
-        <app-searchbar
-          (querySubmit)="createNotebook($event)"
-          [loading]="busy"
-          buttonText="Create Notebook"
-          color="primary"
-          placeholder="Name your new Notebook"
-        ></app-searchbar>
+  <app-searchbar
+    (querySubmit)="createNotebook($event)"
+    [loading]="busy"
+    buttonText="Create Notebook"
+    color="primary"
+    placeholder="Name your new Notebook"
+  ></app-searchbar>
 
-        @if (notebooks?.length > 0) {
-          <ion-list
-            class="ion-margin-top notebooks"
-            style="background: transparent"
-            >
-            <ion-list-header class="ion-no-padding">
-              <ion-label color="medium"> Existing Repositories</ion-label>
-            </ion-list-header>
-            @for (notebook of notebooks; track notebook) {
-              <ion-item
-                [routerLink]="'/notebook/' + notebook.id"
-                >
-                <ion-label>{{ notebook.title }}</ion-label>
-                <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-              </ion-item>
-            }
-          </ion-list>
-        }
+  @if (notebooks?.length > 0) {
+    <ion-list class="ion-margin-top notebooks" style="background: transparent">
+      <ion-list-header class="ion-no-padding">
+        <ion-label color="medium"> Existing Repositories</ion-label>
+      </ion-list-header>
+      @for (notebook of notebooks; track notebook) {
+        <ion-item [routerLink]="'/notebook/' + notebook.id">
+          <ion-label>{{ notebook.title }}</ion-label>
+          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+        </ion-item>
+      }
+    </ion-list>
+  }
 
-        <!--    <div style="margin-top: 150px">-->
-        <!--      <h2>About</h2>-->
-        <!--      <p>-->
-        <!--        For maximum independence you can self-host. Import and export data using common formats.-->
-      <!--      </p>-->
-    <!--    </div>-->
-  </app-product-header>
+  <!--    <div style="margin-top: 150px">-->
+  <!--      <h2>About</h2>-->
+  <!--      <p>-->
+  <!--        For maximum independence you can self-host. Import and export data using common formats.-->
+  <!--      </p>-->
+  <!--    </div>-->
+</app-product-header>

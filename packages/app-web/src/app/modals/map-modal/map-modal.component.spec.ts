@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapModalComponent } from './map-modal.component';
-import { MapModalModule } from './map-modal.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('MapModalComponent', () => {
@@ -10,7 +9,7 @@ describe('MapModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapModalModule, AppTestModule.withDefaults()],
+      imports: [MapModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapModalComponent);

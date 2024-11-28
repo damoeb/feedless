@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { Record } from '../graphql/types';
 import { RecordService } from './record.service';

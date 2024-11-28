@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { PublicRepository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -13,16 +19,16 @@ import { addIcons } from 'ionicons';
 import { trendingDownOutline } from 'ionicons/icons';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonHeader,
-  IonProgressBar,
-  IonContent,
-  IonRow,
-  IonItem,
-  IonList,
-  IonLabel,
-  IonChip,
   IonButton,
+  IonChip,
+  IonContent,
+  IonHeader,
   IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonProgressBar,
+  IonRow,
 } from '@ionic/angular/standalone';
 
 import { ProductHeaderComponent } from '../../components/product-header/product-header.component';
@@ -53,8 +59,8 @@ type ViewMode = 'list' | 'grid';
     RemoveIfProdDirective,
     IonButton,
     IonIcon,
-    PaginationComponent
-],
+    PaginationComponent,
+  ],
   standalone: true,
 })
 export class DirectoryPage implements OnInit {

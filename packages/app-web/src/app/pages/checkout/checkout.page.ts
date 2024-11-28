@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -8,9 +15,9 @@ import {
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
@@ -26,20 +33,20 @@ import {
 import { SessionService } from '../../services/session.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
-  IonContent,
-  IonSpinner,
-  IonList,
-  IonItem,
-  IonRow,
-  IonCol,
-  IonInput,
   IonButton,
-  IonListHeader,
+  IonCheckbox,
+  IonCol,
+  IonContent,
+  IonInput,
+  IonItem,
   IonLabel,
+  IonList,
+  IonListHeader,
   IonNote,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonCheckbox,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { NgClass } from '@angular/common';
 
@@ -327,8 +334,8 @@ type PaymentOption = {
     IonSelect,
     IonSelectOption,
     NgClass,
-    IonCheckbox
-],
+    IonCheckbox,
+  ],
   standalone: true,
 })
 export class CheckoutPage implements OnInit, OnDestroy {

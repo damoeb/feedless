@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EventPage } from './event.page';
 import { AppTestModule, mockFullRecords } from '../../../app-test.module';
-import { EventPageModule } from './event-page.module';
 
 describe('EventPage', () => {
   let component: EventPage;
@@ -10,7 +9,7 @@ describe('EventPage', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EventPageModule,
+        EventPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockFullRecords(apolloMockController);

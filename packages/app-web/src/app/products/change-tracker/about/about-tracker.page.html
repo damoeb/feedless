@@ -1,0 +1,40 @@
+<ion-content>
+  <app-product-header productTitle="Page Change Tracker">
+    <p>Track websites to bring transparency.</p>
+
+    @if (serverConfig.isSelfHosted()) {
+    <div>
+      <div style="margin-top: 50px"></div>
+      <div class="ion-margin-vertical">
+        <h2>Hello, fellow Self-Hoster,</h2>
+        <p>
+          Checkout the <a href="" target="_blank">documentation</a> and
+          <a href="https://discord.gg/8Tu742HQkr" target="_blank"
+            >join us on discord</a
+          >
+          to help us strengthening the feed community..
+        </p>
+      </div>
+    </div>
+    }
+
+    <div style="margin-top: 50px">
+      <h2>Trackers</h2>
+      <app-searchbar
+        (querySubmit)="handleQuery($event)"
+        buttonText="Filter"
+        color="light"
+        placeholder="Type a Url of a website"
+      ></app-searchbar>
+      <div>
+        <div></div>
+      </div>
+    </div>
+  </app-product-header>
+
+  <div style="display: flex; justify-content: center">
+    <div style="max-width: 700px; margin-top: 150px; margin-bottom: 100px">
+      <app-product-headline title="Page Change Tracker"></app-product-headline>
+    </div>
+  </div>
+</ion-content>

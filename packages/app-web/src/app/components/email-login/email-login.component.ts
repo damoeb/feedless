@@ -1,27 +1,26 @@
-import { ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy } from '@angular/core';
 import { GqlConfirmCode } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
 import {
   FormControl,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 import {
   IonCard,
   IonCardContent,
-  IonList,
-  IonItem,
-  IonInput,
-  IonLabel,
   IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
   IonSpinner,
 } from '@ionic/angular/standalone';
-
 
 @Component({
   selector: 'app-email-login',
@@ -37,8 +36,8 @@ import {
     ReactiveFormsModule,
     IonLabel,
     IonIcon,
-    IonSpinner
-],
+    IonSpinner,
+  ],
   standalone: true,
 })
 export class EmailLoginComponent implements OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, forwardRef, OnInit, input } from '@angular/core';
+import { Component, forwardRef, input, OnInit } from '@angular/core';
 import { isNull, isUndefined } from 'lodash-es';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';

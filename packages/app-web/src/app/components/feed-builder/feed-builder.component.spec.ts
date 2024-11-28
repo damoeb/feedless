@@ -11,8 +11,8 @@ describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
   let fixture: ComponentFixture<FeedBuilderComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         FeedBuilderComponent,
         AppTestModule.withDefaults({
@@ -28,7 +28,7 @@ describe('FeedBuilderComponent', () => {
     fixture = TestBed.createComponent(FeedBuilderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

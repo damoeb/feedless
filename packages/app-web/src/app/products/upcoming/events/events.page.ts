@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
-import dayjs, { Dayjs, OpUnitType } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import { groupBy, sortBy, unionBy, uniqBy } from 'lodash-es';
 import { RecordService } from '../../../services/record.service';
@@ -20,7 +28,7 @@ import {
   homeRoute,
   parseDateFromUrl,
   parseLocationFromUrl,
-} from '../upcoming-product-routing.module';
+} from '../upcoming-product-routes';
 import { Subscription } from 'rxjs';
 import 'dayjs/locale/de';
 import { addIcons } from 'ionicons';
@@ -32,12 +40,12 @@ import {
 import { NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
-  IonContent,
-  IonButton,
-  IonIcon,
   IonBadge,
-  IonSpinner,
+  IonButton,
+  IonContent,
+  IonIcon,
   IonNote,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 
@@ -108,8 +116,8 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
     IonSpinner,
     RouterLink,
     IonNote,
-    UpcomingFooterComponent
-],
+    UpcomingFooterComponent,
+  ],
   standalone: true,
 })
 export class EventsPage implements OnInit, OnDestroy {

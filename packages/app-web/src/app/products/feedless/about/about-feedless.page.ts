@@ -1,17 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import '@justinribeiro/lite-youtube';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
 import {
-  IonPopover,
+  IonBadge,
   IonContent,
+  IonIcon,
+  IonItem,
   IonList,
   IonListHeader,
-  IonItem,
-  IonIcon,
-  IonBadge,
+  IonPopover,
 } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';

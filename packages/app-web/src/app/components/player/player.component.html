@@ -1,12 +1,7 @@
 @if (hasAudioStream(document)) {
   <div class="ion-margin-top">
     @if (!isPlaying) {
-      <ion-button
-        (click)="playAudio()"
-        color="dark"
-        fill="clear"
-        shape="round"
-        >
+      <ion-button (click)="playAudio()" color="dark" fill="clear" shape="round">
         <ion-icon color="primary" name="play-outline" slot="start"></ion-icon>
         Play
         <ion-note class="ion-padding-start"

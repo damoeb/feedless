@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  input,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
 import { GqlRecordField } from '../../../generated/graphql';

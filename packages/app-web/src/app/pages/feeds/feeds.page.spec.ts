@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FeedsPage } from './feeds.page';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
-import { FeedsPageModule } from './feeds.module';
 
 describe('FeedsPage', () => {
   let component: FeedsPage;
   let fixture: ComponentFixture<FeedsPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
-        FeedsPageModule,
+        FeedsPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockRepositories(apolloMockController),
@@ -23,7 +22,7 @@ describe('FeedsPage', () => {
     component.repositories = [];
     component.documents = [];
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

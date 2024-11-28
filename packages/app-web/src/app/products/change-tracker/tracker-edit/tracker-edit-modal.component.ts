@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import {
@@ -8,25 +15,25 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonTitle,
-  IonLabel,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
   IonList,
   IonListHeader,
-  IonRadioGroup,
-  IonItem,
-  IonRadio,
   IonNote,
-  IonText,
-  IonInput,
+  IonRadio,
+  IonRadioGroup,
   IonSelect,
   IonSelectOption,
+  IonText,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { FeedOrRepository } from '../../../components/feed-builder/feed-builder.component';
 import {
@@ -38,7 +45,6 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
-
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -71,8 +77,8 @@ export interface TrackerEditModalComponentProps {}
     IonText,
     IonInput,
     IonSelect,
-    IonSelectOption
-],
+    IonSelectOption,
+  ],
   standalone: true,
 })
 export class TrackerEditModalComponent

@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PlanColumnComponent } from './plan-column.component';
-import { PlanColumnModule } from './plan-column.module';
 
 describe('PlanColumnComponent', () => {
   let component: PlanColumnComponent;
   let fixture: ComponentFixture<PlanColumnComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [PlanColumnComponent],
     }).compileComponents();
 
@@ -16,7 +15,7 @@ describe('PlanColumnComponent', () => {
     component = fixture.componentInstance;
     component.featureGroups = [];
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

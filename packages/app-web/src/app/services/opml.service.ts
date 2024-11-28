@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { FileService } from './file.service';
 
@@ -16,7 +16,6 @@ export interface Outline {
 export class OpmlService {
   private readonly toastCtrl = inject(ToastController);
   private readonly fileService = inject(FileService);
-
 
   async convertOpmlToJson(uploadEvent: Event): Promise<Outline[]> {
     const data = this.fileService.uploadAsText(uploadEvent);

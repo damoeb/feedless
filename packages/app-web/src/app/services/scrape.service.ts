@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
@@ -15,7 +15,6 @@ import { ScrapeResponse } from '../graphql/types';
 export class ScrapeService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly authService = inject(AuthService);
-
 
   async scrape(source: GqlSourceInput): Promise<ScrapeResponse> {
     await this.authService.requireAnyAuthToken();

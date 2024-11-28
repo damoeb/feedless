@@ -1,24 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonIcon,
-  IonTitle,
-  IonContent,
-  IonList,
-  IonItem,
+  IonButtons,
   IonCheckbox,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
   IonLabel,
+  IonList,
   IonNote,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 
 export interface SelectionModalComponentProps<T> {
   selectables: SelectableEntity<T>[];
@@ -56,8 +55,8 @@ type EntityWithFormControl<T> = {
     FormsModule,
     ReactiveFormsModule,
     IonLabel,
-    IonNote
-],
+    IonNote,
+  ],
   standalone: true,
 })
 export class SelectionModalComponent<T>

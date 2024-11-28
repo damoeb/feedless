@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router, RouterLink } from '@angular/router';
 import { has } from 'lodash-es';
@@ -10,14 +17,13 @@ import { filter, map, Subscription } from 'rxjs';
 import { GqlVertical } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
-  IonRouterLink,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
   IonButton,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonMenuButton,
   IonRouterOutlet,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
@@ -44,8 +50,8 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonButton,
     LoginButtonComponent,
     IonContent,
-    IonRouterOutlet
-],
+    IonRouterOutlet,
+  ],
   standalone: true,
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {

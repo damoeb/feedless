@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ReportPage } from './report.page';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
-import { ReportPageModule } from './report.module';
 
 describe('FeedsPage', () => {
   let component: ReportPage;
   let fixture: ComponentFixture<ReportPage>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
       imports: [
-        ReportPageModule,
+        ReportPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockRepositories(apolloMockController),

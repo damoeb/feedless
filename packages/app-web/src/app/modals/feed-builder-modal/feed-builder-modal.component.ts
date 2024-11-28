@@ -1,17 +1,17 @@
 import { Component, inject } from '@angular/core';
 import {
-  FeedWithRequest,
   FeedBuilderComponent,
+  FeedWithRequest,
 } from '../../components/feed-builder/feed-builder.component';
 import {
-  ModalController,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { GqlSourceInput } from '../../../generated/graphql';
 import { Repository } from '../../graphql/types';

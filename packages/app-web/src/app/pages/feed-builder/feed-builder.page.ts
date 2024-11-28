@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
@@ -6,9 +13,9 @@ import {
 } from '../../services/app-config.service';
 import { RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
 import {
+  FeedBuilderComponent,
   FeedWithRequest,
   NativeOrGenericFeed,
-  FeedBuilderComponent,
 } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
 import {

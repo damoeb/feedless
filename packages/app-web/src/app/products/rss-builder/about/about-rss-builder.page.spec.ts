@@ -5,7 +5,6 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '../../../app-test.module';
-import { AboutRssBuilderModule } from './about-rss-builder.module';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 import { AppConfigService } from '../../../services/app-config.service';
@@ -14,9 +13,9 @@ describe('AboutRssBuilderPage', () => {
   let component: AboutRssBuilderPage;
   let fixture: ComponentFixture<AboutRssBuilderPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AboutRssBuilderModule, AppTestModule.withDefaults()],
+      imports: [AboutRssBuilderPage, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
@@ -36,7 +35,7 @@ describe('AboutRssBuilderPage', () => {
     fixture = TestBed.createComponent(AboutRssBuilderPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

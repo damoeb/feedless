@@ -1,20 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   ConnectedApp,
   ConnectedAppService,
 } from '../../services/connected-app.service';
 import {
-  ToastController,
-  IonContent,
-  IonSpinner,
+  IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
-  IonButtons,
-  IonButton,
+  IonContent,
+  IonSpinner,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-
 
 @Component({
   selector: 'app-connect-app-page',
@@ -28,8 +33,8 @@ import { FeedlessHeaderComponent } from '../../components/feedless-header/feedle
     IonCard,
     IonCardContent,
     IonButtons,
-    IonButton
-],
+    IonButton,
+  ],
   standalone: true,
 })
 export class ConnectAppPage implements OnInit {

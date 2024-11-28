@@ -2,7 +2,7 @@ import { Component, Input, input } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
-import { IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
+import { IonCol, IonIcon, IonRow } from '@ionic/angular/standalone';
 
 export type StringFeature = {
   title: string;

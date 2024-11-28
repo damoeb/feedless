@@ -3,7 +3,6 @@ import { UpcomingHeaderComponent } from './upcoming-header.component';
 import { AppTestModule, mockEvents } from '../../../app-test.module';
 import dayjs from 'dayjs';
 import { getCachedLocations } from '../places';
-import { EventsPageModule } from '../events/events-page.module';
 import { AppConfigService } from '../../../services/app-config.service';
 import { of } from 'rxjs';
 
@@ -14,7 +13,7 @@ describe('UpcomingHeaderComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EventsPageModule,
+        UpcomingHeaderComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockEvents(apolloMockController);

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { NamedLatLon, Nullable } from '../types';

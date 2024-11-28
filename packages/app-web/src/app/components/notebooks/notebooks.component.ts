@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Notebook, NotebookService } from '../../services/notebook.service';
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -8,11 +15,11 @@ import { ProductHeaderComponent } from '../product-header/product-header.compone
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
 import {
+  IonIcon,
+  IonItem,
+  IonLabel,
   IonList,
   IonListHeader,
-  IonLabel,
-  IonItem,
-  IonIcon,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -28,8 +35,8 @@ import {
     IonLabel,
     IonItem,
     RouterLink,
-    IonIcon
-],
+    IonIcon,
+  ],
   standalone: true,
 })
 export class NotebooksComponent implements OnInit, OnDestroy {

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import {
@@ -6,12 +13,12 @@ import {
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import {
-  IonHeader,
-  IonToolbar,
   IonButtons,
-  IonMenuButton,
   IonContent,
+  IonHeader,
+  IonMenuButton,
   IonRouterOutlet,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';

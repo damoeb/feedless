@@ -6,7 +6,6 @@ import {
   mockFullRecords,
   mockRecords,
 } from '../../../app-test.module';
-import { EventsPageModule } from './events-page.module';
 import { Router } from '@angular/router';
 
 describe('EventsPage', () => {
@@ -16,7 +15,7 @@ describe('EventsPage', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EventsPageModule,
+        EventsPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockEvents(apolloMockController);

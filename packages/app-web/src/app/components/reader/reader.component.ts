@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   ReaderLinkTarget,
   ReaderTextTransform,
@@ -7,7 +17,7 @@ import { isUndefined } from 'lodash-es';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
 import { NgClass } from '@angular/common';
-import { IonRow, IonCol } from '@ionic/angular/standalone';
+import { IonCol, IonRow } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-reader',

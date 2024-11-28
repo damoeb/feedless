@@ -5,8 +5,8 @@ import { ServerConfigService } from './server-config.service';
 describe('ServerConfigService', () => {
   let service: ServerConfigService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults()],
     });
     service = TestBed.inject(ServerConfigService);

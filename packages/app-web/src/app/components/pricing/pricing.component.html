@@ -4,7 +4,7 @@
       [formControl]="serviceFlavorFc"
       mode="ios"
       style="max-width: 400px; height: 50px"
-      >
+    >
       <ion-segment-button [value]="serviceFlavorSelf">
         <ion-label>Self-Hosting</ion-label>
       </ion-segment-button>
@@ -22,7 +22,7 @@
         [formControl]="targetGroupFc"
         mode="ios"
         style="max-width: 800px; height: 50px"
-        >
+      >
         <ion-segment-button [value]="targetGroupOrganization">
           <ion-label
             ><span class="ion-hide-md-down">For</span> Organizations
@@ -44,7 +44,7 @@
     mode="ios"
     [formControl]="paymentIntervalFc"
     style="max-width: 300px; height: 50px"
-    >
+  >
     <ion-segment-button [value]="paymentIntervalMonthly">
       <ion-label>Monthly</ion-label>
     </ion-segment-button>
@@ -54,8 +54,7 @@
   </ion-segment>
 
   <div class="ion-margin-top">
-    @if (serviceFlavorFc.value === serviceFlavorCloud) {
-    }
+    @if (serviceFlavorFc.value === serviceFlavorCloud) {}
     @if (serviceFlavorFc.value !== serviceFlavorCloud) {
       @if (targetGroupFc.value === targetGroupIndividual) {
         <p>
@@ -81,9 +80,7 @@
 
     <div class="offers">
       @for (product of filteredProducts(); track product) {
-        <app-plan-column
-          [featureGroups]="product.stringifiedFeatureGroups"
-          >
+        <app-plan-column [featureGroups]="product.stringifiedFeatureGroups">
           <h3>{{ product.name }}</h3>
           <p>{{ product.description }}</p>
           <div style="flex: 1">

@@ -1,25 +1,32 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
 import {
   AlertController,
-  ToastController,
-  IonContent,
-  IonRow,
-  IonCol,
-  IonList,
-  IonLabel,
-  IonInput,
   IonButton,
-  IonItem,
+  IonCol,
+  IonContent,
   IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
   IonNote,
+  IonRow,
+  ToastController,
 } from '@ionic/angular/standalone';
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
@@ -65,8 +72,8 @@ import { RouterLink } from '@angular/router';
     RouterLink,
     IonIcon,
     IonNote,
-    DatePipe
-],
+    DatePipe,
+  ],
   standalone: true,
 })
 export class ProfilePage implements OnInit, OnDestroy {

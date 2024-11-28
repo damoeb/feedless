@@ -13,10 +13,7 @@
   <ng-content></ng-content>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
     @if (loading) {
-      <ion-spinner
-        class="cy-remote-feed--busy"
-        name="dots"
-      ></ion-spinner>
+      <ion-spinner class="cy-remote-feed--busy" name="dots"></ion-spinner>
     }
     @if (!loading) {
       @if (errorMessage) {

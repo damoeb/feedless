@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnInit,
+} from '@angular/core';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
@@ -7,8 +14,8 @@ import { Record } from '../../graphql/types';
 import {
   IonItem,
   IonLabel,
-  IonSpinner,
   IonList,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.component';
 
@@ -17,13 +24,7 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
   templateUrl: './native-feed.component.html',
   styleUrls: ['./native-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonItem,
-    IonLabel,
-    IonSpinner,
-    IonList,
-    RemoteFeedItemComponent
-],
+  imports: [IonItem, IonLabel, IonSpinner, IonList, RemoteFeedItemComponent],
   standalone: true,
 })
 export class NativeFeedComponent implements OnInit {

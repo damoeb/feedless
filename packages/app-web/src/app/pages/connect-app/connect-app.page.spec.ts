@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ConnectAppPage } from './connect-app.page';
-import { LinkAppPageModule } from './connect-app.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -18,7 +17,7 @@ describe('LoginPage', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        LinkAppPageModule,
+        ConnectAppPage,
         AppTestModule.withDefaults(),
         RouterTestingModule.withRoutes([]),
       ],

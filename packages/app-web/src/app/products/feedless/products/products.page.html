@@ -16,7 +16,7 @@
   </div>
   <div style="display: flex; justify-content: center; margin: 20px">
     @if (product) {
-      <div
+    <div
       style="
         max-width: 900px;
         width: 1120px;
@@ -24,115 +24,114 @@
         flex-direction: column;
         position: relative;
       "
-        >
-        <ion-breadcrumbs style="margin-bottom: 150px">
-          <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
-          <ion-breadcrumb>{{ product.title }}</ion-breadcrumb>
-        </ion-breadcrumbs>
-        <div class="flex__column">
-          <app-product-headline [title]="product.title"></app-product-headline>
-          @if (!isReleased()) {
-            <ion-toolbar
-              class="ion-margin-top ion-padding-horizontal"
-              color="warning"
-              >Self Hosting Coming Soon!
-            </ion-toolbar>
-            <p>Version {{ product.version.join('.') }}</p>
-            <p>
-              {{ product.summary }} <br />
-              <span [innerHtml]="product.descriptionHtml"></span>
-            </p>
-            <!--          <app-newsletter-->
-            <!--            headerText="Support the Mission!"-->
-            <!--            bodyText="If you endorse this idea, join the list of supporters and get early access"-->
-            <!--            buttonText="Subscribe Now"-->
-          <!--          ></app-newsletter>-->
+    >
+      <ion-breadcrumbs style="margin-bottom: 150px">
+        <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+        <ion-breadcrumb>{{ product.title }}</ion-breadcrumb>
+      </ion-breadcrumbs>
+      <div class="flex__column">
+        <app-product-headline [title]="product.title"></app-product-headline>
+        @if (!isReleased()) {
+        <ion-toolbar
+          class="ion-margin-top ion-padding-horizontal"
+          color="warning"
+          >Self Hosting Coming Soon!
+        </ion-toolbar>
+        <p>Version {{ product.version.join('.') }}</p>
+        <p>
+          {{ product.summary }} <br />
+          <span [innerHtml]="product.descriptionHtml"></span>
+        </p>
+        <!--          <app-newsletter-->
+        <!--            headerText="Support the Mission!"-->
+        <!--            bodyText="If you endorse this idea, join the list of supporters and get early access"-->
+        <!--            buttonText="Subscribe Now"-->
+        <!--          ></app-newsletter>-->
+        <div>
+          <h1>Upcoming Features</h1>
+          <p>Among others, here are some of the main features:</p>
           <div>
-            <h1>Upcoming Features</h1>
-            <p>Among others, here are some of the main features:</p>
-            <div>
-              <ul>
-                @for (feature of product.features; track feature) {
-                  <li>{{ feature }}</li>
-                }
-                <li>Source Available</li>
-              </ul>
-            </div>
+            <ul>
+              @for (feature of product.features; track feature) {
+              <li>{{ feature }}</li>
+              }
+              <li>Source Available</li>
+            </ul>
           </div>
-        }
-        @if (isReleased()) {
-          <p class="ion-padding-vertical">{{ product.descriptionMarkdown }}</p>
-          <div class="flex__row" style="column-gap: 10px">
-            <ion-button
-              (click)="setup.scrollIntoView()"
-              color="primary"
-              shape="round"
-              size="small"
-              style="height: 40px"
-              >
-              Local Setup
-              <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-            </ion-button>
-            @if (product.costs.length > 0) {
-              <ion-button
-                [routerLink]="'/pricing/'+product.id"
-                color="dark"
-                fill="outline"
-                shape="round"
-                size="small"
-                style="height: 40px"
-                >
-                Pricing
-                <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-              </ion-button>
-            }
-          </div>
-          <div style="margin-top: 50px">
-            <h1>Features</h1>
-            <div>
-              <ul>
-                @for (feature of product.features; track feature) {
-                  <li>{{ feature }}</li>
-                }
-                <!--                <li>Source Available</li>-->
-              </ul>
-            </div>
-          </div>
-          @if (videoUrl) {
-            <div style="margin-top: 50px">
-              <h1>Demo Video</h1>
-              <iframe
-                [src]="videoUrl"
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-                frameborder="0"
-                height="315"
-                referrerpolicy="strict-origin-when-cross-origin"
-                title="YouTube video player"
-                width="560"
-              ></iframe>
-            </div>
+        </div>
+        } @if (isReleased()) {
+        <p class="ion-padding-vertical">{{ product.descriptionMarkdown }}</p>
+        <div class="flex__row" style="column-gap: 10px">
+          <ion-button
+            (click)="setup.scrollIntoView()"
+            color="primary"
+            shape="round"
+            size="small"
+            style="height: 40px"
+          >
+            Local Setup
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
+          @if (product.costs.length > 0) {
+          <ion-button
+            [routerLink]="'/pricing/'+product.id"
+            color="dark"
+            fill="outline"
+            shape="round"
+            size="small"
+            style="height: 40px"
+          >
+            Pricing
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
           }
-          <div style="margin-top: 50px">
-            <h1 #setup>Local Setup</h1>
-            <div [innerHtml]="product.localSetupBeforeMarkup"></div>
-            <pre>{{ product.localSetupBash }}</pre>
-            <div [innerHtml]="product.localSetupAfterMarkup"></div>
+        </div>
+        <div style="margin-top: 50px">
+          <h1>Features</h1>
+          <div>
+            <ul>
+              @for (feature of product.features; track feature) {
+              <li>{{ feature }}</li>
+              }
+              <!--                <li>Source Available</li>-->
+            </ul>
           </div>
-          <div style="margin-top: 50px">
-            <h1>Try Online</h1>
-            <div class="ion-margin-bottom">
-              Avoid the hassle and try this nerd box online for free.
-            </div>
-            <div class="ion-margin-bottom">
-              <ion-button color="primary" routerLink="/login" shape="round"
-                >Try now!
-              </ion-button>
-            </div>
+        </div>
+        @if (videoUrl) {
+        <div style="margin-top: 50px">
+          <h1>Demo Video</h1>
+          <iframe
+            [src]="videoUrl"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            frameborder="0"
+            height="315"
+            referrerpolicy="strict-origin-when-cross-origin"
+            title="YouTube video player"
+            width="560"
+          ></iframe>
+        </div>
+        }
+        <div style="margin-top: 50px">
+          <h1 #setup>Local Setup</h1>
+          <div [innerHtml]="product.localSetupBeforeMarkup"></div>
+          <pre>{{ product.localSetupBash }}</pre>
+          <div [innerHtml]="product.localSetupAfterMarkup"></div>
+        </div>
+        <div style="margin-top: 50px">
+          <h1>Try Online</h1>
+          <div class="ion-margin-bottom">
+            Avoid the hassle and try this nerd box online for free.
           </div>
+          <div class="ion-margin-bottom">
+            <ion-button color="primary" routerLink="/login" shape="round"
+              >Try now!
+            </ion-button>
+          </div>
+        </div>
         }
       </div>
     </div>
-  }
-</div>
+    }
+  </div>
 </ion-content>

@@ -5,8 +5,8 @@ import { SessionService } from './session.service';
 describe('SessionService', () => {
   let service: SessionService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults()],
     });
     service = TestBed.inject(SessionService);

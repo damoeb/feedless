@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsButtonComponent } from './agents-button.component';
-import { AgentsButtonModule } from './agents-button.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -19,10 +18,10 @@ describe('AgentsButtonComponent', () => {
   let component: AgentsButtonComponent;
   let fixture: ComponentFixture<AgentsButtonComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        AgentsButtonModule,
+        AgentsButtonComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController
@@ -47,7 +46,7 @@ describe('AgentsButtonComponent', () => {
     fixture = TestBed.createComponent(AgentsButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

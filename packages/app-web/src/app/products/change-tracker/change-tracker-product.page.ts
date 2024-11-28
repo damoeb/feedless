@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
+import { LocalizedLicense } from '../../graphql/types';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -14,16 +21,16 @@ import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-moda
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
   IonButton,
-  IonIcon,
-  IonContent,
-  IonRouterOutlet,
-  IonFooter,
+  IonButtons,
   IonChip,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonIcon,
+  IonMenuButton,
+  IonRouterOutlet,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 
@@ -49,8 +56,8 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonContent,
     IonRouterOutlet,
     IonFooter,
-    IonChip
-],
+    IonChip,
+  ],
   standalone: true,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {

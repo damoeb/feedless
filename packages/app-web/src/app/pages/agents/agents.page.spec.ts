@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AgentsPage } from './agents.page';
-import { AgentsPageModule } from './agents.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -14,9 +13,9 @@ describe('AgentsPage', () => {
   let component: AgentsPage;
   let fixture: ComponentFixture<AgentsPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AgentsPageModule, AppTestModule.withDefaults()],
+      imports: [AgentsPage, AppTestModule.withDefaults()],
       providers: [],
     }).compileComponents();
 
@@ -29,7 +28,7 @@ describe('AgentsPage', () => {
     fixture = TestBed.createComponent(AgentsPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

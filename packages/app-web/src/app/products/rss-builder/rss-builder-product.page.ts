@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
@@ -14,14 +21,14 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
   IonButton,
-  IonIcon,
+  IonButtons,
   IonContent,
+  IonHeader,
+  IonIcon,
+  IonMenuButton,
   IonRouterOutlet,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
@@ -51,8 +58,8 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     DarkModeButtonComponent,
     LoginButtonComponent,
     IonContent,
-    IonRouterOutlet
-],
+    IonRouterOutlet,
+  ],
   standalone: true,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {

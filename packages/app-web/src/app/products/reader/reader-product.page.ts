@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewEncapsulation, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
@@ -17,26 +27,26 @@ import { Embeddable } from '../../components/embedded-image/embedded-image.compo
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
   IonButton,
-  IonIcon,
-  IonPopover,
-  IonTitle,
+  IonButtons,
+  IonCol,
   IonContent,
-  IonList,
+  IonFooter,
+  IonHeader,
+  IonIcon,
   IonItem,
-  IonLabel,
   IonItemDivider,
-  IonText,
-  IonSpinner,
+  IonLabel,
+  IonList,
+  IonMenuButton,
+  IonPopover,
+  IonRow,
   IonSegment,
   IonSegmentButton,
-  IonRow,
-  IonCol,
-  IonFooter,
+  IonSpinner,
+  IonText,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
@@ -99,8 +109,8 @@ export interface ReaderOptions {
     IonRow,
     IonCol,
     ReaderComponent,
-    IonFooter
-],
+    IonFooter,
+  ],
   standalone: true,
 })
 export class ReaderProductPage implements OnInit, OnDestroy {

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import {
-  IonList,
-  IonListHeader,
   IonItem,
   IonLabel,
+  IonList,
+  IonListHeader,
 } from '@ionic/angular/standalone';
 
 @Component({

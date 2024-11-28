@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
@@ -10,15 +17,15 @@ import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 
 import {
-  IonHeader,
-  IonToolbar,
-  IonText,
+  IonBreadcrumb,
+  IonBreadcrumbs,
   IonButton,
   IonContent,
-  IonBreadcrumbs,
-  IonBreadcrumb,
-  IonSpinner,
+  IonHeader,
   IonItem,
+  IonSpinner,
+  IonText,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { FeedDetailsComponent } from '../../components/feed-details/feed-details.component';
 
@@ -39,8 +46,8 @@ import { FeedDetailsComponent } from '../../components/feed-details/feed-details
     RouterLink,
     IonSpinner,
     IonItem,
-    FeedDetailsComponent
-],
+    FeedDetailsComponent,
+  ],
   standalone: true,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {

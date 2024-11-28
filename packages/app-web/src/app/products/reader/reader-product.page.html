@@ -9,7 +9,7 @@
         class="ion-hide-md-down ion-padding-horizontal"
         routerLink="/"
         style="cursor: pointer"
-        >
+      >
         reader
       </div>
       <app-searchbar
@@ -33,7 +33,7 @@
         style="--min-width: 400px"
         trigger="open-settings-modal"
         triggerAction="click"
-        >
+      >
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -70,177 +70,173 @@
                 <div class="controls">
                   <ion-text class="ion-padding-horizontal"
                     >{{ readerOptions.fontSize }}</ion-text
-                    >
-                    <ion-button
-                      (click)="changeNumOption('fontSize', -2, {min: 16, max: 24})"
-                      color="light"
-                      size="medium"
-                      >-
-                    </ion-button>
-                    <ion-button
-                      (click)="changeNumOption('fontSize', 2, {min: 16, max: 24})"
-                      color="light"
-                      size="medium"
-                      >+
-                    </ion-button>
-                  </div>
-                </ion-item>
-                <ion-item>
-                  <ion-label>Alignment</ion-label>
-                  <div class="controls">
-                    <ion-button
-                      (click)="changeOption('textAlignment', 'left')"
-                      [color]="ifActiveOption('textAlignment', 'left')"
-                      size="medium"
-                      >Left
-                    </ion-button>
-                    <ion-button
-                      (click)="changeOption('textAlignment', 'justify')"
-                      [color]="ifActiveOption('textAlignment', 'justify')"
-                      size="medium"
-                      >Justify
-                    </ion-button>
-                  </div>
-                </ion-item>
-                <ion-item>
-                  <ion-label>Transformation</ion-label>
-                  <div>
-                    <ion-button
-                      (click)="changeOption('textTransform', 'normal')"
-                      [color]="ifActiveOption('textTransform', 'normal')"
-                      size="medium"
-                      >Normal
-                    </ion-button>
-                    <ion-button
-                      (click)="changeOption('textTransform', 'bionic')"
-                      [color]="ifActiveOption('textTransform', 'bionic')"
-                      size="medium"
-                      ><strong>Bion</strong>ic
-                    </ion-button>
-                  </div>
-                </ion-item>
-                <ion-item-divider></ion-item-divider>
-                <ion-item>
-                  <ion-label>Width</ion-label>
-                  <div class="controls">
-                    <ion-text class="ion-padding-horizontal"
-                      >{{ readerOptions.contentWidth }}</ion-text
-                      >
-                      <ion-button
-                        (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 1400})"
-                        color="light"
-                        size="medium"
-                        >-
-                      </ion-button>
-                      <ion-button
-                        (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 1400})"
-                        color="light"
-                        size="medium"
-                        >+
-                      </ion-button>
-                    </div>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Link Target</ion-label>
-                    <div>
-                      <ion-button
-                        (click)="changeOption('linkTarget', 'reader')"
-                        [color]="ifActiveOption('linkTarget', 'reader')"
-                        size="medium"
-                        >Reader
-                      </ion-button>
-                      <ion-button
-                        (click)="changeOption('linkTarget', 'blank')"
-                        [color]="ifActiveOption('linkTarget', 'blank')"
-                        size="medium"
-                        >Blank
-                      </ion-button>
-                    </div>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label>Verbose Link</ion-label>
-                    <div>
-                      <ion-button
-                        (click)="changeOption('verboseLink', true)"
-                        [color]="ifActiveOption('verboseLink', true)"
-                        size="medium"
-                        >Yes
-                      </ion-button>
-                      <ion-button
-                        (click)="changeOption('verboseLink', false)"
-                        [color]="ifActiveOption('verboseLink', false)"
-                        size="medium"
-                        >No
-                      </ion-button>
-                    </div>
-                  </ion-item>
+                  >
+                  <ion-button
+                    (click)="changeNumOption('fontSize', -2, {min: 16, max: 24})"
+                    color="light"
+                    size="medium"
+                    >-
+                  </ion-button>
+                  <ion-button
+                    (click)="changeNumOption('fontSize', 2, {min: 16, max: 24})"
+                    color="light"
+                    size="medium"
+                    >+
+                  </ion-button>
+                </div>
+              </ion-item>
+              <ion-item>
+                <ion-label>Alignment</ion-label>
+                <div class="controls">
+                  <ion-button
+                    (click)="changeOption('textAlignment', 'left')"
+                    [color]="ifActiveOption('textAlignment', 'left')"
+                    size="medium"
+                    >Left
+                  </ion-button>
+                  <ion-button
+                    (click)="changeOption('textAlignment', 'justify')"
+                    [color]="ifActiveOption('textAlignment', 'justify')"
+                    size="medium"
+                    >Justify
+                  </ion-button>
+                </div>
+              </ion-item>
+              <ion-item>
+                <ion-label>Transformation</ion-label>
+                <div>
+                  <ion-button
+                    (click)="changeOption('textTransform', 'normal')"
+                    [color]="ifActiveOption('textTransform', 'normal')"
+                    size="medium"
+                    >Normal
+                  </ion-button>
+                  <ion-button
+                    (click)="changeOption('textTransform', 'bionic')"
+                    [color]="ifActiveOption('textTransform', 'bionic')"
+                    size="medium"
+                    ><strong>Bion</strong>ic
+                  </ion-button>
+                </div>
+              </ion-item>
+              <ion-item-divider></ion-item-divider>
+              <ion-item>
+                <ion-label>Width</ion-label>
+                <div class="controls">
+                  <ion-text class="ion-padding-horizontal"
+                    >{{ readerOptions.contentWidth }}</ion-text
+                  >
+                  <ion-button
+                    (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 1400})"
+                    color="light"
+                    size="medium"
+                    >-
+                  </ion-button>
+                  <ion-button
+                    (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 1400})"
+                    color="light"
+                    size="medium"
+                    >+
+                  </ion-button>
+                </div>
+              </ion-item>
+              <ion-item>
+                <ion-label>Link Target</ion-label>
+                <div>
+                  <ion-button
+                    (click)="changeOption('linkTarget', 'reader')"
+                    [color]="ifActiveOption('linkTarget', 'reader')"
+                    size="medium"
+                    >Reader
+                  </ion-button>
+                  <ion-button
+                    (click)="changeOption('linkTarget', 'blank')"
+                    [color]="ifActiveOption('linkTarget', 'blank')"
+                    size="medium"
+                    >Blank
+                  </ion-button>
+                </div>
+              </ion-item>
+              <ion-item>
+                <ion-label>Verbose Link</ion-label>
+                <div>
+                  <ion-button
+                    (click)="changeOption('verboseLink', true)"
+                    [color]="ifActiveOption('verboseLink', true)"
+                    size="medium"
+                    >Yes
+                  </ion-button>
+                  <ion-button
+                    (click)="changeOption('verboseLink', false)"
+                    [color]="ifActiveOption('verboseLink', false)"
+                    size="medium"
+                    >No
+                  </ion-button>
+                </div>
+              </ion-item>
 
-                  <ion-item-divider></ion-item-divider>
+              <ion-item-divider></ion-item-divider>
 
-                  <ion-item>
-                    <ion-label>Theme</ion-label>
-                    <div>
-                      <ion-button
-                        (click)="profile.setColorScheme(true)"
-                        [color]="isDarkMode ? 'primary' : 'light'"
-                        size="medium"
-                        >
-                        Dark
-                      </ion-button>
-                      <ion-button
-                        (click)="profile.setColorScheme(false)"
-                        [color]="!isDarkMode ? 'primary' : 'light'"
-                        size="medium"
-                        >
-                        Light
-                      </ion-button>
-                    </div>
-                  </ion-item>
-                </ion-list>
-              </ion-content>
-            </ng-template>
-          </ion-popover>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+              <ion-item>
+                <ion-label>Theme</ion-label>
+                <div>
+                  <ion-button
+                    (click)="profile.setColorScheme(true)"
+                    [color]="isDarkMode ? 'primary' : 'light'"
+                    size="medium"
+                  >
+                    Dark
+                  </ion-button>
+                  <ion-button
+                    (click)="profile.setColorScheme(false)"
+                    [color]="!isDarkMode ? 'primary' : 'light'"
+                    size="medium"
+                  >
+                    Light
+                  </ion-button>
+                </div>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-    <ion-content (ionScroll)="handleScroll($event)" [scrollEvents]="true">
-      @if (loading) {
-        <div class="ion-margin">
-          <ion-spinner name="dots"></ion-spinner>
-        </div>
-      }
-
-      @if (!loading && !scrapeResponse) {
-        <div
+<ion-content (ionScroll)="handleScroll($event)" [scrollEvents]="true">
+  @if (loading) {
+  <div class="ion-margin">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+  } @if (!loading && !scrapeResponse) {
+  <div
     style="
       height: 300px;
       align-items: center;
       justify-content: center;
       display: flex;
     "
-          >
-          Welcome to Reader.
-        </div>
-      }
-
-      @if (!loading && scrapeResponse) {
-        <div #readerContent class="reader-page">
-          <div class="ion-padding-top" style="align-self: center">
-            <ion-segment [(ngModel)]="output" mode="ios" style="max-width: 300px">
-              <!--        <ion-segment-button value="website">-->
-              <!--          <ion-label>Website</ion-label>-->
-            <!--        </ion-segment-button>-->
-            <ion-segment-button value="list">
-              <ion-label>List</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="article">
-              <ion-label>Article</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-        </div>
-        <div class="flex">
-          <div
+  >
+    Welcome to Reader.
+  </div>
+  } @if (!loading && scrapeResponse) {
+  <div #readerContent class="reader-page">
+    <div class="ion-padding-top" style="align-self: center">
+      <ion-segment [(ngModel)]="output" mode="ios" style="max-width: 300px">
+        <!--        <ion-segment-button value="website">-->
+        <!--          <ion-label>Website</ion-label>-->
+        <!--        </ion-segment-button>-->
+        <ion-segment-button value="list">
+          <ion-label>List</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="article">
+          <ion-label>Article</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+    <div class="flex">
+      <div
         [ngStyle]="{
     '--font': 'var(' + getCssVariable('font') + ')',
     '--font-size': getCssVariable('fontSize'),
@@ -249,64 +245,58 @@
     'text-align': getCssVariable('textAlignment'),
     '--width': getCssVariable('contentWidth')
   }"
-            class="reader"
-            >
-            @if (output === 'list' || output === 'article') {
-              <ion-row
-                class="ion-margin-top"
-                >
-                <ion-col size="12">
-                  <a [href]="getReadability().url">{{ getReadability().url }}</a>
-                </ion-col>
-                <ion-col size="12">
-                  <h1>{{ getReadability().title }}</h1>
-                  <div
+        class="reader"
+      >
+        @if (output === 'list' || output === 'article') {
+        <ion-row class="ion-margin-top">
+          <ion-col size="12">
+            <a [href]="getReadability().url">{{ getReadability().url }}</a>
+          </ion-col>
+          <ion-col size="12">
+            <h1>{{ getReadability().title }}</h1>
+            <div
               style="
                 width: 100px;
                 height: 3px;
                 background: var(--app-foreground);
               "
-                  ></div>
-                </ion-col>
-              </ion-row>
-            }
-            @if (output === 'list') {
-              <div>
-                @for (groupOfArticles of groupsOfArticles; track groupOfArticles) {
-                  <div
-                    class="ion-margin-bottom"
-                    >
-                    @for (article of groupOfArticles; track article) {
-                      <ion-item
-                        style="--background: transparent; --background-hover: none"
-                        >
-                        <ion-label class="ion-text-wrap">
-                          <p>
-                            <a [href]="article.url">{{article.contentTitle}}</a>
-                            [{{article.hostname}}]
-                          </p>
-                          <p>{{ article.contentText }}</p>
-                        </ion-label>
-                      </ion-item>
-                    }
-                  </div>
-                }
-              </div>
-            }
-            @if (output === 'article') {
-              <app-reader
-                [linkTarget]="readerOptions.linkTarget"
-                [html]="getReadability().html"
-                [textTransform]="readerOptions.textTransform"
-                [verboseLink]="readerOptions.verboseLink"
-              ></app-reader>
+            ></div>
+          </ion-col>
+        </ion-row>
+        } @if (output === 'list') {
+        <div>
+          @for (groupOfArticles of groupsOfArticles; track groupOfArticles) {
+          <div class="ion-margin-bottom">
+            @for (article of groupOfArticles; track article) {
+            <ion-item
+              style="--background: transparent; --background-hover: none"
+            >
+              <ion-label class="ion-text-wrap">
+                <p>
+                  <a [href]="article.url">{{article.contentTitle}}</a>
+                  [{{article.hostname}}]
+                </p>
+                <p>{{ article.contentText }}</p>
+              </ion-label>
+            </ion-item>
             }
           </div>
+          }
         </div>
+        } @if (output === 'article') {
+        <app-reader
+          [linkTarget]="readerOptions.linkTarget"
+          [html]="getReadability().html"
+          [textTransform]="readerOptions.textTransform"
+          [verboseLink]="readerOptions.verboseLink"
+        ></app-reader>
+        }
       </div>
-    }
-  </ion-content>
+    </div>
+  </div>
+  }
+</ion-content>
 
-  <ion-footer>
-    <div [ngStyle]="{width: progress + '%'}" class="progress"></div>
-  </ion-footer>
+<ion-footer>
+  <div [ngStyle]="{width: progress + '%'}" class="progress"></div>
+</ion-footer>
