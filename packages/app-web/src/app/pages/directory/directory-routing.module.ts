@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DirectoryPage } from './directory.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: DirectoryPage,
+    loadComponent: () => import('./directory.page').then(m => m.DirectoryPage),
   },
 ];
 

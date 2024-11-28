@@ -1,22 +1,22 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { DocumentsPage } from './documents.page';
-import { TermsPage } from './terms.page';
-import { TelegramPage } from './telegram.page';
+
+
+
 
 const routes: Routes = [
   {
     path: '',
-    component: DocumentsPage,
+    loadComponent: () => import('./documents.page').then(m => m.DocumentsPage),
     children: [
       {
         path: 'terms',
-        component: TermsPage,
+        loadComponent: () => import('./terms.page').then(m => m.TermsPage),
       },
       {
         path: 'telegram',
-        component: TelegramPage,
+        loadComponent: () => import('./telegram.page').then(m => m.TelegramPage),
       },
     ],
   },

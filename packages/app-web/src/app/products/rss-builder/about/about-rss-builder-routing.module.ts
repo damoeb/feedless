@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AboutRssBuilderPage } from './about-rss-builder.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: AboutRssBuilderPage,
+    loadComponent: () => import('./about-rss-builder.page').then(m => m.AboutRssBuilderPage),
   },
 ];
 

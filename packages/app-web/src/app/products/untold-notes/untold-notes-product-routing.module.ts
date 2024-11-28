@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { UntoldNotesProductPage } from './untold-notes-product.page';
+
 import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
     path: '',
-    component: UntoldNotesProductPage,
+    loadComponent: () => import('./untold-notes-product.page').then(m => m.UntoldNotesProductPage),
     children: [
       {
         path: '',

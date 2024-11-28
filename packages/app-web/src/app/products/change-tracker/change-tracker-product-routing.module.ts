@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { ChangeTrackerProductPage } from './change-tracker-product.page';
+
 import { DefaultRoutes } from '../default-routes';
 
 const routes: Routes = [
   {
     path: '',
-    component: ChangeTrackerProductPage,
+    loadComponent: () => import('./change-tracker-product.page').then(m => m.ChangeTrackerProductPage),
     children: [
       {
         path: '',

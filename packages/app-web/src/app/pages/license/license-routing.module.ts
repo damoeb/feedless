@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { LicensePage } from './license.page';
+
 
 const routes: Routes = [
   {
     path: '**',
-    component: LicensePage,
+    loadComponent: () => import('./license.page').then(m => m.LicensePage),
   },
 ];
 

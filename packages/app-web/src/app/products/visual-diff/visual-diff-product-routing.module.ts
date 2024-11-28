@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { VisualDiffProductPage } from './visual-diff-product.page';
+
 import { DefaultRoutes } from '../default-routes';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
 const routes: Routes = [
   {
     path: '',
-    component: VisualDiffProductPage,
+    loadComponent: () => import('./visual-diff-product.page').then(m => m.VisualDiffProductPage),
     children: [
       {
         path: '',

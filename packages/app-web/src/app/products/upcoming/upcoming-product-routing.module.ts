@@ -5,7 +5,7 @@ import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { NamedLatLon } from '../../types';
 import { intParser, route } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/build/parser';
-import { AboutUsPage } from './about-us/about-us.page';
+
 
 export const perimeterUnit = 'Km';
 
@@ -119,7 +119,7 @@ const routes: Routes = [
     children: [
       {
         path: homeRoute.children.about.template,
-        component: AboutUsPage,
+        loadComponent: () => import('./about-us/about-us.page').then(m => m.AboutUsPage),
       },
       {
         path: '',

@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AboutFeedlessPage } from './about-feedless.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: AboutFeedlessPage,
+    loadComponent: () => import('./about-feedless.page').then(m => m.AboutFeedlessPage),
   },
 ];
 

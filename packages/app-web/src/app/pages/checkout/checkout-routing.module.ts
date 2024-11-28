@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { CheckoutPage } from './checkout.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: CheckoutPage,
+    loadComponent: () => import('./checkout.page').then(m => m.CheckoutPage),
   },
   {
     path: ':productId',
-    component: CheckoutPage,
+    loadComponent: () => import('./checkout.page').then(m => m.CheckoutPage),
   },
 ];
 

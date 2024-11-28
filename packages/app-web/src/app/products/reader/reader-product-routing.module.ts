@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { ReaderProductPage } from './reader-product.page';
-import { ReaderMenuComponent } from './reader-menu/reader-menu.component';
+
+
 
 const routes: Routes = [
   {
     path: ':url',
-    component: ReaderProductPage,
+    loadComponent: () => import('./reader-product.page').then(m => m.ReaderProductPage),
   },
   {
     path: '',
-    component: ReaderProductPage,
+    loadComponent: () => import('./reader-product.page').then(m => m.ReaderProductPage),
   },
   {
     path: '**',
@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: '',
     outlet: 'sidemenu',
-    component: ReaderMenuComponent,
+    loadComponent: () => import('./reader-menu/reader-menu.component').then(m => m.ReaderMenuComponent),
   },
 ];
 

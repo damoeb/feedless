@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { FeedDetailsPage } from './feed-details.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: FeedDetailsPage,
+    loadComponent: () => import('./feed-details.page').then(m => m.FeedDetailsPage),
   },
 ];
 

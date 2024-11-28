@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AboutVisualDiffPage } from './about-visual-diff.page';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: AboutVisualDiffPage,
+    loadComponent: () => import('./about-visual-diff.page').then(m => m.AboutVisualDiffPage),
   },
 ];
 
