@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   GqlFeatureName,
   GqlVertical,
@@ -28,17 +28,15 @@ type ToastOptions = {
   providedIn: 'root',
 })
 export class ServerConfigService {
+  private readonly httpClient = inject(HttpClient);
+  private readonly alertCtrl = inject(AlertController);
+
   apiUrl!: string;
   private features!: Feature[];
   private profiles!: GqlProfileName[];
   private buildFrom!: number;
   private version!: string;
   private license: LocalizedLicense;
-
-  constructor(
-    private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController,
-  ) {}
 
   async fetchConfig(): Promise<VerticalAppConfig> {
     const config = await firstValueFrom(

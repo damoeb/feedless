@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { dateFormat } from '../../services/session.service';
 import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
@@ -50,18 +45,16 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
   standalone: true,
 })
 export class SettingsPage implements OnInit {
+  private readonly featureService = inject(FeatureService);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   loading = true;
   featureGroupsFc = new FormControl<FeatureGroup>(null);
   protected readonly dateFormat = dateFormat;
   protected features: FeatureWithFormControl[] = [];
   protected featureGroups: FeatureGroup[];
-
-  constructor(
-    private readonly featureService: FeatureService,
-    private readonly toastCtrl: ToastController,
-    private readonly appConfig: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Settings');

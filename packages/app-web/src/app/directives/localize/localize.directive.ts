@@ -1,11 +1,13 @@
-import { Directive, ElementRef } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
   selector: '[localize-*], [localize]',
 })
 export class LocalizeDirective {
-  constructor(element: ElementRef) {
+  constructor() {
+    const element = inject(ElementRef);
+
     if (element.nativeElement) {
       console.log(element.nativeElement.attributes);
       element.nativeElement.replace('hase');

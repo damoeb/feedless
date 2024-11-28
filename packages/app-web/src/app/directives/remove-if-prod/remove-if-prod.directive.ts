@@ -1,12 +1,11 @@
-import { Directive, ElementRef, Renderer2, OnInit } from '@angular/core';
+import { Directive, ElementRef, Renderer2, OnInit, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 @Directive({ selector: '[appDev]', standalone: true })
 export class RemoveIfProdDirective implements OnInit {
-  constructor(
-    private el: ElementRef,
-    private renderer: Renderer2,
-  ) {}
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
+
 
   ngOnInit(): void {
     if (environment.production) {

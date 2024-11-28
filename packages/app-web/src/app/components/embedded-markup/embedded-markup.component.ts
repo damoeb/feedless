@@ -1,17 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -59,6 +46,8 @@ interface IframeMessage {
 export class EmbeddedMarkupComponent
   implements OnInit, AfterViewInit, OnChanges, OnDestroy
 {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -83,8 +72,6 @@ export class EmbeddedMarkupComponent
   private unbindMessageListener: () => void;
   private subscriptions: Subscription[] = [];
   protected currentXpath: string = '';
-
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>((resolve) => {

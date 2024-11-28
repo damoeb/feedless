@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -21,13 +15,11 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class ProductTitleComponent implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   ngOnInit(): void {
     this.subscriptions.push(

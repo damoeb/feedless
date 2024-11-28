@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Record, Repository } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -70,6 +64,11 @@ type ViewMode = 'list' | 'table';
   standalone: true,
 })
 export class FeedsPage implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly repositoryService = inject(RepositoryService);
+
   loading = false;
   currentPage: number = 0;
   documents: Record[];
@@ -80,13 +79,6 @@ export class FeedsPage implements OnInit, OnDestroy {
   viewModeTable: ViewMode = 'table';
   viewModeList: ViewMode = 'list';
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly repositoryService: RepositoryService,
-  ) {}
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Feeds');

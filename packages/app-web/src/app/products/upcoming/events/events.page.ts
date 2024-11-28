@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs, OpUnitType } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
@@ -120,6 +113,14 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
   standalone: true,
 })
 export class EventsPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly recordService = inject(RecordService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly locationService = inject(Location);
+  private readonly pageService = inject(PageService);
+  private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly appConfigService = inject(AppConfigService);
+
   date: Dayjs = dayjs();
   now: Dayjs = dayjs();
   perimeter: number = 10;
@@ -136,15 +137,7 @@ export class EventsPage implements OnInit, OnDestroy {
   protected loadingDay = true;
   protected eventCount: number = 0;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly recordService: RecordService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly locationService: Location,
-    private readonly pageService: PageService,
-    private readonly openStreetMapService: OpenStreetMapService,
-    private readonly appConfigService: AppConfigService,
-  ) {
+  constructor() {
     addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
   }
 

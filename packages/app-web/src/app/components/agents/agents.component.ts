@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -23,14 +17,12 @@ import { IonList, IonItem, IonLabel, IonChip } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class AgentsComponent implements OnInit, OnDestroy {
+  private readonly agentService = inject(AgentService);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   agents: Agent[] = [];
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly agentService: AgentService,
-    protected readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

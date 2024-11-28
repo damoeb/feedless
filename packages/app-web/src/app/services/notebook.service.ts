@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
 import { AlertController } from '@ionic/angular/standalone';
@@ -142,6 +142,12 @@ type IndexDocument = {
   providedIn: 'root',
 })
 export class NotebookService {
+  private readonly alertCtrl = inject(AlertController);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly recordService = inject(RecordService);
+  private readonly authGuard = inject(AuthGuardService);
+  private readonly router = inject(Router);
+
   private actions: AppAction[] = [
     {
       name: 'Close Note',
@@ -167,13 +173,7 @@ export class NotebookService {
   findAllAsync: DebouncedFunc<(query: string) => void>;
   private currentRepositoryId!: string;
 
-  constructor(
-    private readonly alertCtrl: AlertController,
-    private readonly repositoryService: RepositoryService,
-    private readonly recordService: RecordService,
-    private readonly authGuard: AuthGuardService,
-    private readonly router: Router,
-  ) {
+  constructor() {
     this.findAllAsync = debounce(this.findAllAsyncInternal, 200);
     this.init();
   }

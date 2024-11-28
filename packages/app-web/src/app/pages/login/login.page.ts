@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
@@ -53,6 +47,13 @@ import { EmailLoginComponent } from '../../components/email-login/email-login.co
   standalone: true,
 })
 export class LoginPage implements OnInit, OnDestroy {
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
+
   showMailLogin: boolean;
   showSSO: boolean;
   loginUrl: string;
@@ -62,14 +63,9 @@ export class LoginPage implements OnInit, OnDestroy {
   loading: boolean = true;
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    protected readonly serverConfig: ServerConfigService,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-    private readonly appConfig: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly authService: AuthService,
-  ) {
+  constructor() {
+    const serverConfig = this.serverConfig;
+
     this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/';
     addIcons({ logoGithub });
   }

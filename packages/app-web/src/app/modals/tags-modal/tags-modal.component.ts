@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   ModalController,
   IonHeader,
@@ -42,9 +42,11 @@ export interface TagsModalComponentProps {
   standalone: true,
 })
 export class TagsModalComponent implements TagsModalComponentProps {
+  private readonly modalCtrl = inject(ModalController);
+
   tags: string[] = [];
 
-  constructor(private readonly modalCtrl: ModalController) {
+  constructor() {
     addIcons({ closeOutline, trashOutline });
   }
 

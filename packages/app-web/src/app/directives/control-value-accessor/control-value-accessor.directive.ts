@@ -1,4 +1,4 @@
-import { Directive, Inject, Injector, OnInit } from '@angular/core';
+import { Directive, Injector, OnInit, inject, Inject } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -25,7 +25,7 @@ export class ControlValueAccessorDirective<T>
   private _destroy$ = new Subject<void>();
   private _onTouched!: () => T;
 
-  constructor(@Inject(Injector) private injector: Injector) {}
+  constructor(private injector: Injector) {}
 
   ngOnInit() {
     this.setFormControl();

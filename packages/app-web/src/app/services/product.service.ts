@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   GqlListProductsQuery,
   GqlListProductsQueryVariables,
@@ -12,7 +12,8 @@ import { Product } from '../graphql/types';
   providedIn: 'root',
 })
 export class ProductService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+
 
   listProducts(data: GqlProductsWhereInput): Promise<Product[]> {
     return this.apollo

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   AuthAnonymous,
   AuthUser,
@@ -50,12 +50,12 @@ export interface Authentication {
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly router = inject(Router);
+
   private readonly authStatus: Subject<Nullable<Authentication>>;
 
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly router: Router,
-  ) {
+  constructor() {
     this.authStatus = new BehaviorSubject<Nullable<Authentication>>(null);
   }
 

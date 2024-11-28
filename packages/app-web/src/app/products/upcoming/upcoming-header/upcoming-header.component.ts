@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject } from '@angular/core';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -99,6 +89,12 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
   standalone: true,
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+
   years: Years = {};
   productConfig: VerticalSpecWithRoutes;
   locationFc = new FormControl<string>('');
@@ -140,14 +136,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   subHeader: 'Select your favorite color',
   // };
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    // private readonly apollo: ApolloClient<any>,
-    private readonly router: Router,
-    private readonly openStreetMapService: OpenStreetMapService,
-    private readonly appConfigService: AppConfigService,
-    private readonly activatedRoute: ActivatedRoute,
-  ) {
+  constructor() {
     dayjs.extend(weekday);
     this.fetchEventOverviewDebounced = debounceLD(
       () => {},

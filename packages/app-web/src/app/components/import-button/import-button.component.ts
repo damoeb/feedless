@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -41,6 +41,15 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
   standalone: true,
 })
 export class ImportButtonComponent {
+  private readonly omplService = inject(OpmlService);
+  private readonly authService = inject(AuthService);
+  private readonly fileService = inject(FileService);
+  private readonly modalService = inject(ModalService);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly router = inject(Router);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly modalCtrl = inject(ModalController);
+
   @Input()
   color: string;
 
@@ -49,17 +58,6 @@ export class ImportButtonComponent {
 
   @Input()
   fill: string = 'clear';
-
-  constructor(
-    private readonly omplService: OpmlService,
-    private readonly authService: AuthService,
-    private readonly fileService: FileService,
-    private readonly modalService: ModalService,
-    private readonly repositoryService: RepositoryService,
-    private readonly router: Router,
-    private readonly toastCtrl: ToastController,
-    private readonly modalCtrl: ModalController,
-  ) {}
 
   async importOpml(uploadEvent: Event) {
     const outlines = await this.omplService.convertOpmlToJson(uploadEvent);

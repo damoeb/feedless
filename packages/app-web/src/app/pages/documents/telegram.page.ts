@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { IonContent } from '@ionic/angular/standalone';
 
@@ -9,7 +9,9 @@ import { IonContent } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class TelegramPage {
-  constructor(appConfig: AppConfigService) {
+  constructor() {
+    const appConfig = inject(AppConfigService);
+
     appConfig.setPageTitle('Telegram Setup');
   }
 }

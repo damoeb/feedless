@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical } from '../../../generated/graphql';
 import {
@@ -45,21 +45,19 @@ import { LoginButtonComponent } from '../login-button/login-button.component';
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly authService = inject(AuthService);
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly sessionService = inject(SessionService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  readonly profile = inject(SessionService);
+
   protected productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   protected authorization: Authentication;
   protected session: Session;
   protected readonly GqlProductName = GqlVertical;
   protected fromNow = relativeTimeOrElse;
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly authService: AuthService,
-    readonly serverConfig: ServerConfigService,
-    private readonly sessionService: SessionService,
-    private readonly changeRef: ChangeDetectorRef,
-    readonly profile: SessionService,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

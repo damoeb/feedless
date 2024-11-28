@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -26,15 +20,13 @@ import { PricingComponent } from '../../components/pricing/pricing.component';
   standalone: true,
 })
 export class PricingPage implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute,
-  ) {}
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Pricing');

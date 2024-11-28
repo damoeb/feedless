@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -50,14 +50,12 @@ export enum ModalName {
   providedIn: 'root',
 })
 export class ModalService {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
   private readonly unfinishedWizardKey = 'unfinished-wizard';
   private isModalOpen = false;
-
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-  ) {}
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,

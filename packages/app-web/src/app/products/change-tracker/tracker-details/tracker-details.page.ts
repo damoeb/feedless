@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Record, Repository } from '../../../graphql/types';
@@ -33,6 +27,10 @@ import { IonRouterLink } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class TrackerDetailsPage implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly modalCtrl = inject(ModalController);
+
   busy = false;
   documents: Record[];
   private subscriptions: Subscription[] = [];
@@ -40,12 +38,6 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
   repository: Repository;
 
   feedUrl: string;
-
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly modalCtrl: ModalController,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

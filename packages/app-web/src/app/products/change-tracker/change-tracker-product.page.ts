@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
@@ -60,20 +54,20 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
   standalone: true,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly licenseService = inject(LicenseService);
+  private readonly modalService = inject(ModalService);
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly router = inject(Router);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   productConfig: VerticalSpecWithRoutes;
   url: string;
   private subscriptions: Subscription[] = [];
   license: LocalizedLicense;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly licenseService: LicenseService,
-    private readonly modalService: ModalService,
-    readonly serverConfig: ServerConfigService,
-    private readonly router: Router,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ logoGithub });
   }
 

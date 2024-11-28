@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
@@ -36,15 +31,13 @@ import {
   standalone: true,
 })
 export class BillingsPage implements OnInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly orderService = inject(OrderService);
+
   busy = false;
   orders: Order[] = [];
   fromNow = relativeTimeOrElse;
-
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly appConfig: AppConfigService,
-    private readonly orderService: OrderService,
-  ) {}
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Billings');

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   ModalController,
   IonHeader,
@@ -35,11 +35,13 @@ export interface MapModalComponentProps {
   standalone: true,
 })
 export class MapModalComponent implements MapModalComponentProps {
+  private readonly modalCtrl = inject(ModalController);
+
   position: LatLon;
 
   perimeter: number;
 
-  constructor(private readonly modalCtrl: ModalController) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

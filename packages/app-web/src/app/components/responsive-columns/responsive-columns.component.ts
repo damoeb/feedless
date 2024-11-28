@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
 import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
@@ -20,10 +13,12 @@ import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class ResponsiveColumnsComponent implements AfterViewInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @ViewChild('scrollpane')
   scrollpaneElement: ElementRef;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {
+  constructor() {
     addIcons({ chevronForwardOutline, chevronBackOutline });
   }
 

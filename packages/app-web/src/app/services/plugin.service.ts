@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import {
   GqlListPluginsQuery,
@@ -11,7 +11,8 @@ import { FeedlessPlugin } from '../graphql/types';
   providedIn: 'root',
 })
 export class PluginService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+
 
   async listPlugins(): Promise<FeedlessPlugin[]> {
     return this.apollo

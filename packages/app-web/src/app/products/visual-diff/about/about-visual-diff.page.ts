@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import '@justinribeiro/lite-youtube';
 
@@ -16,7 +16,8 @@ import { SearchbarComponent } from '../../../elements/searchbar/searchbar.compon
   standalone: true,
 })
 export class AboutVisualDiffPage {
-  constructor(private readonly router: Router) {}
+  private readonly router = inject(Router);
+
 
   async handleQuery(url: string) {
     try {

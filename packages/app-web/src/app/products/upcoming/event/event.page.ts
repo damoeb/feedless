@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { RecordService } from '../../../services/record.service';
 import { Record } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
@@ -57,6 +51,13 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
   standalone: true,
 })
 export class EventPage implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly pageService = inject(PageService);
+  private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly recordService = inject(RecordService);
+
   loading: boolean = true;
   date: Dayjs;
   location: NamedLatLon;
@@ -64,14 +65,7 @@ export class EventPage implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly pageService: PageService,
-    private readonly openStreetMapService: OpenStreetMapService,
-    private readonly appConfigService: AppConfigService,
-    private readonly recordService: RecordService,
-  ) {
+  constructor() {
     addIcons({ arrowBackOutline, calendarNumberOutline });
   }
 

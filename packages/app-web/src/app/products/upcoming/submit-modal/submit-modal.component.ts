@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   AlertController,
   ModalController,
@@ -75,6 +75,10 @@ type ReportFrequency = 'week' | 'month';
   standalone: true,
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly reportService = inject(ReportService);
+
   repositoryId: string;
   location: NamedLatLon;
   reportFrequencyWeek: ReportFrequency = 'week';
@@ -90,11 +94,7 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
     ]),
   });
 
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly alertCtrl: AlertController,
-    private readonly reportService: ReportService,
-  ) {
+  constructor() {
     addIcons({
       closeOutline,
       trashOutline,

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import {
   ModalController,
@@ -73,6 +73,9 @@ type FcOutline = {
 export class ImportOpmlModalComponent
   implements OnInit, ImportOpmlModalComponentProps
 {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly repositoryService = inject(RepositoryService);
+
   @Input()
   outlines: Outline[];
   fcOutlines: FcOutline[];
@@ -84,10 +87,7 @@ export class ImportOpmlModalComponent
 
   private formControls: FormControl<boolean>[] = [];
 
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly repositoryService: RepositoryService,
-  ) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   ModalController,
   IonHeader,
@@ -41,14 +41,14 @@ import { SearchbarComponent } from '../../elements/searchbar/searchbar.component
   standalone: true,
 })
 export class SearchAddressModalComponent {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly openStreetMapService = inject(OpenStreetMapService);
+
   matches: NamedLatLon[];
   loading = false;
   protected latLon: GqlGeoPoint;
 
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly openStreetMapService: OpenStreetMapService,
-  ) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

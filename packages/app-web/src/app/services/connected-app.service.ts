@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import {
   ConnectedAppById,
@@ -18,7 +18,8 @@ export type ConnectedApp = GqlConnectedAppByIdQuery['connectedApp'];
   providedIn: 'root',
 })
 export class ConnectedAppService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+
 
   async findById(id: string): Promise<ConnectedApp> {
     return this.apollo

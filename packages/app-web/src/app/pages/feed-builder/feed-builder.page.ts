@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
@@ -43,19 +37,17 @@ export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
   standalone: true,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly modalService = inject(ModalService);
+  private readonly titleService = inject(Title);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly router = inject(Router);
+  private readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   loading = false;
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly modalService: ModalService,
-    private readonly titleService: Title,
-    private readonly repositoryService: RepositoryService,
-    private readonly router: Router,
-    private readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('RSS Feed Builder');

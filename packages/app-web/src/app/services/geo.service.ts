@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { NamedLatLon, Nullable } from '../types';
@@ -27,12 +27,12 @@ export interface GeoJsResponse {
   providedIn: 'root',
 })
 export class GeoService {
+  private readonly httpClient = inject(HttpClient);
+  private readonly openStreetMapService = inject(OpenStreetMapService);
+
   private currentPosition: Subject<NamedLatLon>;
 
-  constructor(
-    private readonly httpClient: HttpClient,
-    private readonly openStreetMapService: OpenStreetMapService,
-  ) {
+  constructor() {
     const supported = getCachedLocations();
     this.currentPosition = new BehaviorSubject<Nullable<NamedLatLon>>(
       supported[Math.floor(Math.random() * supported.length + 1)],

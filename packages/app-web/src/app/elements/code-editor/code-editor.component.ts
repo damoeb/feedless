@@ -1,18 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  forwardRef,
-  Inject,
-  Injector,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, forwardRef, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -195,8 +181,8 @@ export class CodeEditorComponent
   private editorView: EditorView;
   ctrlPressed: boolean;
 
-  constructor(@Inject(Injector) injector: Injector) {
-    super(injector);
+  constructor() {
+    super(inject<Injector>(Injector));
     addIcons({ listOutline, linkOutline });
   }
 

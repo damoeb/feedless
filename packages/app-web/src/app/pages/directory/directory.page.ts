@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { PublicRepository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import {
@@ -63,6 +58,10 @@ type ViewMode = 'list' | 'grid';
   standalone: true,
 })
 export class DirectoryPage implements OnInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly repositoryService = inject(RepositoryService);
+
   loading = false;
   currentPage: number = 0;
   documents: Record[];
@@ -73,11 +72,7 @@ export class DirectoryPage implements OnInit {
   viewModeGrid: ViewMode = 'grid';
   viewModeFc = new FormControl<ViewMode>('list');
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly appConfig: AppConfigService,
-    private readonly repositoryService: RepositoryService,
-  ) {
+  constructor() {
     addIcons({ trendingDownOutline });
   }
 

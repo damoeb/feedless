@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -45,16 +38,16 @@ import { ProductHeadlineComponent } from '../../../components/product-headline/p
   standalone: true,
 })
 export class ProductsPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly domSanitizer = inject(DomSanitizer);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   private subscriptions: Subscription[] = [];
   product: VerticalSpecWithRoutes;
   videoUrl: SafeResourceUrl;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly domSanitizer: DomSanitizer,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ arrowForwardOutline });
   }
 

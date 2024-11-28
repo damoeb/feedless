@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
@@ -63,6 +55,10 @@ type ProductWithFeatureGroups = Product & {
   standalone: true,
 })
 export class PricingComponent implements OnInit {
+  private readonly featureService = inject(FeatureService);
+  private readonly productService = inject(ProductService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   targetGroupFc = new FormControl<TargetGroup>('individual');
   paymentIntervalFc = new FormControl<PaymentInterval>(
     GqlRecurringPaymentInterval.Yearly,
@@ -88,12 +84,6 @@ export class PricingComponent implements OnInit {
 
   @Output()
   selectionChange: EventEmitter<Product> = new EventEmitter<Product>();
-
-  constructor(
-    private readonly featureService: FeatureService,
-    private readonly productService: ProductService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     if (this.serviceFlavor) {

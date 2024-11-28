@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { AlertController } from '@ionic/angular/standalone';
 import { filter, interval, throttle } from 'rxjs';
@@ -7,10 +7,10 @@ import { filter, interval, throttle } from 'rxjs';
   providedIn: 'root',
 })
 export class AppUpdateService {
-  constructor(
-    private readonly swUpdate: SwUpdate,
-    private readonly alertCtrl: AlertController,
-  ) {
+  private readonly swUpdate = inject(SwUpdate);
+  private readonly alertCtrl = inject(AlertController);
+
+  constructor() {
     this.swUpdate.versionUpdates
       .pipe(
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),

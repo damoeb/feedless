@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
@@ -34,6 +34,9 @@ export type VerticalRoutes = {
   providedIn: 'root',
 })
 export class AppConfigService {
+  private readonly router = inject(Router);
+  private readonly titleService = inject(Title);
+
   private verticalRoutes: VerticalRoutes[] = [
     {
       id: 'reader',
@@ -146,11 +149,6 @@ export class AppConfigService {
     new ReplaySubject<VerticalSpecWithRoutes>();
   public activeProductConfig!: VerticalSpecWithRoutes;
   public customProperties!: { [p: string]: number | boolean | string };
-
-  constructor(
-    private readonly router: Router,
-    private readonly titleService: Title,
-  ) {}
 
   async activateUserInterface(appConfig: VerticalAppConfig) {
     console.log('appConfig', appConfig);

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { intersection, sortedUniqBy } from 'lodash-es';
 import { NgStyle } from '@angular/common';
@@ -19,6 +12,8 @@ import { NgStyle } from '@angular/common';
   standalone: true,
 })
 export class TableComponent<T> implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   private subscriptions: Subscription[] = [];
 
   @Input({ required: true })
@@ -26,8 +21,6 @@ export class TableComponent<T> implements OnInit, OnDestroy {
 
   @Input()
   columns: (keyof T)[];
-
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnInit(): Promise<void> {
     console.log(this.rows);

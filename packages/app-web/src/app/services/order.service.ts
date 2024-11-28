@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   GqlOrderCreateInput,
   GqlOrdersInput,
@@ -18,7 +18,8 @@ import { Order } from '../types';
   providedIn: 'root',
 })
 export class OrderService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+
 
   async orders(
     data: GqlOrdersInput,

@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import {
@@ -79,6 +70,9 @@ type ViewMode = 'markup' | 'image';
   standalone: true,
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @Input({ required: true })
   sourceBuilder: SourceBuilder;
 
@@ -126,10 +120,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
 
   protected readonly parseInt = parseInt;
 
-  constructor(
-    protected readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ removeOutline, addOutline });
   }
 

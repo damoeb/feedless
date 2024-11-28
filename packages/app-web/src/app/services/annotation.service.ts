@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   CreateAnnotation,
   DeleteAnnotation,
@@ -19,11 +19,10 @@ import { Nullable } from '../types';
   providedIn: 'root',
 })
 export class AnnotationService {
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly router: Router,
-    private readonly sessionService: SessionService,
-  ) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly router = inject(Router);
+  private readonly sessionService = inject(SessionService);
+
 
   async createAnnotation(
     data: GqlCreateAnnotationInput,

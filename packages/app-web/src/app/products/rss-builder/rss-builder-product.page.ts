@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
@@ -62,6 +56,12 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
   standalone: true,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly licenseService = inject(LicenseService);
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   scrapeResponse: ScrapeResponse;
   productConfig: VerticalSpecWithRoutes;
   url: string;
@@ -71,13 +71,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   protected readonly dateFormat = dateFormat;
   protected embedded: boolean = false;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly licenseService: LicenseService,
-    readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ logoGithub });
   }
 

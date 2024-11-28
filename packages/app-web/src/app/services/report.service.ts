@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import {
   CreateReport,
@@ -11,7 +11,8 @@ import {
   providedIn: 'root',
 })
 export class ReportService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+
 
   async createReport(
     repositoryId: string,

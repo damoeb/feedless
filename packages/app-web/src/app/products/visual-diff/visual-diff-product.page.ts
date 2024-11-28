@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router, RouterLink } from '@angular/router';
 import { has } from 'lodash-es';
@@ -55,17 +49,15 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
   standalone: true,
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {
+  readonly profile = inject(SessionService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly router = inject(Router);
+  private readonly appConfigService = inject(AppConfigService);
+
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   activePageTitle: string;
-
-  constructor(
-    readonly profile: SessionService,
-    private readonly changeRef: ChangeDetectorRef,
-    protected readonly serverConfig: ServerConfigService,
-    private readonly router: Router,
-    private readonly appConfigService: AppConfigService,
-  ) {}
 
   ngOnInit() {
     this.subscriptions.push(

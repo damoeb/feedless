@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -101,6 +91,13 @@ export type ComponentStatus = 'valid' | 'invalid';
   standalone: true,
 })
 export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly scrapeService = inject(ScrapeService);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+  private readonly modalService = inject(ModalService);
+
   protected readonly CUSTOM_HASH = 'custom-hash';
 
   @Input({ required: true })
@@ -160,14 +157,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   private customSelectorsFgChangeSubscription: Subscription;
   protected loadingFeedPreview: boolean;
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly scrapeService: ScrapeService,
-    private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly location: Location,
-    private readonly modalService: ModalService,
-  ) {
+  constructor() {
     addIcons({
       chevronForward,
       searchOutline,

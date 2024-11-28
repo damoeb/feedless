@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { GqlSourceInput } from '../../../generated/graphql';
 import {
   ModalController,
@@ -69,17 +62,17 @@ export class InteractiveWebsiteModalComponent
   extends InteractiveWebsiteController
   implements OnInit, OnDestroy, InteractiveWebsiteModalComponentProps
 {
+  readonly changeRef = inject(ChangeDetectorRef);
+  private readonly modalCtrl = inject(ModalController);
+  readonly scrapeService = inject(ScrapeService);
+  readonly serverConfig = inject(ServerConfigService);
+
   @Input({ required: true })
   source: GqlSourceInput;
 
   hideNonUiActions: boolean = true;
 
-  constructor(
-    public readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController,
-    public readonly scrapeService: ScrapeService,
-    public readonly serverConfig: ServerConfigService,
-  ) {
+  constructor() {
     super();
     addIcons({ closeOutline, trashOutline });
   }

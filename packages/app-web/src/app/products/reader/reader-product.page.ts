@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
@@ -113,6 +104,12 @@ export interface ReaderOptions {
   standalone: true,
 })
 export class ReaderProductPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly scrapeService = inject(ScrapeService);
+  private readonly router = inject(Router);
+  readonly profile = inject(SessionService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   url: string;
   output: 'website' | 'list' | 'article' = 'article';
   @ViewChild('readerContent')
@@ -138,13 +135,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
   loading = false;
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly scrapeService: ScrapeService,
-    private readonly router: Router,
-    readonly profile: SessionService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ settingsOutline });
   }
 

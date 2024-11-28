@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { LicenseService } from '../../services/license.service';
 import { dateFormat } from '../../services/session.service';
 import { Subscription } from 'rxjs';
@@ -65,6 +59,11 @@ import { DatePipe } from '@angular/common';
   standalone: true,
 })
 export class LicensePage implements OnInit, OnDestroy {
+  private readonly licenseService = inject(LicenseService);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   loading = true;
   license: LocalizedLicense;
   fromNow = relativeTimeOrElse;
@@ -75,12 +74,7 @@ export class LicensePage implements OnInit, OnDestroy {
   protected readonly dateFormat = dateFormat;
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    private readonly licenseService: LicenseService,
-    private readonly appConfig: AppConfigService,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ timeOutline, checkmarkDoneOutline, alertOutline });
   }
 

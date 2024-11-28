@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
@@ -160,6 +153,22 @@ type Pair<A, B> = {
   standalone: true,
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {
+  private readonly modalService = inject(ModalService);
+  private readonly authGuard = inject(AuthGuardService);
+  private readonly fileService = inject(FileService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly annotationService = inject(AnnotationService);
+  private readonly popoverCtrl = inject(PopoverController);
+  private readonly recordService = inject(RecordService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly router = inject(Router);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly sessionService = inject(SessionService);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly modalCtrl = inject(ModalController);
+
   @Input({ required: true })
   repositoryId: string;
 
@@ -200,23 +209,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
 
-  constructor(
-    private readonly modalService: ModalService,
-    private readonly authGuard: AuthGuardService,
-    private readonly fileService: FileService,
-    private readonly alertCtrl: AlertController,
-    private readonly annotationService: AnnotationService,
-    private readonly popoverCtrl: PopoverController,
-    private readonly recordService: RecordService,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly toastCtrl: ToastController,
-    private readonly router: Router,
-    protected readonly serverConfig: ServerConfigService,
-    private readonly sessionService: SessionService,
-    private readonly repositoryService: RepositoryService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController,
-  ) {
+  constructor() {
     addIcons({
       closeOutline,
       addOutline,

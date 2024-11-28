@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { GraphQLFormattedError } from 'graphql/error';
 
@@ -6,7 +6,8 @@ import { GraphQLFormattedError } from 'graphql/error';
   providedIn: 'root',
 })
 export class HttpErrorInterceptorService {
-  constructor(private readonly toastCtrl: ToastController) {}
+  private readonly toastCtrl = inject(ToastController);
+
 
   interceptNetworkError(
     networkError:

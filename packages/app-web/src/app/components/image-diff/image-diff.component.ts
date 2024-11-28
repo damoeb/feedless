@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import pixelmatch from 'pixelmatch';
 import { Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -31,6 +23,9 @@ type ImageSize = {
   standalone: true,
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly domSanitizer = inject(DomSanitizer);
+
   @Input({ required: true })
   before: Record;
 
@@ -40,10 +35,7 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   safeDiffImageUrl: SafeResourceUrl;
   private diffImageUrl: string;
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly domSanitizer: DomSanitizer,
-  ) {
+  constructor() {
     addIcons({ arrowForwardOutline });
   }
 

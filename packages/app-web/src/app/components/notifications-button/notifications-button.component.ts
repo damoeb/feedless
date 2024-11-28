@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -14,10 +14,12 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class NotificationsButtonComponent implements OnInit, OnDestroy {
+  readonly sessionService = inject(SessionService);
+
   notificationRepositoryId: string;
   private subscriptions: Subscription[] = [];
 
-  constructor(readonly sessionService: SessionService) {
+  constructor() {
     addIcons({ notificationsOutline });
   }
 

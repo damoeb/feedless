@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
 import {
@@ -42,14 +36,12 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
   standalone: true,
 })
 export class UntoldNotesProductPage implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   scrapeResponse: ScrapeResponse;
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

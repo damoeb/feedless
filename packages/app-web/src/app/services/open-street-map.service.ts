@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { getCachedLocations } from '../products/upcoming/places';
@@ -66,7 +66,8 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
   providedIn: 'root',
 })
 export class OpenStreetMapService {
-  constructor(private readonly httpClient: HttpClient) {}
+  private readonly httpClient = inject(HttpClient);
+
 
   // https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
   async searchByObject({

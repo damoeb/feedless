@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
@@ -37,6 +30,11 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
+  private readonly authService = inject(AuthService);
+  private readonly sessionService = inject(SessionService);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   authorization: Authentication;
   private subscriptions: Subscription[] = [];
 
@@ -47,12 +45,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   @Input()
   color: string;
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly sessionService: SessionService,
-    protected readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({
       appsOutline,
       personOutline,

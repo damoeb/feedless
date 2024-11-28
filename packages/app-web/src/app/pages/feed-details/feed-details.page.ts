@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
@@ -50,6 +44,12 @@ import { FeedDetailsComponent } from '../../components/feed-details/feed-details
   standalone: true,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly serverConfig = inject(ServerConfigService);
+  private readonly repositoryService = inject(RepositoryService);
+
   busy = true;
   repository: RepositoryFull;
   feedUrl: string;
@@ -59,14 +59,6 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
   private repositoryId: string;
-
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfig: AppConfigService,
-    private readonly serverConfig: ServerConfigService,
-    private readonly repositoryService: RepositoryService,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

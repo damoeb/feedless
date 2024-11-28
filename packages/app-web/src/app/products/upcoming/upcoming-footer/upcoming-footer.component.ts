@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { NamedLatLon } from '../../../types';
 import {
   AlertController,
@@ -42,17 +42,17 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly geoService = inject(GeoService);
+
   @Input()
   location: NamedLatLon;
 
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly alertCtrl: AlertController,
-    private readonly appConfigService: AppConfigService,
-    private readonly geoService: GeoService,
-  ) {
+  constructor() {
     addIcons({ sendOutline, heart, locateOutline });
   }
 

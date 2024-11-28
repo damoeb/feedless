@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { debounce, interval } from 'rxjs';
 import {
   FormControl,
@@ -104,6 +98,17 @@ export class TrackerEditPage
   extends InteractiveWebsiteController
   implements OnInit, OnDestroy
 {
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+  private readonly sessionService = inject(SessionService);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly repositoryService = inject(RepositoryService);
+  readonly changeRef = inject(ChangeDetectorRef);
+  readonly scrapeService = inject(ScrapeService);
+  readonly serverConfig = inject(ServerConfigService);
+
   // additionalWait = new FormControl<number>(0, [
   //   Validators.required,
   //   Validators.min(0),
@@ -159,18 +164,7 @@ export class TrackerEditPage
   protected isLoading: boolean = false;
   protected hasUrl: boolean = false;
 
-  constructor(
-    private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly location: Location,
-    private readonly sessionService: SessionService,
-    private readonly appConfig: AppConfigService,
-    private readonly alertCtrl: AlertController,
-    private readonly repositoryService: RepositoryService,
-    public readonly changeRef: ChangeDetectorRef,
-    public readonly scrapeService: ScrapeService,
-    public readonly serverConfig: ServerConfigService,
-  ) {
+  constructor() {
     super();
     addIcons({ trashOutline });
   }

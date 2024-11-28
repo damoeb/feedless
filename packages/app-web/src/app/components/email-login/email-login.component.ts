@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
 import { GqlConfirmCode } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -42,6 +42,11 @@ import {
   standalone: true,
 })
 export class EmailLoginComponent implements OnDestroy {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly sessionService = inject(SessionService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   mode: 'enterMail' | 'enterConfirmationCode' | 'finalized' = 'enterMail';
   emailFc = new FormControl<string>('', [
     Validators.email,
@@ -53,12 +58,7 @@ export class EmailLoginComponent implements OnDestroy {
   private subscriptionHandle: { unsubscribe: () => void; closed: boolean };
   errorMessage: string;
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly sessionService: SessionService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ arrowForwardOutline });
   }
 

@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -53,6 +42,8 @@ interface Box {
 export class EmbeddedImageComponent
   implements AfterViewInit, OnDestroy, OnInit
 {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @Input({ required: true })
   embed!: Embeddable;
 
@@ -88,7 +79,7 @@ export class EmbeddedImageComponent
   private readonly drawBoxDebounced: DebouncedFunc<(box: Box) => void>;
   private imageUrl: Nullable<string>;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {
+  constructor() {
     this.drawBoxDebounced = debounce(this.drawBox, 5);
   }
 

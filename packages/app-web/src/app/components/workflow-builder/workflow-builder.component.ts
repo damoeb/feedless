@@ -1,8 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { removeOutline, addOutline, ellipse } from 'ionicons/icons';
 import {
@@ -48,11 +44,13 @@ import { BubbleComponent } from '../bubble/bubble.component';
   standalone: true,
 })
 export class WorkflowBuilderComponent {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   scaleFactor: number = 0.7;
   minScaleFactor: number = 0.5;
   maxScaleFactor: number = 1.3;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {
+  constructor() {
     addIcons({ removeOutline, addOutline, ellipse });
   }
 

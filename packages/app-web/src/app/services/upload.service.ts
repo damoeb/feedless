@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { Record } from '../graphql/types';
 import { RecordService } from './record.service';
@@ -13,13 +13,13 @@ export type UploadFileHandler = {
   providedIn: 'root',
 })
 export class UploadService {
+  private readonly recordService = inject(RecordService);
+  private readonly alertController = inject(AlertController);
+  private readonly toastController = inject(ToastController);
+
   private fileHandlers: UploadFileHandler[];
 
-  constructor(
-    private readonly recordService: RecordService,
-    private readonly alertController: AlertController,
-    private readonly toastController: ToastController,
-  ) {
+  constructor() {
     this.fileHandlers = this.createFileHandlers();
   }
 

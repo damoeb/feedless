@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
 import {
@@ -84,6 +78,11 @@ export interface TrackerEditModalComponentProps {}
 export class TrackerEditModalComponent
   implements TrackerEditModalComponentProps, OnInit, OnDestroy
 {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly modalService = inject(ModalService);
+  private readonly serverConfig = inject(ServerConfigService);
+  private readonly modalCtrl = inject(ModalController);
+
   private subscriptions: Subscription[] = [];
   isThrottled: boolean;
 
@@ -96,12 +95,7 @@ export class TrackerEditModalComponent
   });
   private source: GqlSourceInput;
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly modalService: ModalService,
-    private readonly serverConfig: ServerConfigService,
-    private readonly modalCtrl: ModalController,
-  ) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

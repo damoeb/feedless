@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   CreateUserSecret,
   DeleteUserSecret,
@@ -49,18 +49,18 @@ export function needsPlanSubscription(
   providedIn: 'root',
 })
 export class SessionService {
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly authService = inject(AuthService);
+  private readonly serverConfigService = inject(ServerConfigService);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly modalCtrl = inject(ModalController);
+
   private session: Session = {} as any;
   private darkModePipe: ReplaySubject<boolean>;
   private sessionPipe: BehaviorSubject<Nullable<Session>>;
   private modalIsOpen: boolean = false;
 
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly authService: AuthService,
-    private readonly serverConfigService: ServerConfigService,
-    private readonly appConfigService: AppConfigService,
-    private readonly modalCtrl: ModalController,
-  ) {
+  constructor() {
     this.darkModePipe = new ReplaySubject<boolean>(1);
     this.sessionPipe = new BehaviorSubject<Nullable<Session>>(null);
     this.detectColorScheme();

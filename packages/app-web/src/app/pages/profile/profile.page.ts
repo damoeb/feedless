@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
 import {
   AlertController,
@@ -76,6 +70,16 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class ProfilePage implements OnInit, OnDestroy {
+  private readonly toastCtrl = inject(ToastController);
+  protected readonly sessionService = inject(SessionService);
+  protected readonly repositoryService = inject(RepositoryService);
+  protected readonly changeRef = inject(ChangeDetectorRef);
+  protected readonly productService = inject(ProductService);
+  protected readonly alertCtrl = inject(AlertController);
+  protected readonly connectedAppService = inject(ConnectedAppService);
+  private readonly appConfig = inject(AppConfigService);
+  protected readonly serverConfig = inject(ServerConfigService);
+
   protected secrets: UserSecret[] = [];
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
@@ -98,17 +102,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private connectedApps: Session['user']['connectedApps'] = [];
 
-  constructor(
-    private readonly toastCtrl: ToastController,
-    protected readonly sessionService: SessionService,
-    protected readonly repositoryService: RepositoryService,
-    protected readonly changeRef: ChangeDetectorRef,
-    protected readonly productService: ProductService,
-    protected readonly alertCtrl: AlertController,
-    protected readonly connectedAppService: ConnectedAppService,
-    private readonly appConfig: AppConfigService,
-    protected readonly serverConfig: ServerConfigService,
-  ) {
+  constructor() {
     addIcons({ cardOutline, cloudDownloadOutline });
   }
 

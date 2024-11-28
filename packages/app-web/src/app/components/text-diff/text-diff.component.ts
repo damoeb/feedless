@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
 import { GqlRecordField } from '../../../generated/graphql';
@@ -21,6 +14,8 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
   standalone: true,
 })
 export class TextDiffComponent implements OnInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @Input({ required: true })
   before: Record;
 
@@ -39,8 +34,6 @@ export class TextDiffComponent implements OnInit {
   protected highlightedLines: number[];
   compareByText = GqlRecordField.Text;
   compareByMarkup = GqlRecordField.Markup;
-
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnInit() {
     const textBefore = this.getText(this.before);

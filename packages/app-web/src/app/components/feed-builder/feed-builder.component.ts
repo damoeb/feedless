@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -122,6 +112,18 @@ export type FeedWithRequest = {
   standalone: true,
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly apolloAbortController = inject(ApolloAbortControllerService);
+  private readonly scrapeService = inject(ScrapeService);
+  private readonly modalService = inject(ModalService);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   url: string;
 
   loading = false;
@@ -158,19 +160,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly apolloAbortController: ApolloAbortControllerService,
-    private readonly scrapeService: ScrapeService,
-    private readonly modalService: ModalService,
-    private readonly location: Location,
-    private readonly router: Router,
-    private readonly modalCtrl: ModalController,
-    private readonly alertCtrl: AlertController,
-    private readonly repositoryService: RepositoryService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ logoJavascript, settingsOutline, checkmarkOutline });
   }
 

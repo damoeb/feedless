@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order.service';
@@ -23,16 +17,14 @@ import { JsonPipe } from '@angular/common';
   standalone: true,
 })
 export class PaymentSummaryPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly orderService = inject(OrderService);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   protected order: Order;
   private subscriptions: Subscription[] = [];
   private billingId: string;
-
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly orderService: OrderService,
-    private readonly appConfig: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Payment Summary');

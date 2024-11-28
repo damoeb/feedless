@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { Repository } from '../../graphql/types';
 import {
@@ -120,6 +109,15 @@ type NoteReferences = {
   standalone: true,
 })
 export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly annotationService = inject(AnnotationService);
+  private readonly appConfig = inject(AppConfigService);
+  protected readonly upload = inject(UploadService);
+  private readonly router = inject(Router);
+  private readonly notebookService = inject(NotebookService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+
   busy = false;
   private subscriptions: Subscription[] = [];
   repository: Repository;
@@ -153,16 +151,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   >;
   protected starredNotes: Note[];
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly alertCtrl: AlertController,
-    private readonly annotationService: AnnotationService,
-    private readonly appConfig: AppConfigService,
-    protected readonly upload: UploadService,
-    private readonly router: Router,
-    private readonly notebookService: NotebookService,
-    private readonly activatedRoute: ActivatedRoute,
-  ) {
+  constructor() {
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
     this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 400);
     addIcons({

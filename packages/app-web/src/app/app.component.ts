@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
@@ -25,19 +19,17 @@ import { kebabCase } from 'lodash-es';
   standalone: false,
 })
 export class AppComponent implements OnDestroy, OnInit {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly sessionService = inject(SessionService);
+  private readonly authService = inject(AuthService);
+
   verticalConfig!: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   private isDarkMode!: boolean;
   private vertical!: GqlVertical;
-
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly appConfigService: AppConfigService,
-    private readonly sessionService: SessionService,
-    private readonly authService: AuthService,
-  ) {}
 
   ngOnInit(): void {
     this.subscriptions.push(

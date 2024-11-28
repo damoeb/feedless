@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -21,14 +15,12 @@ import { IonContent, IonRow, IonCol } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class ReportPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly repositoryService = inject(RepositoryService);
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly appConfigService: AppConfigService,
-    private readonly repositoryService: RepositoryService,
-  ) {}
+  private subscriptions: Subscription[] = [];
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Report Feed');

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
@@ -28,7 +28,9 @@ import { AgentsComponent } from '../../components/agents/agents.component';
   standalone: true,
 })
 export class AgentsPage {
-  constructor(appConfigService: AppConfigService) {
+  constructor() {
+    const appConfigService = inject(AppConfigService);
+
     appConfigService.setPageTitle('Agents');
   }
 }

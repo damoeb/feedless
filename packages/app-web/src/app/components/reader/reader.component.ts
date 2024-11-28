@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
 import {
   ReaderLinkTarget,
   ReaderTextTransform,
@@ -27,6 +19,9 @@ import { IonRow, IonCol } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class ReaderComponent implements OnChanges {
+  private readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @Input()
   linkTarget: ReaderLinkTarget = 'blank';
 
@@ -46,11 +41,6 @@ export class ReaderComponent implements OnChanges {
   private useBionic: boolean;
   private openLinkInReader: boolean;
   private showLinksHostname: boolean;
-
-  constructor(
-    private readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes.html && changes.html.currentValue) {

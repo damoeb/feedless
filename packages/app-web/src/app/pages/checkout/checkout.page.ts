@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -338,6 +332,15 @@ type PaymentOption = {
   standalone: true,
 })
 export class CheckoutPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly productService = inject(ProductService);
+  private readonly router = inject(Router);
+  private readonly orderService = inject(OrderService);
+  private readonly sessionService = inject(SessionService);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly authService = inject(AuthService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   product: VerticalSpecWithRoutes;
   currentStep: CheckoutStep;
   protected countries = countries;
@@ -371,17 +374,6 @@ export class CheckoutPage implements OnInit, OnDestroy {
   ];
   private subscriptions: Subscription[] = [];
   private productId: string;
-
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly productService: ProductService,
-    private readonly router: Router,
-    private readonly orderService: OrderService,
-    private readonly sessionService: SessionService,
-    private readonly appConfig: AppConfigService,
-    private readonly authService: AuthService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Checkout');

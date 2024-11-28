@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -21,14 +15,12 @@ import { IonContent, IonSpinner } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class PaymentPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly serverConfig = inject(ServerConfigService);
+  private readonly appConfig = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly serverConfig: ServerConfigService,
-    private readonly appConfig: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  private subscriptions: Subscription[] = [];
 
   async ngOnInit() {
     this.appConfig.setPageTitle('Payment');

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -28,16 +22,14 @@ import { BubbleComponent } from '../bubble/bubble.component';
   standalone: true,
 })
 export class AgentsButtonComponent implements OnInit, OnDestroy {
+  private readonly agentService = inject(AgentService);
+  private readonly authService = inject(AuthService);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   agentCount: number = 0;
   isLoggedIn: boolean;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly agentService: AgentService,
-    private readonly authService: AuthService,
-    protected readonly serverConfig: ServerConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

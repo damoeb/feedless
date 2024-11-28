@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   FeedWithRequest,
   FeedBuilderComponent,
@@ -43,11 +43,13 @@ export interface FeedBuilderModalComponentProps {
 export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps
 {
+  private readonly modalCtrl = inject(ModalController);
+
   source: GqlSourceInput;
   modalTitle: string = 'Feed Builder';
   submitButtonText = 'Save Feed';
 
-  constructor(private readonly modalCtrl: ModalController) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

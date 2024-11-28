@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { CanActivate, UrlTree } from '@angular/router';
@@ -8,10 +8,9 @@ import { SessionService } from '../services/session.service';
   providedIn: 'root',
 })
 export class ProfileGuardService implements CanActivate {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly sessionService: SessionService,
-  ) {}
+  private readonly authService = inject(AuthService);
+  private readonly sessionService = inject(SessionService);
+
 
   canActivate(): Observable<boolean | UrlTree> {
     return this.authService.authorizationChange().pipe(

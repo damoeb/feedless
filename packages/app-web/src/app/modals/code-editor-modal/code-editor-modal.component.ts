@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   ModalController,
   IonHeader,
@@ -43,13 +43,15 @@ export interface CodeEditorModalComponentProps {
 export class CodeEditorModalComponent
   implements OnInit, CodeEditorModalComponentProps
 {
+  private readonly modalCtrl = inject(ModalController);
+
   text: string;
   title: string;
   contentType: ContentType;
   readOnly: boolean;
   controls: boolean;
 
-  constructor(private readonly modalCtrl: ModalController) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

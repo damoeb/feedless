@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlServerSettingsQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';
@@ -22,15 +22,13 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   standalone: true,
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly licenseService = inject(LicenseService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   license: GqlServerSettingsQuery['serverSettings']['license'];
   trialEndIn: string;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    readonly serverConfig: ServerConfigService,
-    private readonly licenseService: LicenseService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     dayjs.extend(relativeTime);

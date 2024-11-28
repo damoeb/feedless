@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import '@justinribeiro/lite-youtube';
 import {
   AppConfigService,
@@ -52,15 +46,15 @@ import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove
   standalone: true,
 })
 export class AboutFeedlessPage implements OnInit {
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly appConfigService = inject(AppConfigService);
+
   @ViewChild('createOptions')
   createOptionsPopover: IonPopover;
 
   listedProducts: VerticalSpecWithRoutes[];
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly appConfigService: AppConfigService,
-  ) {
+  constructor() {
     addIcons({
       listOutline,
       chevronForwardOutline,

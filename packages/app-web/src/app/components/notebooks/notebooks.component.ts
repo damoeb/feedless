@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Notebook, NotebookService } from '../../services/notebook.service';
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -39,15 +33,15 @@ import {
   standalone: true,
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
+  private readonly router = inject(Router);
+  private readonly notebookService = inject(NotebookService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   busy = false;
   notebooks: Notebook[];
   private subscriptions: Subscription[] = [];
 
-  constructor(
-    private readonly router: Router,
-    private readonly notebookService: NotebookService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {
+  constructor() {
     addIcons({ chevronForwardOutline });
   }
 

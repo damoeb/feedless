@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
   ModalController,
   IonContent,
@@ -63,6 +58,13 @@ import { Product } from '../../graphql/types';
   standalone: true,
 })
 export class FinalizeProfileModalComponent implements OnInit {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly sessionService = inject(SessionService);
+  private readonly serverConfigService = inject(ServerConfigService);
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly productService = inject(ProductService);
+
   loading = false;
   name: string;
 
@@ -77,15 +79,6 @@ export class FinalizeProfileModalComponent implements OnInit {
   protected canSkip = true;
   protected requiresPlan: boolean;
   protected product: Product;
-
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly sessionService: SessionService,
-    private readonly serverConfigService: ServerConfigService,
-    private readonly appConfigService: AppConfigService,
-    private readonly productService: ProductService,
-  ) {}
 
   async ngOnInit() {
     this.sessionService.getSession().subscribe(async (session) => {

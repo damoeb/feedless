@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -11,7 +11,9 @@ import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class DocumentsPage {
-  constructor(appConfig: AppConfigService) {
+  constructor() {
+    const appConfig = inject(AppConfigService);
+
     appConfig.setPageTitle('Documents');
   }
 }

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import {
   ModalController,
   ToastController,
@@ -125,6 +119,14 @@ export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
 export class RepositoryModalComponent
   implements RepositoryModalComponentProps, OnInit
 {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly sessionService = inject(SessionService);
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly router = inject(Router);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly repositoryService = inject(RepositoryService);
+
   formFg = new FormGroup({
     title: new FormControl<string>('', [
       Validators.required,
@@ -171,15 +173,7 @@ export class RepositoryModalComponent
 
   private filterParams: GqlItemFilterParamsInput[];
 
-  constructor(
-    private readonly modalCtrl: ModalController,
-    private readonly toastCtrl: ToastController,
-    private readonly sessionService: SessionService,
-    readonly serverConfig: ServerConfigService,
-    private readonly router: Router,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly repositoryService: RepositoryService,
-  ) {
+  constructor() {
     addIcons({ closeOutline });
   }
 

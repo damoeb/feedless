@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
@@ -33,6 +27,9 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
   standalone: true,
 })
 export class NativeFeedComponent implements OnInit {
+  private readonly scrapeService = inject(ScrapeService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   @Input({ required: true })
   feedUrl: string;
   @Input({ required: true })
@@ -43,11 +40,6 @@ export class NativeFeedComponent implements OnInit {
   loading: boolean;
   feedItems: Record[];
   errorMessage: string;
-
-  constructor(
-    private readonly scrapeService: ScrapeService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   ngOnInit() {
     return this.refresh();

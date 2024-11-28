@@ -1,11 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
 import {
   IonPopover,
   IonSearchbar,
@@ -59,6 +52,8 @@ export function labelProvider<T>(
   standalone: true,
 })
 export class MenuComponent<T> implements OnInit {
+  private readonly popoverController = inject(PopoverController);
+
   @Input()
   hideFilter: boolean = false;
 
@@ -95,8 +90,6 @@ export class MenuComponent<T> implements OnInit {
   currentValue: T;
   query = '';
   indexInFocus = -1;
-
-  constructor(private readonly popoverController: PopoverController) {}
 
   ngOnInit(): void {
     this.currentValue = this.value;

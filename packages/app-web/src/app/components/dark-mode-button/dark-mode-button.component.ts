@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -14,6 +14,8 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class DarkModeButtonComponent implements OnInit, OnDestroy {
+  readonly sessionService = inject(SessionService);
+
   darkMode: boolean;
   private subscriptions: Subscription[] = [];
 
@@ -24,7 +26,7 @@ export class DarkModeButtonComponent implements OnInit, OnDestroy {
   @Input()
   color: string;
 
-  constructor(readonly sessionService: SessionService) {
+  constructor() {
     addIcons({ sunnyOutline, moonOutline });
   }
 

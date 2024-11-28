@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   CountRepositories,
   CreateRepositories,
@@ -48,12 +48,11 @@ type Source = ArrayElement<RepositoryFull['sources']>;
   providedIn: 'root',
 })
 export class RepositoryService {
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly sessionService: SessionService,
-  ) {}
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly sessionService = inject(SessionService);
+
 
   async createRepositories(
     data: GqlRepositoryCreateInput[],

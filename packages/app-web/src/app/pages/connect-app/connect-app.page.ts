@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   ConnectedApp,
@@ -38,18 +33,16 @@ import { FeedlessHeaderComponent } from '../../components/feedless-header/feedle
   standalone: true,
 })
 export class ConnectAppPage implements OnInit {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly connectedAppService = inject(ConnectedAppService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly router = inject(Router);
+
   loading: boolean = false;
   invalidRequest: boolean = false;
   protected connectedApp: ConnectedApp;
   private appConnectionId: string;
-
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly connectedAppService: ConnectedAppService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly toastCtrl: ToastController,
-    private readonly router: Router,
-  ) {}
 
   async ngOnInit() {
     this.appConnectionId = this.activatedRoute.snapshot.params['link'];

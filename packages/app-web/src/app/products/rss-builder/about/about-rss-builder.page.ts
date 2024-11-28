@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -49,6 +41,13 @@ import { ImportButtonComponent } from '../../../components/import-button/import-
   standalone: true,
 })
 export class AboutRssBuilderPage implements OnInit {
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly licenseService = inject(LicenseService);
+  private readonly appConfigService = inject(AppConfigService);
+  readonly serverConfig = inject(ServerConfigService);
+
   @ViewChild('opmlPicker')
   opmlPickerElement!: ElementRef<HTMLInputElement>;
 
@@ -56,14 +55,7 @@ export class AboutRssBuilderPage implements OnInit {
   protected license: LocalizedLicense;
   protected product: VerticalSpec;
 
-  constructor(
-    private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly licenseService: LicenseService,
-    private readonly appConfigService: AppConfigService,
-    readonly serverConfig: ServerConfigService,
-  ) {
+  constructor() {
     addIcons({ settingsOutline });
   }
 

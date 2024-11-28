@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
@@ -23,14 +17,12 @@ import { NotebooksComponent } from '../../components/notebooks/notebooks.compone
   standalone: true,
 })
 export class NotebooksPage implements OnInit, OnDestroy {
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+
   loading = false;
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
-
-  constructor(
-    private readonly appConfigService: AppConfigService,
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
 
   async ngOnInit() {
     this.appConfigService.setPageTitle('Notebooks');

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 import { LatLon } from '../components/map/map.component';
 import { Dayjs } from 'dayjs';
@@ -22,10 +22,9 @@ export type PageTags = {
   providedIn: 'root',
 })
 export class PageService {
-  constructor(
-    private readonly meta: Meta,
-    private readonly title: Title,
-  ) {}
+  private readonly meta = inject(Meta);
+  private readonly title = inject(Title);
+
 
   setMetaTags(options: PageTags) {
     this.title.setTitle(options.title);

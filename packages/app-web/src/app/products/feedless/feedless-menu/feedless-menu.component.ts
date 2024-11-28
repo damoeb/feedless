@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
@@ -37,19 +31,17 @@ import { BubbleComponent } from '../../../components/bubble/bubble.component';
   standalone: true,
 })
 export class FeedlessMenuComponent implements OnInit, OnDestroy {
+  private readonly agentService = inject(AgentService);
+  private readonly authService = inject(AuthService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly repositoryService = inject(RepositoryService);
+
   private subscriptions: Subscription[] = [];
   agentCount: number;
   feedCount: number;
   trackerCount: number;
   loggedIn: boolean;
   libraryCount: number = 0;
-
-  constructor(
-    private readonly agentService: AgentService,
-    private readonly authService: AuthService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly repositoryService: RepositoryService,
-  ) {}
 
   async ngOnInit() {
     this.subscriptions.push(

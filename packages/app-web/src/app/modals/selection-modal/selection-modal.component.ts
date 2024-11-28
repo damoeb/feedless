@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   ModalController,
   IonHeader,
@@ -63,12 +63,14 @@ type EntityWithFormControl<T> = {
 export class SelectionModalComponent<T>
   implements SelectionModalComponentProps<T>, OnInit
 {
+  private readonly modalCtrl = inject(ModalController);
+
   selectables: SelectableEntity<T>[] = [];
   description: string;
   title: string;
   entitiesWithFormControl: EntityWithFormControl<T>[] = [];
 
-  constructor(private readonly modalCtrl: ModalController) {
+  constructor() {
     addIcons({ closeOutline, trashOutline });
   }
 

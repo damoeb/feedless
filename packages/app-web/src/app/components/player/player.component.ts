@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { GetElementType, Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
@@ -17,6 +17,8 @@ type Enclosure = GetElementType<Record['attachments']>;
   standalone: true,
 })
 export class PlayerComponent {
+  private readonly domSanitizer = inject(DomSanitizer);
+
   @Input({ required: true })
   document: Record;
 
@@ -26,7 +28,7 @@ export class PlayerComponent {
   @Output()
   playback = new EventEmitter<void>();
 
-  constructor(private readonly domSanitizer: DomSanitizer) {
+  constructor() {
     addIcons({ playOutline });
   }
 

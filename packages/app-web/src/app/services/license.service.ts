@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   GqlUpdateLicenseInput,
   GqlUpdateLicenseMutation,
@@ -14,12 +14,12 @@ import { LocalizedLicense } from '../graphql/types';
   providedIn: 'root',
 })
 export class LicenseService {
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly serverConfig = inject(ServerConfigService);
+
   public licenseChange = new ReplaySubject<LocalizedLicense>();
 
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly serverConfig: ServerConfigService,
-  ) {
+  constructor() {
     if (this.serverConfig.isSelfHosted()) {
       this.initialize();
     }
