@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, input } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
@@ -26,17 +26,14 @@ export type StringFeatureGroup = {
   standalone: true,
 })
 export class PlanColumnComponent {
-  @Input()
-  price: string;
+  readonly price = input<string>();
 
-  @Input()
-  imploded: boolean;
+  readonly imploded = input<boolean>();
 
   @Input()
   featureGroups: StringFeatureGroup[];
 
-  @Input()
-  pricePerUnit: string = '/ Month';
+  readonly pricePerUnit = input<string>('/ Month');
 
   constructor() {
     addIcons({ checkmarkOutline, closeOutline });

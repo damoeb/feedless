@@ -2,31 +2,31 @@
   <form (ngSubmit)="triggerUpdate()">
     <ion-input
       [formControl]="queryFc"
-      [placeholder]="placeholder"
+      [placeholder]="placeholder()"
       class="cy-searchbar-input"
       fill="outline"
       slot="secondary"
       style="--padding-start: 10px"
     ></ion-input>
 
-    @if (!loading) {
+    @if (!loading()) {
       <ion-button
         (click)="triggerUpdate()"
-        [color]="color ?? 'light'"
+        [color]="color() ?? 'light'"
         class="cy-searchbar-button"
         type="submit"
         >
         <span style="white-space: nowrap">
-          {{ buttonText }}
+          {{ buttonText() }}
         </span>
         <ion-icon
-          [slot]="buttonText ? 'end' : ''"
+          [slot]="buttonText() ? 'end' : ''"
           name="chevron-forward-outline"
         ></ion-icon>
       </ion-button>
     }
 
-    @if (loading) {
+    @if (loading()) {
       <ion-button color="danger">
         <ion-spinner class="ion-margin-end" name="crescent"></ion-spinner>
         Busy

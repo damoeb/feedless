@@ -1,7 +1,7 @@
 @if (!authorization?.loggedIn) {
   <ion-button
-    [color]="color"
-    [expand]="expand"
+    [color]="color()"
+    [expand]="expand()"
     class="cy-login-button"
     routerLink="/login"
     >
@@ -11,8 +11,8 @@
 
 @if (authorization?.loggedIn) {
   <ion-button
-    [color]="color"
-    [expand]="expand"
+    [color]="color()"
+    [expand]="expand()"
     class="cy-profile-button"
     id="open-settings-popover"
     >

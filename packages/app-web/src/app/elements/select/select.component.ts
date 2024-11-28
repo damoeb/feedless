@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, OnInit, input } from '@angular/core';
 import { isNull, isUndefined } from 'lodash-es';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
@@ -28,20 +28,15 @@ export class SelectComponent<T>
   extends ControlValueAccessorDirective<T>
   implements OnInit
 {
-  @Input()
-  hideFilter: boolean = false;
+  readonly hideFilter = input<boolean>(false);
 
-  @Input()
-  placeholder: string = 'Empty';
+  readonly placeholder = input<string>('Empty');
 
-  @Input()
-  disabled: boolean = false;
+  readonly disabled = input<boolean>(false);
 
-  @Input()
-  color: string = 'light';
+  readonly color = input<string>('light');
 
-  @Input({ required: true })
-  items: KeyLabelOption<T>[];
+  readonly items = input.required<KeyLabelOption<T>[]>();
 
   ngOnInit() {
     super.ngOnInit();
@@ -50,9 +45,9 @@ export class SelectComponent<T>
   label() {
     const currentValue = this.control.value;
     if (isUndefined(currentValue) || isNull(currentValue)) {
-      return this.placeholder;
+      return this.placeholder();
     } else {
-      return this.items.find((item) => item.key === currentValue).label;
+      return this.items().find((item) => item.key === currentValue).label;
     }
   }
 

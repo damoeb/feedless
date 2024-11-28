@@ -1,10 +1,10 @@
 import {
   Component,
-  Input,
   OnChanges,
   OnInit,
   SimpleChanges,
-  output
+  output,
+  input
 } from '@angular/core';
 import {
   FormControl,
@@ -37,20 +37,15 @@ import {
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {
-  @Input()
-  value: string;
+  readonly value = input<string>();
 
-  @Input()
-  loading: boolean;
+  readonly loading = input<boolean>();
 
-  @Input()
-  buttonText: string;
+  readonly buttonText = input<string>();
 
-  @Input()
-  placeholder: string;
+  readonly placeholder = input<string>();
 
-  @Input()
-  color: string;
+  readonly color = input<string>();
 
   readonly querySubmit = output<string>();
 
@@ -67,7 +62,7 @@ export class SearchbarComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.queryFc.setValue(this.value);
+    this.queryFc.setValue(this.value());
   }
 
   ngOnChanges(changes: SimpleChanges): void {

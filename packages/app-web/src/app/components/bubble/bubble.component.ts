@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 export type BubbleColor = 'orange' | 'blue' | 'red' | 'gray' | 'green';
@@ -11,8 +11,7 @@ export type BubbleColor = 'orange' | 'blue' | 'red' | 'gray' | 'green';
   standalone: true,
 })
 export class BubbleComponent {
-  @Input()
-  color: BubbleColor = 'blue';
+  readonly color = input<BubbleColor>('blue');
 
   constructor() {}
 }

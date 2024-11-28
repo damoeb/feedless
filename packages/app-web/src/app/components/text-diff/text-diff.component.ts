@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild, inject, input } from '@angular/core';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
 import { GqlRecordField } from '../../../generated/graphql';
@@ -22,8 +22,7 @@ export class TextDiffComponent implements OnInit {
   @Input()
   after: Record;
 
-  @Input()
-  compareBy: GqlRecordField = GqlRecordField.Markup;
+  readonly compareBy = input<GqlRecordField>(GqlRecordField.Markup);
 
   @ViewChild('diffEditor')
   diffEditorComponent: CodeEditorComponent;
@@ -56,7 +55,7 @@ export class TextDiffComponent implements OnInit {
   }
 
   private getText(document: Record): string {
-    switch (this.compareBy) {
+    switch (this.compareBy()) {
       case GqlRecordField.Markup:
         return this.formatHtml(document.html);
       case GqlRecordField.Text:

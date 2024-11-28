@@ -1,6 +1,6 @@
 <ion-footer [translucent]="true" class="ion-no-border">
   <div class="events">
-    @if (location) {
+    @if (location()) {
       <div style="align-self: center">
         <ion-button
           color="primary"
@@ -13,7 +13,7 @@
         </ion-button>
       </div>
     }
-    @if (!location) {
+    @if (!location()) {
       <div style="align-self: center">
         <ion-button
           appDev

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, output } from '@angular/core';
+import { Component, Input, OnInit, output, input } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -86,17 +86,13 @@ export class FilterItemsAccordionComponent implements OnInit {
     RepositoryFull['plugins']
   >['params']['org_feedless_filter'];
 
-  @Input({ required: true })
-  labelPrefix: string;
+  readonly labelPrefix = input.required<string>();
 
-  @Input()
-  advanced: boolean;
+  readonly advanced = input<boolean>();
 
-  @Input()
-  hideIfEmpty: boolean = false;
+  readonly hideIfEmpty = input<boolean>(false);
 
-  @Input()
-  disabled: boolean;
+  readonly disabled = input<boolean>();
 
   readonly filterChange = output<GqlItemFilterParamsInput[]>();
 

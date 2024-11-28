@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, output, input } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -131,22 +131,18 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   @ViewChild('webToFeedTransformer')
   webToFeedTransformerComponent: TransformWebsiteToFeedComponent;
 
-  @Input()
-  submitButtonText = 'Create Feed';
+  readonly submitButtonText = input('Create Feed');
 
-  @Input()
-  source: GqlSourceInput;
+  readonly source = input<GqlSourceInput>();
 
   selectedFeed: NativeOrGenericFeed;
   productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   errorMessage: string;
 
-  @Input()
-  hideSearchBar = false;
+  readonly hideSearchBar = input(false);
 
-  @Input()
-  hideCustomizeFeed = false;
+  readonly hideCustomizeFeed = input(false);
 
   readonly selectedFeedChanged = output<FeedWithRequest>();
 
@@ -163,10 +159,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    if (this.source) {
-      console.log('this.source', this.source);
+    const source = this.source();
+    if (source) {
+      console.log('this.source', source);
       this.sourceBuilder = SourceBuilder.fromSource(
-        this.source,
+        source,
         this.scrapeService,
       );
       this.url = this.sourceBuilder.getUrl();

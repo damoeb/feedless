@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -50,14 +50,11 @@ export class ImportButtonComponent {
   private readonly toastCtrl = inject(ToastController);
   private readonly modalCtrl = inject(ModalController);
 
-  @Input()
-  color: string;
+  readonly color = input<string>();
 
-  @Input()
-  expand: string;
+  readonly expand = input<string>();
 
-  @Input()
-  fill: string = 'clear';
+  readonly fill = input<string>('clear');
 
   async importOpml(uploadEvent: Event) {
     const outlines = await this.omplService.convertOpmlToJson(uploadEvent);

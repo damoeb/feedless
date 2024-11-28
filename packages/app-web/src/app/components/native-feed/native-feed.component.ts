@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
@@ -30,12 +30,9 @@ export class NativeFeedComponent implements OnInit {
   private readonly scrapeService = inject(ScrapeService);
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @Input({ required: true })
-  feedUrl: string;
-  @Input({ required: true })
-  title = 'Feed Preview';
-  @Input()
-  showTitle = true;
+  readonly feedUrl = input.required<string>();
+  readonly title = input.required<string>();
+  readonly showTitle = input(true);
 
   loading: boolean;
   feedItems: Record[];
@@ -46,7 +43,7 @@ export class NativeFeedComponent implements OnInit {
   }
 
   async refresh() {
-    await this.fetch(this.feedUrl);
+    await this.fetch(this.feedUrl());
   }
 
   private async fetch(nativeFeedUrl: string): Promise<void> {

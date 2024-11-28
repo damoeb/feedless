@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild, inject, output } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, output, input } from '@angular/core';
 import {
   IonPopover,
   IonSearchbar,
@@ -54,29 +54,21 @@ export function labelProvider<T>(
 export class MenuComponent<T> implements OnInit {
   private readonly popoverController = inject(PopoverController);
 
-  @Input()
-  hideFilter: boolean = false;
+  readonly hideFilter = input<boolean>(false);
 
-  @Input()
-  placeholder: string;
+  readonly placeholder = input<string>();
 
-  @Input()
-  error: boolean = false;
+  readonly error = input<boolean>(false);
 
-  @Input()
-  disabled: boolean = false;
+  readonly disabled = input<boolean>(false);
 
-  @Input()
-  labelFn: keyof T | ((value: T) => string);
+  readonly labelFn = input<keyof T | ((value: T) => string)>();
 
-  @Input()
-  color: string = 'light';
+  readonly color = input<string>('light');
 
-  @Input({ required: true })
-  items: T[];
+  readonly items = input.required<T[]>();
 
-  @Input()
-  value: T;
+  readonly value = input<T>();
 
   readonly valueChanged = output<T>();
 
@@ -91,16 +83,16 @@ export class MenuComponent<T> implements OnInit {
   indexInFocus = -1;
 
   ngOnInit(): void {
-    this.currentValue = this.value;
+    this.currentValue = this.value();
   }
 
   filteredOptions(): T[] {
     if (this.query) {
-      return this.items.filter((option) => {
+      return this.items().filter((option) => {
         return JSON.stringify(option).indexOf(this.query) > -1;
       });
     } else {
-      return this.items;
+      return this.items();
     }
   }
 
@@ -125,7 +117,7 @@ export class MenuComponent<T> implements OnInit {
   }
 
   focusNext() {
-    if (this.indexInFocus === this.items.length - 1) {
+    if (this.indexInFocus === this.items().length - 1) {
       this.indexInFocus = 0;
     } else {
       this.indexInFocus = this.indexInFocus + 1;
@@ -134,7 +126,7 @@ export class MenuComponent<T> implements OnInit {
 
   focusPrevious() {
     if (this.indexInFocus <= 0) {
-      this.indexInFocus = this.items.length - 1;
+      this.indexInFocus = this.items().length - 1;
     } else {
       this.indexInFocus = this.indexInFocus - 1;
     }
@@ -142,12 +134,12 @@ export class MenuComponent<T> implements OnInit {
 
   pickInFocus() {
     if (this.indexInFocus > -1) {
-      return this.pick(this.items[this.indexInFocus]);
+      return this.pick(this.items()[this.indexInFocus]);
     }
   }
 
   focusSearchbar() {
-    if (!this.hideFilter) {
+    if (!this.hideFilter()) {
       setTimeout(() => {
         this.searchbarElement.setFocus();
       }, 1);
@@ -159,7 +151,7 @@ export class MenuComponent<T> implements OnInit {
   }
 
   label(option: T) {
-    return labelProvider<T>(option, this.labelFn);
+    return labelProvider<T>(option, this.labelFn());
   }
 
   private dismiss() {

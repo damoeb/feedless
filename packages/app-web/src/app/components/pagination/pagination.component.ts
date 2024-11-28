@@ -2,7 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  output
+  output,
+  input
 } from '@angular/core';
 import { IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
 
@@ -19,8 +20,7 @@ export class PaginationComponent {
   @Input({ required: true })
   currentPage: number;
 
-  @Input()
-  isLastPage: boolean;
+  readonly isLastPage = input<boolean>();
 
   readonly pageChange = output<number>();
 

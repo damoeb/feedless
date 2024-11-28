@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { NamedLatLon } from '../../../types';
 import {
   AlertController,
@@ -47,8 +47,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   private readonly appConfigService = inject(AppConfigService);
   private readonly geoService = inject(GeoService);
 
-  @Input()
-  location: NamedLatLon;
+  readonly location = input<NamedLatLon>();
 
   private subscriptions: Subscription[] = [];
 
@@ -63,7 +62,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   async createMailSubscription() {
     const componentProps: SubmitModalComponentProps = {
       repositoryId: this.getRepositoryId(),
-      location: this.location,
+      location: this.location(),
     };
     const modal = await this.modalCtrl.create({
       component: SubmitModalComponent,

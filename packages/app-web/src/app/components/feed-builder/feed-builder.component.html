@@ -1,5 +1,5 @@
 <div class="flex__column">
-  @if (!hideSearchBar) {
+  @if (!hideSearchBar()) {
     <div>
       <ion-toolbar style="padding: 10px">
         <app-searchbar
@@ -133,7 +133,7 @@
         <!--        ></ion-icon>-->
       <!--      </ion-item>-->
       <ion-list bottomSlot>
-        @if (!hideCustomizeFeed) {
+        @if (!hideCustomizeFeed()) {
           <ion-item
             (click)="createOrRefineFeed(true)"
             [button]="true"
@@ -150,7 +150,7 @@
           color="primary"
           >
           <ion-label>
-            {{ submitButtonText }}
+            {{ submitButtonText() }}
           </ion-label>
           <ion-icon name="checkmark-outline" slot="end"></ion-icon>
         </ion-item>

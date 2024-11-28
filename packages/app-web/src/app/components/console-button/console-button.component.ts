@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import {
@@ -18,8 +18,7 @@ import { IonButton } from '@ionic/angular/standalone';
 export class ConsoleButtonComponent {
   private readonly modalService = inject(ModalService);
 
-  @Input()
-  logs: GqlLogStatement[];
+  readonly logs = input<GqlLogStatement[]>();
 
   openModal() {
     const props: CodeEditorModalComponentProps = {
@@ -27,7 +26,7 @@ export class ConsoleButtonComponent {
       contentType: 'text',
       readOnly: true,
       controls: false,
-      text: stringifyLogStatement(this.logs),
+      text: stringifyLogStatement(this.logs()),
     };
     return this.modalService.openCodeEditorModal(props);
   }

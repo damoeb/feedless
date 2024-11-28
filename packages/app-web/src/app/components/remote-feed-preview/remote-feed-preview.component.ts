@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, input } from '@angular/core';
 import { Record } from '../../graphql/types';
 
 import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
@@ -14,8 +14,7 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
 export class RemoteFeedPreviewComponent {
   @Input()
   items: Record[];
-  @Input()
-  noMetaColumn: boolean = false;
+  readonly noMetaColumn = input<boolean>(false);
 
   constructor() {}
 }

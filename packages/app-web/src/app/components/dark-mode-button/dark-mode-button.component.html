@@ -1,7 +1,7 @@
 <ion-button
   (click)="sessionService.setColorScheme(!darkMode)"
-  [color]="color"
-  [expand]="expand"
+  [color]="color()"
+  [expand]="expand()"
   aria-label="Toggle light mode"
   >
   @if (label) {

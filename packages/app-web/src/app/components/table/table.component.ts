@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { intersection, sortedUniqBy } from 'lodash-es';
 import { NgStyle } from '@angular/common';
@@ -19,8 +19,7 @@ export class TableComponent<T> implements OnInit, OnDestroy {
   @Input({ required: true })
   rows: T[];
 
-  @Input()
-  columns: (keyof T)[];
+  readonly columns = input<(keyof T)[]>();
 
   async ngOnInit(): Promise<void> {
     console.log(this.rows);
@@ -46,8 +45,9 @@ export class TableComponent<T> implements OnInit, OnDestroy {
   private getColumnIds() {
     if (this.rows) {
       const allColumns = Object.keys(this.rows[0]) as (keyof T)[];
-      if (this.columns) {
-        return intersection(this.columns, allColumns);
+      const columns = this.columns();
+      if (columns) {
+        return intersection(columns, allColumns);
       } else {
         return allColumns;
       }

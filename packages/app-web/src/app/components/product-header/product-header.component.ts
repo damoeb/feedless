@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ProductHeadlineComponent } from '../product-headline/product-headline.component';
 
 @Component({
@@ -9,8 +9,7 @@ import { ProductHeadlineComponent } from '../product-headline/product-headline.c
   standalone: true,
 })
 export class ProductHeaderComponent {
-  @Input({ required: true })
-  productTitle: string;
+  readonly productTitle = input.required<string>();
 
   constructor() {}
 }

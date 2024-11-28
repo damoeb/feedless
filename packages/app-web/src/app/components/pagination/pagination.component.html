@@ -8,7 +8,7 @@
       </ion-button>
     }
     <ion-button>{{ currentPage + 1 }}</ion-button>
-    @if (!isLastPage) {
+    @if (!isLastPage()) {
       <ion-button (click)="pageChange.emit(currentPage + 1)">
         Next
       </ion-button>

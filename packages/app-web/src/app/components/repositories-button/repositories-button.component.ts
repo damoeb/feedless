@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { IonButton } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 
@@ -11,11 +11,9 @@ import { RouterLink } from '@angular/router';
   standalone: true,
 })
 export class RepositoriesButtonComponent {
-  @Input({ required: true })
-  name: string;
+  readonly name = input.required<string>();
 
-  @Input({ required: true })
-  link: string;
+  readonly link = input.required<string>();
 
   constructor() {}
 }

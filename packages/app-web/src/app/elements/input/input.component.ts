@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, OnInit, input } from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
   FormsModule,
@@ -25,14 +25,11 @@ export class InputComponent<T>
   extends ControlValueAccessorDirective<T>
   implements OnInit
 {
-  @Input()
-  placeholder: string = '';
+  readonly placeholder = input<string>('');
 
-  @Input()
-  type: string = '';
+  readonly type = input<string>('');
 
-  @Input()
-  color: string = 'light';
+  readonly color = input<string>('light');
 
   ngOnInit() {
     super.ngOnInit();

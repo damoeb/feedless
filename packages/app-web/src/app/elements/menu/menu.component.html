@@ -12,13 +12,13 @@
   >
   <ng-template>
     <ion-content>
-      @if (!hideFilter) {
+      @if (!hideFilter()) {
         <ion-header>
           <ion-searchbar
             #searchbar
             (ngModelChange)="indexInFocus = 0"
             [(ngModel)]="query"
-            [placeholder]="placeholder"
+            [placeholder]="placeholder()"
             class="ion-no-padding"
           ></ion-searchbar>
         </ion-header>
@@ -46,9 +46,9 @@
 
 <ion-button
   (click)="togglePopover(popover, $event)"
-  [color]="color"
-  [disabled]="disabled"
-  [ngClass]="{ error: error }"
+  [color]="color()"
+  [disabled]="disabled()"
+  [ngClass]="{ error: error() }"
   >
   <ng-content></ng-content>
 </ion-button>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, forwardRef, Injector, Input, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, inject, output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, forwardRef, Injector, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, inject, output, input } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -136,32 +136,23 @@ export class CodeEditorComponent
   @ViewChild('editor')
   editor!: ElementRef<HTMLDivElement>;
 
-  @Input()
-  text: string;
+  readonly text = input<string>();
 
-  @Input()
-  contentType: ContentType;
+  readonly contentType = input<ContentType>();
 
-  @Input()
-  readOnly: boolean = false;
+  readonly readOnly = input<boolean>(false);
 
-  @Input()
-  markdownControls: boolean = false;
+  readonly markdownControls = input<boolean>(false);
 
-  @Input()
-  autofocus: boolean = false;
+  readonly autofocus = input<boolean>(false);
 
-  @Input()
-  highlightedLines: number[];
+  readonly highlightedLines = input<number[]>();
 
-  @Input()
-  lineWrapping: boolean = true;
+  readonly lineWrapping = input<boolean>(true);
 
-  @Input()
-  lineNumbers: boolean = true;
+  readonly lineNumbers = input<boolean>(true);
 
-  @Input()
-  extensions: Extension[] = [];
+  readonly extensions = input<Extension[]>([]);
 
   // @Input()
   // scrollLeft: number;
@@ -173,8 +164,7 @@ export class CodeEditorComponent
 
   readonly triggerQuery = output<string>();
 
-  @Input()
-  autoSuggestionsProvider: AutoSuggestionsProvider = () => Promise.resolve([]);
+  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() => Promise.resolve([]));
 
   private editorView: EditorView;
   ctrlPressed: boolean;
@@ -185,8 +175,8 @@ export class CodeEditorComponent
   }
 
   ngAfterViewInit() {
-    this.setText(this.text || this.control.value);
-    this.highlightLines(this.highlightedLines);
+    this.setText(this.text() || this.control.value);
+    this.highlightLines(this.highlightedLines());
   }
 
   private highlightLines(lines: number[]) {
@@ -197,7 +187,7 @@ export class CodeEditorComponent
   }
 
   private getLanguageSupportForMimeType() {
-    switch (this.contentType) {
+    switch (this.contentType()) {
       case 'html':
         return html().extension;
       case 'json':
@@ -222,7 +212,7 @@ export class CodeEditorComponent
           this.control.setValue(text);
         }
       }),
-      EditorState.readOnly.of(this.readOnly),
+      EditorState.readOnly.of(this.readOnly()),
       highlightSpecialChars(),
       foldGutter(),
       lineHighlightField,
@@ -235,7 +225,7 @@ export class CodeEditorComponent
       // rectangularSelection(),
       highlightSelectionMatches(),
       hashtagMatcher,
-      ...this.extensions,
+      ...this.extensions(),
       // noteReferenceMatcher,
       keymap.of([
         ...closeBracketsKeymap,
@@ -318,7 +308,7 @@ export class CodeEditorComponent
 
             if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
               const query = context.state.sliceDoc(token.from, token.to);
-              const options = await this.autoSuggestionsProvider(
+              const options = await this.autoSuggestionsProvider()(
                 query,
                 node.name,
               );
@@ -340,7 +330,7 @@ export class CodeEditorComponent
 
                 const from = selection?.from || context.pos;
 
-                const options = await this.autoSuggestionsProvider(
+                const options = await this.autoSuggestionsProvider()(
                   resolveQuery(),
                   node.name,
                 );
@@ -362,10 +352,10 @@ export class CodeEditorComponent
       // }, 300)),
     ];
 
-    if (this.lineNumbers) {
+    if (this.lineNumbers()) {
       extensions.push(lineNumbers());
     }
-    if (this.lineWrapping) {
+    if (this.lineWrapping()) {
       extensions.push(EditorView.lineWrapping);
     }
     return extensions;
@@ -391,7 +381,7 @@ export class CodeEditorComponent
         parent: this.editor.nativeElement,
       });
 
-      if (this.autofocus) {
+      if (this.autofocus()) {
         this.setFocus();
       }
     }

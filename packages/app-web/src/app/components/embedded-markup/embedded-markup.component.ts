@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject, input } from '@angular/core';
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -57,11 +57,9 @@ export class EmbeddedMarkupComponent
   @Input()
   sourceBuilder: SourceBuilder;
 
-  @Input()
-  maxHeight: boolean = false;
+  readonly maxHeight = input<boolean>(false);
 
-  @Input()
-  showBoxes: boolean = false;
+  readonly showBoxes = input<boolean>(false);
 
   private pickedXpath: EventEmitter<string> = new EventEmitter<string>();
 
@@ -202,7 +200,7 @@ body { cursor: pointer; }
       const data: IframeMessage = e.data;
       switch (data.type) {
         case 'height':
-          if (this.maxHeight) {
+          if (this.maxHeight()) {
             this.iframeRefHeight = (data.data as number) * 0.7;
             this.changeRef.detectChanges();
           }

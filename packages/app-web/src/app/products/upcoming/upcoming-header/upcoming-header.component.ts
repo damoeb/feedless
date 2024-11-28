@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -110,8 +110,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   @Input({ required: true })
   location: Nullable<NamedLatLon>;
 
-  @Input({ required: true })
-  perimeter: number;
+  readonly perimeter = input.required<number>();
 
   // @Input({ required: true })
   // categories: string[];
@@ -152,7 +151,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   async ngOnInit() {
-    this.perimeterFc.patchValue(this.perimeter, { emitEvent: false });
+    this.perimeterFc.patchValue(this.perimeter(), { emitEvent: false });
     this.locationNotAvailable = false;
     await this.changeLocation(this.location, false);
     await this.changeDate(this.date, false);
@@ -509,7 +508,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           place,
         })
         .dateTime({
-          perimeter: this.perimeter,
+          perimeter: this.perimeter(),
           year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
           month: parseInt(this.currentDate.locale(this.locale).format('MM')),
           day: parseInt(this.currentDate.locale(this.locale).format('DD')),

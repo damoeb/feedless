@@ -6,7 +6,7 @@
     <ion-row>
       <ion-col size="9">
         <div style="display: flex; align-items: center; column-gap: 10px">
-          @if (showUrl) {
+          @if (showUrl()) {
             <ion-input
               [formControl]="formFg.controls.url"
               class="ion-margin-start"

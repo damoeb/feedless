@@ -1,10 +1,10 @@
 <div style="flex: 1; display: flex; flex-direction: column; position: relative">
-  @if (showTitle) {
+  @if (showTitle()) {
     <ion-item>
       <ion-label>
         <h3>
-          <a [href]="feedUrl" target="_blank">
-            {{ title }}
+          <a [href]="feedUrl()" target="_blank">
+            {{ title() }}
           </a>
         </h3>
       </ion-label>

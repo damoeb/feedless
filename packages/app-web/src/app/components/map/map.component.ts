@@ -4,12 +4,12 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  Input,
   OnChanges,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation,
-  output
+  output,
+  input
 } from '@angular/core';
 
 export type LatLon = number[];
@@ -25,11 +25,9 @@ export class MapComponent implements AfterViewInit, OnChanges {
   @ViewChild('map')
   mapElement: ElementRef;
 
-  @Input({ required: true })
-  position: LatLon;
+  readonly position = input.required<LatLon>();
 
-  @Input({ required: true })
-  perimeter: number;
+  readonly perimeter = input.required<number>();
 
   readonly positionChange = output<LatLon>();
 
@@ -43,8 +41,8 @@ export class MapComponent implements AfterViewInit, OnChanges {
     try {
       const maxZoom = 13;
       const minZoom = 11;
-      const lat = this.position[0];
-      const lng = this.position[1];
+      const lat = this.position()[0];
+      const lng = this.position()[1];
       this.map = new Map(this.mapElement.nativeElement)
         .setMinZoom(minZoom)
         .setMaxZoom(maxZoom)
@@ -64,7 +62,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
       this.marker = marker({ lat, lng }).addTo(this.map);
       this.circle = circle(
         { lat, lng },
-        { radius: this.perimeter * 1000 },
+        { radius: this.perimeter() * 1000 },
       ).addTo(this.map);
       window.dispatchEvent(new Event('resize'));
     } catch (e) {

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -21,10 +21,8 @@ export class DarkModeButtonComponent implements OnInit, OnDestroy {
 
   @Input()
   label: string;
-  @Input()
-  expand: string;
-  @Input()
-  color: string;
+  readonly expand = input<string>();
+  readonly color = input<string>();
 
   constructor() {
     addIcons({ sunnyOutline, moonOutline });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { SessionService } from '../../services/session.service';
@@ -40,10 +40,8 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   @Input()
   label: string;
-  @Input()
-  expand: string;
-  @Input()
-  color: string;
+  readonly expand = input<string>();
+  readonly color = input<string>();
 
   constructor() {
     addIcons({

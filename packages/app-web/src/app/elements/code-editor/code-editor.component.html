@@ -7,7 +7,7 @@
   class="editor-wrapper"
   >
   <ng-content select="[controls]"></ng-content>
-  @if (markdownControls) {
+  @if (markdownControls()) {
     <ion-toolbar>
       <ion-buttons>
         <ion-button title="Bold">B</ion-button>

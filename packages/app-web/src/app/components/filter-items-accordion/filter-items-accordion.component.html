@@ -1,12 +1,12 @@
-@if (!hideIfEmpty || hasFilters()) {
+@if (!hideIfEmpty() || hasFilters()) {
   <ion-accordion
-    [disabled]="disabled"
+    [disabled]="disabled()"
     toggleIconSlot="start"
     value="filter"
     >
     <ion-item slot="header">
       <ion-label [color]="hasCompositeFilters() ? 'dark' : 'medium'">
-        {{ labelPrefix }} Filters
+        {{ labelPrefix() }} Filters
         @if (countValidFilters() > 0) {
           <ion-chip
             >{{ countValidFilters() }}
@@ -16,7 +16,7 @@
       </ion-label>
     </ion-item>
     <div slot="content">
-      @if (advanced) {
+      @if (advanced()) {
         <ion-item [disabled]="filters.length === 0">
           <ion-checkbox
             [formControl]="formFg.controls.applyFiltersLast"
@@ -122,15 +122,15 @@
   </ion-accordion>
 }
 
-@if (!hideIfEmpty || hasFilters()) {
+@if (!hideIfEmpty() || hasFilters()) {
   <ion-accordion
-    [disabled]="disabled"
+    [disabled]="disabled()"
     toggleIconSlot="start"
     value="filter-expression"
     >
     <ion-item slot="header">
       <ion-label [color]="hasFilterExpression() ? 'dark' : 'medium'">
-        {{ labelPrefix }} Expert Filters
+        {{ labelPrefix() }} Expert Filters
       </ion-label>
     </ion-item>
     <div slot="content">

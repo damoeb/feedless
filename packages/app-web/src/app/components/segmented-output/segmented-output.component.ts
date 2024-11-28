@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, output } from '@angular/core';
+import { Component, Input, OnInit, output, input } from '@angular/core';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
 import { InputComponent } from '../../elements/input/input.component';
@@ -34,8 +34,7 @@ export class SegmentedOutputComponent implements OnInit {
   @Input({ required: true })
   segmented: SegmentedOutput;
 
-  @Input({ required: true })
-  fields: Field[] = [];
+  readonly fields = input.required<Field[]>();
 
   readonly segmentedChanged = output<SegmentedOutput>();
 

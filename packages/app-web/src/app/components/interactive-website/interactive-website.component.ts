@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, output, input } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import {
@@ -76,8 +76,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input({ required: true })
   sourceBuilder: SourceBuilder;
 
-  @Input()
-  showUrl: boolean = false;
+  readonly showUrl = input<boolean>(false);
 
   readonly loadingChange = output<boolean>();
 

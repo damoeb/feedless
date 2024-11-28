@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
@@ -169,13 +169,11 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly modalCtrl = inject(ModalController);
 
-  @Input({ required: true })
-  repositoryId: string;
+  readonly repositoryId = input.required<string>();
 
   repository: RepositoryFull;
 
-  @Input()
-  track: boolean;
+  readonly track = input<boolean>();
 
   protected documents: RecordWithFornmControl[] = [];
   protected feedUrl: string;
@@ -269,7 +267,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
     this.repository = await this.repositoryService.getRepositoryById(
-      this.repositoryId,
+      this.repositoryId(),
       {
         cursor: {
           page: this.currentSourcesPage,
@@ -601,7 +599,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getDocumentUrl(document: Record): string {
-    if (this.track) {
+    if (this.track()) {
       return `${this.serverConfig.apiUrl}/article/${document.id}`;
     } else {
       return document.url;
@@ -732,7 +730,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.annotationService.createAnnotation({
       where: {
         repository: {
-          id: this.repositoryId,
+          id: this.repositoryId(),
         },
       },
       annotation: {
@@ -842,7 +840,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async fetchSources(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
     this.currentSourcesPage = page;
     this.sources = await this.repositoryService.getSourcesByRepository(
-      this.repositoryId,
+      this.repositoryId(),
       {
         cursor: {
           page,

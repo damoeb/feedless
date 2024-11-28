@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject, output, input } from '@angular/core';
 import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
@@ -76,17 +76,16 @@ export class PricingComponent implements OnInit {
   @Input({ required: true })
   vertical: GqlVertical;
 
-  @Input()
-  serviceFlavor: ServiceFlavor;
+  readonly serviceFlavor = input<ServiceFlavor>();
 
-  @Input()
-  hideServiceFlavor: boolean;
+  readonly hideServiceFlavor = input<boolean>();
 
   readonly selectionChange = output<Product>();
 
   async ngOnInit() {
-    if (this.serviceFlavor) {
-      this.serviceFlavorFc.setValue(this.serviceFlavor);
+    const serviceFlavor = this.serviceFlavor();
+    if (serviceFlavor) {
+      this.serviceFlavorFc.setValue(serviceFlavor);
     }
     const products = await this.productService.listProducts({
       category: this.vertical,

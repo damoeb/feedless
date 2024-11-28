@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -47,8 +47,7 @@ export class EmbeddedImageComponent
   @Input({ required: true })
   embed!: Embeddable;
 
-  @Input()
-  strokeStyle: string = 'red';
+  readonly strokeStyle = input<string>('red');
 
   @Input({ required: true })
   sourceBuilder!: SourceBuilder;
@@ -243,7 +242,7 @@ export class EmbeddedImageComponent
     this.resetCanvas();
     const ctx: CanvasRenderingContext2D =
       this.overlayCanvas.nativeElement.getContext('2d');
-    ctx.strokeStyle = this.strokeStyle;
+    ctx.strokeStyle = this.strokeStyle();
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(this.position!.x, this.position!.y, 20, 0, 2 * Math.PI);

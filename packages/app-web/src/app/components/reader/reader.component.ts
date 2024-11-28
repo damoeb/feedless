@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject, input } from '@angular/core';
 import {
   ReaderLinkTarget,
   ReaderTextTransform,
@@ -22,20 +22,16 @@ export class ReaderComponent implements OnChanges {
   private readonly serverConfig = inject(ServerConfigService);
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @Input()
-  linkTarget: ReaderLinkTarget = 'blank';
+  readonly linkTarget = input<ReaderLinkTarget>('blank');
 
-  @Input()
-  verboseLink: boolean = true;
+  readonly verboseLink = input<boolean>(true);
 
-  @Input()
-  textTransform: ReaderTextTransform = 'normal';
+  readonly textTransform = input<ReaderTextTransform>('normal');
 
   @Input({ required: true })
   html: string;
 
-  @Input()
-  showImages: boolean = false;
+  readonly showImages = input<boolean>(false);
 
   content: string;
   private useBionic: boolean;

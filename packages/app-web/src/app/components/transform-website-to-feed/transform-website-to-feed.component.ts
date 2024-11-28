@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output, input } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -106,8 +106,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   @ViewChild('interactiveWebsite')
   interactiveWebsiteComponent: InteractiveWebsiteComponent;
 
-  @Input()
-  feed: NativeOrGenericFeed;
+  readonly feed = input<NativeOrGenericFeed>();
 
   readonly statusChange = output<ComponentStatus>();
 
@@ -234,11 +233,12 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       } else {
         throw new Error('not supported');
       }
-      if (this.feed) {
-        if (this.feed.nativeFeed) {
-          await this.pickNativeFeed(this.feed.nativeFeed);
-        } else if (this.feed.genericFeed) {
-          await this.pickGenericFeed(this.feed.genericFeed);
+      const feed = this.feed();
+      if (feed) {
+        if (feed.nativeFeed) {
+          await this.pickNativeFeed(feed.nativeFeed);
+        } else if (feed.genericFeed) {
+          await this.pickGenericFeed(feed.genericFeed);
         } else {
           throw new Error('not supported');
         }
