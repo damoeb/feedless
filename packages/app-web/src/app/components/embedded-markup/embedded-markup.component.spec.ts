@@ -12,7 +12,7 @@ describe('EmbeddedMarkupComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [EmbeddedMarkupModule, AppTestModule.withDefaults()],
+      imports: [EmbeddedMarkupComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmbeddedMarkupComponent);

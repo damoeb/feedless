@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UpcomingProductRoutingModule } from './upcoming-product-routing.module';
 
-import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
-import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
-import { BubbleModule } from '../../components/bubble/bubble.module';
-import { MapModule } from '../../components/map/map.module';
-import { MapModalModule } from '../../modals/map-modal/map-modal.module';
+
+
+
+
+
 // import { HttpClient } from '@angular/common/http';
 // import dayjs from 'dayjs';
 import { EventsPageModule } from './events/events-page.module';
@@ -25,11 +25,6 @@ import { IonContent, IonHeader } from '@ionic/angular/standalone';
     CommonModule,
     FormsModule,
     UpcomingProductRoutingModule,
-    DarkModeButtonModule,
-    SearchbarModule,
-    BubbleModule,
-    MapModule,
-    MapModalModule,
     IonContent,
     // TranslateModule.forRoot({
     //   isolate: true,
@@ -44,8 +39,9 @@ import { IonContent, IonHeader } from '@ionic/angular/standalone';
     EventsPageModule,
     EventPageModule,
     IonHeader,
-  ],
-  declarations: [AboutUsPage, TermsPage],
+    AboutUsPage,
+    TermsPage,
+],
   exports: [AboutUsPage, TermsPage],
 })
 export class UpcomingProductModule {

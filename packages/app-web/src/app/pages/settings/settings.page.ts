@@ -8,10 +8,23 @@ import { dateFormat } from '../../services/session.service';
 import { debounce, interval } from 'rxjs';
 import { FeatureService } from '../../services/feature.service';
 import { Feature, FeatureGroup } from '../../graphql/types';
-import { FormControl } from '@angular/forms';
-import { ToastController } from '@ionic/angular/standalone';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ToastController,
+  IonContent,
+  IonList,
+  IonItem,
+  IonSpinner,
+  IonSelect,
+  IonSelectOption,
+  IonLabel,
+  IonInput,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
 import { sortBy } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { NgIf, NgFor } from '@angular/common';
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -20,7 +33,23 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    IonList,
+    IonItem,
+    NgIf,
+    IonSpinner,
+    IonSelect,
+    FormsModule,
+    ReactiveFormsModule,
+    NgFor,
+    IonSelectOption,
+    IonLabel,
+    IonInput,
+    IonCheckbox,
+  ],
+  standalone: true,
 })
 export class SettingsPage implements OnInit {
   loading = true;

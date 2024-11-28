@@ -16,7 +16,7 @@ describe('FilterItemsAccordionComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), FilterItemsAccordionModule],
+      imports: [AppTestModule.withDefaults(), FilterItemsAccordionComponent],
     }).compileComponents();
 
     await mockServerSettings(

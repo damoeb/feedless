@@ -12,7 +12,7 @@ describe('EmbeddedImageComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [EmbeddedImageModule, AppTestModule.withDefaults()],
+      imports: [EmbeddedImageComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmbeddedImageComponent);

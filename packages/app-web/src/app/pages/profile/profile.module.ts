@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProfilePageRoutingModule } from './profile-routing.module';
 
 import { ProfilePage } from './profile.page';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
-import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
+
+
 import {
   IonButton,
   IonCol,
@@ -25,8 +25,6 @@ import {
     FormsModule,
     ProfilePageRoutingModule,
     ReactiveFormsModule,
-    FeedlessHeaderModule,
-    RemoveIfProdModule,
     IonContent,
     IonRow,
     IonCol,
@@ -37,7 +35,7 @@ import {
     IonItem,
     IonIcon,
     IonNote,
-  ],
-  declarations: [ProfilePage],
+    ProfilePage,
+],
 })
 export class ProfilePageModule {}

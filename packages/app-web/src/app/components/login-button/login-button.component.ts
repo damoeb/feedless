@@ -18,13 +18,23 @@ import {
   cardOutline,
   exitOutline,
 } from 'ionicons/icons';
+import { NgIf } from '@angular/common';
+import {
+  IonButton,
+  IonIcon,
+  IonPopover,
+  IonList,
+  IonItem,
+} from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login-button',
   templateUrl: './login-button.component.html',
   styleUrls: ['./login-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [NgIf, IonButton, RouterLink, IonIcon, IonPopover, IonList, IonItem],
+  standalone: true,
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
   authorization: Authentication;

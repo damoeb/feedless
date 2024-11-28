@@ -1,17 +1,46 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+} from '@ionic/angular/standalone';
 import { ModalCancel } from '../../app.module';
 import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { GqlGeoPoint } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { NgIf, NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-search-address-modal',
   templateUrl: './search-address-modal.component.html',
   styleUrls: ['./search-address-modal.component.scss'],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    SearchbarComponent,
+    IonList,
+    NgIf,
+    IonItem,
+    NgFor,
+    IonLabel,
+  ],
+  standalone: true,
 })
 export class SearchAddressModalComponent {
   matches: NamedLatLon[];

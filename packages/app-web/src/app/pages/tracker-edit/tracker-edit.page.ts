@@ -6,8 +6,14 @@ import {
   OnInit,
 } from '@angular/core';
 import { debounce, interval } from 'rxjs';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Location } from '@angular/common';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { Location, NgClass, NgIf, NgFor } from '@angular/common';
 import {
   BoundingBox,
   XyPosition,
@@ -21,6 +27,23 @@ import {
 import {
   AlertController,
   ItemReorderEventDetail,
+  IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonReorderGroup,
+  IonSelect,
+  IonSelectOption,
+  IonButton,
+  IonIcon,
+  IonReorder,
+  IonRadioGroup,
+  IonRadio,
 } from '@ionic/angular/standalone';
 import { RepositoryService } from '../../services/repository.service';
 import { fixUrl, isValidUrl } from '../../app.module';
@@ -37,6 +60,9 @@ import {
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { trashOutline } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
 
 type Email = string;
 
@@ -47,7 +73,34 @@ type Screen = 'area' | 'page' | 'element';
   templateUrl: './tracker-edit.page.html',
   styleUrls: ['./tracker-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    NgClass,
+    NgIf,
+    FormsModule,
+    IonGrid,
+    IonRow,
+    IonCol,
+    SearchbarComponent,
+    InteractiveWebsiteComponent,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonReorderGroup,
+    NgFor,
+    IonSelect,
+    ReactiveFormsModule,
+    IonSelectOption,
+    IonButton,
+    IonIcon,
+    IonReorder,
+    IonRadioGroup,
+    IonRadio,
+  ],
+  standalone: true,
 })
 export class TrackerEditPage
   extends InteractiveWebsiteController

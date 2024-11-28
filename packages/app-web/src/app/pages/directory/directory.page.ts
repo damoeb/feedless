@@ -6,13 +6,34 @@ import {
 } from '@angular/core';
 import { PublicRepository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import { BubbleColor } from '../../components/bubble/bubble.component';
+import {
+  BubbleColor,
+  BubbleComponent,
+} from '../../components/bubble/bubble.component';
 import { GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl } from '@angular/forms';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { trendingDownOutline } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonHeader,
+  IonProgressBar,
+  IonContent,
+  IonRow,
+  IonItem,
+  IonList,
+  IonLabel,
+  IonChip,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
+import { ProductHeaderComponent } from '../../components/product-header/product-header.component';
+import { RouterLink } from '@angular/router';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type ViewMode = 'list' | 'grid';
 
@@ -21,7 +42,27 @@ type ViewMode = 'list' | 'grid';
   templateUrl: './directory.page.html',
   styleUrls: ['./directory.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonHeader,
+    NgIf,
+    IonProgressBar,
+    IonContent,
+    ProductHeaderComponent,
+    IonRow,
+    IonItem,
+    IonList,
+    NgFor,
+    BubbleComponent,
+    IonLabel,
+    RouterLink,
+    IonChip,
+    RemoveIfProdDirective,
+    IonButton,
+    IonIcon,
+    PaginationComponent,
+  ],
+  standalone: true,
 })
 export class DirectoryPage implements OnInit {
   loading = false;

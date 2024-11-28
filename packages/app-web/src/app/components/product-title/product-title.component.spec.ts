@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ProductTitleComponent } from './product-title.component';
-import { ProductTitleModule } from './product-title.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('ProductTitleComponent', () => {
@@ -11,7 +10,7 @@ describe('ProductTitleComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        ProductTitleModule,
+        ProductTitleComponent,
         AppTestModule.withDefaults({ mockAppConfig: false }),
       ],
     }).compileComponents();

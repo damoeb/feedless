@@ -1,8 +1,22 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+} from '@ionic/angular/standalone';
 import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { NgIf, NgFor } from '@angular/common';
 
 export interface TagsModalComponentProps {
   tags: string[];
@@ -12,7 +26,22 @@ export interface TagsModalComponentProps {
   selector: 'app-tags-modal',
   templateUrl: './tags-modal.component.html',
   styleUrls: ['./tags-modal.component.scss'],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonList,
+    SearchbarComponent,
+    NgIf,
+    IonItem,
+    IonLabel,
+    NgFor,
+  ],
+  standalone: true,
 })
 export class TagsModalComponent implements TagsModalComponentProps {
   tags: string[] = [];

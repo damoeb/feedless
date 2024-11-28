@@ -10,7 +10,7 @@ describe('ImageDiffComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ImageDiffModule, AppTestModule.withDefaults()],
+      imports: [ImageDiffComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImageDiffComponent);

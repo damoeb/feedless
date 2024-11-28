@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SegmentedOutputComponent } from './segmented-output.component';
-import { SegmentedOutputModule } from './segmented-output.module';
 
 describe('SegmentedOutputComponent', () => {
   let component: SegmentedOutputComponent;
@@ -9,7 +8,7 @@ describe('SegmentedOutputComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SegmentedOutputModule],
+      imports: [SegmentedOutputComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SegmentedOutputComponent);

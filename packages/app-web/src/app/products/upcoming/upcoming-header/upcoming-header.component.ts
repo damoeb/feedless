@@ -23,10 +23,10 @@ import {
   uniqBy,
 } from 'lodash-es';
 import { LatLon } from '../../../components/map/map.component';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { getCachedLocations } from '../places';
 import { addIcons } from 'ionicons';
 import {
@@ -42,6 +42,19 @@ import {
 } from '../upcoming-product-routing.module';
 import { getSavedLocations } from '../events/events.page';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButton,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonButtons,
+  IonList,
+  IonItem,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
+import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
 
 type Day = {
   day: Dayjs | null;
@@ -68,7 +81,24 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
   templateUrl: './upcoming-header.component.html',
   styleUrls: ['./upcoming-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonHeader,
+    NgIf,
+    IonToolbar,
+    IonButton,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSelect,
+    IonSelectOption,
+    IonButtons,
+    DarkModeButtonComponent,
+    IonList,
+    IonItem,
+    NgFor,
+    RouterLink,
+  ],
+  standalone: true,
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   years: Years = {};

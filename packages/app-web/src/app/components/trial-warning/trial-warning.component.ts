@@ -5,13 +5,21 @@ import { LicenseService } from '../../services/license.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Subscription } from 'rxjs';
-import { IonRouterLink } from '@ionic/angular/standalone';
+import {
+  IonRouterLink,
+  IonToolbar,
+  IonText,
+  IonButton,
+} from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-trial-warning',
   templateUrl: './trial-warning.component.html',
   styleUrls: ['./trial-warning.component.scss'],
-  standalone: false,
+  imports: [NgIf, IonToolbar, RouterLink, RouterLinkActive, IonText, IonButton],
+  standalone: true,
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {
   license: GqlServerSettingsQuery['serverSettings']['license'];

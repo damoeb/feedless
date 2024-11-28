@@ -10,8 +10,16 @@ import {
   IonPopover,
   IonSearchbar,
   PopoverController,
+  IonContent,
+  IonHeader,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButton,
 } from '@ionic/angular/standalone';
 import { isFunction, isObject, isString } from 'lodash-es';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export function labelProvider<T>(
   value: T,
@@ -36,7 +44,21 @@ export function labelProvider<T>(
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
-  standalone: false,
+  imports: [
+    IonPopover,
+    IonContent,
+    NgIf,
+    IonHeader,
+    IonSearchbar,
+    FormsModule,
+    IonList,
+    NgFor,
+    IonItem,
+    NgClass,
+    IonLabel,
+    IonButton,
+  ],
+  standalone: true,
 })
 export class MenuComponent<T> implements OnInit {
   @Input()

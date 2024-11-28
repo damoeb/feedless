@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { ScrapeResponse } from '../../graphql/types';
-import { TransformWebsiteToFeedModule } from './transform-website-to-feed.module';
 import {
   AppTestModule,
   mockRepositories,
@@ -84,7 +83,6 @@ describe('TransformWebsiteToFeedComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        TransformWebsiteToFeedModule,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockScrape(apolloMockController);

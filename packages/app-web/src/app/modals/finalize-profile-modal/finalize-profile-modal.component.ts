@@ -4,12 +4,32 @@ import {
   Component,
   OnInit,
 } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonContent,
+  IonList,
+  IonRow,
+  IonCol,
+  IonLabel,
+  IonInput,
+  IonNote,
+  IonCheckbox,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 import {
   needsPlanSubscription,
   SessionService,
 } from '../../services/session.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import dayjs from 'dayjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -17,13 +37,31 @@ import { AppConfigService } from '../../services/app-config.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-finalize-profile-modal',
   templateUrl: './finalize-profile-modal.component.html',
   styleUrls: ['./finalize-profile-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonContent,
+    IonList,
+    IonRow,
+    IonCol,
+    IonLabel,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonNote,
+    NgIf,
+    IonCheckbox,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonSpinner,
+  ],
+  standalone: true,
 })
 export class FinalizeProfileModalComponent implements OnInit {
   loading = false;

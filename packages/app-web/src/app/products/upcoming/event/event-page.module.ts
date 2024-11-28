@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventPage } from './event.page';
 import { EventRoutingModule } from './event-routing.module';
-import { UpcomingHeaderModule } from '../upcoming-header/upcoming-header.module';
-import { UpcomingFooterModule } from '../upcoming-footer/upcoming-footer.module';
 import {
   IonBadge,
   IonButton,
@@ -20,8 +18,6 @@ import {
   imports: [
     CommonModule,
     EventRoutingModule,
-    UpcomingHeaderModule,
-    UpcomingFooterModule,
     IonContent,
     IonSpinner,
     IonToolbar,
@@ -31,8 +27,7 @@ import {
     IonNote,
     IonBadge,
     IonFooter,
+    EventPage,
   ],
-  declarations: [EventPage],
-  exports: [EventPage],
 })
 export class EventPageModule {}

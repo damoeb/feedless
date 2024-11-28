@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PrivacyPageRoutingModule } from './privacy-routing.module';
 
 import { PrivacyPage } from './privacy.page';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
 import { IonContent } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -12,9 +12,8 @@ import { IonContent } from '@ionic/angular/standalone';
     CommonModule,
     FormsModule,
     PrivacyPageRoutingModule,
-    FeedlessHeaderModule,
     IonContent,
-  ],
-  declarations: [PrivacyPage],
+    PrivacyPage,
+],
 })
 export class PrivacyPageModule {}

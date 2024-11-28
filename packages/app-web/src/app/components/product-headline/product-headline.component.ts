@@ -4,7 +4,7 @@ import { Component, Input } from '@angular/core';
   selector: 'app-product-headline',
   templateUrl: './product-headline.component.html',
   styleUrls: ['./product-headline.component.scss'],
-  standalone: false,
+  standalone: true,
 })
 export class ProductHeadlineComponent {
   @Input({ required: true })

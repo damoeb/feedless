@@ -10,7 +10,7 @@ describe('MapComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [MapModule, AppTestModule],
+      imports: [MapComponent, AppTestModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapComponent);

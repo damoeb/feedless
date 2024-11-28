@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AgentsPageRoutingModule } from './agents-routing.module';
 
 import { AgentsPage } from './agents.page';
-import { AgentsModule } from '../../components/agents/agents.module';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
+
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -19,14 +19,12 @@ import {
     CommonModule,
     FormsModule,
     AgentsPageRoutingModule,
-    AgentsModule,
-    FeedlessHeaderModule,
     IonContent,
     IonBreadcrumbs,
     IonBreadcrumb,
     IonRow,
     IonCol,
-  ],
-  declarations: [AgentsPage],
+    AgentsPage,
+],
 })
 export class AgentsPageModule {}

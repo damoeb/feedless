@@ -31,10 +31,10 @@ import { HttpErrorInterceptorService } from './services/http-error-interceptor.s
 import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
 import { ServerConfigService } from './services/server-config.service';
-import { FinalizeProfileModalModule } from './modals/finalize-profile-modal/finalize-profile-modal.module';
+
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GqlVertical } from '../generated/graphql';
-import { ProductTitleModule } from './components/product-title/product-title.module';
+
 import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
@@ -107,12 +107,10 @@ export const fixUrl = (value: string): string => {
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    FinalizeProfileModalModule,
     AppLoadModule,
-    ProductTitleModule,
     IonApp,
     IonRouterOutlet,
-  ],
+],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     {

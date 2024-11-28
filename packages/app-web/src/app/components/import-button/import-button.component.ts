@@ -2,7 +2,16 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { ModalController, ToastController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  ToastController,
+  IonButton,
+  IonLabel,
+  IonPopover,
+  IonContent,
+  IonList,
+  IonItem,
+} from '@ionic/angular/standalone';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,
@@ -13,13 +22,23 @@ import { RepositoryService } from '../../services/repository.service';
 import { isArray } from 'lodash-es';
 import { GqlRepositoryCreateInput } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 
 @Component({
   selector: 'app-import-button',
   templateUrl: './import-button.component.html',
   styleUrls: ['./import-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonButton,
+    IonLabel,
+    IonPopover,
+    IonContent,
+    IonList,
+    IonItem,
+    RemoveIfProdDirective,
+  ],
+  standalone: true,
 })
 export class ImportButtonComponent {
   @Input()

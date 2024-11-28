@@ -10,13 +10,17 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { IonContent } from '@ionic/angular/standalone';
+import { NotebooksComponent } from '../../components/notebooks/notebooks.component';
 
 @Component({
   selector: 'app-notebook-page',
   templateUrl: './notebooks.page.html',
   styleUrls: ['./notebooks.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [FeedlessHeaderComponent, IonContent, NotebooksComponent],
+  standalone: true,
 })
 export class NotebooksPage implements OnInit, OnDestroy {
   loading = false;

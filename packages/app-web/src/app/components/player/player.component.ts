@@ -4,6 +4,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { playOutline } from 'ionicons/icons';
+import { NgIf } from '@angular/common';
+import { IonButton, IonIcon, IonNote } from '@ionic/angular/standalone';
 
 type Enclosure = GetElementType<Record['attachments']>;
 
@@ -11,7 +13,8 @@ type Enclosure = GetElementType<Record['attachments']>;
   selector: 'app-player',
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.scss'],
-  standalone: false,
+  imports: [NgIf, IonButton, IonIcon, IonNote],
+  standalone: true,
 })
 export class PlayerComponent {
   @Input({ required: true })

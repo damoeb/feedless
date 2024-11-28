@@ -14,6 +14,8 @@ import {
 import { isUndefined } from 'lodash-es';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
+import { NgIf, NgClass } from '@angular/common';
+import { IonRow, IonCol } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-reader',
@@ -21,7 +23,8 @@ import { isDefined } from '../../types';
   styleUrls: ['./reader.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [NgIf, NgClass, IonRow, IonCol],
+  standalone: true,
 })
 export class ReaderComponent implements OnChanges {
   @Input()

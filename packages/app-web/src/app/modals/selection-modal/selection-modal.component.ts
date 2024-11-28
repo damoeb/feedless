@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonCheckbox,
+  IonLabel,
+  IonNote,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgFor, NgIf } from '@angular/common';
 
 export interface SelectionModalComponentProps<T> {
   selectables: SelectableEntity<T>[];
@@ -27,7 +42,25 @@ type EntityWithFormControl<T> = {
   selector: 'app-tags-modal',
   templateUrl: './selection-modal.component.html',
   styleUrls: ['./selection-modal.component.scss'],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonList,
+    NgFor,
+    IonItem,
+    IonCheckbox,
+    FormsModule,
+    ReactiveFormsModule,
+    IonLabel,
+    NgIf,
+    IonNote,
+  ],
+  standalone: true,
 })
 export class SelectionModalComponent<T>
   implements SelectionModalComponentProps<T>, OnInit

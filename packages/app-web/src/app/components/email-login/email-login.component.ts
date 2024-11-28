@@ -3,15 +3,44 @@ import { GqlConfirmCode } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
-import { FormControl, Validators } from '@angular/forms';
+import {
+  FormControl,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
+import {
+  IonCard,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonInput,
+  IonLabel,
+  IonIcon,
+  IonSpinner,
+} from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-email-login',
   templateUrl: './email-login.component.html',
   styleUrls: ['./email-login.component.scss'],
-  standalone: false,
+  imports: [
+    IonCard,
+    IonCardContent,
+    IonList,
+    FormsModule,
+    IonItem,
+    IonInput,
+    ReactiveFormsModule,
+    NgIf,
+    IonLabel,
+    IonIcon,
+    IonSpinner,
+  ],
+  standalone: true,
 })
 export class EmailLoginComponent implements OnDestroy {
   mode: 'enterMail' | 'enterConfirmationCode' | 'finalized' = 'enterMail';

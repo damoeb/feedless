@@ -8,13 +8,34 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonContent,
+  IonRow,
+  IonCol,
+  IonList,
+  IonItem,
+  IonLabel,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-billings-page',
   templateUrl: './billings.page.html',
   styleUrls: ['./billings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    IonRow,
+    IonCol,
+    IonList,
+    NgIf,
+    IonItem,
+    NgFor,
+    IonLabel,
+  ],
+  standalone: true,
 })
 export class BillingsPage implements OnInit {
   busy = false;

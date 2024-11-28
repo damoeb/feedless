@@ -11,7 +11,12 @@ import { Subscription } from 'rxjs';
 import dayjs from 'dayjs';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { environment } from '../../../environments/environment';
-import { FormControl, Validators } from '@angular/forms';
+import {
+  FormControl,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
 import { AppConfigService } from '../../services/app-config.service';
@@ -21,13 +26,44 @@ import {
   checkmarkDoneOutline,
   timeOutline,
 } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonContent,
+  IonList,
+  IonItem,
+  IonSpinner,
+  IonIcon,
+  IonProgressBar,
+  IonRow,
+  IonCol,
+  IonButton,
+  IonTextarea,
+} from '@ionic/angular/standalone';
+import { NgIf, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-license-page',
   templateUrl: './license.page.html',
   styleUrls: ['./license.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    IonList,
+    IonItem,
+    NgIf,
+    IonSpinner,
+    IonIcon,
+    IonProgressBar,
+    IonRow,
+    IonCol,
+    IonButton,
+    IonTextarea,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+  ],
+  standalone: true,
 })
 export class LicensePage implements OnInit, OnDestroy {
   loading = true;

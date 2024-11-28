@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FeedsPage } from './feeds.page';
 import 'img-comparison-slider';
 import { FeedsRoutingModule } from './feeds-routing.module';
-import { BubbleModule } from '../../components/bubble/bubble.module';
-import { HistogramModule } from '../../components/histogram/histogram.module';
+
+
 import { ImportButtonModule } from '../../components/import-button/import-button.module';
-import { PaginationModule } from '../../components/pagination/pagination.module';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
-import { TableModule } from '../../components/table/table.module';
-import { RemoveIfProdModule } from '../../directives/remove-if-prod/remove-if-prod.module';
+
+
+
+
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -29,13 +29,7 @@ import {
   imports: [
     CommonModule,
     FeedsRoutingModule,
-    BubbleModule,
-    HistogramModule,
     ImportButtonModule,
-    PaginationModule,
-    FeedlessHeaderModule,
-    TableModule,
-    RemoveIfProdModule,
     IonContent,
     IonBreadcrumbs,
     IonBreadcrumb,
@@ -48,8 +42,8 @@ import {
     IonItem,
     IonLabel,
     IonChip,
-  ],
+    FeedsPage,
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  declarations: [FeedsPage],
 })
 export class FeedsPageModule {}

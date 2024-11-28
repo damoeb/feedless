@@ -10,14 +10,42 @@ import {
 } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { SourceBuilder } from './source-builder';
 import { map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Embeddable } from '../embedded-image/embedded-image.component';
+import {
+  Embeddable,
+  EmbeddedImageComponent,
+} from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { addIcons } from 'ionicons';
 import { removeOutline, addOutline } from 'ionicons/icons';
+import {
+  IonToolbar,
+  IonRow,
+  IonCol,
+  IonInput,
+  IonSegment,
+  IonSegmentButton,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonRange,
+  IonLabel,
+  IonText,
+  IonItem,
+  IonProgressBar,
+} from '@ionic/angular/standalone';
+import { NgIf, NgStyle } from '@angular/common';
+import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';
+import { ConsoleButtonComponent } from '../console-button/console-button.component';
 
 type ViewMode = 'markup' | 'image';
 
@@ -26,7 +54,30 @@ type ViewMode = 'markup' | 'image';
   templateUrl: './interactive-website.component.html',
   styleUrls: ['./interactive-website.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonToolbar,
+    IonRow,
+    IonCol,
+    NgIf,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSegment,
+    IonSegmentButton,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonRange,
+    IonLabel,
+    IonText,
+    NgStyle,
+    EmbeddedImageComponent,
+    EmbeddedMarkupComponent,
+    ConsoleButtonComponent,
+    IonItem,
+    IonProgressBar,
+  ],
+  standalone: true,
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input({ required: true })

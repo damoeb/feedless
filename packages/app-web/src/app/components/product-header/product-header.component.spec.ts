@@ -9,7 +9,7 @@ describe('ProductHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ProductHeaderModule],
+      imports: [ProductHeaderComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductHeaderComponent);

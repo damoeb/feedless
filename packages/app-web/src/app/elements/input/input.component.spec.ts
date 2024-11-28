@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { InputComponent } from './input.component';
-import { InputModule } from './input.module';
+
 
 describe('InputComponent', () => {
   let component: InputComponent<any>;
@@ -9,7 +9,7 @@ describe('InputComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [InputModule],
+      imports: [InputComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputComponent);

@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   AppConfigService,
@@ -15,6 +15,16 @@ import {
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
+import {
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonToolbar,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
+import { ProductHeadlineComponent } from '../../../components/product-headline/product-headline.component';
 
 @Component({
   selector: 'app-feedless-products-page',
@@ -22,7 +32,19 @@ import { arrowForwardOutline } from 'ionicons/icons';
   styleUrls: ['./products.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  imports: [
+    IonContent,
+    NgIf,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    RouterLink,
+    ProductHeadlineComponent,
+    IonToolbar,
+    NgFor,
+    IonButton,
+    IonIcon,
+  ],
+  standalone: true,
 })
 export class ProductsPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

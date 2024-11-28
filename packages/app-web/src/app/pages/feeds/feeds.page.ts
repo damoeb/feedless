@@ -7,13 +7,36 @@ import {
 } from '@angular/core';
 import { Record, Repository } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import { BubbleColor } from '../../components/bubble/bubble.component';
+import {
+  BubbleColor,
+  BubbleComponent,
+} from '../../components/bubble/bubble.component';
 import { GqlVertical, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonRow,
+  IonCol,
+  IonButtons,
+  IonButton,
+  IonProgressBar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonChip,
+} from '@ionic/angular/standalone';
+import { NgClass, NgIf, NgFor } from '@angular/common';
+import { ImportButtonComponent } from '../../components/import-button/import-button.component';
+import { TableComponent } from '../../components/table/table.component';
+import { HistogramComponent } from '../../components/histogram/histogram.component';
+import { PaginationComponent } from '../../components/pagination/pagination.component';
 
 type ViewMode = 'list' | 'table';
 
@@ -22,7 +45,31 @@ type ViewMode = 'list' | 'table';
   templateUrl: './feeds.page.html',
   styleUrls: ['./feeds.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    NgClass,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    RouterLink,
+    IonRow,
+    IonCol,
+    IonButtons,
+    ImportButtonComponent,
+    IonButton,
+    NgIf,
+    IonProgressBar,
+    TableComponent,
+    IonList,
+    IonItem,
+    NgFor,
+    BubbleComponent,
+    IonLabel,
+    IonChip,
+    HistogramComponent,
+    PaginationComponent,
+  ],
+  standalone: true,
 })
 export class FeedsPage implements OnInit, OnDestroy {
   loading = false;

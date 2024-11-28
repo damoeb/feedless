@@ -6,7 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { SessionService } from '../../services/session.service';
-import { ChildActivationEnd, Router } from '@angular/router';
+import { ChildActivationEnd, Router, RouterLink } from '@angular/router';
 import { has } from 'lodash-es';
 import {
   AppConfigService,
@@ -15,14 +15,45 @@ import {
 import { filter, map, Subscription } from 'rxjs';
 import { GqlVertical } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
-import { IonRouterLink } from '@ionic/angular/standalone';
+import {
+  IonRouterLink,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonButton,
+  IonContent,
+  IonRouterOutlet,
+} from '@ionic/angular/standalone';
+import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
+import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
+import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
+import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
+import { NgIf } from '@angular/common';
+import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 @Component({
   selector: 'app-visual-diff-product-page',
   templateUrl: './visual-diff-product.page.html',
   styleUrls: ['./visual-diff-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonHeader,
+    TrialWarningComponent,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    RouterLink,
+    RepositoriesButtonComponent,
+    AgentsButtonComponent,
+    DarkModeButtonComponent,
+    NgIf,
+    IonButton,
+    LoginButtonComponent,
+    IonContent,
+    IonRouterOutlet,
+  ],
+  standalone: true,
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

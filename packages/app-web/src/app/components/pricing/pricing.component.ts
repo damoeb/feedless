@@ -8,7 +8,7 @@ import {
   Output,
 } from '@angular/core';
 import { filter } from 'lodash-es';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { FeatureGroup, Product } from '../../graphql/types';
 import {
@@ -20,8 +20,19 @@ import {
 import {
   StringFeature,
   StringFeatureGroup,
+  PlanColumnComponent,
 } from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
+import { NgIf, NgFor } from '@angular/common';
+import {
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
+  IonRow,
+  IonCol,
+  IonNote,
+  IonButton,
+} from '@ionic/angular/standalone';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -37,7 +48,21 @@ type ProductWithFeatureGroups = Product & {
   templateUrl: './pricing.component.html',
   styleUrls: ['./pricing.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    IonSegment,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSegmentButton,
+    IonLabel,
+    NgFor,
+    PlanColumnComponent,
+    IonRow,
+    IonCol,
+    IonNote,
+    IonButton,
+  ],
+  standalone: true,
 })
 export class PricingComponent implements OnInit {
   targetGroupFc = new FormControl<TargetGroup>('individual');

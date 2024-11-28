@@ -5,13 +5,47 @@ import {
 } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { removeOutline, addOutline, ellipse } from 'ionicons/icons';
+import {
+  IonToolbar,
+  IonLabel,
+  IonText,
+  IonInput,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonRange,
+  IonItem,
+  IonAccordionGroup,
+  IonAccordion,
+  IonList,
+} from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
+import { NgStyle } from '@angular/common';
+import { BubbleComponent } from '../bubble/bubble.component';
 
 @Component({
   selector: 'app-workflow-builder',
   templateUrl: './workflow-builder.component.html',
   styleUrls: ['./workflow-builder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonToolbar,
+    IonLabel,
+    IonText,
+    IonInput,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonRange,
+    FormsModule,
+    NgStyle,
+    IonItem,
+    IonAccordionGroup,
+    IonAccordion,
+    IonList,
+    BubbleComponent,
+  ],
+  standalone: true,
 })
 export class WorkflowBuilderComponent {
   scaleFactor: number = 0.7;

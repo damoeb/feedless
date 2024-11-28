@@ -9,13 +9,30 @@ import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
 import { Record } from '../../graphql/types';
+import { NgIf, NgFor } from '@angular/common';
+import {
+  IonItem,
+  IonLabel,
+  IonSpinner,
+  IonList,
+} from '@ionic/angular/standalone';
+import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.component';
 
 @Component({
   selector: 'app-native-feed',
   templateUrl: './native-feed.component.html',
   styleUrls: ['./native-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    IonItem,
+    IonLabel,
+    IonSpinner,
+    IonList,
+    NgFor,
+    RemoteFeedItemComponent,
+  ],
+  standalone: true,
 })
 export class NativeFeedComponent implements OnInit {
   @Input({ required: true })

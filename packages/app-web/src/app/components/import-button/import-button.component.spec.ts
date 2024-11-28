@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ImportButtonComponent } from './import-button.component';
-import { ImportButtonModule } from './import-button.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -22,7 +21,7 @@ describe('ImportButtonComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        ImportButtonModule,
+        ImportButtonComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController

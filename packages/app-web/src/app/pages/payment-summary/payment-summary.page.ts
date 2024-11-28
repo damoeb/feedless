@@ -10,13 +10,17 @@ import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { IonContent } from '@ionic/angular/standalone';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-payment-summary-page',
   templateUrl: './payment-summary.page.html',
   styleUrls: ['./payment-summary.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [FeedlessHeaderComponent, IonContent, JsonPipe],
+  standalone: true,
 })
 export class PaymentSummaryPage implements OnInit, OnDestroy {
   protected order: Order;

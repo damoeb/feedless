@@ -11,7 +11,13 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
 import { sum } from 'lodash-es';
@@ -24,6 +30,24 @@ import {
   GqlUserCreateOrConnectInput,
 } from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonContent,
+  IonSpinner,
+  IonList,
+  IonItem,
+  IonRow,
+  IonCol,
+  IonInput,
+  IonButton,
+  IonListHeader,
+  IonLabel,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor, NgClass } from '@angular/common';
 
 type Country = {
   name: string;
@@ -291,7 +315,29 @@ type PaymentOption = {
   templateUrl: './checkout.page.html',
   styleUrls: ['./checkout.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    NgIf,
+    IonSpinner,
+    IonList,
+    IonItem,
+    FormsModule,
+    IonRow,
+    IonCol,
+    IonInput,
+    ReactiveFormsModule,
+    IonButton,
+    IonListHeader,
+    NgFor,
+    IonLabel,
+    IonNote,
+    IonSelect,
+    IonSelectOption,
+    NgClass,
+    IonCheckbox,
+  ],
+  standalone: true,
 })
 export class CheckoutPage implements OnInit, OnDestroy {
   product: VerticalSpecWithRoutes;

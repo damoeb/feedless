@@ -6,7 +6,6 @@ import {
   mockRepositories,
   mockScrape,
 } from '../../app-test.module';
-import { FeedBuilderModule } from './feed-builder.module';
 
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
@@ -15,7 +14,7 @@ describe('FeedBuilderComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        FeedBuilderModule,
+        FeedBuilderComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockScrape(apolloMockController);

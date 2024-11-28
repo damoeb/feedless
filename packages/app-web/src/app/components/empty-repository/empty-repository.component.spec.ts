@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { EmptyRepositoryComponent } from './empty-repository.component';
-import { EmptyRepositoryModule } from './empty-repository.module';
+
 import { AppTestModule } from '../../app-test.module';
 
 describe('EmptyRepositoryComponent', () => {
@@ -10,7 +10,7 @@ describe('EmptyRepositoryComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [EmptyRepositoryModule, AppTestModule.withDefaults()],
+      imports: [EmptyRepositoryComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmptyRepositoryComponent);

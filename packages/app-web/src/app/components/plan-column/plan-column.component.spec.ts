@@ -9,7 +9,7 @@ describe('PlanColumnComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [PlanColumnModule],
+      imports: [PlanColumnComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlanColumnComponent);

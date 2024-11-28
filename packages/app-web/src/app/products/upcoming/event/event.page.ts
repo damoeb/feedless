@@ -8,7 +8,7 @@ import {
 import { RecordService } from '../../../services/record.service';
 import { Record } from '../../../graphql/types';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AppConfigService } from '../../../services/app-config.service';
 import { PageService, PageTags } from '../../../services/page.service';
 import dayjs, { Dayjs } from 'dayjs';
@@ -22,13 +22,41 @@ import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../../types';
+import { NgIf, NgFor } from '@angular/common';
+import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
+import {
+  IonContent,
+  IonSpinner,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonNote,
+  IonBadge,
+} from '@ionic/angular/standalone';
+import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 
 @Component({
   selector: 'app-event-page',
   templateUrl: './event.page.html',
   styleUrls: ['./event.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    UpcomingHeaderComponent,
+    IonContent,
+    IonSpinner,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    RouterLink,
+    IonIcon,
+    IonNote,
+    NgFor,
+    IonBadge,
+    UpcomingFooterComponent,
+  ],
+  standalone: true,
 })
 export class EventPage implements OnInit, OnDestroy {
   loading: boolean = true;

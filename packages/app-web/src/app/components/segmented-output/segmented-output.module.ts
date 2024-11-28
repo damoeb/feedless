@@ -5,8 +5,15 @@ import { InputModule } from '../../elements/input/input.module';
 import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
 
 @NgModule({
-  declarations: [SegmentedOutputComponent],
   exports: [SegmentedOutputComponent],
-  imports: [CommonModule, InputModule, IonGrid, IonRow, IonCol, IonButton],
+  imports: [
+    CommonModule,
+    InputModule,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonButton,
+    SegmentedOutputComponent,
+  ],
 })
 export class SegmentedOutputModule {}

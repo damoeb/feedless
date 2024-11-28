@@ -9,13 +9,16 @@ import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { IonContent, IonRow, IonCol } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-report-page',
   templateUrl: './report.page.html',
   styleUrls: ['./report.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [FeedlessHeaderComponent, IonContent, IonRow, IonCol],
+  standalone: true,
 })
 export class ReportPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

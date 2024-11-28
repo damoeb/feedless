@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CheckoutPageRoutingModule } from './checkout-routing.module';
 
 import { CheckoutPage } from './checkout.page';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
 import {
   IonButton,
   IonCheckbox,
@@ -28,7 +28,6 @@ import {
     FormsModule,
     CheckoutPageRoutingModule,
     ReactiveFormsModule,
-    FeedlessHeaderModule,
     IonContent,
     IonSpinner,
     IonList,
@@ -43,7 +42,7 @@ import {
     IonSelect,
     IonSelectOption,
     IonCheckbox,
-  ],
-  declarations: [CheckoutPage],
+    CheckoutPage,
+],
 })
 export class CheckoutPageModule {}

@@ -5,7 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
@@ -19,13 +19,46 @@ import { ModalService } from '../../services/modal.service';
 import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-modal.component';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonRouterOutlet,
+  IonFooter,
+  IonChip,
+} from '@ionic/angular/standalone';
+import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
+import { NgIf } from '@angular/common';
+import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
+import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 @Component({
   selector: 'app-change-tracker-product-page',
   templateUrl: './change-tracker-product.page.html',
   styleUrls: ['./change-tracker-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonHeader,
+    TrialWarningComponent,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    RouterLink,
+    NgIf,
+    IonButton,
+    IonIcon,
+    DarkModeButtonComponent,
+    LoginButtonComponent,
+    IonContent,
+    IonRouterOutlet,
+    IonFooter,
+    IonChip,
+  ],
+  standalone: true,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

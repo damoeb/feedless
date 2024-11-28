@@ -20,7 +20,7 @@ export type LatLon = number[];
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  standalone: true,
 })
 export class MapComponent implements AfterViewInit, OnChanges {
   @ViewChild('map')

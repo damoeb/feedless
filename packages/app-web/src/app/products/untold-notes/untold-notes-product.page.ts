@@ -11,13 +11,35 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonContent,
+  IonRouterOutlet,
+} from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
+import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
+import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 @Component({
   selector: 'app-untold-notes-product-page',
   templateUrl: './untold-notes-product.page.html',
   styleUrls: ['./untold-notes-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    RouterLink,
+    DarkModeButtonComponent,
+    LoginButtonComponent,
+    IonContent,
+    IonRouterOutlet,
+  ],
+  standalone: true,
 })
 export class UntoldNotesProductPage implements OnInit, OnDestroy {
   scrapeResponse: ScrapeResponse;

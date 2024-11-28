@@ -9,14 +9,34 @@ import {
   ConnectedApp,
   ConnectedAppService,
 } from '../../services/connected-app.service';
-import { ToastController } from '@ionic/angular/standalone';
+import {
+  ToastController,
+  IonContent,
+  IonSpinner,
+  IonCard,
+  IonCardContent,
+  IonButtons,
+  IonButton,
+} from '@ionic/angular/standalone';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-connect-app-page',
   templateUrl: './connect-app.page.html',
   styleUrls: ['./connect-app.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    NgIf,
+    IonSpinner,
+    IonCard,
+    IonCardContent,
+    IonButtons,
+    IonButton,
+  ],
+  standalone: true,
 })
 export class ConnectAppPage implements OnInit {
   loading: boolean = false;

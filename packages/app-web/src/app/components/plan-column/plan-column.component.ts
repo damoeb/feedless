@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
+import { NgIf, NgFor } from '@angular/common';
+import { IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
 
 export type StringFeature = {
   title: string;
@@ -20,7 +22,8 @@ export type StringFeatureGroup = {
   selector: 'app-plan-column',
   templateUrl: './plan-column.component.html',
   styleUrls: ['./plan-column.component.scss'],
-  standalone: false,
+  imports: [NgIf, NgFor, IonRow, IonCol, IonIcon],
+  standalone: true,
 })
 export class PlanColumnComponent {
   @Input()

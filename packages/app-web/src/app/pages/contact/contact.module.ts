@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ContactPageRoutingModule } from './contact-routing.module';
 
 import { ContactPage } from './contact.page';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
 import { IonContent } from '@ionic/angular/standalone';
 
 @NgModule({
@@ -12,9 +12,8 @@ import { IonContent } from '@ionic/angular/standalone';
     CommonModule,
     FormsModule,
     ContactPageRoutingModule,
-    FeedlessHeaderModule,
     IonContent,
-  ],
-  declarations: [ContactPage],
+    ContactPage,
+],
 })
 export class ContactPageModule {}

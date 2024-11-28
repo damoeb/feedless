@@ -1,6 +1,11 @@
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  NG_VALUE_ACCESSOR,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
+import { IonInput } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-input',
@@ -13,7 +18,8 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
       multi: true,
     },
   ],
-  standalone: false,
+  imports: [IonInput, FormsModule, ReactiveFormsModule],
+  standalone: true,
 })
 export class InputComponent<T>
   extends ControlValueAccessorDirective<T>

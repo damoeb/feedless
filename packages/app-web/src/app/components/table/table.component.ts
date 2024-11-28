@@ -8,13 +8,15 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { intersection, sortedUniqBy } from 'lodash-es';
+import { NgIf, NgStyle, NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [NgIf, NgStyle, NgFor],
+  standalone: true,
 })
 export class TableComponent<T> implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

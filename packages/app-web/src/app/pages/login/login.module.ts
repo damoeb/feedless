@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
-import { EmailLoginModule } from '../../components/email-login/email-login.module';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
+
 import {
   IonButton,
   IonCard,
@@ -24,8 +24,6 @@ import {
     CommonModule,
     FormsModule,
     LoginPageRoutingModule,
-    EmailLoginModule,
-    FeedlessHeaderModule,
     IonContent,
     IonSpinner,
     IonCardContent,
@@ -36,7 +34,7 @@ import {
     IonCard,
     IonButton,
     IonIcon,
-  ],
-  declarations: [LoginPage],
+    LoginPage,
+],
 })
 export class EmailLoginPageModule {}

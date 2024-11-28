@@ -5,8 +5,39 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular/standalone';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  ModalController,
+  ToastController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonLabel,
+  IonContent,
+  IonList,
+  IonRow,
+  IonCol,
+  IonInput,
+  IonTextarea,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonNote,
+  IonCheckbox,
+  IonRadioGroup,
+  IonRadio,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular/standalone';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeatureName,
@@ -17,7 +48,7 @@ import {
   GqlSourceInput,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RepositoryFull } from '../../graphql/types';
@@ -27,6 +58,10 @@ import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 import { omit } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { NgIf, NgFor, JsonPipe, KeyValuePipe } from '@angular/common';
+import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { FilterItemsAccordionComponent } from '../../components/filter-items-accordion/filter-items-accordion.component';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -53,7 +88,41 @@ export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
   templateUrl: './repository-modal.component.html',
   styleUrls: ['./repository-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    NgIf,
+    IonLabel,
+    IonContent,
+    IonList,
+    IonRow,
+    IonCol,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    NgFor,
+    IonTextarea,
+    FetchRateAccordionComponent,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonNote,
+    IonCheckbox,
+    IonRadioGroup,
+    IonRadio,
+    RemoveIfProdDirective,
+    IonSelect,
+    IonSelectOption,
+    RouterLink,
+    FilterItemsAccordionComponent,
+    JsonPipe,
+    KeyValuePipe,
+  ],
+  standalone: true,
 })
 export class RepositoryModalComponent
   implements RepositoryModalComponentProps, OnInit

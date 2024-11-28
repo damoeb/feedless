@@ -1,14 +1,19 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
-import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../../modals/code-editor-modal/code-editor-modal.component';
+import { IonButton } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-console-button',
   templateUrl: './console-button.component.html',
   styleUrls: ['./console-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [IonButton, CodeEditorModalComponent],
+  standalone: true,
 })
 export class ConsoleButtonComponent {
   @Input()

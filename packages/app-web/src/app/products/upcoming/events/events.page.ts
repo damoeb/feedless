@@ -21,8 +21,8 @@ import {
 import { getCachedLocations } from '../places';
 import { LatLon } from '../../../components/map/map.component';
 import { PageService, PageTags } from '../../../services/page.service';
-import { ActivatedRoute } from '@angular/router';
-import { Location } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Location, NgIf, NgClass, NgFor } from '@angular/common';
 import {
   homeRoute,
   parseDateFromUrl,
@@ -38,6 +38,15 @@ import {
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonBadge,
+  IonSpinner,
+  IonNote,
+} from '@ionic/angular/standalone';
+import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 
 type Distance2Events = { [distance: string]: Record[] };
 type EventsByDistance = {
@@ -96,7 +105,21 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
   templateUrl: './events.page.html',
   styleUrls: ['./events.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    UpcomingHeaderComponent,
+    IonContent,
+    IonButton,
+    IonIcon,
+    NgClass,
+    IonBadge,
+    IonSpinner,
+    NgFor,
+    RouterLink,
+    IonNote,
+    UpcomingFooterComponent,
+  ],
+  standalone: true,
 })
 export class EventsPage implements OnInit, OnDestroy {
   date: Dayjs = dayjs();

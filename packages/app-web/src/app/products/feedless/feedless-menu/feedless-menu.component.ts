@@ -10,13 +10,32 @@ import { AgentService } from '../../../services/agent.service';
 import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
 import { GqlVertical } from '../../../../generated/graphql';
+import {
+  IonList,
+  IonMenuToggle,
+  IonItem,
+  IonChip,
+} from '@ionic/angular/standalone';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NgIf } from '@angular/common';
+import { BubbleComponent } from '../../../components/bubble/bubble.component';
 
 @Component({
   selector: 'app-feedless-menu',
   templateUrl: './feedless-menu.component.html',
   styleUrls: ['./feedless-menu.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonList,
+    IonMenuToggle,
+    IonItem,
+    RouterLink,
+    RouterLinkActive,
+    NgIf,
+    IonChip,
+    BubbleComponent,
+  ],
+  standalone: true,
 })
 export class FeedlessMenuComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];

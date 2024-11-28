@@ -10,7 +10,7 @@ describe('DarkModeButtonComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NotificationsButtonModule, AppTestModule.withDefaults()],
+      imports: [NotificationsButtonComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotificationsButtonComponent);

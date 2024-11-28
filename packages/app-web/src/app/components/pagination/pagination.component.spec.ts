@@ -22,7 +22,7 @@ describe('PaginationComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        PaginationModule,
+        PaginationComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController

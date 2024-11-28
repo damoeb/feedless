@@ -66,6 +66,13 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
+import { NgIf, NgClass } from '@angular/common';
+import {
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -133,7 +140,8 @@ export type AutoSuggestionsProvider = (
       multi: true,
     },
   ],
-  standalone: false,
+  imports: [NgIf, IonToolbar, IonButtons, IonButton, IonIcon, NgClass],
+  standalone: true,
 })
 export class CodeEditorComponent
   extends ControlValueAccessorDirective<string>

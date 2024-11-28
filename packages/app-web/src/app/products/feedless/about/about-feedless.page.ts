@@ -10,7 +10,15 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../../services/app-config.service';
-import { IonPopover } from '@ionic/angular/standalone';
+import {
+  IonPopover,
+  IonContent,
+  IonList,
+  IonListHeader,
+  IonItem,
+  IonIcon,
+  IonBadge,
+} from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';
 import {
@@ -19,13 +27,29 @@ import {
   gitNetworkOutline,
   listOutline,
 } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../../components/feedless-header/feedless-header.component';
+import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
+import { RouterLink } from '@angular/router';
+import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 
 @Component({
   selector: 'app-about-feedless-page',
   templateUrl: './about-feedless.page.html',
   styleUrls: ['./about-feedless.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    ProductHeaderComponent,
+    IonList,
+    IonListHeader,
+    IonItem,
+    RouterLink,
+    IonIcon,
+    RemoveIfProdDirective,
+    IonBadge,
+  ],
+  standalone: true,
 })
 export class AboutFeedlessPage implements OnInit {
   @ViewChild('createOptions')

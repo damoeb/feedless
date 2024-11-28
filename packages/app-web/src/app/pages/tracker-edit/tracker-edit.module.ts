@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { TrackerEditPage } from './tracker-edit.page';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TrackerEditRoutingModule } from './tracker-edit-routing.module';
-import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
-import { InteractiveWebsiteModule } from '../../components/interactive-website/interactive-website.module';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
+
+
 import {
   IonAccordion,
   IonAccordionGroup,
@@ -32,9 +32,6 @@ import {
     FormsModule,
     ReactiveFormsModule,
     TrackerEditRoutingModule,
-    SearchbarModule,
-    InteractiveWebsiteModule,
-    FeedlessHeaderModule,
     IonContent,
     IonGrid,
     IonRow,
@@ -52,7 +49,7 @@ import {
     IonReorder,
     IonRadioGroup,
     IonRadio,
-  ],
-  declarations: [TrackerEditPage],
+    TrackerEditPage,
+],
 })
 export class TrackerEditPageModule {}

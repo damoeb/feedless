@@ -8,7 +8,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
@@ -25,6 +25,33 @@ import { fixUrl, isValidUrl } from '../../app.module';
 import { Embeddable } from '../../components/embedded-image/embedded-image.component';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonButton,
+  IonIcon,
+  IonPopover,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonItemDivider,
+  IonText,
+  IonSpinner,
+  IonSegment,
+  IonSegmentButton,
+  IonRow,
+  IonCol,
+  IonFooter,
+} from '@ionic/angular/standalone';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
+import { NgIf, NgStyle, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ReaderComponent } from '../../components/reader/reader.component';
 
 type InlineContent = {
   hostname: string;
@@ -55,7 +82,37 @@ export interface ReaderOptions {
   styleUrls: ['./reader-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    RouterLink,
+    SearchbarComponent,
+    DarkModeButtonComponent,
+    IonButton,
+    IonIcon,
+    IonPopover,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonItemDivider,
+    IonText,
+    NgIf,
+    IonSpinner,
+    IonSegment,
+    FormsModule,
+    IonSegmentButton,
+    NgStyle,
+    IonRow,
+    IonCol,
+    NgFor,
+    ReaderComponent,
+    IonFooter,
+  ],
+  standalone: true,
 })
 export class ReaderProductPage implements OnInit, OnDestroy {
   url: string;

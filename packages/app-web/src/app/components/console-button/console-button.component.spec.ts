@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ConsoleButtonComponent } from './console-button.component';
-import { ConsoleButtonModule } from './console-button.module';
 import {
   ApolloMockController,
   AppTestModule,
@@ -15,14 +14,14 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('AgentsButtonComponent', () => {
+describe('ConsoleButtonComponent', () => {
   let component: ConsoleButtonComponent;
   let fixture: ComponentFixture<ConsoleButtonComponent>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        ConsoleButtonModule,
+        ConsoleButtonComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             apolloMockController

@@ -1,5 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import {
   GqlCompositeFieldFilterParamsInput,
   GqlCompositeFilterParamsInput,
@@ -13,6 +19,22 @@ import { Repository, RepositoryFull } from '../../graphql/types';
 import { ArrayElement, TypedFormGroup } from '../../types';
 import { addIcons } from 'ionicons';
 import { trashOutline, addOutline } from 'ionicons/icons';
+import { NgIf, NgFor } from '@angular/common';
+import {
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonChip,
+  IonNote,
+  IonCheckbox,
+  IonText,
+  IonSelect,
+  IonSelectOption,
+  IonInput,
+  IonButton,
+  IonIcon,
+  IonTextarea,
+} from '@ionic/angular/standalone';
 
 export type FilterOperator = GqlStringFilterOperator;
 export type FilterField = keyof GqlCompositeFieldFilterParamsInput;
@@ -33,7 +55,26 @@ type GeneralFilterParams = ArrayElement<
   selector: 'app-filter-feed-accordion',
   templateUrl: './filter-items-accordion.component.html',
   styleUrls: ['./filter-items-accordion.component.scss'],
-  standalone: false,
+  imports: [
+    NgIf,
+    IonAccordion,
+    IonItem,
+    IonLabel,
+    IonChip,
+    IonNote,
+    IonCheckbox,
+    FormsModule,
+    ReactiveFormsModule,
+    NgFor,
+    IonText,
+    IonSelect,
+    IonSelectOption,
+    IonInput,
+    IonButton,
+    IonIcon,
+    IonTextarea,
+  ],
+  standalone: true,
 })
 export class FilterItemsAccordionComponent implements OnInit {
   formFg = new FormGroup({

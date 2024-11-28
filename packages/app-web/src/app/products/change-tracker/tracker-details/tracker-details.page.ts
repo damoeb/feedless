@@ -6,17 +6,32 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Record, Repository } from '../../../graphql/types';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  ModalController,
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 import { IonRouterLink } from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-tracker-details-page',
   templateUrl: './tracker-details.page.html',
   styleUrls: ['./tracker-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonContent,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    RouterLink,
+    NgIf,
+    IonSpinner,
+  ],
+  standalone: true,
 })
 export class TrackerDetailsPage implements OnInit, OnDestroy {
   busy = false;

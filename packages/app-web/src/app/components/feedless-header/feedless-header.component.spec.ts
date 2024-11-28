@@ -10,7 +10,7 @@ describe('FeedlessHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FeedlessHeaderModule, AppTestModule.withDefaults()],
+      imports: [FeedlessHeaderComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedlessHeaderComponent);

@@ -14,7 +14,7 @@ describe('PricingComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        PricingModule,
+        PricingComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockProducts(apolloMockController),

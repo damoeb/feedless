@@ -21,7 +21,6 @@ import {
 } from '@ionic/angular/standalone';
 
 @NgModule({
-  declarations: [ImportOpmlModalComponent],
   exports: [ImportOpmlModalComponent],
   imports: [
     CommonModule,
@@ -41,6 +40,7 @@ import {
     IonLabel,
     IonFooter,
     IonNote,
+    ImportOpmlModalComponent,
   ],
   providers: [ModalController],
 })

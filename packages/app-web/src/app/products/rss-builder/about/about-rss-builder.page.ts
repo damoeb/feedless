@@ -2,12 +2,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   ElementRef,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { fixUrl } from '../../../app.module';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
@@ -17,13 +18,36 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { LocalizedLicense } from '../../../graphql/types';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonItem,
+} from '@ionic/angular/standalone';
+import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
+import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
+import { NgIf, DatePipe } from '@angular/common';
+import { ImportButtonComponent } from '../../../components/import-button/import-button.component';
 
 @Component({
   selector: 'app-about-rss-builder',
   templateUrl: './about-rss-builder.page.html',
   styleUrls: ['./about-rss-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [
+    IonContent,
+    ProductHeaderComponent,
+    SearchbarComponent,
+    NgIf,
+    IonButton,
+    RouterLink,
+    IonIcon,
+    ImportButtonComponent,
+    IonItem,
+    DatePipe,
+  ],
+  standalone: true,
 })
 export class AboutRssBuilderPage implements OnInit {
   @ViewChild('opmlPicker')

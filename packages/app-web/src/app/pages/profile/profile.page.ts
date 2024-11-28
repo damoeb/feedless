@@ -6,8 +6,27 @@ import {
   OnInit,
 } from '@angular/core';
 import { dateTimeFormat, SessionService } from '../../services/session.service';
-import { AlertController, ToastController } from '@ionic/angular/standalone';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AlertController,
+  ToastController,
+  IonContent,
+  IonRow,
+  IonCol,
+  IonList,
+  IonLabel,
+  IonInput,
+  IonButton,
+  IonItem,
+  IonIcon,
+  IonNote,
+} from '@ionic/angular/standalone';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -26,13 +45,37 @@ import { GqlVertical } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { addIcons } from 'ionicons';
 import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-profile-page',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    IonRow,
+    IonCol,
+    IonList,
+    NgIf,
+    IonLabel,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonButton,
+    RemoveIfProdDirective,
+    IonItem,
+    RouterLink,
+    IonIcon,
+    IonNote,
+    NgFor,
+    DatePipe,
+  ],
+  standalone: true,
 })
 export class ProfilePage implements OnInit, OnDestroy {
   protected secrets: UserSecret[] = [];

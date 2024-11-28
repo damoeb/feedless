@@ -8,13 +8,25 @@ import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
+import { IonContent } from '@ionic/angular/standalone';
+import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
+import { NgIf } from '@angular/common';
+import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
+import { ProductHeadlineComponent } from '../../../components/product-headline/product-headline.component';
 
 @Component({
   selector: 'app-about-page-change-tracker',
   templateUrl: './about-pc-tracker.page.html',
   styleUrls: ['./about-pc-tracker.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonContent,
+    ProductHeaderComponent,
+    NgIf,
+    SearchbarComponent,
+    ProductHeadlineComponent,
+  ],
+  standalone: true,
 })
 export class AboutPcTrackerPage {
   @ViewChild('opmlPicker')

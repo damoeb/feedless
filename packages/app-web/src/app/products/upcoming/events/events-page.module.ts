@@ -4,8 +4,6 @@ import { EventsPage } from './events.page';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EventsRoutingModule } from './events-routing.module';
-import { UpcomingHeaderModule } from '../upcoming-header/upcoming-header.module';
-import { UpcomingFooterModule } from '../upcoming-footer/upcoming-footer.module';
 import {
   IonBadge,
   IonButton,
@@ -22,7 +20,7 @@ import {
   IonSpinner,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if-prod.module';
+
 
 @NgModule({
   imports: [
@@ -30,8 +28,6 @@ import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if
     ReactiveFormsModule,
     RouterLink,
     EventsRoutingModule,
-    UpcomingHeaderModule,
-    UpcomingFooterModule,
     IonContent,
     IonToolbar,
     IonButtons,
@@ -43,12 +39,10 @@ import { RemoveIfProdModule } from '../../../directives/remove-if-prod/remove-if
     IonCard,
     IonCardContent,
     IonCardTitle,
-    RemoveIfProdModule,
     IonInput,
     IonBadge,
     IonItem,
-  ],
-  declarations: [EventsPage],
-  exports: [EventsPage],
+    EventsPage,
+],
 })
 export class EventsPageModule {}

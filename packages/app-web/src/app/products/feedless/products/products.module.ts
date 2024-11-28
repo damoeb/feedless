@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductsPageRoutingModule } from './products-routing.module';
 
 import { ProductsPage } from './products.page';
-import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
+
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -19,14 +19,13 @@ import {
     CommonModule,
     FormsModule,
     ProductsPageRoutingModule,
-    ProductHeadlineModule,
     IonContent,
     IonBreadcrumbs,
     IonBreadcrumb,
     IonToolbar,
     IonButton,
     IonIcon,
-  ],
-  declarations: [ProductsPage],
+    ProductsPage,
+],
 })
 export class ProductsPageModule {}

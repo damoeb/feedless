@@ -4,9 +4,19 @@ import {
   forwardRef,
   OnInit,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  NG_VALUE_ACCESSOR,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
-import { KeyValue } from '@angular/common';
+import { KeyValue, NgFor } from '@angular/common';
+import {
+  IonRow,
+  IonCol,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-fetch-rate-accordion',
@@ -20,7 +30,16 @@ import { KeyValue } from '@angular/common';
       multi: true,
     },
   ],
-  standalone: false,
+  imports: [
+    IonRow,
+    IonCol,
+    IonSelect,
+    FormsModule,
+    ReactiveFormsModule,
+    NgFor,
+    IonSelectOption,
+  ],
+  standalone: true,
 })
 export class FetchRateAccordionComponent
   extends ControlValueAccessorDirective<string>

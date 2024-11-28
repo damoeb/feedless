@@ -18,11 +18,32 @@ import {
   NotebookService,
   SearchResultGroup,
 } from '../../services/notebook.service';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { debounce as debounceFn, DebouncedFunc, isNull, omit } from 'lodash-es';
-import { AlertController, IonSearchbar } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonSearchbar,
+  IonSplitPane,
+  IonMenu,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonText,
+  IonPopover,
+  IonProgressBar,
+} from '@ionic/angular/standalone';
 import { Completion } from '@codemirror/autocomplete';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Extension } from '@codemirror/state';
 import { createNoteReferenceMarker } from './note-reference-marker';
 import { createNoteReferenceWidget } from './note-reference-widget';
@@ -40,6 +61,10 @@ import {
   starOutline,
   trashOutline,
 } from 'ionicons/icons';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
+import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 type SearchResult = {
   id?: string;
@@ -63,7 +88,38 @@ type NoteReferences = {
   templateUrl: './notebook-details.page.html',
   styleUrls: ['./notebook-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonSplitPane,
+    IonMenu,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    RouterLink,
+    RemoveIfProdDirective,
+    IonIcon,
+    FormsModule,
+    IonContent,
+    IonSearchbar,
+    ReactiveFormsModule,
+    IonList,
+    NgIf,
+    IonItem,
+    IonLabel,
+    NgFor,
+    NgClass,
+    DarkModeButtonComponent,
+    LoginButtonComponent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonText,
+    IonPopover,
+    CodeEditorComponent,
+    IonProgressBar,
+  ],
+  standalone: true,
 })
 export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   busy = false;

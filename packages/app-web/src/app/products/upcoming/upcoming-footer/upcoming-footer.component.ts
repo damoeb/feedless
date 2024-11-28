@@ -1,6 +1,12 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { NamedLatLon } from '../../../types';
-import { AlertController, ModalController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  ModalController,
+  IonFooter,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { AppConfigService } from '../../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import {
@@ -18,12 +24,23 @@ import { GeoService } from '../../../services/geo.service';
 import { Subscription } from 'rxjs';
 import { homeRoute } from '../upcoming-product-routing.module';
 import dayjs from 'dayjs';
+import { NgIf } from '@angular/common';
+import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  standalone: false,
+  imports: [
+    IonFooter,
+    NgIf,
+    IonButton,
+    IonIcon,
+    RemoveIfProdDirective,
+    RouterLink,
+  ],
+  standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {
   @Input()

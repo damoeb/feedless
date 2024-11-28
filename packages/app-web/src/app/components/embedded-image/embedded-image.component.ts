@@ -15,6 +15,7 @@ import { debounce, DebouncedFunc } from 'lodash-es';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { Nullable } from '../../types';
+import { NgClass } from '@angular/common';
 
 export type XyPosition = GqlXyPosition;
 
@@ -46,7 +47,8 @@ interface Box {
   templateUrl: './embedded-image.component.html',
   styleUrls: ['./embedded-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [NgClass],
+  standalone: true,
 })
 export class EmbeddedImageComponent
   implements AfterViewInit, OnDestroy, OnInit

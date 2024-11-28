@@ -12,7 +12,7 @@ describe('NotebooksComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        NotebooksModule,
+        NotebooksComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockRepositories(apolloMockController),

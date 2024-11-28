@@ -12,13 +12,18 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../graphql/types';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { IonContent } from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
+import { PricingComponent } from '../../components/pricing/pricing.component';
 
 @Component({
   selector: 'app-pricing-page',
   templateUrl: './pricing.page.html',
   styleUrls: ['./pricing.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [FeedlessHeaderComponent, IonContent, NgIf, PricingComponent],
+  standalone: true,
 })
 export class PricingPage implements OnInit, OnDestroy {
   productConfig: VerticalSpecWithRoutes;

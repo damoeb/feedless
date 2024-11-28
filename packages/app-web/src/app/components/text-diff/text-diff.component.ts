@@ -17,7 +17,8 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
   templateUrl: './text-diff.component.html',
   styleUrls: ['./text-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [CodeEditorComponent],
+  standalone: true,
 })
 export class TextDiffComponent implements OnInit {
   @Input({ required: true })

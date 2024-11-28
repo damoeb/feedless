@@ -10,7 +10,7 @@ describe('NativeFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NativeFeedModule, AppTestModule.withDefaults()],
+      imports: [NativeFeedComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NativeFeedComponent);

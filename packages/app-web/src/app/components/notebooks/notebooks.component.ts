@@ -6,17 +6,39 @@ import {
   OnInit,
 } from '@angular/core';
 import { Notebook, NotebookService } from '../../services/notebook.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
+import { ProductHeaderComponent } from '../product-header/product-header.component';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { NgIf, NgFor } from '@angular/common';
+import {
+  IonList,
+  IonListHeader,
+  IonLabel,
+  IonItem,
+  IonIcon,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-notebook-builder',
   templateUrl: './notebooks.component.html',
   styleUrls: ['./notebooks.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    ProductHeaderComponent,
+    SearchbarComponent,
+    NgIf,
+    IonList,
+    IonListHeader,
+    IonLabel,
+    NgFor,
+    IonItem,
+    RouterLink,
+    IonIcon,
+  ],
+  standalone: true,
 })
 export class NotebooksComponent implements OnInit, OnDestroy {
   busy = false;

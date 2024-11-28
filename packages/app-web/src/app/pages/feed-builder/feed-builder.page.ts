@@ -14,6 +14,7 @@ import { RepositoryModalComponentProps } from '../../modals/repository-modal/rep
 import {
   FeedWithRequest,
   NativeOrGenericFeed,
+  FeedBuilderComponent,
 } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
 import {
@@ -28,6 +29,8 @@ import { environment } from '../../../environments/environment';
 import { RepositoryService } from '../../services/repository.service';
 import { Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { IonContent } from '@ionic/angular/standalone';
 
 export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 
@@ -36,7 +39,8 @@ export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
   templateUrl: './feed-builder.page.html',
   styleUrls: ['./feed-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [FeedlessHeaderComponent, IonContent, FeedBuilderComponent],
+  standalone: true,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
   loading = false;

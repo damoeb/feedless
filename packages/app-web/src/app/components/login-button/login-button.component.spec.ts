@@ -10,7 +10,7 @@ describe('LoginButtonComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [LoginButtonModule, AppTestModule.withDefaults()],
+      imports: [LoginButtonComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginButtonComponent);

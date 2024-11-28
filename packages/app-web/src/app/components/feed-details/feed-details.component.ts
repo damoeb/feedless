@@ -31,6 +31,29 @@ import {
   ModalController,
   PopoverController,
   ToastController,
+  IonSpinner,
+  IonRow,
+  IonChip,
+  IonToolbar,
+  IonButtons,
+  IonModal,
+  IonHeader,
+  IonTitle,
+  IonButton,
+  IonIcon,
+  IonLabel,
+  IonContent,
+  IonList,
+  IonItem,
+  IonNote,
+  IonText,
+  IonFooter,
+  IonBadge,
+  IonPopover,
+  IonCol,
+  IonSegment,
+  IonSegmentButton,
+  IonCheckbox,
 } from '@ionic/angular/standalone';
 import {
   FeedOrRepository,
@@ -38,14 +61,14 @@ import {
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
 import { ArrayElement } from '../../types';
-import { BubbleColor } from '../bubble/bubble.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { BubbleColor, BubbleComponent } from '../bubble/bubble.component';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isUndefined, sortBy, uniq, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
@@ -73,6 +96,13 @@ import {
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
+import { NgIf, NgFor, NgClass, DatePipe } from '@angular/common';
+import { PaginationComponent } from '../pagination/pagination.component';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { HistogramComponent } from '../histogram/histogram.component';
+import { ImageDiffComponent } from '../image-diff/image-diff.component';
+import { TextDiffComponent } from '../text-diff/text-diff.component';
+import { PlayerComponent } from '../player/player.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -90,7 +120,46 @@ type Pair<A, B> = {
   templateUrl: './feed-details.component.html',
   styleUrls: ['./feed-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    IonSpinner,
+    IonRow,
+    IonChip,
+    IonToolbar,
+    IonButtons,
+    IonModal,
+    IonHeader,
+    IonTitle,
+    IonButton,
+    IonIcon,
+    IonLabel,
+    BubbleComponent,
+    IonContent,
+    IonList,
+    IonItem,
+    NgFor,
+    IonNote,
+    IonText,
+    IonFooter,
+    PaginationComponent,
+    IonBadge,
+    RemoveIfProdDirective,
+    RouterLink,
+    IonPopover,
+    NgClass,
+    IonCol,
+    IonSegment,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSegmentButton,
+    HistogramComponent,
+    ImageDiffComponent,
+    TextDiffComponent,
+    IonCheckbox,
+    PlayerComponent,
+    DatePipe,
+  ],
+  standalone: true,
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {
   @Input({ required: true })

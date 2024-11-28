@@ -16,7 +16,7 @@ describe('GenerateFeedModalComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), FetchRateAccordionModule],
+      imports: [AppTestModule.withDefaults(), FetchRateAccordionComponent],
     }).compileComponents();
 
     await mockServerSettings(

@@ -1,7 +1,27 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
-import { ModalController } from '@ionic/angular/standalone';
-import { FormControl, FormGroup } from '@angular/forms';
+import {
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonCheckbox,
+  IonLabel,
+  IonFooter,
+  IonNote,
+} from '@ionic/angular/standalone';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
@@ -12,6 +32,7 @@ import {
 } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { NgFor, NgIf } from '@angular/common';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -30,7 +51,26 @@ type FcOutline = {
   selector: 'app-import-opml',
   templateUrl: './import-opml-modal.component.html',
   styleUrls: ['./import-opml-modal.component.scss'],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonList,
+    NgFor,
+    IonItem,
+    NgIf,
+    IonCheckbox,
+    FormsModule,
+    ReactiveFormsModule,
+    IonLabel,
+    IonFooter,
+    IonNote,
+  ],
+  standalone: true,
 })
 export class ImportOpmlModalComponent
   implements OnInit, ImportOpmlModalComponentProps

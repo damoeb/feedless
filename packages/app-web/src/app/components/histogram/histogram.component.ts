@@ -3,12 +3,14 @@ import { GqlRecordFrequency } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
 import { scaleLinear } from 'd3-scale';
+import { NgClass, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-histogram',
   templateUrl: './histogram.component.html',
   styleUrls: ['./histogram.component.scss'],
-  standalone: false,
+  imports: [NgClass, NgIf],
+  standalone: true,
 })
 export class HistogramComponent implements OnInit {
   @Input({ required: true })

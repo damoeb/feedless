@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LicensePageRoutingModule } from './license-routing.module';
 
 import { LicensePage } from './license.page';
-import { PlanColumnModule } from '../../components/plan-column/plan-column.module';
-import { FeedlessHeaderModule } from '../../components/feedless-header/feedless-header.module';
+
+
 import {
   IonButton,
   IonCol,
@@ -24,9 +24,7 @@ import {
     CommonModule,
     FormsModule,
     LicensePageRoutingModule,
-    PlanColumnModule,
     ReactiveFormsModule,
-    FeedlessHeaderModule,
     IonContent,
     IonList,
     IonItem,
@@ -37,7 +35,7 @@ import {
     IonCol,
     IonButton,
     IonTextarea,
-  ],
-  declarations: [LicensePage],
+    LicensePage,
+],
 })
 export class LicensePageModule {}

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RemoteFeedItemComponent } from './remote-feed-item.component';
-import { RemoteFeedItemModule } from './remote-feed-item.module';
 import { AppTestModule } from '../../app-test.module';
 import { AppConfigService } from '../../services/app-config.service';
 
@@ -11,7 +10,7 @@ describe('RemoteFeedItemComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [RemoteFeedItemModule, AppTestModule.withDefaults()],
+      imports: [RemoteFeedItemComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

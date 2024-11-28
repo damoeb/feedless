@@ -13,7 +13,7 @@ describe('InteractiveWebsiteComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        InteractiveWebsiteModule,
+        InteractiveWebsiteComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             mockScrape(apolloMockController),

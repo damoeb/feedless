@@ -6,20 +6,49 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { AppConfigService } from '../../services/app-config.service';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { NgIf } from '@angular/common';
+import {
+  IonHeader,
+  IonToolbar,
+  IonText,
+  IonButton,
+  IonContent,
+  IonBreadcrumbs,
+  IonBreadcrumb,
+  IonSpinner,
+  IonItem,
+} from '@ionic/angular/standalone';
+import { FeedDetailsComponent } from '../../components/feed-details/feed-details.component';
 
 @Component({
   selector: 'app-feed-details-page',
   templateUrl: './feed-details.page.html',
   styleUrls: ['./feed-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    NgIf,
+    IonHeader,
+    IonToolbar,
+    IonText,
+    IonButton,
+    IonContent,
+    IonBreadcrumbs,
+    IonBreadcrumb,
+    RouterLink,
+    IonSpinner,
+    IonItem,
+    FeedDetailsComponent,
+  ],
+  standalone: true,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = true;

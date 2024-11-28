@@ -13,13 +13,45 @@ import { debounce, interval, Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import {
+  IonContent,
+  IonSpinner,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonInput,
+  IonLabel,
+  IonCard,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { EmailLoginComponent } from '../../components/email-login/email-login.component';
 
 @Component({
   selector: 'app-login-page',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    NgIf,
+    IonSpinner,
+    FormsModule,
+    IonCardContent,
+    IonList,
+    IonItem,
+    IonInput,
+    IonLabel,
+    EmailLoginComponent,
+    IonCard,
+    IonButton,
+    IonIcon,
+  ],
+  standalone: true,
 })
 export class LoginPage implements OnInit, OnDestroy {
   showMailLogin: boolean;

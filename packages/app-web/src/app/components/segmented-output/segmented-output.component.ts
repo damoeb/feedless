@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { KeyLabelOption } from '../../elements/select/select.component';
+import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
+import { InputComponent } from '../../elements/input/input.component';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -25,7 +27,8 @@ export type SegmentedOutput = {
   selector: 'app-segmented-output',
   templateUrl: './segmented-output.component.html',
   styleUrls: ['./segmented-output.component.scss'],
-  standalone: false,
+  imports: [IonGrid, IonRow, IonCol, IonButton, InputComponent],
+  standalone: true,
 })
 export class SegmentedOutputComponent implements OnInit {
   @Input({ required: true })

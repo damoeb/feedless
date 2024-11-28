@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { UntoldNotesPageRoutingModule } from './untold-notes-product-routing.module';
 
 import { UntoldNotesProductPage } from './untold-notes-product.page';
-import { DarkModeButtonModule } from '../../components/dark-mode-button/dark-mode-button.module';
-import { LoginButtonModule } from '../../components/login-button/login-button.module';
+
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+
 import { OfflineModule } from '../../offline.module';
 import {
   IonHeader,
@@ -21,11 +21,8 @@ import {
   imports: [
     CommonModule,
     UntoldNotesPageRoutingModule,
-    DarkModeButtonModule,
-    LoginButtonModule,
     ReactiveFormsModule,
     FormsModule,
-    SearchbarModule,
     OfflineModule,
     IonHeader,
     IonToolbar,
@@ -33,8 +30,7 @@ import {
     IonMenuButton,
     IonContent,
     IonRouterOutlet,
-  ],
-  // providers: [NotebookService],
-  declarations: [UntoldNotesProductPage],
+    UntoldNotesProductPage,
+],
 })
 export class UntoldNotesProductModule {}

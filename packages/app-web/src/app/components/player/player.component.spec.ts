@@ -10,7 +10,7 @@ describe('PlayerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [PlayerModule, AppTestModule],
+      imports: [PlayerComponent, AppTestModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlayerComponent);

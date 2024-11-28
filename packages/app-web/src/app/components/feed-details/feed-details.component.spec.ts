@@ -20,7 +20,7 @@ describe('FeedDetailsComponent', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FeedDetailsModule,
+        FeedDetailsComponent,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockPlugins(apolloMockController);

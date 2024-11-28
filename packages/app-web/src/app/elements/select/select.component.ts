@@ -2,6 +2,7 @@ import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { isNull, isUndefined } from 'lodash-es';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
+import { MenuComponent } from '../menu/menu.component';
 
 export interface KeyLabelOption<T> {
   key: T;
@@ -20,7 +21,8 @@ export interface KeyLabelOption<T> {
       multi: true,
     },
   ],
-  standalone: false,
+  imports: [MenuComponent],
+  standalone: true,
 })
 export class SelectComponent<T>
   extends ControlValueAccessorDirective<T>

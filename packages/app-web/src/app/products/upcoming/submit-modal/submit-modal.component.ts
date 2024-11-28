@@ -1,5 +1,23 @@
 import { Component } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonRadioGroup,
+  IonLabel,
+  IonRadio,
+  IonFooter,
+  IonList,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   bodyOutline,
@@ -8,7 +26,13 @@ import {
   sendOutline,
   trashOutline,
 } from 'ionicons/icons';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { createEmailFormControl } from '../../../form-controls';
 import {
   GqlFeedlessPlugins,
@@ -29,7 +53,26 @@ type ReportFrequency = 'week' | 'month';
   selector: 'app-submit-modal',
   templateUrl: './submit-modal.component.html',
   styleUrls: ['./submit-modal.component.scss'],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonItem,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonRadioGroup,
+    IonLabel,
+    IonRadio,
+    IonFooter,
+    IonList,
+    IonCheckbox,
+  ],
+  standalone: true,
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {
   repositoryId: string;

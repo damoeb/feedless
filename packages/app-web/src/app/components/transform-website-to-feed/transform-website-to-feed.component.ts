@@ -19,7 +19,13 @@ import {
 import { Record, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { assign, last, max, min, omit } from 'lodash-es';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
 import { ModalService } from '../../services/modal.service';
@@ -29,7 +35,7 @@ import { SourceBuilder } from '../interactive-website/source-builder';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
+import { Location, NgFor, NgIf, NgStyle } from '@angular/common';
 import { ScrapeService } from '../../services/scrape.service';
 import { addIcons } from 'ionicons';
 import {
@@ -38,6 +44,25 @@ import {
   chevronForwardOutline,
   refreshOutline,
 } from 'ionicons/icons';
+import { ResponsiveColumnsComponent } from '../responsive-columns/responsive-columns.component';
+import {
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonIcon,
+  IonInput,
+  IonButton,
+  IonNote,
+  IonCheckbox,
+  IonList,
+  IonSegmentButton,
+  IonProgressBar,
+  IonSpinner,
+} from '@ionic/angular/standalone';
+import { BubbleComponent } from '../bubble/bubble.component';
+import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
+import { ConsoleButtonComponent } from '../console-button/console-button.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -50,7 +75,32 @@ export type ComponentStatus = 'valid' | 'invalid';
   templateUrl: './transform-website-to-feed.component.html',
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    ResponsiveColumnsComponent,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonLabel,
+    NgFor,
+    IonIcon,
+    NgIf,
+    NgStyle,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonButton,
+    IonNote,
+    IonCheckbox,
+    IonList,
+    BubbleComponent,
+    InteractiveWebsiteComponent,
+    IonSegmentButton,
+    IonProgressBar,
+    IonSpinner,
+    RemoteFeedPreviewComponent,
+    ConsoleButtonComponent,
+  ],
+  standalone: true,
 })
 export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   protected readonly CUSTOM_HASH = 'custom-hash';

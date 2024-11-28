@@ -9,7 +9,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { Location } from '@angular/common';
+import { Location, NgIf, NgFor } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   GqlExtendContentOptions,
@@ -20,7 +20,18 @@ import {
   GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
-import { AlertController, ModalController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  ModalController,
+  IonToolbar,
+  IonProgressBar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonIcon,
+  IonAccordion,
+  IonNote,
+} from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Repository, ScrapeResponse } from '../../graphql/types';
@@ -45,6 +56,8 @@ import {
   checkmarkOutline,
 } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
+import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 
 /**
  * IDEEN
@@ -93,7 +106,22 @@ export type FeedWithRequest = {
   templateUrl: './feed-builder.component.html',
   styleUrls: ['./feed-builder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    NgIf,
+    IonToolbar,
+    SearchbarComponent,
+    IonProgressBar,
+    IonList,
+    NgFor,
+    IonItem,
+    TransformWebsiteToFeedComponent,
+    IonLabel,
+    IonIcon,
+    IonAccordion,
+    IonNote,
+    FilterItemsAccordionComponent,
+  ],
+  standalone: true,
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {
   url: string;

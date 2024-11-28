@@ -11,13 +11,16 @@ import { ServerConfigService } from '../../services/server-config.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { compact } from 'lodash-es';
+import { IonList, IonItem, IonLabel, IonChip } from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-agents',
   templateUrl: './agents.component.html',
   styleUrls: ['./agents.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [IonList, NgIf, IonItem, IonLabel, NgFor, IonChip],
+  standalone: true,
 })
 export class AgentsComponent implements OnInit, OnDestroy {
   agents: Agent[] = [];
