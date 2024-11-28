@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -148,11 +148,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   @Input()
   hideCustomizeFeed = false;
 
-  @Output()
-  selectedFeedChanged = new EventEmitter<FeedWithRequest>();
+  readonly selectedFeedChanged = output<FeedWithRequest>();
 
-  @Output()
-  selectedRepositoryChanged = new EventEmitter<Repository>();
+  readonly selectedRepositoryChanged = output<Repository>();
 
   protected tags: string[] = [];
   protected geoLocation: NamedLatLon;

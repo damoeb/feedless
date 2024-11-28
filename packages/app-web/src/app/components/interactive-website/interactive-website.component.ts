@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, output } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import {
@@ -79,11 +79,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   @Input()
   showUrl: boolean = false;
 
-  @Output()
-  loadingChange: EventEmitter<boolean> = new EventEmitter<boolean>(false);
+  readonly loadingChange = output<boolean>();
 
-  @Output()
-  segmentChange: EventEmitter<string> = new EventEmitter<string>();
+  readonly segmentChange = output<string>();
 
   scaleFactor: number = 0.7;
   minScaleFactor: number = 0.5;

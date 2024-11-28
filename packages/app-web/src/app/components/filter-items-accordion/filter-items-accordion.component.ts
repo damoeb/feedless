@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit, output } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -98,10 +98,7 @@ export class FilterItemsAccordionComponent implements OnInit {
   @Input()
   disabled: boolean;
 
-  @Output()
-  filterChange: EventEmitter<GqlItemFilterParamsInput[]> = new EventEmitter<
-    GqlItemFilterParamsInput[]
-  >();
+  readonly filterChange = output<GqlItemFilterParamsInput[]>();
 
   filterChanges = new ReplaySubject<void>();
 

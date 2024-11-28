@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, forwardRef, Injector, Input, OnChanges, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, forwardRef, Injector, Input, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, inject, output } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -166,14 +166,12 @@ export class CodeEditorComponent
   // @Input()
   // scrollLeft: number;
 
-  @Output()
-  textChange = new EventEmitter<string>();
+  readonly textChange = output<string>();
 
   // @Output()
   // scrollChange = new EventEmitter<{ left: number, top: number }>();
 
-  @Output()
-  triggerQuery = new EventEmitter<string>();
+  readonly triggerQuery = output<string>();
 
   @Input()
   autoSuggestionsProvider: AutoSuggestionsProvider = () => Promise.resolve([]);

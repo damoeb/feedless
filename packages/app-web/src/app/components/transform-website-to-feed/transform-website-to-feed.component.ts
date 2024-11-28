@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -109,13 +109,9 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   @Input()
   feed: NativeOrGenericFeed;
 
-  @Output()
-  readonly statusChange: EventEmitter<ComponentStatus> =
-    new EventEmitter<ComponentStatus>();
+  readonly statusChange = output<ComponentStatus>();
 
-  @Output()
-  readonly selectedFeedChange: EventEmitter<NativeOrGenericFeed> =
-    new EventEmitter<NativeOrGenericFeed>();
+  readonly selectedFeedChange = output<NativeOrGenericFeed>();
 
   readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> =
     new FormGroup<TypedFormControls<Selectors>>(

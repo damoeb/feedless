@@ -1,11 +1,10 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
+  output
 } from '@angular/core';
 import {
   FormControl,
@@ -53,11 +52,9 @@ export class SearchbarComponent implements OnInit, OnChanges {
   @Input()
   color: string;
 
-  @Output()
-  querySubmit: EventEmitter<string> = new EventEmitter<string>();
+  readonly querySubmit = output<string>();
 
-  @Output()
-  cancelReceived: EventEmitter<void> = new EventEmitter<void>();
+  readonly cancelReceived = output<void>();
 
   queryFc = new FormControl<string>('', [Validators.required]);
 

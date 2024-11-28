@@ -1,9 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Input,
-  Output,
+  output
 } from '@angular/core';
 import { IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
 
@@ -23,8 +22,7 @@ export class PaginationComponent {
   @Input()
   isLastPage: boolean;
 
-  @Output()
-  pageChange: EventEmitter<number> = new EventEmitter<number>();
+  readonly pageChange = output<number>();
 
   constructor() {}
 }

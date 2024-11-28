@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, Input, inject, output } from '@angular/core';
 import { GetElementType, Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
@@ -25,8 +25,7 @@ export class PlayerComponent {
   @Input()
   isPlaying: boolean;
 
-  @Output()
-  playback = new EventEmitter<void>();
+  readonly playback = output<void>();
 
   constructor() {
     addIcons({ playOutline });

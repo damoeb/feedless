@@ -4,13 +4,12 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
-  Output,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation,
+  output
 } from '@angular/core';
 
 export type LatLon = number[];
@@ -32,8 +31,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   @Input({ required: true })
   perimeter: number;
 
-  @Output()
-  positionChange: EventEmitter<LatLon> = new EventEmitter<LatLon>();
+  readonly positionChange = output<LatLon>();
 
   private map: Map;
   private marker: Marker<any>;

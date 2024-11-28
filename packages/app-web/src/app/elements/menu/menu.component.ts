@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, inject, output } from '@angular/core';
 import {
   IonPopover,
   IonSearchbar,
@@ -78,8 +78,7 @@ export class MenuComponent<T> implements OnInit {
   @Input()
   value: T;
 
-  @Output()
-  valueChanged: EventEmitter<T> = new EventEmitter<T>();
+  readonly valueChanged = output<T>();
 
   @ViewChild('searchbar')
   searchbarElement: IonSearchbar;

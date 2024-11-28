@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit, output } from '@angular/core';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
 import { InputComponent } from '../../elements/input/input.component';
@@ -37,9 +37,7 @@ export class SegmentedOutputComponent implements OnInit {
   @Input({ required: true })
   fields: Field[] = [];
 
-  @Output()
-  segmentedChanged: EventEmitter<SegmentedOutput> =
-    new EventEmitter<SegmentedOutput>();
+  readonly segmentedChanged = output<SegmentedOutput>();
 
   sortDirection: KeyLabelOption<SortDirection>[] = [
     {

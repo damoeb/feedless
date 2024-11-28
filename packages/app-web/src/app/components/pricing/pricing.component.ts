@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject, output } from '@angular/core';
 import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
@@ -82,8 +82,7 @@ export class PricingComponent implements OnInit {
   @Input()
   hideServiceFlavor: boolean;
 
-  @Output()
-  selectionChange: EventEmitter<Product> = new EventEmitter<Product>();
+  readonly selectionChange = output<Product>();
 
   async ngOnInit() {
     if (this.serviceFlavor) {
