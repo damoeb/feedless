@@ -6,10 +6,10 @@ import {
   ElementRef,
   OnChanges,
   SimpleChanges,
-  ViewChild,
   ViewEncapsulation,
   output,
-  input
+  input,
+  viewChild
 } from '@angular/core';
 
 export type LatLon = number[];
@@ -22,8 +22,7 @@ export type LatLon = number[];
   standalone: true,
 })
 export class MapComponent implements AfterViewInit, OnChanges {
-  @ViewChild('map')
-  mapElement: ElementRef;
+  readonly mapElement = viewChild<ElementRef>('map');
 
   readonly position = input.required<LatLon>();
 
@@ -43,7 +42,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
       const minZoom = 11;
       const lat = this.position()[0];
       const lng = this.position()[1];
-      this.map = new Map(this.mapElement.nativeElement)
+      this.map = new Map(this.mapElement().nativeElement)
         .setMinZoom(minZoom)
         .setMaxZoom(maxZoom)
         .setZoom(11)

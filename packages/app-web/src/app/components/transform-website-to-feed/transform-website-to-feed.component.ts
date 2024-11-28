@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, output, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, inject, output, input, viewChild } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
@@ -103,8 +103,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   @Input({ required: true })
   sourceBuilder: SourceBuilder;
 
-  @ViewChild('interactiveWebsite')
-  interactiveWebsiteComponent: InteractiveWebsiteComponent;
+  readonly interactiveWebsiteComponent = viewChild<InteractiveWebsiteComponent>('interactiveWebsite');
 
   readonly feed = input<NativeOrGenericFeed>();
 
@@ -353,7 +352,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     if (this.selectedFeed) {
       this.genFeedXpathsFg.markAsPristine();
       if (switchTab) {
-        this.interactiveWebsiteComponent?.selectTab('feed');
+        this.interactiveWebsiteComponent()?.selectTab('feed');
       }
 
       try {

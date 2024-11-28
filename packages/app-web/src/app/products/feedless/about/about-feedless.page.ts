@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, viewChild } from '@angular/core';
 import '@justinribeiro/lite-youtube';
 import {
   AppConfigService,
@@ -49,8 +49,7 @@ export class AboutFeedlessPage implements OnInit {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly appConfigService = inject(AppConfigService);
 
-  @ViewChild('createOptions')
-  createOptionsPopover: IonPopover;
+  readonly createOptionsPopover = viewChild<IonPopover>('createOptions');
 
   listedProducts: VerticalSpecWithRoutes[];
 

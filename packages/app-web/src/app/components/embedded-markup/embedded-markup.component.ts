@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject, input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input, viewChild } from '@angular/core';
 import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
@@ -48,8 +48,7 @@ export class EmbeddedMarkupComponent
 {
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @ViewChild('iframeElement')
-  iframeRef: ElementRef;
+  readonly iframeRef = viewChild<ElementRef>('iframeElement');
 
   @Input({ required: true })
   embed: Embeddable;
@@ -178,7 +177,7 @@ export class EmbeddedMarkupComponent
 
   private postIframeMessage(message: IframeMessage) {
     return this.waitForDocument?.then(() =>
-      this.iframeRef.nativeElement.contentWindow?.postMessage(message, '*'),
+      this.iframeRef().nativeElement.contentWindow?.postMessage(message, '*'),
     );
   }
 
@@ -336,7 +335,7 @@ window.addEventListener('message', (message) => {
         }),
       );
       // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
-      this.iframeRef.nativeElement.src = this.proxyUrl;
+      this.iframeRef().nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();
     }
   }

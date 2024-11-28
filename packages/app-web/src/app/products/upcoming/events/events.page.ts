@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs, OpUnitType } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
@@ -130,8 +130,7 @@ export class EventsPage implements OnInit, OnDestroy {
   dateWindow: Dayjs[] = [];
   private subscriptions: Subscription[] = [];
 
-  @ViewChild('header')
-  headerComponent: UpcomingHeaderComponent;
+  readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
 
   protected placesByDistance: PlaceByDistance[] = [];
   protected loadingDay = true;
@@ -173,7 +172,7 @@ export class EventsPage implements OnInit, OnDestroy {
           //   this.geoService.getCurrentLatLon(),
           // );
 
-          this.headerComponent.fetchSuggestions('');
+          this.headerComponent().fetchSuggestions('');
         } finally {
           this.loading = false;
         }

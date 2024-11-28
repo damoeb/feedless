@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, viewChild, viewChildren } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
 import { Repository } from '../../graphql/types';
 import {
@@ -130,11 +130,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   currentNote: OpenNote = null;
   queryFc = new FormControl<string>('');
 
-  @ViewChild('searchbar')
-  searchbarElement: IonSearchbar;
+  readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
 
-  @ViewChildren(CodeEditorComponent)
-  codeEditorComponents: QueryList<CodeEditorComponent>;
+  readonly codeEditorComponents = viewChildren(CodeEditorComponent);
 
   searchMode = false;
   // incomingLinks: Note[];
@@ -181,7 +179,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.notebookService.queryChanges.subscribe(async (query) => {
         if (this.queryFc.value !== query) {
           this.queryFc.setValue(query);
-          await this.searchbarElement.setFocus();
+          await this.searchbarElement().setFocus();
         }
       }),
       this.queryFc.valueChanges.subscribe((query) => {
@@ -418,7 +416,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         (note) => note.id === this.currentNote?.id,
       );
       if (index > -1) {
-        this.codeEditorComponents.get(index).setFocus();
+        this.codeEditorComponents().at(index).setFocus();
       }
     }
     this.changeRef.detectChanges();
@@ -472,9 +470,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private async focusSearchElement() {
     console.log('focusSearchElement');
     this.focussedMatchIndex = 0;
-    if (this.searchbarElement) {
-      await this.searchbarElement.setFocus();
-      const input = await this.searchbarElement.getInputElement();
+    const searchbarElement = this.searchbarElement();
+    if (searchbarElement) {
+      await searchbarElement.setFocus();
+      const input = await searchbarElement.getInputElement();
       input.select();
     }
   }

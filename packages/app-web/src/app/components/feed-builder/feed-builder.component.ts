@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, output, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, output, input, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -128,8 +128,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   loading = false;
 
-  @ViewChild('webToFeedTransformer')
-  webToFeedTransformerComponent: TransformWebsiteToFeedComponent;
+  readonly webToFeedTransformerComponent = viewChild<TransformWebsiteToFeedComponent>('webToFeedTransformer');
 
   readonly submitButtonText = input('Create Feed');
 
@@ -383,7 +382,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.url = params['url'];
     await this.scrapeUrl();
     setTimeout(() => {
-      this.webToFeedTransformerComponent.pickGenericFeed({
+      this.webToFeedTransformerComponent().pickGenericFeed({
         selectors: {
           contextXPath: params['contextXPath'],
           linkXPath: params['linkXPath'],

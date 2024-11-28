@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -26,8 +26,7 @@ export class AboutPcTrackerPage {
   private readonly router = inject(Router);
   readonly serverConfig = inject(ServerConfigService);
 
-  @ViewChild('opmlPicker')
-  opmlPickerElement!: ElementRef<HTMLInputElement>;
+  readonly opmlPickerElement = viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
 
   protected readonly dateFormat = dateFormat;
 

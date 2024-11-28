@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnInit, inject, viewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -48,8 +48,7 @@ export class AboutRssBuilderPage implements OnInit {
   private readonly appConfigService = inject(AppConfigService);
   readonly serverConfig = inject(ServerConfigService);
 
-  @ViewChild('opmlPicker')
-  opmlPickerElement!: ElementRef<HTMLInputElement>;
+  readonly opmlPickerElement = viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
 
   protected readonly dateFormat = dateFormat;
   protected license: LocalizedLicense;

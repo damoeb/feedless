@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, forwardRef, Injector, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, inject, output, input } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, forwardRef, Injector, OnChanges, SimpleChanges, ViewEncapsulation, inject, output, input, viewChild } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
 import {
@@ -133,8 +133,7 @@ export class CodeEditorComponent
   extends ControlValueAccessorDirective<string>
   implements AfterViewInit, OnChanges
 {
-  @ViewChild('editor')
-  editor!: ElementRef<HTMLDivElement>;
+  readonly editor = viewChild.required<ElementRef<HTMLDivElement>>('editor');
 
   readonly text = input<string>();
 
@@ -375,10 +374,11 @@ export class CodeEditorComponent
       extensions: this.getExtensions(),
     });
 
-    if (this.editor?.nativeElement) {
+    const editor = this.editor();
+    if (editor?.nativeElement) {
       this.editorView = new EditorView({
         state,
-        parent: this.editor.nativeElement,
+        parent: editor.nativeElement,
       });
 
       if (this.autofocus()) {

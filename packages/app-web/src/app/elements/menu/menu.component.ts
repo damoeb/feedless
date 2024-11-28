@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, output, input } from '@angular/core';
+import { Component, OnInit, inject, output, input, viewChild } from '@angular/core';
 import {
   IonPopover,
   IonSearchbar,
@@ -72,11 +72,9 @@ export class MenuComponent<T> implements OnInit {
 
   readonly valueChanged = output<T>();
 
-  @ViewChild('searchbar')
-  searchbarElement: IonSearchbar;
+  readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
 
-  @ViewChild('popover')
-  popoverElement: IonPopover;
+  readonly popoverElement = viewChild<IonPopover>('popover');
 
   currentValue: T;
   query = '';
@@ -141,7 +139,7 @@ export class MenuComponent<T> implements OnInit {
   focusSearchbar() {
     if (!this.hideFilter()) {
       setTimeout(() => {
-        this.searchbarElement.setFocus();
+        this.searchbarElement().setFocus();
       }, 1);
     }
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewEncapsulation, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
@@ -112,8 +112,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
   url: string;
   output: 'website' | 'list' | 'article' = 'article';
-  @ViewChild('readerContent')
-  readerContent: ElementRef;
+  readonly readerContent = viewChild<ElementRef>('readerContent');
   readerOptions: ReaderOptions = {
     url: '',
     font: 'serif',
@@ -336,7 +335,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     this.progress = parseFloat(
       (
         (100 * event.detail.scrollTop) /
-        (this.readerContent.nativeElement.scrollHeight -
+        (this.readerContent().nativeElement.scrollHeight -
           document.defaultView.innerHeight)
       ).toFixed(1),
     );
