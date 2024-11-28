@@ -3,14 +3,22 @@
   [color]="color"
   [expand]="expand"
   aria-label="Toggle light mode"
->
-  <ng-container *ngIf="label">
-    <ion-icon *ngIf="darkMode" name="sunny-outline" slot="start"></ion-icon>
-    <ion-icon *ngIf="!darkMode" name="moon-outline" slot="start"></ion-icon>
+  >
+  @if (label) {
+    @if (darkMode) {
+      <ion-icon name="sunny-outline" slot="start"></ion-icon>
+    }
+    @if (!darkMode) {
+      <ion-icon name="moon-outline" slot="start"></ion-icon>
+    }
     {{ label }}
-  </ng-container>
-  <ng-container *ngIf="!label">
-    <ion-icon *ngIf="darkMode" name="sunny-outline"></ion-icon>
-    <ion-icon *ngIf="!darkMode" name="moon-outline"></ion-icon>
-  </ng-container>
+  }
+  @if (!label) {
+    @if (darkMode) {
+      <ion-icon name="sunny-outline"></ion-icon>
+    }
+    @if (!darkMode) {
+      <ion-icon name="moon-outline"></ion-icon>
+    }
+  }
 </ion-button>

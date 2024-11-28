@@ -49,7 +49,7 @@ import {
 } from '@ionic/angular/standalone';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { NgIf, NgStyle, NgFor } from '@angular/common';
+import { NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReaderComponent } from '../../components/reader/reader.component';
 
@@ -100,7 +100,6 @@ export interface ReaderOptions {
     IonLabel,
     IonItemDivider,
     IonText,
-    NgIf,
     IonSpinner,
     IonSegment,
     FormsModule,
@@ -108,10 +107,9 @@ export interface ReaderOptions {
     NgStyle,
     IonRow,
     IonCol,
-    NgFor,
     ReaderComponent,
-    IonFooter,
-  ],
+    IonFooter
+],
   standalone: true,
 })
 export class ReaderProductPage implements OnInit, OnDestroy {

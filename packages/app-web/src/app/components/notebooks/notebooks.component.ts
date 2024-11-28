@@ -12,7 +12,7 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 import { ProductHeaderComponent } from '../product-header/product-header.component';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-import { NgIf, NgFor } from '@angular/common';
+
 import {
   IonList,
   IonListHeader,
@@ -29,15 +29,13 @@ import {
   imports: [
     ProductHeaderComponent,
     SearchbarComponent,
-    NgIf,
     IonList,
     IonListHeader,
     IonLabel,
-    NgFor,
     IonItem,
     RouterLink,
-    IonIcon,
-  ],
+    IonIcon
+],
   standalone: true,
 })
 export class NotebooksComponent implements OnInit, OnDestroy {

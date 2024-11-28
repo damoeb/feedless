@@ -66,7 +66,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
-import { NgIf, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import {
   IonToolbar,
   IonButtons,
@@ -140,7 +140,7 @@ export type AutoSuggestionsProvider = (
       multi: true,
     },
   ],
-  imports: [NgIf, IonToolbar, IonButtons, IonButton, IonIcon, NgClass],
+  imports: [IonToolbar, IonButtons, IonButton, IonIcon, NgClass],
   standalone: true,
 })
 export class CodeEditorComponent

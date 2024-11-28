@@ -1,142 +1,154 @@
 <div class="flex__column">
-  <div *ngIf="!hideSearchBar">
-    <ion-toolbar style="padding: 10px">
-      <app-searchbar
-        (cancelReceived)="handleCancel()"
-        (querySubmit)="receiveUrl($event)"
-        [color]="url?.length > 0 ? undefined : 'primary'"
-        [loading]="loading"
-        [value]="url"
-        buttonText="Go"
-        placeholder="Enter Url of a website or RSS feed"
-      ></app-searchbar>
-      <ng-container *ngIf="errorMessage">
-        <p class="ion-margin" style="color: var(--ion-color-danger)">
-          We ran into a problem! {{ errorMessage }}.
-        </p>
-        <p class="ion-margin">
-          Some errors can be resolved by
-          <a (click)="showInteractiveWebsiteModal()" href="javascript:void(0)"
-            >enabling JavaScript</a
+  @if (!hideSearchBar) {
+    <div>
+      <ion-toolbar style="padding: 10px">
+        <app-searchbar
+          (cancelReceived)="handleCancel()"
+          (querySubmit)="receiveUrl($event)"
+          [color]="url?.length > 0 ? undefined : 'primary'"
+          [loading]="loading"
+          [value]="url"
+          buttonText="Go"
+          placeholder="Enter Url of a website or RSS feed"
+        ></app-searchbar>
+        @if (errorMessage) {
+          <p class="ion-margin" style="color: var(--ion-color-danger)">
+            We ran into a problem! {{ errorMessage }}.
+          </p>
+          <p class="ion-margin">
+            Some errors can be resolved by
+            <a (click)="showInteractiveWebsiteModal()" href="javascript:void(0)"
+              >enabling JavaScript</a
+              >
+            </p>
+          }
+        </ion-toolbar>
+      </div>
+    }
+
+    <div class="flex">
+      @if (loading) {
+        <ion-progress-bar
+          color="medium"
+          type="indeterminate"
+        ></ion-progress-bar>
+      }
+
+      @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {
+        <div
+          class="ion-padding"
+          style="width: 100%"
           >
-        </p>
-      </ng-container>
-    </ion-toolbar>
-  </div>
+          <p>Remix existing feeds</p>
+          <ion-list>
+            @for (r of repositories; track r) {
+              <ion-item
+                (click)="remix(r)"
+                [button]="true"
+                >
+                {{ r.title }}
+              </ion-item>
+            }
+          </ion-list>
+        </div>
+      }
 
-  <div class="flex">
-    <ion-progress-bar
-      *ngIf="loading"
-      color="medium"
-      type="indeterminate"
-    ></ion-progress-bar>
-
-    <div
-      *ngIf="!sourceBuilder?.response && repositories.length > 0 && !loading"
-      class="ion-padding"
-      style="width: 100%"
-    >
-      <p>Remix existing feeds</p>
-      <ion-list>
-        <ion-item
-          (click)="remix(r)"
-          *ngFor="let r of repositories"
-          [button]="true"
-        >
-          {{ r.title }}
-        </ion-item>
-      </ion-list>
-    </div>
-
-    <app-transform-website-to-feed
-      #webToFeedTransformer
-      (selectedFeedChange)="selectedFeed = $event"
-      (statusChange)="hasValidFeed = $event === 'valid'"
-      *ngIf="sourceBuilder && sourceBuilder.response"
-      [sourceBuilder]="sourceBuilder"
-    >
-      <ion-item
-        (click)="showInteractiveWebsiteModal()"
-        [button]="true"
-        beforeFeedsSlot
-        class="cy-enable-js-button"
-      >
-        <ion-label color="medium" *ngIf="!needsJavaScript()">
-          Use JavaScript
-        </ion-label>
-        <ion-label color="primary" *ngIf="needsJavaScript()">
-          Using JavaScript
-        </ion-label>
-        <ion-icon color="warning" name="logo-javascript" slot="end"></ion-icon>
-      </ion-item>
-      <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
-        <ion-item slot="header">
-          <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'">
-            Metadata</ion-label
+      @if (sourceBuilder && sourceBuilder.response) {
+        <app-transform-website-to-feed
+          #webToFeedTransformer
+          (selectedFeedChange)="selectedFeed = $event"
+          (statusChange)="hasValidFeed = $event === 'valid'"
+          [sourceBuilder]="sourceBuilder"
           >
-        </ion-item>
-        <ion-list class="ion-no-padding" slot="content">
-          <ion-item (click)="showTagsModal()" [button]="true">
-            <ion-label>
-              Tags
-              <ion-note *ngIf="tags.length > 0">{{ getTagsString() }}</ion-note>
-            </ion-label>
+          <ion-item
+            (click)="showInteractiveWebsiteModal()"
+            [button]="true"
+            beforeFeedsSlot
+            class="cy-enable-js-button"
+            >
+            @if (!needsJavaScript()) {
+              <ion-label color="medium">
+                Use JavaScript
+              </ion-label>
+            }
+            @if (needsJavaScript()) {
+              <ion-label color="primary">
+                Using JavaScript
+              </ion-label>
+            }
+            <ion-icon color="warning" name="logo-javascript" slot="end"></ion-icon>
           </ion-item>
-          <ion-item (click)="showLocationPickerModal()" [button]="true">
-            <ion-label>
-              Geo Tag
-
-              <ion-note *ngIf="!geoLocation">None</ion-note>
-              <ion-note *ngIf="geoLocation"
-                >({{ geoLocation.lat }}/{{ geoLocation.lon }})
-              </ion-note>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-accordion>
-
-      <app-filter-feed-accordion
-        (filterChange)="onFilterChange($event)"
-        [advanced]="false"
-        [disabled]="!hasValidFeed"
-        [filterPlugin]="getFilterPlugin()"
-        afterFeedsSlot
-        labelPrefix=""
-      ></app-filter-feed-accordion>
-      <!--      <app-fetch-rate-accordion afterFeedsSlot *ngIf="!hideCustomizeFeed"></app-fetch-rate-accordion>-->
-
-      <!--      <ion-item-->
-      <!--        *ngIf="selectedFeed?.nativeFeed"-->
-      <!--        [button]="true"-->
-      <!--        topSlot-->
-      <!--      >-->
-      <!--        <ion-checkbox slot="start"></ion-checkbox>-->
-      <!--        <ion-label>-->
-      <!--          Inherit categories-->
-      <!--        </ion-label>-->
-      <!--        <ion-icon-->
-      <!--          name="link-outline"-->
-      <!--          color="primary"-->
-      <!--          slot="end"-->
-      <!--        ></ion-icon>-->
+          <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
+            <ion-item slot="header">
+              <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'">
+                Metadata</ion-label
+                >
+              </ion-item>
+              <ion-list class="ion-no-padding" slot="content">
+                <ion-item (click)="showTagsModal()" [button]="true">
+                  <ion-label>
+                    Tags
+                    @if (tags.length > 0) {
+                      <ion-note>{{ getTagsString() }}</ion-note>
+                    }
+                  </ion-label>
+                </ion-item>
+                <ion-item (click)="showLocationPickerModal()" [button]="true">
+                  <ion-label>
+                    Geo Tag
+                    @if (!geoLocation) {
+                      <ion-note>None</ion-note>
+                    }
+                    @if (geoLocation) {
+                      <ion-note
+                        >({{ geoLocation.lat }}/{{ geoLocation.lon }})
+                      </ion-note>
+                    }
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-accordion>
+            <app-filter-feed-accordion
+              (filterChange)="onFilterChange($event)"
+              [advanced]="false"
+              [disabled]="!hasValidFeed"
+              [filterPlugin]="getFilterPlugin()"
+              afterFeedsSlot
+              labelPrefix=""
+            ></app-filter-feed-accordion>
+            <!--      <app-fetch-rate-accordion afterFeedsSlot *ngIf="!hideCustomizeFeed"></app-fetch-rate-accordion>-->
+            <!--      <ion-item-->
+            <!--        *ngIf="selectedFeed?.nativeFeed"-->
+            <!--        [button]="true"-->
+            <!--        topSlot-->
+            <!--      >-->
+            <!--        <ion-checkbox slot="start"></ion-checkbox>-->
+            <!--        <ion-label>-->
+            <!--          Inherit categories-->
+          <!--        </ion-label>-->
+          <!--        <ion-icon-->
+          <!--          name="link-outline"-->
+          <!--          color="primary"-->
+          <!--          slot="end"-->
+        <!--        ></ion-icon>-->
       <!--      </ion-item>-->
       <ion-list bottomSlot>
-        <ng-container *ngIf="!hideCustomizeFeed">
+        @if (!hideCustomizeFeed) {
           <ion-item
             (click)="createOrRefineFeed(true)"
             [button]="true"
             [disabled]="!hasValidFeed"
-          >
+            >
             <ion-label> Advanced Options</ion-label>
             <ion-icon name="settings-outline" slot="end"></ion-icon>
           </ion-item>
-        </ng-container>
+        }
         <ion-item
           (click)="createOrRefineFeed(false)"
           [button]="true"
           [disabled]="!hasValidFeed"
           color="primary"
-        >
+          >
           <ion-label>
             {{ submitButtonText }}
           </ion-label>
@@ -144,5 +156,6 @@
         </ion-item>
       </ion-list>
     </app-transform-website-to-feed>
-  </div>
+  }
+</div>
 </div>

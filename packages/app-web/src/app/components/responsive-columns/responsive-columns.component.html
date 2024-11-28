@@ -8,7 +8,7 @@
         size-sm="10"
         size-xl="4"
         size-xs="10"
-      >
+        >
         <ng-content select="[left]"></ng-content>
       </ion-col>
 
@@ -19,7 +19,7 @@
         size-sm="10"
         size-xl="8"
         size-xs="10"
-      >
+        >
         <ng-content select="[right]"></ng-content>
       </ion-col>
 
@@ -28,19 +28,21 @@
         class="flex ion-hide-md-up"
         size="2"
         style="position: absolute; height: 100%"
-      >
+        >
         <div (click)="triggerSlider(scrollpane)" class="slider-button">
           <div class="slider-button__bg"></div>
-          <ion-icon
-            *ngIf="scrollpane.scrollLeft === 0"
-            name="chevron-forward-outline"
-            size="large"
-          ></ion-icon>
-          <ion-icon
-            *ngIf="scrollpane.scrollLeft !== 0"
-            name="chevron-back-outline"
-            size="large"
-          ></ion-icon>
+          @if (scrollpane.scrollLeft === 0) {
+            <ion-icon
+              name="chevron-forward-outline"
+              size="large"
+            ></ion-icon>
+          }
+          @if (scrollpane.scrollLeft !== 0) {
+            <ion-icon
+              name="chevron-back-outline"
+              size="large"
+            ></ion-icon>
+          }
         </div>
       </ion-col>
     </ion-row>

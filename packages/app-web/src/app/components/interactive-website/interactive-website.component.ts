@@ -43,7 +43,7 @@ import {
   IonItem,
   IonProgressBar,
 } from '@ionic/angular/standalone';
-import { NgIf, NgStyle } from '@angular/common';
+import { NgStyle } from '@angular/common';
 import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 
@@ -58,7 +58,6 @@ type ViewMode = 'markup' | 'image';
     IonToolbar,
     IonRow,
     IonCol,
-    NgIf,
     IonInput,
     FormsModule,
     ReactiveFormsModule,
@@ -75,8 +74,8 @@ type ViewMode = 'markup' | 'image';
     EmbeddedMarkupComponent,
     ConsoleButtonComponent,
     IonItem,
-    IonProgressBar,
-  ],
+    IonProgressBar
+],
   standalone: true,
 })
 export class InteractiveWebsiteComponent implements OnInit, OnDestroy {

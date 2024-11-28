@@ -14,7 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../graphql/types';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 import { PricingComponent } from '../../components/pricing/pricing.component';
 
 @Component({
@@ -22,7 +22,7 @@ import { PricingComponent } from '../../components/pricing/pricing.component';
   templateUrl: './pricing.page.html',
   styleUrls: ['./pricing.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, NgIf, PricingComponent],
+  imports: [FeedlessHeaderComponent, IonContent, PricingComponent],
   standalone: true,
 })
 export class PricingPage implements OnInit, OnDestroy {

@@ -11,14 +11,14 @@ import {
   IonText,
   IonButton,
 } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-trial-warning',
   templateUrl: './trial-warning.component.html',
   styleUrls: ['./trial-warning.component.scss'],
-  imports: [NgIf, IonToolbar, RouterLink, RouterLinkActive, IonText, IonButton],
+  imports: [IonToolbar, RouterLink, RouterLinkActive, IonText, IonButton],
   standalone: true,
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {

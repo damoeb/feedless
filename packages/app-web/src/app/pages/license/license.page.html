@@ -13,24 +13,28 @@
         </p>
       </ion-item>
 
-      <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+      @if (loading) {
+        <ion-spinner name="dots"></ion-spinner>
+      }
 
-      <ng-container *ngIf="!loading">
-        <ion-item *ngIf="license.isValid && !license.isTrial" color="success">
-          <p>No License needed, its now Apache 2</p>
-        </ion-item>
-
-        <div style="position: relative">
-          <ion-item
-            *ngIf="license.isValid && license.isTrial && !license.isLocated"
-            style="--background: transparent"
-          >
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            <p>
-              Trial period remaining {{ fromNow(license.trialUntil) }} (until {{
-              license.trialUntil | date: dateFormat }})
-            </p>
+      @if (!loading) {
+        @if (license.isValid && !license.isTrial) {
+          <ion-item color="success">
+            <p>No License needed, its now Apache 2</p>
           </ion-item>
+        }
+        <div style="position: relative">
+          @if (license.isValid && license.isTrial && !license.isLocated) {
+            <ion-item
+              style="--background: transparent"
+              >
+              <ion-icon name="time-outline" slot="start"></ion-icon>
+              <p>
+                Trial period remaining {{ fromNow(license.trialUntil) }} (until {{
+                license.trialUntil | date: dateFormat }})
+              </p>
+            </ion-item>
+          }
           <ion-progress-bar
             [value]="getRelativeTrialDaysLeft()"
             color="success"
@@ -43,24 +47,28 @@
             "
           ></ion-progress-bar>
         </div>
-
-        <ng-container *ngIf="!license.isLocated">
-          <ion-item *ngIf="!license.isValid" color="warning">
-            <p>No License found</p>
-          </ion-item>
-        </ng-container>
-        <ng-container *ngIf="license.isLocated">
-          <ion-item *ngIf="license.isValid" color="success">
-            <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
-            <p>Licenced to <strong>{{ license.data?.name }}</strong></p>
-          </ion-item>
-          <ion-item *ngIf="!license.isValid" color="warning">
-            <ion-icon name="alert-outline" slot="start"></ion-icon>
-            <p>{{ license.data?.name }}</p>
-            <p>License is invalid</p>
-          </ion-item>
-        </ng-container>
-
+        @if (!license.isLocated) {
+          @if (!license.isValid) {
+            <ion-item color="warning">
+              <p>No License found</p>
+            </ion-item>
+          }
+        }
+        @if (license.isLocated) {
+          @if (license.isValid) {
+            <ion-item color="success">
+              <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+              <p>Licenced to <strong>{{ license.data?.name }}</strong></p>
+            </ion-item>
+          }
+          @if (!license.isValid) {
+            <ion-item color="warning">
+              <ion-icon name="alert-outline" slot="start"></ion-icon>
+              <p>{{ license.data?.name }}</p>
+              <p>License is invalid</p>
+            </ion-item>
+          }
+        }
         <ion-item class="ion-margin-top">
           <h3>Get License Key</h3>
         </ion-item>
@@ -78,8 +86,7 @@
             </ion-button>
           </ion-col>
         </ion-row>
-
-        <ng-container *ngIf="!license.isValid || license.isTrial">
+        @if (!license.isValid || license.isTrial) {
           <ion-item class="ion-margin-top">
             <h3>Offline Activation</h3>
           </ion-item>
@@ -104,13 +111,13 @@
               <ion-button
                 (click)="applyLicense()"
                 [color]="licenseFc.value.length > 0 ? 'primary' : 'light'"
-              >
+                >
                 Activate Now
               </ion-button>
             </ion-col>
           </ion-row>
-        </ng-container>
-      </ng-container>
+        }
+      }
     </ion-list>
   </div>
 </ion-content>

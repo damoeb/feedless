@@ -1,44 +1,53 @@
 <div class="plan">
   <ng-content></ng-content>
 
-  <div *ngIf="featureGroups && !imploded" class="features">
-    <ng-container *ngFor="let featureGroup of featureGroups">
-      <ng-container *ngIf="featureGroup.features.length > 0">
-        <div class="feature__group">
-          {{ featureGroup.groupLabel }}
-        </div>
-        <ion-row *ngFor="let feature of featureGroup.features" class="feature">
-          <ion-col class="feature__name" size="10">
-            <span class="feature__title">
-              {{ feature.title }}
-            </span>
-            <span *ngIf="feature.subtitle" class="feature__subtitle"
-              >({{ feature.subtitle }})</span
-            >
-          </ion-col>
-          <ion-col class="feature__value" size="2">
-            <div
-              *ngIf="feature.valueHtml"
-              [innerHTML]="feature.valueHtml"
-            ></div>
-            <ng-container *ngIf="feature.valueBool">
-              <ion-icon
-                *ngIf="feature.valueBool.value"
-                color="success"
-                name="checkmark-outline"
-              ></ion-icon>
-              <ion-icon
-                *ngIf="!feature.valueBool.value"
-                color="danger"
-                name="close-outline"
-              ></ion-icon>
-            </ng-container>
-          </ion-col>
-        </ion-row>
-      </ng-container>
-    </ng-container>
+  @if (featureGroups && !imploded) {
+    <div class="features">
+      @for (featureGroup of featureGroups; track featureGroup) {
+        @if (featureGroup.features.length > 0) {
+          <div class="feature__group">
+            {{ featureGroup.groupLabel }}
+          </div>
+          @for (feature of featureGroup.features; track feature) {
+            <ion-row class="feature">
+              <ion-col class="feature__name" size="10">
+                <span class="feature__title">
+                  {{ feature.title }}
+                </span>
+                @if (feature.subtitle) {
+                  <span class="feature__subtitle"
+                    >({{ feature.subtitle }})</span
+                    >
+                  }
+                </ion-col>
+                <ion-col class="feature__value" size="2">
+                  @if (feature.valueHtml) {
+                    <div
+                      [innerHTML]="feature.valueHtml"
+                    ></div>
+                  }
+                  @if (feature.valueBool) {
+                    @if (feature.valueBool.value) {
+                      <ion-icon
+                        color="success"
+                        name="checkmark-outline"
+                      ></ion-icon>
+                    }
+                    @if (!feature.valueBool.value) {
+                      <ion-icon
+                        color="danger"
+                        name="close-outline"
+                      ></ion-icon>
+                    }
+                  }
+                </ion-col>
+              </ion-row>
+            }
+          }
+        }
+      </div>
+    }
+    <div class="plan__action ion-margin-top">
+      <ng-content select="[planAction]"></ng-content>
+    </div>
   </div>
-  <div class="plan__action ion-margin-top">
-    <ng-content select="[planAction]"></ng-content>
-  </div>
-</div>

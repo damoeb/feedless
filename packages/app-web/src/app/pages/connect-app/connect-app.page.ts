@@ -19,7 +19,7 @@ import {
   IonButton,
 } from '@ionic/angular/standalone';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-connect-app-page',
@@ -29,13 +29,12 @@ import { NgIf } from '@angular/common';
   imports: [
     FeedlessHeaderComponent,
     IonContent,
-    NgIf,
     IonSpinner,
     IonCard,
     IonCardContent,
     IonButtons,
-    IonButton,
-  ],
+    IonButton
+],
   standalone: true,
 })
 export class ConnectAppPage implements OnInit {

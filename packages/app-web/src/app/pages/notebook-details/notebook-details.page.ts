@@ -62,7 +62,7 @@ import {
   trashOutline,
 } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
@@ -103,10 +103,8 @@ type NoteReferences = {
     IonSearchbar,
     ReactiveFormsModule,
     IonList,
-    NgIf,
     IonItem,
     IonLabel,
-    NgFor,
     NgClass,
     DarkModeButtonComponent,
     LoginButtonComponent,
@@ -117,8 +115,8 @@ type NoteReferences = {
     IonText,
     IonPopover,
     CodeEditorComponent,
-    IonProgressBar,
-  ],
+    IonProgressBar
+],
   standalone: true,
 })
 export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {

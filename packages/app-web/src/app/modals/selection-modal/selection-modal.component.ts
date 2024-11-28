@@ -18,7 +18,7 @@ import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
+
 
 export interface SelectionModalComponentProps<T> {
   selectables: SelectableEntity<T>[];
@@ -51,15 +51,13 @@ type EntityWithFormControl<T> = {
     IonTitle,
     IonContent,
     IonList,
-    NgFor,
     IonItem,
     IonCheckbox,
     FormsModule,
     ReactiveFormsModule,
     IonLabel,
-    NgIf,
-    IonNote,
-  ],
+    IonNote
+],
   standalone: true,
 })
 export class SelectionModalComponent<T>

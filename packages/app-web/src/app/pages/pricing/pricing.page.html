@@ -10,11 +10,12 @@
         This license includes all minor and patch releases.
       </p>
 
-      <app-pricing
-        (selectionChange)="checkout($event)"
-        *ngIf="productConfig"
-        [vertical]="productConfig.product"
-      ></app-pricing>
+      @if (productConfig) {
+        <app-pricing
+          (selectionChange)="checkout($event)"
+          [vertical]="productConfig.product"
+        ></app-pricing>
+      }
     </div>
   </div>
 </ion-content>

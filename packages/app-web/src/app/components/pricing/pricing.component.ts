@@ -23,7 +23,7 @@ import {
   PlanColumnComponent,
 } from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
-import { NgIf, NgFor } from '@angular/common';
+
 import {
   IonSegment,
   IonSegmentButton,
@@ -49,19 +49,17 @@ type ProductWithFeatureGroups = Product & {
   styleUrls: ['./pricing.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     IonSegment,
     FormsModule,
     ReactiveFormsModule,
     IonSegmentButton,
     IonLabel,
-    NgFor,
     PlanColumnComponent,
     IonRow,
     IonCol,
     IonNote,
-    IonButton,
-  ],
+    IonButton
+],
   standalone: true,
 })
 export class PricingComponent implements OnInit {

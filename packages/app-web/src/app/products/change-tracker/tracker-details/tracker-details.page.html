@@ -6,14 +6,18 @@
       <ion-breadcrumb>{{ repository?.title }}</ion-breadcrumb>
     </ion-breadcrumbs>
 
-    <div *ngIf="busy">
-      <ion-spinner name="dots"></ion-spinner>
-    </div>
-    <div *ngIf="!busy" style="margin-top: 50px">
-      <div class="flex__row">
-        <h2 style="flex: 1">{{ repository.title }}</h2>
-        <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
+    @if (busy) {
+      <div>
+        <ion-spinner name="dots"></ion-spinner>
       </div>
-    </div>
+    }
+    @if (!busy) {
+      <div style="margin-top: 50px">
+        <div class="flex__row">
+          <h2 style="flex: 1">{{ repository.title }}</h2>
+          <!--        <ion-chip>{{subscription.visibility}}</ion-chip>-->
+        </div>
+      </div>
+    }
   </div>
 </ion-content>

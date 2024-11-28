@@ -53,7 +53,7 @@ import {
   IonList,
   IonItem,
 } from '@ionic/angular/standalone';
-import { NgIf, NgFor } from '@angular/common';
+
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
 
 type Day = {
@@ -83,7 +83,6 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
-    NgIf,
     IonToolbar,
     IonButton,
     IonInput,
@@ -95,9 +94,8 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     DarkModeButtonComponent,
     IonList,
     IonItem,
-    NgFor,
-    RouterLink,
-  ],
+    RouterLink
+],
   standalone: true,
 })
 export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {

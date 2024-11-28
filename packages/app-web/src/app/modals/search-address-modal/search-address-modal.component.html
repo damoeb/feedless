@@ -15,22 +15,24 @@
     placeholder="Enter address to search or lat/long point like `47.386740, 8.453995`"
   ></app-searchbar>
   <ion-list>
-    <ion-item
-      (click)="pickLatLon()"
-      *ngIf="latLon"
-      [button]="true"
-      color="primary"
-    >
-      Use point {{ latLon.lat }}, {{ latLon.lon }}
-    </ion-item>
-    <ion-item
-      (click)="pick(match)"
-      *ngFor="let match of matches"
-      [button]="true"
-    >
-      <ion-label>
-        {{ match.displayName }}
-      </ion-label>
-    </ion-item>
+    @if (latLon) {
+      <ion-item
+        (click)="pickLatLon()"
+        [button]="true"
+        color="primary"
+        >
+        Use point {{ latLon.lat }}, {{ latLon.lon }}
+      </ion-item>
+    }
+    @for (match of matches; track match) {
+      <ion-item
+        (click)="pick(match)"
+        [button]="true"
+        >
+        <ion-label>
+          {{ match.displayName }}
+        </ion-label>
+      </ion-item>
+    }
   </ion-list>
 </ion-content>

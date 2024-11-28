@@ -29,7 +29,7 @@ import {
   IonButton,
   IonIcon,
 } from '@ionic/angular/standalone';
-import { NgIf, NgFor } from '@angular/common';
+
 import { ProductHeaderComponent } from '../../components/product-header/product-header.component';
 import { RouterLink } from '@angular/router';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
@@ -45,14 +45,12 @@ type ViewMode = 'list' | 'grid';
   imports: [
     FeedlessHeaderComponent,
     IonHeader,
-    NgIf,
     IonProgressBar,
     IonContent,
     ProductHeaderComponent,
     IonRow,
     IonItem,
     IonList,
-    NgFor,
     BubbleComponent,
     IonLabel,
     RouterLink,
@@ -60,8 +58,8 @@ type ViewMode = 'list' | 'grid';
     RemoveIfProdDirective,
     IonButton,
     IonIcon,
-    PaginationComponent,
-  ],
+    PaginationComponent
+],
   standalone: true,
 })
 export class DirectoryPage implements OnInit {

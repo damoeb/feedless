@@ -16,7 +16,7 @@ import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-import { NgIf, NgFor } from '@angular/common';
+
 
 export interface TagsModalComponentProps {
   tags: string[];
@@ -36,11 +36,9 @@ export interface TagsModalComponentProps {
     IonContent,
     IonList,
     SearchbarComponent,
-    NgIf,
     IonItem,
-    IonLabel,
-    NgFor,
-  ],
+    IonLabel
+],
   standalone: true,
 })
 export class TagsModalComponent implements TagsModalComponentProps {

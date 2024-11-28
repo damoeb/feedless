@@ -21,7 +21,7 @@ import {
   IonIcon,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-searchbar',
@@ -31,11 +31,10 @@ import { NgIf } from '@angular/common';
     FormsModule,
     IonInput,
     ReactiveFormsModule,
-    NgIf,
     IonButton,
     IonIcon,
-    IonSpinner,
-  ],
+    IonSpinner
+],
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {

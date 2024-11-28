@@ -96,7 +96,7 @@ import {
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
-import { NgIf, NgFor, NgClass, DatePipe } from '@angular/common';
+import { NgClass, DatePipe } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { HistogramComponent } from '../histogram/histogram.component';
@@ -121,7 +121,6 @@ type Pair<A, B> = {
   styleUrls: ['./feed-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     IonSpinner,
     IonRow,
     IonChip,
@@ -137,7 +136,6 @@ type Pair<A, B> = {
     IonContent,
     IonList,
     IonItem,
-    NgFor,
     IonNote,
     IonText,
     IonFooter,
@@ -157,8 +155,8 @@ type Pair<A, B> = {
     TextDiffComponent,
     IonCheckbox,
     PlayerComponent,
-    DatePipe,
-  ],
+    DatePipe
+],
   standalone: true,
 })
 export class FeedDetailsComponent implements OnInit, OnDestroy {

@@ -8,14 +8,14 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { intersection, sortedUniqBy } from 'lodash-es';
-import { NgIf, NgStyle, NgFor } from '@angular/common';
+import { NgStyle } from '@angular/common';
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgIf, NgStyle, NgFor],
+  imports: [NgStyle],
   standalone: true,
 })
 export class TableComponent<T> implements OnInit, OnDestroy {

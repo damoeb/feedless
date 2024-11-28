@@ -10,7 +10,7 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { IonContent } from '@ionic/angular/standalone';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
-import { NgIf } from '@angular/common';
+
 import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
 import { ProductHeadlineComponent } from '../../../components/product-headline/product-headline.component';
 
@@ -22,10 +22,9 @@ import { ProductHeadlineComponent } from '../../../components/product-headline/p
   imports: [
     IonContent,
     ProductHeaderComponent,
-    NgIf,
     SearchbarComponent,
-    ProductHeadlineComponent,
-  ],
+    ProductHeadlineComponent
+],
   standalone: true,
 })
 export class AboutPcTrackerPage {

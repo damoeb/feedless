@@ -30,7 +30,7 @@ import { InteractiveWebsiteController } from './interactive-website-controller';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
-import { NgClass, NgFor, NgIf, JsonPipe } from '@angular/common';
+import { NgClass, JsonPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export type InteractiveWebsiteModalComponentProps = {
@@ -54,17 +54,15 @@ export type InteractiveWebsiteModalComponentProps = {
     InteractiveWebsiteComponent,
     IonList,
     NgClass,
-    NgFor,
     IonItem,
     IonSelect,
     FormsModule,
     ReactiveFormsModule,
     IonSelectOption,
-    NgIf,
     IonLabel,
     IonFooter,
-    JsonPipe,
-  ],
+    JsonPipe
+],
   standalone: true,
 })
 export class InteractiveWebsiteModalComponent

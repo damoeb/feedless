@@ -13,7 +13,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Location, NgClass, NgIf, NgFor } from '@angular/common';
+import { Location, NgClass } from '@angular/common';
 import {
   BoundingBox,
   XyPosition,
@@ -77,7 +77,6 @@ type Screen = 'area' | 'page' | 'element';
     FeedlessHeaderComponent,
     IonContent,
     NgClass,
-    NgIf,
     FormsModule,
     IonGrid,
     IonRow,
@@ -90,7 +89,6 @@ type Screen = 'area' | 'page' | 'element';
     IonLabel,
     IonList,
     IonReorderGroup,
-    NgFor,
     IonSelect,
     ReactiveFormsModule,
     IonSelectOption,
@@ -98,8 +96,8 @@ type Screen = 'area' | 'page' | 'element';
     IonIcon,
     IonReorder,
     IonRadioGroup,
-    IonRadio,
-  ],
+    IonRadio
+],
   standalone: true,
 })
 export class TrackerEditPage

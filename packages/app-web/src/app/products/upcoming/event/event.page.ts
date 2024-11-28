@@ -22,7 +22,7 @@ import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../../types';
-import { NgIf, NgFor } from '@angular/common';
+
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
   IonContent,
@@ -42,7 +42,6 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
   styleUrls: ['./event.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     UpcomingHeaderComponent,
     IonContent,
     IonSpinner,
@@ -52,10 +51,9 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
     RouterLink,
     IonIcon,
     IonNote,
-    NgFor,
     IonBadge,
-    UpcomingFooterComponent,
-  ],
+    UpcomingFooterComponent
+],
   standalone: true,
 })
 export class EventPage implements OnInit, OnDestroy {

@@ -13,56 +13,66 @@
             type="email"
           ></ion-input>
         </ion-item>
-        <ion-item *ngIf="errorMessage">
-          <ion-label color="danger">
-            {{ errorMessage }}
-          </ion-label>
-        </ion-item>
-        <ion-item
-          (click)="initiateSession()"
-          *ngIf="mode === 'enterMail'"
-          [button]="true"
-          [color]="busy ? 'medium' : 'primary'"
-          class="ion-margin-top"
-          type="submit"
-        >
-          Send Auth Code
-          <ion-icon
-            *ngIf="!busy"
-            name="arrow-forward-outline"
-            slot="end"
-          ></ion-icon>
-          <ion-spinner *ngIf="busy" name="dots" slot="end"></ion-spinner>
-        </ion-item>
+        @if (errorMessage) {
+          <ion-item>
+            <ion-label color="danger">
+              {{ errorMessage }}
+            </ion-label>
+          </ion-item>
+        }
+        @if (mode === 'enterMail') {
+          <ion-item
+            (click)="initiateSession()"
+            [button]="true"
+            [color]="busy ? 'medium' : 'primary'"
+            class="ion-margin-top"
+            type="submit"
+            >
+            Send Auth Code
+            @if (!busy) {
+              <ion-icon
+                name="arrow-forward-outline"
+                slot="end"
+              ></ion-icon>
+            }
+            @if (busy) {
+              <ion-spinner name="dots" slot="end"></ion-spinner>
+            }
+          </ion-item>
+        }
       </form>
-      <form
-        (ngSubmit)="sendAuthCode()"
-        *ngIf="mode === 'enterConfirmationCode'"
-      >
-        <ion-item>
-          <ion-input
-            [formControl]="confirmationCodeFc"
-            label="Email Code"
-            labelPlacement="stacked"
-            name="confirmationCode"
-            placeholder="Type here"
-          ></ion-input>
-        </ion-item>
-        <ion-item
-          (click)="sendAuthCode()"
-          [button]="true"
-          class="ion-margin-top"
-          color="primary"
-        >
-          Authenticate
-          <ion-icon
-            *ngIf="!busy"
-            name="arrow-forward-outline"
-            slot="end"
-          ></ion-icon>
-          <ion-spinner *ngIf="busy" name="dots" slot="end"></ion-spinner>
-        </ion-item>
-      </form>
+      @if (mode === 'enterConfirmationCode') {
+        <form
+          (ngSubmit)="sendAuthCode()"
+          >
+          <ion-item>
+            <ion-input
+              [formControl]="confirmationCodeFc"
+              label="Email Code"
+              labelPlacement="stacked"
+              name="confirmationCode"
+              placeholder="Type here"
+            ></ion-input>
+          </ion-item>
+          <ion-item
+            (click)="sendAuthCode()"
+            [button]="true"
+            class="ion-margin-top"
+            color="primary"
+            >
+            Authenticate
+            @if (!busy) {
+              <ion-icon
+                name="arrow-forward-outline"
+                slot="end"
+              ></ion-icon>
+            }
+            @if (busy) {
+              <ion-spinner name="dots" slot="end"></ion-spinner>
+            }
+          </ion-item>
+        </form>
+      }
     </ion-list>
   </ion-card-content>
 </ion-card>

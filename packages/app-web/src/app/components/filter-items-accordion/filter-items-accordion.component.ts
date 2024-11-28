@@ -19,7 +19,7 @@ import { Repository, RepositoryFull } from '../../graphql/types';
 import { ArrayElement, TypedFormGroup } from '../../types';
 import { addIcons } from 'ionicons';
 import { trashOutline, addOutline } from 'ionicons/icons';
-import { NgIf, NgFor } from '@angular/common';
+
 import {
   IonAccordion,
   IonItem,
@@ -56,7 +56,6 @@ type GeneralFilterParams = ArrayElement<
   templateUrl: './filter-items-accordion.component.html',
   styleUrls: ['./filter-items-accordion.component.scss'],
   imports: [
-    NgIf,
     IonAccordion,
     IonItem,
     IonLabel,
@@ -65,15 +64,14 @@ type GeneralFilterParams = ArrayElement<
     IonCheckbox,
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     IonText,
     IonSelect,
     IonSelectOption,
     IonInput,
     IonButton,
     IonIcon,
-    IonTextarea,
-  ],
+    IonTextarea
+],
   standalone: true,
 })
 export class FilterItemsAccordionComponent implements OnInit {

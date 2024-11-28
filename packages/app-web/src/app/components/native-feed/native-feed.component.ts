@@ -9,7 +9,7 @@ import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
 import { Record } from '../../graphql/types';
-import { NgIf, NgFor } from '@angular/common';
+
 import {
   IonItem,
   IonLabel,
@@ -24,14 +24,12 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
   styleUrls: ['./native-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     IonItem,
     IonLabel,
     IonSpinner,
     IonList,
-    NgFor,
-    RemoteFeedItemComponent,
-  ],
+    RemoteFeedItemComponent
+],
   standalone: true,
 })
 export class NativeFeedComponent implements OnInit {

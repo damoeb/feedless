@@ -16,7 +16,7 @@ import {
   IonChip,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
-import { NgIf } from '@angular/common';
+
 import { BubbleComponent } from '../bubble/bubble.component';
 
 @Component({
@@ -24,7 +24,7 @@ import { BubbleComponent } from '../bubble/bubble.component';
   templateUrl: './agents-button.component.html',
   styleUrls: ['./agents-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, RouterLink, IonLabel, NgIf, BubbleComponent, IonChip],
+  imports: [IonButton, RouterLink, IonLabel, BubbleComponent, IonChip],
   standalone: true,
 })
 export class AgentsButtonComponent implements OnInit, OnDestroy {

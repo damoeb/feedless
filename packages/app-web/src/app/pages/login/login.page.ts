@@ -26,7 +26,7 @@ import {
   IonButton,
   IonIcon,
 } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { EmailLoginComponent } from '../../components/email-login/email-login.component';
 
@@ -38,7 +38,6 @@ import { EmailLoginComponent } from '../../components/email-login/email-login.co
   imports: [
     FeedlessHeaderComponent,
     IonContent,
-    NgIf,
     IonSpinner,
     FormsModule,
     IonCardContent,
@@ -49,8 +48,8 @@ import { EmailLoginComponent } from '../../components/email-login/email-login.co
     EmailLoginComponent,
     IonCard,
     IonButton,
-    IonIcon,
-  ],
+    IonIcon
+],
   standalone: true,
 })
 export class LoginPage implements OnInit, OnDestroy {

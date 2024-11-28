@@ -24,7 +24,7 @@ import {
 import { sortBy } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-import { NgIf, NgFor } from '@angular/common';
+
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -38,17 +38,15 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
     IonContent,
     IonList,
     IonItem,
-    NgIf,
     IonSpinner,
     IonSelect,
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     IonSelectOption,
     IonLabel,
     IonInput,
-    IonCheckbox,
-  ],
+    IonCheckbox
+],
   standalone: true,
 })
 export class SettingsPage implements OnInit {

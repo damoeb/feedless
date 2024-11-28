@@ -58,7 +58,7 @@ import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 import { omit } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { NgIf, NgFor, JsonPipe, KeyValuePipe } from '@angular/common';
+import { JsonPipe, KeyValuePipe } from '@angular/common';
 import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { FilterItemsAccordionComponent } from '../../components/filter-items-accordion/filter-items-accordion.component';
@@ -95,7 +95,6 @@ export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
     IonButton,
     IonIcon,
     IonTitle,
-    NgIf,
     IonLabel,
     IonContent,
     IonList,
@@ -104,7 +103,6 @@ export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
     IonInput,
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     IonTextarea,
     FetchRateAccordionComponent,
     IonAccordionGroup,
@@ -120,8 +118,8 @@ export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
     RouterLink,
     FilterItemsAccordionComponent,
     JsonPipe,
-    KeyValuePipe,
-  ],
+    KeyValuePipe
+],
   standalone: true,
 })
 export class RepositoryModalComponent

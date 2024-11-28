@@ -9,7 +9,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { Location, NgIf, NgFor } from '@angular/common';
+import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   GqlExtendContentOptions,
@@ -107,20 +107,18 @@ export type FeedWithRequest = {
   styleUrls: ['./feed-builder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     IonToolbar,
     SearchbarComponent,
     IonProgressBar,
     IonList,
-    NgFor,
     IonItem,
     TransformWebsiteToFeedComponent,
     IonLabel,
     IonIcon,
     IonAccordion,
     IonNote,
-    FilterItemsAccordionComponent,
-  ],
+    FilterItemsAccordionComponent
+],
   standalone: true,
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {

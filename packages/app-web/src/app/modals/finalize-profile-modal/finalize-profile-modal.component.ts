@@ -37,7 +37,7 @@ import { AppConfigService } from '../../services/app-config.service';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../graphql/types';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-finalize-profile-modal',
@@ -54,13 +54,12 @@ import { NgIf } from '@angular/common';
     FormsModule,
     ReactiveFormsModule,
     IonNote,
-    NgIf,
     IonCheckbox,
     IonToolbar,
     IonButtons,
     IonButton,
-    IonSpinner,
-  ],
+    IonSpinner
+],
   standalone: true,
 })
 export class FinalizeProfileModalComponent implements OnInit {

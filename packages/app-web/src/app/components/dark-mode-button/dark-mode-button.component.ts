@@ -4,13 +4,13 @@ import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { sunnyOutline, moonOutline } from 'ionicons/icons';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-dark-mode-button',
   templateUrl: './dark-mode-button.component.html',
   styleUrls: ['./dark-mode-button.component.scss'],
-  imports: [IonButton, NgIf, IonIcon],
+  imports: [IonButton, IonIcon],
   standalone: true,
 })
 export class DarkModeButtonComponent implements OnInit, OnDestroy {

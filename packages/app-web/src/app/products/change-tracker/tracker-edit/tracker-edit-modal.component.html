@@ -11,7 +11,7 @@
         (click)="createOrUpdatePageTracker()"
         color="success"
         fill="solid"
-      >
+        >
         <ion-label> Create Page Tracker</ion-label>
       </ion-button>
     </ion-buttons>
@@ -44,13 +44,13 @@
 
       <ion-list-header class="ion-margin-top"> Customize</ion-list-header>
 
-      <ng-container *ngIf="formFg.value.kind === 'static'">
+      @if (formFg.value.kind === 'static') {
         <ion-item [button]="true" color="primary">
           Customize a website
         </ion-item>
-      </ng-container>
+      }
 
-      <ng-container *ngIf="formFg.value.kind === 'dynamic'">
+      @if (formFg.value.kind === 'dynamic') {
         <ion-item (click)="openFeedBuilder()" [button]="true" color="primary">
           Customize a Feed
         </ion-item>
@@ -62,7 +62,7 @@
             placeholder="Type a number"
           ></ion-input>
         </ion-item>
-      </ng-container>
+      }
 
       <ion-list-header> Update Frequency</ion-list-header>
 
@@ -72,7 +72,7 @@
           fill="outline"
           interface="popover"
           placeholder="Frequency"
-        >
+          >
           <ion-select-option [disabled]="isThrottled" value="0 */15 * * * *"
             >Every 15 min
           </ion-select-option>
@@ -101,7 +101,7 @@
           fill="outline"
           interface="popover"
           placeholder="Trigger"
-        >
+          >
           <ion-select-option [value]="0">Any change</ion-select-option>
           <ion-select-option [value]="0.01">Tiny 1%</ion-select-option>
           <ion-select-option [value]="0.1">Medium 10%</ion-select-option>
@@ -117,7 +117,7 @@
           fill="outline"
           interface="popover"
           placeholder="Frequency"
-        >
+          >
           <ion-select-option value="FirstSnapshot"
             >After first snapshot
           </ion-select-option>

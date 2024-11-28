@@ -1,58 +1,67 @@
 <app-feedless-header></app-feedless-header>
-<ion-header *ngIf="repository?.disabledFrom">
-  <ion-toolbar color="danger">
-    <ion-text class="ion-padding-horizontal" style="font-size: 16px"
-      >This feed will expire in
-      <strong>{{ fromNow(repository.disabledFrom) }}</strong></ion-text
-    >
-    <ion-button
-      class="ion-margin-horizontal"
-      color="light"
-      shape="round"
-      slot="end"
-    >
-      Remove Expiry
-    </ion-button>
-  </ion-toolbar>
-</ion-header>
-<ion-header *ngIf="repository?.archived">
-  <ion-toolbar color="medium">
-    <ion-text class="ion-padding-horizontal" style="font-size: 16px">
-      Feed is archived. It will not be updated.
-    </ion-text>
-    <ion-button
-      class="ion-margin-horizontal"
-      color="light"
-      shape="round"
-      slot="end"
-    >
-      Resume
-    </ion-button>
-  </ion-toolbar>
-</ion-header>
-<ion-content class="ion-padding">
-  <div class="limited-width-pane">
-    <ion-breadcrumbs>
-      <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
-      <ion-breadcrumb routerLink="/feeds">Feeds</ion-breadcrumb>
-      <ion-breadcrumb>{{ repository?.title }}</ion-breadcrumb>
-    </ion-breadcrumbs>
+@if (repository?.disabledFrom) {
+  <ion-header>
+    <ion-toolbar color="danger">
+      <ion-text class="ion-padding-horizontal" style="font-size: 16px"
+        >This feed will expire in
+        <strong>{{ fromNow(repository.disabledFrom) }}</strong></ion-text
+        >
+        <ion-button
+          class="ion-margin-horizontal"
+          color="light"
+          shape="round"
+          slot="end"
+          >
+          Remove Expiry
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+  }
+  @if (repository?.archived) {
+    <ion-header>
+      <ion-toolbar color="medium">
+        <ion-text class="ion-padding-horizontal" style="font-size: 16px">
+          Feed is archived. It will not be updated.
+        </ion-text>
+        <ion-button
+          class="ion-margin-horizontal"
+          color="light"
+          shape="round"
+          slot="end"
+          >
+          Resume
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+  }
+  <ion-content class="ion-padding">
+    <div class="limited-width-pane">
+      <ion-breadcrumbs>
+        <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+        <ion-breadcrumb routerLink="/feeds">Feeds</ion-breadcrumb>
+        <ion-breadcrumb>{{ repository?.title }}</ion-breadcrumb>
+      </ion-breadcrumbs>
 
-    <div *ngIf="busy">
-      <ion-spinner name="dots"></ion-spinner>
+      @if (busy) {
+        <div>
+          <ion-spinner name="dots"></ion-spinner>
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div>
+          <ion-item color="danger">
+            <p>{{ errorMessage }}</p>
+          </ion-item>
+        </div>
+      }
+
+      @if (!busy && !errorMessage) {
+        <app-feed-details
+          [repositoryId]="repository.id"
+          style="margin-top: 50px"
+          >
+        </app-feed-details>
+      }
     </div>
-
-    <div *ngIf="errorMessage">
-      <ion-item color="danger">
-        <p>{{ errorMessage }}</p>
-      </ion-item>
-    </div>
-
-    <app-feed-details
-      *ngIf="!busy && !errorMessage"
-      [repositoryId]="repository.id"
-      style="margin-top: 50px"
-    >
-    </app-feed-details>
-  </div>
-</ion-content>
+  </ion-content>

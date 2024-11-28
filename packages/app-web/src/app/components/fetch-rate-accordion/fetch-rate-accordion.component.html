@@ -4,9 +4,11 @@
   </ion-col>
   <ion-col size="9">
     <ion-select [formControl]="control" fill="outline" interface="popover">
-      <ion-select-option *ngFor="let option of options" [value]="option.value"
-        >{{ option.key }}
-      </ion-select-option>
+      @for (option of options; track option) {
+        <ion-select-option [value]="option.value"
+          >{{ option.key }}
+        </ion-select-option>
+      }
     </ion-select>
   </ion-col>
 </ion-row>

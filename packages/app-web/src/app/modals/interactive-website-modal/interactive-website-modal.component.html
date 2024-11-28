@@ -13,7 +13,7 @@
     <app-interactive-website
       [sourceBuilder]="sourceBuilder"
       style="flex: 1; display: flex"
-    >
+      >
     </app-interactive-website>
   </ion-row>
 
@@ -21,69 +21,77 @@
     <ion-list
       [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }"
       class="flex__column"
-    >
-      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
-      <ion-item
-        *ngFor="let action of getActionFgs(); let i = index"
-        [ngClass]="{ action__raw: !!action.value.raw }"
       >
-        <!--          <ion-reorder slot="start"></ion-reorder>-->
-        <div class="flex__row">
-          <div>
-            <ion-select
-              [formControl]="action.controls.type"
-              fill="outline"
-              interface="popover"
-              placeholder="Action"
-            >
-              <ion-select-option
-                *ngFor="let action of actionTypes"
-                [value]="action"
-              >
-                {{ action }}
-              </ion-select-option>
-            </ion-select>
-          </div>
-
-          <div *ngIf="action.value.raw">
-            {{ action.value.raw | json }}
-          </div>
-
-          <ion-button
-            (click)="pickPosition(action)"
-            *ngIf="action.value.type === 'click'"
-            [ngClass]="{ 'ng-invalid': action.invalid }"
-            color="medium"
-            expand="block"
-            fill="outline"
-            style="flex: 1"
+      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
+      @for (action of getActionFgs(); track action; let i = $index) {
+        <ion-item
+          [ngClass]="{ action__raw: !!action.value.raw }"
           >
-            {{ getPositionLabel(action) }}
-          </ion-button>
-
-          <ion-button (click)="removeAction(i)" color="medium" fill="clear">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-      <!--      </ion-reorder-group>-->
-      <ion-item *ngIf="actionsFg.length < 4" [disabled]="actionsFg.invalid">
+          <!--          <ion-reorder slot="start"></ion-reorder>-->
+          <div class="flex__row">
+            <div>
+              <ion-select
+                [formControl]="action.controls.type"
+                fill="outline"
+                interface="popover"
+                placeholder="Action"
+                >
+                @for (action of actionTypes; track action) {
+                  <ion-select-option
+                    [value]="action"
+                    >
+                    {{ action }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </div>
+            @if (action.value.raw) {
+              <div>
+                {{ action.value.raw | json }}
+              </div>
+            }
+            @if (action.value.type === 'click') {
+              <ion-button
+                (click)="pickPosition(action)"
+                [ngClass]="{ 'ng-invalid': action.invalid }"
+                color="medium"
+                expand="block"
+                fill="outline"
+                style="flex: 1"
+                >
+                {{ getPositionLabel(action) }}
+              </ion-button>
+            }
+            <ion-button (click)="removeAction(i)" color="medium" fill="clear">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      }
+    <!--      </ion-reorder-group>-->
+    @if (actionsFg.length < 4) {
+      <ion-item [disabled]="actionsFg.invalid">
         <ion-label>
           <a (click)="addAction()" href="javascript:void(0)">Add Action</a>
         </ion-label>
       </ion-item>
-    </ion-list>
-  </ion-row>
-  <!--  </form>-->
+    }
+  </ion-list>
+</ion-row>
+<!--  </form>-->
 </ion-content>
 <ion-footer>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="hideNonUiActions = !hideNonUiActions">
-        <ion-label *ngIf="hideNonUiActions" color="medium"
-          >Debug Mode Off
-        </ion-label>
-        <span *ngIf="!hideNonUiActions">Debug Mode On</span>
+        @if (hideNonUiActions) {
+          <ion-label color="medium"
+            >Debug Mode Off
+          </ion-label>
+        }
+        @if (!hideNonUiActions) {
+          <span>Debug Mode On</span>
+        }
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
@@ -94,7 +102,7 @@
         color="success"
         expand="full"
         fill="solid"
-      >
+        >
         Apply
       </ion-button>
     </ion-buttons>

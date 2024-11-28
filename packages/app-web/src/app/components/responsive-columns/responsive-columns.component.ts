@@ -9,14 +9,14 @@ import {
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
 import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-responsive-columns',
   templateUrl: './responsive-columns.component.html',
   styleUrls: ['./responsive-columns.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonGrid, IonRow, IonCol, NgIf, IonIcon],
+  imports: [IonGrid, IonRow, IonCol, IonIcon],
   standalone: true,
 })
 export class ResponsiveColumnsComponent implements AfterViewInit {

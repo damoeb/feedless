@@ -24,7 +24,7 @@ import { GeoService } from '../../../services/geo.service';
 import { Subscription } from 'rxjs';
 import { homeRoute } from '../upcoming-product-routing.module';
 import dayjs from 'dayjs';
-import { NgIf } from '@angular/common';
+
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 import { RouterLink } from '@angular/router';
 
@@ -34,12 +34,11 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./upcoming-footer.component.scss'],
   imports: [
     IonFooter,
-    NgIf,
     IonButton,
     IonIcon,
     RemoveIfProdDirective,
-    RouterLink,
-  ],
+    RouterLink
+],
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {

@@ -25,19 +25,25 @@
           <ion-note> You hate reading mails, I hate writing them</ion-note>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="requiresPlan">
-        <ion-col class="ion-padding-vertical" push="3" size="9">
-          <span *ngIf="product">Plan {{ product.name }}</span>
-          <span *ngIf="!product">No plan available</span>
-        </ion-col>
-      </ion-row>
+      @if (requiresPlan) {
+        <ion-row>
+          <ion-col class="ion-padding-vertical" push="3" size="9">
+            @if (product) {
+              <span>Plan {{ product.name }}</span>
+            }
+            @if (!product) {
+              <span>No plan available</span>
+            }
+          </ion-col>
+        </ion-row>
+      }
       <ion-row>
         <ion-col class="ion-padding-vertical" push="3" size="9">
           <ion-checkbox
             [formControl]="formFg.controls.terms"
             class="ion-text-wrap"
             labelPlacement="end"
-          >
+            >
             I accept the terms and conditions
           </ion-checkbox>
         </ion-col>
@@ -50,13 +56,14 @@
           [disabled]="loading || !product"
           color="primary"
           fill="solid"
-        >
-          <ion-spinner
-            *ngIf="loading"
-            class="ion-margin-end"
-            color="dark"
-            name="dots"
-          ></ion-spinner>
+          >
+          @if (loading) {
+            <ion-spinner
+              class="ion-margin-end"
+              color="dark"
+              name="dots"
+            ></ion-spinner>
+          }
           Let's go!
         </ion-button>
       </ion-buttons>

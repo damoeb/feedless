@@ -17,7 +17,7 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/angular/standalone';
-import { NgIf, NgFor } from '@angular/common';
+
 
 @Component({
   selector: 'app-billings-page',
@@ -30,11 +30,9 @@ import { NgIf, NgFor } from '@angular/common';
     IonRow,
     IonCol,
     IonList,
-    NgIf,
     IonItem,
-    NgFor,
-    IonLabel,
-  ],
+    IonLabel
+],
   standalone: true,
 })
 export class BillingsPage implements OnInit {

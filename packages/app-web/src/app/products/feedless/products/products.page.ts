@@ -23,7 +23,7 @@ import {
   IonButton,
   IonIcon,
 } from '@ionic/angular/standalone';
-import { NgIf, NgFor } from '@angular/common';
+
 import { ProductHeadlineComponent } from '../../../components/product-headline/product-headline.component';
 
 @Component({
@@ -34,16 +34,14 @@ import { ProductHeadlineComponent } from '../../../components/product-headline/p
   encapsulation: ViewEncapsulation.None,
   imports: [
     IonContent,
-    NgIf,
     IonBreadcrumbs,
     IonBreadcrumb,
     RouterLink,
     ProductHeadlineComponent,
     IonToolbar,
-    NgFor,
     IonButton,
-    IonIcon,
-  ],
+    IonIcon
+],
   standalone: true,
 })
 export class ProductsPage implements OnInit, OnDestroy {

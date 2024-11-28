@@ -18,7 +18,7 @@ import {
   IonButtons,
   IonMenuButton,
 } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { RepositoriesButtonComponent } from '../repositories-button/repositories-button.component';
 import { AgentsButtonComponent } from '../agents-button/agents-button.component';
@@ -31,7 +31,6 @@ import { LoginButtonComponent } from '../login-button/login-button.component';
   styleUrls: ['./feedless-header.component.scss'],
   imports: [
     IonHeader,
-    NgIf,
     IonToolbar,
     IonLabel,
     IonButton,
@@ -41,8 +40,8 @@ import { LoginButtonComponent } from '../login-button/login-button.component';
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    LoginButtonComponent,
-  ],
+    LoginButtonComponent
+],
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {

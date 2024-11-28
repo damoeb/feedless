@@ -1,10 +1,11 @@
 <app-feedless-header></app-feedless-header>
 <ion-header>
-  <ion-progress-bar
-    *ngIf="loading"
-    color="medium"
-    type="indeterminate"
-  ></ion-progress-bar>
+  @if (loading) {
+    <ion-progress-bar
+      color="medium"
+      type="indeterminate"
+    ></ion-progress-bar>
+  }
 </ion-header>
 <ion-content>
   <app-product-header productTitle="Feed Directory">
@@ -24,54 +25,63 @@
     <!--    <ion-row>-->
     <!--      <ion-col size="12">-->
     <!--        <app-searchbar placeholder="Type to search"></app-searchbar>-->
-    <!--      </ion-col>-->
-    <!--    </ion-row>-->
-    <ion-row>
-      <!--      <ion-col push="8" size="4">-->
-      <!--        <ion-segment mode="ios" [formControl]="viewModeFc">-->
-      <!--          <ion-segment-button [value]="viewModeList"-->
-      <!--          >List</ion-segment-button-->
-      <!--          >-->
-      <!--          <ion-segment-button [value]="viewModeGrid"-->
-      <!--          >Grid</ion-segment-button-->
-      <!--          >-->
-      <!--        </ion-segment>-->
-      <!--      </ion-col>-->
-    </ion-row>
-  </div>
+  <!--      </ion-col>-->
+<!--    </ion-row>-->
+<ion-row>
+  <!--      <ion-col push="8" size="4">-->
+  <!--        <ion-segment mode="ios" [formControl]="viewModeFc">-->
+  <!--          <ion-segment-button [value]="viewModeList"-->
+<!--          >List</ion-segment-button-->
+<!--          >-->
+<!--          <ion-segment-button [value]="viewModeGrid"-->
+<!--          >Grid</ion-segment-button-->
+<!--          >-->
+<!--        </ion-segment>-->
+<!--      </ion-col>-->
+</ion-row>
+</div>
 
-  <div *ngIf="viewModeFc.value === viewModeGrid" class="grid">
+@if (viewModeFc.value === viewModeGrid) {
+  <div class="grid">
     <ion-item class="grid-item"> div</ion-item>
   </div>
+}
 
-  <div *ngIf="viewModeFc.value === viewModeList" class="limited-width-pane">
+@if (viewModeFc.value === viewModeList) {
+  <div class="limited-width-pane">
     <ion-list style="border-radius: 8px">
-      <ion-item *ngIf="!loading && repositories?.length === 0">
-        <p>No feeds found</p>
-      </ion-item>
-      <ion-item *ngFor="let feed of repositories" lines="inset">
-        <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
-        <ion-label>
-          <h2>
-            <a [routerLink]="'/feeds/' + feed.id"> {{ feed.title }} </a>
-            <ion-chip *ngIf="isPrivate(feed)">Private</ion-chip>
-          </h2>
-          <p class="ion-padding-top">{{ feed.description }}</p>
-          <!--          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>-->
-        </ion-label>
-        <ion-label slot="end" appDev>
-          <ion-button color="light" title="Unique pulls per week">
-            <ion-icon name="trending-down-outline" slot="start"></ion-icon>
-            {{ feed.pullsPerMonth / 4 }}
-          </ion-button>
-        </ion-label>
-      </ion-item>
+      @if (!loading && repositories?.length === 0) {
+        <ion-item>
+          <p>No feeds found</p>
+        </ion-item>
+      }
+      @for (feed of repositories; track feed) {
+        <ion-item lines="inset">
+          <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
+          <ion-label>
+            <h2>
+              <a [routerLink]="'/feeds/' + feed.id"> {{ feed.title }} </a>
+              @if (isPrivate(feed)) {
+                <ion-chip>Private</ion-chip>
+              }
+            </h2>
+            <p class="ion-padding-top">{{ feed.description }}</p>
+            <!--          <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>-->
+          </ion-label>
+          <ion-label slot="end" appDev>
+            <ion-button color="light" title="Unique pulls per week">
+              <ion-icon name="trending-down-outline" slot="start"></ion-icon>
+              {{ feed.pullsPerMonth / 4 }}
+            </ion-button>
+          </ion-label>
+        </ion-item>
+      }
     </ion-list>
-
     <app-pagination
       (pageChange)="fetchFeeds($event)"
       [currentPage]="currentPage"
       [isLastPage]="isLastPage"
     ></app-pagination>
   </div>
+}
 </ion-content>

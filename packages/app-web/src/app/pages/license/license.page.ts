@@ -39,7 +39,7 @@ import {
   IonButton,
   IonTextarea,
 } from '@ionic/angular/standalone';
-import { NgIf, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-license-page',
@@ -51,7 +51,6 @@ import { NgIf, DatePipe } from '@angular/common';
     IonContent,
     IonList,
     IonItem,
-    NgIf,
     IonSpinner,
     IonIcon,
     IonProgressBar,
@@ -61,8 +60,8 @@ import { NgIf, DatePipe } from '@angular/common';
     IonTextarea,
     FormsModule,
     ReactiveFormsModule,
-    DatePipe,
-  ],
+    DatePipe
+],
   standalone: true,
 })
 export class LicensePage implements OnInit, OnDestroy {

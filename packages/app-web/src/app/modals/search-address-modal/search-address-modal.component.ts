@@ -19,7 +19,7 @@ import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-import { NgIf, NgFor } from '@angular/common';
+
 
 @Component({
   selector: 'app-search-address-modal',
@@ -35,11 +35,9 @@ import { NgIf, NgFor } from '@angular/common';
     IonContent,
     SearchbarComponent,
     IonList,
-    NgIf,
     IonItem,
-    NgFor,
-    IonLabel,
-  ],
+    IonLabel
+],
   standalone: true,
 })
 export class SearchAddressModalComponent {

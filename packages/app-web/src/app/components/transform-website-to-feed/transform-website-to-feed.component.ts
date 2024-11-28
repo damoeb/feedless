@@ -35,7 +35,7 @@ import { SourceBuilder } from '../interactive-website/source-builder';
 import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location, NgFor, NgIf, NgStyle } from '@angular/common';
+import { Location, NgStyle } from '@angular/common';
 import { ScrapeService } from '../../services/scrape.service';
 import { addIcons } from 'ionicons';
 import {
@@ -81,9 +81,7 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonAccordion,
     IonItem,
     IonLabel,
-    NgFor,
     IonIcon,
-    NgIf,
     NgStyle,
     IonInput,
     FormsModule,
@@ -98,8 +96,8 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonProgressBar,
     IonSpinner,
     RemoteFeedPreviewComponent,
-    ConsoleButtonComponent,
-  ],
+    ConsoleButtonComponent
+],
   standalone: true,
 })
 export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {

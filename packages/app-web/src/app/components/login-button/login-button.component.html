@@ -1,37 +1,38 @@
-<ion-button
-  *ngIf="!authorization?.loggedIn"
-  [color]="color"
-  [expand]="expand"
-  class="cy-login-button"
-  routerLink="/login"
->
-  Login
-</ion-button>
+@if (!authorization?.loggedIn) {
+  <ion-button
+    [color]="color"
+    [expand]="expand"
+    class="cy-login-button"
+    routerLink="/login"
+    >
+    Login
+  </ion-button>
+}
 
-<ion-button
-  *ngIf="authorization?.loggedIn"
-  [color]="color"
-  [expand]="expand"
-  class="cy-profile-button"
-  id="open-settings-popover"
->
-  <ng-container *ngIf="label">
-    <ion-icon name="apps-outline" slot="start"></ion-icon>
-    {{ label }}
-  </ng-container>
-  <ng-container *ngIf="!label">
-    <ion-icon name="apps-outline"></ion-icon>
-  </ng-container>
-  <ion-popover trigger="open-settings-popover" triggerAction="click">
-    <ng-template>
-      <ion-list>
-        <ion-item [button]="true" routerLink="/profile">
-          <ion-icon name="person-outline" slot="start"></ion-icon>
-          Profile
-        </ion-item>
-        <!--        <ion-item [button]="true" routerLink="/secrets">-->
-        <!--          <ion-icon name="key-outline" slot="start"></ion-icon>-->
-        <!--          Secrets-->
+@if (authorization?.loggedIn) {
+  <ion-button
+    [color]="color"
+    [expand]="expand"
+    class="cy-profile-button"
+    id="open-settings-popover"
+    >
+    @if (label) {
+      <ion-icon name="apps-outline" slot="start"></ion-icon>
+      {{ label }}
+    }
+    @if (!label) {
+      <ion-icon name="apps-outline"></ion-icon>
+    }
+    <ion-popover trigger="open-settings-popover" triggerAction="click">
+      <ng-template>
+        <ion-list>
+          <ion-item [button]="true" routerLink="/profile">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            Profile
+          </ion-item>
+          <!--        <ion-item [button]="true" routerLink="/secrets">-->
+          <!--          <ion-icon name="key-outline" slot="start"></ion-icon>-->
+          <!--          Secrets-->
         <!--        </ion-item>-->
         <!--        <ion-item-->
         <!--          [button]="true"-->
@@ -40,28 +41,31 @@
         <!--        >-->
         <!--          <ion-icon name="card-outline" slot="start"></ion-icon>-->
         <!--          Billings-->
-        <!--        </ion-item>-->
+      <!--        </ion-item>-->
+      @if (serverConfig.isSelfHosted()) {
         <ion-item
-          *ngIf="serverConfig.isSelfHosted()"
           [button]="true"
           routerLink="/settings"
-        >
+          >
           <ion-icon name="settings-outline" slot="start"></ion-icon>
           Settings
         </ion-item>
+      }
+      @if (serverConfig.isSelfHosted()) {
         <ion-item
-          *ngIf="serverConfig.isSelfHosted()"
           [button]="true"
           routerLink="/license"
-        >
+          >
           <ion-icon name="card-outline" slot="start"></ion-icon>
           License
         </ion-item>
-        <ion-item (click)="logout()" [button]="true">
-          <ion-icon name="exit-outline" slot="start"></ion-icon>
-          Logout
-        </ion-item>
-      </ion-list>
-    </ng-template>
-  </ion-popover>
+      }
+      <ion-item (click)="logout()" [button]="true">
+        <ion-icon name="exit-outline" slot="start"></ion-icon>
+        Logout
+      </ion-item>
+    </ion-list>
+  </ng-template>
+</ion-popover>
 </ion-button>
+}

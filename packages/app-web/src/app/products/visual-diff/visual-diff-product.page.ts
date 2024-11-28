@@ -29,7 +29,7 @@ import { TrialWarningComponent } from '../../components/trial-warning/trial-warn
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { NgIf } from '@angular/common';
+
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 @Component({
@@ -47,12 +47,11 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    NgIf,
     IonButton,
     LoginButtonComponent,
     IonContent,
-    IonRouterOutlet,
-  ],
+    IonRouterOutlet
+],
   standalone: true,
 })
 export class VisualDiffProductPage implements OnInit, OnDestroy {

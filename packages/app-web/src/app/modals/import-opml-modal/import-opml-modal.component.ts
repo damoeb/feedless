@@ -32,7 +32,7 @@ import {
 } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { NgFor, NgIf } from '@angular/common';
+
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -60,16 +60,14 @@ type FcOutline = {
     IonIcon,
     IonContent,
     IonList,
-    NgFor,
     IonItem,
-    NgIf,
     IonCheckbox,
     FormsModule,
     ReactiveFormsModule,
     IonLabel,
     IonFooter,
-    IonNote,
-  ],
+    IonNote
+],
   standalone: true,
 })
 export class ImportOpmlModalComponent

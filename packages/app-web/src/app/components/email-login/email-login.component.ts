@@ -21,7 +21,7 @@ import {
   IonIcon,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-email-login',
@@ -35,11 +35,10 @@ import { NgIf } from '@angular/common';
     IonItem,
     IonInput,
     ReactiveFormsModule,
-    NgIf,
     IonLabel,
     IonIcon,
-    IonSpinner,
-  ],
+    IonSpinner
+],
   standalone: true,
 })
 export class EmailLoginComponent implements OnDestroy {

@@ -47,7 +47,7 @@ import {
   IonSelectOption,
   IonCheckbox,
 } from '@ionic/angular/standalone';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 type Country = {
   name: string;
@@ -318,7 +318,6 @@ type PaymentOption = {
   imports: [
     FeedlessHeaderComponent,
     IonContent,
-    NgIf,
     IonSpinner,
     IonList,
     IonItem,
@@ -329,14 +328,13 @@ type PaymentOption = {
     ReactiveFormsModule,
     IonButton,
     IonListHeader,
-    NgFor,
     IonLabel,
     IonNote,
     IonSelect,
     IonSelectOption,
     NgClass,
-    IonCheckbox,
-  ],
+    IonCheckbox
+],
   standalone: true,
 })
 export class CheckoutPage implements OnInit, OnDestroy {

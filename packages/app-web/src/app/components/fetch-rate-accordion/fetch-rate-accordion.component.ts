@@ -10,7 +10,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
-import { KeyValue, NgFor } from '@angular/common';
+import { KeyValue } from '@angular/common';
 import {
   IonRow,
   IonCol,
@@ -36,9 +36,8 @@ import {
     IonSelect,
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
-    IonSelectOption,
-  ],
+    IonSelectOption
+],
   standalone: true,
 })
 export class FetchRateAccordionComponent

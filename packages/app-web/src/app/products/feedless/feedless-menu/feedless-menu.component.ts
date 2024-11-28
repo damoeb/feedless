@@ -17,7 +17,7 @@ import {
   IonChip,
 } from '@ionic/angular/standalone';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NgIf } from '@angular/common';
+
 import { BubbleComponent } from '../../../components/bubble/bubble.component';
 
 @Component({
@@ -31,10 +31,9 @@ import { BubbleComponent } from '../../../components/bubble/bubble.component';
     IonItem,
     RouterLink,
     RouterLinkActive,
-    NgIf,
     IonChip,
-    BubbleComponent,
-  ],
+    BubbleComponent
+],
   standalone: true,
 })
 export class FeedlessMenuComponent implements OnInit, OnDestroy {

@@ -22,7 +22,7 @@ import { getCachedLocations } from '../places';
 import { LatLon } from '../../../components/map/map.component';
 import { PageService, PageTags } from '../../../services/page.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Location, NgIf, NgClass, NgFor } from '@angular/common';
+import { Location, NgClass } from '@angular/common';
 import {
   homeRoute,
   parseDateFromUrl,
@@ -106,7 +106,6 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
   styleUrls: ['./events.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     UpcomingHeaderComponent,
     IonContent,
     IonButton,
@@ -114,11 +113,10 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
     NgClass,
     IonBadge,
     IonSpinner,
-    NgFor,
     RouterLink,
     IonNote,
-    UpcomingFooterComponent,
-  ],
+    UpcomingFooterComponent
+],
   standalone: true,
 })
 export class EventsPage implements OnInit, OnDestroy {

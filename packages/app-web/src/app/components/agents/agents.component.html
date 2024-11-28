@@ -1,22 +1,32 @@
 <ion-list>
-  <ion-item *ngIf="serverConfig.isSelfHosted()" color="primary">
-    <p>
-      <strong>Note</strong>: Agents are used to prerender websites in a browser
-      with JavaScript support. They register themselfes to the server using a
-      user secret. For more information, take a look at the documentation.
-    </p>
-  </ion-item>
-  <ion-item *ngIf="agents.length === 0" color="danger">
-    <ion-label>
-      <p>No Agents connected.</p>
-    </ion-label>
-  </ion-item>
-  <ion-item *ngFor="let agent of agents">
-    <ion-chip *ngIf="agent.openInstance" slot="start">Public</ion-chip>
-    <ion-chip *ngIf="!agent.openInstance" color="success" slot="start"
-      >Private
-    </ion-chip>
-    <ion-label> {{ agent.name }}, version {{ agent.version }}</ion-label>
-    <ion-label> added {{ fromNow(agent.addedAt) }} ago</ion-label>
-  </ion-item>
+  @if (serverConfig.isSelfHosted()) {
+    <ion-item color="primary">
+      <p>
+        <strong>Note</strong>: Agents are used to prerender websites in a browser
+        with JavaScript support. They register themselfes to the server using a
+        user secret. For more information, take a look at the documentation.
+      </p>
+    </ion-item>
+  }
+  @if (agents.length === 0) {
+    <ion-item color="danger">
+      <ion-label>
+        <p>No Agents connected.</p>
+      </ion-label>
+    </ion-item>
+  }
+  @for (agent of agents; track agent) {
+    <ion-item>
+      @if (agent.openInstance) {
+        <ion-chip slot="start">Public</ion-chip>
+      }
+      @if (!agent.openInstance) {
+        <ion-chip color="success" slot="start"
+          >Private
+        </ion-chip>
+      }
+      <ion-label> {{ agent.name }}, version {{ agent.version }}</ion-label>
+      <ion-label> added {{ fromNow(agent.addedAt) }} ago</ion-label>
+    </ion-item>
+  }
 </ion-list>

@@ -16,35 +16,38 @@
 </ion-header>
 <ion-content>
   <ion-list>
-    <ng-container *ngFor="let outlineRoot of fcOutlines">
+    @for (outlineRoot of fcOutlines; track outlineRoot) {
       <ion-item slot="header">
-        <ion-checkbox
-          *ngIf="outlineRoot.xmlUrl"
-          [formControl]="outlineRoot.fc"
-          aria-label="check"
-          slot="start"
-        ></ion-checkbox>
+        @if (outlineRoot.xmlUrl) {
+          <ion-checkbox
+            [formControl]="outlineRoot.fc"
+            aria-label="check"
+            slot="start"
+          ></ion-checkbox>
+        }
         <ion-label>
           {{ outlineRoot.title }}
         </ion-label>
       </ion-item>
       <ion-list>
-        <ion-item
-          *ngFor="let outlineChild of outlineRoot.outlines"
-          class="ion-padding-start"
-        >
-          <ion-checkbox
-            *ngIf="outlineChild.xmlUrl"
-            [formControl]="outlineChild.fc"
-            label-placement="end"
-            slot="start"
-          >
-            <p>{{ outlineChild.title }}</p>
-            <p>{{ outlineChild.xmlUrl }}</p>
-          </ion-checkbox>
-        </ion-item>
+        @for (outlineChild of outlineRoot.outlines; track outlineChild) {
+          <ion-item
+            class="ion-padding-start"
+            >
+            @if (outlineChild.xmlUrl) {
+              <ion-checkbox
+                [formControl]="outlineChild.fc"
+                label-placement="end"
+                slot="start"
+                >
+                <p>{{ outlineChild.title }}</p>
+                <p>{{ outlineChild.xmlUrl }}</p>
+              </ion-checkbox>
+            }
+          </ion-item>
+        }
       </ion-list>
-    </ng-container>
+    }
   </ion-list>
 </ion-content>
 <ion-footer>
@@ -58,7 +61,7 @@
         [formControl]="formFg.controls.applyFulltextPlugin"
         justify="start"
         labelPlacement="end"
-      >
+        >
         Fulltext
         <ion-note class="ion-padding-horizontal"
           >Fetch Fulltext for every Item (static only)
@@ -70,7 +73,7 @@
         [formControl]="formFg.controls.applyPrivacyPlugin"
         justify="start"
         labelPlacement="end"
-      >
+        >
         Privacy & Robustness
         <ion-note class="ion-padding-horizontal"
           >Inlines images (base64) and unwinds tracking urls

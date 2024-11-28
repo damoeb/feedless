@@ -1,14 +1,21 @@
-<div
-  *ngIf="rows"
-  [ngStyle]="{ '--app-table-columns': getHeaders().length }"
-  class="table"
->
-  <div class="table-header">
-    <div *ngFor="let header of getHeaders()">{{ header.name }}</div>
-  </div>
-  <div class="table-body">
-    <div *ngFor="let row of getRows()" class="table-row">
-      <div *ngFor="let cell of row">{{ cell.value }}</div>
+@if (rows) {
+  <div
+    [ngStyle]="{ '--app-table-columns': getHeaders().length }"
+    class="table"
+    >
+    <div class="table-header">
+      @for (header of getHeaders(); track header) {
+        <div>{{ header.name }}</div>
+      }
+    </div>
+    <div class="table-body">
+      @for (row of getRows(); track row) {
+        <div class="table-row">
+          @for (cell of row; track cell) {
+            <div>{{ cell.value }}</div>
+          }
+        </div>
+      }
     </div>
   </div>
-</div>
+}

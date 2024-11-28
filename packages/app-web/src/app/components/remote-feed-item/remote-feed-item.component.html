@@ -1,12 +1,16 @@
 <ion-item class="cy-feed-item">
   <div class="ion-margin-end">{{ feedItemIndex }}.</div>
   <ion-label>
-    <h2 *ngIf="feedItem.title" class="cy-remote-feed__title">
-      {{ feedItem.title }}
-    </h2>
-    <h2 *ngIf="!feedItem.title" class="cy-remote-feed__title">
-      <del>Empty Title</del>
-    </h2>
+    @if (feedItem.title) {
+      <h2 class="cy-remote-feed__title">
+        {{ feedItem.title }}
+      </h2>
+    }
+    @if (!feedItem.title) {
+      <h2 class="cy-remote-feed__title">
+        <del>Empty Title</del>
+      </h2>
+    }
     <p>
       <a
         [href]="feedItem.url"
@@ -14,23 +18,29 @@
         referrerpolicy="no-referrer"
         target="_blank"
         >{{ feedItem.url }}</a
-      >
-    </p>
-    <p class="cy-remote-feed__date-published">
-      Published
-      {{ toDate(feedItem.publishedAt) | date: dateFormat }}
-    </p>
-    <p *ngIf="feedItem.tags?.length > 0">
-      <ion-chip *ngFor="let tag of feedItem.tags">{{ tag }}</ion-chip>
-    </p>
-    <p *ngIf="feedItem.startingAt">
-      Starting
-      {{ toDate(feedItem.startingAt) | date: dateFormat }}
-    </p>
-    <p class="cy-remote-feed__body ion-text-wrap">
-      {{ feedItem.text }}
-    </p>
+        >
+      </p>
+      <p class="cy-remote-feed__date-published">
+        Published
+        {{ toDate(feedItem.publishedAt) | date: dateFormat }}
+      </p>
+      @if (feedItem.tags?.length > 0) {
+        <p>
+          @for (tag of feedItem.tags; track tag) {
+            <ion-chip>{{ tag }}</ion-chip>
+          }
+        </p>
+      }
+      @if (feedItem.startingAt) {
+        <p>
+          Starting
+          {{ toDate(feedItem.startingAt) | date: dateFormat }}
+        </p>
+      }
+      <p class="cy-remote-feed__body ion-text-wrap">
+        {{ feedItem.text }}
+      </p>
 
-    <app-player [document]="feedItem"></app-player>
-  </ion-label>
-</ion-item>
+      <app-player [document]="feedItem"></app-player>
+    </ion-label>
+  </ion-item>

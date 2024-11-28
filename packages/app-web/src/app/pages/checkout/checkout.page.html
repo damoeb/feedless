@@ -4,10 +4,12 @@
     <div class="flex__column">
       <h1>Checkout</h1>
 
-      <ion-spinner *ngIf="!currentStep" name="dots"></ion-spinner>
+      @if (!currentStep) {
+        <ion-spinner name="dots"></ion-spinner>
+      }
 
       <ion-list class="ion-padding">
-        <ng-container *ngIf="currentStep === 'email'">
+        @if (currentStep === 'email') {
           <ion-item>
             Please provide an email address where we should send your license
           </ion-item>
@@ -28,149 +30,148 @@
               </ion-col>
             </ion-row>
           </form>
-
           <ion-item class="ion-margin-top">
             Alternatively, you can
             <a [href]="loginWithRedirect" style="margin-left: 5px"
               >login here</a
-            >
-          </ion-item>
-        </ng-container>
-
-        <ng-container *ngIf="currentStep === 'data'">
-          <ion-list-header>
-            <h3>Your Basket</h3>
-          </ion-list-header>
-          <ion-row *ngFor="let product of products">
-            <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
-            <ion-col class="ion-text-center" push="4" size="4"
-              >${{ getPrice(product).toFixed(2) }}
-            </ion-col>
-          </ion-row>
-          <ion-row class="ion-margin-top">
-            <ion-col push="4" size="4">
-              <strong>Total incl. VAT</strong>
-            </ion-col>
-            <ion-col
-              class="ion-padding-vertical ion-text-center"
-              push="4"
-              size="4"
-              style="border-top: 1px solid var(--app-foreground)"
-            >
-              <strong>${{ getTotalPrice().toFixed(2) }} </strong>
-            </ion-col>
-          </ion-row>
-
-          <ion-list-header>
-            <h3>Your Data</h3>
-          </ion-list-header>
-          <ion-row>
-            <ion-col size="4">
-              <ion-label class="ion-padding">First Name</ion-label>
-            </ion-col>
-            <ion-col size="8">
-              <ion-input
-                [formControl]="formFg.controls.firstName"
-                aria-label="First Name"
-                fill="outline"
-                placeholder="Your first name"
-              ></ion-input>
-              <!--              <ion-note color="danger">Enter your name</ion-note>-->
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="4">
-              <ion-label class="ion-padding">Last Name</ion-label>
-            </ion-col>
-            <ion-col size="8">
-              <ion-input
-                [formControl]="formFg.controls.lastName"
-                aria-label="Last Name"
-                fill="outline"
-                placeholder="Your last name"
-              ></ion-input>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="4">
-              <ion-label class="ion-padding">Email</ion-label>
-            </ion-col>
-            <ion-col size="8">
-              <ion-input
-                [formControl]="formFg.controls.email"
-                aria-label="Email"
-                fill="outline"
-                placeholder="Email Adress"
-              ></ion-input>
-              <ion-note>Licenses will be send to this address</ion-note>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="4">
-              <ion-label class="ion-padding">Country</ion-label>
-            </ion-col>
-            <ion-col size="8">
-              <ion-select
-                [formControl]="formFg.controls.country"
-                [multiple]="false"
-                fill="outline"
-                label="Your country of residence"
-                labelPlacement="start"
               >
-                <ion-select-option
-                  *ngFor="let country of countries"
-                  [value]="country.code"
+            </ion-item>
+          }
+
+          @if (currentStep === 'data') {
+            <ion-list-header>
+              <h3>Your Basket</h3>
+            </ion-list-header>
+            @for (product of products; track product) {
+              <ion-row>
+                <ion-col push="4" size="4">1x {{ product.name }}</ion-col>
+                <ion-col class="ion-text-center" push="4" size="4"
+                  >${{ getPrice(product).toFixed(2) }}
+                </ion-col>
+              </ion-row>
+            }
+            <ion-row class="ion-margin-top">
+              <ion-col push="4" size="4">
+                <strong>Total incl. VAT</strong>
+              </ion-col>
+              <ion-col
+                class="ion-padding-vertical ion-text-center"
+                push="4"
+                size="4"
+                style="border-top: 1px solid var(--app-foreground)"
                 >
-                  {{ country.name }}
-                </ion-select-option>
-              </ion-select>
-            </ion-col>
-          </ion-row>
-
-          <ion-list-header>
-            <h3>Payment Methods</h3>
-          </ion-list-header>
-          <ion-row>
-            <ion-col push="4" size="8">
-              <div
-                [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}"
-                class="payment-options"
-              >
+                <strong>${{ getTotalPrice().toFixed(2) }} </strong>
+              </ion-col>
+            </ion-row>
+            <ion-list-header>
+              <h3>Your Data</h3>
+            </ion-list-header>
+            <ion-row>
+              <ion-col size="4">
+                <ion-label class="ion-padding">First Name</ion-label>
+              </ion-col>
+              <ion-col size="8">
+                <ion-input
+                  [formControl]="formFg.controls.firstName"
+                  aria-label="First Name"
+                  fill="outline"
+                  placeholder="Your first name"
+                ></ion-input>
+                <!--              <ion-note color="danger">Enter your name</ion-note>-->
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="4">
+                <ion-label class="ion-padding">Last Name</ion-label>
+              </ion-col>
+              <ion-col size="8">
+                <ion-input
+                  [formControl]="formFg.controls.lastName"
+                  aria-label="Last Name"
+                  fill="outline"
+                  placeholder="Your last name"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="4">
+                <ion-label class="ion-padding">Email</ion-label>
+              </ion-col>
+              <ion-col size="8">
+                <ion-input
+                  [formControl]="formFg.controls.email"
+                  aria-label="Email"
+                  fill="outline"
+                  placeholder="Email Adress"
+                ></ion-input>
+                <ion-note>Licenses will be send to this address</ion-note>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="4">
+                <ion-label class="ion-padding">Country</ion-label>
+              </ion-col>
+              <ion-col size="8">
+                <ion-select
+                  [formControl]="formFg.controls.country"
+                  [multiple]="false"
+                  fill="outline"
+                  label="Your country of residence"
+                  labelPlacement="start"
+                  >
+                  @for (country of countries; track country) {
+                    <ion-select-option
+                      [value]="country.code"
+                      >
+                      {{ country.name }}
+                    </ion-select-option>
+                  }
+                </ion-select>
+              </ion-col>
+            </ion-row>
+            <ion-list-header>
+              <h3>Payment Methods</h3>
+            </ion-list-header>
+            <ion-row>
+              <ion-col push="4" size="8">
                 <div
-                  (click)="formFg.controls.paymentMethod.setValue(option.method)"
-                  *ngFor="let option of paymentOptions"
-                  [ngClass]="{active: formFg.value.paymentMethod === option.method }"
-                >
-                  <h3>{{ option.title }}</h3>
+                  [ngClass]="{'ng-invalid': formFg.controls.paymentMethod.invalid, 'ng-touched': formFg.controls.paymentMethod.touched}"
+                  class="payment-options"
+                  >
+                  @for (option of paymentOptions; track option) {
+                    <div
+                      (click)="formFg.controls.paymentMethod.setValue(option.method)"
+                      [ngClass]="{active: formFg.value.paymentMethod === option.method }"
+                      >
+                      <h3>{{ option.title }}</h3>
+                    </div>
+                  }
                 </div>
-              </div>
-            </ion-col>
-          </ion-row>
-
-          <ion-row class="ion-margin-top">
-            <ion-col push="4" size="8">
-              <ion-checkbox
-                [formControl]="formFg.controls.acceptedTerms"
-                labelPlacement="end"
-              >
-                I have read and agree to the terms and conditions
-              </ion-checkbox>
-            </ion-col>
-          </ion-row>
-
-          <ion-row class="ion-margin-top">
-            <ion-col size="12">
-              <ion-button
-                (click)="createBilling()"
-                [disabled]="loading"
-                expand="block"
-              >
-                Buy
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ng-container>
-      </ion-list>
+              </ion-col>
+            </ion-row>
+            <ion-row class="ion-margin-top">
+              <ion-col push="4" size="8">
+                <ion-checkbox
+                  [formControl]="formFg.controls.acceptedTerms"
+                  labelPlacement="end"
+                  >
+                  I have read and agree to the terms and conditions
+                </ion-checkbox>
+              </ion-col>
+            </ion-row>
+            <ion-row class="ion-margin-top">
+              <ion-col size="12">
+                <ion-button
+                  (click)="createBilling()"
+                  [disabled]="loading"
+                  expand="block"
+                  >
+                  Buy
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          }
+        </ion-list>
+      </div>
     </div>
-  </div>
-</ion-content>
+  </ion-content>

@@ -26,7 +26,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
-import { NgIf, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ImportButtonComponent } from '../../../components/import-button/import-button.component';
 
 @Component({
@@ -39,14 +39,13 @@ import { ImportButtonComponent } from '../../../components/import-button/import-
     IonContent,
     ProductHeaderComponent,
     SearchbarComponent,
-    NgIf,
     IonButton,
     RouterLink,
     IonIcon,
     ImportButtonComponent,
     IonItem,
-    DatePipe,
-  ],
+    DatePipe
+],
   standalone: true,
 })
 export class AboutRssBuilderPage implements OnInit {

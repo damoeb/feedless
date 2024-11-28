@@ -18,7 +18,7 @@ import { LicenseService } from '../../services/license.service';
 import { GqlVertical } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
-import { NgIf } from '@angular/common';
+
 import {
   IonHeader,
   IonToolbar,
@@ -42,7 +42,6 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
   styleUrls: ['./rss-builder-product.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     IonHeader,
     TrialWarningComponent,
     IonToolbar,
@@ -58,8 +57,8 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     DarkModeButtonComponent,
     LoginButtonComponent,
     IonContent,
-    IonRouterOutlet,
-  ],
+    IonRouterOutlet
+],
   standalone: true,
 })
 export class RssBuilderProductPage implements OnInit, OnDestroy {

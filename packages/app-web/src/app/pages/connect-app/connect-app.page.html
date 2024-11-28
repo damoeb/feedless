@@ -3,41 +3,43 @@
   <div
     class="flex__column"
     style="justify-content: center; align-items: center; margin-top: 200px"
-  >
-    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
-    <div *ngIf="!loading" style="width: 500px">
-      <div class="ion-margin-top">
-        <div>
-          <h1 class="ion-margin-start">Connect Telegram</h1>
-
-          <ion-card class="ion-margin-top">
-            <ion-card-content>
-              <p>
-                Telegram want to connect to feedless, so you can receive live
-                updates.
-              </p>
-
-              <ion-buttons class="ion-margin-top">
-                <ion-button
-                  (click)="cancelAttempt()"
-                  fill="outline"
-                  style="flex: 1"
-                >
-                  Cancel
-                </ion-button>
-                <ion-button
-                  (click)="authorizeApp()"
-                  color="success"
-                  fill="solid"
-                  style="flex: 1"
-                >
-                  Authorize
-                </ion-button>
-              </ion-buttons>
-            </ion-card-content>
-          </ion-card>
+    >
+    @if (loading) {
+      <ion-spinner name="dots"></ion-spinner>
+    }
+    @if (!loading) {
+      <div style="width: 500px">
+        <div class="ion-margin-top">
+          <div>
+            <h1 class="ion-margin-start">Connect Telegram</h1>
+            <ion-card class="ion-margin-top">
+              <ion-card-content>
+                <p>
+                  Telegram want to connect to feedless, so you can receive live
+                  updates.
+                </p>
+                <ion-buttons class="ion-margin-top">
+                  <ion-button
+                    (click)="cancelAttempt()"
+                    fill="outline"
+                    style="flex: 1"
+                    >
+                    Cancel
+                  </ion-button>
+                  <ion-button
+                    (click)="authorizeApp()"
+                    color="success"
+                    fill="solid"
+                    style="flex: 1"
+                    >
+                    Authorize
+                  </ion-button>
+                </ion-buttons>
+              </ion-card-content>
+            </ion-card>
+          </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 </ion-content>

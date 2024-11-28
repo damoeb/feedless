@@ -1,7 +1,11 @@
 <ion-button fill="clear" routerLink="/agents">
   <ion-label>
     Agents
-    <app-bubble *ngIf="isLoggedIn && agentCount === 0" color="red"></app-bubble>
+    @if (isLoggedIn && agentCount === 0) {
+      <app-bubble color="red"></app-bubble>
+    }
   </ion-label>
-  <ion-chip *ngIf="isLoggedIn && agentCount > 0">{{ agentCount }}</ion-chip>
+  @if (isLoggedIn && agentCount > 0) {
+    <ion-chip>{{ agentCount }}</ion-chip>
+  }
 </ion-button>

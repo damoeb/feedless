@@ -13,7 +13,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { dateFormat, dateTimeFormat } from '../../services/session.service';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
-import { NgIf, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
 
 type ImageSize = {
@@ -27,7 +27,7 @@ type ImageSize = {
   styleUrls: ['./image-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [NgIf, IonIcon, DatePipe],
+  imports: [IonIcon, DatePipe],
   standalone: true,
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {

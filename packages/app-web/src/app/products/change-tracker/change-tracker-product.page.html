@@ -12,27 +12,30 @@
     </div>
 
     <ion-buttons slot="end">
-      <ng-container *ngIf="serverConfig.isSelfHosted()">
-        <ion-button
-          *ngIf="serverConfig.isSelfHosted()"
-          href="https://gihub.com/damoeb/rss-proxy"
-          target="_blank"
-        >
-          <ion-icon name="logo-github" slot="start"></ion-icon>
-          Documentation
-        </ion-button>
+      @if (serverConfig.isSelfHosted()) {
+        @if (serverConfig.isSelfHosted()) {
+          <ion-button
+            href="https://gihub.com/damoeb/rss-proxy"
+            target="_blank"
+            >
+            <ion-icon name="logo-github" slot="start"></ion-icon>
+            Documentation
+          </ion-button>
+        }
         <ion-button
           (click)="openCreateTrackerModal()"
           color="primary"
           fill="solid"
-        >
+          >
           Create Tracker
         </ion-button>
-      </ng-container>
+      }
       <app-dark-mode-button></app-dark-mode-button>
-      <ion-button *ngIf="!serverConfig.isSelfHosted()" routerLink="/plans">
-        Pricing
-      </ion-button>
+      @if (!serverConfig.isSelfHosted()) {
+        <ion-button routerLink="/plans">
+          Pricing
+        </ion-button>
+      }
       <app-login-button></app-login-button>
     </ion-buttons>
   </ion-toolbar>
@@ -45,23 +48,27 @@
 <ion-footer>
   <div class="ion-text-right">
     <ion-chip>v.{{ serverConfig.getVersion() }}</ion-chip>
-    <ng-container *ngIf="serverConfig.isSelfHosted() && license">
-      <ion-chip *ngIf="license.isValid && !license.isTrial"
-        >Open Source Apache 2
-      </ion-chip>
-      <ion-chip
-        *ngIf="license.isValid && license.isTrial && !license.isLocated"
-        color="primary"
-        routerLink="/license"
-        >Trial
-      </ion-chip>
-      <ion-chip
-        *ngIf="license.isValid && license.isLocated"
-        color="dark"
-        routerLink="/license"
-      >
-        {{ license.data.name }}
-      </ion-chip>
-    </ng-container>
+    @if (serverConfig.isSelfHosted() && license) {
+      @if (license.isValid && !license.isTrial) {
+        <ion-chip
+          >Open Source Apache 2
+        </ion-chip>
+      }
+      @if (license.isValid && license.isTrial && !license.isLocated) {
+        <ion-chip
+          color="primary"
+          routerLink="/license"
+          >Trial
+        </ion-chip>
+      }
+      @if (license.isValid && license.isLocated) {
+        <ion-chip
+          color="dark"
+          routerLink="/license"
+          >
+          {{ license.data.name }}
+        </ion-chip>
+      }
+    }
   </div>
 </ion-footer>

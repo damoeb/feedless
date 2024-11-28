@@ -1,43 +1,46 @@
-<ng-container *ngIf="!repository">
+@if (!repository) {
   <ion-spinner name="dots"></ion-spinner>
-</ng-container>
+}
 <input
   #jsonPicker
   (change)="importFeedlessJson($event)"
   accept="application/json"
   style="display: none"
   type="file"
-/>
-<ng-container *ngIf="repository">
+  />
+@if (repository) {
   <ion-row style="margin-top: 50px">
     <h2 class="ion-no-margin" style="display: inline">
       {{ repository.title }}
     </h2>
-    <ion-chip
-      (click)="editRepository(['privacy'])"
-      *ngIf="repository.visibility === GqlVisibility.IsPrivate"
-      >Private
-    </ion-chip>
-    <ion-chip
-      (click)="editRepository(['privacy'])"
-      *ngIf="repository.visibility === GqlVisibility.IsPublic"
-      >Public
-    </ion-chip>
-
-    <ion-chip
-      (click)="editRepository(['notifications'])"
-      *ngIf="!repository.pushNotificationsMuted"
-      >Push Notifications
-    </ion-chip>
-    <ion-chip
-      (click)="editRepository(['notifications'])"
-      *ngIf="repository.pushNotificationsMuted"
-      >No Notifications
-    </ion-chip>
+    @if (repository.visibility === GqlVisibility.IsPrivate) {
+      <ion-chip
+        (click)="editRepository(['privacy'])"
+        >Private
+      </ion-chip>
+    }
+    @if (repository.visibility === GqlVisibility.IsPublic) {
+      <ion-chip
+        (click)="editRepository(['privacy'])"
+        >Public
+      </ion-chip>
+    }
+    @if (!repository.pushNotificationsMuted) {
+      <ion-chip
+        (click)="editRepository(['notifications'])"
+        >Push Notifications
+      </ion-chip>
+    }
+    @if (repository.pushNotificationsMuted) {
+      <ion-chip
+        (click)="editRepository(['notifications'])"
+        >No Notifications
+      </ion-chip>
+    }
   </ion-row>
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
     <ion-buttons slot="end">
-      <ng-container *ngIf="isOwner">
+      @if (isOwner) {
         <ion-modal [trigger]="sourcesModalId">
           <ng-template>
             <ion-header>
@@ -55,464 +58,496 @@
                   <!--              <ion-button>-->
                   <!--                <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
                   <!--                Trigger Refresh-->
-                  <!--              </ion-button>-->
-
-                  <ion-button (click)="jsonPicker.click()">
-                    <ion-icon
-                      name="cloud-upload-outline"
-                      slot="start"
-                    ></ion-icon>
-                    <ion-label>Import JSON</ion-label>
-                  </ion-button>
-
-                  <ion-button (click)="editSource()">
-                    <ion-icon name="add-outline" slot="start"></ion-icon>
-                    Add Source
+                <!--              </ion-button>-->
+                <ion-button (click)="jsonPicker.click()">
+                  <ion-icon
+                    name="cloud-upload-outline"
+                    slot="start"
+                  ></ion-icon>
+                  <ion-label>Import JSON</ion-label>
+                </ion-button>
+                <ion-button (click)="editSource()">
+                  <ion-icon name="add-outline" slot="start"></ion-icon>
+                  Add Source
+                  @if (repository.sourcesCount === 0) {
                     <app-bubble
-                      *ngIf="repository.sourcesCount === 0"
                       color="red"
                       slot="end"
                     ></app-bubble>
-                  </ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-            </ion-header>
-            <ion-content class="ion-padding">
-              <ion-list>
-                <ion-item *ngIf="repository.sourcesCount === 0">
+                  }
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding">
+            <ion-list>
+              @if (repository.sourcesCount === 0) {
+                <ion-item>
                   <ion-label>No sources defined</ion-label>
                 </ion-item>
-                <ng-container *ngFor="let source of sources">
-                  <ion-item>
-                    <app-bubble
-                      [color]="getHealthColorForSource(source)"
-                    ></app-bubble>
-                    <ion-label style="overflow: hidden">
-                      <h3 class="ion-padding-horizontal nowrap">
-                        {{ source.title }}
-                      </h3>
-                      <p class="ion-padding-horizontal nowrap">
-                        <ion-note>{{ getUrl(source) }}</ion-note>
-                      </p>
-                      <p class="ion-padding-horizontal nowrap">
-                        {{ getPluginsOfSource(source) }}
-                      </p>
-                      <p>
-                        <ion-button
-                          (click)="editTags(source)"
+              }
+              @for (source of sources; track source) {
+                <ion-item>
+                  <app-bubble
+                    [color]="getHealthColorForSource(source)"
+                  ></app-bubble>
+                  <ion-label style="overflow: hidden">
+                    <h3 class="ion-padding-horizontal nowrap">
+                      {{ source.title }}
+                    </h3>
+                    <p class="ion-padding-horizontal nowrap">
+                      <ion-note>{{ getUrl(source) }}</ion-note>
+                    </p>
+                    <p class="ion-padding-horizontal nowrap">
+                      {{ getPluginsOfSource(source) }}
+                    </p>
+                    <p>
+                      <ion-button
+                        (click)="editTags(source)"
                           [color]="
                             source.tags?.length > 0 ? 'medium' : 'primary'
                           "
-                          fill="clear"
-                          >{{ stringifyTags(source) }}
-                        </ion-button>
-
-                        <ion-button
-                          (click)="editLatLon(source)"
-                          [color]="source.latLng ? 'medium' : 'primary'"
-                          fill="clear"
-                          >{{ stringifyLocalization(source) }}
-                        </ion-button>
-
-                        <ion-text
-                          class="nowrap"
-                          title="last fetch"
+                        fill="clear"
+                        >{{ stringifyTags(source) }}
+                      </ion-button>
+                      <ion-button
+                        (click)="editLatLon(source)"
+                        [color]="source.latLng ? 'medium' : 'primary'"
+                        fill="clear"
+                        >{{ stringifyLocalization(source) }}
+                      </ion-button>
+                      <ion-text
+                        class="nowrap"
+                        title="last fetch"
                           [color]="
                             source.lastRecordsRetrieved === 0
                               ? 'danger'
                               : undefined
                           "
-                          ><span *ngIf="source.lastRecordsRetrieved === 0"
-                            >Last fetched</span
+                        >@if (source.lastRecordsRetrieved === 0) {
+                        <span
+                          >Last fetched</span
                           >
-                          {{ source.lastRecordsRetrieved }} items
-                        </ion-text>
-                      </p>
-                      <ion-label *ngIf="source.disabled" color="danger">
+                        }
+                        {{ source.lastRecordsRetrieved }} items
+                      </ion-text>
+                    </p>
+                    @if (source.disabled) {
+                      <ion-label color="danger">
                         Disabled.
                         {{ source.lastErrorMessage }}
                       </ion-label>
-                    </ion-label>
-                    <ion-buttons [collapse]="true">
+                    }
+                  </ion-label>
+                  <ion-buttons [collapse]="true">
+                    @if (!source.disabled) {
                       <ion-button
                         (click)="setDisabledForSource(source, true)"
-                        *ngIf="!source.disabled"
-                      >
+                        >
                         Disable
                       </ion-button>
+                    }
+                    @if (source.disabled) {
                       <ion-button
                         (click)="setDisabledForSource(source, false)"
-                        *ngIf="source.disabled"
                         color="success"
                         fill="solid"
-                      >
+                        >
                         Enable
                       </ion-button>
-                      <ion-button (click)="deleteSource(source)" color="danger">
-                        Delete
-                      </ion-button>
-                      <ion-button (click)="editSource(source)">
-                        Edit
-                      </ion-button>
-                    </ion-buttons>
-                  </ion-item>
-                </ng-container>
-              </ion-list>
-            </ion-content>
-            <ion-footer>
-              <app-pagination
-                (pageChange)="fetchSources($event)"
-                [currentPage]="currentSourcesPage"
-                [isLastPage]="sources.length === 0"
-              ></app-pagination>
-            </ion-footer>
-          </ng-template>
-        </ion-modal>
-
-        <!--        <ion-modal [trigger]="harvestsModalId">-->
-        <!--          <ng-template>-->
-        <!--            <ion-header>-->
-        <!--              <ion-toolbar>-->
-        <!--                <ion-title>Last Harvests</ion-title>-->
-        <!--                <ion-buttons slot="end">-->
-        <!--                  <ion-button (click)="dismissModal()">-->
-        <!--                    <ion-icon name="close-outline"></ion-icon>-->
-        <!--                  </ion-button>-->
-        <!--                </ion-buttons>-->
-        <!--              </ion-toolbar>-->
-        <!--            </ion-header>-->
-        <!--            <ion-content class="ion-padding">-->
-        <!--              <ion-list>-->
-        <!--                <ion-item *ngFor="let h of repository.harvests">-->
-        <!--                  <ion-label> Started {{ fromNow(h.startedAt) }} ago</ion-label>-->
-        <!--                  <ion-label>-->
-        <!--                    Took {{ diffInSeconds(h.finishedAt, h.startedAt) }} sec-->
-        <!--                  </ion-label>-->
-        <!--                  <ion-label> Added {{ h.itemsAdded }}</ion-label>-->
-        <!--                  <ion-button (click)="openLogsModal(h)">-->
-        <!--                    <ion-icon name="list-outline" slot="start"></ion-icon>-->
-        <!--                    Logs-->
-        <!--                  </ion-button>-->
-        <!--                </ion-item>-->
-        <!--              </ion-list>-->
-        <!--            </ion-content>-->
-        <!--          </ng-template>-->
-        <!--        </ion-modal>-->
-
-        <!--        <ion-button *ngIf="isOwner" [id]="harvestsModalId">-->
-        <!--          <ion-icon name="pulse-outline" slot="start"></ion-icon>-->
-        <!--          <ion-label> Harvests</ion-label>-->
-        <!--        </ion-button>-->
-
-        <ion-button [id]="sourcesModalId">
-          <ion-icon name="git-branch-outline" slot="start"></ion-icon>
-          <ion-label>
-            Sources
-            <!--            <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>-->
-          </ion-label>
-          <ion-badge color="light" style="margin-left: 5px"
-            >{{ repository.sourcesCount }}
-            <span *ngIf="repository.sourcesCountWithProblems > 0">
-              /
-              <span style="color: var(--ion-color-danger)">
-                {{ repository.sourcesCountWithProblems }}
-              </span>
-            </span>
-          </ion-badge>
-        </ion-button>
-      </ng-container>
-
-      <ion-button *ngIf="!isOwner" appDev routerLink="report">
-        <ion-icon name="flag-outline" slot="start"></ion-icon>
-        <ion-label> Report</ion-label>
-      </ion-button>
-      <!--      <ion-button>-->
-      <!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
-      <!--        Visit website-->
-      <!--      </ion-button>-->
-      <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
-      <!--      <ion-icon-->
-      <!--        name="arrow-down-outline"-->
-      <!--        color="primary"-->
-      <!--        slot="start"-->
-      <!--      ></ion-icon>-->
-      <!--      Pull 2.3k-->
-      <!--    </ion-button>-->
-      <ion-button (click)="starRepository()" *ngIf="!hasCurrentUserStarred()">
-        <ion-icon name="star-outline" slot="start"></ion-icon>
-        Star
-        <ion-badge color="light" style="margin-left: 5px"
-          >{{ getStartCount() }}
-        </ion-badge>
-      </ion-button>
-      <ion-button (click)="unstarRepository()" *ngIf="hasCurrentUserStarred()">
-        <ion-icon name="star" slot="start"></ion-icon>
-        Starred
-        <ion-badge color="light" style="margin-left: 5px"
-          >{{ getStartCount() }}
-        </ion-badge>
-      </ion-button>
-      <ion-button [href]="feedUrl" color="primary" fill="solid">
-        <ion-icon name="logo-rss" slot="start"></ion-icon>
-        Feed
-      </ion-button>
-
-      <ion-button [id]="settingsModalId">
-        <ion-icon name="settings-outline"></ion-icon>
-      </ion-button>
-
-      <ion-popover
-        [showBackdrop]="false"
-        [trigger]="settingsModalId"
-        alignment="end"
-        side="bottom"
-        size="auto"
-        triggerAction="click"
-      >
-        <ng-template>
-          <ion-content>
-            <ion-list>
-              <ion-item appDev button="true" (click)="showCode()">
-                <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label>Code</ion-label>
-              </ion-item>
-              <ion-item (click)="exportRepository()" button="true">
-                <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
-                <ion-label>Download as JSON</ion-label>
-              </ion-item>
-              <ion-item (click)="jsonPicker.click()" button="true">
-                <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-                <ion-label>Import JSON</ion-label>
-              </ion-item>
-              <ion-item (click)="editRepository()" button="true">
-                <ion-icon name="settings-outline" slot="start"></ion-icon>
-                <ion-label>Edit</ion-label>
-              </ion-item>
-              <ion-item (click)="deleteRepository()" button="true">
-                <ion-icon name="trash-outline" slot="start"></ion-icon>
-                <ion-label>Delete</ion-label>
-              </ion-item>
+                    }
+                    <ion-button (click)="deleteSource(source)" color="danger">
+                      Delete
+                    </ion-button>
+                    <ion-button (click)="editSource(source)">
+                      Edit
+                    </ion-button>
+                  </ion-buttons>
+                </ion-item>
+              }
             </ion-list>
           </ion-content>
+          <ion-footer>
+            <app-pagination
+              (pageChange)="fetchSources($event)"
+              [currentPage]="currentSourcesPage"
+              [isLastPage]="sources.length === 0"
+            ></app-pagination>
+          </ion-footer>
         </ng-template>
-      </ion-popover>
-    </ion-buttons>
-  </ion-toolbar>
-  <div
-    [ngClass]="{ 'description--flat': !showFullDescription }"
-    class="description"
+      </ion-modal>
+      <!--        <ion-modal [trigger]="harvestsModalId">-->
+      <!--          <ng-template>-->
+      <!--            <ion-header>-->
+      <!--              <ion-toolbar>-->
+      <!--                <ion-title>Last Harvests</ion-title>-->
+      <!--                <ion-buttons slot="end">-->
+      <!--                  <ion-button (click)="dismissModal()">-->
+      <!--                    <ion-icon name="close-outline"></ion-icon>-->
+    <!--                  </ion-button>-->
+  <!--                </ion-buttons>-->
+<!--              </ion-toolbar>-->
+<!--            </ion-header>-->
+<!--            <ion-content class="ion-padding">-->
+<!--              <ion-list>-->
+<!--                <ion-item *ngFor="let h of repository.harvests">-->
+<!--                  <ion-label> Started {{ fromNow(h.startedAt) }} ago</ion-label>-->
+<!--                  <ion-label>-->
+<!--                    Took {{ diffInSeconds(h.finishedAt, h.startedAt) }} sec-->
+<!--                  </ion-label>-->
+<!--                  <ion-label> Added {{ h.itemsAdded }}</ion-label>-->
+<!--                  <ion-button (click)="openLogsModal(h)">-->
+<!--                    <ion-icon name="list-outline" slot="start"></ion-icon>-->
+<!--                    Logs-->
+<!--                  </ion-button>-->
+<!--                </ion-item>-->
+<!--              </ion-list>-->
+<!--            </ion-content>-->
+<!--          </ng-template>-->
+<!--        </ion-modal>-->
+<!--        <ion-button *ngIf="isOwner" [id]="harvestsModalId">-->
+<!--          <ion-icon name="pulse-outline" slot="start"></ion-icon>-->
+<!--          <ion-label> Harvests</ion-label>-->
+<!--        </ion-button>-->
+<ion-button [id]="sourcesModalId">
+  <ion-icon name="git-branch-outline" slot="start"></ion-icon>
+  <ion-label>
+    Sources
+    <!--            <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>-->
+  </ion-label>
+  <ion-badge color="light" style="margin-left: 5px"
+    >{{ repository.sourcesCount }}
+    @if (repository.sourcesCountWithProblems > 0) {
+      <span>
+        /
+        <span style="color: var(--ion-color-danger)">
+          {{ repository.sourcesCountWithProblems }}
+        </span>
+      </span>
+    }
+  </ion-badge>
+</ion-button>
+}
+@if (!isOwner) {
+  <ion-button appDev routerLink="report">
+    <ion-icon name="flag-outline" slot="start"></ion-icon>
+    <ion-label> Report</ion-label>
+  </ion-button>
+}
+<!--      <ion-button>-->
+<!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
+<!--        Visit website-->
+<!--      </ion-button>-->
+<!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
+<!--      <ion-icon-->
+<!--        name="arrow-down-outline"-->
+<!--        color="primary"-->
+<!--        slot="start"-->
+<!--      ></ion-icon>-->
+<!--      Pull 2.3k-->
+<!--    </ion-button>-->
+@if (!hasCurrentUserStarred()) {
+  <ion-button (click)="starRepository()">
+    <ion-icon name="star-outline" slot="start"></ion-icon>
+    Star
+    <ion-badge color="light" style="margin-left: 5px"
+      >{{ getStartCount() }}
+    </ion-badge>
+  </ion-button>
+}
+@if (hasCurrentUserStarred()) {
+  <ion-button (click)="unstarRepository()">
+    <ion-icon name="star" slot="start"></ion-icon>
+    Starred
+    <ion-badge color="light" style="margin-left: 5px"
+      >{{ getStartCount() }}
+    </ion-badge>
+  </ion-button>
+}
+<ion-button [href]="feedUrl" color="primary" fill="solid">
+  <ion-icon name="logo-rss" slot="start"></ion-icon>
+  Feed
+</ion-button>
+<ion-button [id]="settingsModalId">
+  <ion-icon name="settings-outline"></ion-icon>
+</ion-button>
+<ion-popover
+  [showBackdrop]="false"
+  [trigger]="settingsModalId"
+  alignment="end"
+  side="bottom"
+  size="auto"
+  triggerAction="click"
   >
-    <ion-row>
-      <ion-col>
-        <strong>Description</strong>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col> {{ repository.description }}</ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <dl>
-          <!--          <dt>Filters</dt>-->
-          <!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
-          <dt>Created</dt>
-          <dd>{{ repository.createdAt | date: dateFormat }}</dd>
-          <ng-container *ngIf="repository.refreshCron">
-            <dt>Last Updated</dt>
-            <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
-          </ng-container>
-          <ng-container *ngIf="isOwner && repository.refreshCron">
-            <dt>Next Update</dt>
-            <dd>
-              {{ fromNow(repository.nextUpdateAt) }}
-              <ion-button
-                (click)="refreshSources()"
-                [disabled]="repository.sources.length === 0"
-                class="ion-margin-start"
-                shape="round"
-                size="small"
-                title="Trigger Refresh"
+  <ng-template>
+    <ion-content>
+      <ion-list>
+        <ion-item appDev button="true" (click)="showCode()">
+          <ion-icon name="code-outline" slot="start"></ion-icon>
+          <ion-label>Code</ion-label>
+        </ion-item>
+        <ion-item (click)="exportRepository()" button="true">
+          <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+          <ion-label>Download as JSON</ion-label>
+        </ion-item>
+        <ion-item (click)="jsonPicker.click()" button="true">
+          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+          <ion-label>Import JSON</ion-label>
+        </ion-item>
+        <ion-item (click)="editRepository()" button="true">
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          <ion-label>Edit</ion-label>
+        </ion-item>
+        <ion-item (click)="deleteRepository()" button="true">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          <ion-label>Delete</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-popover>
+</ion-buttons>
+</ion-toolbar>
+<div
+  [ngClass]="{ 'description--flat': !showFullDescription }"
+  class="description"
+  >
+  <ion-row>
+    <ion-col>
+      <strong>Description</strong>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col> {{ repository.description }}</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <dl>
+        <!--          <dt>Filters</dt>-->
+        <!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
+        <dt>Created</dt>
+        <dd>{{ repository.createdAt | date: dateFormat }}</dd>
+        @if (repository.refreshCron) {
+          <dt>Last Updated</dt>
+          <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
+        }
+        @if (isOwner && repository.refreshCron) {
+          <dt>Next Update</dt>
+          <dd>
+            {{ fromNow(repository.nextUpdateAt) }}
+            <ion-button
+              (click)="refreshSources()"
+              [disabled]="repository.sources.length === 0"
+              class="ion-margin-start"
+              shape="round"
+              size="small"
+              title="Trigger Refresh"
               >
-                <ion-icon name="refresh-outline" slot="start"></ion-icon>
-                Trigger Refresh
-              </ion-button>
-            </dd>
-          </ng-container>
-          <ng-container *ngIf="isOwner">
-            <dt>Retention Strategy</dt>
-            <dd>
-              {{ getRetentionStrategy() }}
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Trigger Refresh
+            </ion-button>
+          </dd>
+        }
+        @if (isOwner) {
+          <dt>Retention Strategy</dt>
+          <dd>
+            {{ getRetentionStrategy() }}
+            @if (isOwner) {
               <ion-button
                 (click)="editRepository(['storage'])"
-                *ngIf="isOwner"
                 class="ion-margin-start"
                 shape="round"
                 size="small"
-              >
+                >
                 <ion-icon name="pencil-outline" slot="start"></ion-icon>
                 Edit
               </ion-button>
-            </dd>
-          </ng-container>
-        </dl>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-button
+            }
+          </dd>
+        }
+      </dl>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-button
         (click)="
           showFullDescription = !showFullDescription; $event.stopPropagation()
         "
-        color="dark"
-        fill="clear"
-        style="margin: auto"
+      color="dark"
+      fill="clear"
+      style="margin: auto"
       >
-        <span *ngIf="showFullDescription">Show less</span>
-        <span *ngIf="!showFullDescription">Show more</span>
-      </ion-button>
-    </ion-row>
-  </div>
-
-  <div style="border-radius: 8px">
-    <div class="ion-padding" style="margin-top: 50px; display: flex">
-      <h3 style="flex: 1">
-        <span *ngIf="viewModeFc.value === viewModeList">Available items</span>
-        <span *ngIf="viewModeFc.value === viewModeDiff">Changes</span>
-        <span *ngIf="viewModeFc.value === viewModeHistogram">Activity</span>
-      </h3>
-
-      <div style="align-content: center">
-        <ion-segment
-          [formControl]="viewModeFc"
-          mode="ios"
-          style="max-width: 300px"
+      @if (showFullDescription) {
+        <span>Show less</span>
+      }
+      @if (!showFullDescription) {
+        <span>Show more</span>
+      }
+    </ion-button>
+  </ion-row>
+</div>
+<div style="border-radius: 8px">
+  <div class="ion-padding" style="margin-top: 50px; display: flex">
+    <h3 style="flex: 1">
+      @if (viewModeFc.value === viewModeList) {
+        <span>Available items</span>
+      }
+      @if (viewModeFc.value === viewModeDiff) {
+        <span>Changes</span>
+      }
+      @if (viewModeFc.value === viewModeHistogram) {
+        <span>Activity</span>
+      }
+    </h3>
+    <div style="align-content: center">
+      <ion-segment
+        [formControl]="viewModeFc"
+        mode="ios"
+        style="max-width: 300px"
         >
-          <ion-segment-button [value]="viewModeList">List</ion-segment-button>
-          <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
+        <ion-segment-button [value]="viewModeList">List</ion-segment-button>
+        <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
+        @if (repository.product === GqlProductName.VisualDiff) {
           <ion-segment-button
-            *ngIf="repository.product === GqlProductName.VisualDiff"
             [value]="viewModeDiff"
             >Diff
           </ion-segment-button>
-        </ion-segment>
-      </div>
+        }
+      </ion-segment>
     </div>
-
-    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
-
-    <ng-container *ngIf="!loading">
+  </div>
+  @if (loading) {
+    <ion-spinner name="dots"></ion-spinner>
+  }
+  @if (!loading) {
+    @if (viewModeFc.value === viewModeHistogram) {
       <div
-        *ngIf="viewModeFc.value === viewModeHistogram"
         style="position: relative"
-      >
+        >
         <app-histogram [data]="repository.frequency"></app-histogram>
       </div>
-      <ng-container *ngIf="viewModeFc.value === viewModeDiff">
-        <ion-item *ngIf="documents.length === 0">
+    }
+    @if (viewModeFc.value === viewModeDiff) {
+      @if (documents.length === 0) {
+        <ion-item>
           <ion-label>No items yet.</ion-label>
         </ion-item>
-        <ng-container *ngIf="compareByField === compareByPixel">
+      }
+      @if (compareByField === compareByPixel) {
+        @if (documents.length === 1) {
           <app-image-diff
-            *ngIf="documents.length === 1"
             [before]="documents[0]"
           ></app-image-diff>
-          <ng-container *ngIf="documents.length > 1">
-            <div *ngFor="let pair of getDocumentPairs()">
+        }
+        @if (documents.length > 1) {
+          @for (pair of getDocumentPairs(); track pair) {
+            <div>
               <app-image-diff
                 [after]="pair.b"
                 [before]="pair.a"
               ></app-image-diff>
             </div>
-          </ng-container>
-        </ng-container>
-
-        <ng-container *ngIf="compareByField !== compareByPixel">
+          }
+        }
+      }
+      @if (compareByField !== compareByPixel) {
+        @if (documents.length === 1) {
           <app-text-diff
-            *ngIf="documents.length === 1"
             [before]="documents[0]"
           ></app-text-diff>
-          <ng-container *ngIf="documents.length > 1">
-            <div *ngFor="let pair of getDocumentPairs()">
+        }
+        @if (documents.length > 1) {
+          @for (pair of getDocumentPairs(); track pair) {
+            <div>
               <app-text-diff [after]="pair.b" [before]="pair.a"></app-text-diff>
             </div>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-
-      <ng-container *ngIf="viewModeFc.value === viewModeList">
-        <ion-list style="border-radius: 8px">
-          <ion-toolbar *ngIf="isOwner" style="padding-left: 15px">
+          }
+        }
+      }
+    }
+    @if (viewModeFc.value === viewModeList) {
+      <ion-list style="border-radius: 8px">
+        @if (isOwner) {
+          <ion-toolbar style="padding-left: 15px">
             <ion-buttons slot="start">
               <ion-checkbox
                 [formControl]="selectAllFc"
                 aria-label="toggle all"
               ></ion-checkbox>
               <div class="ion-padding-horizontal flex">
-                <ion-text
-                  *ngIf="selectedCount === 0"
-                  class="ion-margin-end"
-                  style="align-content: center"
-                  >Select All
-                </ion-text>
-                <ion-text
-                  *ngIf="selectedCount > 0"
-                  class="ion-margin-end"
-                  style="align-content: center"
-                  >({{ selectedCount }})
-                </ion-text>
-                <ion-button
-                  (click)="deleteAllSelected()"
-                  *ngIf="selectedCount > 0"
-                  color="danger"
-                  fill="solid"
-                >
-                  Delete selected
-                </ion-button>
+                @if (selectedCount === 0) {
+                  <ion-text
+                    class="ion-margin-end"
+                    style="align-content: center"
+                    >Select All
+                  </ion-text>
+                }
+                @if (selectedCount > 0) {
+                  <ion-text
+                    class="ion-margin-end"
+                    style="align-content: center"
+                    >({{ selectedCount }})
+                  </ion-text>
+                }
+                @if (selectedCount > 0) {
+                  <ion-button
+                    (click)="deleteAllSelected()"
+                    color="danger"
+                    fill="solid"
+                    >
+                    Delete selected
+                  </ion-button>
+                }
               </div>
             </ion-buttons>
           </ion-toolbar>
-          <ion-item *ngIf="documents.length === 0">
+        }
+        @if (documents.length === 0) {
+          <ion-item>
             <ion-label>No items yet</ion-label>
           </ion-item>
-          <div *ngFor="let document of documents">
+        }
+        @for (document of documents; track document) {
+          <div>
             <ion-item lines="full">
-              <ion-checkbox
-                *ngIf="isOwner"
-                [formControl]="document.fc"
-                aria-label="toggle document"
-                class="doc__checkbox"
-                slot="start"
-              ></ion-checkbox>
+              @if (isOwner) {
+                <ion-checkbox
+                  [formControl]="document.fc"
+                  aria-label="toggle document"
+                  class="doc__checkbox"
+                  slot="start"
+                ></ion-checkbox>
+              }
               <ion-label>
                 <ion-toolbar style="--background: transparent">
                   <ion-buttons>
                     <ion-note
                       >{{ fromNow(document.publishedAt) }} on
                       {{ hostname(document.url) }}
-
                       <!--                      https://www.openstreetmap.org/#map=14/-->
-                      <ion-icon
-                        *ngIf="document.latLng"
-                        name="location-outline"
-                      ></ion-icon>
+                      @if (document.latLng) {
+                        <ion-icon
+                          name="location-outline"
+                        ></ion-icon>
+                      }
                     </ion-note>
-                    <ion-note *ngIf="document.tags.length > 0">
-                      <em class="ion-padding-start">{{ getTags(document) }}</em>
-                    </ion-note>
+                    @if (document.tags.length > 0) {
+                      <ion-note>
+                        <em class="ion-padding-start">{{ getTags(document) }}</em>
+                      </ion-note>
+                    }
                   </ion-buttons>
                 </ion-toolbar>
-
                 <h2 style="padding-bottom: 5px">
                   <a
                     [href]="getDocumentUrl(document)"
                     referrerpolicy="no-referrer"
                     target="_blank"
-                  >
+                    >
                     {{ document.title }}
                   </a>
                 </h2>
-
                 <p class="content">{{ getText(document) }}</p>
-
                 <app-player
                   (playback)="playAudio(document)"
                   [document]="document"
@@ -521,12 +556,13 @@
               </ion-label>
             </ion-item>
           </div>
-        </ion-list>
-        <app-pagination
-          (pageChange)="fetchPage($event)"
-          [currentPage]="currentDocumentsPage"
-        ></app-pagination>
-      </ng-container>
-    </ng-container>
-  </div>
-</ng-container>
+        }
+      </ion-list>
+      <app-pagination
+        (pageChange)="fetchPage($event)"
+        [currentPage]="currentDocumentsPage"
+      ></app-pagination>
+    }
+  }
+</div>
+}

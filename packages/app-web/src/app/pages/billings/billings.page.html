@@ -8,12 +8,16 @@
     </ion-row>
 
     <ion-list style="border-radius: 8px">
-      <ion-item *ngIf="orders?.length === 0">
-        <p>You have no billings yet</p>
-      </ion-item>
-      <ion-item *ngFor="let feed of orders" lines="inset">
-        <ion-label> Billing</ion-label>
-      </ion-item>
+      @if (orders?.length === 0) {
+        <ion-item>
+          <p>You have no billings yet</p>
+        </ion-item>
+      }
+      @for (feed of orders; track feed) {
+        <ion-item lines="inset">
+          <ion-label> Billing</ion-label>
+        </ion-item>
+      }
     </ion-list>
   </div>
 </ion-content>

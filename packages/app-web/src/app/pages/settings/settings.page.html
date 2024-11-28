@@ -10,46 +10,50 @@
           <p>Adjust the server.</p>
         </ion-item>
 
-        <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+        @if (loading) {
+          <ion-spinner name="dots"></ion-spinner>
+        }
 
-        <ng-container *ngIf="!loading">
+        @if (!loading) {
           <ion-list>
             <ion-item>
               <ion-select
                 [formControl]="featureGroupsFc"
                 label="Feature Group"
                 labelPlacement="start"
-              >
-                <ion-select-option
-                  *ngFor="let group of featureGroups"
-                  [value]="group"
                 >
-                  {{ group.name }}
-                </ion-select-option>
+                @for (group of featureGroups; track group) {
+                  <ion-select-option
+                    [value]="group"
+                    >
+                    {{ group.name }}
+                  </ion-select-option>
+                }
               </ion-select>
             </ion-item>
-            <ion-item *ngFor="let feature of features; let i = index">
-              <ng-container *ngIf="feature.value.numVal">
-                <ion-label>{{ feature.name }}</ion-label>
-                <ion-input
-                  [formControl]="feature.fc"
-                  aria-label=""
-                  type="number"
-                ></ion-input>
-              </ng-container>
-              <ng-container *ngIf="feature.value.boolVal">
-                <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
-                  {{ feature.name }}
-                </ion-checkbox>
-              </ng-container>
-
-              <!--              <ion-button slot="start" color="light" shape="round" *ngIf="featureGroupsFc.value.parentId">-->
-              <!--                <ion-icon name="close-outline"></ion-icon>-->
+            @for (feature of features; track feature; let i = $index) {
+              <ion-item>
+                @if (feature.value.numVal) {
+                  <ion-label>{{ feature.name }}</ion-label>
+                  <ion-input
+                    [formControl]="feature.fc"
+                    aria-label=""
+                    type="number"
+                  ></ion-input>
+                }
+                @if (feature.value.boolVal) {
+                  <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
+                    {{ feature.name }}
+                  </ion-checkbox>
+                }
+                <!--              <ion-button slot="start" color="light" shape="round" *ngIf="featureGroupsFc.value.parentId">-->
+                <!--                <ion-icon name="close-outline"></ion-icon>-->
               <!--              </ion-button>-->
             </ion-item>
-          </ion-list>
-        </ng-container>
-      </ion-list>
-    </div>
+          }
+        </ion-list>
+      }
+    </ion-list>
   </div>
+</div>
 </ion-content>

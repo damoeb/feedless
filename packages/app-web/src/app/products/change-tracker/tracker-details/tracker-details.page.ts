@@ -16,7 +16,7 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { IonRouterLink } from '@ionic/angular/standalone';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-tracker-details-page',
@@ -28,9 +28,8 @@ import { NgIf } from '@angular/common';
     IonBreadcrumbs,
     IonBreadcrumb,
     RouterLink,
-    NgIf,
-    IonSpinner,
-  ],
+    IonSpinner
+],
   standalone: true,
 })
 export class TrackerDetailsPage implements OnInit, OnDestroy {

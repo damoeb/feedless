@@ -32,7 +32,7 @@ import {
   IonLabel,
   IonChip,
 } from '@ionic/angular/standalone';
-import { NgClass, NgIf, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ImportButtonComponent } from '../../components/import-button/import-button.component';
 import { TableComponent } from '../../components/table/table.component';
 import { HistogramComponent } from '../../components/histogram/histogram.component';
@@ -57,18 +57,16 @@ type ViewMode = 'list' | 'table';
     IonButtons,
     ImportButtonComponent,
     IonButton,
-    NgIf,
     IonProgressBar,
     TableComponent,
     IonList,
     IonItem,
-    NgFor,
     BubbleComponent,
     IonLabel,
     IonChip,
     HistogramComponent,
-    PaginationComponent,
-  ],
+    PaginationComponent
+],
   standalone: true,
 })
 export class FeedsPage implements OnInit, OnDestroy {

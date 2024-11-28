@@ -14,7 +14,7 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { AppConfigService } from '../../services/app-config.service';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
-import { NgIf } from '@angular/common';
+
 import {
   IonHeader,
   IonToolbar,
@@ -35,7 +35,6 @@ import { FeedDetailsComponent } from '../../components/feed-details/feed-details
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FeedlessHeaderComponent,
-    NgIf,
     IonHeader,
     IonToolbar,
     IonText,
@@ -46,8 +45,8 @@ import { FeedDetailsComponent } from '../../components/feed-details/feed-details
     RouterLink,
     IonSpinner,
     IonItem,
-    FeedDetailsComponent,
-  ],
+    FeedDetailsComponent
+],
   standalone: true,
 })
 export class FeedDetailsPage implements OnInit, OnDestroy {

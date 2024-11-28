@@ -16,7 +16,7 @@ import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { debounce, distinct, interval, Subscription } from 'rxjs';
-import { NgIf, NgStyle } from '@angular/common';
+import { NgStyle } from '@angular/common';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath
@@ -53,7 +53,7 @@ interface IframeMessage {
   templateUrl: './embedded-markup.component.html',
   styleUrls: ['./embedded-markup.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgIf, NgStyle],
+  imports: [NgStyle],
   standalone: true,
 })
 export class EmbeddedMarkupComponent

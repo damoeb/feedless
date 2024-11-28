@@ -32,7 +32,7 @@ import {
   IonChip,
 } from '@ionic/angular/standalone';
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
-import { NgIf } from '@angular/common';
+
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
@@ -48,7 +48,6 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonButtons,
     IonMenuButton,
     RouterLink,
-    NgIf,
     IonButton,
     IonIcon,
     DarkModeButtonComponent,
@@ -56,8 +55,8 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonContent,
     IonRouterOutlet,
     IonFooter,
-    IonChip,
-  ],
+    IonChip
+],
   standalone: true,
 })
 export class ChangeTrackerProductPage implements OnInit, OnDestroy {

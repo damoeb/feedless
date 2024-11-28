@@ -14,24 +14,23 @@ import {
 describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AppComponent],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [
+    declarations: [AppComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    imports: [
         RouterTestingModule.withRoutes([]),
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            apolloMockController
-              .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
-              .and.resolveOnce(async () => {
+            configurer: (apolloMockController) => apolloMockController
+                .mockQuery<GqlSessionQuery, GqlSessionQueryVariables>(Session)
+                .and.resolveOnce(async () => {
                 return {
-                  data: {
-                    session: {} as any,
-                  },
+                    data: {
+                        session: {} as any,
+                    },
                 };
-              }),
+            }),
         }),
-      ],
-    }).compileComponents();
+    ],
+}).compileComponents();
   }));
 
   it('should create the app', waitForAsync(() => {

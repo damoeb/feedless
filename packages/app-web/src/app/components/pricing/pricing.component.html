@@ -1,46 +1,50 @@
-<div *ngIf="!hideServiceFlavor">
-  <ion-segment
-    [formControl]="serviceFlavorFc"
-    mode="ios"
-    style="max-width: 400px; height: 50px"
-  >
-    <ion-segment-button [value]="serviceFlavorSelf">
-      <ion-label>Self-Hosting</ion-label>
-    </ion-segment-button>
-    <ion-segment-button [value]="serviceFlavorCloud">
-      <ion-label>Cloud</ion-label>
-    </ion-segment-button>
-  </ion-segment>
-</div>
-
-<div class="ion-padding-top">
-  <div *ngIf="serviceFlavorFc.value === serviceFlavorSelf">
+@if (!hideServiceFlavor) {
+  <div>
     <ion-segment
-      [formControl]="targetGroupFc"
+      [formControl]="serviceFlavorFc"
       mode="ios"
-      style="max-width: 800px; height: 50px"
-    >
-      <ion-segment-button [value]="targetGroupOrganization">
-        <ion-label
-          ><span class="ion-hide-md-down">For</span> Organizations
-        </ion-label>
+      style="max-width: 400px; height: 50px"
+      >
+      <ion-segment-button [value]="serviceFlavorSelf">
+        <ion-label>Self-Hosting</ion-label>
       </ion-segment-button>
-      <ion-segment-button [value]="targetGroupIndividual">
-        <ion-label
-          ><span class="ion-hide-md-down">For</span> Individuals
-        </ion-label>
-      </ion-segment-button>
-      <ion-segment-button [value]="targetGroupOther">
-        <ion-label>Supported Categories</ion-label>
+      <ion-segment-button [value]="serviceFlavorCloud">
+        <ion-label>Cloud</ion-label>
       </ion-segment-button>
     </ion-segment>
   </div>
+}
+
+<div class="ion-padding-top">
+  @if (serviceFlavorFc.value === serviceFlavorSelf) {
+    <div>
+      <ion-segment
+        [formControl]="targetGroupFc"
+        mode="ios"
+        style="max-width: 800px; height: 50px"
+        >
+        <ion-segment-button [value]="targetGroupOrganization">
+          <ion-label
+            ><span class="ion-hide-md-down">For</span> Organizations
+          </ion-label>
+        </ion-segment-button>
+        <ion-segment-button [value]="targetGroupIndividual">
+          <ion-label
+            ><span class="ion-hide-md-down">For</span> Individuals
+          </ion-label>
+        </ion-segment-button>
+        <ion-segment-button [value]="targetGroupOther">
+          <ion-label>Supported Categories</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+  }
 
   <ion-segment
     mode="ios"
     [formControl]="paymentIntervalFc"
     style="max-width: 300px; height: 50px"
-  >
+    >
     <ion-segment-button [value]="paymentIntervalMonthly">
       <ion-label>Monthly</ion-label>
     </ion-segment-button>
@@ -50,55 +54,55 @@
   </ion-segment>
 
   <div class="ion-margin-top">
-    <ng-container *ngIf="serviceFlavorFc.value === serviceFlavorCloud">
-    </ng-container>
-    <ng-container *ngIf="serviceFlavorFc.value !== serviceFlavorCloud">
-      <ng-container *ngIf="targetGroupFc.value === targetGroupIndividual">
+    @if (serviceFlavorFc.value === serviceFlavorCloud) {
+    }
+    @if (serviceFlavorFc.value !== serviceFlavorCloud) {
+      @if (targetGroupFc.value === targetGroupIndividual) {
         <p>
           Hobbyists, professionals, or casual users who seek to enhance their
           personal experience or skills.
         </p>
-      </ng-container>
-      <ng-container *ngIf="targetGroupFc.value === targetGroupOrganization">
+      }
+      @if (targetGroupFc.value === targetGroupOrganization) {
         <p>
           Commercial enterprises, Non-Profit Organizations, Educational
           Institutions and Governmental Bodies who use the product as part of
           their activities.
         </p>
-      </ng-container>
-
-      <ng-container *ngIf="targetGroupFc.value === targetGroupOther">
+      }
+      @if (targetGroupFc.value === targetGroupOther) {
         <p>
           Students or teachers who use the product as part of their studies and
           Open Source contributors who integrate the product into their project
           it's free.
         </p>
-      </ng-container>
-    </ng-container>
+      }
+    }
 
     <div class="offers">
-      <app-plan-column
-        *ngFor="let product of filteredProducts()"
-        [featureGroups]="product.stringifiedFeatureGroups"
-      >
-        <h3>{{ product.name }}</h3>
-        <p>{{ product.description }}</p>
-
-        <div style="flex: 1">
-          <ion-row *ngFor="let price of filteredPrices(product.prices)">
-            <ion-col size="6" style="align-content: center">
-              <ion-note>{{ price.description }}</ion-note>
-            </ion-col>
-            <ion-col class="ion-text-right" size="6">
-              <h1>${{ formatPrice(price.price) }}</h1>
-            </ion-col>
-          </ion-row>
-        </div>
-
-        <ion-button (click)="checkout(product)" color="primary" planAction>
-          {{ getProductActionLabel(product) }}
-        </ion-button>
-      </app-plan-column>
+      @for (product of filteredProducts(); track product) {
+        <app-plan-column
+          [featureGroups]="product.stringifiedFeatureGroups"
+          >
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.description }}</p>
+          <div style="flex: 1">
+            @for (price of filteredPrices(product.prices); track price) {
+              <ion-row>
+                <ion-col size="6" style="align-content: center">
+                  <ion-note>{{ price.description }}</ion-note>
+                </ion-col>
+                <ion-col class="ion-text-right" size="6">
+                  <h1>${{ formatPrice(price.price) }}</h1>
+                </ion-col>
+              </ion-row>
+            }
+          </div>
+          <ion-button (click)="checkout(product)" color="primary" planAction>
+            {{ getProductActionLabel(product) }}
+          </ion-button>
+        </app-plan-column>
+      }
     </div>
   </div>
 </div>

@@ -1,38 +1,40 @@
-<ng-container *ngIf="serverConfig.isSelfHosted()">
-  <ion-toolbar
-    *ngIf="isTrialPeriod()"
-    color="primary"
-    routerLink="/license"
-    routerLinkActive="hidden"
-  >
-    <ion-text class="ion-margin-horizontal">
-      <strong>Your Trial Period</strong> ends in {{ trialEndIn }}
-    </ion-text>
-    <ion-button
-      class="ion-margin-end"
-      color="dark"
+@if (serverConfig.isSelfHosted()) {
+  @if (isTrialPeriod()) {
+    <ion-toolbar
+      color="primary"
       routerLink="/license"
-      slot="end"
-    >
-      Activate
-    </ion-button>
-  </ion-toolbar>
-  <ion-toolbar
-    *ngIf="!isTrialPeriod() && !license?.isValid"
-    color="danger"
-    routerLink="/license"
-    routerLinkActive="hidden"
-  >
-    <ion-text class="ion-margin-horizontal">
-      <strong>Trial Period ended</strong>.
-    </ion-text>
-    <ion-button
-      class="ion-margin-end"
-      color="dark"
+      routerLinkActive="hidden"
+      >
+      <ion-text class="ion-margin-horizontal">
+        <strong>Your Trial Period</strong> ends in {{ trialEndIn }}
+      </ion-text>
+      <ion-button
+        class="ion-margin-end"
+        color="dark"
+        routerLink="/license"
+        slot="end"
+        >
+        Activate
+      </ion-button>
+    </ion-toolbar>
+  }
+  @if (!isTrialPeriod() && !license?.isValid) {
+    <ion-toolbar
+      color="danger"
       routerLink="/license"
-      slot="end"
-    >
-      Activate
-    </ion-button>
-  </ion-toolbar>
-</ng-container>
+      routerLinkActive="hidden"
+      >
+      <ion-text class="ion-margin-horizontal">
+        <strong>Trial Period ended</strong>.
+      </ion-text>
+      <ion-button
+        class="ion-margin-end"
+        color="dark"
+        routerLink="/license"
+        slot="end"
+        >
+        Activate
+      </ion-button>
+    </ion-toolbar>
+  }
+}

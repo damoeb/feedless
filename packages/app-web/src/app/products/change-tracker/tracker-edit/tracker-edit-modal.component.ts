@@ -44,7 +44,7 @@ import { ServerConfigService } from '../../../services/server-config.service';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
-import { NgIf } from '@angular/common';
+
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -74,12 +74,11 @@ export interface TrackerEditModalComponentProps {}
     IonItem,
     IonRadio,
     IonNote,
-    NgIf,
     IonText,
     IonInput,
     IonSelect,
-    IonSelectOption,
-  ],
+    IonSelectOption
+],
   standalone: true,
 })
 export class TrackerEditModalComponent

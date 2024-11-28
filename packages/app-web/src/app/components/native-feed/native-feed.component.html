@@ -1,32 +1,40 @@
 <div style="flex: 1; display: flex; flex-direction: column; position: relative">
-  <ion-item *ngIf="showTitle">
-    <ion-label>
-      <h3>
-        <a [href]="feedUrl" target="_blank">
-          {{ title }}
-        </a>
-      </h3>
-    </ion-label>
-  </ion-item>
+  @if (showTitle) {
+    <ion-item>
+      <ion-label>
+        <h3>
+          <a [href]="feedUrl" target="_blank">
+            {{ title }}
+          </a>
+        </h3>
+      </ion-label>
+    </ion-item>
+  }
   <ng-content></ng-content>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
-    <ion-spinner
-      *ngIf="loading"
-      class="cy-remote-feed--busy"
-      name="dots"
-    ></ion-spinner>
-    <ng-container *ngIf="!loading">
-      <div *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-      <ion-list *ngIf="!errorMessage" class="cy-remote-feed remote-feed">
-        <app-remote-feed-item
-          *ngFor="let item of feedItems; let feedIndex = index"
-          [feedItemIndex]="feedIndex + 1"
-          [feedItem]="item"
-          class="cy-feed-item"
-        ></app-remote-feed-item>
-      </ion-list>
-    </ng-container>
+    @if (loading) {
+      <ion-spinner
+        class="cy-remote-feed--busy"
+        name="dots"
+      ></ion-spinner>
+    }
+    @if (!loading) {
+      @if (errorMessage) {
+        <div>
+          {{ errorMessage }}
+        </div>
+      }
+      @if (!errorMessage) {
+        <ion-list class="cy-remote-feed remote-feed">
+          @for (item of feedItems; track item; let feedIndex = $index) {
+            <app-remote-feed-item
+              [feedItemIndex]="feedIndex + 1"
+              [feedItem]="item"
+              class="cy-feed-item"
+            ></app-remote-feed-item>
+          }
+        </ion-list>
+      }
+    }
   </div>
 </div>
