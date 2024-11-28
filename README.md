@@ -23,6 +23,10 @@ the [discord channel](https://discord.gg/8Tu742HQkr).
 - Workflow Builder
 - Self-Hosting
 
+## Verticals
+Due to the general use case of feedless, I can build plenty of verticals on top of it.
+- [locale.events](https://lokale.events) event listing by geo position
+
 ## License
 
 Feedless is released under non-competitive FSL license, that falls back to Open Source Apache 2 after two years ([FSL-1.0-Apache-2.0](https://fsl.software/)).
