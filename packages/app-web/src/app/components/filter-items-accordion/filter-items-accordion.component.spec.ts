@@ -27,6 +27,8 @@ describe('FilterItemsAccordionComponent', () => {
     fixture = TestBed.createComponent(FilterItemsAccordionComponent);
     component = fixture.componentInstance;
     component.filterPlugin = null;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('labelPrefix', '');
     fixture.detectChanges();
   }));
 

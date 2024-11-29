@@ -15,6 +15,10 @@ describe('NativeFeedComponent', () => {
     fixture = TestBed.createComponent(NativeFeedComponent);
     component = fixture.componentInstance;
 
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('feedUrl', '');
+    componentRef.setInput('title', '');
+
     // component.handler = new WizardHandler(
     //   defaultWizardContext,
     //   feedService,

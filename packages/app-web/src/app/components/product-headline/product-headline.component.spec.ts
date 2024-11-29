@@ -13,6 +13,8 @@ describe('ProductHeadlineComponent', () => {
 
     fixture = TestBed.createComponent(ProductHeadlineComponent);
     component = fixture.componentInstance;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('title', '');
     fixture.detectChanges();
   }));
 

@@ -45,6 +45,9 @@ describe('RepositoriesButtonComponent', () => {
 
     fixture = TestBed.createComponent(RepositoriesButtonComponent);
     component = fixture.componentInstance;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('name', '');
+    componentRef.setInput('link', '');
     fixture.detectChanges();
   });
 

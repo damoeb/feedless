@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  Input,
   input,
 } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
@@ -23,7 +24,8 @@ import { IonButton } from '@ionic/angular/standalone';
 export class ConsoleButtonComponent {
   private readonly modalService = inject(ModalService);
 
-  readonly logs = input<GqlLogStatement[]>();
+  @Input({ required: true })
+  logs: GqlLogStatement[];
 
   openModal() {
     const props: CodeEditorModalComponentProps = {
@@ -31,7 +33,7 @@ export class ConsoleButtonComponent {
       contentType: 'text',
       readOnly: true,
       controls: false,
-      text: stringifyLogStatement(this.logs()),
+      text: stringifyLogStatement(this.logs),
     };
     return this.modalService.openCodeEditorModal(props);
   }

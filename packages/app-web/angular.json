@@ -107,7 +107,6 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-            "karmaConfig": "karma.conf.js",
             "styles": ["src/global.scss"],
             "scripts": [],
             "assets": [

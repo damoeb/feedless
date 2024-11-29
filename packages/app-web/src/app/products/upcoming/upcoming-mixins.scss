@@ -30,3 +30,15 @@ h3 {
   flex-direction: column;
   flex: 1;
 }
+
+a:has(ion-button),
+a:has(div) {
+  display: flex;
+  color: inherit;
+  &:hover {
+    text-decoration: none;
+  }
+  &:visited {
+    color: inherit;
+  }
+}

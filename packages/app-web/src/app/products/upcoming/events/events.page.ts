@@ -101,6 +101,11 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
   };
 }
 
+type DateWindowItem = {
+  date: Dayjs;
+  offset: number;
+};
+
 @Component({
   selector: 'app-events-page',
   templateUrl: './events.page.html',
@@ -135,7 +140,7 @@ export class EventsPage implements OnInit, OnDestroy {
   latLon: Nullable<LatLon>;
   location: Nullable<NamedLatLon>;
   loading: boolean = true;
-  dateWindow: Dayjs[] = [];
+  dateWindow: DateWindowItem[] = [];
   private subscriptions: Subscription[] = [];
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
@@ -419,7 +424,7 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  getEventUrl(event: Record) {
+  getDateUrl(date: Dayjs) {
     const { countryCode, region, place, year, month, day } =
       this.activatedRoute.snapshot.params;
 
@@ -436,9 +441,28 @@ export class EventsPage implements OnInit, OnDestroy {
           month,
           day,
         })
-        .eventId({ eventId: event.id }).$
     );
   }
+  // getEventUrl(event: Record) {
+  //   const { countryCode, region, place, year, month, day } =
+  //     this.activatedRoute.snapshot.params;
+  //
+  //   return (
+  //     '/' +
+  //     homeRoute({})
+  //       .events({})
+  //       .countryCode({ countryCode })
+  //       .region({ region })
+  //       .place({ place })
+  //       .dateTime({
+  //         perimeter: this.perimeter,
+  //         year,
+  //         month,
+  //         day,
+  //       })
+  //       .eventId({ eventId: event.id }).$
+  //   );
+  // }
 
   private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
     return {
@@ -485,19 +509,21 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   patchUrlInAddressBar() {
-    const url = homeRoute({})
+    this.locationService.replaceState(this.createUrl(this.location, this.date));
+  }
+
+  createUrl(location: NamedLatLon, date: Dayjs): string {
+    return homeRoute({})
       .events({})
-      .countryCode({ countryCode: this.location.countryCode })
-      .region({ region: this.location.area })
-      .place({ place: this.location.place })
+      .countryCode({ countryCode: location.countryCode })
+      .region({ region: location.area })
+      .place({ place: location.place })
       .dateTime({
         perimeter: 10,
-        year: parseInt(this.date.format('YYYY')),
-        month: parseInt(this.date.format('MM')),
-        day: parseInt(this.date.format('DD')),
+        year: parseInt(date.format('YYYY')),
+        month: parseInt(date.format('MM')),
+        day: parseInt(date.format('DD')),
       }).$;
-
-    this.locationService.replaceState(url);
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
@@ -512,22 +538,31 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private createDateWindow(date: Dayjs) {
-    // if (!this.dateWindow.some(otherDate => this.isSame(otherDate, date, ['date', 'month', 'year']))) {
+    if (
+      this.dateWindow.length > 0 &&
+      this.dateWindow[0].date.isBefore(date) &&
+      this.dateWindow[this.dateWindow.length - 1].date.isAfter(date)
+    ) {
+      return;
+    }
+    const createDateWindowItem = (offset: number): DateWindowItem => {
+      return {
+        date: date.add(offset, 'day'),
+        offset: Math.abs(offset),
+      };
+    };
+
     this.dateWindow = [
-      date.subtract(1, 'day'),
-      date,
-      date.add(1, 'day'),
-      date.add(2, 'day'),
-      date.add(3, 'day'),
-      date.add(4, 'day'),
-      date.add(5, 'day'),
+      createDateWindowItem(-1),
+      createDateWindowItem(0),
+      createDateWindowItem(1),
+      createDateWindowItem(2),
+      createDateWindowItem(3),
+      createDateWindowItem(4),
+      createDateWindowItem(5),
     ];
     this.changeRef.detectChanges();
     // }
-  }
-
-  isToday(day: Dayjs): boolean {
-    return this.isSame(day, dayjs(), ['day', 'month', 'year']);
   }
 
   isPast(day: Dayjs): boolean {
@@ -566,12 +601,12 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   moveCalendarWindow(days: number) {
-    this.createDateWindow(this.dateWindow[0].add(days, 'days'));
+    this.createDateWindow(this.dateWindow[0].date.add(days, 'days'));
   }
 
   isDateInCalendar(date: Dayjs) {
     return this.dateWindow.some((d) =>
-      this.isSame(date, d, ['year', 'month', 'day']),
+      this.isSame(date, d.date, ['year', 'month', 'day']),
     );
   }
 }

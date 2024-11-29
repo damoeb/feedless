@@ -9,6 +9,15 @@ ion-content::part(scroll) {
   column-gap: 0.5rem;
 }
 
+.calendar-days {
+  display: flex;
+  flex: 1;
+  column-gap: 0.5rem;
+  justify-content: center;
+  > * {
+    flex: 1;
+  }
+}
 .calendar-day {
   flex: 1;
   max-width: 130px;

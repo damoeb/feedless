@@ -27,9 +27,11 @@
       "
     >
       <div style="display: flex; flex: 1">
-        <ion-button color="light" aria-label="lokale.events">
-          <strong>lokale</strong><em>.events</em>
-        </ion-button>
+        <a routerLink="/" class="" aria-label="lokale.events">
+          <ion-button color="light" size="block">
+            <strong>lokale</strong><em>.events</em>
+          </ion-button>
+        </a>
         <ion-input
           (ionFocus)="expand = 'suggestions'"
           [formControl]="locationFc"
@@ -126,10 +128,15 @@
           </ion-item>
         }
         @for (location of locationSuggestions; track location) {
-          <ion-item [routerLink]="getUrlForLocation(location)" [button]="true">
-            <!--          <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>-->
-            <span class="suggestion" [innerHTML]="location.displayName"></span>
-          </ion-item>
+          <a [routerLink]="getUrlForLocation(location)">
+            <ion-item [button]="true">
+              <!--          <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>-->
+              <span
+                class="suggestion"
+                [innerHTML]="location.displayName"
+              ></span>
+            </ion-item>
+          </a>
         }
       </ion-list>
       <!--      <app-map-->

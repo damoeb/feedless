@@ -119,7 +119,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   @Input({ required: true })
   location: Nullable<NamedLatLon>;
 
-  readonly perimeter = input.required<number>();
+  readonly perimeter = input<number>(10);
 
   // @Input({ required: true })
   // categories: string[];
