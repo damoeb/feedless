@@ -109,14 +109,12 @@
         <div style="display: flex" [ngClass]="{'past-events': isPast(date)}">
           <div>
             @if (placesByDistance.length === 0) {
-            <div style="font-size: 1.2rem" class="ion-text-center">
+            <div style="font-size: 1.2rem">
               <p>Leider keine Veranstaltungen gefunden</p>
               <p class="ion-margin-top">
-                Hast du Vorschläge?
-                <a href="mailto:markus@lokale.events?subject=Links"
-                  >Schick uns gerne Links</a
-                >
-                zu spannenden Events!
+                <a href="mailto:markus@lokale.events?subject=Links">
+                  <ion-button>Event-Links vorschlagen</ion-button>
+                </a>
               </p>
             </div>
             } @for (placesGroup of placesByDistance; track placesGroup) {

@@ -533,7 +533,7 @@ export class EventsPage implements OnInit, OnDestroy {
     const locations = uniqBy(
       [location, ...savedLocations],
       (l) => `${l.lat}:${l.lon}`,
-    ).filter((_, index) => index < 5);
+    ).filter((_, index) => index < 4);
     localStorage.setItem('savedLocations', JSON.stringify(locations));
   }
 
@@ -611,6 +611,6 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 }
 
-export function getSavedLocations(): NamedLatLon[] {
+export function getPreviousLocations(): NamedLatLon[] {
   return JSON.parse(localStorage.getItem('savedLocations') || '[]');
 }

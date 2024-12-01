@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.Index
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
@@ -74,7 +75,11 @@ enum class MaxAgeDaysDateField {
 
 
 @Entity
-@Table(name = "t_repository")
+@Table(name = "t_repository",
+  indexes = [
+    Index(name = "repository_created_at_idx", columnList = StandardJpaFields.createdAt),
+  ]
+)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
   name = "type",

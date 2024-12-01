@@ -42,7 +42,6 @@ import org.migor.feedless.repository.addListenableTag
 import org.migor.feedless.repository.classifyDuration
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.toMillis
-import org.springframework.context.annotation.Lazy
 import java.nio.charset.StandardCharsets
 import java.sql.Types
 import java.time.LocalDateTime
@@ -54,6 +53,9 @@ import java.util.*
   indexes = [
     Index(name = "url__idx", columnList = StandardJpaFields.url),
     Index(name = "repository_id__idx", columnList = StandardJpaFields.repositoryId),
+    Index(name = "document_published_at_idx", columnList = StandardJpaFields.publishedAt),
+    Index(name = "document_starting_at_idx", columnList = StandardJpaFields.startingAt),
+    Index(name = "document_created_at_idx", columnList = StandardJpaFields.createdAt),
   ]
 )
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -87,7 +89,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(length = LEN_50, name = "content_raw_mime")
   open var rawMimeType: String? = null
 
-  @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
+  @Column(nullable = true, name = StandardJpaFields.latLon, columnDefinition = "geometry")
   open var latLon: Point? = null
 
   @JdbcTypeCode(Types.ARRAY)
@@ -116,7 +118,7 @@ open class DocumentEntity : EntityWithUUID() {
   @Column(nullable = false, name = StandardJpaFields.publishedAt)
   open var publishedAt: LocalDateTime = LocalDateTime.now()
 
-  @Column(name = "starting_at")
+  @Column(name = StandardJpaFields.startingAt)
   open var startingAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "is_dead")

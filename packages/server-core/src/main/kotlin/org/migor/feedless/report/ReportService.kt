@@ -1,9 +1,12 @@
 package org.migor.feedless.report
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.generated.types.GeoPointInput
@@ -35,6 +38,7 @@ class ReportService(
   val repositoryService: RepositoryService,
   val userService: UserService,
   val segmentationService: SegmentationService,
+  val meterRegistry: MeterRegistry,
   val context: ApplicationContext
 ) {
 
@@ -94,6 +98,7 @@ class ReportService(
     report.authorizationAttempt = 1
     report.lastRequestedAuthorization = LocalDateTime.now()
 
+    meterRegistry.counter(AppMetrics.createReport)
     sendAuthorizationMail(segment)
 
     return context.getBean(ReportService::class.java).saveReport(report)

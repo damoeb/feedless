@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -32,7 +33,11 @@ import java.util.*
 
 
 @Entity
-@Table(name = "t_source")
+@Table(name = "t_source",
+  indexes = [
+    Index(name = "source_created_at_idx", columnList = StandardJpaFields.createdAt),
+  ]
+)
 open class SourceEntity : EntityWithUUID() {
 
   @Column(name = "language")

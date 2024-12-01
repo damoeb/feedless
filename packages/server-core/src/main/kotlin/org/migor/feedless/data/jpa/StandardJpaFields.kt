@@ -13,6 +13,7 @@ object StandardJpaFields {
   const val order_id = "billing_id"
   const val featureId = "feature_id"
   const val publishedAt = "released_at"
+  const val startingAt = "starting_at"
   const val featureGroupId = "feature_group_id"
   const val status = "status"
   const val name = "name"
@@ -26,4 +27,5 @@ object StandardJpaFields {
   const val tags = "tags"
   const val visibility = "visibility"
   const val id = "id"
+  const val latLon = "lat_lon"
 }

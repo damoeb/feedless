@@ -26,7 +26,7 @@
         display: flex;
       "
     >
-      <div style="display: flex; flex: 1">
+      <div style="display: flex; flex: 1" class="ion-padding-horizontal">
         <a routerLink="/" class="" aria-label="lokale.events">
           <ion-button color="light" size="block">
             <strong>lokale</strong><em>.events</em>
@@ -110,7 +110,7 @@
     @if (expand === "suggestions") {
       <ion-list
         class="ion-margin-bottom"
-        style="max-height: 20vh; overflow-y: hidden"
+        style="max-height: 20vh; overflow-y: auto"
       >
         <!--        <ion-item-->
         <!--          (click)="getCurrentLocation()"-->
@@ -127,13 +127,13 @@
             </span>
           </ion-item>
         }
-        @for (location of locationSuggestions; track location) {
-          <a [routerLink]="getUrlForLocation(location)">
+        @for (suggestion of locationSuggestions; track suggestion.url) {
+          <a [routerLink]="suggestion.url">
             <ion-item [button]="true">
               <!--          <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>-->
               <span
                 class="suggestion"
-                [innerHTML]="location.displayName"
+                [innerHTML]="suggestion.labelHtml"
               ></span>
             </ion-item>
           </a>

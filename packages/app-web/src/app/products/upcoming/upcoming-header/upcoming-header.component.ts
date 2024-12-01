@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  HostListener,
   inject,
   Input,
   input,
@@ -17,7 +16,6 @@ import {
 } from '../../../services/app-config.service';
 import dayjs, { Dayjs } from 'dayjs';
 import {
-  clone,
   compact,
   debounce as debounceLD,
   DebouncedFunc,
@@ -36,10 +34,11 @@ import {
   chevronBackOutline,
   chevronForwardOutline,
   locationOutline,
+  save,
 } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '../../../types';
 import { homeRoute, parseLocationFromUrl } from '../upcoming-product-routes';
-import { getSavedLocations } from '../events/events.page';
+import { getPreviousLocations } from '../events/events.page';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
   IonButton,
@@ -72,6 +71,10 @@ type Years = {
 };
 
 type SiteLocale = 'de' | 'en';
+type LocationSuggestion = {
+  url: string;
+  labelHtml: string;
+};
 
 type ExpandableSection = 'map' | 'calendar' | 'suggestions';
 
@@ -134,7 +137,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   // protected categories = ['Algemein', 'Kinder', 'Sport', 'Veranstaltung'];
   private timeWindowTo: number;
   private timeWindowFrom: number;
-  protected locationSuggestions: NamedLatLon[];
+  protected locationSuggestions: LocationSuggestion[];
   protected locationNotAvailable: boolean = true;
   protected currentLocation: NamedLatLon;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
@@ -235,50 +238,49 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   this.changeRef.detectChanges();
   // }
   //
-  @HostListener('window:keydown.enter', ['$event'])
-  async handleEnter(event: KeyboardEvent) {
-    if (this.locationSuggestions.length === 1) {
-    }
-    // console.log('handleEnter', this.focussedMatchIndex);
-    // if (this.focussedMatchIndex >= 0 && this.locationSuggestions?.length > 0) {
-    //   const searchResult = this.locationSuggestions[this.focussedMatchIndex];
-    // } else {
-    //
-    // }
-    event.stopPropagation();
-  }
+  // @HostListener('window:keydown.enter', ['$event'])
+  // async handleEnter(event: KeyboardEvent) {
+  //   if (this.locationSuggestions.length === 1) {
+  //   }
+  // console.log('handleEnter', this.focussedMatchIndex);
+  // if (this.focussedMatchIndex >= 0 && this.locationSuggestions?.length > 0) {
+  //   const searchResult = this.locationSuggestions[this.focussedMatchIndex];
+  // } else {
+  //
+  // }
+  // event.stopPropagation();
+  // }
 
   private highlightTokens(tokens: string[]) {
-    return (matches: NamedLatLon[]) =>
-      matches
-        .map((match) => clone(match))
-        .map((match) => {
-          match.displayName = tokens.reduce((hl, token) => {
+    return (matches: NamedLatLon[]): LocationSuggestion[] =>
+      matches.map<LocationSuggestion>((match) => {
+        return {
+          url: this.getUrlForLocation(match),
+          labelHtml: tokens.reduce((hl, token) => {
             return hl.replace(new RegExp(token, 'i'), `<mark>${token}</mark>`);
-          }, match.displayName);
-          return match;
-        });
+          }, match.displayName),
+        };
+      });
   }
 
   async fetchSuggestions(query: string) {
     const tokens = compact(query.toLowerCase().trim().normalize().split(' '));
     const matchHighlighter = this.highlightTokens(tokens);
     this.expand = 'suggestions';
-    let suggestions = getCachedLocations().filter((p) =>
-      tokens.every((token) => p.index.indexOf(token) > -1),
-    );
-
     if (query.length === 0) {
-      suggestions = uniqBy(
-        [...getSavedLocations(), ...suggestions],
-        (l) => `${l.lat}:${l.lon}`,
+      const previousLocations = matchHighlighter(
+        uniqBy(getPreviousLocations(), (l) => `${l.lat}:${l.lon}`),
+      );
+      const breadcrumbs = this.getBreadcrumbs();
+      this.locationSuggestions = [...previousLocations, ...breadcrumbs];
+    } else {
+      this.locationSuggestions = matchHighlighter(
+        getCachedLocations()
+          .filter((p) => tokens.every((token) => p.index.indexOf(token) > -1))
+          .filter((_, index) => index < 6),
       );
     }
 
-    // if (staticMatches.length > 0) {
-    this.locationSuggestions = matchHighlighter(
-      suggestions.filter((_, index) => index < 6),
-    );
     this.changeRef.detectChanges();
     // } else {
     // return matchHighlighter(
@@ -506,7 +508,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   }
   // }
 
-  getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
+  private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
     return (
       '/' +
       homeRoute({})
@@ -523,5 +525,48 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           day: parseInt(this.currentDate.locale(this.locale).format('DD')),
         }).$
     );
+  }
+
+  private getBreadcrumbs(): LocationSuggestion[] {
+    const { countryCode } =
+      homeRoute.children.events.children.countryCode.parseParams(
+        this.activatedRoute.snapshot.params as any,
+      );
+    const { region } =
+      homeRoute.children.events.children.countryCode.children.region.parseParams(
+        this.activatedRoute.snapshot.params as any,
+      );
+
+    if (region) {
+      return getCachedLocations()
+        .filter((l) => l.countryCode == countryCode && l.area == region)
+        .map<LocationSuggestion>((l) => ({
+          url: this.getUrlForLocation(l),
+          labelHtml: l.displayName,
+        }));
+    } else {
+      if (countryCode) {
+        return uniqBy(
+          getCachedLocations().filter((l) => l.countryCode == countryCode),
+          'area',
+        ).map<LocationSuggestion>(({ countryCode, area }) => ({
+          url:
+            '/' +
+            homeRoute({})
+              .events({})
+              .countryCode({ countryCode })
+              .region({ region: area }).$,
+          labelHtml: `${countryCode} ${area}...`,
+        }));
+      } else {
+        return uniqBy<NamedLatLon>(
+          getCachedLocations(),
+          'countryCode',
+        ).map<LocationSuggestion>(({ countryCode }) => ({
+          url: '/' + homeRoute({}).events({}).countryCode({ countryCode }).$,
+          labelHtml: `${countryCode} ...`,
+        }));
+      }
+    }
   }
 }

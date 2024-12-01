@@ -1,11 +1,14 @@
 package org.migor.feedless.feed
 
 import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.Tracked
 import org.migor.feedless.analytics.toFullUrlString
@@ -46,6 +49,8 @@ class LegacyFeedController {
   @Autowired
   private lateinit var legacyFeedService: LegacyFeedService
 
+  @Autowired
+  private lateinit var meterRegistry: MeterRegistry
 
   @Tracked
   @GetMapping(
@@ -59,6 +64,8 @@ class LegacyFeedController {
   fun bucketFeedWithFormat(
     @PathVariable("repositoryId") repositoryId: String,
   ): ResponseEntity<String> {
+    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "repositoryId"))).increment()
+    meterRegistry.counter(AppMetrics.legacyPull).increment()
     return legacyFeedService.getRepository(repositoryId)
   }
 
@@ -75,6 +82,7 @@ class LegacyFeedController {
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
   ): ResponseEntity<String> = withContext(createRequestContext()) {
+    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.getFeed(
@@ -90,6 +98,7 @@ class LegacyFeedController {
     "/api/feed",
   )
   suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
+    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "v1"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl)
     {
@@ -113,6 +122,7 @@ class LegacyFeedController {
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
+    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "v2"))).increment()
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.webToFeed(
         request.param("url"),
@@ -136,6 +146,7 @@ class LegacyFeedController {
     ApiUrls.transformFeed
   )
   suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
+    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "transform"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       legacyFeedService.transformFeed(
