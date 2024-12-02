@@ -24,6 +24,7 @@ import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.StringFilterInput
+import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.FeedlessPlugin
@@ -36,8 +37,10 @@ import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
+import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
@@ -65,17 +68,11 @@ class DocumentService(
   private val documentPipelineJobDAO: DocumentPipelineJobDAO,
   private val pluginService: PluginService,
   private val permissionService: PermissionService,
+  private val telegramBotService: Optional<TelegramBotService>,
+  private val messageService: MessageService,
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
-
-
-//  @Autowired
-//  private lateinit var mailService: MailService
-//
-//  @Autowired
-//  private lateinit var mailForwardDAO: MailForwardDAO
-
 
   @Transactional(readOnly = true)
   suspend fun findById(id: UUID): DocumentEntity? {
@@ -362,7 +359,7 @@ class DocumentService(
         }
 
         if (!withError) {
-          releaseDocument(document)
+          releaseDocument(document, repository)
           document
         } else {
           null
@@ -378,12 +375,23 @@ class DocumentService(
 
   private suspend fun releaseDocument(
     document: DocumentEntity,
+    repository: RepositoryEntity,
   ) {
 //    forwardToMail(corrId, document, repository)
     document.status = ReleaseStatus.released
     log.info("[${coroutineContext.corrId()}] releasing document ${document.id}")
+
     withContext(Dispatchers.IO) {
       documentDAO.save(document)
+    }
+
+    telegramBotService.getOrNull()?.let {
+      it.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
+        messageService.publishMessage(
+          TelegramBotService.toTopic(tgLink.chatId),
+          document.asJsonItem(repository)
+        )
+      }
     }
   }
 
@@ -519,4 +527,5 @@ class DocumentService(
 }
 
 class FilterMismatchException : RuntimeException()
+
 

@@ -27,6 +27,7 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.PluginService
@@ -42,6 +43,8 @@ import org.migor.feedless.repository.eq
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.RequestContext
+import org.migor.feedless.transport.TelegramBotService
+import org.migor.feedless.user.TelegramConnectionEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
@@ -72,6 +75,8 @@ class DocumentServiceTest {
   private lateinit var filterPlugin: CompositeFilterPlugin
   private lateinit var fulltextPlugin: FulltextPlugin
   private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
+  private lateinit var telegranBotService: TelegramBotService
+  private lateinit var messageService: MessageService
   private lateinit var documentId: UUID
   private lateinit var document: DocumentEntity
 
@@ -87,6 +92,8 @@ class DocumentServiceTest {
     documentDAO = mock(DocumentDAO::class.java)
     permissionService = PermissionService(userDAO, repositoryDAO)
     planConstraintsService = mock(PlanConstraintsService::class.java)
+    telegranBotService = mock(TelegramBotService::class.java)
+    messageService = mock(MessageService::class.java)
 
     filterPlugin = spy(CompositeFilterPlugin())
     fulltextPlugin = mock(FulltextPlugin::class.java)
@@ -107,6 +114,8 @@ class DocumentServiceTest {
       documentPipelineJobDAO,
       pluginService,
       permissionService,
+      Optional.of(telegranBotService),
+      messageService
     )
 
     documentId = UUID.randomUUID()
@@ -212,6 +221,22 @@ class DocumentServiceTest {
 
   @Test
   fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
+    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
+    val telegramConnection = mock(TelegramConnectionEntity::class.java)
+    `when`(telegramConnection.chatId).thenReturn(12345)
+    `when`(telegranBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
+
+    // when
+    documentService.processDocumentPlugins(
+      documentId, listOf()
+    )
+
+    verify(document).status = ReleaseStatus.released
+    verify(messageService).publishMessage(any2(), any2())
+  }
+
+  @Test
+  fun `released document will be forwarded to telegram`() = runTest {
     assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
     documentService.processDocumentPlugins(
       documentId, listOf()
