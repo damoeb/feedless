@@ -37,6 +37,6 @@ class MailController(
     reportService.updateReportById(UUID.fromString(mailForwardId), true)
 
     ResponseEntity.ok()
-      .body(templateService.renderTemplate(MailTrackerAuthorizedTemplate()))
+      .body(templateService.renderTemplate(ChangeTrackerAuthorizedTemplate()))
   }
 }

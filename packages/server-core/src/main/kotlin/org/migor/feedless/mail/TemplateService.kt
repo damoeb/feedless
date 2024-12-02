@@ -17,14 +17,9 @@ abstract class FtlTemplate<T>(val templateName: String) {
 }
 
 data class WelcomeMailParams(val productName: String)
-data class WelcomeFreeMailTemplate(override val params: WelcomeMailParams) :
-  FtlTemplate<WelcomeMailParams>("mail-welcome-free")
 
 data class WelcomePaidMailTemplate(override val params: WelcomeMailParams) :
   FtlTemplate<WelcomeMailParams>("mail-welcome-paid")
-
-data class WelcomeWaitListMailTemplate(override val params: WelcomeMailParams) :
-  FtlTemplate<WelcomeMailParams>("mail-welcome-wait-list")
 
 data class AuthCodeMailParams(
   val domain: String,
@@ -57,9 +52,7 @@ data class VisualDiffWelcomeParams(
 data class VisualDiffWelcomeMailTemplate(override val params: VisualDiffWelcomeParams) :
   FtlTemplate<VisualDiffWelcomeParams>("mail-visual-diff-welcome")
 
-class MailTrackerAuthorizedTemplate(override val params: Unit = Unit) : FtlTemplate<Unit>("page-tracker-authorized")
-class DocumentUpdateMailTemplate(override val params: Unit = Unit) :
-  FtlTemplate<Unit>("mail-web-document-update")
+class ChangeTrackerAuthorizedTemplate(override val params: Unit = Unit) : FtlTemplate<Unit>("page-tracker-authorized")
 
 @Service
 @Transactional(propagation = Propagation.NEVER)

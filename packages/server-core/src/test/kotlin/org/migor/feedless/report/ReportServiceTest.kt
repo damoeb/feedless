@@ -1,5 +1,6 @@
 package org.migor.feedless.report
 
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
@@ -59,6 +60,7 @@ class ReportServiceTest {
       repositoryService,
       userService,
       segmentationService,
+      mock(MeterRegistry::class.java),
       context
     )
 
