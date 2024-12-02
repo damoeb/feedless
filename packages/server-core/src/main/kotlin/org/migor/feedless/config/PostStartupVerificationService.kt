@@ -24,13 +24,25 @@ class PostStartupVerificationService {
 
   @PostConstruct
   fun postConstruct() {
+    verifyGeneralEnvironment()
+    verifySaasEnvironment()
+  }
+
+  private fun verifyGeneralEnvironment() {
+    verifyEnvironment("general", arrayOf(AppProfiles.scrape, AppLayer.scheduler, AppLayer.repository, AppLayer.api))
+  }
+
+  private fun verifySaasEnvironment() {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      log.info("Validating environment")
-      val expectedSaasProfiles = arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.legacyFeeds)
-      val missingProfiles = expectedSaasProfiles.filter { !environment.acceptsProfiles(Profiles.of(it)) }
-      if (missingProfiles.isNotEmpty()) {
-        throw IllegalArgumentException("The following spring-profiles are not activated ${missingProfiles.joinToString(",")}")
-      }
+      verifyEnvironment("saas", arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.legacyFeeds, AppProfiles.analytics ))
+    }
+  }
+
+  private fun verifyEnvironment(envName: String, expectedProfiles: Array<String>) {
+    log.info("Validating $envName environment")
+    val missingProfiles = expectedProfiles.filter { !environment.acceptsProfiles(Profiles.of(it)) }
+    if (missingProfiles.isNotEmpty()) {
+      throw IllegalArgumentException("The following spring-profiles are not activated ${missingProfiles.joinToString(",")}")
     }
   }
 
