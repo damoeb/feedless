@@ -7,10 +7,7 @@ import { ProfileGuardService } from '../../guards/profile-guard.service';
 export const RSS_BUILDER_ROUTES: Routes = [
   {
     path: 'setup',
-    loadComponent: () =>
-      import('./setup/setup.page').then(
-        (m) => m.SetupPage,
-      ),
+    loadComponent: () => import('./setup/setup.page').then((m) => m.SetupPage),
   },
   {
     path: '',
@@ -30,7 +27,7 @@ export const RSS_BUILDER_ROUTES: Routes = [
           },
           {
             path: 'feed-builder',
-            data: {compact: true, standalone: true},
+            data: { compact: true, standalone: true },
             // canActivate: [AuthGuardService],
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.routes').then(

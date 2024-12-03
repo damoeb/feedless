@@ -1,9 +1,9 @@
 @if (!compact) {
-  <app-feedless-header></app-feedless-header>
+<app-feedless-header></app-feedless-header>
 }
 <ion-content>
   @if (!compact) {
-    <h2 class="ion-padding-horizontal" >RSS Feed Builder</h2>
+  <h2 class="ion-padding-horizontal">RSS Feed Builder</h2>
   }
   <app-feed-builder
     (selectedFeedChanged)="handleFeed($event)"

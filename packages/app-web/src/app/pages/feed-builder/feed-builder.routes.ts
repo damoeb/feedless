@@ -20,7 +20,8 @@ export const standaloneV2WebToFeedRoute = route(
     dateIsEvent: booleanParser,
     q: strParser,
     out: strParser,
-  }, {},
+  },
+  {},
 );
 
 export const standaloneV1WebToFeedRoute = route(
@@ -29,7 +30,8 @@ export const standaloneV1WebToFeedRoute = route(
     url: strParser,
     pLink: strParser,
     pContext: strParser,
-  }, {},
+  },
+  {},
 );
 
 export const standaloneV2FeedTransformRoute = route(
@@ -38,5 +40,6 @@ export const standaloneV2FeedTransformRoute = route(
     url: strParser,
     q: strParser,
     out: strParser,
-  }, {},
+  },
+  {},
 );

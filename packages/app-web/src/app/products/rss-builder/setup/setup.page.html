@@ -7,91 +7,98 @@
 </ion-header>
 <ion-content>
   <div style="width: 600px; margin: auto; display: flex">
-<!--    <div style="width: 200px">-->
-<!--      <ion-list>-->
-<!--        <ion-item>-->
-<!--          Features-->
-<!--        </ion-item>-->
-<!--      </ion-list>-->
-<!--    </div>-->
+    <!--    <div style="width: 200px">-->
+    <!--      <ion-list>-->
+    <!--        <ion-item>-->
+    <!--          Features-->
+    <!--        </ion-item>-->
+    <!--      </ion-list>-->
+    <!--    </div>-->
     <div style="flex: 1">
       @if (currentPage === 0) {
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Setup RSS-proxy</ion-card-title>
-            <ion-card-subtitle>Aside the standard features, choose those features you need</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div style="min-height: 200px">
-              <ion-list>
-                <ion-list-header>Feed</ion-list-header>
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    Aggregate Feeds
-                    <ion-note>(Database)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    Fulltext Feeds
-                    <ion-note>(Database)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    Feed Archive
-                    <ion-note>(Database)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-                <ion-list-header>Services</ion-list-header>
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    Push Notification
-                    <ion-note>(Telegram Bot)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-<!--                <ion-item>-->
-<!--                  <ion-checkbox labelPlacement="end">-->
-<!--                    Public Feeds-->
-<!--                    <ion-note>(Feedless)</ion-note>-->
-<!--                  </ion-checkbox>-->
-<!--                </ion-item>-->
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    Email Reports
-                    <ion-note>(SMTP)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-                <ion-list-header>Security</ion-list-header>
-                <ion-item>
-                  <ion-checkbox labelPlacement="end">
-                    OAuth2 Authentication
-                    <ion-note>(OAuth)</ion-note>
-                  </ion-checkbox>
-                </ion-item>
-<!--                <ion-item>-->
-<!--                  <ion-checkbox labelPlacement="end">-->
-<!--                    Web Scraping API-->
-<!--                    <ion-note>(API keys)</ion-note>-->
-<!--                  </ion-checkbox>-->
-<!--                </ion-item>-->
-              </ion-list>
-            </div>
-            <ion-toolbar style="--background: transparent">
-<!--              <ion-buttons slot="start">-->
-<!--                <ion-button (click)="currentPage = currentPage-1">Back</ion-button>-->
-<!--              </ion-buttons>-->
-              <ion-buttons slot="end">
-                <ion-button (click)="currentPage = currentPage-1">Later</ion-button>
-                <ion-button fill="solid"
-                            color="primary"
-                            (click)="currentPage = currentPage+1">Next</ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-card-content>
-        </ion-card>
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Setup RSS-proxy</ion-card-title>
+          <ion-card-subtitle
+            >Aside the standard features, choose those features you
+            need</ion-card-subtitle
+          >
+        </ion-card-header>
+        <ion-card-content>
+          <div style="min-height: 200px">
+            <ion-list>
+              <ion-list-header>Feed</ion-list-header>
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  Aggregate Feeds
+                  <ion-note>(Database)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  Fulltext Feeds
+                  <ion-note>(Database)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  Feed Archive
+                  <ion-note>(Database)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <ion-list-header>Services</ion-list-header>
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  Push Notification
+                  <ion-note>(Telegram Bot)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <!--                <ion-item>-->
+              <!--                  <ion-checkbox labelPlacement="end">-->
+              <!--                    Public Feeds-->
+              <!--                    <ion-note>(Feedless)</ion-note>-->
+              <!--                  </ion-checkbox>-->
+              <!--                </ion-item>-->
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  Email Reports
+                  <ion-note>(SMTP)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <ion-list-header>Security</ion-list-header>
+              <ion-item>
+                <ion-checkbox labelPlacement="end">
+                  OAuth2 Authentication
+                  <ion-note>(OAuth)</ion-note>
+                </ion-checkbox>
+              </ion-item>
+              <!--                <ion-item>-->
+              <!--                  <ion-checkbox labelPlacement="end">-->
+              <!--                    Web Scraping API-->
+              <!--                    <ion-note>(API keys)</ion-note>-->
+              <!--                  </ion-checkbox>-->
+              <!--                </ion-item>-->
+            </ion-list>
+          </div>
+          <ion-toolbar style="--background: transparent">
+            <!--              <ion-buttons slot="start">-->
+            <!--                <ion-button (click)="currentPage = currentPage-1">Back</ion-button>-->
+            <!--              </ion-buttons>-->
+            <ion-buttons slot="end">
+              <ion-button (click)="currentPage = currentPage-1"
+                >Later</ion-button
+              >
+              <ion-button
+                fill="solid"
+                color="primary"
+                (click)="currentPage = currentPage+1"
+                >Next</ion-button
+              >
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-card-content>
+      </ion-card>
       }
     </div>
   </div>
-
 </ion-content>

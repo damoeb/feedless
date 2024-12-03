@@ -30,7 +30,8 @@ import {
   IonNote,
   IonProgressBar,
   IonToolbar,
-  ModalController, ToastController
+  ModalController,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -58,7 +59,10 @@ import {
 import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
-import { standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../pages/feed-builder/feed-builder.routes';
+import {
+  standaloneV2FeedTransformRoute,
+  standaloneV2WebToFeedRoute,
+} from '../../pages/feed-builder/feed-builder.routes';
 import { ServerConfigService } from '../../services/server-config.service';
 
 /**
@@ -455,17 +459,16 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const alert = await this.alertCtrl.create({
       header: 'Standalone URL',
       backdropDismiss: false,
-      message:
-        'You can use this URL directly in your feed reader',
+      message: 'You can use this URL directly in your feed reader',
       inputs: [
         {
           name: 'feedUrl',
           type: 'textarea',
           value: this.createStandaloneFeedUrl(),
           attributes: {
-            readonly: true
-          }
-        }
+            readonly: true,
+          },
+        },
       ],
       buttons: [
         {
@@ -480,13 +483,13 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
             });
 
             await toast.present();
-          }
+          },
         },
         {
           role: 'cancel',
           text: 'Close',
         },
-      ]
+      ],
     });
     await alert.present();
   }
@@ -496,21 +499,27 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const q = JSON.stringify(this.getFilterPlugin());
     if (this.selectedFeed.genericFeed) {
       const gf = this.selectedFeed.genericFeed;
-      return baseUrl + standaloneV2WebToFeedRoute({
-        url: this.url,
-        link: gf.selectors.linkXPath,
-        context: gf.selectors.contextXPath,
-        date: gf.selectors.dateXPath,
-        dateIsEvent: gf.selectors.dateIsStartOfEvent,
-        q,
-        out: 'atom',
-      });
+      return (
+        baseUrl +
+        standaloneV2WebToFeedRoute({
+          url: this.url,
+          link: gf.selectors.linkXPath,
+          context: gf.selectors.contextXPath,
+          date: gf.selectors.dateXPath,
+          dateIsEvent: gf.selectors.dateIsStartOfEvent,
+          q,
+          out: 'atom',
+        })
+      );
     } else {
-      return baseUrl + standaloneV2FeedTransformRoute({
-        url: this.selectedFeed.nativeFeed.feedUrl,
-        q,
-        out: 'atom',
-      });
+      return (
+        baseUrl +
+        standaloneV2FeedTransformRoute({
+          url: this.selectedFeed.nativeFeed.feedUrl,
+          q,
+          out: 'atom',
+        })
+      );
     }
   }
 }

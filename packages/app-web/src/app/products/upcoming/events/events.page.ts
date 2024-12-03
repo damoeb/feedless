@@ -537,14 +537,21 @@ export class EventsPage implements OnInit, OnDestroy {
     localStorage.setItem('savedLocations', JSON.stringify(locations));
   }
 
-  private createDateWindow(date: Dayjs) {
+  private createDateWindow(dateP: Dayjs) {
+    const date = this.coerceDate(
+      dateP,
+      dayjs().subtract(2, 'week'),
+      dayjs().add(2, 'month'),
+    );
     if (
       this.dateWindow.length > 0 &&
       this.dateWindow[0].date.isBefore(date) &&
-      this.dateWindow[this.dateWindow.length - 1].date.isAfter(date)
+      this.dateWindow[this.dateWindow.length - 1].date.isAfter(date) &&
+      this.dateWindow[0].date.isAfter(dayjs().add(2, 'month').add(7, 'day'))
     ) {
       return;
     }
+
     const createDateWindowItem = (offset: number): DateWindowItem => {
       return {
         date: date.add(offset, 'day'),
@@ -562,7 +569,6 @@ export class EventsPage implements OnInit, OnDestroy {
       createDateWindowItem(5),
     ];
     this.changeRef.detectChanges();
-    // }
   }
 
   isPast(day: Dayjs): boolean {
@@ -608,6 +614,18 @@ export class EventsPage implements OnInit, OnDestroy {
     return this.dateWindow.some((d) =>
       this.isSame(date, d.date, ['year', 'month', 'day']),
     );
+  }
+
+  private coerceDate(date: Dayjs, min: Dayjs, max: Dayjs) {
+    if (date.isBefore(min)) {
+      return min;
+    } else {
+      if (date.isAfter(max)) {
+        return max;
+      } else {
+        return date;
+      }
+    }
   }
 }
 

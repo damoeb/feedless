@@ -31,18 +31,18 @@
       <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
     }
 
-<!--    @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {-->
-<!--      <div class="ion-padding" style="width: 100%">-->
-<!--        <p>Remix existing feeds</p>-->
-<!--        <ion-list>-->
-<!--          @for (r of repositories; track r) {-->
-<!--            <ion-item (click)="remix(r)" [button]="true">-->
-<!--              {{ r.title }}-->
-<!--            </ion-item>-->
-<!--          }-->
-<!--        </ion-list>-->
-<!--      </div>-->
-<!--    }-->
+    <!--    @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {-->
+    <!--      <div class="ion-padding" style="width: 100%">-->
+    <!--        <p>Remix existing feeds</p>-->
+    <!--        <ion-list>-->
+    <!--          @for (r of repositories; track r) {-->
+    <!--            <ion-item (click)="remix(r)" [button]="true">-->
+    <!--              {{ r.title }}-->
+    <!--            </ion-item>-->
+    <!--          }-->
+    <!--        </ion-list>-->
+    <!--      </div>-->
+    <!--    }-->
 
     @if (sourceBuilder && sourceBuilder.response) {
       <app-transform-website-to-feed
@@ -131,9 +131,9 @@
               [disabled]="!hasValidFeed"
             >
               @if (standaloneFeedMode()) {
-                <ion-label >Persisted Feed Options...</ion-label>
+                <ion-label>Persisted Feed Options...</ion-label>
               } @else {
-                <ion-label >Advanced Options</ion-label>
+                <ion-label>Advanced Options</ion-label>
               }
               <ion-icon name="settings-outline" slot="end"></ion-icon>
             </ion-item>
@@ -145,9 +145,7 @@
               [disabled]="!hasValidFeed"
               color="primary"
             >
-              <ion-label>
-                Show Feed URL
-              </ion-label>
+              <ion-label> Show Feed URL </ion-label>
               <ion-icon name="checkmark-outline" slot="end"></ion-icon>
             </ion-item>
           } @else {

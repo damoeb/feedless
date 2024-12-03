@@ -94,7 +94,13 @@
         }
       </div>
       <div class="ion-padding-horizontal">
-        <h1 style="font-size: 1.8rem; font-weight: bold">
+        <h1
+          style="
+            font-size: 1.8rem;
+            font-weight: bold;
+            white-space: break-spaces;
+          "
+        >
           Veranstaltungen in {{ location?.displayName }}
         </h1>
         <div>
@@ -110,7 +116,7 @@
           <div>
             @if (placesByDistance.length === 0) {
             <div style="font-size: 1.2rem">
-              <p>Leider keine Veranstaltungen gefunden</p>
+              <p style="color: var(--ion-color-medium);">Leider keine Veranstaltungen gefunden</p>
               <p class="ion-margin-top">
                 <a href="mailto:markus@lokale.events?subject=Links">
                   <ion-button>Event-Links vorschlagen</ion-button>
