@@ -53,13 +53,13 @@ const val feedId = "feed-id"
   AppLayer.api,
   AppLayer.service,
   AppProfiles.properties,
-  AppProfiles.legacyFeeds,
+  AppProfiles.standaloneFeeds,
 )
 @Import(
   DisableDatabaseConfiguration::class,
   DisableSecurityConfiguration::class,
 )
-class LegacyFeedControllerTest {
+class StandaloneFeedControllerTest {
 
   lateinit var baseEndpoint: String
 
@@ -67,7 +67,7 @@ class LegacyFeedControllerTest {
   var port = 0
 
   @MockBean
-  lateinit var legacyFeedService: LegacyFeedService
+  lateinit var standaloneFeedService: StandaloneFeedService
 
   lateinit var mockFeed: JsonFeed
 
@@ -88,7 +88,7 @@ class LegacyFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      legacyFeedService.transformFeed(
+      standaloneFeedService.transformFeed(
         any2(),
         anyOrNull2(),
         any2(),
@@ -120,7 +120,7 @@ class LegacyFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      legacyFeedService.webToFeed(
+      standaloneFeedService.webToFeed(
         any2(),
         any2(),
         any2(),
@@ -168,7 +168,7 @@ class LegacyFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      legacyFeedService.getFeed(
+      standaloneFeedService.getFeed(
         any2(),
         any2(),
       )
@@ -194,7 +194,7 @@ class LegacyFeedControllerTest {
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
     val restTemplate = TestRestTemplate()
-    `when`(legacyFeedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
+    `when`(standaloneFeedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)

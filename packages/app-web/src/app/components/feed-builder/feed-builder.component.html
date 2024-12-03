@@ -31,18 +31,18 @@
       <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
     }
 
-    @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {
-      <div class="ion-padding" style="width: 100%">
-        <p>Remix existing feeds</p>
-        <ion-list>
-          @for (r of repositories; track r) {
-            <ion-item (click)="remix(r)" [button]="true">
-              {{ r.title }}
-            </ion-item>
-          }
-        </ion-list>
-      </div>
-    }
+<!--    @if (!sourceBuilder?.response && repositories.length > 0 && !loading) {-->
+<!--      <div class="ion-padding" style="width: 100%">-->
+<!--        <p>Remix existing feeds</p>-->
+<!--        <ion-list>-->
+<!--          @for (r of repositories; track r) {-->
+<!--            <ion-item (click)="remix(r)" [button]="true">-->
+<!--              {{ r.title }}-->
+<!--            </ion-item>-->
+<!--          }-->
+<!--        </ion-list>-->
+<!--      </div>-->
+<!--    }-->
 
     @if (sourceBuilder && sourceBuilder.response) {
       <app-transform-website-to-feed
@@ -130,21 +130,39 @@
               [button]="true"
               [disabled]="!hasValidFeed"
             >
-              <ion-label> Advanced Options</ion-label>
+              @if (standaloneFeedMode()) {
+                <ion-label >Persisted Feed Options...</ion-label>
+              } @else {
+                <ion-label >Advanced Options</ion-label>
+              }
               <ion-icon name="settings-outline" slot="end"></ion-icon>
             </ion-item>
           }
-          <ion-item
-            (click)="createOrRefineFeed(false)"
-            [button]="true"
-            [disabled]="!hasValidFeed"
-            color="primary"
-          >
-            <ion-label>
-              {{ submitButtonText() }}
-            </ion-label>
-            <ion-icon name="checkmark-outline" slot="end"></ion-icon>
-          </ion-item>
+          @if (standaloneFeedMode()) {
+            <ion-item
+              (click)="createFeedUrl()"
+              [button]="true"
+              [disabled]="!hasValidFeed"
+              color="primary"
+            >
+              <ion-label>
+                Show Feed URL
+              </ion-label>
+              <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+            </ion-item>
+          } @else {
+            <ion-item
+              (click)="createOrRefineFeed(false)"
+              [button]="true"
+              [disabled]="!hasValidFeed"
+              color="primary"
+            >
+              <ion-label>
+                {{ submitButtonText() }}
+              </ion-label>
+              <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+            </ion-item>
+          }
         </ion-list>
       </app-transform-website-to-feed>
     }

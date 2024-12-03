@@ -4,6 +4,7 @@ import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { NamedLatLon } from '../../types';
 import { intParser, route } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/build/parser';
+import { strParser, upperCaseStringParser } from '../default-routes';
 
 export const perimeterUnit = 'Km';
 
@@ -54,14 +55,6 @@ export async function parseLocationFromUrl(
 export const perimeterParser: Parser<number> = {
   parse: (s) => parseInt(s.replace(perimeterUnit, '')),
   serialize: (s) => `${s}${perimeterUnit}`,
-};
-export const upperCaseStringParser: Parser<string> = {
-  parse: (s) => s.toUpperCase(),
-  serialize: (s) => s.toUpperCase(),
-};
-export const strParser: Parser<string> = {
-  parse: (s) => decodeURIComponent(s),
-  serialize: (s) => s,
 };
 
 export const homeRoute = route(

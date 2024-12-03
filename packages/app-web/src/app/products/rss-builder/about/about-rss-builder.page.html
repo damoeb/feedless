@@ -12,67 +12,29 @@
       placeholder="Type a Url of a website"
     ></app-searchbar>
 
-    @if (!serverConfig.isSelfHosted()) {
-    <div>
-      <div style="margin-top: 50px"></div>
-      <div
-        class="ion-margin-vertical"
-        style="
-          border-left: 5px solid var(--ion-color-primary);
-          padding-left: 15px;
-          margin-left: -20px;
-        "
-      >
-        <h2>End-of-life announcements for legacy feeds!</h2>
-        <p>
-          Support for old feed Urls from RSS-Proxy will end in a couple of
-          weeks, I will give you a notification inside of every feed, you will
-          have plenty of time to migrate them. I won't allow anonymous feed
-          transformations anymore.
-        </p>
-        <p>
-          For self hoster nothing will change, support for legacy urls will
-          continue.
-        </p>
-      </div>
-      <div style="margin-top: 50px"></div>
-      <div class="ion-margin-vertical">
-        <h2>Migration Path for legacy feeds</h2>
-        <p>
-          If you come from an older version of RSS-proxy, just paste those urls
-          into the form above, you can convert them fully, except the filters.
-        </p>
-      </div>
-    </div>
-    } @if (serverConfig.isSelfHosted()) {
+    @if (serverConfig.isSelfHosted()) {
     <div>
       <div style="margin-top: 50px"></div>
       <div class="ion-margin-vertical">
         <h2>Hello, fellow Self-Hoster,</h2>
         <p>
-          Checkout the <a href="" target="_blank">documentation</a> and
-          <a href="https://discord.gg/8Tu742HQkr" target="_blank"
+          If you need help, <a href="https://discord.gg/8Tu742HQkr" target="_blank"
             >join us on discord</a
-          >
-          to help us strengthening the feed community.
+          >.
         </p>
-        <p>
-          Customize constraints of
-          <ion-button routerLink="/settings" size="small">
-            <ion-icon name="settings-outline" slot="start"></ion-icon>
-            server settings
-          </ion-button>
-        </p>
-        <p>Now, fastest way to get started is by importing an OPML file.</p>
+<!--        <p>-->
+<!--          Customize constraints of-->
+<!--          <ion-button routerLink="/settings" size="small">-->
+<!--            <ion-icon name="settings-outline" slot="start"></ion-icon>-->
+<!--            server settings-->
+<!--          </ion-button>-->
+<!--        </p>-->
+<!--        <p>Now, fastest way to get started is by importing an OPML XML or feedless Json file.</p>-->
         <app-import-button
           color="primary"
           expand="block"
           fill="solid"
         ></app-import-button>
-      </div>
-      <div style="margin-top: 50px">
-        <h2>Video Introduction</h2>
-        <p>[video]</p>
       </div>
       @if (license?.isLocated) {
       <div style="margin-top: 50px">
@@ -82,23 +44,6 @@
         </ion-item>
       </div>
       }
-      <div style="margin-top: 50px">
-        <h2>Pricing</h2>
-        <p>
-          RSS-Proxy is released under a
-          <a href="https://fsl.software/" target="_blank"
-            >non-competitive license</a
-          >
-          that will become Open Source (Apache 2) after 2 years ({{
-          getLicenseExpiry() | date: dateFormat }}). Within this period you need
-          to activate the software, <strong>it's free</strong> for e.g.
-          students.
-        </p>
-        <p>
-          After the 2-month trial period you need to activate the software to
-          keep all working.
-        </p>
-      </div>
     </div>
     } @if (!serverConfig.isSelfHosted()) {
     <div>
@@ -126,12 +71,6 @@
         </p>
       </div>
       <div style="margin-top: 50px"></div>
-      <div>
-        <h2>Demo Video</h2>
-        <p>
-          <lite-youtube videoid="7weraU_FpUs"></lite-youtube>
-        </p>
-      </div>
       <div>
         <h2>Self Hosting Guide</h2>
       </div>

@@ -525,6 +525,13 @@ class RepositoryService(
       repositoryDAO.save(repository)
     }
   }
+
+  @Transactional(readOnly = true)
+  suspend fun findByTitleAndOwnerId(title: String, ownerId: UUID): RepositoryEntity? {
+    return withContext(Dispatchers.IO) {
+      repositoryDAO.findByTitleAndOwnerId(title, ownerId)
+    }
+  }
 }
 
 private fun Visibility.fromDto(): EntityVisibility {

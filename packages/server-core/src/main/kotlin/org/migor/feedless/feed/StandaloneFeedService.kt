@@ -1,7 +1,5 @@
 package org.migor.feedless.feed
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
@@ -12,7 +10,6 @@ import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
@@ -22,21 +19,21 @@ import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
-import org.migor.feedless.repository.RepositoryDAO
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.user.UserDAO
+import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -57,58 +54,32 @@ import kotlin.coroutines.coroutineContext
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.legacyFeeds} & ${AppLayer.service}")
-class LegacyFeedService {
+@Profile("${AppProfiles.standaloneFeeds} & ${AppLayer.service}")
+class StandaloneFeedService(
+  private val propertyService: PropertyService,
+  private val webToFeedTransformer: WebToFeedTransformer,
+  private val feedParserService: FeedParserService,
+  private val scrapeService: ScrapeService,
+  private val repositoryService: RepositoryService,
+  private val userService: UserService,
+  private val sourceService: SourceService,
+  private val featureService: FeatureService,
+  private val documentService: DocumentService,
+  private val filterPlugin: CompositeFilterPlugin
+) {
 
-  private val log = LoggerFactory.getLogger(LegacyFeedService::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var webToFeedTransformer: WebToFeedTransformer
-
-  @Autowired
-  private lateinit var feedParserService: FeedParserService
-
-  @Autowired
-  private lateinit var scrapeService: ScrapeService
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
-  private lateinit var documentDAO: DocumentDAO
-
-  @Autowired
-  private lateinit var sourceDAO: SourceDAO
-
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Autowired
-  private lateinit var documentService: DocumentService
-
-  @Autowired
-  private lateinit var filterPlugin: CompositeFilterPlugin
+  private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
 
   fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
 
-  @Transactional(readOnly = true)
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedId")
-  suspend fun getFeed(feedId: String, feedUrl: String): JsonFeed {
-    return if (legacySupport()) {
-      val sourceId = UUID.fromString(feedId)
-      val feed = withContext(Dispatchers.IO) {
-        val f = sourceDAO.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
-        f.items =
-          documentDAO.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
-            .map { it.asJsonItem() }
-        f
-      }
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #sourceId")
+  suspend fun getFeed(sourceId: UUID, feedUrl: String): JsonFeed {
+    return if (standaloneSupport()) {
+      val feed =
+        sourceService.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
+      feed.items =
+        documentService.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+          .map { it.asJsonItem() }
 
       appendNotifications(feed)
     } else {
@@ -116,7 +87,6 @@ class LegacyFeedService {
     }
   }
 
-  @Transactional(propagation = Propagation.NEVER)
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
   suspend fun webToFeed(
     url: String,
@@ -129,7 +99,7 @@ class LegacyFeedService {
     feedUrl: String
   ): JsonFeed {
     val corrId = coroutineContext.corrId()
-    return if (legacySupport()) {
+    return if (standaloneSupport()) {
       val source = SourceEntity()
       source.title = "Feed from $url"
       val fetch = FetchActionEntity()
@@ -167,13 +137,7 @@ class LegacyFeedService {
 
       try {
         filter?.let {
-          val params = PluginExecutionParamsInput(
-            org_feedless_filter = listOf(
-              ItemFilterParamsInput(
-                expression = it
-              )
-            )
-          )
+          val params = convertFilterStringToPluginParams(it)
           feed.items = feed.items.filterIndexed { index, jsonItem ->
             filterPlugin.filterEntity(
               jsonItem,
@@ -193,13 +157,37 @@ class LegacyFeedService {
     }
   }
 
+  private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): PluginExecutionParamsInput {
+    return PluginExecutionParamsInput(
+      org_feedless_filter = try {
+        JsonUtil.gson.fromJson<List<ItemFilterParamsInput>>(jsonOrExpressionFilter, List::class.java)
+      } catch (e: Exception) {
+        listOf(
+          ItemFilterParamsInput(
+            expression = jsonOrExpressionFilter,
+          )
+        )
+      }
+    )
+  }
+
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
-  @Transactional(readOnly = true)
   suspend fun transformFeed(nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
-    return if (legacySupport()) {
-      appendNotifications(
-        feedParserService.parseFeedFromUrl(nativeFeedUrl)
-      )
+    return if (standaloneSupport()) {
+      val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
+      filter?.let {
+        val params = convertFilterStringToPluginParams(filter)
+        feed.items = feed.items.filterIndexed { index, jsonItem ->
+          filterPlugin.filterEntity(
+            jsonItem,
+            params.toEntity(),
+            index,
+            LogCollector()
+          )
+        }
+      }
+
+      appendNotifications(feed)
     } else {
       createEolFeed(feedUrl)
     }
@@ -215,12 +203,8 @@ class LegacyFeedService {
 
   private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
     val corrId = coroutineContext.corrId()
-    val root = withContext(Dispatchers.IO) {
-      userDAO.findFirstByAdminIsTrue()
-    }
-    withContext(Dispatchers.IO) {
-      repositoryDAO.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)
-    }?.let { repo ->
+    val root = userService.findAdminUser()
+    repositoryService.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
       val documents = documentService.findAllByRepositoryId(
         repo.id,
@@ -238,7 +222,7 @@ class LegacyFeedService {
     return feed
   }
 
-  private suspend fun legacySupport(): Boolean {
+  private suspend fun standaloneSupport(): Boolean {
     return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 

@@ -6,6 +6,13 @@ import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 export const RSS_BUILDER_ROUTES: Routes = [
   {
+    path: 'setup',
+    loadComponent: () =>
+      import('./setup/setup.page').then(
+        (m) => m.SetupPage,
+      ),
+  },
+  {
     path: '',
     loadComponent: () =>
       import('./rss-builder-product.page').then((m) => m.RssBuilderProductPage),
@@ -23,7 +30,8 @@ export const RSS_BUILDER_ROUTES: Routes = [
           },
           {
             path: 'feed-builder',
-            canActivate: [AuthGuardService],
+            data: {compact: true, standalone: true},
+            // canActivate: [AuthGuardService],
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.routes').then(
                 (m) => m.FEED_BUILDER_ROUTES,

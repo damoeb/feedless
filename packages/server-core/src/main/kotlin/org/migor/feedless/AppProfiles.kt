@@ -18,7 +18,7 @@ object AppProfiles {
   const val repository = "repository"
   const val plan = "plan"
   const val source = "source"
-  const val legacyFeeds = "legacy"
+  const val standaloneFeeds = "legacy"
   const val analytics = "analytics"
   const val authSSO = "sso"
   const val agent = "agent"

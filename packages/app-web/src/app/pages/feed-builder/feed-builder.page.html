@@ -1,9 +1,14 @@
-<app-feedless-header></app-feedless-header>
+@if (!compact) {
+  <app-feedless-header></app-feedless-header>
+}
 <ion-content>
-  <h2 class="ion-padding-horizontal">RSS Feed Builder</h2>
+  @if (!compact) {
+    <h2 class="ion-padding-horizontal" >RSS Feed Builder</h2>
+  }
   <app-feed-builder
     (selectedFeedChanged)="handleFeed($event)"
     (selectedRepositoryChanged)="handleRepository($event)"
     [hideSearchBar]="false"
+    [standaloneFeedMode]="standalone"
   ></app-feed-builder>
 </ion-content>

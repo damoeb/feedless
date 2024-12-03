@@ -30,7 +30,7 @@ import {
   IonNote,
   IonProgressBar,
   IonToolbar,
-  ModalController,
+  ModalController, ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -58,6 +58,8 @@ import {
 import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
+import { standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../pages/feed-builder/feed-builder.routes';
+import { ServerConfigService } from '../../services/server-config.service';
 
 /**
  * IDEEN
@@ -132,6 +134,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   private readonly modalCtrl = inject(ModalController);
   private readonly alertCtrl = inject(AlertController);
   private readonly repositoryService = inject(RepositoryService);
+  private readonly serverConfigService = inject(ServerConfigService);
+  private readonly toastCtrl = inject(ToastController);
   private readonly changeRef = inject(ChangeDetectorRef);
 
   url: string;
@@ -152,6 +156,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   readonly hideSearchBar = input(false);
 
+  readonly standaloneFeedMode = input(false);
+
   readonly hideCustomizeFeed = input(false);
 
   readonly selectedFeedChanged = output<FeedWithRequest>();
@@ -160,7 +166,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   protected tags: string[] = [];
   protected geoLocation: NamedLatLon;
-  protected repositories: Repository[] = [];
+  // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
 
@@ -191,28 +197,28 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       }),
     );
 
-    await this.fetchFeeds();
+    // await this.fetchFeeds();
   }
 
-  remix(repository: Repository) {
-    this.selectedRepositoryChanged.emit(repository);
-  }
+  // remix(repository: Repository) {
+  //   this.selectedRepositoryChanged.emit(repository);
+  // }
 
-  private async fetchFeeds() {
-    const page = 0;
-    const repositories = await this.repositoryService.listRepositories({
-      cursor: {
-        page,
-      },
-      where: {
-        product: {
-          eq: GqlVertical.Feedless,
-        },
-      },
-    });
-    this.repositories.push(...repositories);
-    this.changeRef.detectChanges();
-  }
+  // private async fetchFeeds() {
+  //   const page = 0;
+  //   const repositories = await this.repositoryService.listRepositories({
+  //     cursor: {
+  //       page,
+  //     },
+  //     where: {
+  //       product: {
+  //         eq: GqlVertical.Feedless,
+  //       },
+  //     },
+  //   });
+  //   this.repositories.push(...repositories);
+  //   this.changeRef.detectChanges();
+  // }
 
   async scrapeUrl() {
     if (!this.url) {
@@ -347,10 +353,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       )
     ) {
       const alert = await this.alertCtrl.create({
-        header: 'Legacy URL detected',
+        header: 'Standalone URL detected',
         backdropDismiss: false,
         message:
-          'This URL looks like an old RSS-proxy url, do you want to convert it?',
+          'This URL looks like an standalone RSS-proxy url, do you want to convert it?',
         cssClass: 'primary-alert',
         buttons: [
           {
@@ -362,7 +368,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
             role: 'ok',
             cssClass: 'confirm-button',
             text: 'Convert',
-            handler: () => this.convertLegacyRssProxyUrl(),
+            handler: () => this.convertStandaloneRssProxyUrl(),
           },
         ],
       });
@@ -371,7 +377,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async convertLegacyRssProxyUrl() {
+  private async convertStandaloneRssProxyUrl() {
     await this.alertCtrl.dismiss();
     const url = new URL(this.url);
     const params = url.search
@@ -443,6 +449,69 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   needsJavaScript() {
     return this.sourceBuilder.needsJavascript();
+  }
+
+  async createFeedUrl() {
+    const alert = await this.alertCtrl.create({
+      header: 'Standalone URL',
+      backdropDismiss: false,
+      message:
+        'You can use this URL directly in your feed reader',
+      inputs: [
+        {
+          name: 'feedUrl',
+          type: 'textarea',
+          value: this.createStandaloneFeedUrl(),
+          attributes: {
+            readonly: true
+          }
+        }
+      ],
+      buttons: [
+        {
+          role: 'ok',
+          text: 'Copy URL',
+          handler: async () => {
+            await navigator.clipboard.writeText(alert.inputs[0].value);
+            const toast = await this.toastCtrl.create({
+              message: 'Copied',
+              duration: 2000,
+              color: 'success',
+            });
+
+            await toast.present();
+          }
+        },
+        {
+          role: 'cancel',
+          text: 'Close',
+        },
+      ]
+    });
+    await alert.present();
+  }
+
+  private createStandaloneFeedUrl() {
+    const baseUrl = this.serverConfigService.apiUrl + '/';
+    const q = JSON.stringify(this.getFilterPlugin());
+    if (this.selectedFeed.genericFeed) {
+      const gf = this.selectedFeed.genericFeed;
+      return baseUrl + standaloneV2WebToFeedRoute({
+        url: this.url,
+        link: gf.selectors.linkXPath,
+        context: gf.selectors.contextXPath,
+        date: gf.selectors.dateXPath,
+        dateIsEvent: gf.selectors.dateIsStartOfEvent,
+        q,
+        out: 'atom',
+      });
+    } else {
+      return baseUrl + standaloneV2FeedTransformRoute({
+        url: this.selectedFeed.nativeFeed.feedUrl,
+        q,
+        out: 'atom',
+      });
+    }
   }
 }
 

@@ -23,38 +23,47 @@ import java.time.LocalDateTime
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
-class RepositoryHarvesterExecutor internal constructor(
-  private val repositoryHarvester: RepositoryHarvester,
+@Profile("${AppProfiles.analytics} & ${AppLayer.scheduler}")
+class AnalyticsSyncExecutor internal constructor(
+  private val analyticsService: AnalyticsService,
   private val repositoryService: RepositoryService
 ) {
 
-  private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(AnalyticsSyncExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 1345, initialDelay = 5000)
-  fun refreshSubscriptions() {
+  @Scheduled(fixedDelay = 61000, initialDelay = 5000)
+  fun syncPullCountForPublicRepos() {
     try {
       val corrId = newCorrId()
-      val reposDue =
-        repositoryService.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
-      log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
-      if (reposDue.isNotEmpty()) {
-        val semaphore = Semaphore(10)
+
+      LocalDateTime.now().minusDays(1)
+      val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
+      val repos =
+        repositoryService.findAllByVisibilityAndLastPullSyncBefore(
+          EntityVisibility.isPublic,
+          LocalDateTime.now(),
+          pageable
+        )
+
+      if (analyticsService.canPullEvents()) {
+
+        val semaphore = Semaphore(2)
         runBlocking {
           runCatching {
             coroutineScope {
-              reposDue.map {
-                async(RequestContext(userId = it.ownerId)) {
+              repos.map { repo ->
+                async(RequestContext(userId = repo.ownerId)) {
                   semaphore.acquire()
                   try {
-                    repositoryHarvester.handleRepository(it.id)
+                    val views = analyticsService.getUniquePageViewsForRepository(repo.id)
+                    repositoryService.updatePullsFromAnalytics(repo.id, views)
                   } finally {
                     semaphore.release()
                   }
                 }
               }.awaitAll()
             }
-            log.info("[$corrId] done")
+            log.info("done")
           }.onFailure {
             log.error("[$corrId] batch refresh done: ${it.message}")
           }

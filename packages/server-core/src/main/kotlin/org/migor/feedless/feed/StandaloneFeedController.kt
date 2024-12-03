@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -40,14 +41,14 @@ import kotlin.time.toDuration
  */
 @Controller
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppLayer.api} & ${AppProfiles.legacyFeeds}")
-class LegacyFeedController {
+@Profile("${AppLayer.api} & ${AppProfiles.standaloneFeeds}")
+class StandaloneFeedController {
 
   @Autowired
   private lateinit var feedExporter: FeedExporter
 
   @Autowired
-  private lateinit var legacyFeedService: LegacyFeedService
+  private lateinit var standaloneFeedService: StandaloneFeedService
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
@@ -64,9 +65,8 @@ class LegacyFeedController {
   fun bucketFeedWithFormat(
     @PathVariable("repositoryId") repositoryId: String,
   ): ResponseEntity<String> {
-    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "repositoryId"))).increment()
-    meterRegistry.counter(AppMetrics.legacyPull).increment()
-    return legacyFeedService.getRepository(repositoryId)
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "repositoryId"))).increment()
+    return standaloneFeedService.getRepository(repositoryId)
   }
 
   @Tracked
@@ -82,11 +82,11 @@ class LegacyFeedController {
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
   ): ResponseEntity<String> = withContext(createRequestContext()) {
-    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "feedId"))).increment()
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
-      legacyFeedService.getFeed(
-        feedId,
+      standaloneFeedService.getFeed(
+        UUID.fromString(feedId),
         feedUrl
       )
     }
@@ -98,11 +98,11 @@ class LegacyFeedController {
     "/api/feed",
   )
   suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
-    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "v1"))).increment()
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl)
     {
-      legacyFeedService.webToFeed(
+      standaloneFeedService.webToFeed(
         request.param("url"),
         request.param("pLink"),
         "",
@@ -122,9 +122,9 @@ class LegacyFeedController {
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
     val feedUrl = toFullUrlString(request)
-    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "v2"))).increment()
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
     val feed = resolveFeedCatching(feedUrl) {
-      legacyFeedService.webToFeed(
+      standaloneFeedService.webToFeed(
         request.param("url"),
         request.firstParam("link", "linkXPath"),
         request.firstParamOptional("x", "extendContext") ?: "",
@@ -146,10 +146,10 @@ class LegacyFeedController {
     ApiUrls.transformFeed
   )
   suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
-    meterRegistry.counter(AppMetrics.legacyPull, listOf(Tag.of("type", "transform"))).increment()
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
-      legacyFeedService.transformFeed(
+      standaloneFeedService.transformFeed(
         request.param("url"),
         request.paramOptional("q"),
         feedUrl
@@ -166,7 +166,7 @@ class LegacyFeedController {
       val f = feedProvider()
       f
     } catch (t: Throwable) {
-      legacyFeedService.createErrorFeed(feedUrl, t)
+      standaloneFeedService.createErrorFeed(feedUrl, t)
     }
   }
 

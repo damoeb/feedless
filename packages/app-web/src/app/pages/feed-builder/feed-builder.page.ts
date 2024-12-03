@@ -25,10 +25,9 @@ import {
 } from '../../../generated/graphql';
 import { Repository } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { RepositoryService } from '../../services/repository.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
@@ -46,17 +45,21 @@ export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
 export class FeedBuilderPage implements OnInit, OnDestroy {
   private readonly appConfigService = inject(AppConfigService);
   private readonly modalService = inject(ModalService);
-  private readonly titleService = inject(Title);
   private readonly repositoryService = inject(RepositoryService);
   private readonly router = inject(Router);
   private readonly serverConfig = inject(ServerConfigService);
+  private readonly activatedRoute = inject(ActivatedRoute);
   private readonly changeRef = inject(ChangeDetectorRef);
 
   loading = false;
   productConfig: VerticalSpecWithRoutes;
+  compact: boolean = false;
+  standalone: boolean = false;
   private subscriptions: Subscription[] = [];
 
   async ngOnInit() {
+    this.compact = this.activatedRoute.snapshot.data?.compact == true;
+    this.standalone = this.activatedRoute.snapshot.data?.standalone == true;
     this.appConfigService.setPageTitle('RSS Feed Builder');
     this.subscriptions.push(
       this.appConfigService

@@ -19,7 +19,7 @@ import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.feature.FeatureValueType
-import org.migor.feedless.feed.LegacyFeedService
+import org.migor.feedless.feed.StandaloneFeedService
 import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.PricedProductEntity
 import org.migor.feedless.plan.ProductDAO
@@ -85,7 +85,7 @@ class Seeder {
   private lateinit var repositoryService: RepositoryService
 
   @Autowired
-  private lateinit var legacyFeedService: LegacyFeedService
+  private lateinit var standaloneFeedService: StandaloneFeedService
 
   @Autowired
   private lateinit var userDAO: UserDAO
@@ -188,7 +188,7 @@ class Seeder {
   }
 
   private fun resolveLegacyNotificationsRepo(root: UserEntity): RepositoryEntity {
-    val repoTitleLegacyNotifications = legacyFeedService.getRepoTitleForLegacyFeedNotifications()
+    val repoTitleLegacyNotifications = standaloneFeedService.getRepoTitleForLegacyFeedNotifications()
     return resolveOpsNotificationsRepo(repoTitleLegacyNotifications, root)
   }
 

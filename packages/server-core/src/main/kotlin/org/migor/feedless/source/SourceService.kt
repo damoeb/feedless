@@ -306,6 +306,13 @@ class SourceService(
     }
   }
 
+  @Transactional(readOnly = true)
+  suspend fun findById(sourceId: UUID): Optional<SourceEntity> {
+    return withContext(Dispatchers.IO) {
+      sourceDAO.findById(sourceId)
+    }
+  }
+
 }
 
 

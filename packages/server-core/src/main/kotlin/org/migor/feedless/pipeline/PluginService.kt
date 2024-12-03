@@ -54,7 +54,7 @@ class PluginService(
     }
   }
 
-  final inline fun <reified T : FeedlessPlugin> resolveById(id: String): T? {
+  final inline suspend fun <reified T : FeedlessPlugin> resolveById(id: String): T? {
     return plugins.filterTo(ArrayList()) { it: FeedlessPlugin -> it.id() == id }
       .filterIsInstance<T>()
       .firstOrNull()

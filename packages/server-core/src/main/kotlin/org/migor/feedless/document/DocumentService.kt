@@ -46,6 +46,7 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -494,6 +495,13 @@ class DocumentService(
   suspend fun saveAll(documents: List<DocumentEntity>): List<DocumentEntity> {
     return withContext(Dispatchers.IO) {
       documentDAO.saveAll(documents)
+    }
+  }
+
+  @Transactional(readOnly = true)
+  suspend fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity> {
+    return withContext(Dispatchers.IO) {
+      documentDAO.findAllBySourceId(sourceId, pageable)
     }
   }
 

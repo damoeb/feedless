@@ -63,7 +63,6 @@ import kotlin.jvm.optionals.getOrNull
 class RepositoryHarvester(
   private val documentService: DocumentService,
   private val documentPipelineService: DocumentPipelineService,
-//  private val harvestDAO: HarvestDAO,
   private val sourcePipelineService: SourcePipelineService,
   private val telegramBotService: Optional<TelegramBotService>,
   private val sourceService: SourceService,

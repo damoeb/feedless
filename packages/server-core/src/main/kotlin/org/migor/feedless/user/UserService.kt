@@ -338,10 +338,10 @@ class UserService {
     }
   }
 
-  @Transactional
-  suspend fun existsByEmail(email: String): Boolean {
+  @Transactional(readOnly = true)
+  suspend fun findAdminUser(): UserEntity? {
     return withContext(Dispatchers.IO) {
-      userDAO.existsByEmail(email)
+      userDAO.findFirstByAdminIsTrue()
     }
   }
 }
