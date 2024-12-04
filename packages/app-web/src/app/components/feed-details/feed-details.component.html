@@ -19,14 +19,9 @@
     @if (repository.visibility === GqlVisibility.IsPublic) {
       <ion-chip (click)="editRepository(['privacy'])">Public </ion-chip>
     }
-    @if (!repository.pushNotificationsMuted) {
+    @if (repository.pushNotificationsEnabled) {
       <ion-chip (click)="editRepository(['notifications'])"
         >Push Notifications
-      </ion-chip>
-    }
-    @if (repository.pushNotificationsMuted) {
-      <ion-chip (click)="editRepository(['notifications'])"
-        >No Notifications
       </ion-chip>
     }
   </ion-row>

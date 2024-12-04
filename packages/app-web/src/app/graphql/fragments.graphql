@@ -121,7 +121,7 @@ fragment RepositoryFragment on Repository {
   refreshCron
   sourcesCount
   sourcesCountWithProblems
-  pushNotificationsMuted
+  pushNotificationsEnabled
   shareKey
   disabledFrom
   archived

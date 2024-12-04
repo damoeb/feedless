@@ -110,8 +110,8 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(name = "retention_max_items")
   open var retentionMaxCapacity: Int? = null
 
-  @Column(name = "push_notifications_muted", nullable = false)
-  open var pushNotificationsMuted: Boolean = true
+  @Column(name = "push_notifications_enabled", nullable = false)
+  open var pushNotificationsEnabled: Boolean = true
 
   @Column(name = "retention_max_age_days")
   open var retentionMaxAgeDays: Int? = null
@@ -255,7 +255,7 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     sourcesCount = 0,
     sourcesCountWithProblems = 0,
     currentUserIsOwner = currentUserIsOwner,
-    pushNotificationsMuted = pushNotificationsMuted,
+    pushNotificationsEnabled = pushNotificationsEnabled,
     pullsPerMonth = pullsPerMonth,
     annotations = null
   )

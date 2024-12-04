@@ -19,7 +19,6 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
-import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.FragmentOutput
@@ -33,7 +32,6 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.transport.TelegramBotService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -78,11 +76,9 @@ class RepositoryHarvesterTest {
       documentService,
       documentPipelineService,
       sourcePipelineService,
-      Optional.of(mock(TelegramBotService::class.java)),
       sourceService,
       scrapeService,
       meterRegistry,
-      mock(MessageService::class.java),
       repositoryService,
     )
 
@@ -235,10 +231,10 @@ class RepositoryHarvesterTest {
                 fragmentName = "feed",
                 fragments = emptyList(),
                 items = listOf(
-                  newJsonItem(url = "https://example.org/1", title = "1"),
-                  newJsonItem(url = "https://example.org/1", title = "1"),
+                  newJsonItem(url = "https://example.org/1", title = "3"),
+                  newJsonItem(url = "https://example.org/1", title = "3"),
                   newJsonItem(url = "https://example.org/3", title = "3"),
-                  newJsonItem(url = "https://example.org/4", title = "4"),
+                  newJsonItem(url = "https://example.org/4", title = "3"),
                 )
               )
             )
@@ -388,6 +384,53 @@ class RepositoryHarvesterTest {
         it.count() == 2 // number of plugins
       })
       verify(existing).status = ReleaseStatus.unreleased
+    }
+
+  @Test
+  fun `released documents will trigger post release effects`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+      `when`(repository.plugins).thenReturn(emptyList())
+      val newDocument = mock(DocumentEntity::class.java)
+      `when`(newDocument.id).thenReturn(UUID.randomUUID())
+
+      `when`(
+        documentService.saveAll(any2())
+      ).thenAnswer{ it.arguments[0] }
+//      `when`(
+//        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+//          any2(),
+//          any2(),
+//          any2(),
+//        )
+//      ).thenReturn(null)
+
+      `when`(
+        scrapeService.scrape(
+          any(SourceEntity::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = emptyList(),
+                items = listOf(
+                  newJsonItem(url = "", title = "updated.title"),
+                )
+              )
+            )
+          ),
+          time = 0
+        )
+      )
+
+      repositoryHarvester.handleRepository(repositoryId)
+
+      // then
+      verify(documentService, times(1)).triggerPostReleaseEffects(any2(), any2())
     }
 
   @Test

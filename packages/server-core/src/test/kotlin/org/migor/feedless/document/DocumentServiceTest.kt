@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.PermissionDeniedException
@@ -14,7 +13,6 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.CreateRecordInput
@@ -49,6 +47,7 @@ import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
@@ -62,6 +61,7 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DocumentServiceTest {
 
+  private lateinit var repository: RepositoryEntity
   private lateinit var documentDAO: DocumentDAO
   private lateinit var repositoryDAO: RepositoryDAO
   private lateinit var userDAO: UserDAO
@@ -128,7 +128,9 @@ class DocumentServiceTest {
     `when`(document.publishedAt).thenReturn(LocalDateTime.now())
     `when`(document.repositoryId).thenReturn(repositoryId)
     `when`(documentDAO.findByIdWithSource(eq(documentId))).thenReturn(document)
-    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(mock(RepositoryEntity::class.java)))
+
+    repository = mock(RepositoryEntity::class.java)
+    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
   }
 
   @Test
@@ -220,8 +222,10 @@ class DocumentServiceTest {
   }
 
   @Test
-  fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
+  fun `released document will be forwarded to telegram, if repository allow notifications`() = runTest {
     assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
+    `when`(repository.pushNotificationsEnabled).thenReturn(true)
+
     val telegramConnection = mock(TelegramConnectionEntity::class.java)
     `when`(telegramConnection.chatId).thenReturn(12345)
     `when`(telegranBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
@@ -236,7 +240,26 @@ class DocumentServiceTest {
   }
 
   @Test
-  fun `released document will be forwarded to telegram`() = runTest {
+  fun `released document won't be forwarded to telegram, if repository disabled notifications`() = runTest {
+    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
+    `when`(repository.pushNotificationsEnabled).thenReturn(false)
+
+    val telegramConnection = mock(TelegramConnectionEntity::class.java)
+    `when`(telegramConnection.chatId).thenReturn(12345)
+    `when`(telegranBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
+
+    // when
+    documentService.processDocumentPlugins(
+      documentId, listOf()
+    )
+
+    verify(document).status = ReleaseStatus.released
+    verify(messageService, times(0)).publishMessage(any2(), any2())
+  }
+
+
+  @Test
+  fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
     assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
     documentService.processDocumentPlugins(
       documentId, listOf()

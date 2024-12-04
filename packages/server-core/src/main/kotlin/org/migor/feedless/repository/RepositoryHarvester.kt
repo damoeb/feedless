@@ -23,12 +23,10 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
-import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.SourcePipelineService
-import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
@@ -36,7 +34,6 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
@@ -55,7 +52,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -64,11 +60,9 @@ class RepositoryHarvester(
   private val documentService: DocumentService,
   private val documentPipelineService: DocumentPipelineService,
   private val sourcePipelineService: SourcePipelineService,
-  private val telegramBotService: Optional<TelegramBotService>,
   private val sourceService: SourceService,
   private val scrapeService: ScrapeService,
   private val meterRegistry: MeterRegistry,
-  private val messageService: MessageService,
   private val repositoryService: RepositoryService,
 ) {
 
@@ -333,7 +327,7 @@ class RepositoryHarvester(
     }
 
     val start = Instant.now()
-    val documents = items
+    val newOrUpdatedDocuments = items
       .map { it.asEntity(repository.id, ReleaseStatus.released, source) }
       .distinctBy { it.contentHash }
       .filterIndexed { index, _ -> index < 300 }
@@ -351,7 +345,7 @@ class RepositoryHarvester(
       }
 
     val validator = Validation.buildDefaultValidatorFactory().validator
-    val validDocuments = documents
+    val validNewOrUpdatedDocuments = newOrUpdatedDocuments
       .filter { document ->
         validator.validate(document).let { validation ->
           if (validation.isEmpty()) {
@@ -362,39 +356,26 @@ class RepositoryHarvester(
           }
         }
       }.map { (_, document) -> document }
-    documentService.saveAll(validDocuments)
+    documentService.saveAll(validNewOrUpdatedDocuments)
 
-    if (validDocuments.isNotEmpty()) {
-      log.info("[$corrId] $repositoryId/${source.id} found ${validDocuments.size} documents")
+    if (validNewOrUpdatedDocuments.isNotEmpty()) {
+      log.info("[$corrId] $repositoryId/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
     }
 
-    if (repository.pushNotificationsMuted) {
-      telegramBotService.getOrNull()?.let {
-        it.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
-          validDocuments
-            .filter { it.status == ReleaseStatus.released }
-            .forEach {
-              messageService.publishMessage(
-                TelegramBotService.toTopic(tgLink.chatId),
-                it.asJsonItem(repository)
-              )
-            }
-        }
-      }
-    }
+    documentService.triggerPostReleaseEffects(validNewOrUpdatedDocuments, repository)
 
     if (repository.plugins.isNotEmpty()) {
       try {
         log.debug("[$corrId] delete all document job by documents")
         documentPipelineService.deleteAllByDocumentIdIn(
-          documents.filter { (isNew, _) -> !isNew }
+          newOrUpdatedDocuments.filter { (isNew, _) -> !isNew }
             .map { (_, document) -> document.id })
       } catch (e: Exception) {
         log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
       }
     }
     documentPipelineService.saveAll(
-      documents
+      newOrUpdatedDocuments
         .map { (_, document) -> document }
         .flatMap {
           repository.plugins
@@ -404,7 +385,7 @@ class RepositoryHarvester(
     )
 
     log.debug("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
-    val hasNew = documents.any { (new, _) -> new }
+    val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
         val pageUrls = next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(source.id, url) }
@@ -424,7 +405,7 @@ class RepositoryHarvester(
         log.debug("[$corrId] wont follow page urls")
       }
     }
-    return Pair(items.size, documents.filter { (isNew, _) -> isNew }.size)
+    return Pair(items.size, newOrUpdatedDocuments.filter { (isNew, _) -> isNew }.size)
   }
 
   suspend fun detectMainImageUrl(html: String?): String? {

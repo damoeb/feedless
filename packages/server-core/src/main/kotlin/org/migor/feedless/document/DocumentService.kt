@@ -386,12 +386,23 @@ class DocumentService(
       documentDAO.save(document)
     }
 
-    telegramBotService.getOrNull()?.let {
-      it.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { tgLink ->
-        messageService.publishMessage(
-          TelegramBotService.toTopic(tgLink.chatId),
-          document.asJsonItem(repository)
-        )
+    triggerPostReleaseEffects(listOf(document), repository)
+  }
+
+  suspend fun triggerPostReleaseEffects(
+    documents: List<DocumentEntity>,
+    repository: RepositoryEntity,
+  ) {
+    if (repository.pushNotificationsEnabled) {
+      telegramBotService.getOrNull()?.let { telegramBot ->
+        telegramBot.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { telegramLink ->
+          documents.forEach {
+            messageService.publishMessage(
+              TelegramBotService.toTopic(telegramLink.chatId),
+              it.asJsonItem(repository)
+            )
+          }
+        }
       }
     }
   }

@@ -34,7 +34,6 @@ import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.source.SourceDAO
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
@@ -339,7 +338,7 @@ class RepositoryService(
     }
 
     data.pushNotificationsMuted?.let {
-      repository.pushNotificationsMuted = it.set
+      repository.pushNotificationsEnabled = it.set
     }
 
     data.visibility?.set?.let { repository.visibility = planConstraintsService.coerceVisibility(it.fromDto()) }
@@ -373,8 +372,6 @@ class RepositoryService(
         documentService.applyRetentionStrategy(repository.id)
       }
     }
-
-
 
     data.sources?.let {
       it.add?.let {
@@ -441,7 +438,7 @@ class RepositoryService(
 //      ""
 //    }
 
-    repo.pushNotificationsMuted = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
+    repo.pushNotificationsEnabled = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
 
     repo.sourcesSyncCron = repoInput.refreshCron?.let {
       planConstraintsService.auditCronExpression(repoInput.refreshCron)

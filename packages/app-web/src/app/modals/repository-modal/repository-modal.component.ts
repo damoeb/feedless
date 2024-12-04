@@ -154,7 +154,7 @@ export class RepositoryModalComponent
     fulltextTransformer: new FormControl<FulltextTransformer>('none'),
     isPublic: new FormControl<boolean>(false),
     applyPrivacyPlugin: new FormControl<boolean>(false),
-    enablePushNotifications: new FormControl<boolean>(false),
+    enabledPushNotifications: new FormControl<boolean>(false),
     applyConditionalTagsPlugin: new FormControl<boolean>(false),
   });
   // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
@@ -422,7 +422,7 @@ export class RepositoryModalComponent
       applyPrivacyPlugin: this.repository.plugins.some(
         (p) => p.pluginId === GqlFeedlessPlugins.OrgFeedlessPrivacy,
       ),
-      enablePushNotifications: !this.repository.pushNotificationsMuted,
+      enabledPushNotifications: this.repository.pushNotificationsEnabled,
       maxAgeDays: retention?.maxAgeDays || null,
       maxCapacity: retention?.maxCapacity || null,
     });
