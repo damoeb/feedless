@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
-import { IonItem, IonLabel, IonChip } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonChip, IonBadge } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { PlayerComponent } from '../player/player.component';
 
@@ -11,7 +11,7 @@ import { PlayerComponent } from '../player/player.component';
   templateUrl: './remote-feed-item.component.html',
   styleUrls: ['./remote-feed-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonItem, IonLabel, IonChip, PlayerComponent, DatePipe],
+  imports: [IonItem, IonLabel, IonChip, PlayerComponent, DatePipe, IonBadge],
   standalone: true,
 })
 export class RemoteFeedItemComponent {

@@ -69,7 +69,20 @@ function roundLatLon(v: number): number {
   return Math.round(v * 1000) / 1000;
 }
 
-export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
+export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
+  const country = homeRoute({})
+    .events({})
+    .countryCode({
+      countryCode: location.countryCode
+    });
+  const region = country
+    .region({
+      region: location.area
+    });
+  const place = region
+    .place({
+      place: location.place
+    });
   return {
     '@type': 'BreadcrumbList',
     itemListElement: [
@@ -77,24 +90,24 @@ export function createBreadcrumbsSchema(loc: NamedLatLon): BreadcrumbList {
         '@type': 'ListItem',
         position: 1,
         item: {
-          '@id': 'https://example.com/dresses',
-          name: 'Events',
+          '@id': `https://lokale.events/${country.$}`,
+          name: `Events in ${location.countryCode}`,
         },
       },
       {
         '@type': 'ListItem',
         position: 2,
         item: {
-          '@id': 'https://example.com/dresses',
-          name: loc.area,
+          '@id': `https://lokale.events/${region.$}`,
+          name: `Events in ${location.area}, ${location.countryCode}`,
         },
       },
       {
         '@type': 'ListItem',
-        position: 2,
+        position: 3,
         item: {
-          '@id': 'https://example.com/dresses',
-          name: loc.displayName,
+          '@id': `https://lokale.events/${place.$}`,
+          name: `Events in ${location.displayName}`,
         },
       },
     ],
@@ -409,17 +422,21 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  private toSchemaOrgEvent(event: Record): SchemaEvent {
+  private toSchemaOrgEvent(event: Record, location: NamedLatLon): SchemaEvent {
     return {
       '@type': 'Event',
       name: event.title,
       description: event.text,
+      eventStatus: 'EventScheduled',
       startDate: dayjs(event.startingAt).format('YYYY-MM-DD'),
+      endDate: dayjs(event.startingAt).format('YYYY-MM-DD'),
+      duration: 'PT2H',
+      // endDate: dayjs(event.startingAt).add(2, 'hours').format('YYYY-MM-DD'),
       // endDate: '2024-11-15T22:15',
       url: event.url,
       location: {
         '@type': 'Place',
-        name: 'Hedingen',
+        name: location.displayName,
       },
     };
   }
@@ -473,7 +490,7 @@ export class EventsPage implements OnInit, OnDestroy {
         latitude: place.place.lat,
         longitude: place.place.lon,
       },
-      event: place.events.map((event) => this.toSchemaOrgEvent(event)),
+      event: place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
     };
   }
 

@@ -33,8 +33,10 @@
     }
     @if (feedItem.startingAt) {
       <p>
-        Starting
-        {{ toDate(feedItem.startingAt) | date: dateFormat }}
+        <ion-badge color="success">
+          Starting
+          {{ toDate(feedItem.startingAt) | date: dateFormat }}
+        </ion-badge>
       </p>
     }
     <p class="cy-remote-feed__body ion-text-wrap">
