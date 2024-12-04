@@ -96,18 +96,25 @@ export class FinalizeProfileModalComponent implements OnInit {
         session.user,
         this.serverConfigService,
       );
+
+      const vertical = await firstValueFrom(
+        this.appConfigService.getActiveProductConfigChange(),
+      );
+      const saasProducts = (
+        await this.productService.listProducts({
+          category: vertical.product,
+        })
+      ).filter((product) => product.isCloud);
+
       if (this.requiresPlan) {
         this.formFg.controls.plan.addValidators(Validators.required);
-        const vertical = await firstValueFrom(
-          this.appConfigService.getActiveProductConfigChange(),
-        );
-        const cloudProducts = (
-          await this.productService.listProducts({
-            category: vertical.product,
-          })
-        ).filter((product) => product.isCloud);
-        this.product = cloudProducts.find((product) =>
+
+        this.product = saasProducts.find((product) =>
           product.prices.some((price) => price.price === 0),
+        );
+      } else {
+        this.product = saasProducts.find(
+          (product) => product.id === session.user.plan.productId,
         );
       }
       this.formFg.patchValue({

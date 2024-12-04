@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -167,7 +166,7 @@ class OrderService {
 
       val product = order.product!!
       if (product.saas) {
-        productService.enableCloudProduct(product, order.user!!, order)
+        productService.enableSaasProduct(product, order.user!!, order)
       } else {
         order.licenses = mutableListOf(licenseService.createLicenseForProduct(product, order))
         orderDAO.save(order)

@@ -70,19 +70,15 @@ function roundLatLon(v: number): number {
 }
 
 export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
-  const country = homeRoute({})
-    .events({})
-    .countryCode({
-      countryCode: location.countryCode
-    });
-  const region = country
-    .region({
-      region: location.area
-    });
-  const place = region
-    .place({
-      place: location.place
-    });
+  const country = homeRoute({}).events({}).countryCode({
+    countryCode: location.countryCode,
+  });
+  const region = country.region({
+    region: location.area,
+  });
+  const place = region.place({
+    place: location.place,
+  });
   return {
     '@type': 'BreadcrumbList',
     itemListElement: [
@@ -490,7 +486,9 @@ export class EventsPage implements OnInit, OnDestroy {
         latitude: place.place.lat,
         longitude: place.place.lon,
       },
-      event: place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
+      event: place.events.map((event) =>
+        this.toSchemaOrgEvent(event, place.place),
+      ),
     };
   }
 

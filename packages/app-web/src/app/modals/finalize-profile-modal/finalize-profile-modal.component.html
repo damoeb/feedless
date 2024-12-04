@@ -25,18 +25,16 @@
           <ion-note> You hate reading mails, I hate writing them</ion-note>
         </ion-col>
       </ion-row>
-      @if (requiresPlan) {
-        <ion-row>
-          <ion-col class="ion-padding-vertical" push="3" size="9">
-            @if (product) {
-              <span>Plan {{ product.name }}</span>
-            }
-            @if (!product) {
-              <span>No plan available</span>
-            }
-          </ion-col>
-        </ion-row>
-      }
+      <ion-row>
+        <ion-col class="ion-padding-vertical" push="3" size="9">
+          @if (product) {
+            <span>Plan {{ product.name }}</span>
+          }
+          @if (!product) {
+            <span>No plan available</span>
+          }
+        </ion-col>
+      </ion-row>
       <ion-row>
         <ion-col class="ion-padding-vertical" push="3" size="9">
           <ion-checkbox

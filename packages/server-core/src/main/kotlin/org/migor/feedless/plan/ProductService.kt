@@ -79,7 +79,7 @@ class ProductService {
   }
 
   @Transactional
-  suspend fun enableCloudProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
+  suspend fun enableSaasProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
     val prices = withContext(Dispatchers.IO) {
       pricedProductDAO.findAllByProductId(product.id)
@@ -118,7 +118,7 @@ class ProductService {
     val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
     val user = withContext(Dispatchers.IO) { userDAO.findById(userId).orElseThrow() }
 
-    enableCloudProduct(product, user)
+    enableSaasProduct(product, user)
   }
 
   @Transactional(readOnly = true)

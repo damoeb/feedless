@@ -197,7 +197,7 @@ class UserService {
 
     data.plan?.let {
       val product = withContext(Dispatchers.IO) { productDAO.findById(UUID.fromString(it.set)).orElseThrow() }
-      productService.enableCloudProduct(
+      productService.enableSaasProduct(
         product,
         user
       )
