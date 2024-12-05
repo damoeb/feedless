@@ -25,7 +25,6 @@ import {
   GqlListRepositoriesQueryVariables,
   GqlOrdersQuery,
   GqlOrdersQueryVariables,
-  GqlVertical,
   GqlRecordByIdsQuery,
   GqlRecordByIdsQueryVariables,
   GqlRepository,
@@ -37,6 +36,7 @@ import {
   GqlServerSettings,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
+  GqlVertical,
   GqlVisibility,
   ListPlugins,
   ListProducts,
@@ -58,8 +58,8 @@ import {
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import {
-  VerticalSpecWithRoutes,
   AppConfigService,
+  VerticalSpecWithRoutes,
 } from './services/app-config.service';
 import {
   ModalController,

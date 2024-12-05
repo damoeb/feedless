@@ -50,7 +50,7 @@ class SourceServiceTest {
     )
     sourceService.createSources(UUID.randomUUID(), inputs, repository)
 
-    verify(sourceDAO).save(argThat { it.actions.isEmpty() })
+    verify(sourceDAO).saveAll(argThat<List<SourceEntity>> { it.size == 1 })
     verify(scrapeActionDAO).saveAll(argThat<List<ScrapeActionEntity>> { it.size == 1 })
   }
 

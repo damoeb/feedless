@@ -125,6 +125,7 @@ class ScrapeService {
           time = System.nanoTime().minus(startTime).div(1000000).toInt()
         )
       } catch (e: Exception) {
+        log.error(e.message)
         if (e !is ResumableHarvestException) {
           log.debug("[$corrId] scrape failed for source ${source.id} ${e.message}")
         }
@@ -302,6 +303,7 @@ class ScrapeService {
         )
       })
       context.log("[$corrId] received -> ${response.outputs.size} outputs")
+      log.debug("[$corrId] received -> ${response.outputs.size} outputs")
     } else {
       context.log("[$corrId] render static")
 //      val startTime = System.nanoTime()

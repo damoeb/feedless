@@ -6,39 +6,8 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import {
-  IonAccordion,
-  IonAccordionGroup,
-  IonButton,
-  IonButtons,
-  IonCheckbox,
-  IonCol,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
-  IonRadio,
-  IonRadioGroup,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  IonTextarea,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-  ToastController,
-} from '@ionic/angular/standalone';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { ModalController, ToastController } from '@ionic/angular/standalone';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeatureName,
@@ -49,20 +18,16 @@ import {
   GqlSourceInput,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
-import { DEFAULT_FETCH_CRON } from '../../pages/feed-builder/feed-builder.page';
 import { omit } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { JsonPipe, KeyValuePipe } from '@angular/common';
-import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
-import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { FilterItemsAccordionComponent } from '../../components/filter-items-accordion/filter-items-accordion.component';
+import { DEFAULT_FETCH_CRON } from '../../defaults';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -84,44 +49,26 @@ export type FulltextTransformer = 'none' | 'summary' | 'readability';
 
 export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
 
+type RepositoryFormGroupDef = {
+  title: FormControl<string>;
+  description: FormControl<string>;
+  maxCapacity: FormControl<number>;
+  maxAgeDays: FormControl<number>;
+  ageReferenceField: FormControl<GqlRecordDateField>;
+  fetchFrequency: FormControl<string>;
+  applyFulltextPlugin: FormControl<boolean>;
+  fulltextTransformer: FormControl<FulltextTransformer>;
+  isPublic: FormControl<boolean>;
+  applyPrivacyPlugin: FormControl<boolean>;
+  enabledPushNotifications: FormControl<boolean>;
+  applyConditionalTagsPlugin: FormControl<boolean>;
+};
 @Component({
   selector: 'app-repository-modal',
   templateUrl: './repository-modal.component.html',
   styleUrls: ['./repository-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonTitle,
-    IonLabel,
-    IonContent,
-    IonList,
-    IonRow,
-    IonCol,
-    IonInput,
-    FormsModule,
-    ReactiveFormsModule,
-    IonTextarea,
-    FetchRateAccordionComponent,
-    IonAccordionGroup,
-    IonAccordion,
-    IonItem,
-    IonNote,
-    IonCheckbox,
-    IonRadioGroup,
-    IonRadio,
-    RemoveIfProdDirective,
-    IonSelect,
-    IonSelectOption,
-    RouterLink,
-    FilterItemsAccordionComponent,
-    JsonPipe,
-    KeyValuePipe,
-  ],
-  standalone: true,
+  standalone: false,
 })
 export class RepositoryModalComponent
   implements RepositoryModalComponentProps, OnInit
@@ -134,29 +81,7 @@ export class RepositoryModalComponent
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly repositoryService = inject(RepositoryService);
 
-  formFg = new FormGroup({
-    title: new FormControl<string>('', [
-      Validators.required,
-      Validators.minLength(3),
-      Validators.maxLength(255),
-    ]),
-    description: new FormControl<string>('', [Validators.maxLength(500)]),
-    maxCapacity: new FormControl<number>(null, [Validators.min(2)]),
-    maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
-    ageReferenceField: new FormControl<GqlRecordDateField>(
-      GqlRecordDateField.PublishedAt,
-    ),
-    fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, {
-      nonNullable: true,
-      validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
-    }),
-    applyFulltextPlugin: new FormControl<boolean>(false),
-    fulltextTransformer: new FormControl<FulltextTransformer>('none'),
-    isPublic: new FormControl<boolean>(false),
-    applyPrivacyPlugin: new FormControl<boolean>(false),
-    enabledPushNotifications: new FormControl<boolean>(false),
-    applyConditionalTagsPlugin: new FormControl<boolean>(false),
-  });
+  formFg: FormGroup<RepositoryFormGroupDef>;
   // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
 
   summaryTransformer: FulltextTransformer = 'summary';
@@ -165,6 +90,8 @@ export class RepositoryModalComponent
 
   @Input({ required: true })
   repository: RepositoryFull;
+  @Input()
+  openAccordions: RepositoryModalAccordion[] = [];
 
   loading = false;
   errorMessage: string;
@@ -172,8 +99,6 @@ export class RepositoryModalComponent
 
   protected readonly dateFormat = dateFormat;
   protected readonly GqlRecordDateField = GqlRecordDateField;
-  @Input()
-  openAccordions: RepositoryModalAccordion[] = [];
   accordionPrivacy: RepositoryModalAccordion = 'privacy';
   accordionNotifications: RepositoryModalAccordion = 'notifications';
   accordionStorage: RepositoryModalAccordion = 'storage';
@@ -364,7 +289,31 @@ export class RepositoryModalComponent
     this.changeRef.detectChanges();
   }
 
-  async ngOnInit(): Promise<void> {
+  async ngOnInit() {
+    console.log('wefwef');
+    this.formFg = new FormGroup({
+      title: new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(255),
+      ]),
+      description: new FormControl<string>('', [Validators.maxLength(500)]),
+      maxCapacity: new FormControl<number>(null, [Validators.min(2)]),
+      maxAgeDays: new FormControl<number>(null, [Validators.min(1)]),
+      ageReferenceField: new FormControl<GqlRecordDateField>(
+        GqlRecordDateField.PublishedAt,
+      ),
+      fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, {
+        nonNullable: true,
+        validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
+      }),
+      applyFulltextPlugin: new FormControl<boolean>(false),
+      fulltextTransformer: new FormControl<FulltextTransformer>('none'),
+      isPublic: new FormControl<boolean>(false),
+      applyPrivacyPlugin: new FormControl<boolean>(false),
+      enabledPushNotifications: new FormControl<boolean>(false),
+      applyConditionalTagsPlugin: new FormControl<boolean>(false),
+    });
     this.isLoggedIn = this.sessionService.isAuthenticated();
 
     const canPublicRepository = this.serverConfig.getFeatureValueBool(

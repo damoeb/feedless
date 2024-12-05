@@ -61,7 +61,7 @@ import kotlin.coroutines.coroutineContext
 
 fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   val fixedPage = (page ?: 0).coerceAtLeast(0)
-  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(20)
+  val fixedPageSize = (pageSize ?: 0).coerceAtLeast(0).coerceAtMost(20)
   return PageRequest.of(fixedPage, fixedPageSize)
 }
 
@@ -315,7 +315,7 @@ class RepositoryService(
     )
   }
 
-  suspend fun updateRepository(id: UUID, data: RepositoryUpdateDataInput): RepositoryEntity {
+  suspend fun updateRepository(id: UUID, data: RepositoryUpdateDataInput) {
     val repository = context.getBean(RepositoryService::class.java).findById(id).orElseThrow { NotFoundException("Repository $id not found") }
     val corrId = coroutineContext.corrId()
     if (repository.ownerId != coroutineContext.userId()) {
@@ -384,8 +384,7 @@ class RepositoryService(
         sourceService.deleteAllById(repository.id, it.map { UUID.fromString(it) })
       }
     }
-
-    return context.getBean(RepositoryService::class.java).save(repository)
+    context.getBean(RepositoryService::class.java).save(repository)
   }
 
   @Transactional(readOnly = true)

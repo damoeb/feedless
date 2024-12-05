@@ -1,18 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular/standalone';
-import {
-  CodeEditorComponent,
-  ContentType,
-} from '../../elements/code-editor/code-editor.component';
+import { Component, inject } from '@angular/core';
+import { ModalController } from '@ionic/angular/standalone';
+import { ContentType } from '../../elements/code-editor/code-editor.component';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 
@@ -28,21 +16,9 @@ export interface CodeEditorModalComponentProps {
   selector: 'app-code-editor-modal',
   templateUrl: './code-editor-modal.component.html',
   styleUrls: ['./code-editor-modal.component.scss'],
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonContent,
-    CodeEditorComponent,
-  ],
-  standalone: true,
+  standalone: false,
 })
-export class CodeEditorModalComponent
-  implements OnInit, CodeEditorModalComponentProps
-{
+export class CodeEditorModalComponent implements CodeEditorModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
 
   text: string;
@@ -54,8 +30,6 @@ export class CodeEditorModalComponent
   constructor() {
     addIcons({ closeOutline });
   }
-
-  ngOnInit() {}
 
   cancel() {
     return this.modalCtrl.dismiss();

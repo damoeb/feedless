@@ -1,4 +1,4 @@
-import { Directive, Injector, OnInit, inject, Inject } from '@angular/core';
+import { Directive, Injector, OnInit } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,

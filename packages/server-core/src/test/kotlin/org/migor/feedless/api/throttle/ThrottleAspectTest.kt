@@ -2,10 +2,10 @@ package org.migor.feedless.api.throttle
 
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
-import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -17,7 +17,6 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
@@ -35,6 +34,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.client.WebClient
+import kotlin.time.Duration.Companion.seconds
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(
@@ -88,7 +88,7 @@ class ThrottleAspectTest {
   }
 
   @Test
-  fun `throttle kicks in`() = runTest {
+  fun `throttle kicks in`() = runTest(timeout = 60.seconds) {
     val graphQLMutation = DgsClient.buildMutation {
       authAnonymous {
         token

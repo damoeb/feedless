@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Record, Repository } from '../../graphql/types';
+import { Record, RepositoryWithFrequency } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
 import {
   BubbleColor,
@@ -22,7 +22,6 @@ import { FeedlessHeaderComponent } from '../../components/feedless-header/feedle
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
-  IonButton,
   IonButtons,
   IonChip,
   IonCol,
@@ -57,7 +56,6 @@ type ViewMode = 'list' | 'table';
     IonCol,
     IonButtons,
     ImportButtonComponent,
-    IonButton,
     IonProgressBar,
     TableComponent,
     IonList,
@@ -79,7 +77,7 @@ export class FeedsPage implements OnInit, OnDestroy {
   loading = false;
   currentPage: number = 0;
   documents: Record[];
-  repositories: Repository[] = [];
+  repositories: RepositoryWithFrequency[] = [];
   fromNow = relativeTimeOrElse;
   isLastPage: boolean;
   viewMode: ViewMode = 'list';
@@ -105,7 +103,7 @@ export class FeedsPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  getHealthColorForFeed(repository: Repository): BubbleColor {
+  getHealthColorForFeed(repository: RepositoryWithFrequency): BubbleColor {
     if (repository.sourcesCount === repository.sourcesCountWithProblems) {
       return 'red';
     } else {
@@ -117,7 +115,7 @@ export class FeedsPage implements OnInit, OnDestroy {
     }
   }
 
-  isPrivate(repository: Repository): boolean {
+  isPrivate(repository: RepositoryWithFrequency): boolean {
     return repository.visibility === GqlVisibility.IsPrivate;
   }
 

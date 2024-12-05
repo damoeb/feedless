@@ -5,11 +5,11 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  inject,
   Input,
+  input,
   OnDestroy,
   OnInit,
-  inject,
-  input,
   viewChild,
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';

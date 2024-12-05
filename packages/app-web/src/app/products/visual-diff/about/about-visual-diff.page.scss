@@ -1,7 +1,7 @@
-@import "../../../../mixins";
+@use "../../../../mixins";
 
 ion-searchbar {
-  @include search-form();
+  @include mixins.search-form();
   border: 2px solid var(--ion-color-dark);
   border-radius: 10px;
 }

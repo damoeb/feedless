@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
+import { CheckoutPage } from './checkout.page';
 
 export const CHECKOUT_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./checkout.page').then((m) => m.CheckoutPage),
+    component: CheckoutPage,
   },
   {
     path: ':productId',
-    loadComponent: () => import('./checkout.page').then((m) => m.CheckoutPage),
+    component: CheckoutPage,
   },
 ];

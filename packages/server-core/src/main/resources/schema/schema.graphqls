@@ -169,7 +169,7 @@ type Mutation {
   deleteUserSecret(data: DeleteUserSecretInput!): Boolean!
 
   createRepositories(data: [RepositoryCreateInput!]!): [Repository!]!
-  updateRepository(data: RepositoryUpdateInput!): Repository!
+  updateRepository(data: RepositoryUpdateInput!): Boolean!
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
   createReport(repositoryId: ID!, segmentation: SegmentInput!): Report!
@@ -1687,6 +1687,7 @@ type Source {
   title: String!
   flow: ScrapeFlow!
   disabled: Boolean
+  lastRefreshedAt: Long
   lastRecordsRetrieved: Int
   latLng: GeoPoint
   tags: [String!]

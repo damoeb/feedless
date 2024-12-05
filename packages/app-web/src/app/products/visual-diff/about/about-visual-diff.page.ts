@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import '@justinribeiro/lite-youtube';
 
 import { fixUrl } from '../../../app.module';
 import { IonContent } from '@ionic/angular/standalone';

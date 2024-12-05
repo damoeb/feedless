@@ -5,9 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppLoadModule } from './app-load.module';
 import {
-  IonApp,
   IonicRouteStrategy,
-  IonRouterOutlet,
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 import {

@@ -12,6 +12,4 @@ export type BubbleColor = 'orange' | 'blue' | 'red' | 'gray' | 'green';
 })
 export class BubbleComponent {
   readonly color = input<BubbleColor>('blue');
-
-  constructor() {}
 }

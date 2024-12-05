@@ -2,12 +2,12 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   Input,
+  input,
   OnDestroy,
   OnInit,
-  inject,
   output,
-  input,
   viewChild,
 } from '@angular/core';
 import {
@@ -23,9 +23,9 @@ import { assign, last, max, min, omit } from 'lodash-es';
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
@@ -41,29 +41,30 @@ import { ScrapeService } from '../../services/scrape.service';
 import { addIcons } from 'ionicons';
 import {
   chevronForward,
-  searchOutline,
   chevronForwardOutline,
   refreshOutline,
+  searchOutline,
 } from 'ionicons/icons';
 import { ResponsiveColumnsComponent } from '../responsive-columns/responsive-columns.component';
 import {
-  IonAccordionGroup,
   IonAccordion,
-  IonItem,
-  IonLabel,
+  IonAccordionGroup,
+  IonButton,
+  IonCheckbox,
   IonIcon,
   IonInput,
-  IonButton,
-  IonNote,
-  IonCheckbox,
+  IonItem,
+  IonLabel,
   IonList,
-  IonSegmentButton,
+  IonNote,
   IonProgressBar,
+  IonSegmentButton,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { BubbleComponent } from '../bubble/bubble.component';
 import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
+import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -98,6 +99,7 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonSpinner,
     RemoteFeedPreviewComponent,
     ConsoleButtonComponent,
+    CodeEditorModalModule,
   ],
   standalone: true,
 })

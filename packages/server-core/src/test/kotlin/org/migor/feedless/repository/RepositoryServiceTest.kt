@@ -16,6 +16,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
+import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeActionInput
@@ -35,6 +36,7 @@ import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
@@ -177,14 +179,20 @@ class RepositoryServiceTest {
   @Test
   fun `given user is owner, updating repository works`() = runTest(context = RequestContext(userId = userId)) {
     val ssId = UUID.randomUUID()
-    val data = RepositoryUpdateDataInput()
+    val data = RepositoryUpdateDataInput(
+      nextUpdateAt = NullableLongUpdateOperationsInput(set = null)
+    )
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(userId)
 
     `when`(repositoryDAO.findById(any(UUID::class.java)))
       .thenReturn(Optional.of(mockRepository))
 
+    // when
     val update = repositoryService.updateRepository(ssId, data)
+
+    // then
+    verify(mockRepository).triggerScheduledNextAt = any2()
     assertThat(update).isNotNull()
   }
 

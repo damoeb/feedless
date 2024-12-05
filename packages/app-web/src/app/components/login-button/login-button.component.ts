@@ -2,11 +2,11 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   Input,
+  input,
   OnDestroy,
   OnInit,
-  inject,
-  input,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
@@ -15,18 +15,18 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { addIcons } from 'ionicons';
 import {
   appsOutline,
-  personOutline,
-  settingsOutline,
   cardOutline,
   exitOutline,
+  personOutline,
+  settingsOutline,
 } from 'ionicons/icons';
 
 import {
   IonButton,
   IonIcon,
-  IonPopover,
-  IonList,
   IonItem,
+  IonList,
+  IonPopover,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 

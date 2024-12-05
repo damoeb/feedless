@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ImageDiffComponent } from './image-diff.component';
 import { AppTestModule } from '../../app-test.module';
 import { Record } from '../../graphql/types';

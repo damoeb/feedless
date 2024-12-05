@@ -1,4 +1,4 @@
-@import "../../../mixins";
+@use "../../../mixins";
 
 .url-form {
   --border-color: rgba(var(--ion-color-medium-rgb), 0.4);
@@ -15,7 +15,7 @@
     margin-right: 5px;
   }
 
-  @include search-form();
+  @include mixins.search-form();
 
   ion-searchbar {
     text-align: left;

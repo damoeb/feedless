@@ -46,7 +46,6 @@
 
     @if (sourceBuilder && sourceBuilder.response) {
       <app-transform-website-to-feed
-        #webToFeedTransformer
         (selectedFeedChange)="selectedFeed = $event"
         (statusChange)="hasValidFeed = $event === 'valid'"
         [sourceBuilder]="sourceBuilder"

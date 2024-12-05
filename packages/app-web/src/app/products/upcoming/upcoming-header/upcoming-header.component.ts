@@ -22,7 +22,6 @@ import {
   isUndefined,
   uniqBy,
 } from 'lodash-es';
-import { LatLon } from '../../../components/map/map.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
@@ -33,17 +32,21 @@ import {
   calendarOutline,
   chevronBackOutline,
   chevronForwardOutline,
+  footstepsOutline,
   locationOutline,
-  save,
 } from 'ionicons/icons';
-import { NamedLatLon, Nullable } from '../../../types';
-import { homeRoute, parseLocationFromUrl } from '../upcoming-product-routes';
+import { LatLon, NamedLatLon, Nullable } from '../../../types';
+import {
+  parseLocationFromUrl,
+  upcomingBaseRoute,
+} from '../upcoming-product-routes';
 import { getPreviousLocations } from '../events/events.page';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
   IonButton,
   IonButtons,
   IonHeader,
+  IonIcon,
   IonInput,
   IonItem,
   IonList,
@@ -96,6 +99,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     DarkModeButtonComponent,
     IonList,
     IonItem,
+    IonIcon,
     RouterLink,
   ],
   standalone: true,
@@ -113,7 +117,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly subscriptions: Subscription[] = [];
   protected currentDate: Dayjs;
   protected currentLatLon: LatLon;
-  protected readonly zhLatLon: LatLon = [47.3744489, 8.5410422];
   protected readonly now = dayjs();
 
   @Input({ required: true })
@@ -159,6 +162,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       locationOutline,
       chevronBackOutline,
       chevronForwardOutline,
+      footstepsOutline,
     });
   }
 
@@ -429,7 +433,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.expand = null;
     this.currentLocation = location;
     if (location) {
-      this.currentLatLon = [location.lat, location.lon];
+      this.currentLatLon = location;
       this.locationFc.setValue(location.displayName, {
         emitEvent: false,
       });
@@ -460,7 +464,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       this.activatedRoute,
       this.openStreetMapService,
     );
-    const url = homeRoute({})
+    const url = upcomingBaseRoute({})
       .events({})
       .countryCode({ countryCode })
       .region({
@@ -511,7 +515,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
     return (
       '/' +
-      homeRoute({})
+      upcomingBaseRoute({})
         .events({})
         .countryCode({ countryCode })
         .region({ region: area })
@@ -529,11 +533,11 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   private getBreadcrumbs(): LocationSuggestion[] {
     const { countryCode } =
-      homeRoute.children.events.children.countryCode.parseParams(
+      upcomingBaseRoute.children.events.children.countryCode.parseParams(
         this.activatedRoute.snapshot.params as any,
       );
     const { region } =
-      homeRoute.children.events.children.countryCode.children.region.parseParams(
+      upcomingBaseRoute.children.events.children.countryCode.children.region.parseParams(
         this.activatedRoute.snapshot.params as any,
       );
 
@@ -552,7 +556,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         ).map<LocationSuggestion>(({ countryCode, area }) => ({
           url:
             '/' +
-            homeRoute({})
+            upcomingBaseRoute({})
               .events({})
               .countryCode({ countryCode })
               .region({ region: area }).$,
@@ -563,7 +567,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           getCachedLocations(),
           'countryCode',
         ).map<LocationSuggestion>(({ countryCode }) => ({
-          url: '/' + homeRoute({}).events({}).countryCode({ countryCode }).$,
+          url:
+            '/' +
+            upcomingBaseRoute({}).events({}).countryCode({ countryCode }).$,
           labelHtml: `${countryCode} ...`,
         }));
       }

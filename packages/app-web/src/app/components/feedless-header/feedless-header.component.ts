@@ -1,9 +1,9 @@
 import {
   ChangeDetectorRef,
   Component,
+  inject,
   OnDestroy,
   OnInit,
-  inject,
 } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical } from '../../../generated/graphql';
@@ -17,19 +17,22 @@ import { Session } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SessionService } from '../../services/session.service';
 import {
-  IonHeader,
-  IonToolbar,
-  IonLabel,
   IonButton,
   IonButtons,
+  IonHeader,
+  IonIcon,
+  IonLabel,
   IonMenuButton,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { RepositoriesButtonComponent } from '../repositories-button/repositories-button.component';
 import { AgentsButtonComponent } from '../agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../login-button/login-button.component';
+import { addIcons } from 'ionicons';
+import { logoSlack } from 'ionicons/icons';
 
 @Component({
   selector: 'app-feedless-header',
@@ -47,6 +50,8 @@ import { LoginButtonComponent } from '../login-button/login-button.component';
     AgentsButtonComponent,
     DarkModeButtonComponent,
     LoginButtonComponent,
+    IonIcon,
+    RouterLinkActive,
   ],
   standalone: true,
 })
@@ -64,6 +69,12 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
   protected session: Session;
   protected readonly GqlProductName = GqlVertical;
   protected fromNow = relativeTimeOrElse;
+
+  constructor() {
+    addIcons({
+      logoSlack,
+    });
+  }
 
   async ngOnInit() {
     this.subscriptions.push(

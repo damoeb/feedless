@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
+import { PricingPage } from './pricing.page';
 
 export const PRICING_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./pricing.page').then((m) => m.PricingPage),
+    component: PricingPage,
   },
   {
     path: ':productId',
-    loadComponent: () => import('./pricing.page').then((m) => m.PricingPage),
+    component: PricingPage,
   },
 ];

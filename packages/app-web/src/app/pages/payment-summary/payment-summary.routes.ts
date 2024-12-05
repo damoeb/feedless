@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
+import { PaymentSummaryPage } from './payment-summary.page';
 
 export const PAYMENT_SUMMARY_ROUTES: Routes = [
   {
     path: ':billingId',
-    loadComponent: () =>
-      import('./payment-summary.page').then((m) => m.PaymentSummaryPage),
+    component: PaymentSummaryPage,
   },
 ];

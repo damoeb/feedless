@@ -1,7 +1,7 @@
 import { Component, Input, input } from '@angular/core';
 import { Record } from '../../graphql/types';
 
-import { IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList } from '@ionic/angular/standalone';
 import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.component';
 
 @Component({

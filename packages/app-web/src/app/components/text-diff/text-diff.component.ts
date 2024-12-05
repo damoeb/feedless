@@ -6,7 +6,6 @@ import {
   Input,
   input,
   OnInit,
-  viewChild,
 } from '@angular/core';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
@@ -32,8 +31,6 @@ export class TextDiffComponent implements OnInit {
   after: Record;
 
   readonly compareBy = input<GqlRecordField>(GqlRecordField.Markup);
-
-  readonly diffEditorComponent = viewChild<CodeEditorComponent>('diffEditor');
 
   protected textBefore: string;
   protected textAfter: string;

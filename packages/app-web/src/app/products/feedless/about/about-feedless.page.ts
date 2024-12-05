@@ -4,7 +4,6 @@ import {
   Component,
   inject,
   OnInit,
-  viewChild,
 } from '@angular/core';
 import '@justinribeiro/lite-youtube';
 import {
@@ -14,11 +13,12 @@ import {
 import {
   IonBadge,
   IonContent,
+  IonHeader,
   IonIcon,
   IonItem,
   IonList,
   IonListHeader,
-  IonPopover,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';
@@ -49,14 +49,14 @@ import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove
     IonIcon,
     RemoveIfProdDirective,
     IonBadge,
+    IonHeader,
+    IonToolbar,
   ],
   standalone: true,
 })
 export class AboutFeedlessPage implements OnInit {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly appConfigService = inject(AppConfigService);
-
-  readonly createOptionsPopover = viewChild<IonPopover>('createOptions');
 
   listedProducts: VerticalSpecWithRoutes[];
 

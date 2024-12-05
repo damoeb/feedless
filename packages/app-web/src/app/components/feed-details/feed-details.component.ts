@@ -6,6 +6,7 @@ import {
   input,
   OnDestroy,
   OnInit,
+  viewChild,
 } from '@angular/core';
 import {
   GqlFeedlessPlugins,
@@ -44,6 +45,7 @@ import {
   IonModal,
   IonNote,
   IonPopover,
+  IonProgressBar,
   IonRow,
   IonSegment,
   IonSegmentButton,
@@ -66,7 +68,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isUndefined, sortBy, uniq, without } from 'lodash-es';
+import { isUndefined, sortBy, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
@@ -103,6 +105,12 @@ import { HistogramComponent } from '../histogram/histogram.component';
 import { ImageDiffComponent } from '../image-diff/image-diff.component';
 import { TextDiffComponent } from '../text-diff/text-diff.component';
 import { PlayerComponent } from '../player/player.component';
+import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
+import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
+import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
+import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
+import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
+import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -156,6 +164,13 @@ type Pair<A, B> = {
     IonCheckbox,
     PlayerComponent,
     DatePipe,
+    FeedBuilderModalModule,
+    TagsModalModule,
+    SelectionModalModule,
+    CodeEditorModalModule,
+    SearchAddressModalModule,
+    RepositoryModalModule,
+    IonProgressBar,
   ],
   standalone: true,
 })
@@ -176,9 +191,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly modalCtrl = inject(ModalController);
 
-  readonly repositoryId = input.required<string>();
-
-  repository: RepositoryFull;
+  readonly repository = input.required<RepositoryFull>();
+  readonly sourcesModal = viewChild<IonModal>('sourcesModalRef');
 
   readonly track = input<boolean>();
 
@@ -210,9 +224,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   protected readonly compareByPixel: GqlRecordField = GqlRecordField.Pixel;
 
   private seed = Math.random();
-  sourcesModalId: string = `open-sources-modal-${this.seed}`;
   // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
+  protected loadingSources: boolean = false;
 
   constructor() {
     addIcons({
@@ -273,31 +287,22 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
-    this.repository = await this.repositoryService.getRepositoryById(
-      this.repositoryId(),
-      {
-        cursor: {
-          page: this.currentSourcesPage,
-        },
-      },
-      fetchPolicy,
-    );
-    this.sources = this.repository.sources;
-    if (this.repository.product === GqlVertical.VisualDiff) {
+    const repository = this.repository();
+    if (repository.product === GqlVertical.VisualDiff) {
       this.viewModeFc.setValue('diff');
     }
-    this.compareByField = this.repository.plugins.find(
+    this.compareByField = repository.plugins.find(
       (plugin) =>
         plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
     )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
 
     if (
-      this.repository.visibility === GqlVisibility.IsPrivate &&
-      this.repository.shareKey?.length > 0
+      repository.visibility === GqlVisibility.IsPrivate &&
+      repository.shareKey?.length > 0
     ) {
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
     } else {
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom`;
     }
     this.changeRef.detectChanges();
   }
@@ -312,7 +317,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async editRepository(accordions: RepositoryModalAccordion[] = []) {
     const componentProps: RepositoryModalComponentProps = {
-      repository: this.repository,
+      repository: this.repository(),
       openAccordions: accordions,
     };
     await this.modalService.openRepositoryEditor(componentProps);
@@ -346,7 +351,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
         where: {
           repository: {
-            id: this.repository.id,
+            id: this.repository().id,
           },
         },
       },
@@ -376,20 +381,15 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getRetentionStrategy(): string {
-    if (
-      this.repository.retention.maxAgeDays ||
-      this.repository.retention.maxCapacity
-    ) {
-      if (
-        this.repository.retention.maxAgeDays &&
-        this.repository.retention.maxCapacity
-      ) {
-        return `${this.repository.retention.maxAgeDays} days, ${this.repository.retention.maxCapacity} items`;
+    const repository = this.repository();
+    if (repository.retention.maxAgeDays || repository.retention.maxCapacity) {
+      if (repository.retention.maxAgeDays && repository.retention.maxCapacity) {
+        return `${repository.retention.maxAgeDays} days, ${repository.retention.maxCapacity} items`;
       } else {
-        if (this.repository.retention.maxAgeDays) {
-          return `${this.repository.retention.maxAgeDays} days`;
+        if (repository.retention.maxAgeDays) {
+          return `${repository.retention.maxAgeDays} days`;
         } else {
-          return `${this.repository.retention.maxCapacity} items`;
+          return `${repository.retention.maxCapacity} items`;
         }
       }
     } else {
@@ -413,7 +413,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           cssClass: 'confirm-button',
           handler: async () => {
             await this.repositoryService.deleteRepository({
-              id: this.repository.id,
+              id: this.repository().id,
             });
             await this.router.navigateByUrl('/feeds?reload=true');
           },
@@ -421,22 +421,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       ],
     });
     await alert.present();
-  }
-
-  getPluginsOfSource(source: ArrayElement<RepositoryFull['sources']>): string {
-    return uniq(
-      source.flow.sequence.map((it) => it.execute?.pluginId).filter((p) => p),
-    )
-      .map((pluginId) => {
-        switch (pluginId) {
-          case GqlFeedlessPlugins.OrgFeedlessFilter:
-            return 'Filter';
-          case GqlFeedlessPlugins.OrgFeedlessFulltext:
-            return 'Fulltext';
-        }
-      })
-      .filter((p) => p)
-      .join(', ');
   }
 
   stringifyTags(source: ArrayElement<RepositoryFull['sources']>) {
@@ -447,7 +431,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const { latLng } = source;
     return latLng
       ? `(${latLng.lat.toFixed(4)},${latLng.lon.toFixed(4)})`
-      : 'Localize Source';
+      : 'Add geo tag';
   }
 
   async deleteSource(source: RepositorySource) {
@@ -466,9 +450,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           role: 'confirm',
           cssClass: 'confirm-button',
           handler: async () => {
-            this.repository = await this.repositoryService.updateRepository({
+            await this.repositoryService.updateRepository({
               where: {
-                id: this.repository.id,
+                id: this.repository().id,
               },
               data: {
                 sources: {
@@ -489,9 +473,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
     const geoTag = await this.modalService.openSearchAddressModal();
     if (geoTag) {
-      this.repository = await this.repositoryService.updateRepository({
+      await this.repositoryService.updateRepository({
         where: {
-          id: this.repository.id,
+          id: this.repository().id,
         },
         data: {
           sources: {
@@ -515,7 +499,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           },
         },
       });
-      this.fetchSources(this.currentSourcesPage, 'network-only');
+      await this.fetchSources(this.currentSourcesPage, 'network-only');
       this.changeRef.detectChanges();
     }
   }
@@ -524,9 +508,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const tags = await this.modalService.openTagModal({
       tags: source.tags || [],
     });
-    this.repository = await this.repositoryService.updateRepository({
+    await this.repositoryService.updateRepository({
       where: {
-        id: this.repository.id,
+        id: this.repository().id,
       },
       data: {
         sources: {
@@ -545,7 +529,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
-    this.fetchSources(this.currentSourcesPage, 'network-only');
+    await this.fetchSources(this.currentSourcesPage, 'network-only');
     this.changeRef.detectChanges();
   }
 
@@ -556,45 +540,68 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async editSource(source: RepositorySource = null) {
     await this.modalService.openFeedBuilder(
       {
-        source: source as any,
+        source: this.repositoryService.toSourceInput(
+          await this.repositoryService.getSourceFullByRepository(
+            this.repository().id,
+            source.id,
+          ),
+        ),
       },
       async (data: FeedOrRepository) => {
         if (data?.repository) {
           console.warn('not implemented');
         }
         if (data?.feed) {
-          data.feed.source.flow;
-          this.repository = await this.repositoryService.updateRepository({
-            where: {
-              id: this.repository.id,
-            },
-            data: {
-              sources: {
-                update: [
-                  {
-                    where: {
-                      id: source.id,
-                    },
-                    data: {
-                      latLng: {
-                        set: data.feed.source.latLng,
-                      },
-                      tags: {
-                        set: data.feed.source.tags,
-                      },
-                      title: {
-                        set: data.feed.source.title,
-                      },
-                      flow: {
-                        set: data.feed.source.flow,
-                      },
-                    },
-                  },
-                ],
+          if (source) {
+            await this.repositoryService.updateRepository({
+              where: {
+                id: this.repository().id,
               },
-            },
-          });
-          this.fetchSources(this.currentSourcesPage, 'network-only');
+              data: {
+                sources: {
+                  update: [
+                    {
+                      where: {
+                        id: source.id,
+                      },
+                      data: {
+                        latLng: {
+                          set: data.feed.source.latLng,
+                        },
+                        tags: {
+                          set: data.feed.source.tags,
+                        },
+                        title: {
+                          set: data.feed.source.title,
+                        },
+                        flow: {
+                          set: data.feed.source.flow,
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            });
+          } else {
+            await this.repositoryService.updateRepository({
+              where: {
+                id: this.repository().id,
+              },
+              data: {
+                sources: {
+                  add: [
+                    {
+                      title: data.feed.source.title,
+                      latLng: data.feed.source.latLng,
+                      tags: data.feed.source.tags,
+                      flow: data.feed.source.flow,
+                    },
+                  ],
+                },
+              },
+            });
+          }
           this.changeRef.detectChanges();
         }
       },
@@ -614,7 +621,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   private assessIsOwner() {
-    this.isOwner = this.repository?.ownerId === this.currentUserId;
+    this.isOwner = this.repository()?.ownerId === this.currentUserId;
     this.changeRef.detectChanges();
   }
 
@@ -623,7 +630,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.recordService.removeById({
       where: {
         repository: {
-          id: this.repository.id,
+          id: this.repository().id,
         },
         id: {
           in: selected.map((document) => document.id),
@@ -648,9 +655,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async refreshSources() {
-    this.repository = await this.repositoryService.updateRepository({
+    await this.repositoryService.updateRepository({
       where: {
-        id: this.repository.id,
+        id: this.repository().id,
       },
       data: {
         nextUpdateAt: {
@@ -669,21 +676,19 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await toast.present();
   }
 
-  getUrl(source: ArrayElement<RepositoryFull['sources']>): string {
-    return source.flow.sequence.find((action) => action.fetch).fetch.get.url
-      .literal;
-  }
-
   async showCode() {
     await this.modalService.openCodeEditorModal({
       title: 'JSON Editor',
       text: JSON.stringify(
-        this.repositoryService.toRepositoryInput(this.repository),
+        await this.repositoryService.getRepositoryInputWithSourcesAndFlow(
+          this.repository(),
+        ),
         null,
         2,
       ),
       contentType: 'json',
     });
+    // todo use editor data
   }
 
   // openLogsModal(
@@ -703,9 +708,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   // }
 
   async setDisabledForSource(source: RepositorySource, isDisabled: boolean) {
-    this.repository = await this.repositoryService.updateRepository({
+    await this.repositoryService.updateRepository({
       where: {
-        id: this.repository.id,
+        id: this.repository().id,
       },
       data: {
         sources: {
@@ -724,7 +729,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       },
     });
-    this.fetchSources(this.currentSourcesPage, 'network-only');
+    await this.fetchSources(this.currentSourcesPage, 'network-only');
     this.changeRef.detectChanges();
   }
 
@@ -737,7 +742,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.annotationService.createAnnotation({
       where: {
         repository: {
-          id: this.repositoryId(),
+          id: this.repository().id,
         },
       },
       annotation: {
@@ -759,7 +764,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   getStartCount(): string | number {
-    const upVotes = this.repository?.annotations?.upVotes || 0;
+    const upVotes = this.repository()?.annotations?.upVotes || 0;
     if (upVotes >= 1000) {
       return (upVotes / 1000.0).toFixed(1) + 'k';
     } else {
@@ -772,7 +777,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   private getUpvoteAnnotation(): Annotation | undefined {
-    return this.repository.annotations?.votes?.find((v) => v.upVote);
+    return this.repository().annotations?.votes?.find((v) => v.upVote);
   }
 
   getText(document: Record) {
@@ -785,8 +790,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async exportRepository() {
     await this.repositoryService.downloadRepositories(
-      [this.repository],
-      `feedless-repo-${this.repository.id}.json`,
+      [this.repository()],
+      `feedless-repo-${this.repository().id}.json`,
     );
   }
 
@@ -798,7 +803,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         .filter((r) => r.sources)
         .flatMap((r) => r.sources)
         .map<SelectableEntity<GqlSourceInput>>((source) => {
-          const disabled = this.repository.sources.some(
+          const disabled = this.repository().sources.some(
             (existingSource) => existingSource.title == source.title,
           );
           return {
@@ -822,7 +827,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     if (selected.length > 0) {
       await this.repositoryService.updateRepository({
         where: {
-          id: this.repository.id,
+          id: this.repository().id,
         },
         data: {
           sources: {
@@ -831,7 +836,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         },
       });
 
-      this.fetchSources(this.currentSourcesPage, 'network-only');
+      await this.fetchSources(this.currentSourcesPage, 'network-only');
       this.changeRef.detectChanges();
 
       const toast = await this.toastCtrl.create({
@@ -846,15 +851,29 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async fetchSources(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
     this.currentSourcesPage = page;
-    this.sources = await this.repositoryService.getSourcesByRepository(
-      this.repositoryId(),
-      {
-        cursor: {
-          page,
-        },
-      },
-      fetchPolicy,
-    );
+    this.loadingSources = true;
+    this.sources = [];
     this.changeRef.detectChanges();
+    try {
+      this.sources = await this.repositoryService.getSourcesByRepository(
+        this.repository().id,
+        {
+          cursor: {
+            page,
+          },
+        },
+        fetchPolicy,
+      );
+    } finally {
+      this.loadingSources = false;
+    }
+    this.changeRef.detectChanges();
+  }
+
+  async openSourcesModal() {
+    await Promise.all([
+      this.fetchSources(this.currentSourcesPage),
+      this.sourcesModal().present(),
+    ]);
   }
 }

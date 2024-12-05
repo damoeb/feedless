@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutFeedlessPage } from './about-feedless.page';
 import { AppTestModule } from '../../../app-test.module';
 import { AppConfigService } from '../../../services/app-config.service';

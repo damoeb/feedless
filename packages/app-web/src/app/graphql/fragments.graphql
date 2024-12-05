@@ -90,11 +90,9 @@ fragment SourceFragment on Source {
   }
   lastErrorMessage
   recordCount
+  lastRefreshedAt
   lastRecordsRetrieved
   title
-  flow {
-    ...ScrapeFlowFragment
-  }
 }
 
 fragment RepositoryFragment on Repository {
@@ -225,15 +223,11 @@ fragment HttpGetRequestFragment on HttpGetRequest {
   waitUntil
 }
 
-fragment ScrapeFlowFragment on ScrapeFlow {
-  sequence {
-    ...ActionFragment
-  }
-}
-
-fragment ScrapeOptionsFragment on Source {
+fragment ScrapeFlowFragment on Source {
   flow {
-    ...ScrapeFlowFragment
+    sequence {
+      ...ActionFragment
+    }
   }
 }
 

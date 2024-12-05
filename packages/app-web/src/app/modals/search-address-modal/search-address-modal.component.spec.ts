@@ -1,7 +1,8 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SearchAddressModalComponent } from './search-address-modal.component';
 import { AppTestModule } from '../../app-test.module';
+import { SearchAddressModalModule } from './search-address-modal.module';
 
 describe('SearchAddressModalComponent', () => {
   let component: SearchAddressModalComponent;
@@ -9,7 +10,7 @@ describe('SearchAddressModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SearchAddressModalComponent, AppTestModule.withDefaults()],
+      imports: [SearchAddressModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchAddressModalComponent);

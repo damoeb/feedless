@@ -2,21 +2,21 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   Input,
+  input,
   OnDestroy,
   OnInit,
-  inject,
   output,
-  input,
 } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement } from '../../../generated/graphql';
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { SourceBuilder } from './source-builder';
 import { map, merge, Subscription } from 'rxjs';
@@ -27,22 +27,22 @@ import {
 } from '../embedded-image/embedded-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { addIcons } from 'ionicons';
-import { removeOutline, addOutline } from 'ionicons/icons';
+import { addOutline, removeOutline } from 'ionicons/icons';
 import {
-  IonToolbar,
-  IonRow,
+  IonButton,
+  IonButtons,
   IonCol,
+  IonIcon,
   IonInput,
+  IonItem,
+  IonLabel,
+  IonProgressBar,
+  IonRange,
+  IonRow,
   IonSegment,
   IonSegmentButton,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonRange,
-  IonLabel,
   IonText,
-  IonItem,
-  IonProgressBar,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { NgStyle } from '@angular/common';
 import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';

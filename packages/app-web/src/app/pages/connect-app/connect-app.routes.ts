@@ -1,14 +1,13 @@
 import { Routes } from '@angular/router';
+import { ConnectAppPage } from './connect-app.page';
 
 export const CONNECT_APP_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./connect-app.page').then((m) => m.ConnectAppPage),
+    component: ConnectAppPage,
   },
   {
     path: ':link',
-    loadComponent: () =>
-      import('./connect-app.page').then((m) => m.ConnectAppPage),
+    component: ConnectAppPage,
   },
 ];

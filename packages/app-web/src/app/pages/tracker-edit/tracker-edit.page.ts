@@ -52,7 +52,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { createEmailFormControl } from '../../form-controls';
-import { DEFAULT_FETCH_CRON } from '../feed-builder/feed-builder.page';
 import { ScrapeService } from '../../services/scrape.service';
 import {
   BrowserAction,
@@ -64,6 +63,7 @@ import { trashOutline } from 'ionicons/icons';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
+import { DEFAULT_FETCH_CRON } from '../../defaults';
 
 type Email = string;
 

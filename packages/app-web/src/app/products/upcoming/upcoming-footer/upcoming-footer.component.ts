@@ -19,12 +19,20 @@ import { Subscription } from 'rxjs';
 
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 import { RouterLink } from '@angular/router';
+import { SubmitModalModule } from '../submit-modal/submit-modal.module';
 
 @Component({
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [IonFooter, IonButton, IonIcon, RemoveIfProdDirective, RouterLink],
+  imports: [
+    IonFooter,
+    IonButton,
+    IonIcon,
+    RemoveIfProdDirective,
+    RouterLink,
+    SubmitModalModule,
+  ],
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {

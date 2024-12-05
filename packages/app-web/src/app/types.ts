@@ -57,3 +57,8 @@ export type NamedLatLon = {
   area: string;
   countryCode: string;
 };
+
+export type LatLon = {
+  lat: number;
+  lon: number;
+};

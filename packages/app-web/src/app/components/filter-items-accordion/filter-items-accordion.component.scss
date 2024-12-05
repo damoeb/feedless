@@ -1,11 +1,11 @@
-@import "../../../mixins";
+@use "../../../mixins";
 
 ion-input,
 ion-textarea {
   --app-border-radius: 8px;
   --padding-start: 10px !important;
   --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
-  @include control();
+  @include mixins.control();
 }
 
 ion-input,

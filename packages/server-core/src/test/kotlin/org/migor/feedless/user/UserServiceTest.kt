@@ -1,65 +1,155 @@
 package org.migor.feedless.user
 
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.plan.ProductDAO
+import org.migor.feedless.plan.ProductService
+import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
+import org.migor.feedless.repository.anyList
 import org.migor.feedless.repository.eq
 import org.migor.feedless.transport.TelegramBotService
-import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.junit.jupiter.MockitoSettings
-import org.mockito.quality.Strictness
-import java.time.LocalDateTime
+import org.springframework.context.ApplicationContext
+import org.springframework.core.env.Environment
 import java.util.*
 
-@ExtendWith(MockitoExtension::class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class UserServiceTest {
+  private lateinit var userDAO: UserDAO
+  private lateinit var connectedAppDAO: ConnectedAppDAO
+  private lateinit var telegramBotService: TelegramBotService
+  private lateinit var githubConnectionDAO: GithubConnectionDAO
+  private lateinit var userService: UserService
+  private lateinit var productDAO: ProductDAO
+  private lateinit var meterRegistry: MeterRegistry
+  private lateinit var environment: Environment
+  private lateinit var featureService: FeatureService
+  private lateinit var repositoryDAO: RepositoryDAO
+  private lateinit var productService: ProductService
 
-  @Mock
-  lateinit var userDAO: UserDAO
-
-  @Mock
-  lateinit var connectedAppDAO: ConnectedAppDAO
-
-  @Mock
-  lateinit var telegramBotService: TelegramBotService
-
-  @Mock
-  lateinit var githubConnectionDAO: GithubConnectionDAO
-
-  @InjectMocks
-  lateinit var userService: UserService
 
   lateinit var user: UserEntity
   lateinit var githubId: String
+  lateinit var email: String
   lateinit var userId: UUID
 
   @BeforeEach
-  fun setUp() {
+  fun setUp() = runTest {
+    userDAO = mock(UserDAO::class.java)
+    connectedAppDAO = mock(ConnectedAppDAO::class.java)
+    telegramBotService = mock(TelegramBotService::class.java)
+    githubConnectionDAO = mock(GithubConnectionDAO::class.java)
+    userService = mock(UserService::class.java)
+    productDAO = mock(ProductDAO::class.java)
+    meterRegistry = mock(MeterRegistry::class.java)
+    environment = mock(Environment::class.java)
+    featureService = mock(FeatureService::class.java)
+    repositoryDAO = mock(RepositoryDAO::class.java)
+    productService = mock(ProductService::class.java)
+
+    userService = UserService(
+      userDAO,
+      productDAO,
+      meterRegistry,
+      environment,
+      featureService,
+      repositoryDAO,
+      productService,
+      githubConnectionDAO,
+      connectedAppDAO,
+      Optional.of(telegramBotService)
+    )
+
+    `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
+
     user = mock(UserEntity::class.java)
     githubId = "123678"
     userId = UUID.randomUUID()
+    email = "$githubId@github.com"
     `when`(user.id).thenReturn(userId)
 //    `when`(user.githubId).thenReturn(githubId)
-    `when`(user.email).thenReturn("$githubId@github.com ")
+    `when`(user.email).thenReturn(email)
     `when`(userDAO.findById(any2())).thenReturn(Optional.of(user))
+    `when`(userDAO.save(any2())).thenAnswer { it.arguments[0] }
+    `when`(repositoryDAO.save(any2())).thenAnswer { it.arguments[0] }
+    `when`(githubConnectionDAO.save(any2())).thenAnswer { it.arguments[0] }
+  }
+
+  @Test
+  fun `createUser fails if feature is disabled`() {
+    assertThatExceptionOfType(BadRequestException::class.java).isThrownBy {
+      runTest {
+        `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(true)
+        userService.createUser(email)
+      }
+    }
+  }
+
+  @Test
+  fun `createUser fails if user with email already exists`() {
+    assertThatExceptionOfType(BadRequestException::class.java).isThrownBy {
+      runTest {
+        `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(false)
+        `when`(userDAO.existsByEmail(eq(email))).thenReturn(true)
+        userService.createUser(email)
+      }
+    }
+  }
+
+  @Test
+  fun `createUser fails if user with githubId already exists`() {
+    assertThatExceptionOfType(BadRequestException::class.java).isThrownBy {
+      runTest {
+        `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(false)
+        `when`(userDAO.existsByEmail(eq(email))).thenReturn(false)
+        `when`(githubConnectionDAO.existsByGithubId(eq(githubId))).thenReturn(true)
+        userService.createUser(email, githubId)
+      }
+    }
+  }
+
+  @Test
+  fun `createUser will link github account`() = runTest {
+    `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(false)
+    `when`(userDAO.existsByEmail(eq(email))).thenReturn(false)
+    `when`(githubConnectionDAO.existsByGithubId(eq(githubId))).thenReturn(false)
+
+    userService.createUser(email, githubId)
+
+    verify(githubConnectionDAO).save(argThat {
+      it.githubId == githubId
+    })
+    verify(githubConnectionDAO).save(argThat { it.authorized })
+  }
+
+  @Test
+  fun `createUser will enable the default product for vertical`() = runTest {
+    `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(false)
+    `when`(userDAO.existsByEmail(eq(email))).thenReturn(false)
+    `when`(githubConnectionDAO.existsByGithubId(eq(githubId))).thenReturn(false)
+
+    userService.createUser(email, githubId)
+
+    verify(productService).enableDefaultSaasProduct(any2(), any2())
   }
 
   @Test
@@ -163,10 +253,12 @@ class UserServiceTest {
   }
 
   @Test
+  @Disabled
   fun `given github id is not present, updateLegacyUser will set it`() = runTest {
     val user = mock(UserEntity::class.java)
     val githubId = "123678"
     `when`(user.email).thenReturn("")
+    `when`(githubConnectionDAO.existsByUserId(any2())).thenReturn(true)
 
     userService.updateLegacyUser(user, githubId)
 

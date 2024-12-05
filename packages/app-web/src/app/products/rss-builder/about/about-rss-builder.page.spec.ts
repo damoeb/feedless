@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
 import {
   ApolloMockController,

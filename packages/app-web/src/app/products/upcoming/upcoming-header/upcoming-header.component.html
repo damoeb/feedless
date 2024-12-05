@@ -26,10 +26,13 @@
         display: flex;
       "
     >
-      <div style="display: flex; flex: 1" class="ion-padding-horizontal">
-        <a routerLink="/" class="" aria-label="lokale.events">
-          <ion-button color="light" size="block">
+      <div style="display: flex; flex: 1">
+        <a routerLink="/" aria-label="lokale.events">
+          <ion-button color="light" class="ion-hide-sm-down" size="block">
             <strong>lokale</strong><em>.events</em>
+          </ion-button>
+          <ion-button color="light" class="ion-hide-sm-up" size="block">
+            <ion-icon name="location-outline"></ion-icon><em>.events</em>
           </ion-button>
         </a>
         <ion-input
@@ -65,7 +68,8 @@
           title="Umkreis konfigurieren"
           (click)="perimeterCtrl.open($event)"
         >
-          +{{ perimeterFc.value }} Km
+          <span class="ion-hide-sm-down">+{{ perimeterFc.value }} Km</span>
+          <ion-icon name="footsteps-outline" class="ion-hide-sm-up"></ion-icon>
         </ion-button>
         <!--      <ion-button-->
         <!--        color="light"-->

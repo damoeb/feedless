@@ -5,20 +5,20 @@ import {
   inject,
 } from '@angular/core';
 import { addIcons } from 'ionicons';
-import { removeOutline, addOutline, ellipse } from 'ionicons/icons';
+import { addOutline, ellipse, removeOutline } from 'ionicons/icons';
 import {
-  IonToolbar,
-  IonLabel,
-  IonText,
-  IonInput,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonRange,
-  IonItem,
-  IonAccordionGroup,
   IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  IonButtons,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
   IonList,
+  IonRange,
+  IonText,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { NgStyle } from '@angular/common';

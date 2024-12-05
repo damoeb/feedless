@@ -1,19 +1,20 @@
 import { Routes } from '@angular/router';
+import { DocumentsPage } from './documents.page';
+import { TermsPage } from './terms.page';
+import { TelegramPage } from './telegram.page';
 
 export const DOCUMENTS_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./documents.page').then((m) => m.DocumentsPage),
+    component: DocumentsPage,
     children: [
       {
         path: 'terms',
-        loadComponent: () => import('./terms.page').then((m) => m.TermsPage),
+        component: TermsPage,
       },
       {
         path: 'telegram',
-        loadComponent: () =>
-          import('./telegram.page').then((m) => m.TelegramPage),
+        component: TelegramPage,
       },
     ],
   },

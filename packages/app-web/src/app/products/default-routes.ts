@@ -119,7 +119,7 @@ export const DefaultRoutes: Routes = [
       {
         path: 'feeds',
         loadChildren: () =>
-          import('../pages/feeds/feeds.routes').then((m) => m.FEED_ROUTES),
+          import('../pages/feeds/feeds.routes').then((m) => m.FEEDS_ROUTES),
       },
       {
         path: 'profile',

@@ -23,7 +23,7 @@ import {
   GqlSourceInput,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { Repository } from '../../graphql/types';
+import { RepositoryWithFrequency } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { environment } from '../../../environments/environment';
 import { RepositoryService } from '../../services/repository.service';
@@ -31,15 +31,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
 import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
-
-export const DEFAULT_FETCH_CRON: string = '0 0 0 * * *';
+import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
+import { DEFAULT_FETCH_CRON } from '../../defaults';
 
 @Component({
   selector: 'app-feed-builder-page',
   templateUrl: './feed-builder.page.html',
   styleUrls: ['./feed-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, FeedBuilderComponent],
+  imports: [
+    FeedlessHeaderComponent,
+    IonContent,
+    FeedBuilderComponent,
+    RepositoryModalModule,
+  ],
   standalone: true,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
@@ -75,7 +80,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async handleRepository(repository: Repository) {
+  async handleRepository(repository: RepositoryWithFrequency) {
     const url = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
     await this.handleSource(
       `Remix ${repository.title}`,

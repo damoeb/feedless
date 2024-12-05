@@ -29,7 +29,7 @@ describe('#getFirstFetch', () => {
   });
 });
 
-describe('InteractiveWebsiteComponent', () => {
+describe('sourceBuilder', () => {
   function createSourceWithActions(
     actions: GqlScrapeActionInput[],
   ): GqlSourceInput {

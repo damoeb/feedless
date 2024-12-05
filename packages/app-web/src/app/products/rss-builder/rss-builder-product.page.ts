@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
 import {
@@ -33,7 +33,6 @@ import {
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
-import { NotificationsButtonComponent } from '../../components/notifications-button/notifications-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
@@ -53,8 +52,6 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     AgentsButtonComponent,
     IonButton,
     IonIcon,
-    RouterLinkActive,
-    NotificationsButtonComponent,
     DarkModeButtonComponent,
     LoginButtonComponent,
     IonContent,

@@ -1,4 +1,4 @@
-@import "../../products/untold-notes/untold-mixins";
+@use "../../products/untold-notes/untold-mixins";
 
 ion-content.main-content::part(scroll) {
   display: flex;
@@ -64,7 +64,7 @@ mark {
 }
 
 ion-searchbar {
-  @include unless-control();
+  @include untold-mixins.unless-control();
   --box-shadow: none;
 
   &.searchbar-has-focus {

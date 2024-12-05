@@ -186,7 +186,7 @@ class PlanConstraintsService {
           var plan =
             planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
           if (plan == null) {
-            productService.enableDefaultCloudProduct(product, userId)
+            productService.enableDefaultSaasProduct(product, userId)
             plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
           }
 

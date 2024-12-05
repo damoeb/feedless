@@ -5,15 +5,15 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  NG_VALUE_ACCESSOR,
   FormsModule,
+  NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { KeyValue } from '@angular/common';
 import {
-  IonRow,
   IonCol,
+  IonRow,
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';

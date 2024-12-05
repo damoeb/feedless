@@ -1,44 +1,5 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
-
-import {
-  IonicRouteStrategy,
-  provideIonicAngular,
-  IonApp,
-  IonRouterOutlet,
-  ModalController,
-} from '@ionic/angular/standalone';
-import {
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client/core';
-import { onError } from '@apollo/client/link/error';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient } from 'graphql-ws';
-
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
-import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
-import { environment } from '../environments/environment';
-import { AppLoadModule } from './app-load.module';
-import { ServerConfigService } from './services/server-config.service';
-
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GqlVertical } from '../generated/graphql';
-
-import { ApolloAbortControllerService } from './services/apollo-abort-controller.service';
-import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { isNull, isUndefined } from 'lodash-es';
-import { AppConfigService } from './services/app-config.service';
 
 export interface AppEnvironment {
   production: boolean;

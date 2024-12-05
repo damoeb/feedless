@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Record, Repository } from '../../../graphql/types';
+import { Record, RepositoryWithFrequency } from '../../../graphql/types';
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -34,7 +34,7 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
   documents: Record[];
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
-  repository: Repository;
+  repository: RepositoryWithFrequency;
 
   feedUrl: string;
 

@@ -87,13 +87,13 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
   private async fetch() {
     this.busy = true;
     this.changeRef.detectChanges();
-
     try {
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
         {
           cursor: {
             page: 0,
+            pageSize: 0,
           },
         },
       );

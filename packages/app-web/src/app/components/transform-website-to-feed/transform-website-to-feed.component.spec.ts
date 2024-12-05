@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
-import { ScrapeResponse } from '../../graphql/types';
 import {
   AppTestModule,
   mockRepositories,

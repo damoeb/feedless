@@ -28,8 +28,6 @@ import {
   Observable,
   ReplaySubject,
 } from 'rxjs';
-import { FinalizeProfileModalComponent } from '../modals/finalize-profile-modal/finalize-profile-modal.component';
-import { ModalController } from '@ionic/angular/standalone';
 import { ServerConfigService } from './server-config.service';
 import { AppConfigService } from './app-config.service';
 import { isNonNull, Nullable } from '../types';
@@ -41,8 +39,8 @@ export const TimeFormat = 'HH:mm, dd.MM.YYYY';
 export function needsPlanSubscription(
   user: User,
   serverConfig: ServerConfigService,
-) {
-  return serverConfig.isSaas() && !user!.plan;
+): boolean {
+  return serverConfig.isSaas() && !user?.plan;
 }
 
 @Injectable({
@@ -51,14 +49,11 @@ export function needsPlanSubscription(
 export class SessionService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly authService = inject(AuthService);
-  private readonly serverConfigService = inject(ServerConfigService);
   private readonly appConfigService = inject(AppConfigService);
-  private readonly modalCtrl = inject(ModalController);
 
   private session: Session = {} as any;
   private darkModePipe: ReplaySubject<boolean>;
   private sessionPipe: BehaviorSubject<Nullable<Session>>;
-  private modalIsOpen: boolean = false;
 
   constructor() {
     this.darkModePipe = new ReplaySubject<boolean>(1);
@@ -102,44 +97,9 @@ export class SessionService {
       });
   }
 
-  async finalizeProfile() {
-    const hasCompletedSignup = this.session.user!.hasCompletedSignup;
-    const needsPlan = needsPlanSubscription(
-      this.session.user,
-      this.serverConfigService,
-    );
-    console.log(
-      'hasCompletedSignup',
-      hasCompletedSignup,
-      'needsPlan',
-      needsPlan,
-    );
-    if (this.modalIsOpen || (hasCompletedSignup && !needsPlan)) {
-      return;
-    }
-    try {
-      this.modalIsOpen = true;
-      const modal = await this.modalCtrl.create({
-        component: FinalizeProfileModalComponent,
-        cssClass: 'fullscreen-modal',
-        backdropDismiss: false,
-      });
-      await modal.present();
-      await modal.onDidDismiss();
-    } finally {
-      this.modalIsOpen = false;
-    }
-  }
-
-  async finalizeSignUp(
-    email: string,
-    product: Nullable<Product> = null,
-  ): Promise<void> {
+  async finalizeSignUp(product: Nullable<Product> = null): Promise<void> {
     const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
     const data: GqlUpdateCurrentUserMutationVariables['data'] = {
-      email: {
-        set: email,
-      },
       acceptedTermsAndServices: {
         set: true,
       },

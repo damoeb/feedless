@@ -18,7 +18,6 @@ import {
   GqlRemoteNativeFeed,
   GqlSourceInput,
   GqlTransientGenericFeed,
-  GqlVertical,
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -35,7 +34,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Repository, ScrapeResponse } from '../../graphql/types';
+import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
 import {
   AppConfigService,
   VerticalSpecWithRoutes,
@@ -56,14 +55,17 @@ import {
   logoJavascript,
   settingsOutline,
 } from 'ionicons/icons';
-import { NamedLatLon } from '../../types';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
+import { ServerConfigService } from '../../services/server-config.service';
+import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
+import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
+import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
 import {
   standaloneV2FeedTransformRoute,
   standaloneV2WebToFeedRoute,
-} from '../../pages/feed-builder/feed-builder.routes';
-import { ServerConfigService } from '../../services/server-config.service';
+} from '../../router-utils';
+import { LatLon } from '../../types';
 
 /**
  * IDEEN
@@ -99,7 +101,7 @@ export type Source = {
 
 export type FeedOrRepository = {
   feed: FeedWithRequest;
-  repository: Repository;
+  repository: RepositoryWithFrequency;
 };
 export type FeedWithRequest = {
   source: GqlSourceInput;
@@ -124,6 +126,9 @@ export type FeedWithRequest = {
     IonAccordion,
     IonNote,
     FilterItemsAccordionComponent,
+    TagsModalModule,
+    SearchAddressModalModule,
+    InteractiveWebsiteModalModule,
   ],
   standalone: true,
 })
@@ -166,10 +171,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   readonly selectedFeedChanged = output<FeedWithRequest>();
 
-  readonly selectedRepositoryChanged = output<Repository>();
+  readonly selectedRepositoryChanged = output<RepositoryWithFrequency>();
 
   protected tags: string[] = [];
-  protected geoLocation: NamedLatLon;
+  protected geoLocation: LatLon;
   // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
@@ -182,6 +187,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const source = this.source();
     if (source) {
       console.log('this.source', source);
+      this.tags = source.tags;
+      this.geoLocation = source.latLng;
       this.sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
       this.url = this.sourceBuilder.getUrl();
       await this.scrapeUrl();
@@ -223,7 +230,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   //   this.repositories.push(...repositories);
   //   this.changeRef.detectChanges();
   // }
-
+  //
   async scrapeUrl() {
     if (!this.url) {
       return;

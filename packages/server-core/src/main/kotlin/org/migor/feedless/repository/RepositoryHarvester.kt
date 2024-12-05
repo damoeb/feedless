@@ -164,6 +164,7 @@ class RepositoryHarvester(
               source.lastErrorMessage = null
             }
             source.lastRecordsRetrieved = retrieved
+            source.lastRefreshedAt = LocalDateTime.now()
             sourceService.save(source)
 
             agg + appended
@@ -204,11 +205,13 @@ class RepositoryHarvester(
     logCollector: LogCollector
   ) {
     val corrId = coroutineContext.corrId()
+    log.error("scrape failed ${e?.message}")
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
       logCollector.log("[$corrId] scrape error '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
       source.lastRecordsRetrieved = 0
+      source.lastRefreshedAt = LocalDateTime.now()
 
       if (e !is NoItemsRetrievedException) {
         val maxErrorCount = 3

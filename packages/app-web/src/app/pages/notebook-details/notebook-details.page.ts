@@ -11,7 +11,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
-import { Repository } from '../../graphql/types';
+import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
   Notebook,
@@ -131,7 +131,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   busy = false;
   private subscriptions: Subscription[] = [];
-  repository: Repository;
+  repository: RepositoryWithFrequency;
   matches: SearchResult[] = [];
   focussedMatchIndex: number = -1;
 

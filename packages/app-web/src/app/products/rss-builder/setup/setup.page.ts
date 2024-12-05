@@ -3,7 +3,6 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
-import '@justinribeiro/lite-youtube';
 import {
   IonButton,
   IonButtons,
@@ -19,9 +18,6 @@ import {
   IonList,
   IonListHeader,
   IonNote,
-  IonSelect,
-  IonSelectOption,
-  IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
@@ -42,9 +38,6 @@ import { DarkModeButtonComponent } from '../../../components/dark-mode-button/da
     IonHeader,
     IonToolbar,
     IonButton,
-    IonText,
-    IonSelect,
-    IonSelectOption,
     IonList,
     IonItem,
     IonCheckbox,

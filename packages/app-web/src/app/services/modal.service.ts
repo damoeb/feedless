@@ -26,11 +26,6 @@ import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
 } from '../modals/code-editor-modal/code-editor-modal.component';
-import {
-  MapModalComponent,
-  MapModalComponentProps,
-} from '../modals/map-modal/map-modal.component';
-import { LatLon } from '../components/map/map.component';
 import { NamedLatLon, Nullable } from '../types';
 import {
   SelectionModalComponent,
@@ -101,7 +96,7 @@ export class ModalService {
       componentProps,
       cssClass: 'tiny-modal',
       showBackdrop: true,
-      backdropDismiss: false,
+      backdropDismiss: true,
     });
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
@@ -109,19 +104,19 @@ export class ModalService {
     return data!;
   }
 
-  async openMapModal(componentProps: MapModalComponentProps): Promise<LatLon> {
-    // await this.updateUrlParams(ModalName.tagEditor);
-    const modal = await this.modalCtrl.create({
-      component: MapModalComponent,
-      componentProps,
-      showBackdrop: true,
-      backdropDismiss: false,
-    });
-    await modal.present();
-    const { data } = await modal.onDidDismiss<LatLon>();
-    await this.updateUrlParams();
-    return data!;
-  }
+  // async openMapModal(componentProps: MapModalComponentProps): Promise<LatLon> {
+  //   // await this.updateUrlParams(ModalName.tagEditor);
+  //   const modal = await this.modalCtrl.create({
+  //     component: MapModalComponent,
+  //     componentProps,
+  //     showBackdrop: true,
+  //     backdropDismiss: false,
+  //   });
+  //   await modal.present();
+  //   const { data } = await modal.onDidDismiss<LatLon>();
+  //   await this.updateUrlParams();
+  //   return data!;
+  // }
 
   async openSelectionModal<T>(
     componentProps: SelectionModalComponentProps<T>,
@@ -203,7 +198,7 @@ export class ModalService {
     }
   }
 
-  async openPageTrackerEditor(componentProps: TrackerEditModalComponentProps) {
+  async openTrackerEditor(componentProps: TrackerEditModalComponentProps) {
     await this.updateUrlParams(ModalName.editTracker);
     const modal = await this.modalCtrl.create({
       component: TrackerEditModalComponent,

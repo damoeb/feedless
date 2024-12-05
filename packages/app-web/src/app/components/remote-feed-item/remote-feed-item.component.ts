@@ -3,10 +3,10 @@ import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
 import {
+  IonBadge,
+  IonChip,
   IonItem,
   IonLabel,
-  IonChip,
-  IonBadge,
 } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { PlayerComponent } from '../player/player.component';

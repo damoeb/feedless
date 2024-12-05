@@ -5,13 +5,13 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  inject,
   Input,
+  input,
   OnChanges,
   OnDestroy,
   OnInit,
   SimpleChanges,
-  inject,
-  input,
   viewChild,
 } from '@angular/core';
 import { isDefined } from '../../types';

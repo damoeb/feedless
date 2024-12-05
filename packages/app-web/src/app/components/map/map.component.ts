@@ -11,8 +11,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-
-export type LatLon = number[];
+import { LatLon } from '../../types';
 
 @Component({
   selector: 'app-map',
@@ -40,8 +39,8 @@ export class MapComponent implements AfterViewInit, OnChanges {
     try {
       const maxZoom = 13;
       const minZoom = 11;
-      const lat = this.position()[0];
-      const lng = this.position()[1];
+      const lat = this.position().lat;
+      const lng = this.position().lon;
       this.map = new Map(this.mapElement().nativeElement)
         .setMinZoom(minZoom)
         .setMaxZoom(maxZoom)

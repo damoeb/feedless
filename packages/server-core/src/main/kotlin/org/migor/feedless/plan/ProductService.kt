@@ -11,7 +11,6 @@ import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -23,22 +22,16 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-class ProductService {
+class ProductService(
+  private var productDAO: ProductDAO,
+  private var userDAO: UserDAO,
+  private var planDAO: PlanDAO,
+  private var pricedProductDAO: PricedProductDAO
+) {
 
   private val log = LoggerFactory.getLogger(ProductService::class.simpleName)
 
-  @Autowired
-  private lateinit var productDAO: ProductDAO
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
-  private lateinit var planDAO: PlanDAO
-
-  @Autowired
-  private lateinit var pricedProductDAO: PricedProductDAO
-
+  @Deprecated("hardcoded")
   fun getDomain(product: Vertical): String {
     return when (product) {
       Vertical.visualDiff -> "visualdiff.com"
@@ -79,6 +72,7 @@ class ProductService {
   }
 
   @Transactional
+  // todo thats bad transactional code
   suspend fun enableSaasProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
     val prices = withContext(Dispatchers.IO) {
@@ -114,7 +108,7 @@ class ProductService {
   }
 
   @Transactional
-  suspend fun enableDefaultCloudProduct(vertical: Vertical, userId: UUID) {
+  suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UUID) {
     val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
     val user = withContext(Dispatchers.IO) { userDAO.findById(userId).orElseThrow() }
 

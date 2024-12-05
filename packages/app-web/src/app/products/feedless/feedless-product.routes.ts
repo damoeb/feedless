@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { DefaultRoutes } from '../default-routes';
 import { ProfileGuardService } from '../../guards/profile-guard.service';
+import { AboutFeedlessPage } from './about/about-feedless.page';
 
 export const FEEDLESS_ROUTES: Routes = [
   {
@@ -52,10 +53,7 @@ export const FEEDLESS_ROUTES: Routes = [
           },
           {
             path: '',
-            loadComponent: () =>
-              import('./about/about-feedless.page').then(
-                (m) => m.AboutFeedlessPage,
-              ),
+            component: AboutFeedlessPage,
           },
         ],
       },

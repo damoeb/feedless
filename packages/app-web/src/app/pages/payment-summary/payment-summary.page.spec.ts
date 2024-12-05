@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PaymentSummaryPage } from './payment-summary.page';
 import { AppTestModule } from '../../app-test.module';

@@ -1,9 +1,9 @@
 import {
   ChangeDetectorRef,
   Component,
+  inject,
   OnDestroy,
   OnInit,
-  inject,
 } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlServerSettingsQuery } from '../../../generated/graphql';
@@ -11,12 +11,7 @@ import { LicenseService } from '../../services/license.service';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Subscription } from 'rxjs';
-import {
-  IonRouterLink,
-  IonToolbar,
-  IonText,
-  IonButton,
-} from '@ionic/angular/standalone';
+import { IonButton, IonText, IonToolbar } from '@ionic/angular/standalone';
 
 import { RouterLink, RouterLinkActive } from '@angular/router';
 

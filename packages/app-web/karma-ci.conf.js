@@ -5,9 +5,8 @@ module.exports = function (config) {
     plugins: [
       require("karma-jasmine"),
       require("karma-chrome-launcher"),
-      require("karma-jasmine-html-reporter"),
-      require("karma-coverage"),
       require("@angular-devkit/build-angular/plugins/karma"),
+      require("karma-mocha-reporter"),
     ],
     client: {
       jasmine: {
@@ -17,9 +16,6 @@ module.exports = function (config) {
         // or set a specific seed with `seed: 4321`
       },
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
-    },
-    jasmineHtmlReporter: {
-      suppressAll: true, // removes the duplicated traces
     },
     customLaunchers: {
       ChromiumHeadlessCI: {
@@ -34,12 +30,7 @@ module.exports = function (config) {
         ],
       },
     },
-    coverageReporter: {
-      dir: require("path").join(__dirname, "./coverage/ngv"),
-      subdir: ".",
-      reporters: [{ type: "html" }, { type: "text-summary" }],
-    },
-    reporters: ["progress"],
+    reporters: ["mocha"],
     port: 9876, // karma web server port
     colors: true,
     logLevel: config.LOG_INFO,

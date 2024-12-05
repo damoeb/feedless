@@ -8,14 +8,14 @@ import { OpmlService } from '../../services/opml.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import {
+  IonButton,
+  IonContent,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonPopover,
   ModalController,
   ToastController,
-  IonButton,
-  IonLabel,
-  IonPopover,
-  IonContent,
-  IonList,
-  IonItem,
 } from '@ionic/angular/standalone';
 import {
   ImportOpmlModalComponent,
@@ -24,10 +24,11 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { FileService } from '../../services/file.service';
 import { RepositoryService } from '../../services/repository.service';
-import { isArray } from 'lodash-es';
 import { GqlRepositoryCreateInput } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
+import { ImportOpmlModalModule } from '../../modals/import-opml-modal/import-opml-modal.module';
 
 @Component({
   selector: 'app-import-button',
@@ -42,6 +43,8 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
     IonList,
     IonItem,
     RemoveIfProdDirective,
+    SelectionModalModule,
+    ImportOpmlModalModule,
   ],
   standalone: true,
 })

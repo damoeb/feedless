@@ -1,4 +1,4 @@
-@import "../../../mixins";
+@use "../../../mixins";
 
 ion-header {
   box-shadow: none;
@@ -11,7 +11,7 @@ ion-content {
 }
 
 .website {
-  @include round-border();
+  @include mixins.round-border();
   min-height: 40vh;
   display: flex;
   flex: 1;
@@ -69,15 +69,15 @@ ion-item {
 }
 
 ion-button {
-  @include control();
+  @include mixins.control();
 }
 
 ion-input {
-  @include control();
+  @include mixins.control();
 }
 
 ion-select {
-  @include control();
+  @include mixins.control();
   --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
 
   &::part(container),

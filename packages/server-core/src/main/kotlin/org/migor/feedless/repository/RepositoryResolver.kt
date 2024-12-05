@@ -48,10 +48,9 @@ import java.util.*
 
 
 fun Cursor.toPageable(): Pageable {
-  val pageNumber = handlePageNumber(page).coerceAtLeast(0)
-  val pageSize = handlePageSize(pageSize)
-
-  return PageRequest.of(pageNumber, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, "createdAt"))
+  val pageNumber = page.coerceAtLeast(0)
+  val pageSize = (pageSize ?: PropertyService.maxPageSize).coerceAtLeast(1).coerceAtMost(PropertyService.maxPageSize)
+  return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
 }
 
 @DgsComponent
@@ -79,8 +78,13 @@ class RepositoryResolver {
     log.debug("repositories $data")
 
     val userId = coroutineContext.userId()
-    repositoryService.findAll(data.cursor.toPageable(), data.where, userId)
-      .map { it.toDto(it.ownerId == userId) }
+    val pageable = data.cursor.toPageable()
+    if (pageable.pageSize == 0) {
+      emptyList()
+    } else {
+      repositoryService.findAll(data.cursor.toPageable(), data.where, userId)
+        .map { it.toDto(it.ownerId == userId) }
+    }
   }
 
   @Throttled
@@ -121,9 +125,10 @@ class RepositoryResolver {
   suspend fun updateRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
-  ): Repository = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ) = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("updateRepository $data")
-    repositoryService.updateRepository(UUID.fromString(data.where.id), data.data).toDto(true)
+    repositoryService.updateRepository(UUID.fromString(data.where.id), data.data)
+    true
   }
 
   @Throttled
@@ -147,9 +152,13 @@ class RepositoryResolver {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
       val pageable = data?.cursor?.toPageable() ?: PageRequest.of(0, 10)
-      sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, data?.where, data?.orderBy)
-        .toList()
-        .map { it.toDto() }
+      if (pageable.pageSize == 0) {
+        emptyList()
+      } else {
+        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, data?.where, data?.orderBy)
+          .toList()
+          .map { it.toDto() }
+      }
     } else {
       emptyList()
     }
@@ -241,9 +250,3 @@ class RepositoryResolver {
 //    upVote = annotateBool(upVote)
 //  )
 //}
-
-private fun handlePageNumber(page: Int?): Int =
-  page ?: 0
-
-private fun handlePageSize(pageSize: Int?): Int =
-  (pageSize ?: PropertyService.maxPageSize).coerceAtLeast(1).coerceAtMost(PropertyService.maxPageSize)

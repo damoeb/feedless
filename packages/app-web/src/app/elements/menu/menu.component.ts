@@ -81,8 +81,6 @@ export class MenuComponent<T> implements OnInit {
 
   readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
 
-  readonly popoverElement = viewChild<IonPopover>('popover');
-
   currentValue: T;
   query = '';
   indexInFocus = -1;

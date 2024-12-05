@@ -8,8 +8,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { addIcons } from 'ionicons';
-import { chevronForwardOutline, chevronBackOutline } from 'ionicons/icons';
-import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/angular/standalone';
+import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
+import { IonCol, IonGrid, IonIcon, IonRow } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-responsive-columns',

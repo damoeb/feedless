@@ -1,17 +1,8 @@
 import { Component, inject } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular/standalone';
-import { LatLon, MapComponent } from '../../components/map/map.component';
+import { ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { LatLon } from '../../types';
 
 export interface MapModalComponentProps {
   position: LatLon;
@@ -22,17 +13,7 @@ export interface MapModalComponentProps {
   selector: 'app-map-modal',
   templateUrl: './map-modal.component.html',
   styleUrls: ['./map-modal.component.scss'],
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonContent,
-    MapComponent,
-  ],
-  standalone: true,
+  standalone: false,
 })
 export class MapModalComponent implements MapModalComponentProps {
   private readonly modalCtrl = inject(ModalController);

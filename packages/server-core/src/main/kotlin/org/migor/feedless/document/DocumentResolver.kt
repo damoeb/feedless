@@ -32,6 +32,7 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.UpdateRecordInput
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageRequest
+import org.migor.feedless.repository.toPageable
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
@@ -82,13 +83,17 @@ class DocumentResolver(
     log.debug("records $data")
     val repositoryId = UUID.fromString(data.where.repository.id)
 
-    val repository = repositoryService.findById(repositoryId).orElseThrow()
-    val pageable = toPageRequest(data.cursor.page, data.cursor.pageSize ?: 10)
-    documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).map {
-      it.toDto(
-        propertyService
-      )
-    }.toList()
+    val repository = repositoryService.findById(repositoryId).orElseThrow { NotFoundException("repository ${repositoryId} not found") }
+    val pageable = data.cursor.toPageable()
+    if (pageable.pageSize == 0) {
+      emptyList()
+    } else {
+      documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).map {
+        it.toDto(
+          propertyService
+        )
+      }.toList()
+    }
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)

@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
-import { LatLon } from '../components/map/map.component';
 import { Dayjs } from 'dayjs';
 import { BreadcrumbList, Event, WebPage } from 'schema-dts';
+import { LatLon } from '../types';
 
 export type PageTags = {
   title: string;
@@ -81,14 +81,14 @@ export class PageService {
     if (options.place) {
       geoTags.push({ name: 'geo.placename', content: options.place });
     }
-    if (options.position?.length == 2) {
+    if (options.position) {
       geoTags.push({
         name: 'geo.position',
-        content: `${options.position[0]};${options.position[1]}`, // '40.7128;-74.0060'
+        content: `${options.position.lat};${options.position.lon}`, // '40.7128;-74.0060'
       });
       geoTags.push({
         name: 'ICBM',
-        content: `${options.position[0]}, ${options.position[1]}`, // '40.7128, -74.0060'
+        content: `${options.position.lat}, ${options.position.lon}`, // '40.7128, -74.0060'
       });
     }
   }

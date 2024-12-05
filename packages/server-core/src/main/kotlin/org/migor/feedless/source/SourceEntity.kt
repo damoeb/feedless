@@ -28,7 +28,9 @@ import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.ScrapeFlow
 import org.migor.feedless.generated.types.Source
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.util.toMillis
 import java.sql.Types
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -65,6 +67,9 @@ open class SourceEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = "last_records_retrieved")
   open var lastRecordsRetrieved: Int = 0
+
+  @Column(name = "last_refreshed_at")
+  open var lastRefreshedAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "errors_in_succession")
   open var errorsInSuccession: Int = 0
@@ -112,6 +117,7 @@ fun SourceEntity.toDto(): Source {
     title = title,
     recordCount = 0,
     lastRecordsRetrieved = lastRecordsRetrieved,
+    lastRefreshedAt = lastRefreshedAt?.toMillis(),
     flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

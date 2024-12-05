@@ -1,21 +1,8 @@
 import { Component, inject } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular/standalone';
 import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
-import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
 export interface TagsModalComponentProps {
   tags: string[];
@@ -25,20 +12,7 @@ export interface TagsModalComponentProps {
   selector: 'app-tags-modal',
   templateUrl: './tags-modal.component.html',
   styleUrls: ['./tags-modal.component.scss'],
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonContent,
-    IonList,
-    SearchbarComponent,
-    IonItem,
-    IonLabel,
-  ],
-  standalone: true,
+  standalone: false,
 })
 export class TagsModalComponent implements TagsModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
@@ -60,8 +34,7 @@ export class TagsModalComponent implements TagsModalComponentProps {
   addTag(value: string | number) {
     const tag = `${value}`;
     if (tag.trim().length > 0) {
-      this.tags.push(tag);
-      this.tags = sortedUniq(this.tags);
+      this.tags = sortedUniq([...this.tags, tag]);
     }
   }
 }

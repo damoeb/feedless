@@ -145,7 +145,7 @@ export class EventPage implements OnInit, OnDestroy {
       place: this.location.displayName,
       lang: 'de',
       publishedAt: dayjs(this.event.createdAt),
-      position: [this.location.lat, this.location.lon],
+      position: this.location,
     };
   }
 

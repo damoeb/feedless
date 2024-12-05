@@ -1,4 +1,4 @@
-import { NgModule, inject, provideAppInitializer } from '@angular/core';
+import { inject, NgModule, provideAppInitializer } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   provideHttpClient,

@@ -11,15 +11,15 @@
 @if (repository) {
   <ion-row style="margin-top: 50px">
     <h2 class="ion-no-margin" style="display: inline">
-      {{ repository.title }}
+      {{ repository().title }}
     </h2>
-    @if (repository.visibility === GqlVisibility.IsPrivate) {
-      <ion-chip (click)="editRepository(['privacy'])">Private </ion-chip>
+    @if (repository().visibility === GqlVisibility.IsPrivate) {
+      <ion-chip (click)="editRepository(['privacy'])">Private</ion-chip>
     }
-    @if (repository.visibility === GqlVisibility.IsPublic) {
-      <ion-chip (click)="editRepository(['privacy'])">Public </ion-chip>
+    @if (repository().visibility === GqlVisibility.IsPublic) {
+      <ion-chip (click)="editRepository(['privacy'])">Public</ion-chip>
     }
-    @if (repository.pushNotificationsEnabled) {
+    @if (repository().pushNotificationsEnabled) {
       <ion-chip (click)="editRepository(['notifications'])"
         >Push Notifications
       </ion-chip>
@@ -28,11 +28,11 @@
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
     <ion-buttons slot="end">
       @if (isOwner) {
-        <ion-modal [trigger]="sourcesModalId">
+        <ion-modal #sourcesModalRef class="fullscreen-modal">
           <ng-template>
             <ion-header>
               <ion-toolbar>
-                <ion-title>Edit Sources</ion-title>
+                <ion-title>Sources of {{ repository().title }}</ion-title>
                 <ion-buttons slot="end">
                   <ion-button (click)="dismissModal()">
                     <ion-icon name="close-outline"></ion-icon>
@@ -40,12 +40,26 @@
                 </ion-buttons>
               </ion-toolbar>
               <ion-toolbar style="--background: transparent">
-                <ion-title> {{ repository.sourcesCount }} Sources</ion-title>
+                <ion-title>
+                  {{ repository().sourcesCount }}
+                  @if (repository().sourcesCount === 1) {
+                    Source
+                  } @else {
+                    Sources
+                  }
+                </ion-title>
                 <ion-buttons slot="end">
-                  <!--              <ion-button>-->
-                  <!--                <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
-                  <!--                Trigger Refresh-->
-                  <!--              </ion-button>-->
+                  <ion-button
+                    (click)="refreshSources()"
+                    [disabled]="repository().sources.length === 0"
+                    class="ion-margin-start"
+                    shape="round"
+                    size="small"
+                    title="Trigger Refresh"
+                  >
+                    <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                    Trigger Refresh
+                  </ion-button>
                   <ion-button (click)="jsonPicker.click()">
                     <ion-icon
                       name="cloud-upload-outline"
@@ -56,7 +70,7 @@
                   <ion-button (click)="editSource()">
                     <ion-icon name="add-outline" slot="start"></ion-icon>
                     Add Source
-                    @if (repository.sourcesCount === 0) {
+                    @if (repository().sourcesCount === 0) {
                       <app-bubble color="red" slot="end"></app-bubble>
                     }
                   </ion-button>
@@ -65,27 +79,39 @@
             </ion-header>
             <ion-content class="ion-padding">
               <ion-list>
-                @if (repository.sourcesCount === 0) {
+                @if (repository().sourcesCount === 0) {
                   <ion-item>
                     <ion-label>No sources defined</ion-label>
                   </ion-item>
                 }
-                @for (source of sources; track source) {
-                  <ion-item>
-                    <app-bubble
-                      [color]="getHealthColorForSource(source)"
-                    ></app-bubble>
-                    <ion-label style="overflow: hidden">
-                      <h3 class="ion-padding-horizontal nowrap">
+
+                <ion-row style="opacity: 0.5">
+                  <ion-col size="1" class="ion-text-center">Status</ion-col>
+                  <ion-col size="4" class="ion-padding-start"
+                    >Description</ion-col
+                  >
+                  <ion-col size="2">Refreshed Last</ion-col>
+                  <ion-col size="2">Retrieved Last</ion-col>
+                </ion-row>
+                @if (loadingSources) {
+                  <ion-progress-bar
+                    color="medium"
+                    type="indeterminate"
+                  ></ion-progress-bar>
+                }
+
+                @for (source of sources; track source.id) {
+                  <ion-row>
+                    <ion-col size="1" class="ion-text-center">
+                      <app-bubble
+                        [color]="getHealthColorForSource(source)"
+                      ></app-bubble>
+                    </ion-col>
+                    <ion-col size="4">
+                      <div style="padding-left: 10px">
                         {{ source.title }}
-                      </h3>
-                      <p class="ion-padding-horizontal nowrap">
-                        <ion-note>{{ getUrl(source) }}</ion-note>
-                      </p>
-                      <p class="ion-padding-horizontal nowrap">
-                        {{ getPluginsOfSource(source) }}
-                      </p>
-                      <p>
+                      </div>
+                      <ion-buttons>
                         <ion-button
                           (click)="editTags(source)"
                           [color]="
@@ -100,53 +126,78 @@
                           fill="clear"
                           >{{ stringifyLocalization(source) }}
                         </ion-button>
+                      </ion-buttons>
+
+                      @if (source.disabled) {
+                        <p>
+                          <ion-label color="danger">
+                            Disabled.
+                            {{ source.lastErrorMessage }}
+                          </ion-label>
+                        </p>
+                      }
+                    </ion-col>
+                    <ion-col size="2">
+                      @if (source.lastRefreshedAt) {
+                        <ion-text class="nowrap" title="last fetch">
+                          {{ fromNow(source.lastRefreshedAt) }} ago
+                        </ion-text>
+                      } @else {
+                        <ion-text class="nowrap" title="last fetch" color="">
+                          Never fetched
+                        </ion-text>
+                      }
+                    </ion-col>
+                    <ion-col size="2">
+                      @if (source.lastRefreshedAt) {
                         <ion-text
                           class="nowrap"
-                          title="last fetch"
+                          title="last items retrieved"
                           [color]="
                             source.lastRecordsRetrieved === 0
                               ? 'danger'
                               : undefined
                           "
                         >
-                          @if (source.lastRecordsRetrieved === 0) {
-                            <span>Last fetched</span>
-                          }
                           {{ source.lastRecordsRetrieved }} items
                         </ion-text>
-                      </p>
-                      @if (source.disabled) {
-                        <ion-label color="danger">
-                          Disabled.
-                          {{ source.lastErrorMessage }}
-                        </ion-label>
+                      } @else {
+                        -
                       }
-                    </ion-label>
-                    <ion-buttons [collapse]="true">
-                      @if (!source.disabled) {
+                    </ion-col>
+                    <ion-col size="3">
+                      <ion-buttons
+                        [collapse]="true"
+                        style="justify-self: flex-end"
+                      >
+                        @if (!source.disabled) {
+                          <ion-button
+                            (click)="setDisabledForSource(source, true)"
+                          >
+                            Disable
+                          </ion-button>
+                        }
+                        @if (source.disabled) {
+                          <ion-button
+                            (click)="setDisabledForSource(source, false)"
+                            color="success"
+                            fill="solid"
+                          >
+                            Enable
+                          </ion-button>
+                        }
                         <ion-button
-                          (click)="setDisabledForSource(source, true)"
+                          (click)="deleteSource(source)"
+                          color="danger"
                         >
-                          Disable
+                          Delete
                         </ion-button>
-                      }
-                      @if (source.disabled) {
-                        <ion-button
-                          (click)="setDisabledForSource(source, false)"
-                          color="success"
-                          fill="solid"
-                        >
-                          Enable
+                        <ion-button (click)="editSource(source)">
+                          Edit
                         </ion-button>
-                      }
-                      <ion-button (click)="deleteSource(source)" color="danger">
-                        Delete
-                      </ion-button>
-                      <ion-button (click)="editSource(source)">
-                        Edit
-                      </ion-button>
-                    </ion-buttons>
-                  </ion-item>
+                      </ion-buttons>
+                    </ion-col>
+                  </ion-row>
                 }
               </ion-list>
             </ion-content>
@@ -173,7 +224,7 @@
         <!--            </ion-header>-->
         <!--            <ion-content class="ion-padding">-->
         <!--              <ion-list>-->
-        <!--                <ion-item *ngFor="let h of repository.harvests">-->
+        <!--                <ion-item *ngFor="let h of repository().harvests">-->
         <!--                  <ion-label> Started {{ fromNow(h.startedAt) }} ago</ion-label>-->
         <!--                  <ion-label>-->
         <!--                    Took {{ diffInSeconds(h.finishedAt, h.startedAt) }} sec-->
@@ -192,19 +243,19 @@
         <!--          <ion-icon name="pulse-outline" slot="start"></ion-icon>-->
         <!--          <ion-label> Harvests</ion-label>-->
         <!--        </ion-button>-->
-        <ion-button [id]="sourcesModalId">
+        <ion-button (click)="openSourcesModal()">
           <ion-icon name="git-branch-outline" slot="start"></ion-icon>
           <ion-label>
             Sources
             <!--            <app-bubble *ngIf="hasErrors()" color="red"></app-bubble>-->
           </ion-label>
           <ion-badge color="light" style="margin-left: 5px"
-            >{{ repository.sourcesCount }}
-            @if (repository.sourcesCountWithProblems > 0) {
+            >{{ repository().sourcesCount }}
+            @if (repository().sourcesCountWithProblems > 0) {
               <span>
                 /
                 <span style="color: var(--ion-color-danger)">
-                  {{ repository.sourcesCountWithProblems }}
+                  {{ repository().sourcesCountWithProblems }}
                 </span>
               </span>
             }
@@ -301,7 +352,7 @@
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-col> {{ repository.description }}</ion-col>
+      <ion-col> {{ repository().description }}</ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
@@ -309,18 +360,18 @@
           <!--          <dt>Filters</dt>-->
           <!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
           <dt>Created</dt>
-          <dd>{{ repository.createdAt | date: dateFormat }}</dd>
-          @if (repository.refreshCron) {
+          <dd>{{ repository().createdAt | date: dateFormat }}</dd>
+          @if (repository().refreshCron) {
             <dt>Last Updated</dt>
-            <dd>{{ fromNow(repository.lastUpdatedAt) }} ago</dd>
+            <dd>{{ fromNow(repository().lastUpdatedAt) }} ago</dd>
           }
-          @if (isOwner && repository.refreshCron) {
+          @if (isOwner && repository().refreshCron) {
             <dt>Next Update</dt>
             <dd>
-              {{ fromNow(repository.nextUpdateAt) }}
+              {{ fromNow(repository().nextUpdateAt) }}
               <ion-button
                 (click)="refreshSources()"
-                [disabled]="repository.sources.length === 0"
+                [disabled]="repository().sources.length === 0"
                 class="ion-margin-start"
                 shape="round"
                 size="small"
@@ -390,7 +441,7 @@
         >
           <ion-segment-button [value]="viewModeList">List</ion-segment-button>
           <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
-          @if (repository.product === GqlProductName.VisualDiff) {
+          @if (repository().product === GqlProductName.VisualDiff) {
             <ion-segment-button [value]="viewModeDiff"
               >Diff
             </ion-segment-button>
@@ -404,7 +455,7 @@
     @if (!loading) {
       @if (viewModeFc.value === viewModeHistogram) {
         <div style="position: relative">
-          <app-histogram [data]="repository.frequency"></app-histogram>
+          <app-histogram [data]="repository().frequency"></app-histogram>
         </div>
       }
       @if (viewModeFc.value === viewModeDiff) {

@@ -36,7 +36,10 @@
       @if (date) {
       <div class="calendar ion-margin-top">
         <div class="calendar-row">
-          <div style="font-size: 2rem; align-content: center">
+          <div
+            style="font-size: 2rem; align-content: center"
+            class="ion-hide-md-down"
+          >
             <a
               [routerLink]="getDateUrl(dateWindow[0].date.subtract(3, 'days'))"
             >
@@ -51,14 +54,18 @@
           </div>
           <div class="calendar-days">
             @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
-            <a [routerLink]="'/'+createUrl(location, d.date)">
+            <a
+              [routerLink]="'/'+createUrl(location, d.date)"
+              [ngClass]="{
+                                'ion-hide-md-down': d.offset > 3
+                              }"
+            >
               <div
                 class="calendar-day"
                 (click)="$event.preventDefault(); $event.stopImmediatePropagation(); changeDate(d.date)"
                 [ngClass]="{
                                 past: isPast(d.date),
                                 active: isSame(date, d.date, ['day', 'month', 'year']),
-                                'ion-hide-md-down': d.offset > 3
                               }"
               >
                 <div>{{ getWeekday(d.date) }}</div>
@@ -71,11 +78,11 @@
             }
           </div>
           <div style="font-size: 2rem; align-content: center">
-            <a [routerLink]="getDateUrl(dateWindow[0].date.add(7, 'days'))">
+            <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
               <ion-button
                 size="expand"
                 color="light"
-                (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(7)"
+                (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(4)"
               >
                 <ion-icon
                   name="arrow-forward-outline"
@@ -101,14 +108,14 @@
             white-space: break-spaces;
           "
         >
-          Veranstaltungen in {{ location?.displayName }}
+          Veranstaltungen in {{ location?.place }}
         </h1>
-        <div>
+        <h2 style="font-size: 1.2rem">
           {{getWeekday(date)}}, {{ formatDate(date, 'DD.MM.YYYY') }} @if
           (isPast(date)) {
           <ion-badge color="danger">Datum in Vergangenheit</ion-badge>
           }
-        </div>
+        </h2>
         @if (loadingDay) {
         <ion-spinner name="dots"></ion-spinner>
         } @if (!loadingDay) {

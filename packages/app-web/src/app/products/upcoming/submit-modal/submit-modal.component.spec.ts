@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SubmitModalComponent } from './submit-modal.component';
+import { SubmitModalModule } from './submit-modal.module';
 import { AppTestModule } from '../../../app-test.module';
 
 describe('SubmitModalComponent', () => {
@@ -9,7 +10,7 @@ describe('SubmitModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubmitModalComponent, AppTestModule.withDefaults()],
+      imports: [SubmitModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubmitModalComponent);

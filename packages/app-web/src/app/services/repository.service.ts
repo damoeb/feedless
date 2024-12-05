@@ -8,6 +8,7 @@ import {
   GqlCountRepositoriesQueryVariables,
   GqlCreateRepositoriesMutation,
   GqlCreateRepositoriesMutationVariables,
+  GqlCursor,
   GqlDeleteRepositoryMutation,
   GqlDeleteRepositoryMutationVariables,
   GqlListPublicRepositoriesQuery,
@@ -24,16 +25,24 @@ import {
   GqlSourcesByRepositoryQuery,
   GqlSourcesByRepositoryQueryVariables,
   GqlSourcesInput,
+  GqlSourcesWithFlowByRepositoryQuery,
+  GqlSourcesWithFlowByRepositoryQueryVariables,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
   ListPublicRepositories,
   ListRepositories,
   RepositoryById,
   SourcesByRepository,
+  SourcesWithFlowByRepository,
   UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { PublicRepository, Repository, RepositoryFull } from '../graphql/types';
+import {
+  PublicRepository,
+  RepositoryFull,
+  RepositoryWithFrequency,
+  SourceFull,
+} from '../graphql/types';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
 import { zenToRx } from './agent.service';
@@ -55,7 +64,7 @@ export class RepositoryService {
 
   async createRepositories(
     data: GqlRepositoryCreateInput[],
-  ): Promise<Repository[]> {
+  ): Promise<RepositoryWithFrequency[]> {
     if (this.sessionService.isAuthenticated()) {
       return this.apollo
         .mutate<
@@ -96,7 +105,9 @@ export class RepositoryService {
       new Blob(
         [
           JSON.stringify(
-            repositories.map((r) => this.toRepositoryInput(r)),
+            repositories.map((it) =>
+              this.getRepositoryInputWithSourcesAndFlow(it),
+            ),
             null,
             2,
           ),
@@ -115,10 +126,7 @@ export class RepositoryService {
     document.body.removeChild(a);
   }
 
-  updateRepository(
-    data: GqlRepositoryUpdateInput,
-    sources: GqlSourcesInput = null,
-  ): Promise<RepositoryFull> {
+  updateRepository(data: GqlRepositoryUpdateInput): Promise<void> {
     return this.apollo
       .mutate<
         GqlUpdateRepositoryMutation,
@@ -127,16 +135,15 @@ export class RepositoryService {
         mutation: UpdateRepository,
         variables: {
           data,
-          sources,
         },
       })
-      .then((response) => response.data!.updateRepository);
+      .then();
   }
 
   listRepositories(
     data: GqlRepositoriesInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Repository[]> {
+  ): Promise<RepositoryWithFrequency[]> {
     return this.apollo
       .query<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>({
         query: ListRepositories,
@@ -238,14 +245,85 @@ export class RepositoryService {
       .then((response) => response.data.repository.sources);
   }
 
-  public toRepositoryInput(
+  async getSourceFullByRepository(
+    repositoryId: string,
+    sourceId: string,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<SourceFull> {
+    return this.apollo
+      .query<
+        GqlSourcesWithFlowByRepositoryQuery,
+        GqlSourcesWithFlowByRepositoryQueryVariables
+      >({
+        query: SourcesWithFlowByRepository,
+        fetchPolicy,
+        variables: {
+          repository: {
+            where: {
+              id: repositoryId,
+            },
+          },
+          sources: {
+            where: {
+              id: {
+                eq: sourceId,
+              },
+            },
+            cursor: {
+              page: 0,
+              pageSize: 1,
+            },
+          },
+        },
+      })
+      .then((response) => response.data.repository.sources[0]);
+  }
+
+  async getSourcesFullByRepository(
+    repositoryId: string,
+    cursor: GqlCursor,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<SourceFull[]> {
+    return this.apollo
+      .query<
+        GqlSourcesWithFlowByRepositoryQuery,
+        GqlSourcesWithFlowByRepositoryQueryVariables
+      >({
+        query: SourcesByRepository,
+        fetchPolicy,
+        variables: {
+          repository: {
+            where: {
+              id: repositoryId,
+            },
+          },
+          sources: {
+            cursor,
+          },
+        },
+      })
+      .then((response) => response.data.repository.sources);
+  }
+
+  public async getRepositoryInputWithSourcesAndFlow(
     repository: RepositoryFull,
-  ): GqlRepositoryCreateInput {
+  ): Promise<GqlRepositoryCreateInput> {
+    const sources: GqlSourceInput[] = [];
+    for (let page = 0; ; ) {
+      const sourcesPage = await this.getSourcesFullByRepository(repository.id, {
+        page,
+      });
+      if (sourcesPage.length === 0) {
+        break;
+      }
+      sources.push(...sourcesPage.map((it) => this.toSourceInput(it)));
+      page++;
+    }
+
     return {
       visibility: repository.visibility,
       product: repository.product,
-      sources:
-        repository.sources?.map((source) => this.toSourceInput(source)) ?? [], // SourceInput
+      sources, // SourceInput
       // segmented: SegmentInput
       title: repository.title,
       description: repository.description,
@@ -259,7 +337,7 @@ export class RepositoryService {
     };
   }
 
-  private toSourceInput(source: Source): GqlSourceInput {
+  public toSourceInput(source: SourceFull): GqlSourceInput {
     const sourceInput: GqlSourceInput = {
       title: source.title,
       flow: removeTypename(source.flow) as any,

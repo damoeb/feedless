@@ -25,7 +25,6 @@
     "test": "ng test",
     "test:ci": "ng test -c ci",
     "lint": "yarn prettier --write --log-level=warn .",
-    "e2e": "ng e2e",
     "outdated": "upgrade-interactive --latest",
     "codegen": "graphql-codegen --config codegen.yml && yarn generate-verticals-data"
   },
@@ -78,9 +77,6 @@
     "uuid": "^11.0.3",
     "zone.js": "0.15.0"
   },
-  "engines": {
-    "node": "22"
-  },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.0.2",
     "@angular-eslint/builder": "^18.4.0",
@@ -92,6 +88,7 @@
     "@angular/compiler": "^19.0.1",
     "@angular/compiler-cli": "^19.0.1",
     "@angular/language-service": "^19.0.1",
+    "@badisi/wdio-harness": "^4.1.0",
     "@graphql-codegen/cli": "^5.0.3",
     "@graphql-codegen/typescript": "^4.1.1",
     "@graphql-codegen/typescript-document-nodes": "^4.0.11",
@@ -122,8 +119,8 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
+    "karma-mocha-reporter": "^2.2.5",
     "prettier": "^3.3.3",
-    "protractor": "^7.0.0",
     "sitemap": "^8.0.0",
     "ts-node": "^10.9.2",
     "typescript": "5.6.3"

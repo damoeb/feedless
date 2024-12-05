@@ -20,14 +20,13 @@ import {
   WebPage,
 } from 'schema-dts';
 import { getCachedLocations } from '../places';
-import { LatLon } from '../../../components/map/map.component';
 import { PageService, PageTags } from '../../../services/page.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Location, NgClass } from '@angular/common';
 import {
-  homeRoute,
   parseDateFromUrl,
   parseLocationFromUrl,
+  upcomingBaseRoute,
 } from '../upcoming-product-routes';
 import { Subscription } from 'rxjs';
 import 'dayjs/locale/de';
@@ -37,7 +36,7 @@ import {
   arrowForwardOutline,
   sendOutline,
 } from 'ionicons/icons';
-import { NamedLatLon, Nullable } from '../../../types';
+import { LatLon, NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
   IonBadge,
@@ -70,7 +69,7 @@ function roundLatLon(v: number): number {
 }
 
 export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
-  const country = homeRoute({}).events({}).countryCode({
+  const country = upcomingBaseRoute({}).events({}).countryCode({
     countryCode: location.countryCode,
   });
   const region = country.region({
@@ -173,10 +172,10 @@ export class EventsPage implements OnInit, OnDestroy {
           );
           this.saveLocation(this.location);
 
-          this.latLon = [this.location.lat, this.location.lon];
+          this.latLon = this.location;
 
           const { perimeter } =
-            homeRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
+            upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
               params as any,
             );
 
@@ -220,7 +219,7 @@ export class EventsPage implements OnInit, OnDestroy {
         place: location.displayName,
         lang: 'de',
         publishedAt: dayjs(),
-        position: [location.lat, location.lon],
+        position: location,
       };
     } else {
       return {
@@ -277,8 +276,8 @@ export class EventsPage implements OnInit, OnDestroy {
         },
         latLng: {
           near: {
-            lat: this.latLon[0],
-            lon: this.latLon[1],
+            lat: this.latLon.lat,
+            lon: this.latLon.lon,
           },
           distanceKm: this.perimeter,
         },
@@ -390,8 +389,8 @@ export class EventsPage implements OnInit, OnDestroy {
     return this.getDistanceFromLatLonInKm(
       event.latLng.lat,
       event.latLng.lon,
-      this.latLon[0],
-      this.latLon[1],
+      this.latLon.lat,
+      this.latLon.lon,
     );
   }
 
@@ -443,7 +442,7 @@ export class EventsPage implements OnInit, OnDestroy {
 
     return (
       '/' +
-      homeRoute({})
+      upcomingBaseRoute({})
         .events({})
         .countryCode({ countryCode })
         .region({ region })
@@ -496,12 +495,12 @@ export class EventsPage implements OnInit, OnDestroy {
     if (location) {
       const { countryCode, area, place } = location;
       const { year, month, day } =
-        homeRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
+        upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
           this.activatedRoute.snapshot.params as any,
         );
       return (
         '/' +
-        homeRoute({})
+        upcomingBaseRoute({})
           .events({})
           .countryCode({ countryCode })
           .region({ region: area })
@@ -528,7 +527,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   createUrl(location: NamedLatLon, date: Dayjs): string {
-    return homeRoute({})
+    return upcomingBaseRoute({})
       .events({})
       .countryCode({ countryCode: location.countryCode })
       .region({ region: location.area })

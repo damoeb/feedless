@@ -1,4 +1,7 @@
 .reader {
+  --header-margin-top: 2em;
+  --header-font-size: 2.5em;
+
   &--hide-images {
     svg,
     imag,
@@ -27,9 +30,6 @@
       margin-top: inherit;
     }
   }
-
-  --header-margin-top: 2em;
-  --header-font-size: 2.5em;
 
   h1,
   h2,

@@ -2,20 +2,15 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   OnDestroy,
   OnInit,
-  inject,
 } from '@angular/core';
 import { AgentService } from '../../services/agent.service';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { AuthService } from '../../services/auth.service';
-import {
-  IonRouterLink,
-  IonButton,
-  IonLabel,
-  IonChip,
-} from '@ionic/angular/standalone';
+import { IonButton, IonChip, IonLabel } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 
 import { BubbleComponent } from '../bubble/bubble.component';

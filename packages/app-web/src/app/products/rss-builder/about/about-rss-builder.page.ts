@@ -13,21 +13,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { dateFormat } from '../../../services/session.service';
 import { LicenseService } from '../../../services/license.service';
-import '@justinribeiro/lite-youtube';
 import { VerticalSpec } from '../../../all-verticals';
 import { AppConfigService } from '../../../services/app-config.service';
 import { LocalizedLicense } from '../../../graphql/types';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
-import {
-  IonButton,
-  IonContent,
-  IonIcon,
-  IonItem,
-} from '@ionic/angular/standalone';
+import { IonContent, IonItem } from '@ionic/angular/standalone';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
-import { DatePipe } from '@angular/common';
 import { ImportButtonComponent } from '../../../components/import-button/import-button.component';
 
 @Component({
@@ -40,12 +33,9 @@ import { ImportButtonComponent } from '../../../components/import-button/import-
     IonContent,
     ProductHeaderComponent,
     SearchbarComponent,
-    IonButton,
     RouterLink,
-    IonIcon,
     ImportButtonComponent,
     IonItem,
-    DatePipe,
   ],
   standalone: true,
 })

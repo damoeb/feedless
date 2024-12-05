@@ -28,6 +28,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
         and (r.triggerScheduledNextAt is null or r.triggerScheduledNextAt < :now)
         and u.locked = false
         and u.banned = false
+        and u.hasAcceptedTerms = true
         and r.archived = false
         and u.purgeScheduledFor is null
         and r.sourcesSyncCron > ''

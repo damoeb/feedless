@@ -24,7 +24,6 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
@@ -36,44 +35,26 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
-class UserService {
+class UserService(
+  private var userDAO: UserDAO,
+  private var productDAO: ProductDAO,
+  private var meterRegistry: MeterRegistry,
+  private var environment: Environment,
+  private var featureService: FeatureService,
+  private var repositoryDAO: RepositoryDAO,
+  private var productService: ProductService,
+  private var githubConnectionService: GithubConnectionDAO,
+  private var connectedAppDAO: ConnectedAppDAO,
+  @Lazy
+  private var telegramBotService: Optional<TelegramBotService>
+) {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
-
-  @Autowired
-  private lateinit var productDAO: ProductDAO
-
-  @Autowired
-  private lateinit var meterRegistry: MeterRegistry
-
-  @Autowired
-  private lateinit var environment: Environment
-
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var productService: ProductService
-
-  @Autowired
-  private lateinit var githubConnectionDAO: GithubConnectionDAO
-
-  @Autowired
-  private lateinit var connectedAppDAO: ConnectedAppDAO
-
-  @Lazy
-  @Autowired(required = false)
-  private lateinit var telegramBotService: TelegramBotService
 
   @Transactional
   suspend fun createUser(
@@ -89,14 +70,14 @@ class UserService {
 //    if (plan.availability == PlanAvailability.unavailable) {
 //      throw BadRequestException("plan $planName for product $productName is unavailable")
 //    }
-    val savedUser = withContext(Dispatchers.IO) {
+    return withContext(Dispatchers.IO) {
       if (StringUtils.isNotBlank(email)) {
         if (userDAO.existsByEmail(email!!)) {
           throw BadRequestException("user already exists")
         }
       }
       if (StringUtils.isNotBlank(githubId)) {
-        if (githubConnectionDAO.existsByGithubId(githubId!!)) {
+        if (githubConnectionService.existsByGithubId(githubId!!)) {
           throw BadRequestException("user already exists")
         }
 
@@ -108,24 +89,18 @@ class UserService {
       user.admin = false
       user.anonymous = false
       user.hasAcceptedTerms = isSelfHosted()
-//    if (!user.anonymous && !user.root) {
-//      when (planName) {
-////        PlanName.waitlist -> mailService.sendWelcomeWaitListMail(corrId, user)
-//        PlanName.free -> mailService.sendWelcomeFreeMail(corrId, user)
-//        else -> mailService.sendWelcomePaidMail(corrId, user)
-//      }
-//    }
 
-      userDAO.save(user)
+      val savedUser = userDAO.save(user)
+
+      if (githubId != null) {
+        linkGithubAccount(savedUser, githubId)
+      }
+      createInboxRepository(savedUser)
+
+      // todo saas only?
+      productService.enableDefaultSaasProduct(Vertical.feedless, savedUser.id)
+      savedUser
     }
-
-    if (githubId != null) {
-      linkGithubAccount(savedUser, githubId)
-    }
-
-    createInboxRepository(savedUser).id
-
-    return savedUser
   }
 
   @Transactional
@@ -170,6 +145,7 @@ class UserService {
     val user = withContext(Dispatchers.IO) {
       userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
     }
+
     var changed = false
 
     val corrId = coroutineContext.corrId()
@@ -246,7 +222,7 @@ class UserService {
     log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
 
     val isGithubAccountLinked = withContext(Dispatchers.IO) {
-      githubConnectionDAO.existsByUserId(user.id)
+      githubConnectionService.existsByUserId(user.id)
     }
 
     if (!isGithubAccountLinked) {
@@ -294,8 +270,10 @@ class UserService {
       app.userId = userId
 
       connectedAppDAO.save(app)
-      if (app is TelegramConnectionEntity) {
-        telegramBotService.showOptionsForKnownUser(app.chatId)
+      telegramBotService.getOrNull()?.let {
+        if (app is TelegramConnectionEntity) {
+          it.showOptionsForKnownUser(app.chatId)
+        }
       }
     }
   }
@@ -312,7 +290,7 @@ class UserService {
 //      }
 
       if (app is TelegramConnectionEntity) {
-        telegramBotService.sendMessage(app.chatId, "Disconnected")
+        telegramBotService.getOrNull()?.let { it.sendMessage(app.chatId, "Disconnected") }
       } else {
         throw IllegalArgumentException("github connection cannot be removed")
       }
@@ -334,7 +312,7 @@ class UserService {
     githubLink.authorizedAt = LocalDateTime.now()
 
     withContext(Dispatchers.IO) {
-      githubConnectionDAO.save(githubLink)
+      githubConnectionService.save(githubLink)
     }
   }
 

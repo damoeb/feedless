@@ -8,31 +8,12 @@ import {
   OnInit,
 } from '@angular/core';
 import { GqlSourceInput } from '../../../generated/graphql';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonFooter,
-  IonHeader,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular/standalone';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ScrapeService } from '../../services/scrape.service';
 import { InteractiveWebsiteController } from './interactive-website-controller';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
-import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
-import { JsonPipe, NgClass } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export type InteractiveWebsiteModalComponentProps = {
   source: GqlSourceInput;
@@ -43,28 +24,7 @@ export type InteractiveWebsiteModalComponentProps = {
   templateUrl: './interactive-website-modal.component.html',
   styleUrls: ['./interactive-website-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonContent,
-    IonRow,
-    InteractiveWebsiteComponent,
-    IonList,
-    NgClass,
-    IonItem,
-    IonSelect,
-    FormsModule,
-    ReactiveFormsModule,
-    IonSelectOption,
-    IonLabel,
-    IonFooter,
-    JsonPipe,
-  ],
-  standalone: true,
+  standalone: false,
 })
 export class InteractiveWebsiteModalComponent
   extends InteractiveWebsiteController

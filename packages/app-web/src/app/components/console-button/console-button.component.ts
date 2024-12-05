@@ -3,22 +3,19 @@ import {
   Component,
   inject,
   Input,
-  input,
 } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { IonButton } from '@ionic/angular/standalone';
+import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 
 @Component({
   selector: 'app-console-button',
   templateUrl: './console-button.component.html',
   styleUrls: ['./console-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, CodeEditorModalComponent],
+  imports: [IonButton, CodeEditorModalModule],
   standalone: true,
 })
 export class ConsoleButtonComponent {

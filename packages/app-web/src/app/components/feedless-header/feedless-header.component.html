@@ -31,14 +31,26 @@
           link="/feeds"
           name="Feeds"
         ></app-repositories-button>
-        <ion-button href="https://discord.gg/8Tu742HQkr" target="_blank">
-          Discord
-        </ion-button>
         <app-agents-button></app-agents-button>
+        <ion-button
+          href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"
+          target="_blank"
+        >
+          <ion-icon name="logo-slack" slot="start"></ion-icon>
+          Slack
+        </ion-button>
       </ion-buttons>
     </div>
 
     <ion-buttons slot="end">
+      <ion-button
+        color="primary"
+        fill="solid"
+        routerLink="/feed-builder"
+        routerLinkActive="hidden"
+      >
+        Create Feed
+      </ion-button>
       <app-dark-mode-button></app-dark-mode-button>
       <!--      <ion-button routerLink="/plans">-->
       <!--        <ion-label> Pricing </ion-label>-->

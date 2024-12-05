@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { VisualDiffProductPage } from './visual-diff-product.page';
 import {
   ApolloMockController,

@@ -1,4 +1,4 @@
-@import "../upcoming-mixins";
+@use "../upcoming-mixins";
 
 .calendar {
   //--app-border-color: rgba(var(--app-foreground-rgb), 0.15);
@@ -38,6 +38,7 @@
   padding: 5px;
   color: rgba(var(--app-foreground-rgb), 0.8);
   border-radius: 10px;
+  border: 2px solid transparent;
 
   &:not(.no-background) {
     background: rgba(var(--app-foreground-rgb), 0.05);
@@ -52,8 +53,6 @@
   &--other {
     opacity: 0.5;
   }
-
-  border: 2px solid transparent;
 
   &--active {
     --app-border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;

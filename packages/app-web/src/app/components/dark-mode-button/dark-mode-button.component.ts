@@ -1,15 +1,15 @@
 import {
   Component,
+  inject,
   Input,
+  input,
   OnDestroy,
   OnInit,
-  inject,
-  input,
 } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
-import { sunnyOutline, moonOutline } from 'ionicons/icons';
+import { moonOutline, sunnyOutline } from 'ionicons/icons';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 
 @Component({

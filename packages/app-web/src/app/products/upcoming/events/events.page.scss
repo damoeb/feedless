@@ -1,4 +1,4 @@
-@import "../upcoming-mixins";
+@use "../upcoming-mixins";
 
 ion-content::part(scroll) {
   display: flex;
@@ -24,6 +24,7 @@ ion-content::part(scroll) {
   padding: 1rem;
   border-radius: 8px;
   align-items: baseline;
+  text-align: center;
   cursor: pointer;
   //color: var(--ion-color-medium);
   div {

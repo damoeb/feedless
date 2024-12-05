@@ -1,5 +1,5 @@
-@import "../../../mixins";
+@use "../../../mixins";
 
 .builder-label {
-  @include builder-label;
+  @include mixins.builder-label;
 }

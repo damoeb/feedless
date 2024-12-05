@@ -7,6 +7,7 @@ import {
 } from '../../../app-test.module';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
+import { TrackerEditModalModule } from './tracker-edit-modal.module';
 
 describe('TrackerEditModalComponent', () => {
   let component: TrackerEditModalComponent;
@@ -14,7 +15,7 @@ describe('TrackerEditModalComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [TrackerEditModalComponent, AppTestModule.withDefaults()],
+      imports: [TrackerEditModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(

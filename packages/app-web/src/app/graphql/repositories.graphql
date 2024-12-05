@@ -41,25 +41,6 @@ query countRepositories($data: CountRepositoriesInput!) {
   countRepositories(data: $data)
 }
 
-fragment RepositoryFull on Repository {
-  ...RepositoryFragment
-  frequency(groupBy: createdAt) {
-    count
-    group
-  }
-  #  harvests {
-  #    startedAt
-  #    finishedAt
-  #    itemsAdded
-  #    itemsIgnored
-  #    logs
-  #  }
-  sourcesCount
-  sources(data: $data) {
-    ...SourceFragment
-  }
-}
-
 query repositoryById(
   $repository: RepositoryWhereInput!
   $sources: SourcesInput
@@ -71,6 +52,7 @@ query repositoryById(
       group
     }
     sourcesCount
+    #    todo remove sources
     sources(data: $sources) {
       ...SourceFragment
     }
@@ -102,33 +84,18 @@ query sourcesByRepository(
   }
 }
 
-mutation updateRepository(
-  $data: RepositoryUpdateInput!
+query sourcesWithFlowByRepository(
+  $repository: RepositoryWhereInput!
   $sources: SourcesInput
 ) {
-  updateRepository(data: $data) {
-    ...RepositoryFragment
-    frequency(groupBy: createdAt) {
-      count
-      group
-    }
-    sourcesCount
+  repository(data: $repository) {
     sources(data: $sources) {
       ...SourceFragment
-    }
-    annotations {
-      votes {
-        id
-        flag {
-          value
-        }
-        upVote {
-          value
-        }
-        downVote {
-          value
-        }
-      }
+      ...ScrapeFlowFragment
     }
   }
+}
+
+mutation updateRepository($data: RepositoryUpdateInput!) {
+  updateRepository(data: $data)
 }

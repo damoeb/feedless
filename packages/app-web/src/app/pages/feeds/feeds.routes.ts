@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
+import { FeedsPage } from './feeds.page';
 
-export const FEED_ROUTES: Routes = [
+export const FEEDS_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./feeds.page').then((m) => m.FeedsPage),
+    component: FeedsPage,
   },
 ];

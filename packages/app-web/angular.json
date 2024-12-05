@@ -21,6 +21,7 @@
             "tsConfig": "tsconfig.app.json",
             "allowedCommonJsDependencies": [
               "dayjs",
+              "typesafe-routes",
               "leaflet",
               "img-comparison-slider"
             ],

@@ -1,10 +1,10 @@
-import { Component, Input, OnInit, output, input } from '@angular/core';
+import { Component, Input, input, OnInit, output } from '@angular/core';
 import {
   FormControl,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import {
   GqlCompositeFieldFilterParamsInput,
@@ -15,24 +15,24 @@ import {
 import { dateFormat } from '../../services/session.service';
 import { debounce, interval, merge, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
-import { Repository, RepositoryFull } from '../../graphql/types';
+import { RepositoryFull, RepositoryWithFrequency } from '../../graphql/types';
 import { ArrayElement, TypedFormGroup } from '../../types';
 import { addIcons } from 'ionicons';
-import { trashOutline, addOutline } from 'ionicons/icons';
+import { addOutline, trashOutline } from 'ionicons/icons';
 
 import {
   IonAccordion,
+  IonButton,
+  IonCheckbox,
+  IonChip,
+  IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
-  IonChip,
   IonNote,
-  IonCheckbox,
-  IonText,
   IonSelect,
   IonSelectOption,
-  IonInput,
-  IonButton,
-  IonIcon,
+  IonText,
   IonTextarea,
 } from '@ionic/angular/standalone';
 
@@ -48,7 +48,9 @@ interface GeneralFilterData {
 }
 
 type GeneralFilterParams = ArrayElement<
-  ArrayElement<Repository['plugins']>['params']['org_feedless_filter']
+  ArrayElement<
+    RepositoryWithFrequency['plugins']
+  >['params']['org_feedless_filter']
 >;
 
 @Component({

@@ -5158,14 +5158,6 @@ const zh: PlacesLatLon[] = [
     lon: 8.5410422,
   },
   {
-    place: 'Adliswil',
-    zip: '8134',
-    area: 'ZH',
-    language: 'de',
-    lat: 47.3117624,
-    lon: 8.52491,
-  },
-  {
     place: 'Kilchberg ZH',
     zip: '8802',
     area: 'ZH',
@@ -6556,14 +6548,6 @@ const zh: PlacesLatLon[] = [
     language: 'de',
     lat: 47.3456637,
     lon: 8.5993998,
-  },
-  {
-    place: 'Adliswil',
-    zip: '8134',
-    area: 'ZH',
-    language: 'de',
-    lat: 47.3117624,
-    lon: 8.52491,
   },
   {
     place: 'Uitikon Waldegg',

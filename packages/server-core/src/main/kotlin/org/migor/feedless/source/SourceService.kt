@@ -211,9 +211,9 @@ class SourceService(
   suspend fun createSources(ownerId: UUID, sourceInputs: List<SourceInput>, repository: RepositoryEntity) {
     log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
 
-    // todo assert is owner
-
     withContext(Dispatchers.IO) {
+      val createSources = mutableListOf<SourceEntity>()
+      val createScrapeActions = mutableListOf<ScrapeActionEntity>()
       sourceInputs.map { it.fromDto() }
         .map { source: SourceEntity ->
           planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, ownerId)
@@ -240,10 +240,13 @@ class SourceService(
             scrapeAction
           }
 
+          createScrapeActions.addAll(actions)
           source.actions = mutableListOf()
-          sourceDAO.save(source)
-          scrapeActionDAO.saveAll(actions)
+          createSources.add(source)
         }
+
+      sourceDAO.saveAll(createSources)
+      scrapeActionDAO.saveAll(createScrapeActions)
     }
 
   }
@@ -253,11 +256,16 @@ class SourceService(
     log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
 
     withContext(Dispatchers.IO) {
-    val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repository.id, updateInputs.map { UUID.fromString(it.where.id) })
+      val sources =
+        sourceDAO.findAllByRepositoryIdAndIdIn(repository.id, updateInputs.map { UUID.fromString(it.where.id) })
 
-    if (sources.size != updateInputs.size) {
-      throw IllegalArgumentException("no permissions")
-    }
+      if (sources.size != updateInputs.size) {
+        throw IllegalArgumentException("no permissions")
+      }
+
+      val modifiedSources = mutableListOf<SourceEntity>()
+      val deleteScrapeActions = mutableListOf<ScrapeActionEntity>()
+      val saveScrapeActions = mutableListOf<ScrapeActionEntity>()
 
       updateInputs.map { sourceUpdate ->
         val source = sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }!!
@@ -276,8 +284,7 @@ class SourceService(
 
         sourceUpdate.data.flow?.let { flow ->
           // remove old actions
-          val oldActions = scrapeActionDAO.findAllBySourceId(source.id)
-          scrapeActionDAO.deleteAll(oldActions)
+          deleteScrapeActions.addAll(scrapeActionDAO.findAllBySourceId(source.id))
 
           flow.set?.let {
             // append new actions
@@ -286,14 +293,17 @@ class SourceService(
               scrapeAction.pos = index
               scrapeAction
             }
-            scrapeActionDAO.saveAll(actions)
+            saveScrapeActions.addAll(actions)
           }
         }
 
         source.actions = mutableListOf()
-        sourceDAO.save(source)
-
+        source
       }
+
+      scrapeActionDAO.deleteAll(deleteScrapeActions)
+      scrapeActionDAO.saveAll(saveScrapeActions)
+      sourceDAO.saveAll(modifiedSources)
     }
   }
 

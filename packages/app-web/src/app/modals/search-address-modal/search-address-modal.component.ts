@@ -1,43 +1,17 @@
 import { Component, inject } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonTitle,
-  IonToolbar,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular/standalone';
 import { ModalCancel } from '../../app.module';
 import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { GqlGeoPoint } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon } from '../../types';
-import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
 @Component({
   selector: 'app-search-address-modal',
   templateUrl: './search-address-modal.component.html',
   styleUrls: ['./search-address-modal.component.scss'],
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonIcon,
-    IonContent,
-    SearchbarComponent,
-    IonList,
-    IonItem,
-    IonLabel,
-  ],
-  standalone: true,
+  standalone: false,
 })
 export class SearchAddressModalComponent {
   private readonly modalCtrl = inject(ModalController);

@@ -36,6 +36,7 @@ import { TrialWarningComponent } from '../../components/trial-warning/trial-warn
 
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { TrackerEditModalModule } from './tracker-edit/tracker-edit-modal.module';
 
 @Component({
   selector: 'app-change-tracker-product-page',
@@ -57,6 +58,7 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonRouterOutlet,
     IonFooter,
     IonChip,
+    TrackerEditModalModule,
   ],
   standalone: true,
 })
@@ -106,6 +108,6 @@ export class ChangeTrackerProductPage implements OnInit, OnDestroy {
 
   async openCreateTrackerModal() {
     const props: TrackerEditModalComponentProps = {};
-    await this.modalService.openPageTrackerEditor(props);
+    await this.modalService.openTrackerEditor(props);
   }
 }

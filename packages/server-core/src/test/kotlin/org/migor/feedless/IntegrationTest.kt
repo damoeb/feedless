@@ -93,6 +93,7 @@ class IntegrationTest {
 
   @BeforeEach
   fun setUp() = runTest {
+    // todo creat user
     val user = UserEntity()
     user.email = "test@test.com"
     userDAO.save(user)

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReaderProductPage } from './reader-product.page';
 import { AppTestModule, mockScrape } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';

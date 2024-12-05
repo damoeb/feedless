@@ -1,9 +1,9 @@
 import {
   Directive,
   ElementRef,
-  Renderer2,
-  OnInit,
   inject,
+  OnInit,
+  Renderer2,
 } from '@angular/core';
 import { environment } from '../../../environments/environment';
 

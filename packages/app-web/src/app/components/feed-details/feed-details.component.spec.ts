@@ -1,11 +1,11 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FeedDetailsComponent } from './feed-details.component';
 import {
   ApolloMockController,
   AppTestModule,
-  mockRecords,
   mockPlugins,
+  mockRecords,
   mockRepository,
   mockServerSettings,
 } from '../../app-test.module';
@@ -38,7 +38,12 @@ describe('FeedDetailsComponent', () => {
 
     fixture = TestBed.createComponent(FeedDetailsComponent);
     component = fixture.componentInstance;
-    component.repository = { retention: {}, sources: [], plugins: [] } as any;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('repository', {
+      retention: {},
+      sources: [],
+      plugins: [],
+    } as any);
     fixture.detectChanges();
   });
 
