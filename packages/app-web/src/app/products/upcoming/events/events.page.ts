@@ -36,7 +36,7 @@ import {
   arrowForwardOutline,
   sendOutline,
 } from 'ionicons/icons';
-import { LatLon, NamedLatLon, Nullable } from '../../../types';
+import { LatLng, NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
   IonBadge,
@@ -145,7 +145,7 @@ export class EventsPage implements OnInit, OnDestroy {
   date: Dayjs = dayjs();
   now: Dayjs = dayjs();
   perimeter: number = 10;
-  latLon: Nullable<LatLon>;
+  latLon: Nullable<LatLng>;
   location: Nullable<NamedLatLon>;
   loading: boolean = true;
   dateWindow: DateWindowItem[] = [];
@@ -232,7 +232,7 @@ export class EventsPage implements OnInit, OnDestroy {
         // place: location.displayName,
         lang: 'de',
         publishedAt: dayjs(),
-        // position: [location.lat, location.lon],
+        // position: [location.lat, location.lng],
       };
     }
   }
@@ -276,10 +276,12 @@ export class EventsPage implements OnInit, OnDestroy {
         },
         latLng: {
           near: {
-            lat: this.latLon.lat,
-            lon: this.latLon.lon,
+            point: {
+              lat: this.latLon.lat,
+              lng: this.latLon.lng,
+            },
+            distanceKm: this.perimeter,
           },
-          distanceKm: this.perimeter,
         },
         startedAt: {
           after: day
@@ -311,14 +313,14 @@ export class EventsPage implements OnInit, OnDestroy {
       const places: NamedLatLon[] = await Promise.all(
         unionBy(
           events.map((e) => e.latLng),
-          (e) => `${e.lat},${e.lon}`,
+          (e) => `${e.lat},${e.lng}`,
         )
           .filter((e) => e)
           .map((latLon) => {
             const namedPlace = getCachedLocations().find(
               (place) =>
                 roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lon) == roundLatLon(latLon.lon),
+                roundLatLon(place.lng) == roundLatLon(latLon.lng),
             );
             if (namedPlace) {
               return namedPlace;
@@ -326,7 +328,7 @@ export class EventsPage implements OnInit, OnDestroy {
               console.log('Cannot resolve', latLon);
               return this.openStreetMapService.reverseSearch(
                 latLon.lat,
-                latLon.lon,
+                latLon.lng,
               );
             }
           }),
@@ -361,7 +363,7 @@ export class EventsPage implements OnInit, OnDestroy {
             const place = places.find(
               (place) =>
                 roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lon) == roundLatLon(latLon.lon),
+                roundLatLon(place.lng) == roundLatLon(latLon.lng),
             );
             if (!place) {
               throw new Error(`Cannot resolve latlon` + latLon);
@@ -388,9 +390,9 @@ export class EventsPage implements OnInit, OnDestroy {
   private getGeoDistance(event: Record): number {
     return this.getDistanceFromLatLonInKm(
       event.latLng.lat,
-      event.latLng.lon,
+      event.latLng.lng,
       this.latLon.lat,
-      this.latLon.lon,
+      this.latLon.lng,
     );
   }
 
@@ -483,7 +485,7 @@ export class EventsPage implements OnInit, OnDestroy {
       geo: {
         '@type': 'GeoCoordinates',
         latitude: place.place.lat,
-        longitude: place.place.lon,
+        longitude: place.place.lng,
       },
       event: place.events.map((event) =>
         this.toSchemaOrgEvent(event, place.place),
@@ -546,7 +548,7 @@ export class EventsPage implements OnInit, OnDestroy {
     );
     const locations = uniqBy(
       [location, ...savedLocations],
-      (l) => `${l.lat}:${l.lon}`,
+      (l) => `${l.lat}:${l.lng}`,
     ).filter((_, index) => index < 4);
     localStorage.setItem('savedLocations', JSON.stringify(locations));
   }

@@ -24,6 +24,7 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourceUpdateInput
@@ -180,6 +181,23 @@ class SourceService(
             whereStatements.add(path(SourceEntity::id).`in`(it.map { UUID.fromString(it) }))
           }
         }
+
+        it.latLng?.let {
+          // https://postgis.net/docs/ST_Distance.html
+          whereStatements.add(path(SourceEntity::latLon).isNotNull())
+          it.near?.let {
+            whereStatements.add(
+              function(
+                Double::class,
+                "fl_latlon_distance",
+                path(SourceEntity::latLon),
+                doubleLiteral(it.point.lat),
+                doubleLiteral(it.point.lng)
+              )
+                .lt(doubleLiteral(it.distanceKm.coerceAtMost(20.0)))
+            )
+          }
+        }
       }
 
       select(path(SourceEntity::id))
@@ -274,7 +292,7 @@ class SourceService(
         }
         sourceUpdate.data.latLng?.let { point ->
           point.set?.let {
-            source.latLon = JtsUtil.createPoint(it.lat, it.lon)
+            source.latLon = JtsUtil.createPoint(it.lat, it.lng)
           } ?: run { source.latLon = null }
         }
         sourceUpdate.data.disabled?.let { disabled ->

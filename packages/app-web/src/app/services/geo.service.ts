@@ -49,7 +49,7 @@ export class GeoService {
       .pipe(
         map<GeoJsResponse, NamedLatLon>((response) => ({
           lat: parseFloat(response.latitude),
-          lon: parseFloat(response.longitude),
+          lng: parseFloat(response.longitude),
           countryCode: response.country_code,
           place: response.city,
           area: response.region,

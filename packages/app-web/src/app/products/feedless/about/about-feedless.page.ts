@@ -32,6 +32,7 @@ import { FeedlessHeaderComponent } from '../../../components/feedless-header/fee
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { RouterLink } from '@angular/router';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
+import { PromotionHeaderComponent } from '../../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -49,8 +50,7 @@ import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove
     IonIcon,
     RemoveIfProdDirective,
     IonBadge,
-    IonHeader,
-    IonToolbar,
+    PromotionHeaderComponent
   ],
   standalone: true,
 })

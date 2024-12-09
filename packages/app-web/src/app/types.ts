@@ -50,7 +50,7 @@ export type VerticalAppConfig = {
 
 export type NamedLatLon = {
   lat: number;
-  lon: number;
+  lng: number;
   place: string;
   displayName: string;
   index?: string;
@@ -58,7 +58,7 @@ export type NamedLatLon = {
   countryCode: string;
 };
 
-export type LatLon = {
+export type LatLng = {
   lat: number;
-  lon: number;
+  lng: number;
 };

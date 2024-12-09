@@ -251,7 +251,7 @@ fun DocumentEntity.toDto(propertyService: PropertyService): Record {
     latLng = latLon?.let {
       GeoPoint(
         lat = it.x,
-        lon = it.y,
+        lng = it.y,
       )
     },
     tags = (tags?.asList() ?: emptyList()).plus(

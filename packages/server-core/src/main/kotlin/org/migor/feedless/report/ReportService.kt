@@ -74,8 +74,10 @@ class ReportService(
     val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
     segmentation.timeSegmentStartingAt = startingAt
     segment.what.latLng?.let {
-      segmentation.contentSegmentLatLon = it.near.toPoint()
-      segmentation.contentSegmentLatLonDistance = it.distanceKm
+      it.near?.let {
+        segmentation.contentSegmentLatLon = it.point.toPoint()
+        segmentation.contentSegmentLatLonDistance = it.distanceKm
+      }
     }
     val interval = when (segment.`when`.scheduled.interval) {
       IntervalUnit.MONTH -> ChronoUnit.MONTHS
@@ -135,5 +137,5 @@ class ReportService(
 }
 
 private fun GeoPointInput.toPoint(): Point {
-  return JtsUtil.createPoint(lat, lon)
+  return JtsUtil.createPoint(lat, lng)
 }

@@ -24,7 +24,7 @@ import {
   GqlSourceInput,
   GqlSourcesByRepositoryQuery,
   GqlSourcesByRepositoryQueryVariables,
-  GqlSourcesInput,
+  GqlSourcesWhereInput,
   GqlSourcesWithFlowByRepositoryQuery,
   GqlSourcesWithFlowByRepositoryQueryVariables,
   GqlUpdateRepositoryMutation,
@@ -34,7 +34,7 @@ import {
   RepositoryById,
   SourcesByRepository,
   SourcesWithFlowByRepository,
-  UpdateRepository,
+  UpdateRepository
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import {
@@ -51,7 +51,7 @@ import { AuthService } from './auth.service';
 import dayjs from 'dayjs';
 import { ArrayElement } from '../types';
 
-type Source = ArrayElement<RepositoryFull['sources']>;
+export type Source = ArrayElement<RepositoryFull['sources']>;
 
 @Injectable({
   providedIn: 'root',
@@ -203,7 +203,8 @@ export class RepositoryService {
 
   async getRepositoryById(
     id: string,
-    sources: GqlSourcesInput,
+    cursor: GqlCursor,
+    where: GqlSourcesWhereInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<RepositoryFull> {
     return this.apollo
@@ -216,7 +217,8 @@ export class RepositoryService {
               id,
             },
           },
-          sources,
+          cursor,
+          where
         },
       })
       .then((response) => response.data.repository);
@@ -224,9 +226,10 @@ export class RepositoryService {
 
   async getSourcesByRepository(
     id: string,
-    sources: GqlSourcesInput,
+    cursor: GqlCursor,
+    where: GqlSourcesWhereInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<ArrayElement<RepositoryFull['sources']>[]> {
+  ): Promise<Source[]> {
     return this.apollo
       .query<GqlSourcesByRepositoryQuery, GqlSourcesByRepositoryQueryVariables>(
         {
@@ -238,7 +241,8 @@ export class RepositoryService {
                 id,
               },
             },
-            sources,
+            where,
+            cursor,
           },
         },
       )
@@ -263,16 +267,14 @@ export class RepositoryService {
               id: repositoryId,
             },
           },
-          sources: {
-            where: {
-              id: {
-                eq: sourceId,
-              },
+          where: {
+            id: {
+              eq: sourceId,
             },
-            cursor: {
-              page: 0,
-              pageSize: 1,
-            },
+          },
+          cursor: {
+            page: 0,
+            pageSize: 1,
           },
         },
       })
@@ -297,9 +299,7 @@ export class RepositoryService {
               id: repositoryId,
             },
           },
-          sources: {
-            cursor,
-          },
+          cursor,
         },
       })
       .then((response) => response.data.repository.sources);

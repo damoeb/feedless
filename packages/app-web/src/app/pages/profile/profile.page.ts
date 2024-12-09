@@ -282,7 +282,11 @@ export class ProfilePage implements OnInit, OnDestroy {
         repositories.push(
           await this.repositoryService.getRepositoryById(
             repositoriesOnPage[index].id,
-            null,
+            {
+              page: 0,
+              pageSize: 0,
+            },
+            null
           ),
         );
       }

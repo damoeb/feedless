@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/">
+        <strong>lokale</strong><em>.events</em>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button routerLink="/management/sources">
+        Sources
+      </ion-button>
+      <ion-button routerLink="/management/documents">
+        Documents
+      </ion-button>
+      <app-dark-mode-button></app-dark-mode-button>
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="sources">
+<!--    <ion-searchbar></ion-searchbar>-->
+    <app-map #map
+             (boundingBoxChange)="onMapChange($event)"
+             [position]="mapPosition"></app-map>
+
+    <div>
+      @if (repository) {
+        @if(showSources) {
+          <app-sources [repository]="repository"
+                       (sourceChange)="onSourceChange($event)"
+                       [sourcesFilter]="sourcesFilter">
+
+          </app-sources>
+        } @else {
+          documents
+        }
+
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
+      }
+    </div>
+  </div>
+</ion-content>

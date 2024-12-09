@@ -54,7 +54,7 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
   const place = convertOsmMatchToString(osmMatch);
   return {
     lat: parseFloat(osmMatch.lat),
-    lon: parseFloat(osmMatch.lon),
+    lng: parseFloat(osmMatch.lon),
     countryCode: country_code,
     area: state,
     place,

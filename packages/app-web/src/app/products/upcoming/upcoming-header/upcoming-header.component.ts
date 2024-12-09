@@ -35,7 +35,7 @@ import {
   footstepsOutline,
   locationOutline,
 } from 'ionicons/icons';
-import { LatLon, NamedLatLon, Nullable } from '../../../types';
+import { LatLng, NamedLatLon, Nullable } from '../../../types';
 import {
   parseLocationFromUrl,
   upcomingBaseRoute,
@@ -116,7 +116,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   locationFc = new FormControl<string>('');
   private readonly subscriptions: Subscription[] = [];
   protected currentDate: Dayjs;
-  protected currentLatLon: LatLon;
+  protected currentLatLon: LatLng;
   protected readonly now = dayjs();
 
   @Input({ required: true })
@@ -273,7 +273,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.expand = 'suggestions';
     if (query.length === 0) {
       const previousLocations = matchHighlighter(
-        uniqBy(getPreviousLocations(), (l) => `${l.lat}:${l.lon}`),
+        uniqBy(getPreviousLocations(), (l) => `${l.lat}:${l.lng}`),
       );
       const breadcrumbs = this.getBreadcrumbs();
       this.locationSuggestions = [...previousLocations, ...breadcrumbs];
@@ -297,68 +297,68 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   return date?.locale(this.locale)?.format(format);
   // }
 
-  private fillCalendar(date: Dayjs) {
-    this.years = {};
-    const ref = date.set('date', 1);
-
-    this.timeWindowFrom = ref.valueOf();
-    const now = dayjs();
-
-    const isToday = (day: Dayjs): boolean => {
-      return (
-        now.isSame(day, 'day') &&
-        now.isSame(day, 'month') &&
-        now.isSame(day, 'year')
-      );
-    };
-
-    const push = (
-      day: Dayjs,
-      context: Dayjs,
-      isFirstWeek: boolean,
-      otherMonth: boolean,
-      printMonth: boolean,
-    ) => {
-      const month = context.month();
-      const year = context.year();
-      if (isUndefined(this.years[year])) {
-        this.years[year] = {};
-      }
-
-      if (isUndefined(this.years[year][month])) {
-        this.years[year][month] = [];
-      }
-
-      this.years[year][month].push({
-        day,
-        today: isToday(day),
-        past: now.isAfter(day, 'day'),
-        otherMonth,
-        isFirstWeek,
-        printMonth,
-      });
-    };
-
-    const prefill = parseInt(ref.format('d'));
-    for (let d = -prefill; d < 0; d++) {
-      const day = ref.add(d, 'day');
-      push(day, ref, d < 7, true, d === -prefill);
-    }
-    for (let d = 0; d < ref.daysInMonth(); d++) {
-      const day = ref.add(d, 'day');
-      push(day, day, prefill + d < 7, false, prefill > 0 && d === 0);
-      this.timeWindowTo = day.valueOf();
-    }
-
-    const postfill = (ref.daysInMonth() + prefill) % 7;
-    if (postfill > 0) {
-      for (let d = 0; d < 7 - postfill; d++) {
-        const day = ref.add(d + ref.daysInMonth(), 'day');
-        push(day, ref, false, true, d === 0);
-        this.timeWindowTo = day.valueOf();
-      }
-    }
-  }
+  // private fillCalendar(date: Dayjs) {
+  //   this.years = {};
+  //   const ref = date.set('date', 1);
+  //
+  //   this.timeWindowFrom = ref.valueOf();
+  //   const now = dayjs();
+  //
+  //   const isToday = (day: Dayjs): boolean => {
+  //     return (
+  //       now.isSame(day, 'day') &&
+  //       now.isSame(day, 'month') &&
+  //       now.isSame(day, 'year')
+  //     );
+  //   };
+  //
+  //   const push = (
+  //     day: Dayjs,
+  //     context: Dayjs,
+  //     isFirstWeek: boolean,
+  //     otherMonth: boolean,
+  //     printMonth: boolean,
+  //   ) => {
+  //     const month = context.month();
+  //     const year = context.year();
+  //     if (isUndefined(this.years[year])) {
+  //       this.years[year] = {};
+  //     }
+  //
+  //     if (isUndefined(this.years[year][month])) {
+  //       this.years[year][month] = [];
+  //     }
+  //
+  //     this.years[year][month].push({
+  //       day,
+  //       today: isToday(day),
+  //       past: now.isAfter(day, 'day'),
+  //       otherMonth,
+  //       isFirstWeek,
+  //       printMonth,
+  //     });
+  //   };
+  //
+  //   const prefill = parseInt(ref.format('d'));
+  //   for (let d = -prefill; d < 0; d++) {
+  //     const day = ref.add(d, 'day');
+  //     push(day, ref, d < 7, true, d === -prefill);
+  //   }
+  //   for (let d = 0; d < ref.daysInMonth(); d++) {
+  //     const day = ref.add(d, 'day');
+  //     push(day, day, prefill + d < 7, false, prefill > 0 && d === 0);
+  //     this.timeWindowTo = day.valueOf();
+  //   }
+  //
+  //   const postfill = (ref.daysInMonth() + prefill) % 7;
+  //   if (postfill > 0) {
+  //     for (let d = 0; d < 7 - postfill; d++) {
+  //       const day = ref.add(d + ref.daysInMonth(), 'day');
+  //       push(day, ref, false, true, d === 0);
+  //       this.timeWindowTo = day.valueOf();
+  //     }
+  //   }
+  // }
 
   // goToDateRelative(value: number, unit: ManipulateType) {
   //   this.changeMonth(this.currentDate.add(value, unit));
@@ -419,7 +419,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     //   await this.patchUrl();
     // }
 
-    this.fillCalendar(date);
+    // this.fillCalendar(date);
     await this.fetchEventOverviewDebounced();
 
     this.changeRef.detectChanges();
@@ -453,7 +453,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     if (triggerUpdate) {
       await this.patchUrl();
     } else {
-      this.fillCalendar(date);
+      // this.fillCalendar(date);
     }
     this.changeRef.detectChanges();
   }

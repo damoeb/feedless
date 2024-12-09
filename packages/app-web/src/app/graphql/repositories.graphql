@@ -43,7 +43,8 @@ query countRepositories($data: CountRepositoriesInput!) {
 
 query repositoryById(
   $repository: RepositoryWhereInput!
-  $sources: SourcesInput
+  $cursor: Cursor!
+  $where: SourcesWhereInput
 ) {
   repository(data: $repository) {
     ...RepositoryFragment
@@ -52,8 +53,7 @@ query repositoryById(
       group
     }
     sourcesCount
-    #    todo remove sources
-    sources(data: $sources) {
+    sources(cursor: $cursor, where: $where) {
       ...SourceFragment
     }
     annotations {
@@ -75,10 +75,11 @@ query repositoryById(
 
 query sourcesByRepository(
   $repository: RepositoryWhereInput!
-  $sources: SourcesInput
+  $cursor: Cursor!
+  $where: SourcesWhereInput
 ) {
   repository(data: $repository) {
-    sources(data: $sources) {
+    sources(cursor: $cursor, where: $where) {
       ...SourceFragment
     }
   }
@@ -86,10 +87,11 @@ query sourcesByRepository(
 
 query sourcesWithFlowByRepository(
   $repository: RepositoryWhereInput!
-  $sources: SourcesInput
+  $cursor: Cursor!
+  $where: SourcesWhereInput
 ) {
   repository(data: $repository) {
-    sources(data: $sources) {
+    sources(cursor: $cursor, where: $where) {
       ...SourceFragment
       ...ScrapeFlowFragment
     }

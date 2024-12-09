@@ -32,7 +32,7 @@ import { AgentsButtonComponent } from '../agents-button/agents-button.component'
 import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../login-button/login-button.component';
 import { addIcons } from 'ionicons';
-import { logoSlack } from 'ionicons/icons';
+import { logoGithub, logoSlack } from 'ionicons/icons';
 
 @Component({
   selector: 'app-feedless-header',
@@ -72,7 +72,7 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
 
   constructor() {
     addIcons({
-      logoSlack,
+      logoSlack, logoGithub
     });
   }
 

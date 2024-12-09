@@ -103,7 +103,7 @@ private fun JsonItem.toDto() = Record(
 
 private fun JsonPoint.toGeoPoint() = GeoPoint(
   lat = x,
-  lon = y
+  lng = y
 )
 
 private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Attachment(

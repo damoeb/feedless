@@ -158,7 +158,7 @@ private fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
         publishedAt = it.publishedAt.toMillis(),
         updatedAt = it.publishedAt.toMillis(),
         startingAt = it.startingAt?.toMillis(),
-        latLng = it.latLng?.let { GeoPoint(lat = it.x, lon = it.y) },
+        latLng = it.latLng?.let { GeoPoint(lat = it.x, lng = it.y) },
         createdAt = LocalDateTime.now().toMillis(),
         url = it.url,
         attachments = it.attachments.map { it.toDto() },

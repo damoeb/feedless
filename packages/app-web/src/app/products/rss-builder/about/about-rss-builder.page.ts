@@ -6,7 +6,7 @@ import {
   ElementRef,
   inject,
   OnInit,
-  viewChild,
+  viewChild
 } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
