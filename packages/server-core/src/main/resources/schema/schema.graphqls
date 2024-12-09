@@ -117,17 +117,12 @@ type Repository {
   frequency(groupBy: RecordDateField!): [RecordFrequency!]
   plugins: [PluginExecution!]
   retention: Retention!
-  sources(data: SourcesInput): [Source!]
-}
-
-input SourcesInput {
-  cursor: Cursor!
-  where: SourcesWhereInput
-  orderBy: SourceOrderByInput
+  sources(cursor: Cursor!, where: SourcesWhereInput, orderBy: SourceOrderByInput): [Source!]
 }
 
 input SourcesWhereInput {
   id: StringFilterInput
+  latLng: GeoPointWhereInput
 }
 
 input SourceOrderByInput {
@@ -601,7 +596,16 @@ input RecordsWhereInput {
 }
 
 input GeoPointWhereInput {
-  near: GeoPointInput!
+  near: GeoPointWhereNearInput
+  within: GeoPointWhereWithinInput
+}
+
+input GeoPointWhereWithinInput {
+  nw: GeoPointInput!
+  se: GeoPointInput!
+}
+input GeoPointWhereNearInput {
+  point: GeoPointInput!
   distanceKm: Float!
 }
 
@@ -964,7 +968,7 @@ type NativeFeed {
   lastChangedAt: Long
   lastCheckedAt: Long
   lat: Long
-  lon: Long
+  lng: Long
   ownerId: ID!
   status: NativeFeedStatus!
   streamId: ID!
@@ -1242,7 +1246,7 @@ input RepositoryCreateInput {
 
 #input LatLonLocationInput {
 #  lat: Long!
-#  lon: Long!
+#  lng: Long!
 #  description: String
 #}
 
@@ -1594,7 +1598,7 @@ input SourceInput {
 
 input GeoPointInput {
   lat: Float!
-  lon: Float!
+  lng: Float!
 }
 
 input ScrapeBoundingBoxInput {
@@ -1697,7 +1701,7 @@ type Source {
 
 type GeoPoint {
   lat: Float!
-  lon: Float!
+  lng: Float!
 }
 
 type ScrapeBoundingBox {

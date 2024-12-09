@@ -65,7 +65,7 @@ import {
   standaloneV2FeedTransformRoute,
   standaloneV2WebToFeedRoute,
 } from '../../router-utils';
-import { LatLon } from '../../types';
+import { LatLng } from '../../types';
 
 /**
  * IDEEN
@@ -174,7 +174,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   readonly selectedRepositoryChanged = output<RepositoryWithFrequency>();
 
   protected tags: string[] = [];
-  protected geoLocation: LatLon;
+  protected geoLocation: LatLng;
   // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
@@ -282,7 +282,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       this.sourceBuilder.patch({
         latLng: {
           lat: this.geoLocation.lat,
-          lon: this.geoLocation.lon,
+          lng: this.geoLocation.lng,
         },
       });
     }

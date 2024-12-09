@@ -86,7 +86,7 @@ fragment SourceFragment on Source {
   tags
   latLng {
     lat
-    lon
+    lng
   }
   lastErrorMessage
   recordCount
@@ -269,7 +269,7 @@ fragment RecordFragment on Record {
   tags
   latLng {
     lat
-    lon
+    lng
   }
   attachments {
     ...AttachmentFragment
@@ -297,7 +297,7 @@ fragment NativeFeedFragment on NativeFeed {
   lastChangedAt
   streamId
   lat
-  lon
+  lng
   ownerId
   createdAt
 }

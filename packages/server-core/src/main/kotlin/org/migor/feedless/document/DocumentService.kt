@@ -143,18 +143,20 @@ class DocumentService(
         it.updatedAt?.let { addDateConstraint(it, path(DocumentEntity::updatedAt)) }
         it.publishedAt?.let { addDateConstraint(it, path(DocumentEntity::publishedAt)) }
         it.latLng?.let {
-          // https://postgis.net/docs/ST_Distance.html
           whereStatements.add(path(DocumentEntity::latLon).isNotNull())
-          whereStatements.add(
-            function(
-              Double::class,
-              "fl_latlon_distance",
-              path(DocumentEntity::latLon),
-              doubleLiteral(it.near.lat),
-              doubleLiteral(it.near.lon)
+          it.near?.let {
+            // https://postgis.net/docs/ST_Distance.html
+            whereStatements.add(
+              function(
+                Double::class,
+                "fl_latlon_distance",
+                path(DocumentEntity::latLon),
+                doubleLiteral(it.point.lat),
+                doubleLiteral(it.point.lng)
+              )
+                .lt(doubleLiteral(it.distanceKm.coerceAtMost(50.0)))
             )
-              .lt(doubleLiteral(it.distanceKm.coerceAtMost(50.0)))
-          )
+          }
         }
       }
       // dummy

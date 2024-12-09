@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { MapComponent } from './map.component';
 import { AppTestModule } from '../../app-test.module';
-import { LatLon } from '../../types';
+import { LatLng } from '../../types';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -16,9 +16,9 @@ describe('MapComponent', () => {
     fixture = TestBed.createComponent(MapComponent);
     component = fixture.componentInstance;
     const componentRef = fixture.componentRef;
-    const latLon: LatLon = {
+    const latLon: LatLng = {
       lat: 0,
-      lon: 0,
+      lng: 0,
     };
     componentRef.setInput('position', latLon);
     componentRef.setInput('perimeter', 10);

@@ -5,6 +5,7 @@ import { NamedLatLon } from '../../types';
 import { intParser, route } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/build/parser';
 import { strParser, upperCaseStringParser } from '../default-routes';
+import { AuthGuardService } from '../../guards/auth-guard.service';
 
 export const perimeterUnit = 'Km';
 
@@ -63,8 +64,13 @@ export const upcomingBaseRoute = route(
   '',
   {},
   {
-    agb: route('agb', {}, {}),
+    terms: route('agb', {}, {}),
+    login: route('login', {}, {}),
     about: route('ueber-uns', {}, {}),
+    management: route('management', {}, {
+      sources: route('sources', {}, {}),
+      documents: route('documents', {}, {}),
+    }),
     events: route(
       'events/in',
       {},
@@ -116,7 +122,39 @@ export const UPCOMING_ROUTES: Routes = [
           import('./about-us/about-us.page').then((m) => m.AboutUsPage),
       },
       {
+        path: upcomingBaseRoute.children.terms.template,
+        loadComponent: () =>
+          import('./terms/terms.page').then((m) => m.TermsPage),
+      },
+      {
+        path: upcomingBaseRoute.children.terms.template,
+        loadComponent: () =>
+          import('../../pages/login/login.page').then((m) => m.LoginPage),
+      },
+      {
+        path: upcomingBaseRoute.children.management.template,
+        canActivate: [AuthGuardService],
+        children: [
+          {
+            path: upcomingBaseRoute.children.management.children.sources.template,
+            data: {sources: true},
+            loadComponent: () =>
+              import('./management/management.page').then((m) => m.ManagementPage)
+          },
+          {
+            path: upcomingBaseRoute.children.management.children.documents.template,
+            loadComponent: () =>
+              import('./management/management.page').then((m) => m.ManagementPage)
+          },
+          {
+            path: '**',
+            redirectTo: '/'+upcomingBaseRoute({}).management({}).sources({}).$
+          },
+        ],
+      },
+      {
         path: '',
+        pathMatch: 'full',
         loadComponent: () =>
           import('./events/events.page').then((m) => m.EventsPage),
       },

@@ -91,11 +91,10 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
       this.repository = await this.repositoryService.getRepositoryById(
         this.repositoryId,
         {
-          cursor: {
-            page: 0,
-            pageSize: 0,
-          },
+          page: 0,
+          pageSize: 0,
         },
+        null
       );
       this.appConfig.setPageTitle(this.repository.title);
       this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;

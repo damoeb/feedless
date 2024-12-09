@@ -111,7 +111,7 @@ fun SourceEntity.toDto(): Source {
     latLng = latLon?.let {
       GeoPoint(
         lat = it.x,
-        lon = it.y,
+        lng = it.y,
       )
     },
     title = title,

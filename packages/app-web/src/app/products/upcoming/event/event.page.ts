@@ -167,7 +167,7 @@ DTSTART:${startingAt.format(utcFormat)}
 DTEND:${startingAt.add(1, 'hour').format(utcFormat)}Z
 SUMMARY:${tags.title}
 DESCRIPTION:${tags.description}
-GEO:${this.location.lat};${this.location.lon}
+GEO:${this.location.lat};${this.location.lng}
 URL:${this.event.url}
 END:VEVENT
 END:VCALENDAR`;

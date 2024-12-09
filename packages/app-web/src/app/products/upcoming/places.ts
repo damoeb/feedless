@@ -13,7 +13,7 @@ export function getCachedLocations(): NamedLatLon[] {
 //   )
 // }
 
-type PlacesLatLon = Pick<NamedLatLon, 'area' | 'lat' | 'lon'> & {
+type PlacesLatLon = Pick<NamedLatLon, 'area' | 'lat' | 'lng'> & {
   place: string[] | string;
   zip: string;
   language: string;
@@ -26,7 +26,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1679898,
-    lon: 8.5173652,
+    lng: 8.5173652,
   },
   {
     place: 'Steinhausen',
@@ -34,7 +34,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1975084,
-    lon: 8.4860144,
+    lng: 8.4860144,
   },
   {
     place: 'Neuägeri',
@@ -42,7 +42,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1517768,
-    lon: 8.5631108,
+    lng: 8.5631108,
   },
   {
     place: 'Allenwinden',
@@ -50,7 +50,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1642467,
-    lon: 8.5559123,
+    lng: 8.5559123,
   },
   {
     place: 'Baar',
@@ -58,7 +58,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1951976,
-    lon: 8.5253985,
+    lng: 8.5253985,
   },
   {
     place: 'Neuheim',
@@ -66,7 +66,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.204646,
-    lon: 8.5751134,
+    lng: 8.5751134,
   },
   {
     place: 'Cham',
@@ -74,7 +74,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1823761,
-    lon: 8.4611036,
+    lng: 8.4611036,
   },
   {
     place: 'Hünenberg',
@@ -82,7 +82,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1751834,
-    lon: 8.4259648,
+    lng: 8.4259648,
   },
   {
     place: 'Hagendorn',
@@ -90,7 +90,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.2027954,
-    lon: 8.4314247,
+    lng: 8.4314247,
   },
   {
     place: 'Mühlau',
@@ -98,7 +98,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.2291056,
-    lon: 8.3886537,
+    lng: 8.3886537,
   },
   {
     place: 'Hünenberg',
@@ -106,7 +106,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1751834,
-    lon: 8.4259648,
+    lng: 8.4259648,
   },
   {
     place: 'Hagendorn',
@@ -114,7 +114,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.2027954,
-    lon: 8.4314247,
+    lng: 8.4314247,
   },
   {
     place: 'Hünenberg See',
@@ -122,7 +122,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1737917,
-    lon: 8.4496257,
+    lng: 8.4496257,
   },
   {
     place: 'Menzingen',
@@ -130,7 +130,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.178291,
-    lon: 8.5899339,
+    lng: 8.5899339,
   },
   {
     place: 'Menzingen',
@@ -138,7 +138,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.178291,
-    lon: 8.5899339,
+    lng: 8.5899339,
   },
   {
     place: 'Edlibach',
@@ -146,7 +146,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1822667,
-    lon: 8.5714782,
+    lng: 8.5714782,
   },
   {
     place: 'Finstersee',
@@ -154,7 +154,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1672003,
-    lon: 8.6296052,
+    lng: 8.6296052,
   },
   {
     place: 'Neuägeri',
@@ -162,7 +162,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1517768,
-    lon: 8.5631108,
+    lng: 8.5631108,
   },
   {
     place: 'Alosen',
@@ -170,7 +170,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1400742,
-    lon: 8.6341533,
+    lng: 8.6341533,
   },
   {
     place: 'Menzingen',
@@ -178,7 +178,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.178291,
-    lon: 8.5899339,
+    lng: 8.5899339,
   },
   {
     place: 'Baar',
@@ -186,7 +186,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1951976,
-    lon: 8.5253985,
+    lng: 8.5253985,
   },
   {
     place: 'Sihlbrugg',
@@ -194,7 +194,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.2179502,
-    lon: 8.5766407,
+    lng: 8.5766407,
   },
   {
     place: 'Neuheim',
@@ -202,7 +202,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.204646,
-    lon: 8.5751134,
+    lng: 8.5751134,
   },
   {
     place: 'Unterägeri',
@@ -210,7 +210,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1374124,
-    lon: 8.584483,
+    lng: 8.584483,
   },
   {
     place: 'Oberägeri',
@@ -218,7 +218,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1347395,
-    lon: 8.6132732,
+    lng: 8.6132732,
   },
   {
     place: 'Alosen',
@@ -226,7 +226,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1400742,
-    lon: 8.6341533,
+    lng: 8.6341533,
   },
   {
     place: 'Morgarten',
@@ -234,7 +234,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.104509,
-    lon: 8.6415298,
+    lng: 8.6415298,
   },
   {
     place: 'Sattel',
@@ -242,7 +242,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.0809852,
-    lon: 8.6335265,
+    lng: 8.6335265,
   },
   {
     place: 'Rothenthurm',
@@ -250,7 +250,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1047258,
-    lon: 8.6748441,
+    lng: 8.6748441,
   },
   {
     place: 'Bennau',
@@ -258,7 +258,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1479168,
-    lon: 8.7287564,
+    lng: 8.7287564,
   },
   {
     place: 'Rotkreuz',
@@ -266,7 +266,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1417024,
-    lon: 8.4305526,
+    lng: 8.4305526,
   },
   {
     place: 'Buonas',
@@ -274,7 +274,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1415972,
-    lon: 8.4539453,
+    lng: 8.4539453,
   },
   {
     place: 'Risch',
@@ -282,7 +282,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.14226175,
-    lon: 8.451007703122551,
+    lng: 8.451007703122551,
   },
   {
     place: 'Holzhäusern ZG',
@@ -290,7 +290,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.150454499999995,
-    lon: 8.430729345306723,
+    lng: 8.430729345306723,
   },
   {
     place: 'Steinhausen',
@@ -298,7 +298,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1975084,
-    lon: 8.4860144,
+    lng: 8.4860144,
   },
   {
     place: 'Cham',
@@ -306,7 +306,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1823761,
-    lon: 8.4611036,
+    lng: 8.4611036,
   },
   {
     place: 'Unterägeri',
@@ -314,7 +314,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1374124,
-    lon: 8.584483,
+    lng: 8.584483,
   },
   {
     place: 'Neuägeri',
@@ -322,7 +322,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1517768,
-    lon: 8.5631108,
+    lng: 8.5631108,
   },
   {
     place: 'Oberägeri',
@@ -330,7 +330,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1347395,
-    lon: 8.6132732,
+    lng: 8.6132732,
   },
   {
     place: 'Walchwil',
@@ -338,7 +338,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1005277,
-    lon: 8.5147778,
+    lng: 8.5147778,
   },
   {
     place: 'Zug',
@@ -346,7 +346,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1679898,
-    lon: 8.5173652,
+    lng: 8.5173652,
   },
   {
     place: 'Zugerberg',
@@ -354,7 +354,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1437602,
-    lon: 8.5337843,
+    lng: 8.5337843,
   },
   {
     place: 'Neuägeri',
@@ -362,7 +362,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1517768,
-    lon: 8.5631108,
+    lng: 8.5631108,
   },
   {
     place: 'Oberwil b. Zug',
@@ -370,7 +370,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.142368,
-    lon: 8.5089133,
+    lng: 8.5089133,
   },
   {
     place: 'Walchwil',
@@ -378,7 +378,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1005277,
-    lon: 8.5147778,
+    lng: 8.5147778,
   },
   {
     place: 'Cham',
@@ -386,7 +386,7 @@ const zg: PlacesLatLon[] = [
     area: 'ZG',
     language: 'de',
     lat: 47.1823761,
-    lon: 8.4611036,
+    lng: 8.4611036,
   },
 ];
 // aargau
@@ -397,7 +397,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3927146,
-    lon: 8.0444448,
+    lng: 8.0444448,
   },
   {
     place: 'Aarau',
@@ -405,7 +405,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3927146,
-    lon: 8.0444448,
+    lng: 8.0444448,
   },
   {
     place: 'Aarau Rohr',
@@ -413,7 +413,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4013608,
-    lon: 8.0820154,
+    lng: 8.0820154,
   },
   {
     place: 'Biberstein',
@@ -421,7 +421,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4140667,
-    lon: 8.0821155,
+    lng: 8.0821155,
   },
   {
     place: 'Buchs AG',
@@ -429,7 +429,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3910322,
-    lon: 8.0692413,
+    lng: 8.0692413,
   },
   {
     place: 'Asp',
@@ -437,7 +437,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4443133,
-    lon: 8.0498085,
+    lng: 8.0498085,
   },
   {
     place: 'Densbüren',
@@ -445,7 +445,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4543265,
-    lon: 8.0538734,
+    lng: 8.0538734,
   },
   {
     place: 'Barmelweid',
@@ -453,7 +453,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4219129,
-    lon: 7.9720204,
+    lng: 7.9720204,
   },
   {
     place: 'Erlinsbach',
@@ -461,7 +461,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3968661,
-    lon: 8.0133738,
+    lng: 8.0133738,
   },
   {
     place: 'Gränichen',
@@ -469,7 +469,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3592835,
-    lon: 8.0971009,
+    lng: 8.0971009,
   },
   {
     place: 'Teufenthal AG',
@@ -477,7 +477,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3300709,
-    lon: 8.1152406,
+    lng: 8.1152406,
   },
   {
     place: 'Hirschthal',
@@ -485,7 +485,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3199916,
-    lon: 8.0543407,
+    lng: 8.0543407,
   },
   {
     place: 'Rombach',
@@ -493,7 +493,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4038235,
-    lon: 8.0482879,
+    lng: 8.0482879,
   },
   {
     place: 'Küttigen',
@@ -501,7 +501,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4194538,
-    lon: 8.0432568,
+    lng: 8.0432568,
   },
   {
     place: 'Muhen',
@@ -509,7 +509,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3408342,
-    lon: 8.0535781,
+    lng: 8.0535781,
   },
   {
     place: 'Oberentfelden',
@@ -517,7 +517,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3567549,
-    lon: 8.0470858,
+    lng: 8.0470858,
   },
   {
     place: 'Aarau',
@@ -525,7 +525,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3927146,
-    lon: 8.0444448,
+    lng: 8.0444448,
   },
   {
     place: 'Suhr',
@@ -533,7 +533,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.373166,
-    lon: 8.079534,
+    lng: 8.079534,
   },
   {
     place: 'Unterentfelden',
@@ -541,7 +541,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3670123,
-    lon: 8.0424171,
+    lng: 8.0424171,
   },
   {
     place: 'Turgi',
@@ -549,7 +549,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4937038,
-    lon: 8.253021,
+    lng: 8.253021,
   },
   {
     place: 'Baden',
@@ -557,7 +557,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4736827,
-    lon: 8.3086822,
+    lng: 8.3086822,
   },
   {
     place: 'Baden',
@@ -565,7 +565,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4736827,
-    lon: 8.3086822,
+    lng: 8.3086822,
   },
   {
     place: 'Dättwil AG',
@@ -573,7 +573,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.459062,
-    lon: 8.27771075679162,
+    lng: 8.27771075679162,
   },
   {
     place: 'Rütihof',
@@ -581,7 +581,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4383008,
-    lon: 8.2693234,
+    lng: 8.2693234,
   },
   {
     place: 'Bellikon',
@@ -589,7 +589,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3900433,
-    lon: 8.3461275,
+    lng: 8.3461275,
   },
   {
     place: 'Widen',
@@ -597,7 +597,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.369628,
-    lon: 8.3595132,
+    lng: 8.3595132,
   },
   {
     place: 'Bergdietikon',
@@ -605,7 +605,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3898401,
-    lon: 8.3865262,
+    lng: 8.3865262,
   },
   {
     place: 'Widen',
@@ -613,7 +613,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.369628,
-    lon: 8.3595132,
+    lng: 8.3595132,
   },
   {
     place: 'Rütihof',
@@ -621,7 +621,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4383008,
-    lon: 8.2693234,
+    lng: 8.2693234,
   },
   {
     place: 'Birmenstorf AG',
@@ -629,7 +629,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4611315,
-    lon: 8.2493768,
+    lng: 8.2493768,
   },
   {
     place: 'Ennetbaden',
@@ -637,7 +637,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4785764,
-    lon: 8.3153871,
+    lng: 8.3153871,
   },
   {
     place: 'Dättwil AG',
@@ -645,7 +645,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.459062,
-    lon: 8.27771075679162,
+    lng: 8.27771075679162,
   },
   {
     place: 'Fislisbach',
@@ -653,7 +653,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4369631,
-    lon: 8.2899457,
+    lng: 8.2899457,
   },
   {
     place: 'Freienwil',
@@ -661,7 +661,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5034967,
-    lon: 8.3279656,
+    lng: 8.3279656,
   },
   {
     place: 'Gebenstorf',
@@ -669,7 +669,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4819508,
-    lon: 8.2408818,
+    lng: 8.2408818,
   },
   {
     place: 'Vogelsang AG',
@@ -677,7 +677,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1890463,
-    lon: 7.3881291,
+    lng: 7.3881291,
   },
   {
     place: 'Killwangen',
@@ -685,7 +685,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4315553,
-    lon: 8.3518766,
+    lng: 8.3518766,
   },
   {
     place: 'Künten',
@@ -693,7 +693,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3891667,
-    lon: 8.3293117,
+    lng: 8.3293117,
   },
   {
     place: 'Mägenwil',
@@ -701,7 +701,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4122258,
-    lon: 8.2301927,
+    lng: 8.2301927,
   },
   {
     place: 'Mellingen',
@@ -709,7 +709,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4181889,
-    lon: 8.2714494,
+    lng: 8.2714494,
   },
   {
     place: 'Neuenhof',
@@ -717,7 +717,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4469308,
-    lon: 8.3225886,
+    lng: 8.3225886,
   },
   {
     place: 'Niederrohrdorf',
@@ -725,7 +725,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4254112,
-    lon: 8.3046257,
+    lng: 8.3046257,
   },
   {
     place: 'Oberrohrdorf',
@@ -733,7 +733,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.421817,
-    lon: 8.316452,
+    lng: 8.316452,
   },
   {
     place: 'Nussbaumen AG',
@@ -741,7 +741,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4881323,
-    lon: 8.2918511,
+    lng: 8.2918511,
   },
   {
     place: 'Hertenstein AG',
@@ -749,7 +749,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4867348,
-    lon: 8.3114384,
+    lng: 8.3114384,
   },
   {
     place: 'Rieden AG',
@@ -757,7 +757,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4836678,
-    lon: 8.3027708,
+    lng: 8.3027708,
   },
   {
     place: 'Kirchdorf AG',
@@ -765,7 +765,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.496631,
-    lon: 8.275998,
+    lng: 8.275998,
   },
   {
     place: 'Remetschwil',
@@ -773,7 +773,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4090319,
-    lon: 8.3279875,
+    lng: 8.3279875,
   },
   {
     place: 'Dietikon',
@@ -781,7 +781,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4050746,
-    lon: 8.4030765,
+    lng: 8.4030765,
   },
   {
     place: 'Spreitenbach',
@@ -789,7 +789,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4182444,
-    lon: 8.3640342,
+    lng: 8.3640342,
   },
   {
     place: 'Stetten AG',
@@ -797,7 +797,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3994584,
-    lon: 8.3074009,
+    lng: 8.3074009,
   },
   {
     place: 'Turgi',
@@ -805,7 +805,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4937038,
-    lon: 8.253021,
+    lng: 8.253021,
   },
   {
     place: 'Siggenthal Station',
@@ -813,7 +813,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5202302,
-    lon: 8.2436926,
+    lng: 8.2436926,
   },
   {
     place: 'Kirchdorf AG',
@@ -821,7 +821,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.496631,
-    lon: 8.275998,
+    lng: 8.275998,
   },
   {
     place: 'Untersiggenthal',
@@ -829,7 +829,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4992019,
-    lon: 8.2574722,
+    lng: 8.2574722,
   },
   {
     place: 'Wettingen',
@@ -837,7 +837,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.465839,
-    lon: 8.3266114,
+    lng: 8.3266114,
   },
   {
     place: 'Mägenwil',
@@ -845,7 +845,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4122258,
-    lon: 8.2301927,
+    lng: 8.2301927,
   },
   {
     place: 'Wohlenschwil',
@@ -853,7 +853,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4127636,
-    lon: 8.2569699,
+    lng: 8.2569699,
   },
   {
     place: 'Würenlingen',
@@ -861,7 +861,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5320878,
-    lon: 8.2569618,
+    lng: 8.2569618,
   },
   {
     place: 'Wettingen',
@@ -869,7 +869,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.465839,
-    lon: 8.3266114,
+    lng: 8.3266114,
   },
   {
     place: 'Würenlos',
@@ -877,7 +877,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4421058,
-    lon: 8.3618108,
+    lng: 8.3618108,
   },
   {
     place: 'Kloster Fahr',
@@ -885,7 +885,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.40811445,
-    lon: 8.438739405113573,
+    lng: 8.438739405113573,
   },
   {
     place: 'Ehrendingen',
@@ -893,7 +893,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4948072,
-    lon: 8.3418609,
+    lng: 8.3418609,
   },
   {
     place: 'Arni AG',
@@ -901,7 +901,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3191633,
-    lon: 8.4200738,
+    lng: 8.4200738,
   },
   {
     place: 'Rudolfstetten',
@@ -909,7 +909,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3694687,
-    lon: 8.3793999,
+    lng: 8.3793999,
   },
   {
     place: 'Berikon',
@@ -917,7 +917,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3528355,
-    lon: 8.3701013,
+    lng: 8.3701013,
   },
   {
     place: 'Bremgarten AG',
@@ -925,7 +925,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3514557,
-    lon: 8.3423906,
+    lng: 8.3423906,
   },
   {
     place: 'Hermetschwil-Staffeln',
@@ -933,7 +933,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3309507,
-    lon: 8.3413696,
+    lng: 8.3413696,
   },
   {
     place: 'Büttikon AG',
@@ -941,7 +941,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3277275,
-    lon: 8.2715698,
+    lng: 8.2715698,
   },
   {
     place: 'Hendschiken',
@@ -949,7 +949,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.386254,
-    lon: 8.2168579,
+    lng: 8.2168579,
   },
   {
     place: 'Dottikon',
@@ -957,7 +957,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3838825,
-    lon: 8.241593,
+    lng: 8.241593,
   },
   {
     place: 'Eggenwil',
@@ -965,7 +965,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3698754,
-    lon: 8.3399569,
+    lng: 8.3399569,
   },
   {
     place: 'Fischbach-Göslikon',
@@ -973,7 +973,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3712188,
-    lon: 8.3071462,
+    lng: 8.3071462,
   },
   {
     place: 'Tägerig',
@@ -981,7 +981,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4049121,
-    lon: 8.2775537,
+    lng: 8.2775537,
   },
   {
     place: 'Hägglingen',
@@ -989,7 +989,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3878226,
-    lon: 8.2535062,
+    lng: 8.2535062,
   },
   {
     place: 'Jonen',
@@ -997,7 +997,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2959739,
-    lon: 8.3950641,
+    lng: 8.3950641,
   },
   {
     place: 'Niederwil AG',
@@ -1005,7 +1005,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3763559,
-    lon: 8.2947614,
+    lng: 8.2947614,
   },
   {
     place: 'Nesselnbach',
@@ -1013,7 +1013,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3889245,
-    lon: 8.2921135,
+    lng: 8.2921135,
   },
   {
     place: 'Oberlunkhofen',
@@ -1021,7 +1021,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3117822,
-    lon: 8.3900422,
+    lng: 8.3900422,
   },
   {
     place: 'Oberwil-Lieli',
@@ -1029,7 +1029,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3338992,
-    lon: 8.3843501,
+    lng: 8.3843501,
   },
   {
     place: 'Rudolfstetten',
@@ -1037,7 +1037,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3694687,
-    lon: 8.3793999,
+    lng: 8.3793999,
   },
   {
     place: 'Sarmenstorf',
@@ -1045,7 +1045,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3099209,
-    lon: 8.2485603,
+    lng: 8.2485603,
   },
   {
     place: 'Bettwil',
@@ -1053,7 +1053,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2902728,
-    lon: 8.265109,
+    lng: 8.265109,
   },
   {
     place: 'Tägerig',
@@ -1061,7 +1061,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4049121,
-    lon: 8.2775537,
+    lng: 8.2775537,
   },
   {
     place: 'Uezwil',
@@ -1069,7 +1069,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3171905,
-    lon: 8.2758947,
+    lng: 8.2758947,
   },
   {
     place: 'Unterlunkhofen',
@@ -1077,7 +1077,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3222122,
-    lon: 8.3805098,
+    lng: 8.3805098,
   },
   {
     place: 'Dottikon',
@@ -1085,7 +1085,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3838825,
-    lon: 8.241593,
+    lng: 8.241593,
   },
   {
     place: 'Wohlen AG',
@@ -1093,7 +1093,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3504945,
-    lon: 8.2786906,
+    lng: 8.2786906,
   },
   {
     place: 'Anglikon',
@@ -1101,7 +1101,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3640882,
-    lon: 8.2632815,
+    lng: 8.2632815,
   },
   {
     place: 'Villmergen',
@@ -1109,7 +1109,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3471991,
-    lon: 8.244908,
+    lng: 8.244908,
   },
   {
     place: 'Hilfikon',
@@ -1117,7 +1117,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3319831,
-    lon: 8.2468223,
+    lng: 8.2468223,
   },
   {
     place: 'Widen',
@@ -1125,7 +1125,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.369628,
-    lon: 8.3595132,
+    lng: 8.3595132,
   },
   {
     place: 'Anglikon',
@@ -1133,7 +1133,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3640882,
-    lon: 8.2632815,
+    lng: 8.2632815,
   },
   {
     place: 'Villmergen',
@@ -1141,7 +1141,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3471991,
-    lon: 8.244908,
+    lng: 8.244908,
   },
   {
     place: 'Zufikon',
@@ -1149,7 +1149,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3483234,
-    lon: 8.3580094,
+    lng: 8.3580094,
   },
   {
     place: 'Islisberg',
@@ -1157,7 +1157,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3229472,
-    lon: 8.4393127,
+    lng: 8.4393127,
   },
   {
     place: 'Auenstein',
@@ -1165,7 +1165,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4168206,
-    lon: 8.1370602,
+    lng: 8.1370602,
   },
   {
     place: 'Birr',
@@ -1173,7 +1173,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4345344,
-    lon: 8.2029778,
+    lng: 8.2029778,
   },
   {
     place: 'Birrhard',
@@ -1181,7 +1181,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4326965,
-    lon: 8.24414,
+    lng: 8.24414,
   },
   {
     place: 'Schinznach Bad',
@@ -1189,7 +1189,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4515074,
-    lon: 8.1676758,
+    lng: 8.1676758,
   },
   {
     place: 'Brugg AG',
@@ -1197,7 +1197,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4809698,
-    lon: 8.209113,
+    lng: 8.209113,
   },
   {
     place: 'Windisch',
@@ -1205,7 +1205,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4793472,
-    lon: 8.2179918,
+    lng: 8.2179918,
   },
   {
     place: 'Umiken',
@@ -1213,7 +1213,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.482462,
-    lon: 8.1893151,
+    lng: 8.1893151,
   },
   {
     place: 'Habsburg',
@@ -1221,7 +1221,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.46255525,
-    lon: 8.180679652032431,
+    lng: 8.180679652032431,
   },
   {
     place: 'Windisch',
@@ -1229,7 +1229,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4793472,
-    lon: 8.2179918,
+    lng: 8.2179918,
   },
   {
     place: 'Hausen AG',
@@ -1237,7 +1237,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4615701,
-    lon: 8.2119339,
+    lng: 8.2119339,
   },
   {
     place: 'Hausen AG',
@@ -1245,7 +1245,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4615701,
-    lon: 8.2119339,
+    lng: 8.2119339,
   },
   {
     place: 'Lupfig',
@@ -1253,7 +1253,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4397165,
-    lon: 8.2013965,
+    lng: 8.2013965,
   },
   {
     place: 'Scherz',
@@ -1261,7 +1261,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.446326,
-    lon: 8.183993,
+    lng: 8.183993,
   },
   {
     place: 'Mandach',
@@ -1269,7 +1269,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5468415,
-    lon: 8.185889,
+    lng: 8.185889,
   },
   {
     place: 'Effingen',
@@ -1277,7 +1277,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4896963,
-    lon: 8.1035209,
+    lng: 8.1035209,
   },
   {
     place: 'Mönthal',
@@ -1285,7 +1285,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5183755,
-    lon: 8.1439869,
+    lng: 8.1439869,
   },
   {
     place: 'Mülligen',
@@ -1293,7 +1293,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.457194,
-    lon: 8.2402149,
+    lng: 8.2402149,
   },
   {
     place: 'Remigen',
@@ -1301,7 +1301,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5164278,
-    lon: 8.1903933,
+    lng: 8.1903933,
   },
   {
     place: 'Riniken',
@@ -1309,7 +1309,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4939693,
-    lon: 8.1876762,
+    lng: 8.1876762,
   },
   {
     place: 'Brugg AG',
@@ -1317,7 +1317,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4809698,
-    lon: 8.209113,
+    lng: 8.209113,
   },
   {
     place: 'Rüfenach AG',
@@ -1325,7 +1325,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5092887,
-    lon: 8.2052484,
+    lng: 8.2052484,
   },
   {
     place: 'Thalheim AG',
@@ -1333,7 +1333,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4367098,
-    lon: 8.0999521,
+    lng: 8.0999521,
   },
   {
     place: 'Veltheim AG',
@@ -1341,7 +1341,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.437709,
-    lon: 8.1461059,
+    lng: 8.1461059,
   },
   {
     place: 'Stilli',
@@ -1349,7 +1349,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5150754,
-    lon: 8.2315106,
+    lng: 8.2315106,
   },
   {
     place: 'Villigen',
@@ -1357,7 +1357,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5262684,
-    lon: 8.2147282,
+    lng: 8.2147282,
   },
   {
     place: 'Schinznach Dorf',
@@ -1365,7 +1365,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4467994,
-    lon: 8.1422836,
+    lng: 8.1422836,
   },
   {
     place: 'Villnachern',
@@ -1373,7 +1373,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4722417,
-    lon: 8.160523,
+    lng: 8.160523,
   },
   {
     place: 'Umiken',
@@ -1381,7 +1381,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.482462,
-    lon: 8.1893151,
+    lng: 8.1893151,
   },
   {
     place: 'Bözberg',
@@ -1389,7 +1389,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4859175,
-    lon: 8.148582661216643,
+    lng: 8.148582661216643,
   },
   {
     place: 'Windisch',
@@ -1397,7 +1397,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4793472,
-    lon: 8.2179918,
+    lng: 8.2179918,
   },
   {
     place: 'Bözberg',
@@ -1405,7 +1405,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4859175,
-    lon: 8.148582661216643,
+    lng: 8.148582661216643,
   },
   {
     place: 'Remigen',
@@ -1413,7 +1413,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5164278,
-    lon: 8.1903933,
+    lng: 8.1903933,
   },
   {
     place: 'Mönthal',
@@ -1421,7 +1421,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5183755,
-    lon: 8.1439869,
+    lng: 8.1439869,
   },
   {
     place: 'Schinznach Dorf',
@@ -1429,7 +1429,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4467994,
-    lon: 8.1422836,
+    lng: 8.1422836,
   },
   {
     place: 'Oberflachs',
@@ -1437,7 +1437,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4418412,
-    lon: 8.1294405,
+    lng: 8.1294405,
   },
   {
     place: 'Beinwil am See',
@@ -1445,7 +1445,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2664506,
-    lon: 8.2027093,
+    lng: 8.2027093,
   },
   {
     place: 'Birrwil',
@@ -1453,7 +1453,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2903395,
-    lon: 8.1965202,
+    lng: 8.1965202,
   },
   {
     place: 'Dürrenäsch',
@@ -1461,7 +1461,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3215135,
-    lon: 8.1571142,
+    lng: 8.1571142,
   },
   {
     place: 'Unterkulm',
@@ -1469,7 +1469,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3103727,
-    lon: 8.11471,
+    lng: 8.11471,
   },
   {
     place: 'Schmiedrued',
@@ -1477,7 +1477,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.270044,
-    lon: 8.103455,
+    lng: 8.103455,
   },
   {
     place: 'Walde AG',
@@ -1485,7 +1485,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.355773,
-    lon: 8.706975302152802,
+    lng: 8.706975302152802,
   },
   {
     place: 'Gontenschwil',
@@ -1493,7 +1493,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2724829,
-    lon: 8.1452923,
+    lng: 8.1452923,
   },
   {
     place: 'Holziken',
@@ -1501,7 +1501,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3202562,
-    lon: 8.04006,
+    lng: 8.04006,
   },
   {
     place: 'Leimbach AG',
@@ -1509,7 +1509,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2722755,
-    lon: 8.1696176,
+    lng: 8.1696176,
   },
   {
     place: 'Boniswil',
@@ -1517,7 +1517,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3161571,
-    lon: 8.1852511,
+    lng: 8.1852511,
   },
   {
     place: 'Leutwil',
@@ -1525,7 +1525,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3095034,
-    lon: 8.1731304,
+    lng: 8.1731304,
   },
   {
     place: 'Burg AG',
@@ -1533,7 +1533,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2352641,
-    lon: 8.1786611,
+    lng: 8.1786611,
   },
   {
     place: 'Menziken',
@@ -1541,7 +1541,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.240878,
-    lon: 8.187274,
+    lng: 8.187274,
   },
   {
     place: 'Oberkulm',
@@ -1549,7 +1549,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2989191,
-    lon: 8.1216116,
+    lng: 8.1216116,
   },
   {
     place: 'Reinach AG',
@@ -1557,7 +1557,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2539675,
-    lon: 8.182824,
+    lng: 8.182824,
   },
   {
     place: 'Schlossrued',
@@ -1565,7 +1565,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.290618,
-    lon: 8.087858,
+    lng: 8.087858,
   },
   {
     place: 'Schmiedrued',
@@ -1573,7 +1573,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.270044,
-    lon: 8.103455,
+    lng: 8.103455,
   },
   {
     place: 'Walde AG',
@@ -1581,7 +1581,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.355773,
-    lon: 8.706975302152802,
+    lng: 8.706975302152802,
   },
   {
     place: 'Schöftland',
@@ -1589,7 +1589,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3054517,
-    lon: 8.0527946,
+    lng: 8.0527946,
   },
   {
     place: 'Teufenthal AG',
@@ -1597,7 +1597,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3300709,
-    lon: 8.1152406,
+    lng: 8.1152406,
   },
   {
     place: 'Dürrenäsch',
@@ -1605,7 +1605,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3215135,
-    lon: 8.1571142,
+    lng: 8.1571142,
   },
   {
     place: 'Gränichen',
@@ -1613,7 +1613,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3592835,
-    lon: 8.0971009,
+    lng: 8.0971009,
   },
   {
     place: 'Teufenthal AG',
@@ -1621,7 +1621,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3300709,
-    lon: 8.1152406,
+    lng: 8.1152406,
   },
   {
     place: 'Unterkulm',
@@ -1629,7 +1629,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3103727,
-    lon: 8.11471,
+    lng: 8.11471,
   },
   {
     place: 'Zetzwil',
@@ -1637,7 +1637,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2862612,
-    lon: 8.1508263,
+    lng: 8.1508263,
   },
   {
     place: 'Eiken',
@@ -1645,7 +1645,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5312508,
-    lon: 7.9894417,
+    lng: 7.9894417,
   },
   {
     place: 'Frick',
@@ -1653,7 +1653,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5075081,
-    lon: 8.0203065,
+    lng: 8.0203065,
   },
   {
     place: 'Gansingen',
@@ -1661,7 +1661,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5432969,
-    lon: 8.1343542,
+    lng: 8.1343542,
   },
   {
     place: 'Wölflinswil',
@@ -1669,7 +1669,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4608194,
-    lon: 7.9976535,
+    lng: 7.9976535,
   },
   {
     place: 'Gipf-Oberfrick',
@@ -1677,7 +1677,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4975112,
-    lon: 8.0029699,
+    lng: 8.0029699,
   },
   {
     place: 'Laufenburg',
@@ -1685,7 +1685,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5604617,
-    lon: 8.0601696,
+    lng: 8.0601696,
   },
   {
     place: 'Kaisten',
@@ -1693,7 +1693,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5386303,
-    lon: 8.0446209,
+    lng: 8.0446209,
   },
   {
     place: 'Ittenthal',
@@ -1701,7 +1701,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5185215,
-    lon: 8.0592609,
+    lng: 8.0592609,
   },
   {
     place: 'Laufenburg',
@@ -1709,7 +1709,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5604617,
-    lon: 8.0601696,
+    lng: 8.0601696,
   },
   {
     place: 'Rheinsulz',
@@ -1717,7 +1717,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5556365,
-    lon: 8.0909838,
+    lng: 8.0909838,
   },
   {
     place: 'Sulz AG',
@@ -1725,7 +1725,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5347382,
-    lon: 8.0961846,
+    lng: 8.0961846,
   },
   {
     place: 'Münchwilen AG',
@@ -1733,7 +1733,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5379513,
-    lon: 7.9629997,
+    lng: 7.9629997,
   },
   {
     place: 'Oberhof',
@@ -1741,7 +1741,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4504204,
-    lon: 8.0068129,
+    lng: 8.0068129,
   },
   {
     place: 'Oeschgen',
@@ -1749,7 +1749,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5191409,
-    lon: 8.0170821,
+    lng: 8.0170821,
   },
   {
     place: 'Schwaderloch',
@@ -1757,7 +1757,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5853969,
-    lon: 8.1435346,
+    lng: 8.1435346,
   },
   {
     place: 'Sisseln AG',
@@ -1765,7 +1765,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5527858,
-    lon: 7.9873781,
+    lng: 7.9873781,
   },
   {
     place: 'Wittnau',
@@ -1773,7 +1773,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4811219,
-    lon: 7.9753983,
+    lng: 7.9753983,
   },
   {
     place: 'Densbüren',
@@ -1781,7 +1781,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4543265,
-    lon: 8.0538734,
+    lng: 8.0538734,
   },
   {
     place: 'Wölflinswil',
@@ -1789,7 +1789,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4608194,
-    lon: 7.9976535,
+    lng: 7.9976535,
   },
   {
     place: 'Zeihen',
@@ -1797,7 +1797,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4765025,
-    lon: 8.0856118,
+    lng: 8.0856118,
   },
   {
     place: 'Oberhofen AG',
@@ -1805,7 +1805,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5537006,
-    lon: 8.1316233,
+    lng: 8.1316233,
   },
   {
     place: 'Mettau',
@@ -1813,7 +1813,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5639096,
-    lon: 8.1274979,
+    lng: 8.1274979,
   },
   {
     place: 'Etzgen',
@@ -1821,7 +1821,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5720309,
-    lon: 8.1108566,
+    lng: 8.1108566,
   },
   {
     place: 'Wil AG',
@@ -1829,7 +1829,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5609977,
-    lon: 8.1519962,
+    lng: 8.1519962,
   },
   {
     place: 'Hottwil',
@@ -1837,7 +1837,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5474422,
-    lon: 8.1623003,
+    lng: 8.1623003,
   },
   {
     place: 'Hornussen',
@@ -1845,7 +1845,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5005311,
-    lon: 8.0633909,
+    lng: 8.0633909,
   },
   {
     place: 'Bözen',
@@ -1853,7 +1853,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4957654,
-    lon: 8.0835501,
+    lng: 8.0835501,
   },
   {
     place: 'Elfingen',
@@ -1861,7 +1861,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5072011,
-    lon: 8.0990017,
+    lng: 8.0990017,
   },
   {
     place: 'Effingen',
@@ -1869,7 +1869,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4896963,
-    lon: 8.1035209,
+    lng: 8.1035209,
   },
   {
     place: 'Herznach',
@@ -1877,7 +1877,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4733714,
-    lon: 8.0502339,
+    lng: 8.0502339,
   },
   {
     place: 'Ueken',
@@ -1885,7 +1885,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4844622,
-    lon: 8.0486412,
+    lng: 8.0486412,
   },
   {
     place: 'Ammerswil AG',
@@ -1893,7 +1893,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3705625,
-    lon: 8.2061524,
+    lng: 8.2061524,
   },
   {
     place: 'Boniswil',
@@ -1901,7 +1901,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3161571,
-    lon: 8.1852511,
+    lng: 8.1852511,
   },
   {
     place: 'Birrwil',
@@ -1909,7 +1909,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2903395,
-    lon: 8.1965202,
+    lng: 8.1965202,
   },
   {
     place: 'Brunegg',
@@ -1917,7 +1917,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4192416,
-    lon: 8.21637,
+    lng: 8.21637,
   },
   {
     place: 'Dintikon',
@@ -1925,7 +1925,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3636287,
-    lon: 8.2281106,
+    lng: 8.2281106,
   },
   {
     place: 'Seon',
@@ -1933,7 +1933,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3460005,
-    lon: 8.1593554,
+    lng: 8.1593554,
   },
   {
     place: 'Egliswil',
@@ -1941,7 +1941,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3499234,
-    lon: 8.186191,
+    lng: 8.186191,
   },
   {
     place: 'Fahrwangen',
@@ -1949,7 +1949,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2946038,
-    lon: 8.2413934,
+    lng: 8.2413934,
   },
   {
     place: 'Hallwil',
@@ -1957,7 +1957,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.329448,
-    lon: 8.1750054,
+    lng: 8.1750054,
   },
   {
     place: 'Hendschiken',
@@ -1965,7 +1965,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.386254,
-    lon: 8.2168579,
+    lng: 8.2168579,
   },
   {
     place: 'Holderbank AG',
@@ -1973,7 +1973,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4270885,
-    lon: 8.1686653,
+    lng: 8.1686653,
   },
   {
     place: 'Hunzenschwil',
@@ -1981,7 +1981,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3854685,
-    lon: 8.1242795,
+    lng: 8.1242795,
   },
   {
     place: 'Lenzburg',
@@ -1989,7 +1989,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3873136,
-    lon: 8.1821873,
+    lng: 8.1821873,
   },
   {
     place: 'Fahrwangen',
@@ -1997,7 +1997,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2946038,
-    lon: 8.2413934,
+    lng: 8.2413934,
   },
   {
     place: 'Meisterschwanden',
@@ -2005,7 +2005,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2949842,
-    lon: 8.2277227,
+    lng: 8.2277227,
   },
   {
     place: 'Tennwil',
@@ -2013,7 +2013,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.30642,
-    lon: 8.221958,
+    lng: 8.221958,
   },
   {
     place: 'Wildegg',
@@ -2021,7 +2021,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4153808,
-    lon: 8.1636356,
+    lng: 8.1636356,
   },
   {
     place: 'Möriken AG',
@@ -2029,7 +2029,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4155082,
-    lon: 8.1807174,
+    lng: 8.1807174,
   },
   {
     place: 'Wildegg',
@@ -2037,7 +2037,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4153808,
-    lon: 8.1636356,
+    lng: 8.1636356,
   },
   {
     place: 'Niederlenz',
@@ -2045,7 +2045,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4019522,
-    lon: 8.1757198,
+    lng: 8.1757198,
   },
   {
     place: 'Othmarsingen',
@@ -2053,7 +2053,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4023481,
-    lon: 8.2162901,
+    lng: 8.2162901,
   },
   {
     place: 'Hendschiken',
@@ -2061,7 +2061,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.386254,
-    lon: 8.2168579,
+    lng: 8.2168579,
   },
   {
     place: 'Rupperswil',
@@ -2069,7 +2069,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4027283,
-    lon: 8.1274477,
+    lng: 8.1274477,
   },
   {
     place: 'Wildegg',
@@ -2077,7 +2077,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4153808,
-    lon: 8.1636356,
+    lng: 8.1636356,
   },
   {
     place: 'Schafisheim',
@@ -2085,7 +2085,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3781151,
-    lon: 8.143202,
+    lng: 8.143202,
   },
   {
     place: 'Seengen',
@@ -2093,7 +2093,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3252906,
-    lon: 8.2079184,
+    lng: 8.2079184,
   },
   {
     place: 'Seon',
@@ -2101,7 +2101,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3460005,
-    lon: 8.1593554,
+    lng: 8.1593554,
   },
   {
     place: 'Staufen',
@@ -2109,7 +2109,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3799837,
-    lon: 8.1665273,
+    lng: 8.1665273,
   },
   {
     place: 'Abtwil AG',
@@ -2117,7 +2117,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1744431,
-    lon: 8.3546821,
+    lng: 8.3546821,
   },
   {
     place: 'Aristau',
@@ -2125,7 +2125,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2863467,
-    lon: 8.3626162,
+    lng: 8.3626162,
   },
   {
     place: 'Muri AG',
@@ -2133,7 +2133,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2756613,
-    lon: 8.3377829,
+    lng: 8.3377829,
   },
   {
     place: 'Beinwil (Freiamt)',
@@ -2141,7 +2141,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2302283,
-    lon: 8.3422897,
+    lng: 8.3422897,
   },
   {
     place: 'Mühlau',
@@ -2149,7 +2149,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2291056,
-    lon: 8.3886537,
+    lng: 8.3886537,
   },
   {
     place: 'Meienberg',
@@ -2157,7 +2157,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.198602,
-    lon: 8.3747859,
+    lng: 8.3747859,
   },
   {
     place: 'Auw',
@@ -2165,7 +2165,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2116635,
-    lon: 8.364871,
+    lng: 8.364871,
   },
   {
     place: 'Kleinwangen',
@@ -2173,7 +2173,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1951141,
-    lon: 8.2940812,
+    lng: 8.2940812,
   },
   {
     place: 'Beinwil (Freiamt)',
@@ -2181,7 +2181,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2302283,
-    lon: 8.3422897,
+    lng: 8.3422897,
   },
   {
     place: 'Besenbüren',
@@ -2189,7 +2189,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3123219,
-    lon: 8.3439287,
+    lng: 8.3439287,
   },
   {
     place: 'Bettwil',
@@ -2197,7 +2197,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2902728,
-    lon: 8.265109,
+    lng: 8.265109,
   },
   {
     place: 'Buttwil',
@@ -2205,7 +2205,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.267594,
-    lon: 8.3112049,
+    lng: 8.3112049,
   },
   {
     place: 'Boswil',
@@ -2213,7 +2213,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3004361,
-    lon: 8.3137505,
+    lng: 8.3137505,
   },
   {
     place: 'Muri AG',
@@ -2221,7 +2221,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2756613,
-    lon: 8.3377829,
+    lng: 8.3377829,
   },
   {
     place: 'Buttwil',
@@ -2229,7 +2229,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.267594,
-    lon: 8.3112049,
+    lng: 8.3112049,
   },
   {
     place: 'Bünzen',
@@ -2237,7 +2237,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3116613,
-    lon: 8.3260392,
+    lng: 8.3260392,
   },
   {
     place: 'Waldhäusern AG',
@@ -2245,7 +2245,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3269618,
-    lon: 8.3145803,
+    lng: 8.3145803,
   },
   {
     place: 'Buttwil',
@@ -2253,7 +2253,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.267594,
-    lon: 8.3112049,
+    lng: 8.3112049,
   },
   {
     place: 'Inwil',
@@ -2261,7 +2261,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1220031,
-    lon: 8.3508443,
+    lng: 8.3508443,
   },
   {
     place: 'Dietwil',
@@ -2269,7 +2269,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1483931,
-    lon: 8.3930963,
+    lng: 8.3930963,
   },
   {
     place: 'Geltwil',
@@ -2277,7 +2277,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2491991,
-    lon: 8.3223867,
+    lng: 8.3223867,
   },
   {
     place: 'Kallern',
@@ -2285,7 +2285,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.317089,
-    lon: 8.2952953,
+    lng: 8.2952953,
   },
   {
     place: 'Merenschwand',
@@ -2293,7 +2293,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2607035,
-    lon: 8.3732781,
+    lng: 8.3732781,
   },
   {
     place: 'Benzenschwil',
@@ -2301,7 +2301,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2480066,
-    lon: 8.3640314,
+    lng: 8.3640314,
   },
   {
     place: 'Mühlau',
@@ -2309,7 +2309,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2291056,
-    lon: 8.3886537,
+    lng: 8.3886537,
   },
   {
     place: 'Muri AG',
@@ -2317,7 +2317,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2756613,
-    lon: 8.3377829,
+    lng: 8.3377829,
   },
   {
     place: 'Oberrüti',
@@ -2325,7 +2325,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.166912,
-    lon: 8.3954207,
+    lng: 8.3954207,
   },
   {
     place: 'Rottenschwil',
@@ -2333,7 +2333,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3141222,
-    lon: 8.3638821,
+    lng: 8.3638821,
   },
   {
     place: 'Sins',
@@ -2341,7 +2341,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1910321,
-    lon: 8.3946059,
+    lng: 8.3946059,
   },
   {
     place: 'Alikon',
@@ -2349,7 +2349,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1989397,
-    lon: 8.359232901420249,
+    lng: 8.359232901420249,
   },
   {
     place: 'Meienberg',
@@ -2357,7 +2357,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.198602,
-    lon: 8.3747859,
+    lng: 8.3747859,
   },
   {
     place: 'Aettenschwil',
@@ -2365,7 +2365,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1844826,
-    lon: 8.3716069,
+    lng: 8.3716069,
   },
   {
     place: 'Fenkrieden',
@@ -2373,7 +2373,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1601212,
-    lon: 8.3694172,
+    lng: 8.3694172,
   },
   {
     place: 'Inwil',
@@ -2381,7 +2381,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1220031,
-    lon: 8.3508443,
+    lng: 8.3508443,
   },
   {
     place: 'Ballwil',
@@ -2389,7 +2389,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.1521716,
-    lon: 8.3185717,
+    lng: 8.3185717,
   },
   {
     place: 'Waltenschwil',
@@ -2397,7 +2397,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3345396,
-    lon: 8.3024947,
+    lng: 8.3024947,
   },
   {
     place: 'Hellikon',
@@ -2405,7 +2405,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5095692,
-    lon: 7.9249732,
+    lng: 7.9249732,
   },
   {
     place: 'Hemmiken',
@@ -2413,7 +2413,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4880195,
-    lon: 7.8913586,
+    lng: 7.8913586,
   },
   {
     place: 'Kaiseraugst',
@@ -2421,7 +2421,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5399823,
-    lon: 7.7230178,
+    lng: 7.7230178,
   },
   {
     place: 'Olsberg',
@@ -2429,7 +2429,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5213934,
-    lon: 7.7835481,
+    lng: 7.7835481,
   },
   {
     place: 'Magden',
@@ -2437,7 +2437,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5283737,
-    lon: 7.8116008,
+    lng: 7.8116008,
   },
   {
     place: 'Möhlin',
@@ -2445,7 +2445,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.560991,
-    lon: 7.8431299,
+    lng: 7.8431299,
   },
   {
     place: 'Mumpf',
@@ -2453,7 +2453,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.545436,
-    lon: 7.920759,
+    lng: 7.920759,
   },
   {
     place: 'Obermumpf',
@@ -2461,7 +2461,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5293336,
-    lon: 7.9381928,
+    lng: 7.9381928,
   },
   {
     place: 'Olsberg',
@@ -2469,7 +2469,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5213934,
-    lon: 7.7835481,
+    lng: 7.7835481,
   },
   {
     place: 'Kaiseraugst',
@@ -2477,7 +2477,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5399823,
-    lon: 7.7230178,
+    lng: 7.7230178,
   },
   {
     place: 'Rheinfelden',
@@ -2485,7 +2485,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5543859,
-    lon: 7.7922905,
+    lng: 7.7922905,
   },
   {
     place: 'Möhlin',
@@ -2493,7 +2493,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.560991,
-    lon: 7.8431299,
+    lng: 7.8431299,
   },
   {
     place: 'Schupfart',
@@ -2501,7 +2501,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5145465,
-    lon: 7.9657804,
+    lng: 7.9657804,
   },
   {
     place: 'Stein AG',
@@ -2509,7 +2509,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5451212,
-    lon: 7.9540042,
+    lng: 7.9540042,
   },
   {
     place: 'Wallbach',
@@ -2517,7 +2517,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5599243,
-    lon: 7.902809,
+    lng: 7.902809,
   },
   {
     place: 'Wegenstetten',
@@ -2525,7 +2525,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4995108,
-    lon: 7.9337595,
+    lng: 7.9337595,
   },
   {
     place: 'Zeiningen',
@@ -2533,7 +2533,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5414438,
-    lon: 7.8716277,
+    lng: 7.8716277,
   },
   {
     place: 'Zuzgen',
@@ -2541,7 +2541,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.52544,
-    lon: 7.900246,
+    lng: 7.900246,
   },
   {
     place: 'Wallbach',
@@ -2549,7 +2549,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5599243,
-    lon: 7.902809,
+    lng: 7.902809,
   },
   {
     place: 'Zuzgen',
@@ -2557,7 +2557,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.52544,
-    lon: 7.900246,
+    lng: 7.900246,
   },
   {
     place: 'Olten',
@@ -2565,7 +2565,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3496571,
-    lon: 7.903787,
+    lng: 7.903787,
   },
   {
     place: 'Aarburg',
@@ -2573,7 +2573,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3206417,
-    lon: 7.8993599,
+    lng: 7.8993599,
   },
   {
     place: 'Oftringen',
@@ -2581,7 +2581,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3126595,
-    lon: 7.92099,
+    lng: 7.92099,
   },
   {
     place: 'Uerkheim',
@@ -2589,7 +2589,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3051502,
-    lon: 8.0253266,
+    lng: 8.0253266,
   },
   {
     place: 'Bottenwil',
@@ -2597,7 +2597,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2854555,
-    lon: 8.0052577,
+    lng: 8.0052577,
   },
   {
     place: 'Vordemwald',
@@ -2605,7 +2605,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2766594,
-    lon: 7.9009035,
+    lng: 7.9009035,
   },
   {
     place: 'Brittnau',
@@ -2613,7 +2613,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2586821,
-    lon: 7.9466147,
+    lng: 7.9466147,
   },
   {
     place: 'Pfaffnau',
@@ -2621,7 +2621,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2273716,
-    lon: 7.8984229,
+    lng: 7.8984229,
   },
   {
     place: 'Kirchleerau',
@@ -2629,7 +2629,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2755071,
-    lon: 8.0702913,
+    lng: 8.0702913,
   },
   {
     place: 'Uerkheim',
@@ -2637,7 +2637,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3051502,
-    lon: 8.0253266,
+    lng: 8.0253266,
   },
   {
     place: 'Kölliken',
@@ -2645,7 +2645,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3352673,
-    lon: 8.0231804,
+    lng: 8.0231804,
   },
   {
     place: 'Moosleerau',
@@ -2653,7 +2653,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2692107,
-    lon: 8.0631076,
+    lng: 8.0631076,
   },
   {
     place: 'Murgenthal',
@@ -2661,7 +2661,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2627727,
-    lon: 7.8319249,
+    lng: 7.8319249,
   },
   {
     place: 'Riken AG',
@@ -2669,7 +2669,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2760208,
-    lon: 7.8491956,
+    lng: 7.8491956,
   },
   {
     place: 'Glashütten',
@@ -2677,7 +2677,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2587718,
-    lon: 7.8445122,
+    lng: 7.8445122,
   },
   {
     place: 'Roggwil BE',
@@ -2685,7 +2685,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.241147,
-    lon: 7.8230774,
+    lng: 7.8230774,
   },
   {
     place: 'St. Urban',
@@ -2693,7 +2693,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2317566,
-    lon: 7.8359882,
+    lng: 7.8359882,
   },
   {
     place: 'Starrkirch-Wil',
@@ -2701,7 +2701,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3526289,
-    lon: 7.928985896329011,
+    lng: 7.928985896329011,
   },
   {
     place: 'Oftringen',
@@ -2709,7 +2709,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3126595,
-    lon: 7.92099,
+    lng: 7.92099,
   },
   {
     place: 'Zofingen',
@@ -2717,7 +2717,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.288491,
-    lon: 7.9458259,
+    lng: 7.9458259,
   },
   {
     place: 'Attelwil',
@@ -2725,7 +2725,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2593336,
-    lon: 8.0433214,
+    lng: 8.0433214,
   },
   {
     place: 'Reitnau',
@@ -2733,7 +2733,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2513234,
-    lon: 8.0449307,
+    lng: 8.0449307,
   },
   {
     place: 'Strengelbach',
@@ -2741,7 +2741,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2790303,
-    lon: 7.9289955,
+    lng: 7.9289955,
   },
   {
     place: 'Rothrist',
@@ -2749,7 +2749,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3029125,
-    lon: 7.8826232,
+    lng: 7.8826232,
   },
   {
     place: 'Safenwil',
@@ -2757,7 +2757,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3187392,
-    lon: 7.9841811,
+    lng: 7.9841811,
   },
   {
     place: 'Staffelbach',
@@ -2765,7 +2765,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2834729,
-    lon: 8.0419242,
+    lng: 8.0419242,
   },
   {
     place: 'Wittwil',
@@ -2773,7 +2773,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.4019779,
-    lon: 9.025557,
+    lng: 9.025557,
   },
   {
     place: 'Strengelbach',
@@ -2781,7 +2781,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2790303,
-    lon: 7.9289955,
+    lng: 7.9289955,
   },
   {
     place: 'Mühlethal',
@@ -2789,7 +2789,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3014579,
-    lon: 7.9795943,
+    lng: 7.9795943,
   },
   {
     place: 'Uerkheim',
@@ -2797,7 +2797,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3051502,
-    lon: 8.0253266,
+    lng: 8.0253266,
   },
   {
     place: 'Vordemwald',
@@ -2805,7 +2805,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2766594,
-    lon: 7.9009035,
+    lng: 7.9009035,
   },
   {
     place: 'Rothrist',
@@ -2813,7 +2813,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3029125,
-    lon: 7.8826232,
+    lng: 7.8826232,
   },
   {
     place: 'Wiliberg',
@@ -2821,7 +2821,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2684312,
-    lon: 8.014673,
+    lng: 8.014673,
   },
   {
     place: 'Zofingen',
@@ -2829,7 +2829,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.288491,
-    lon: 7.9458259,
+    lng: 7.9458259,
   },
   {
     place: 'Mühlethal',
@@ -2837,7 +2837,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.3014579,
-    lon: 7.9795943,
+    lng: 7.9795943,
   },
   {
     place: 'Bottenwil',
@@ -2845,7 +2845,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.2854555,
-    lon: 8.0052577,
+    lng: 8.0052577,
   },
   {
     place: 'Kleindöttingen',
@@ -2853,7 +2853,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5709031,
-    lon: 8.2464072,
+    lng: 8.2464072,
   },
   {
     place: 'Böttstein',
@@ -2861,7 +2861,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5568329,
-    lon: 8.221822,
+    lng: 8.221822,
   },
   {
     place: 'Döttingen',
@@ -2869,7 +2869,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5739904,
-    lon: 8.2569004,
+    lng: 8.2569004,
   },
   {
     place: 'Endingen',
@@ -2877,7 +2877,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5376174,
-    lon: 8.2901196,
+    lng: 8.2901196,
   },
   {
     place: 'Unterendingen',
@@ -2885,7 +2885,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5469468,
-    lon: 8.2890979,
+    lng: 8.2890979,
   },
   {
     place: 'Fisibach',
@@ -2893,7 +2893,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5637103,
-    lon: 8.4100542,
+    lng: 8.4100542,
   },
   {
     place: 'Full-Reuenthal',
@@ -2901,7 +2901,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.6136047,
-    lon: 8.2048625,
+    lng: 8.2048625,
   },
   {
     place: 'Klingnau',
@@ -2909,7 +2909,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5810046,
-    lon: 8.2500088,
+    lng: 8.2500088,
   },
   {
     place: 'Koblenz',
@@ -2917,7 +2917,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.6088321,
-    lon: 8.2386953,
+    lng: 8.2386953,
   },
   {
     place: 'Koblenz',
@@ -2925,7 +2925,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.6088321,
-    lon: 8.2386953,
+    lng: 8.2386953,
   },
   {
     place: 'Leibstadt',
@@ -2933,7 +2933,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5905075,
-    lon: 8.1756561,
+    lng: 8.1756561,
   },
   {
     place: 'Lengnau AG',
@@ -2941,7 +2941,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.521079,
-    lon: 8.3301378,
+    lng: 8.3301378,
   },
   {
     place: 'Leuggern',
@@ -2949,7 +2949,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5798217,
-    lon: 8.217218,
+    lng: 8.217218,
   },
   {
     place: 'Hettenschwil',
@@ -2957,7 +2957,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5771298,
-    lon: 8.1991059,
+    lng: 8.1991059,
   },
   {
     place: 'Mellikon',
@@ -2965,7 +2965,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.567172,
-    lon: 8.3517064,
+    lng: 8.3517064,
   },
   {
     place: 'Schneisingen',
@@ -2973,7 +2973,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5184104,
-    lon: 8.364545,
+    lng: 8.364545,
   },
   {
     place: 'Siglistorf',
@@ -2981,7 +2981,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5453889,
-    lon: 8.3808698,
+    lng: 8.3808698,
   },
   {
     place: 'Tegerfelden',
@@ -2989,7 +2989,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5607982,
-    lon: 8.2858739,
+    lng: 8.2858739,
   },
   {
     place: 'Rietheim',
@@ -2997,7 +2997,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.6008113,
-    lon: 8.2778878,
+    lng: 8.2778878,
   },
   {
     place: 'Bad Zurzach',
@@ -3005,7 +3005,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5866477,
-    lon: 8.2940658,
+    lng: 8.2940658,
   },
   {
     place: 'Rekingen AG',
@@ -3013,7 +3013,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5707146,
-    lon: 8.3204135,
+    lng: 8.3204135,
   },
   {
     place: 'Baldingen',
@@ -3021,7 +3021,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.554707,
-    lon: 8.313637,
+    lng: 8.313637,
   },
   {
     place: 'Böbikon',
@@ -3029,7 +3029,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5537308,
-    lon: 8.333123,
+    lng: 8.333123,
   },
   {
     place: 'Wislikofen',
@@ -3037,7 +3037,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5578734,
-    lon: 8.3622093,
+    lng: 8.3622093,
   },
   {
     place: 'Rümikon AG',
@@ -3045,7 +3045,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5652923,
-    lon: 8.374074,
+    lng: 8.374074,
   },
   {
     place: 'Kaiserstuhl AG',
@@ -3053,7 +3053,7 @@ const ag: PlacesLatLon[] = [
     area: 'AG',
     language: 'de',
     lat: 47.5665767,
-    lon: 8.4188631,
+    lng: 8.4188631,
   },
 ];
 
@@ -3064,7 +3064,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1479168,
-    lon: 8.7287564,
+    lng: 8.7287564,
   },
   {
     place: 'Einsiedeln',
@@ -3072,7 +3072,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1286095,
-    lon: 8.7500299,
+    lng: 8.7500299,
   },
   {
     place: 'Trachslau',
@@ -3080,7 +3080,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.09948,
-    lon: 8.7254028,
+    lng: 8.7254028,
   },
   {
     place: 'Gross',
@@ -3088,7 +3088,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1123325,
-    lon: 8.7750129,
+    lng: 8.7750129,
   },
   {
     place: 'Euthal',
@@ -3096,7 +3096,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0982089,
-    lon: 8.8125164,
+    lng: 8.8125164,
   },
   {
     place: 'Willerzell',
@@ -3104,7 +3104,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.130427,
-    lon: 8.7935671,
+    lng: 8.7935671,
   },
   {
     place: 'Egg SZ',
@@ -3112,7 +3112,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1618288,
-    lon: 8.7826426,
+    lng: 8.7826426,
   },
   {
     place: 'Rigi Scheidegg',
@@ -3120,7 +3120,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0257542,
-    lon: 8.519046622773022,
+    lng: 8.519046622773022,
   },
   {
     place: 'Gersau',
@@ -3128,7 +3128,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9923,
-    lon: 8.5264727,
+    lng: 8.5264727,
   },
   {
     place: 'Wollerau',
@@ -3136,7 +3136,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1957261,
-    lon: 8.7194595,
+    lng: 8.7194595,
   },
   {
     place: 'Schindellegi',
@@ -3144,7 +3144,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.175612,
-    lon: 8.7112027,
+    lng: 8.7112027,
   },
   {
     place: 'Feusisberg',
@@ -3152,7 +3152,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1867433,
-    lon: 8.7486302,
+    lng: 8.7486302,
   },
   {
     place: 'Bennau',
@@ -3160,7 +3160,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1479168,
-    lon: 8.7287564,
+    lng: 8.7287564,
   },
   {
     place: 'Egg SZ',
@@ -3168,7 +3168,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1618288,
-    lon: 8.7826426,
+    lng: 8.7826426,
   },
   {
     place: 'Hurden',
@@ -3176,7 +3176,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2142501,
-    lon: 8.8043485,
+    lng: 8.8043485,
   },
   {
     place: 'Bäch SZ',
@@ -3184,7 +3184,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2008535,
-    lon: 8.7271845,
+    lng: 8.7271845,
   },
   {
     place: 'Freienbach',
@@ -3192,7 +3192,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.204411,
-    lon: 8.7598816,
+    lng: 8.7598816,
   },
   {
     place: 'Pfäffikon SZ',
@@ -3200,7 +3200,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2029524,
-    lon: 8.7780789,
+    lng: 8.7780789,
   },
   {
     place: 'Wollerau',
@@ -3208,7 +3208,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1957261,
-    lon: 8.7194595,
+    lng: 8.7194595,
   },
   {
     place: 'Wilen b. Wollerau',
@@ -3216,7 +3216,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1985954,
-    lon: 8.7342086,
+    lng: 8.7342086,
   },
   {
     place: 'Bäch SZ',
@@ -3224,7 +3224,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2008535,
-    lon: 8.7271845,
+    lng: 8.7271845,
   },
   {
     place: 'Wollerau',
@@ -3232,7 +3232,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1957261,
-    lon: 8.7194595,
+    lng: 8.7194595,
   },
   {
     place: 'Samstagern',
@@ -3240,7 +3240,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1921592,
-    lon: 8.6775862,
+    lng: 8.6775862,
   },
   {
     place: 'Schindellegi',
@@ -3248,7 +3248,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.175612,
-    lon: 8.7112027,
+    lng: 8.7112027,
   },
   {
     place: 'Merlischachen',
@@ -3256,7 +3256,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0655534,
-    lon: 8.4071994,
+    lng: 8.4071994,
   },
   {
     place: 'Küssnacht am Rigi',
@@ -3264,7 +3264,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.08385,
-    lon: 8.4386308,
+    lng: 8.4386308,
   },
   {
     place: 'Immensee',
@@ -3272,7 +3272,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0963863,
-    lon: 8.4630016,
+    lng: 8.4630016,
   },
   {
     place: 'Willerzell',
@@ -3280,7 +3280,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.130427,
-    lon: 8.7935671,
+    lng: 8.7935671,
   },
   {
     place: 'Altendorf',
@@ -3288,7 +3288,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1916374,
-    lon: 8.8294983,
+    lng: 8.8294983,
   },
   {
     place: 'Lachen SZ',
@@ -3296,7 +3296,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1898963,
-    lon: 8.8528409,
+    lng: 8.8528409,
   },
   {
     place: 'Siebnen',
@@ -3304,7 +3304,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1755353,
-    lon: 8.8987142,
+    lng: 8.8987142,
   },
   {
     place: 'Galgenen',
@@ -3312,7 +3312,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1815904,
-    lon: 8.8742411,
+    lng: 8.8742411,
   },
   {
     place: 'Innerthal',
@@ -3320,7 +3320,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1055139,
-    lon: 8.9183482,
+    lng: 8.9183482,
   },
   {
     place: 'Lachen SZ',
@@ -3328,7 +3328,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1898963,
-    lon: 8.8528409,
+    lng: 8.8528409,
   },
   {
     place: 'Reichenburg',
@@ -3336,7 +3336,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1691793,
-    lon: 8.9754615,
+    lng: 8.9754615,
   },
   {
     place: 'Siebnen',
@@ -3344,7 +3344,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1755353,
-    lon: 8.8987142,
+    lng: 8.8987142,
   },
   {
     place: 'Wangen SZ',
@@ -3352,7 +3352,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1923115,
-    lon: 8.8953915,
+    lng: 8.8953915,
   },
   {
     place: 'Schübelbach',
@@ -3360,7 +3360,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1726731,
-    lon: 8.9287461,
+    lng: 8.9287461,
   },
   {
     place: 'Buttikon SZ',
@@ -3368,7 +3368,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1725758,
-    lon: 8.9590832,
+    lng: 8.9590832,
   },
   {
     place: 'Uznach',
@@ -3376,7 +3376,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2250882,
-    lon: 8.98556,
+    lng: 8.98556,
   },
   {
     place: 'Wangen SZ',
@@ -3384,7 +3384,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1923115,
-    lon: 8.8953915,
+    lng: 8.8953915,
   },
   {
     place: 'Tuggen',
@@ -3392,7 +3392,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.2022792,
-    lon: 8.9424794,
+    lng: 8.9424794,
   },
   {
     place: 'Vorderthal',
@@ -3400,7 +3400,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1220234,
-    lon: 8.9008631,
+    lng: 8.9008631,
   },
   {
     place: 'Lachen SZ',
@@ -3408,7 +3408,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1898963,
-    lon: 8.8528409,
+    lng: 8.8528409,
   },
   {
     place: 'Siebnen',
@@ -3416,7 +3416,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1755353,
-    lon: 8.8987142,
+    lng: 8.8987142,
   },
   {
     place: 'Wangen SZ',
@@ -3424,7 +3424,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1923115,
-    lon: 8.8953915,
+    lng: 8.8953915,
   },
   {
     place: 'Alpthal',
@@ -3432,7 +3432,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0734939,
-    lon: 8.7138911,
+    lng: 8.7138911,
   },
   {
     place: 'Walchwil',
@@ -3440,7 +3440,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1005277,
-    lon: 8.5147778,
+    lng: 8.5147778,
   },
   {
     place: 'Rigi Kaltbad',
@@ -3448,7 +3448,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0447063,
-    lon: 8.4661769,
+    lng: 8.4661769,
   },
   {
     place: 'Goldau',
@@ -3456,7 +3456,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.051219,
-    lon: 8.5507758,
+    lng: 8.5507758,
   },
   {
     place: 'Rigi Klösterli',
@@ -3464,7 +3464,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0426107,
-    lon: 8.4872653,
+    lng: 8.4872653,
   },
   {
     place: 'Rigi Staffel',
@@ -3472,7 +3472,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.053493,
-    lon: 8.4738655,
+    lng: 8.4738655,
   },
   {
     place: 'Rigi Kulm',
@@ -3480,7 +3480,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0567857,
-    lon: 8.4861404,
+    lng: 8.4861404,
   },
   {
     place: 'Oberarth',
@@ -3488,7 +3488,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0542976,
-    lon: 8.5371458,
+    lng: 8.5371458,
   },
   {
     place: 'Arth',
@@ -3496,7 +3496,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0644551,
-    lon: 8.5238673,
+    lng: 8.5238673,
   },
   {
     place: 'Steinerberg',
@@ -3504,7 +3504,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0561792,
-    lon: 8.5864716,
+    lng: 8.5864716,
   },
   {
     place: 'Illgau',
@@ -3512,7 +3512,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9889935,
-    lon: 8.7259577,
+    lng: 8.7259577,
   },
   {
     place: 'Seewen SZ',
@@ -3520,7 +3520,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0264458,
-    lon: 8.632258,
+    lng: 8.632258,
   },
   {
     place: 'Brunnen',
@@ -3528,7 +3528,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9940439,
-    lon: 8.6054085,
+    lng: 8.6054085,
   },
   {
     place: 'Lauerz',
@@ -3536,7 +3536,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0323208,
-    lon: 8.5848711,
+    lng: 8.5848711,
   },
   {
     place: 'Stoos SZ',
@@ -3544,7 +3544,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9769494,
-    lon: 8.6643588,
+    lng: 8.6643588,
   },
   {
     place: 'Brunnen',
@@ -3552,7 +3552,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9940439,
-    lon: 8.6054085,
+    lng: 8.6054085,
   },
   {
     place: 'Morschach',
@@ -3560,7 +3560,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9821204,
-    lon: 8.6191516,
+    lng: 8.6191516,
   },
   {
     place: 'Sisikon',
@@ -3568,7 +3568,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.949336,
-    lon: 8.6211018,
+    lng: 8.6211018,
   },
   {
     place: 'Stoos SZ',
@@ -3576,7 +3576,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9769494,
-    lon: 8.6643588,
+    lng: 8.6643588,
   },
   {
     place: 'Muotathal',
@@ -3584,7 +3584,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.974668,
-    lon: 8.7658029,
+    lng: 8.7658029,
   },
   {
     place: 'Bisisthal',
@@ -3592,7 +3592,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9430327,
-    lon: 8.8311956,
+    lng: 8.8311956,
   },
   {
     place: 'Ried (Muotathal)',
@@ -3600,7 +3600,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9877561,
-    lon: 8.7113503,
+    lng: 8.7113503,
   },
   {
     place: 'Klöntal',
@@ -3608,7 +3608,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.025258,
-    lon: 8.940389143198352,
+    lng: 8.940389143198352,
   },
   {
     place: 'Unteriberg',
@@ -3616,7 +3616,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0598018,
-    lon: 8.8035271,
+    lng: 8.8035271,
   },
   {
     place: 'Oberiberg',
@@ -3624,7 +3624,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0391767,
-    lon: 8.7834161,
+    lng: 8.7834161,
   },
   {
     place: 'Riemenstalden',
@@ -3632,7 +3632,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 46.9469935,
-    lon: 8.6645678,
+    lng: 8.6645678,
   },
   {
     place: 'Rothenthurm',
@@ -3640,7 +3640,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1047258,
-    lon: 8.6748441,
+    lng: 8.6748441,
   },
   {
     place: 'Morgarten',
@@ -3648,7 +3648,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.104509,
-    lon: 8.6415298,
+    lng: 8.6415298,
   },
   {
     place: 'Sattel',
@@ -3656,7 +3656,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0809852,
-    lon: 8.6335265,
+    lng: 8.6335265,
   },
   {
     place: 'Rothenthurm',
@@ -3664,7 +3664,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.1047258,
-    lon: 8.6748441,
+    lng: 8.6748441,
   },
   {
     place: 'Steinen',
@@ -3672,7 +3672,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0500549,
-    lon: 8.6108291,
+    lng: 8.6108291,
   },
   {
     place: 'Sattel',
@@ -3680,7 +3680,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0809852,
-    lon: 8.6335265,
+    lng: 8.6335265,
   },
   {
     place: 'Seewen SZ',
@@ -3688,7 +3688,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0264458,
-    lon: 8.632258,
+    lng: 8.632258,
   },
   {
     place: 'Schwyz',
@@ -3696,7 +3696,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0211848,
-    lon: 8.6535598,
+    lng: 8.6535598,
   },
   {
     place: 'Rickenbach b. Schwyz',
@@ -3704,7 +3704,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0212077,
-    lon: 8.6515263,
+    lng: 8.6515263,
   },
   {
     place: 'Ibach',
@@ -3712,7 +3712,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.012328,
-    lon: 8.6436145,
+    lng: 8.6436145,
   },
   {
     place: 'Unteriberg',
@@ -3720,7 +3720,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0598018,
-    lon: 8.8035271,
+    lng: 8.8035271,
   },
   {
     place: 'Oberiberg',
@@ -3728,7 +3728,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0391767,
-    lon: 8.7834161,
+    lng: 8.7834161,
   },
   {
     place: 'Steinen',
@@ -3736,7 +3736,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0500549,
-    lon: 8.6108291,
+    lng: 8.6108291,
   },
   {
     place: 'Steinerberg',
@@ -3744,7 +3744,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0561792,
-    lon: 8.5864716,
+    lng: 8.5864716,
   },
   {
     place: 'Unteriberg',
@@ -3752,7 +3752,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0598018,
-    lon: 8.8035271,
+    lng: 8.8035271,
   },
   {
     place: 'Euthal',
@@ -3760,7 +3760,7 @@ const sz: PlacesLatLon[] = [
     area: 'SZ',
     language: 'de',
     lat: 47.0982089,
-    lon: 8.8125164,
+    lng: 8.8125164,
   },
 ];
 
@@ -3771,7 +3771,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2679489,
-    lon: 8.4863301,
+    lng: 8.4863301,
   },
   {
     place: 'Aeugstertal',
@@ -3779,7 +3779,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2842232,
-    lon: 8.4872912,
+    lng: 8.4872912,
   },
   {
     place: 'Zwillikon',
@@ -3787,7 +3787,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2880474,
-    lon: 8.4310838,
+    lng: 8.4310838,
   },
   {
     place: 'Affoltern am Albis',
@@ -3795,7 +3795,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2782467,
-    lon: 8.4521518,
+    lng: 8.4521518,
   },
   {
     place: 'Bonstetten',
@@ -3803,7 +3803,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3154662,
-    lon: 8.4670602,
+    lng: 8.4670602,
   },
   {
     place: 'Sihlbrugg',
@@ -3811,7 +3811,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2179502,
-    lon: 8.5766407,
+    lng: 8.5766407,
   },
   {
     place: 'Langnau am Albis',
@@ -3819,7 +3819,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2876627,
-    lon: 8.5372813,
+    lng: 8.5372813,
   },
   {
     place: 'Hausen am Albis',
@@ -3827,7 +3827,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2438769,
-    lon: 8.534235,
+    lng: 8.534235,
   },
   {
     place: 'Ebertswil',
@@ -3835,7 +3835,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2265484,
-    lon: 8.5491818,
+    lng: 8.5491818,
   },
   {
     place: 'Hedingen',
@@ -3843,7 +3843,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2982564,
-    lon: 8.4475792,
+    lng: 8.4475792,
   },
   {
     place: 'Kappel am Albis',
@@ -3851,7 +3851,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2288482,
-    lon: 8.5251335,
+    lng: 8.5251335,
   },
   {
     place: 'Hauptikon',
@@ -3859,7 +3859,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.230249,
-    lon: 8.4958582,
+    lng: 8.4958582,
   },
   {
     place: 'Uerzlikon',
@@ -3867,7 +3867,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2218602,
-    lon: 8.4977276,
+    lng: 8.4977276,
   },
   {
     place: 'Knonau',
@@ -3875,7 +3875,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2251463,
-    lon: 8.4573072,
+    lng: 8.4573072,
   },
   {
     place: 'Maschwanden',
@@ -3883,7 +3883,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2349836,
-    lon: 8.4266177,
+    lng: 8.4266177,
   },
   {
     place: 'Mettmenstetten',
@@ -3891,7 +3891,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.243488,
-    lon: 8.4636702,
+    lng: 8.4636702,
   },
   {
     place: 'Obfelden',
@@ -3899,7 +3899,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2617701,
-    lon: 8.4197059,
+    lng: 8.4197059,
   },
   {
     place: 'Ottenbach',
@@ -3907,7 +3907,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.28172,
-    lon: 8.4060915,
+    lng: 8.4060915,
   },
   {
     place: 'Rifferswil',
@@ -3915,7 +3915,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.241563,
-    lon: 8.4971398,
+    lng: 8.4971398,
   },
   {
     place: 'Adliswil',
@@ -3923,7 +3923,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3117624,
-    lon: 8.52491,
+    lng: 8.52491,
   },
   {
     place: 'Stallikon',
@@ -3931,7 +3931,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3269232,
-    lon: 8.4901051,
+    lng: 8.4901051,
   },
   {
     place: 'Uetliberg',
@@ -3939,7 +3939,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3518692,
-    lon: 8.4874187,
+    lng: 8.4874187,
   },
   {
     place: 'Wettswil',
@@ -3947,7 +3947,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3390834,
-    lon: 8.4734523,
+    lng: 8.4734523,
   },
   {
     place: 'Benken ZH',
@@ -3955,7 +3955,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6537872,
-    lon: 8.6537634,
+    lng: 8.6537634,
   },
   {
     place: 'Berg am Irchel',
@@ -3963,7 +3963,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5679698,
-    lon: 8.5959486,
+    lng: 8.5959486,
   },
   {
     place: 'Gräslikon',
@@ -3971,7 +3971,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5571034,
-    lon: 8.6059848,
+    lng: 8.6059848,
   },
   {
     place: 'Buch am Irchel',
@@ -3979,7 +3979,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5489807,
-    lon: 8.6199637,
+    lng: 8.6199637,
   },
   {
     place: 'Dachsen',
@@ -3987,7 +3987,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6661896,
-    lon: 8.6150532,
+    lng: 8.6150532,
   },
   {
     place: 'Dorf',
@@ -3995,7 +3995,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5720029,
-    lon: 8.647344,
+    lng: 8.647344,
   },
   {
     place: 'Feuerthalen',
@@ -4003,7 +4003,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6914771,
-    lon: 8.64598,
+    lng: 8.64598,
   },
   {
     place: 'Langwiesen',
@@ -4011,7 +4011,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6834681,
-    lon: 8.6621286,
+    lng: 8.6621286,
   },
   {
     place: 'Flaach',
@@ -4019,7 +4019,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5754461,
-    lon: 8.6060755,
+    lng: 8.6060755,
   },
   {
     place: 'Flurlingen',
@@ -4027,7 +4027,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6860764,
-    lon: 8.6272354,
+    lng: 8.6272354,
   },
   {
     place: 'Henggart',
@@ -4035,7 +4035,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5632291,
-    lon: 8.6835729,
+    lng: 8.6835729,
   },
   {
     place: 'Kleinandelfingen',
@@ -4043,7 +4043,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5998043,
-    lon: 8.6860581,
+    lng: 8.6860581,
   },
   {
     place: 'Alten',
@@ -4051,7 +4051,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5991435,
-    lon: 8.6470682,
+    lng: 8.6470682,
   },
   {
     place: 'Oerlingen',
@@ -4059,7 +4059,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6254198,
-    lon: 8.6748309,
+    lng: 8.6748309,
   },
   {
     place: 'Nohl',
@@ -4067,7 +4067,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6717331,
-    lon: 8.60805,
+    lng: 8.60805,
   },
   {
     place: 'Uhwiesen',
@@ -4075,7 +4075,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6709937,
-    lon: 8.6350982,
+    lng: 8.6350982,
   },
   {
     place: 'Dachsen',
@@ -4083,7 +4083,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6661896,
-    lon: 8.6150532,
+    lng: 8.6150532,
   },
   {
     place: 'Marthalen',
@@ -4091,7 +4091,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6257747,
-    lon: 8.6501583,
+    lng: 8.6501583,
   },
   {
     place: 'Ellikon am Rhein',
@@ -4099,7 +4099,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6053031,
-    lon: 8.5981551,
+    lng: 8.5981551,
   },
   {
     place: 'Trüllikon',
@@ -4107,7 +4107,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6377265,
-    lon: 8.6934163,
+    lng: 8.6934163,
   },
   {
     place: 'Ossingen',
@@ -4115,7 +4115,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6128544,
-    lon: 8.7283378,
+    lng: 8.7283378,
   },
   {
     place: 'Rheinau',
@@ -4123,7 +4123,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6439248,
-    lon: 8.6017575,
+    lng: 8.6017575,
   },
   {
     place: 'Ellikon am Rhein',
@@ -4131,7 +4131,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6053031,
-    lon: 8.5981551,
+    lng: 8.5981551,
   },
   {
     place: 'Thalheim an der Thur',
@@ -4139,7 +4139,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5786159,
-    lon: 8.7538871,
+    lng: 8.7538871,
   },
   {
     place: 'Rudolfingen',
@@ -4147,7 +4147,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6407539,
-    lon: 8.6738748,
+    lng: 8.6738748,
   },
   {
     place: 'Wildensbuch',
@@ -4155,7 +4155,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6526387,
-    lon: 8.6761453,
+    lng: 8.6761453,
   },
   {
     place: 'Trüllikon',
@@ -4163,7 +4163,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6377265,
-    lon: 8.6934163,
+    lng: 8.6934163,
   },
   {
     place: 'Truttikon',
@@ -4171,7 +4171,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6296056,
-    lon: 8.7276879,
+    lng: 8.7276879,
   },
   {
     place: 'Volken',
@@ -4179,7 +4179,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5746457,
-    lon: 8.6251185,
+    lng: 8.6251185,
   },
   {
     place: 'Bülach',
@@ -4187,7 +4187,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5172321,
-    lon: 8.5407118,
+    lng: 8.5407118,
   },
   {
     place: 'Bachenbülach',
@@ -4195,7 +4195,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5047036,
-    lon: 8.5473259,
+    lng: 8.5473259,
   },
   {
     place: 'Bassersdorf',
@@ -4203,7 +4203,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4435706,
-    lon: 8.6299131,
+    lng: 8.6299131,
   },
   {
     place: 'Bülach',
@@ -4211,7 +4211,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5172321,
-    lon: 8.5407118,
+    lng: 8.5407118,
   },
   {
     place: 'Glattfelden',
@@ -4219,7 +4219,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.559752,
-    lon: 8.5008282,
+    lng: 8.5008282,
   },
   {
     place: 'Dietlikon',
@@ -4227,7 +4227,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4222808,
-    lon: 8.6155979,
+    lng: 8.6155979,
   },
   {
     place: 'Dübendorf',
@@ -4235,7 +4235,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3969942,
-    lon: 8.6185666,
+    lng: 8.6185666,
   },
   {
     place: 'Eglisau',
@@ -4243,7 +4243,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5759965,
-    lon: 8.5240238,
+    lng: 8.5240238,
   },
   {
     place: 'Rafz',
@@ -4251,7 +4251,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6115934,
-    lon: 8.5402669,
+    lng: 8.5402669,
   },
   {
     place: 'Embrach',
@@ -4259,7 +4259,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5056384,
-    lon: 8.5941089,
+    lng: 8.5941089,
   },
   {
     place: 'Freienstein',
@@ -4267,7 +4267,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5311367,
-    lon: 8.585086,
+    lng: 8.585086,
   },
   {
     place: 'Teufen ZH',
@@ -4275,7 +4275,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5503988,
-    lon: 8.5678019,
+    lng: 8.5678019,
   },
   {
     place: 'Glattfelden',
@@ -4283,7 +4283,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.559752,
-    lon: 8.5008282,
+    lng: 8.5008282,
   },
   {
     place: 'Zweidlen',
@@ -4291,7 +4291,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5620482,
-    lon: 8.4693754,
+    lng: 8.4693754,
   },
   {
     place: 'Eglisau',
@@ -4299,7 +4299,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5759965,
-    lon: 8.5240238,
+    lng: 8.5240238,
   },
   {
     place: 'Hochfelden',
@@ -4307,7 +4307,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5225614,
-    lon: 8.5160674,
+    lng: 8.5160674,
   },
   {
     place: 'Glattfelden',
@@ -4315,7 +4315,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.559752,
-    lon: 8.5008282,
+    lng: 8.5008282,
   },
   {
     place: 'Höri',
@@ -4323,7 +4323,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5066543,
-    lon: 8.5062644,
+    lng: 8.5062644,
   },
   {
     place: 'Hüntwangen',
@@ -4331,7 +4331,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5954244,
-    lon: 8.4925331,
+    lng: 8.4925331,
   },
   {
     place: 'Kloten',
@@ -4339,7 +4339,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4525133,
-    lon: 8.5861477,
+    lng: 8.5861477,
   },
   {
     place: 'Nürensdorf',
@@ -4347,7 +4347,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4492605,
-    lon: 8.6470753,
+    lng: 8.6470753,
   },
   {
     place: 'Lufingen',
@@ -4355,7 +4355,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4899328,
-    lon: 8.5943645,
+    lng: 8.5943645,
   },
   {
     place: 'Nürensdorf',
@@ -4363,7 +4363,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4492605,
-    lon: 8.6470753,
+    lng: 8.6470753,
   },
   {
     place: 'Oberembrach',
@@ -4371,7 +4371,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4876358,
-    lon: 8.618543,
+    lng: 8.618543,
   },
   {
     place: 'Zürich',
@@ -4379,7 +4379,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: ['Kreis 1', 'Altstatt'],
@@ -4387,7 +4387,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3737426,
-    lon: 8.5314372,
+    lng: 8.5314372,
   },
   {
     place: ['Kreis 2', 'Wollishofen', 'Enge', 'Laimbach'],
@@ -4395,7 +4395,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3459044,
-    lon: 8.4847271,
+    lng: 8.4847271,
   },
   {
     place: ['Kreis 3', 'Wiedikon'],
@@ -4403,7 +4403,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3590426,
-    lon: 8.4869909,
+    lng: 8.4869909,
   },
   {
     place: ['Kreis 4', 'Aussersihl'],
@@ -4411,7 +4411,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3797307,
-    lon: 8.5074714,
+    lng: 8.5074714,
   },
   {
     place: ['Kreis 5', 'Industriequartier'],
@@ -4419,7 +4419,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3864881,
-    lon: 8.5090755,
+    lng: 8.5090755,
   },
   {
     place: 'Kreis 6',
@@ -4427,7 +4427,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3915057,
-    lon: 8.5285785,
+    lng: 8.5285785,
   },
   {
     place: 'Kreis 7',
@@ -4435,7 +4435,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3706847,
-    lon: 8.5663945,
+    lng: 8.5663945,
   },
   {
     place: ['Kreis 8', 'Riesbach'],
@@ -4443,7 +4443,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3561465,
-    lon: 8.5546195,
+    lng: 8.5546195,
   },
   {
     place: 'Kreis 9',
@@ -4451,7 +4451,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3816017,
-    lon: 8.4576195,
+    lng: 8.4576195,
   },
   {
     place: 'Kreis 10',
@@ -4459,7 +4459,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4043385,
-    lon: 8.4816429,
+    lng: 8.4816429,
   },
   {
     place: 'Kreis 11',
@@ -4467,7 +4467,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4170126,
-    lon: 8.5044333,
+    lng: 8.5044333,
   },
   {
     place: ['Kreis 12', 'Schamendingen'],
@@ -4475,7 +4475,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4040751,
-    lon: 8.5542736,
+    lng: 8.5542736,
   },
   {
     place: 'Glattbrugg',
@@ -4483,7 +4483,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4326312,
-    lon: 8.5647892,
+    lng: 8.5647892,
   },
   {
     place: 'Opfikon',
@@ -4491,7 +4491,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4322671,
-    lon: 8.5779983,
+    lng: 8.5779983,
   },
   {
     place: 'Glattpark (Opfikon)',
@@ -4499,7 +4499,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4299507,
-    lon: 8.5618129,
+    lng: 8.5618129,
   },
   {
     place: 'Rafz',
@@ -4507,7 +4507,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6115934,
-    lon: 8.5402669,
+    lng: 8.5402669,
   },
   {
     place: 'Rorbas',
@@ -4515,7 +4515,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5303235,
-    lon: 8.5771089,
+    lng: 8.5771089,
   },
   {
     place: 'Teufen ZH',
@@ -4523,7 +4523,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5503988,
-    lon: 8.5678019,
+    lng: 8.5678019,
   },
   {
     place: 'Wallisellen',
@@ -4531,7 +4531,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4166195,
-    lon: 8.5919985,
+    lng: 8.5919985,
   },
   {
     place: 'Wasterkingen',
@@ -4539,7 +4539,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.590058,
-    lon: 8.4707137,
+    lng: 8.4707137,
   },
   {
     place: 'Wil ZH',
@@ -4547,7 +4547,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6055207,
-    lon: 8.5049057,
+    lng: 8.5049057,
   },
   {
     place: 'Wil ZH',
@@ -4555,7 +4555,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6055207,
-    lon: 8.5049057,
+    lng: 8.5049057,
   },
   {
     place: 'Rafz',
@@ -4563,7 +4563,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6115934,
-    lon: 8.5402669,
+    lng: 8.5402669,
   },
   {
     place: 'Bülach',
@@ -4571,7 +4571,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5172321,
-    lon: 8.5407118,
+    lng: 8.5407118,
   },
   {
     place: 'Winkel',
@@ -4579,7 +4579,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4933353,
-    lon: 8.5538578,
+    lng: 8.5538578,
   },
   {
     place: 'Bachs',
@@ -4587,7 +4587,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5253778,
-    lon: 8.4397426,
+    lng: 8.4397426,
   },
   {
     place: 'Boppelsen',
@@ -4595,7 +4595,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4708527,
-    lon: 8.4026165,
+    lng: 8.4026165,
   },
   {
     place: 'Regensberg',
@@ -4603,7 +4603,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4827643,
-    lon: 8.4374038,
+    lng: 8.4374038,
   },
   {
     place: 'Buchs ZH',
@@ -4611,7 +4611,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.458087,
-    lon: 8.4378662,
+    lng: 8.4378662,
   },
   {
     place: 'Dällikon',
@@ -4619,7 +4619,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4399418,
-    lon: 8.4388272,
+    lng: 8.4388272,
   },
   {
     place: 'Dänikon ZH',
@@ -4627,7 +4627,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4361905,
-    lon: 8.4078983,
+    lng: 8.4078983,
   },
   {
     place: 'Dielsdorf',
@@ -4635,7 +4635,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4810371,
-    lon: 8.4543245,
+    lng: 8.4543245,
   },
   {
     place: 'Hüttikon',
@@ -4643,7 +4643,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4449831,
-    lon: 8.3867932,
+    lng: 8.3867932,
   },
   {
     place: 'Steinmaur',
@@ -4651,7 +4651,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4989995,
-    lon: 8.4555136,
+    lng: 8.4555136,
   },
   {
     place: 'Bachs',
@@ -4659,7 +4659,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5253778,
-    lon: 8.4397426,
+    lng: 8.4397426,
   },
   {
     place: 'Neerach',
@@ -4667,7 +4667,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5112292,
-    lon: 8.4716,
+    lng: 8.4716,
   },
   {
     place: 'Niederhasli',
@@ -4675,7 +4675,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4812949,
-    lon: 8.4858049,
+    lng: 8.4858049,
   },
   {
     place: 'Niederglatt ZH',
@@ -4683,7 +4683,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4873411,
-    lon: 8.5035509,
+    lng: 8.5035509,
   },
   {
     place: 'Niederhasli',
@@ -4691,7 +4691,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4812949,
-    lon: 8.4858049,
+    lng: 8.4858049,
   },
   {
     place: 'Nassenwil',
@@ -4699,7 +4699,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4656902,
-    lon: 8.4714588,
+    lng: 8.4714588,
   },
   {
     place: 'Oberhasli',
@@ -4707,7 +4707,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4654121,
-    lon: 8.4992517,
+    lng: 8.4992517,
   },
   {
     place: 'Niederweningen',
@@ -4715,7 +4715,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5076024,
-    lon: 8.380001,
+    lng: 8.380001,
   },
   {
     place: 'Oberglatt ZH',
@@ -4723,7 +4723,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4705287,
-    lon: 8.5101628,
+    lng: 8.5101628,
   },
   {
     place: 'Siglistorf',
@@ -4731,7 +4731,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5453889,
-    lon: 8.3808698,
+    lng: 8.3808698,
   },
   {
     place: 'Oberweningen',
@@ -4739,7 +4739,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.501261,
-    lon: 8.4056983,
+    lng: 8.4056983,
   },
   {
     place: 'Buchs ZH',
@@ -4747,7 +4747,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.458087,
-    lon: 8.4378662,
+    lng: 8.4378662,
   },
   {
     place: 'Otelfingen',
@@ -4755,7 +4755,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.460873,
-    lon: 8.3892173,
+    lng: 8.3892173,
   },
   {
     place: 'Regensberg',
@@ -4763,7 +4763,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4827643,
-    lon: 8.4374038,
+    lng: 8.4374038,
   },
   {
     place: 'Regensdorf',
@@ -4771,7 +4771,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4317645,
-    lon: 8.4680435,
+    lng: 8.4680435,
   },
   {
     place: 'Watt',
@@ -4779,7 +4779,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4428231,
-    lon: 8.4814709,
+    lng: 8.4814709,
   },
   {
     place: 'Zürich',
@@ -4787,7 +4787,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Glattbrugg',
@@ -4795,7 +4795,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4326312,
-    lon: 8.5647892,
+    lng: 8.5647892,
   },
   {
     place: 'Rümlang',
@@ -4803,7 +4803,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4507163,
-    lon: 8.5299122,
+    lng: 8.5299122,
   },
   {
     place: 'Schleinikon',
@@ -4811,7 +4811,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4971908,
-    lon: 8.3971872,
+    lng: 8.3971872,
   },
   {
     place: 'Schöfflisdorf',
@@ -4819,7 +4819,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4998561,
-    lon: 8.4162027,
+    lng: 8.4162027,
   },
   {
     place: 'Windlach',
@@ -4827,7 +4827,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5417744,
-    lon: 8.4745461,
+    lng: 8.4745461,
   },
   {
     place: 'Niederhasli',
@@ -4835,7 +4835,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4812949,
-    lon: 8.4858049,
+    lng: 8.4858049,
   },
   {
     place: 'Steinmaur',
@@ -4843,7 +4843,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4989995,
-    lon: 8.4555136,
+    lng: 8.4555136,
   },
   {
     place: 'Sünikon',
@@ -4851,7 +4851,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.49069,
-    lon: 8.4371223,
+    lng: 8.4371223,
   },
   {
     place: 'Weiach',
@@ -4859,7 +4859,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5565844,
-    lon: 8.4375683,
+    lng: 8.4375683,
   },
   {
     place: 'Hinwil',
@@ -4867,7 +4867,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3015316,
-    lon: 8.8419423,
+    lng: 8.8419423,
   },
   {
     place: 'Bäretswil',
@@ -4875,7 +4875,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3360247,
-    lon: 8.8580536,
+    lng: 8.8580536,
   },
   {
     place: 'Adetswil',
@@ -4883,7 +4883,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3396328,
-    lon: 8.8435332,
+    lng: 8.8435332,
   },
   {
     place: 'Gibswil',
@@ -4891,7 +4891,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3130044,
-    lon: 8.9132336,
+    lng: 8.9132336,
   },
   {
     place: 'Bubikon',
@@ -4899,7 +4899,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2682923,
-    lon: 8.8191613,
+    lng: 8.8191613,
   },
   {
     place: 'Wolfhausen',
@@ -4907,7 +4907,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2570817,
-    lon: 8.800881,
+    lng: 8.800881,
   },
   {
     place: 'Hinwil',
@@ -4915,7 +4915,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3015316,
-    lon: 8.8419423,
+    lng: 8.8419423,
   },
   {
     place: 'Bubikon',
@@ -4923,7 +4923,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2682923,
-    lon: 8.8191613,
+    lng: 8.8191613,
   },
   {
     place: 'Rüti ZH',
@@ -4931,7 +4931,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2579312,
-    lon: 8.852696,
+    lng: 8.852696,
   },
   {
     place: 'Tann',
@@ -4939,7 +4939,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2713759,
-    lon: 8.8535852,
+    lng: 8.8535852,
   },
   {
     place: 'Dürnten',
@@ -4947,7 +4947,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2778545,
-    lon: 8.842203,
+    lng: 8.842203,
   },
   {
     place: 'Wald ZH',
@@ -4955,7 +4955,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2741418,
-    lon: 8.9132553,
+    lng: 8.9132553,
   },
   {
     place: 'Hinwil',
@@ -4963,7 +4963,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3015316,
-    lon: 8.8419423,
+    lng: 8.8419423,
   },
   {
     place: 'Bauma',
@@ -4971,7 +4971,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3677633,
-    lon: 8.8792873,
+    lng: 8.8792873,
   },
   {
     place: 'Steg im Tösstal',
@@ -4979,7 +4979,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3514114,
-    lon: 8.9351412,
+    lng: 8.9351412,
   },
   {
     place: 'Fischenthal',
@@ -4987,7 +4987,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3333136,
-    lon: 8.9225988,
+    lng: 8.9225988,
   },
   {
     place: 'Gibswil',
@@ -4995,7 +4995,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3130044,
-    lon: 8.9132336,
+    lng: 8.9132336,
   },
   {
     place: 'Bertschikon (Gossau ZH)',
@@ -5003,7 +5003,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3206469,
-    lon: 8.7576742,
+    lng: 8.7576742,
   },
   {
     place: 'Mönchaltorf',
@@ -5011,7 +5011,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.31279,
-    lon: 8.7222749,
+    lng: 8.7222749,
   },
   {
     place: 'Grüt (Gossau ZH)',
@@ -5019,7 +5019,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.29967245,
-    lon: 8.7761132689858,
+    lng: 8.7761132689858,
   },
   {
     place: 'Gossau ZH',
@@ -5027,7 +5027,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3058847,
-    lon: 8.7602403,
+    lng: 8.7602403,
   },
   {
     place: 'Ottikon (Gossau ZH)',
@@ -5035,7 +5035,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.29163855,
-    lon: 8.77650665,
+    lng: 8.77650665,
   },
   {
     place: 'Grüningen',
@@ -5043,7 +5043,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2819396,
-    lon: 8.7613283,
+    lng: 8.7613283,
   },
   {
     place: 'Grüningen',
@@ -5051,7 +5051,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2819396,
-    lon: 8.7613283,
+    lng: 8.7613283,
   },
   {
     place: 'Hinwil',
@@ -5059,7 +5059,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3015316,
-    lon: 8.8419423,
+    lng: 8.8419423,
   },
   {
     place: 'Wernetshausen',
@@ -5067,7 +5067,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2988,
-    lon: 8.8643355,
+    lng: 8.8643355,
   },
   {
     place: 'Gibswil',
@@ -5075,7 +5075,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3130044,
-    lon: 8.9132336,
+    lng: 8.9132336,
   },
   {
     place: 'Rüti ZH',
@@ -5083,7 +5083,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2579312,
-    lon: 8.852696,
+    lng: 8.852696,
   },
   {
     place: 'Wald ZH',
@@ -5091,7 +5091,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2741418,
-    lon: 8.9132553,
+    lng: 8.9132553,
   },
   {
     place: 'Aathal-Seegräben',
@@ -5099,7 +5099,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3410213,
-    lon: 8.77023092925532,
+    lng: 8.77023092925532,
   },
   {
     place: 'Fischenthal',
@@ -5107,7 +5107,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3333136,
-    lon: 8.9225988,
+    lng: 8.9225988,
   },
   {
     place: 'Wald ZH',
@@ -5115,7 +5115,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2741418,
-    lon: 8.9132553,
+    lng: 8.9132553,
   },
   {
     place: 'Laupen ZH',
@@ -5123,7 +5123,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2727268,
-    lon: 8.9139616,
+    lng: 8.9139616,
   },
   {
     place: 'Adetswil',
@@ -5131,7 +5131,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3396328,
-    lon: 8.8435332,
+    lng: 8.8435332,
   },
   {
     place: 'Wetzikon ZH',
@@ -5139,7 +5139,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3226925,
-    lon: 8.7980939,
+    lng: 8.7980939,
   },
   {
     place: 'Wetzikon ZH',
@@ -5147,7 +5147,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3226925,
-    lon: 8.7980939,
+    lng: 8.7980939,
   },
   {
     place: 'Zürich',
@@ -5155,7 +5155,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Kilchberg ZH',
@@ -5163,7 +5163,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3225316,
-    lon: 8.5459483,
+    lng: 8.5459483,
   },
   {
     place: 'Rüschlikon',
@@ -5171,7 +5171,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.307465,
-    lon: 8.5546421,
+    lng: 8.5546421,
   },
   {
     place: 'Langnau am Albis',
@@ -5179,7 +5179,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2876627,
-    lon: 8.5372813,
+    lng: 8.5372813,
   },
   {
     place: 'Oberrieden',
@@ -5187,7 +5187,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2779101,
-    lon: 8.5762195,
+    lng: 8.5762195,
   },
   {
     place: 'Richterswil',
@@ -5195,7 +5195,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2091079,
-    lon: 8.7017051,
+    lng: 8.7017051,
   },
   {
     place: 'Samstagern',
@@ -5203,7 +5203,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.1921592,
-    lon: 8.6775862,
+    lng: 8.6775862,
   },
   {
     place: 'Rüschlikon',
@@ -5211,7 +5211,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.307465,
-    lon: 8.5546421,
+    lng: 8.5546421,
   },
   {
     place: 'Gattikon',
@@ -5219,7 +5219,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2843053,
-    lon: 8.5487611,
+    lng: 8.5487611,
   },
   {
     place: 'Thalwil',
@@ -5227,7 +5227,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2944325,
-    lon: 8.5635762,
+    lng: 8.5635762,
   },
   {
     place: 'Erlenbach ZH',
@@ -5235,7 +5235,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3037537,
-    lon: 8.5920709,
+    lng: 8.5920709,
   },
   {
     place: 'Erlenbach ZH',
@@ -5243,7 +5243,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3037537,
-    lon: 8.5920709,
+    lng: 8.5920709,
   },
   {
     place: 'Herrliberg',
@@ -5251,7 +5251,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2905574,
-    lon: 8.6124721,
+    lng: 8.6124721,
   },
   {
     place: 'Grüningen',
@@ -5259,7 +5259,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2819396,
-    lon: 8.7613283,
+    lng: 8.7613283,
   },
   {
     place: 'Hombrechtikon',
@@ -5267,7 +5267,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2523354,
-    lon: 8.7680277,
+    lng: 8.7680277,
   },
   {
     place: 'Feldbach',
@@ -5275,7 +5275,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2391708,
-    lon: 8.7830688,
+    lng: 8.7830688,
   },
   {
     place: 'Forch',
@@ -5283,7 +5283,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3255509,
-    lon: 8.6468061,
+    lng: 8.6468061,
   },
   {
     place: 'Küsnacht ZH',
@@ -5291,7 +5291,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3176276,
-    lon: 8.5830859,
+    lng: 8.5830859,
   },
   {
     place: 'Oetwil am See',
@@ -5299,7 +5299,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2703459,
-    lon: 8.721657,
+    lng: 8.721657,
   },
   {
     place: 'Männedorf',
@@ -5307,7 +5307,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.25269045,
-    lon: 8.692993641428322,
+    lng: 8.692993641428322,
   },
   {
     place: 'Meilen',
@@ -5315,7 +5315,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.270428,
-    lon: 8.6412249,
+    lng: 8.6412249,
   },
   {
     place: 'Oetwil am See',
@@ -5323,7 +5323,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2703459,
-    lon: 8.721657,
+    lng: 8.721657,
   },
   {
     place: 'Hombrechtikon',
@@ -5331,7 +5331,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2523354,
-    lon: 8.7680277,
+    lng: 8.7680277,
   },
   {
     place: 'Stäfa',
@@ -5339,7 +5339,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2413349,
-    lon: 8.7348747,
+    lng: 8.7348747,
   },
   {
     place: 'Uerikon',
@@ -5347,7 +5347,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2358983,
-    lon: 8.7526216,
+    lng: 8.7526216,
   },
   {
     place: 'Uetikon am See',
@@ -5355,7 +5355,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.269368,
-    lon: 8.68316,
+    lng: 8.68316,
   },
   {
     place: 'Zumikon',
@@ -5363,7 +5363,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3324061,
-    lon: 8.6238228,
+    lng: 8.6238228,
   },
   {
     place: 'Zollikerberg',
@@ -5371,7 +5371,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3456637,
-    lon: 8.5993998,
+    lng: 8.5993998,
   },
   {
     place: 'Zollikon',
@@ -5379,7 +5379,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3379535,
-    lon: 8.5755735,
+    lng: 8.5755735,
   },
   {
     place: 'Illnau',
@@ -5387,7 +5387,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4088363,
-    lon: 8.7255432,
+    lng: 8.7255432,
   },
   {
     place: 'Fehraltorf',
@@ -5395,7 +5395,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3873705,
-    lon: 8.7520123,
+    lng: 8.7520123,
   },
   {
     place: 'Hittnau',
@@ -5403,7 +5403,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3682799,
-    lon: 8.8233708,
+    lng: 8.8233708,
   },
   {
     place: 'Kemptthal',
@@ -5411,7 +5411,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4528517,
-    lon: 8.7058075,
+    lng: 8.7058075,
   },
   {
     place: 'Grafstal',
@@ -5419,7 +5419,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4450685,
-    lon: 8.7018296,
+    lng: 8.7018296,
   },
   {
     place: 'Winterberg ZH',
@@ -5427,7 +5427,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.448182,
-    lon: 8.6989982,
+    lng: 8.6989982,
   },
   {
     place: 'Lindau',
@@ -5435,7 +5435,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4426676,
-    lon: 8.6722839,
+    lng: 8.6722839,
   },
   {
     place: 'Tagelswangen',
@@ -5443,7 +5443,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4303307,
-    lon: 8.6709808,
+    lng: 8.6709808,
   },
   {
     place: 'Pfäffikon ZH',
@@ -5451,7 +5451,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.365582,
-    lon: 8.7819841,
+    lng: 8.7819841,
   },
   {
     place: 'Auslikon',
@@ -5459,7 +5459,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3446877,
-    lon: 8.8063754,
+    lng: 8.8063754,
   },
   {
     place: 'Wetzikon ZH',
@@ -5467,7 +5467,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3226925,
-    lon: 8.7980939,
+    lng: 8.7980939,
   },
   {
     place: 'Madetswil',
@@ -5475,7 +5475,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4113092,
-    lon: 8.792553,
+    lng: 8.792553,
   },
   {
     place: 'Gündisau',
@@ -5483,7 +5483,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3976618,
-    lon: 8.8072859,
+    lng: 8.8072859,
   },
   {
     place: 'Russikon',
@@ -5491,7 +5491,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.394837,
-    lon: 8.776585,
+    lng: 8.776585,
   },
   {
     place: 'Rumlikon',
@@ -5499,7 +5499,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4087415,
-    lon: 8.7605267,
+    lng: 8.7605267,
   },
   {
     place: 'Agasul',
@@ -5507,7 +5507,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4251128,
-    lon: 8.7429824,
+    lng: 8.7429824,
   },
   {
     place: 'Weisslingen',
@@ -5515,7 +5515,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4318502,
-    lon: 8.7640975,
+    lng: 8.7640975,
   },
   {
     place: 'Neschwil',
@@ -5523,7 +5523,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4295716,
-    lon: 8.7879574,
+    lng: 8.7879574,
   },
   {
     place: 'Theilingen',
@@ -5531,7 +5531,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4214858,
-    lon: 8.7670403,
+    lng: 8.7670403,
   },
   {
     place: 'Rikon im Tösstal',
@@ -5539,7 +5539,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4450251,
-    lon: 8.7965779,
+    lng: 8.7965779,
   },
   {
     place: 'Wila',
@@ -5547,7 +5547,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4199786,
-    lon: 8.8453407,
+    lng: 8.8453407,
   },
   {
     place: 'Saland',
@@ -5555,7 +5555,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.391711,
-    lon: 8.8542547,
+    lng: 8.8542547,
   },
   {
     place: 'Madetswil',
@@ -5563,7 +5563,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4113092,
-    lon: 8.792553,
+    lng: 8.792553,
   },
   {
     place: 'Turbenthal',
@@ -5571,7 +5571,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4368146,
-    lon: 8.848521,
+    lng: 8.848521,
   },
   {
     place: 'Wildberg',
@@ -5579,7 +5579,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4269269,
-    lon: 8.8166167,
+    lng: 8.8166167,
   },
   {
     place: 'Schalchen',
@@ -5587,7 +5587,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4071395,
-    lon: 8.8263515,
+    lng: 8.8263515,
   },
   {
     place: 'Ehrikon',
@@ -5595,7 +5595,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4182785,
-    lon: 8.8091597,
+    lng: 8.8091597,
   },
   {
     place: 'Gockhausen',
@@ -5603,7 +5603,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3820419,
-    lon: 8.5986381,
+    lng: 8.5986381,
   },
   {
     place: 'Zürich',
@@ -5611,7 +5611,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Dübendorf',
@@ -5619,7 +5619,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3969942,
-    lon: 8.6185666,
+    lng: 8.6185666,
   },
   {
     place: 'Schwerzenbach',
@@ -5627,7 +5627,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3815017,
-    lon: 8.6523009,
+    lng: 8.6523009,
   },
   {
     place: 'Forch',
@@ -5635,7 +5635,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3255509,
-    lon: 8.6468061,
+    lng: 8.6468061,
   },
   {
     place: 'Egg b. Zürich',
@@ -5643,7 +5643,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.29626945939928,
-    lon: 8.701113952964034,
+    lng: 8.701113952964034,
   },
   {
     place: 'Hinteregg',
@@ -5651,7 +5651,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3057917,
-    lon: 8.684208,
+    lng: 8.684208,
   },
   {
     place: 'Esslingen',
@@ -5659,7 +5659,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.28919,
-    lon: 8.7096296,
+    lng: 8.7096296,
   },
   {
     place: 'Fällanden',
@@ -5667,7 +5667,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3713238,
-    lon: 8.6388635,
+    lng: 8.6388635,
   },
   {
     place: 'Pfaffhausen',
@@ -5675,7 +5675,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3658602,
-    lon: 8.6232459,
+    lng: 8.6232459,
   },
   {
     place: 'Benglen',
@@ -5683,7 +5683,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3596788,
-    lon: 8.6362113,
+    lng: 8.6362113,
   },
   {
     place: 'Greifensee',
@@ -5691,7 +5691,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3662476,
-    lon: 8.6786693,
+    lng: 8.6786693,
   },
   {
     place: 'Binz',
@@ -5699,7 +5699,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3573192,
-    lon: 8.6267782,
+    lng: 8.6267782,
   },
   {
     place: 'Ebmatingen',
@@ -5707,7 +5707,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3509889,
-    lon: 8.640695,
+    lng: 8.640695,
   },
   {
     place: 'Maur',
@@ -5715,7 +5715,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3402856,
-    lon: 8.6692369,
+    lng: 8.6692369,
   },
   {
     place: 'Forch',
@@ -5723,7 +5723,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3255509,
-    lon: 8.6468061,
+    lng: 8.6468061,
   },
   {
     place: 'Hinteregg',
@@ -5731,7 +5731,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3057917,
-    lon: 8.684208,
+    lng: 8.684208,
   },
   {
     place: 'Aathal-Seegräben',
@@ -5739,7 +5739,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3410213,
-    lon: 8.77023092925532,
+    lng: 8.77023092925532,
   },
   {
     place: 'Mönchaltorf',
@@ -5747,7 +5747,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.31279,
-    lon: 8.7222749,
+    lng: 8.7222749,
   },
   {
     place: 'Dübendorf',
@@ -5755,7 +5755,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3969942,
-    lon: 8.6185666,
+    lng: 8.6185666,
   },
   {
     place: 'Schwerzenbach',
@@ -5763,7 +5763,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3815017,
-    lon: 8.6523009,
+    lng: 8.6523009,
   },
   {
     place: 'Gutenswil',
@@ -5771,7 +5771,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3853976,
-    lon: 8.7180535,
+    lng: 8.7180535,
   },
   {
     place: 'Nänikon',
@@ -5779,7 +5779,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3696093,
-    lon: 8.6923683,
+    lng: 8.6923683,
   },
   {
     place: 'Uster',
@@ -5787,7 +5787,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3512065,
-    lon: 8.7179221,
+    lng: 8.7179221,
   },
   {
     place: 'Sulzbach',
@@ -5795,7 +5795,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3275117,
-    lon: 8.7461473,
+    lng: 8.7461473,
   },
   {
     place: 'Wermatswil',
@@ -5803,7 +5803,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3623284,
-    lon: 8.7445885,
+    lng: 8.7445885,
   },
   {
     place: 'Freudwil',
@@ -5811,7 +5811,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3751446,
-    lon: 8.7351966,
+    lng: 8.7351966,
   },
   {
     place: 'Riedikon',
@@ -5819,7 +5819,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3321185,
-    lon: 8.7122501,
+    lng: 8.7122501,
   },
   {
     place: 'Mönchaltorf',
@@ -5827,7 +5827,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.31279,
-    lon: 8.7222749,
+    lng: 8.7222749,
   },
   {
     place: 'Effretikon',
@@ -5835,7 +5835,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4257472,
-    lon: 8.6870086,
+    lng: 8.6870086,
   },
   {
     place: 'Volketswil',
@@ -5843,7 +5843,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3898617,
-    lon: 8.690503,
+    lng: 8.690503,
   },
   {
     place: 'Gutenswil',
@@ -5851,7 +5851,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3853976,
-    lon: 8.7180535,
+    lng: 8.7180535,
   },
   {
     place: 'Brüttisellen',
@@ -5859,7 +5859,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4242579,
-    lon: 8.6307734,
+    lng: 8.6307734,
   },
   {
     place: 'Wangen b. Dübendorf',
@@ -5867,7 +5867,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4107775,
-    lon: 8.6456746,
+    lng: 8.6456746,
   },
   {
     place: 'Altikon',
@@ -5875,7 +5875,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5733928,
-    lon: 8.7808347,
+    lng: 8.7808347,
   },
   {
     place: 'Brütten',
@@ -5883,7 +5883,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4724517,
-    lon: 8.6751475,
+    lng: 8.6751475,
   },
   {
     place: 'Rutschwil (Dägerlen)',
@@ -5891,7 +5891,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5565086,
-    lon: 8.7306209,
+    lng: 8.7306209,
   },
   {
     place: 'Dägerlen',
@@ -5899,7 +5899,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5605504,
-    lon: 8.7217683,
+    lng: 8.7217683,
   },
   {
     place: 'Oberwil (Dägerlen)',
@@ -5907,7 +5907,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5733263,
-    lon: 8.7160031,
+    lng: 8.7160031,
   },
   {
     place: 'Berg (Dägerlen)',
@@ -5915,7 +5915,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5637138,
-    lon: 8.7326622,
+    lng: 8.7326622,
   },
   {
     place: 'Dättlikon',
@@ -5923,7 +5923,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5256653,
-    lon: 8.6224807,
+    lng: 8.6224807,
   },
   {
     place: 'Dinhard',
@@ -5931,7 +5931,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5551982,
-    lon: 8.7681536,
+    lng: 8.7681536,
   },
   {
     place: 'Ellikon an der Thur',
@@ -5939,7 +5939,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5633514,
-    lon: 8.8242689,
+    lng: 8.8242689,
   },
   {
     place: 'Elsau',
@@ -5947,7 +5947,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5048298,
-    lon: 8.8016078,
+    lng: 8.8016078,
   },
   {
     place: 'Gerlikon',
@@ -5955,7 +5955,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5367433,
-    lon: 8.8772586,
+    lng: 8.8772586,
   },
   {
     place: 'Hagenbuch ZH',
@@ -5963,7 +5963,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5205054,
-    lon: 8.8882927,
+    lng: 8.8882927,
   },
   {
     place: 'Hettlingen',
@@ -5971,7 +5971,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5467745,
-    lon: 8.7095144,
+    lng: 8.7095144,
   },
   {
     place: 'Aesch (Neftenbach)',
@@ -5979,7 +5979,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.541908199999995,
-    lon: 8.68132355,
+    lng: 8.68132355,
   },
   {
     place: 'Riet (Neftenbach)',
@@ -5987,7 +5987,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5363631,
-    lon: 8.6865706,
+    lng: 8.6865706,
   },
   {
     place: 'Hünikon (Neftenbach)',
@@ -5995,7 +5995,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5520621,
-    lon: 8.6686291,
+    lng: 8.6686291,
   },
   {
     place: 'Neftenbach',
@@ -6003,7 +6003,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.528176,
-    lon: 8.6680365,
+    lng: 8.6680365,
   },
   {
     place: 'Pfungen',
@@ -6011,7 +6011,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5161123,
-    lon: 8.6454232,
+    lng: 8.6454232,
   },
   {
     place: 'Rickenbach ZH',
@@ -6019,7 +6019,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5523398,
-    lon: 8.7962716,
+    lng: 8.7962716,
   },
   {
     place: 'Rickenbach Sulz',
@@ -6027,7 +6027,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5387863,
-    lon: 8.7894902,
+    lng: 8.7894902,
   },
   {
     place: 'Hofstetten ZH',
@@ -6035,7 +6035,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4728326,
-    lon: 8.8539141,
+    lng: 8.8539141,
   },
   {
     place: 'Winterthur',
@@ -6043,7 +6043,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Schlatt ZH',
@@ -6051,7 +6051,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4698877,
-    lon: 8.828184,
+    lng: 8.828184,
   },
   {
     place: 'Seuzach',
@@ -6059,7 +6059,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.534596,
-    lon: 8.7338342,
+    lng: 8.7338342,
   },
   {
     place: 'Bichelsee',
@@ -6067,7 +6067,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4483485,
-    lon: 8.9239155,
+    lng: 8.9239155,
   },
   {
     place: 'Turbenthal',
@@ -6075,7 +6075,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4368146,
-    lon: 8.848521,
+    lng: 8.848521,
   },
   {
     place: 'Wila',
@@ -6083,7 +6083,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4199786,
-    lon: 8.8453407,
+    lng: 8.8453407,
   },
   {
     place: 'Schmidrüti',
@@ -6091,7 +6091,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4155764,
-    lon: 8.903413,
+    lng: 8.903413,
   },
   {
     place: 'Kemptthal',
@@ -6099,7 +6099,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4528517,
-    lon: 8.7058075,
+    lng: 8.7058075,
   },
   {
     place: 'Ricketwil (Winterthur)',
@@ -6107,7 +6107,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4794622,
-    lon: 8.8058043,
+    lng: 8.8058043,
   },
   {
     place: 'Winterthur',
@@ -6115,7 +6115,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Winterthur',
@@ -6123,7 +6123,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Reutlingen (Winterthur)',
@@ -6131,7 +6131,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5282022,
-    lon: 8.7514132,
+    lng: 8.7514132,
   },
   {
     place: 'Stadel (Winterthur)',
@@ -6139,7 +6139,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5347815,
-    lon: 8.7610707,
+    lng: 8.7610707,
   },
   {
     place: 'Winterthur',
@@ -6147,7 +6147,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Winterthur',
@@ -6155,7 +6155,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Winterthur',
@@ -6163,7 +6163,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Winterthur',
@@ -6171,7 +6171,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4991723,
-    lon: 8.7291498,
+    lng: 8.7291498,
   },
   {
     place: 'Sennhof (Winterthur)',
@@ -6179,7 +6179,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.466492,
-    lon: 8.7592338,
+    lng: 8.7592338,
   },
   {
     place: 'Wiesendangen',
@@ -6187,7 +6187,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5213051,
-    lon: 8.7889904,
+    lng: 8.7889904,
   },
   {
     place: 'Rickenbach Sulz',
@@ -6195,7 +6195,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5387863,
-    lon: 8.7894902,
+    lng: 8.7894902,
   },
   {
     place: 'Kollbrunn',
@@ -6203,7 +6203,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4578738,
-    lon: 8.7759968,
+    lng: 8.7759968,
   },
   {
     place: 'Rikon im Tösstal',
@@ -6211,7 +6211,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4450251,
-    lon: 8.7965779,
+    lng: 8.7965779,
   },
   {
     place: 'Zell ZH',
@@ -6219,7 +6219,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.448026,
-    lon: 8.8227739,
+    lng: 8.8227739,
   },
   {
     place: 'Rämismühle',
@@ -6227,7 +6227,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4405517,
-    lon: 8.8193439,
+    lng: 8.8193439,
   },
   {
     place: 'Aesch ZH',
@@ -6235,7 +6235,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3373127,
-    lon: 8.4398911,
+    lng: 8.4398911,
   },
   {
     place: 'Uitikon Waldegg',
@@ -6243,7 +6243,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.366016,
-    lon: 8.4658341,
+    lng: 8.4658341,
   },
   {
     place: 'Birmensdorf ZH',
@@ -6251,7 +6251,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3538481,
-    lon: 8.4382157,
+    lng: 8.4382157,
   },
   {
     place: 'Fahrweid',
@@ -6259,7 +6259,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4083023,
-    lon: 8.4134385,
+    lng: 8.4134385,
   },
   {
     place: 'Geroldswil',
@@ -6267,7 +6267,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4224047,
-    lon: 8.4117744,
+    lng: 8.4117744,
   },
   {
     place: 'Oberengstringen',
@@ -6275,7 +6275,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.409141,
-    lon: 8.4626927,
+    lng: 8.4626927,
   },
   {
     place: 'Oetwil an der Limmat',
@@ -6283,7 +6283,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4278248,
-    lon: 8.3964479,
+    lng: 8.3964479,
   },
   {
     place: 'Urdorf',
@@ -6291,7 +6291,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.384708,
-    lon: 8.4259004,
+    lng: 8.4259004,
   },
   {
     place: 'Uitikon Waldegg',
@@ -6299,7 +6299,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.366016,
-    lon: 8.4658341,
+    lng: 8.4658341,
   },
   {
     place: 'Uetliberg',
@@ -6307,7 +6307,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3518692,
-    lon: 8.4874187,
+    lng: 8.4874187,
   },
   {
     place: 'Unterengstringen',
@@ -6315,7 +6315,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4130929,
-    lon: 8.4490943,
+    lng: 8.4490943,
   },
   {
     place: 'Fahrweid',
@@ -6323,7 +6323,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4083023,
-    lon: 8.4134385,
+    lng: 8.4134385,
   },
   {
     place: 'Urdorf',
@@ -6331,7 +6331,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.384708,
-    lon: 8.4259004,
+    lng: 8.4259004,
   },
   {
     place: 'Weiningen ZH',
@@ -6339,7 +6339,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4199708,
-    lon: 8.4366271,
+    lng: 8.4366271,
   },
   {
     place: 'Fahrweid',
@@ -6347,7 +6347,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4083023,
-    lon: 8.4134385,
+    lng: 8.4134385,
   },
   {
     place: 'Zürich',
@@ -6355,7 +6355,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6363,7 +6363,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6371,7 +6371,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6379,7 +6379,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6387,7 +6387,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6395,7 +6395,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6403,7 +6403,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6411,7 +6411,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6419,7 +6419,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6427,7 +6427,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6435,7 +6435,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6443,7 +6443,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6451,7 +6451,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6459,7 +6459,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6467,7 +6467,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6475,7 +6475,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6483,7 +6483,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6491,7 +6491,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6499,7 +6499,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6507,7 +6507,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6515,7 +6515,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6523,7 +6523,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6531,7 +6531,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zürich',
@@ -6539,7 +6539,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3744489,
-    lon: 8.5410422,
+    lng: 8.5410422,
   },
   {
     place: 'Zollikerberg',
@@ -6547,7 +6547,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3456637,
-    lon: 8.5993998,
+    lng: 8.5993998,
   },
   {
     place: 'Uitikon Waldegg',
@@ -6555,7 +6555,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.366016,
-    lon: 8.4658341,
+    lng: 8.4658341,
   },
   {
     place: 'Uetliberg',
@@ -6563,7 +6563,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3518692,
-    lon: 8.4874187,
+    lng: 8.4874187,
   },
   {
     place: 'Glattbrugg',
@@ -6571,7 +6571,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4326312,
-    lon: 8.5647892,
+    lng: 8.5647892,
   },
   {
     place: 'Schlieren',
@@ -6579,7 +6579,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3965147,
-    lon: 8.4444861,
+    lng: 8.4444861,
   },
   {
     place: 'Andelfingen',
@@ -6587,7 +6587,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5953327,
-    lon: 8.6794336,
+    lng: 8.6794336,
   },
   {
     place: 'Adlikon b. Andelfingen',
@@ -6595,7 +6595,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5825032,
-    lon: 8.6912556,
+    lng: 8.6912556,
   },
   {
     place: 'Humlikon',
@@ -6603,7 +6603,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5762347,
-    lon: 8.6695684,
+    lng: 8.6695684,
   },
   {
     place: 'Waltalingen',
@@ -6611,7 +6611,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6219604,
-    lon: 8.7790569,
+    lng: 8.7790569,
   },
   {
     place: 'Guntalingen',
@@ -6619,7 +6619,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6341619,
-    lon: 8.7686513,
+    lng: 8.7686513,
   },
   {
     place: 'Unterstammheim',
@@ -6627,7 +6627,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.638955,
-    lon: 8.7907193,
+    lng: 8.7907193,
   },
   {
     place: 'Oberstammheim',
@@ -6635,7 +6635,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.6317749,
-    lon: 8.7986032,
+    lng: 8.7986032,
   },
   {
     place: 'Wilen b. Neunforn',
@@ -6643,7 +6643,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.60349395,
-    lon: 8.7982741196139,
+    lng: 8.7982741196139,
   },
   {
     place: 'Au ZH',
@@ -6651,7 +6651,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2469193,
-    lon: 8.6440321,
+    lng: 8.6440321,
   },
   {
     place: 'Wädenswil',
@@ -6659,7 +6659,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2278988,
-    lon: 8.6701365,
+    lng: 8.6701365,
   },
   {
     place: 'Schönenberg ZH',
@@ -6667,7 +6667,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.1937464,
-    lon: 8.6415425,
+    lng: 8.6415425,
   },
   {
     place: 'Hütten',
@@ -6675,7 +6675,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.1763059,
-    lon: 8.667935,
+    lng: 8.667935,
   },
   {
     place: 'Elgg',
@@ -6683,7 +6683,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4902329,
-    lon: 8.8669115,
+    lng: 8.8669115,
   },
   {
     place: 'Hofstetten ZH',
@@ -6691,7 +6691,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4728326,
-    lon: 8.8539141,
+    lng: 8.8539141,
   },
   {
     place: 'Dickbuch',
@@ -6699,7 +6699,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4962426,
-    lon: 8.8303367,
+    lng: 8.8303367,
   },
   {
     place: 'Aadorf',
@@ -6707,7 +6707,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4915782,
-    lon: 8.9029526,
+    lng: 8.9029526,
   },
   {
     place: 'Hagenbuch ZH',
@@ -6715,7 +6715,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5205054,
-    lon: 8.8882927,
+    lng: 8.8882927,
   },
   {
     place: 'Sihlbrugg',
@@ -6723,7 +6723,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2179502,
-    lon: 8.5766407,
+    lng: 8.5766407,
   },
   {
     place: 'Sihlbrugg Station',
@@ -6731,7 +6731,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2402908,
-    lon: 8.5774317,
+    lng: 8.5774317,
   },
   {
     place: 'Sihlwald',
@@ -6739,7 +6739,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2683235,
-    lon: 8.5576283,
+    lng: 8.5576283,
   },
   {
     place: 'Horgen',
@@ -6747,7 +6747,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.260692,
-    lon: 8.5976831,
+    lng: 8.5976831,
   },
   {
     place: 'Horgenberg',
@@ -6755,7 +6755,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.252908,
-    lon: 8.5858822,
+    lng: 8.5858822,
   },
   {
     place: 'Hirzel',
@@ -6763,7 +6763,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.2159036,
-    lon: 8.6101778,
+    lng: 8.6101778,
   },
   {
     place: 'Effretikon',
@@ -6771,7 +6771,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4257472,
-    lon: 8.6870086,
+    lng: 8.6870086,
   },
   {
     place: 'Illnau',
@@ -6779,7 +6779,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4088363,
-    lon: 8.7255432,
+    lng: 8.7255432,
   },
   {
     place: 'Agasul',
@@ -6787,7 +6787,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4251128,
-    lon: 8.7429824,
+    lng: 8.7429824,
   },
   {
     place: 'Kyburg',
@@ -6795,7 +6795,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4570858,
-    lon: 8.744344,
+    lng: 8.744344,
   },
   {
     place: 'Sennhof (Winterthur)',
@@ -6803,7 +6803,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.466492,
-    lon: 8.7592338,
+    lng: 8.7592338,
   },
   {
     place: 'Kollbrunn',
@@ -6811,7 +6811,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.4578738,
-    lon: 8.7759968,
+    lng: 8.7759968,
   },
   {
     place: 'Saland',
@@ -6819,7 +6819,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.391711,
-    lon: 8.8542547,
+    lng: 8.8542547,
   },
   {
     place: 'Bauma',
@@ -6827,7 +6827,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3677633,
-    lon: 8.8792873,
+    lng: 8.8792873,
   },
   {
     place: 'Sternenberg',
@@ -6835,7 +6835,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.3870845,
-    lon: 8.9113948,
+    lng: 8.9113948,
   },
   {
     place: 'Wiesendangen',
@@ -6843,7 +6843,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5213051,
-    lon: 8.7889904,
+    lng: 8.7889904,
   },
   {
     place: 'Bertschikon',
@@ -6851,7 +6851,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5262826,
-    lon: 8.8138602,
+    lng: 8.8138602,
   },
   {
     place: 'Gundetswil',
@@ -6859,7 +6859,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5402384,
-    lon: 8.8234937,
+    lng: 8.8234937,
   },
   {
     place: 'Kefikon ZH',
@@ -6867,7 +6867,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5486024,
-    lon: 8.8303743,
+    lng: 8.8303743,
   },
   {
     place: 'Attikon',
@@ -6875,7 +6875,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5358034,
-    lon: 8.7981731,
+    lng: 8.7981731,
   },
   {
     place: 'Menzengrüt',
@@ -6883,7 +6883,7 @@ const zh: PlacesLatLon[] = [
     area: 'ZH',
     language: 'de',
     lat: 47.5493593,
-    lon: 8.8214323,
+    lng: 8.8214323,
   },
 ];
 

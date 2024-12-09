@@ -40,7 +40,7 @@ export class SearchAddressModalComponent {
     this.loading = false;
   }
 
-  async pick(match: Pick<NamedLatLon, 'lat' | 'lon'>) {
+  async pick(match: Pick<NamedLatLon, 'lat' | 'lng'>) {
     await this.modalCtrl.dismiss(match);
   }
 
@@ -48,9 +48,9 @@ export class SearchAddressModalComponent {
     try {
       const parts = query.trim().split(/[, ]+/);
       const lat = parseFloat(parts[0]);
-      const lon = parseFloat(parts[1]);
-      if (!isNaN(lat) && !isNaN(lon)) {
-        return { lat, lon };
+      const lng = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return { lat, lng };
       }
     } catch (e) {}
   }
@@ -58,7 +58,7 @@ export class SearchAddressModalComponent {
   pickLatLon() {
     return this.pick({
       lat: this.latLon.lat,
-      lon: this.latLon.lon,
+      lng: this.latLon.lng,
     });
   }
 }

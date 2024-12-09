@@ -74,10 +74,12 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
         what: {
           tags: {},
           latLng: {
-            distanceKm: 10,
             near: {
-              lat: this.location.lat,
-              lon: this.location.lon,
+              point: {
+                lat: this.location.lat,
+                lng: this.location.lng,
+              },
+              distanceKm: 10,
             },
           },
         },

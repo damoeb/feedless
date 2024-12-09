@@ -2,10 +2,10 @@ import { Component, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { LatLon } from '../../types';
+import { LatLng } from '../../types';
 
 export interface MapModalComponentProps {
-  position: LatLon;
+  position: LatLng;
   perimeter: number;
 }
 
@@ -18,7 +18,7 @@ export interface MapModalComponentProps {
 export class MapModalComponent implements MapModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
 
-  position: LatLon;
+  position: LatLng;
 
   perimeter: number;
 

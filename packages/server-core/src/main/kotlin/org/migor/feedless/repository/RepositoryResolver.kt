@@ -29,7 +29,8 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.Source
-import org.migor.feedless.generated.types.SourcesInput
+import org.migor.feedless.generated.types.SourceOrderByInput
+import org.migor.feedless.generated.types.SourcesWhereInput
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.source.toDto
@@ -146,16 +147,18 @@ class RepositoryResolver {
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Sources)
   suspend fun sources(
-    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Data) data: SourcesInput?,
+    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Cursor) cursor: Cursor,
+    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Where) where: SourcesWhereInput?,
+    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.OrderBy) orderBy: SourceOrderByInput?,
     dfe: DgsDataFetchingEnvironment,
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      val pageable = data?.cursor?.toPageable() ?: PageRequest.of(0, 10)
+      val pageable = cursor.toPageable() ?: PageRequest.of(0, 10)
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
-        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, data?.where, data?.orderBy)
+        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, where, orderBy)
           .toList()
           .map { it.toDto() }
       }

@@ -1,31 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  viewChild,
-} from '@angular/core';
-import {
-  GqlFeedlessPlugins,
-  GqlRecordField,
-  GqlRepositoryCreateInput,
-  GqlSourceInput,
-  GqlVertical,
-  GqlVisibility,
-} from '../../../generated/graphql';
-import {
-  Annotation,
-  Record,
-  RepositoryFull,
-  RepositorySource,
-} from '../../graphql/types';
-import {
-  RepositoryModalAccordion,
-  RepositoryModalComponentProps,
-} from '../../modals/repository-modal/repository-modal.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, viewChild } from '@angular/core';
+import { GqlFeedlessPlugins, GqlRecordField, GqlVertical, GqlVisibility } from '../../../generated/graphql';
+import { Annotation, Record, RepositoryFull } from '../../graphql/types';
+import { RepositoryModalAccordion, RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
 import { ModalName, ModalService } from '../../services/modal.service';
 import {
   AlertController,
@@ -36,7 +12,6 @@ import {
   IonChip,
   IonCol,
   IonContent,
-  IonFooter,
   IonHeader,
   IonIcon,
   IonItem,
@@ -45,7 +20,6 @@ import {
   IonModal,
   IonNote,
   IonPopover,
-  IonProgressBar,
   IonRow,
   IonSegment,
   IonSegmentButton,
@@ -55,24 +29,19 @@ import {
   IonToolbar,
   ModalController,
   PopoverController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
-import {
-  FeedOrRepository,
-  tagsToString,
-} from '../feed-builder/feed-builder.component';
+import { tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
-import { ArrayElement } from '../../types';
-import { BubbleColor, BubbleComponent } from '../bubble/bubble.component';
+import { BubbleComponent } from '../bubble/bubble.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isUndefined, sortBy, without } from 'lodash-es';
+import { isUndefined, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
-import dayjs from 'dayjs';
 import { AnnotationService } from '../../services/annotation.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 import { FetchPolicy } from '@apollo/client/core';
@@ -94,10 +63,9 @@ import {
   settingsOutline,
   star,
   starOutline,
-  trashOutline,
+  trashOutline
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
-import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
 import { DatePipe, NgClass } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
@@ -111,6 +79,7 @@ import { SelectionModalModule } from '../../modals/selection-modal/selection-mod
 import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
+import { SourcesComponent } from '../sources/sources.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -146,7 +115,6 @@ type Pair<A, B> = {
     IonItem,
     IonNote,
     IonText,
-    IonFooter,
     PaginationComponent,
     IonBadge,
     RemoveIfProdDirective,
@@ -170,7 +138,7 @@ type Pair<A, B> = {
     CodeEditorModalModule,
     SearchAddressModalModule,
     RepositoryModalModule,
-    IonProgressBar,
+    SourcesComponent
   ],
   standalone: true,
 })
@@ -193,6 +161,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   readonly repository = input.required<RepositoryFull>();
   readonly sourcesModal = viewChild<IonModal>('sourcesModalRef');
+  readonly sources = viewChild<SourcesComponent>('sources');
 
   readonly track = input<boolean>();
 
@@ -206,8 +175,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private currentUserId: string;
   private subscriptions: Subscription[] = [];
   currentDocumentsPage: number;
-  currentSourcesPage: number = 0;
-  sources: ArrayElement<RepositoryFull['sources']>[];
+  // currentSourcesPage: number = 0;
+  // sources: ArrayElement<RepositoryFull['sources']>[];
 
   fromNow = relativeTimeOrElse;
 
@@ -226,7 +195,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private seed = Math.random();
   // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
-  protected loadingSources: boolean = false;
+  // protected loadingSources: boolean = false;
 
   constructor() {
     addIcons({
@@ -328,16 +297,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     this.modalCtrl.dismiss();
   }
 
-  getHealthColorForSource(
-    source: ArrayElement<RepositoryFull['sources']>,
-  ): BubbleColor {
-    if (source.disabled || source.lastRecordsRetrieved === 0) {
-      return 'red';
-    } else {
-      return 'green';
-    }
-  }
-
   protected async fetchPage(page: number = 0) {
     this.currentDocumentsPage = page;
     this.selectAllFc.setValue(false);
@@ -423,189 +382,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  stringifyTags(source: ArrayElement<RepositoryFull['sources']>) {
-    return tagsToString(source.tags) || 'Add tags';
-  }
-
-  stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
-    const { latLng } = source;
-    return latLng
-      ? `(${latLng.lat.toFixed(4)},${latLng.lon.toFixed(4)})`
-      : 'Add geo tag';
-  }
-
-  async deleteSource(source: RepositorySource) {
-    console.log('deleteSource', source);
-    const alert = await this.alertCtrl.create({
-      header: 'Delete Source?',
-      message: `You won't be able to recover it.`,
-      // cssClass: 'fatal-alert',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        },
-        {
-          text: 'Yes, Delete',
-          role: 'confirm',
-          cssClass: 'confirm-button',
-          handler: async () => {
-            await this.repositoryService.updateRepository({
-              where: {
-                id: this.repository().id,
-              },
-              data: {
-                sources: {
-                  remove: [source.id],
-                },
-              },
-            });
-            this.assessIsOwner();
-            this.fetchSources(this.currentSourcesPage, 'network-only');
-            this.changeRef.detectChanges();
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
-    const geoTag = await this.modalService.openSearchAddressModal();
-    if (geoTag) {
-      await this.repositoryService.updateRepository({
-        where: {
-          id: this.repository().id,
-        },
-        data: {
-          sources: {
-            update: [
-              {
-                where: {
-                  id: source.id,
-                },
-                data: {
-                  latLng: geoTag
-                    ? {
-                        set: {
-                          lat: parseFloat(`${geoTag.lat}`),
-                          lon: parseFloat(`${geoTag.lon}`),
-                        },
-                      }
-                    : null,
-                },
-              },
-            ],
-          },
-        },
-      });
-      await this.fetchSources(this.currentSourcesPage, 'network-only');
-      this.changeRef.detectChanges();
-    }
-  }
-
-  async editTags(source: ArrayElement<RepositoryFull['sources']>) {
-    const tags = await this.modalService.openTagModal({
-      tags: source.tags || [],
-    });
-    await this.repositoryService.updateRepository({
-      where: {
-        id: this.repository().id,
-      },
-      data: {
-        sources: {
-          update: [
-            {
-              where: {
-                id: source.id,
-              },
-              data: {
-                tags: {
-                  set: tags,
-                },
-              },
-            },
-          ],
-        },
-      },
-    });
-    await this.fetchSources(this.currentSourcesPage, 'network-only');
-    this.changeRef.detectChanges();
-  }
-
   getTags(document: Record) {
     return tagsToString(document.tags);
-  }
-
-  async editSource(source: RepositorySource = null) {
-    await this.modalService.openFeedBuilder(
-      {
-        source: this.repositoryService.toSourceInput(
-          await this.repositoryService.getSourceFullByRepository(
-            this.repository().id,
-            source.id,
-          ),
-        ),
-      },
-      async (data: FeedOrRepository) => {
-        if (data?.repository) {
-          console.warn('not implemented');
-        }
-        if (data?.feed) {
-          if (source) {
-            await this.repositoryService.updateRepository({
-              where: {
-                id: this.repository().id,
-              },
-              data: {
-                sources: {
-                  update: [
-                    {
-                      where: {
-                        id: source.id,
-                      },
-                      data: {
-                        latLng: {
-                          set: data.feed.source.latLng,
-                        },
-                        tags: {
-                          set: data.feed.source.tags,
-                        },
-                        title: {
-                          set: data.feed.source.title,
-                        },
-                        flow: {
-                          set: data.feed.source.flow,
-                        },
-                      },
-                    },
-                  ],
-                },
-              },
-            });
-          } else {
-            await this.repositoryService.updateRepository({
-              where: {
-                id: this.repository().id,
-              },
-              data: {
-                sources: {
-                  add: [
-                    {
-                      title: data.feed.source.title,
-                      latLng: data.feed.source.latLng,
-                      tags: data.feed.source.tags,
-                      flow: data.feed.source.flow,
-                    },
-                  ],
-                },
-              },
-            });
-          }
-          this.changeRef.detectChanges();
-        }
-      },
-    );
   }
 
   playAudio(document: Record): void {
@@ -691,52 +469,6 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     // todo use editor data
   }
 
-  // openLogsModal(
-  //   harvest: Pick<
-  //     GqlHarvest,
-  //     'startedAt' | 'finishedAt' | 'itemsAdded' | 'itemsIgnored' | 'logs'
-  //   >,
-  // ) {
-  //   const props: CodeEditorModalComponentProps = {
-  //     title: 'Log Output',
-  //     contentType: 'text',
-  //     readOnly: true,
-  //     controls: false,
-  //     text: harvest.logs,
-  //   };
-  //   return this.modalService.openCodeEditorModal(props);
-  // }
-
-  async setDisabledForSource(source: RepositorySource, isDisabled: boolean) {
-    await this.repositoryService.updateRepository({
-      where: {
-        id: this.repository().id,
-      },
-      data: {
-        sources: {
-          update: [
-            {
-              where: {
-                id: source.id,
-              },
-              data: {
-                disabled: {
-                  set: isDisabled,
-                },
-              },
-            },
-          ],
-        },
-      },
-    });
-    await this.fetchSources(this.currentSourcesPage, 'network-only');
-    this.changeRef.detectChanges();
-  }
-
-  diffInSeconds(a: number, b: number) {
-    return dayjs(a).diff(b, 'seconds');
-  }
-
   async starRepository() {
     await this.authGuard.assertLoggedIn();
     await this.annotationService.createAnnotation({
@@ -795,85 +527,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  async importFeedlessJson(uploadEvent: Event) {
-    const data = await this.fileService.uploadAsText(uploadEvent);
-    const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
-    const selectables: SelectableEntity<GqlSourceInput>[] = sortBy(
-      repositories
-        .filter((r) => r.sources)
-        .flatMap((r) => r.sources)
-        .map<SelectableEntity<GqlSourceInput>>((source) => {
-          const disabled = this.repository().sources.some(
-            (existingSource) => existingSource.title == source.title,
-          );
-          return {
-            entity: source,
-            disabled,
-            note: disabled ? 'Already exists by name' : null,
-            label: source.title,
-          };
-        }),
-      (selectable) => selectable.entity.title,
-    );
-
-    const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
-      {
-        selectables,
-        title: 'Import new sources',
-        description: 'Select those sources you want to import',
-      },
-    );
-
-    if (selected.length > 0) {
-      await this.repositoryService.updateRepository({
-        where: {
-          id: this.repository().id,
-        },
-        data: {
-          sources: {
-            add: selected,
-          },
-        },
-      });
-
-      await this.fetchSources(this.currentSourcesPage, 'network-only');
-      this.changeRef.detectChanges();
-
-      const toast = await this.toastCtrl.create({
-        message: `Added ${selected.length} sources`,
-        duration: 3000,
-        color: 'success',
-      });
-
-      await toast.present();
-    }
-  }
-
-  async fetchSources(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
-    this.currentSourcesPage = page;
-    this.loadingSources = true;
-    this.sources = [];
-    this.changeRef.detectChanges();
-    try {
-      this.sources = await this.repositoryService.getSourcesByRepository(
-        this.repository().id,
-        {
-          cursor: {
-            page,
-          },
-        },
-        fetchPolicy,
-      );
-    } finally {
-      this.loadingSources = false;
-    }
-    this.changeRef.detectChanges();
-  }
-
   async openSourcesModal() {
-    await Promise.all([
-      this.fetchSources(this.currentSourcesPage),
-      this.sourcesModal().present(),
-    ]);
+    await this.sourcesModal().present();
   }
 }

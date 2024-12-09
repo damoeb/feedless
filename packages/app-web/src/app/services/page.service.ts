@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 import { Dayjs } from 'dayjs';
 import { BreadcrumbList, Event, WebPage } from 'schema-dts';
-import { LatLon } from '../types';
+import { LatLng } from '../types';
 
 export type PageTags = {
   title: string;
@@ -13,7 +13,7 @@ export type PageTags = {
   url: string;
   region?: string;
   place?: string;
-  position?: LatLon;
+  position?: LatLng;
   publishedAt: Dayjs;
   startingAt?: Dayjs;
 };
@@ -84,11 +84,11 @@ export class PageService {
     if (options.position) {
       geoTags.push({
         name: 'geo.position',
-        content: `${options.position.lat};${options.position.lon}`, // '40.7128;-74.0060'
+        content: `${options.position.lat};${options.position.lng}`, // '40.7128;-74.0060'
       });
       geoTags.push({
         name: 'ICBM',
-        content: `${options.position.lat}, ${options.position.lon}`, // '40.7128, -74.0060'
+        content: `${options.position.lat}, ${options.position.lng}`, // '40.7128, -74.0060'
       });
     }
   }
