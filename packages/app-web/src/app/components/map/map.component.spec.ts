@@ -21,7 +21,6 @@ describe('MapComponent', () => {
       lng: 0,
     };
     componentRef.setInput('position', latLon);
-    componentRef.setInput('perimeter', 10);
     fixture.detectChanges();
   }));
 

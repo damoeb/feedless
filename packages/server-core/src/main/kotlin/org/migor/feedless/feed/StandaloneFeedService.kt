@@ -70,7 +70,7 @@ class StandaloneFeedService(
 
   private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
 
-  fun getRepoTitleForLegacyFeedNotifications(): String = "legacyFeedNotifications"
+  fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #sourceId")
   suspend fun getFeed(sourceId: UUID, feedUrl: String): JsonFeed {
@@ -204,21 +204,20 @@ class StandaloneFeedService(
   private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
     val corrId = coroutineContext.corrId()
     val root = userService.findAdminUser()
-    repositoryService.findByTitleAndOwnerId(getRepoTitleForLegacyFeedNotifications(), root!!.id)?.let { repo ->
+    repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
       val documents = documentService.findAllByRepositoryId(
         repo.id,
         status = ReleaseStatus.released,
         pageable = pageable,
-        ignoreVisibility = true
       )
-        .filterNotNull()
         .map {
           it.publishedAt = LocalDateTime.now()
           it.asJsonItem()
         }
+
       feed.items = documents.plus(feed.items)
-    } ?: log.error("[$corrId] Repo for legacy notification not found")
+    } ?: log.error("[$corrId] Repo for standalone notification not found")
     return feed
   }
 

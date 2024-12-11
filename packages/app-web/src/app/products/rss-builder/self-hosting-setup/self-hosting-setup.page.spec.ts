@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SetupPage } from './setup.page';
+import { SelfHostingSetupPage } from './self-hosting-setup.page';
 import {
   ApolloMockController,
   AppTestModule,
@@ -10,12 +10,12 @@ import { ApolloClient } from '@apollo/client/core';
 import { AppConfigService } from '../../../services/app-config.service';
 
 describe('SetupPage', () => {
-  let component: SetupPage;
-  let fixture: ComponentFixture<SetupPage>;
+  let component: SelfHostingSetupPage;
+  let fixture: ComponentFixture<SelfHostingSetupPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SetupPage, AppTestModule.withDefaults()],
+      imports: [SelfHostingSetupPage, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
@@ -32,7 +32,7 @@ describe('SetupPage', () => {
         } as any,
       ]);
 
-    fixture = TestBed.createComponent(SetupPage);
+    fixture = TestBed.createComponent(SelfHostingSetupPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

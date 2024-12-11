@@ -13,3 +13,9 @@ ion-content::part(scroll) {
 h1 {
   color: var(--app-foreground);
 }
+
+ion-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

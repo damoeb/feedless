@@ -90,7 +90,6 @@ class DocumentService(
     status: ReleaseStatus = ReleaseStatus.released,
     tag: String? = null,
     pageable: Pageable,
-    ignoreVisibility: Boolean = false
   ): List<DocumentEntity> {
     val query = jpql {
       val whereStatements = prepareWhereStatements(where)

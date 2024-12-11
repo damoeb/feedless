@@ -57,7 +57,7 @@ import { PromotionHeaderComponent } from '../../components/promotion-header/prom
     LoginButtonComponent,
     IonContent,
     IonRouterOutlet,
-    PromotionHeaderComponent
+    PromotionHeaderComponent,
   ],
   standalone: true,
 })

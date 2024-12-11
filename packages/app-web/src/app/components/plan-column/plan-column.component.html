@@ -10,7 +10,7 @@
           </div>
           @for (feature of featureGroup.features; track feature) {
             <ion-row class="feature">
-              <ion-col class="feature__name" size="10">
+              <ion-col class="feature__name" size-md="8">
                 <span class="feature__title">
                   {{ feature.title }}
                 </span>
@@ -20,7 +20,7 @@
                   >
                 }
               </ion-col>
-              <ion-col class="feature__value" size="2">
+              <ion-col class="feature__value" size-md="4">
                 @if (feature.valueHtml) {
                   <div [innerHTML]="feature.valueHtml"></div>
                 }

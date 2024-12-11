@@ -42,7 +42,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   fun deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(id: UUID, maxDate: LocalDateTime, released: ReleaseStatus)
   fun deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(id: UUID, maxDate: LocalDateTime, released: ReleaseStatus)
 
-  fun findByTitleAndRepositoryId(title: String, repositoryId: UUID): DocumentEntity?
+  fun findByTitleInAndRepositoryId(titles: List<String>, repositoryId: UUID): DocumentEntity?
 
   fun countByRepositoryId(id: UUID): Long
 

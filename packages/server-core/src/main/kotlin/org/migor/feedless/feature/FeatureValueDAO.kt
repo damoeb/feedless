@@ -64,5 +64,6 @@ order by f.name, depth
   )
   fun resolveAllByFeatureGroupId(@Param("featureGroupId") featureGroupId: UUID): List<FeatureValueEntity>
   fun findAllByFeatureGroupId(featureGroupId: UUID): List<FeatureValueEntity>
+  fun deleteAllByFeatureGroupId(id: UUID)
 
 }

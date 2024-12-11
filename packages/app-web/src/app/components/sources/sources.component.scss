@@ -1,0 +1,10 @@
+.filters {
+  display: flex;
+  column-gap: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+
+  ion-select {
+    border-radius: 8px;
+  }
+}

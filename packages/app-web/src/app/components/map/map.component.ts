@@ -1,9 +1,17 @@
-import { circle, Map, marker, tileLayer } from 'leaflet';
+import { LayerGroup, layerGroup, Map, tileLayer } from 'leaflet';
 
-import { AfterViewInit, Component, ElementRef, input, OnChanges, output, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  input,
+  output,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { LatLng } from '../../types';
 
-export type LatLngBoundingBox = { northEast: LatLng, southWest: LatLng }
+export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
 
 @Component({
   selector: 'app-map',
@@ -12,18 +20,21 @@ export type LatLngBoundingBox = { northEast: LatLng, southWest: LatLng }
   encapsulation: ViewEncapsulation.None,
   standalone: true,
 })
-export class MapComponent implements AfterViewInit, OnChanges {
+export class MapComponent implements AfterViewInit {
   readonly mapElement = viewChild<ElementRef>('map');
 
   readonly position = input.required<LatLng>();
 
   readonly perimeter = input<number>(10);
+  readonly minZoom = input<number>(11);
+  readonly maxZoom = input<number>(13);
 
   readonly boundingBoxChange = output<LatLngBoundingBox>();
 
   readonly positionChange = output<LatLng>();
 
   private map: Map;
+  private markersLayer: LayerGroup<any> = layerGroup();
   // private marker: Marker<any>;
   // private circle: Circle<any>;
 
@@ -31,15 +42,17 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit() {
     try {
-      const maxZoom = 13;
-      const minZoom = 11;
       const lat = this.position().lat;
       const lng = this.position().lng;
+      const minZoom = this.minZoom();
+      const maxZoom = this.maxZoom();
+      this.markersLayer = layerGroup();
       this.map = new Map(this.mapElement().nativeElement)
         .setMinZoom(minZoom)
         .setMaxZoom(maxZoom)
         .setZoom(11)
         .setView([lat, lng], minZoom)
+        .addLayer(this.markersLayer)
         .panTo({ lat, lng: lng - 0.05 })
         .on('moveend', this.emitBoundingBox.bind(this))
         .on('zoomend', this.emitBoundingBox.bind(this));
@@ -52,7 +65,6 @@ export class MapComponent implements AfterViewInit, OnChanges {
         minZoom,
         maxZoom,
       }).addTo(this.map);
-
 
       // marker({ lat, lng }).addTo(this.map);
       // circle(
@@ -71,18 +83,12 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
   emitBoundingBox() {
     if (this.map) {
-      const bounds = this.map.getBounds()
+      const bounds = this.map.getBounds();
       const bbox: LatLngBoundingBox = {
         northEast: bounds.getNorthEast(),
-        southWest: bounds.getSouthWest()
-      }
-      this.boundingBoxChange.emit(bbox)
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.perimeter?.currentValue) {
-      // this.circle.setRadius(changes.perimeter?.currentValue * 1000);
+        southWest: bounds.getSouthWest(),
+      };
+      this.boundingBoxChange.emit(bbox);
     }
   }
 }

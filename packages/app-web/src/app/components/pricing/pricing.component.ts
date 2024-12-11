@@ -210,7 +210,13 @@ export class PricingComponent implements OnInit {
       case GqlFeatureName.Plugins:
         return 'Plugins';
       case GqlFeatureName.PublicRepository:
-        return 'Public Listing';
+        return 'Public Feed Listing';
+      case GqlFeatureName.RepositoryCapacityUpperLimitInt:
+        return 'Feed Capacity';
+      case GqlFeatureName.RepositoriesMaxCountTotalInt:
+        return 'Feeds';
+      case GqlFeatureName.SourceMaxCountPerRepositoryInt:
+        return 'Sources per Feed';
     }
   }
 }

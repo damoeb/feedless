@@ -1,5 +1,4 @@
-import { Component, input } from '@angular/core';
-import { ProductHeadlineComponent } from '../product-headline/product-headline.component';
+import { Component } from '@angular/core';
 import { IonHeader, IonToolbar } from '@ionic/angular/standalone';
 
 @Component({
@@ -10,6 +9,5 @@ import { IonHeader, IonToolbar } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class PromotionHeaderComponent {
-
   constructor() {}
 }

@@ -84,7 +84,7 @@
           <h3>{{ product.name }}</h3>
           <p>{{ product.description }}</p>
           <div style="flex: 1">
-            @for (price of filteredPrices(product.prices); track price) {
+            @for (price of filteredPrices(product.prices); track price.id) {
               <ion-row>
                 <ion-col size="6" style="align-content: center">
                   <ion-note>{{ price.description }}</ion-note>

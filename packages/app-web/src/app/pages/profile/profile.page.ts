@@ -286,7 +286,7 @@ export class ProfilePage implements OnInit, OnDestroy {
               page: 0,
               pageSize: 0,
             },
-            null
+            null,
           ),
         );
       }

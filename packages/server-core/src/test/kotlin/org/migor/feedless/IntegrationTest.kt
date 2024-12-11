@@ -177,7 +177,6 @@ class IntegrationTest {
       ReleaseStatus.released,
       null,
       PageRequest.of(0, 10),
-      false
     )
     assertThat(documents.size).isEqualTo(1)
   }

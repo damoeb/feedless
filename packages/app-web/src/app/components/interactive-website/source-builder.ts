@@ -130,7 +130,9 @@ export class SourceBuilder {
     return this;
   }
 
-  patch(param: Partial<Pick<GqlSourceInput, 'tags' | 'latLng' | 'title'>>) {
+  patch(
+    param: Partial<Pick<GqlSourceInput, 'tags' | 'latLng' | 'title' | 'draft'>>,
+  ) {
     this.meta.patchValue(param);
     this.events.stateChange.next('DIRTY');
   }

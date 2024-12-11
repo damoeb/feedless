@@ -72,7 +72,8 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
 
   constructor() {
     addIcons({
-      logoSlack, logoGithub
+      logoSlack,
+      logoGithub,
     });
   }
 

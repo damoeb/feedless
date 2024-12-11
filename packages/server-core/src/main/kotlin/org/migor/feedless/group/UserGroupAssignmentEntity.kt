@@ -2,6 +2,8 @@ package org.migor.feedless.group
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
@@ -26,6 +28,7 @@ import java.util.*
 )
 open class UserGroupAssignmentEntity : EntityWithUUID() {
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false)
   open lateinit var role: RoleInGroup
 
