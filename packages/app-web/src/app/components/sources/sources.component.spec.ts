@@ -32,9 +32,14 @@ describe('SourcesComponent', () => {
 
     beforeEach(() => {
       const repositoryService = TestBed.inject(RepositoryService);
-      spyOn(repositoryService, 'getSourceFullByRepository').and.returnValue(Promise.resolve({ } as any));
+      spyOn(repositoryService, 'getSourceFullByRepository').and.returnValue(
+        Promise.resolve({} as any),
+      );
       const modalService = TestBed.inject(ModalService);
-      openFeedBuilderSpy = spyOn(modalService, 'openFeedBuilder').and.returnValue(Promise.resolve());
+      openFeedBuilderSpy = spyOn(
+        modalService,
+        'openFeedBuilder',
+      ).and.returnValue(Promise.resolve());
     });
 
     it('for add source', async () => {
@@ -44,12 +49,10 @@ describe('SourcesComponent', () => {
     });
 
     it('for edit source', async () => {
-      const source: RepositorySource = {id:''} as any;
+      const source: RepositorySource = { id: '' } as any;
       await component.editOrAddSource(source);
 
       expect(openFeedBuilderSpy).toHaveBeenCalled();
     });
-
-  })
-
+  });
 });

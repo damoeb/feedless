@@ -42,6 +42,7 @@ import { addIcons } from 'ionicons';
 import {
   chevronForward,
   chevronForwardOutline,
+  eyeOutline,
   refreshOutline,
   searchOutline,
 } from 'ionicons/icons';
@@ -171,6 +172,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       searchOutline,
       chevronForwardOutline,
       refreshOutline,
+      eyeOutline,
     });
   }
 

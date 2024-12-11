@@ -32,6 +32,8 @@ ion-segment-button {
 
 .offers {
   display: flex;
+  column-gap: 0.5rem;
+  overflow-x: auto;
 
   app-plan-column {
     flex: 1;

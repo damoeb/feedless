@@ -1,10 +1,7 @@
 package org.migor.feedless.data.jpa
 
 import jakarta.annotation.PostConstruct
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.common.PropertyService
@@ -20,13 +17,17 @@ import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.feed.StandaloneFeedService
+import org.migor.feedless.group.GroupDAO
+import org.migor.feedless.group.GroupEntity
+import org.migor.feedless.group.RoleInGroup
+import org.migor.feedless.group.UserGroupAssignmentDAO
+import org.migor.feedless.group.UserGroupAssignmentEntity
 import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.PricedProductEntity
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
-import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretType
@@ -34,7 +35,6 @@ import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
@@ -50,56 +50,52 @@ import java.util.*
 @Service
 @Order(1)
 @Profile(AppProfiles.seed)
-class Seeder {
+class Seeder(
+  private val featureGroupDAO: FeatureGroupDAO,
+  private val featureService: FeatureService,
+  private val documentDAO: DocumentDAO,
+  private val environment: Environment,
+  private val propertyService: PropertyService,
+  private val productDAO: ProductDAO,
+  private val pricedProductDAO: PricedProductDAO,
+  private val userSecretDAO: UserSecretDAO,
+  private val repositoryDAO: RepositoryDAO,
+  private val standaloneFeedService: StandaloneFeedService,
+  private val userDAO: UserDAO,
+  private val groupDAO: GroupDAO,
+  private val userGroupAssignmentDAO: UserGroupAssignmentDAO,
+) {
 
   private val log = LoggerFactory.getLogger(Seeder::class.simpleName)
-
-  @Autowired
-  private lateinit var featureGroupDAO: FeatureGroupDAO
-
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Autowired
-  private lateinit var documentDAO: DocumentDAO
-
-  @Autowired
-  private lateinit var environment: Environment
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var productDAO: ProductDAO
-
-  @Autowired
-  private lateinit var pricedProductDAO: PricedProductDAO
-
-  @Autowired
-  private lateinit var userSecretDAO: UserSecretDAO
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryDAO
-
-  @Autowired
-  private lateinit var repositoryService: RepositoryService
-
-  @Autowired
-  private lateinit var standaloneFeedService: StandaloneFeedService
-
-  @Autowired
-  private lateinit var userDAO: UserDAO
 
   @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun onInit() {
     val root = seedRootUser()
-    runBlocking {
-      coroutineScope {
-        seedProducts(root)
-      }
-    }
+    seedGroups(root)
+    seedProducts(root)
     seedUsers()
+  }
+
+  private fun seedGroups(root: UserEntity) {
+    val adminGroup = resolveGroup("")
+
+    val ugLink = userGroupAssignmentDAO.findByUserIdAndGroupId(root.id, adminGroup.id) ?: UserGroupAssignmentEntity()
+    ugLink.groupId = adminGroup.id
+    ugLink.userId = root.id
+    ugLink.role = RoleInGroup.owner
+
+    userGroupAssignmentDAO.save(ugLink)
+  }
+
+  private fun resolveGroup(groupName: String): GroupEntity {
+    return groupDAO.findByName(groupName) ?: createGroup(groupName)
+  }
+
+  private fun createGroup(groupName: String): GroupEntity {
+    val adminGroup = GroupEntity()
+    adminGroup.name = groupName
+    return groupDAO.save(adminGroup)
   }
 
   private fun seedUsers() {
@@ -128,7 +124,7 @@ class Seeder {
       userSecretDAO.save(userSecret)
     }
 
-    pushLegacyNotifications(root)
+    prepareStandaloneNotification(root)
 //    pushFeedlessOpsNotifications(root)
 
     return root
@@ -158,28 +154,29 @@ class Seeder {
 //    }
 //  }
 
-  private fun pushLegacyNotifications(root: UserEntity) {
-    val legacyNotificationRepo = resolveLegacyNotificationsRepo(root)
+  private fun prepareStandaloneNotification(root: UserEntity) {
+    val standaloneFeedNotificationRepo = resolveStandaloneNotificationsRepo(root)
 
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val title = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
-      val repositoryId = legacyNotificationRepo.id
+      val deprecationMessageTitle = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
+      val repositoryId = standaloneFeedNotificationRepo.id
 
-      val notification = documentDAO.findByTitleAndRepositoryId(title, repositoryId) ?: run {
+      val title = "SERVICE ANNOUNCEMENT: About this feed"
+      val notification = documentDAO.findByTitleInAndRepositoryId(listOf(title, deprecationMessageTitle), repositoryId) ?: run {
         val d = DocumentEntity()
         d.repositoryId = repositoryId
         d
       }
 
-      val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#rss-proxy-feeds-deprecation-warning"
+      val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls"
       notification.url = url
       notification.title = title
       notification.status = ReleaseStatus.released
       notification.contentHash = CryptUtil.sha1(url)
       notification.text =
-        "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at https://feedless.org, where you can import your RSS-proxy feeds."
+        "Dear user, this standalone feed URL is generated per request and comes with some limitations like fetch frequency and others."
       notification.html =
-        "Dear user, please note that RSS-proxy feeds are now deprecated and will be deactivated in the future. We recommend creating a new feed at <a href-\"https://feedless.org\">feedless.org</a>, where you can import your RSS-proxy feeds."
+        "Dear user, this standalone feed URL is generated per request and <a href=\"https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls\">comes with some limitations</a> like fetch frequency and others."
       notification.publishedAt = LocalDateTime.now() // force to top on most readers
       notification.updatedAt = LocalDateTime.now()
 
@@ -187,9 +184,8 @@ class Seeder {
     }
   }
 
-  private fun resolveLegacyNotificationsRepo(root: UserEntity): RepositoryEntity {
-    val repoTitleLegacyNotifications = standaloneFeedService.getRepoTitleForLegacyFeedNotifications()
-    return resolveOpsNotificationsRepo(repoTitleLegacyNotifications, root)
+  private fun resolveStandaloneNotificationsRepo(root: UserEntity): RepositoryEntity {
+    return resolveOpsNotificationsRepo(standaloneFeedService.getRepoTitleForStandaloneFeedNotifications(), root)
   }
 
   private fun resolveOpsNotificationsRepo(repoTitle: String, root: UserEntity): RepositoryEntity {
@@ -225,77 +221,77 @@ class Seeder {
     user.anonymous = isAnonymous
     user.hasAcceptedTerms = isRoot || isAnonymous
 //    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
-    return userDAO.saveAndFlush(user)
+    return userDAO.save(user)
   }
 
-  private suspend fun seedProducts(root: UserEntity) {
-    val baseFeatureGroup = withContext(Dispatchers.IO) {
-      featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
+  private fun seedProducts(root: UserEntity) {
+    val baseFeatureGroup = featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
         val group = FeatureGroupEntity()
         group.name = "feedless"
         featureGroupDAO.save(group)
       }
-    }
 
-    featureService.assignFeatureValues(
-      baseFeatureGroup, features = mapOf(
-        FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
-        FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(5),
-        FeatureName.publicRepositoryBool to asBoolFeature(false),
-        FeatureName.pluginsBool to asBoolFeature(false),
-        FeatureName.legacyApiBool to asBoolFeature(true),
-        FeatureName.legacyAnonymousFeedSupportEolInt to asIntFeature(1718265907060),
-
-        FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(0),
-        FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(0),
-        FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(0),
-
-        FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(0),
-        FeatureName.repositoriesMaxCountTotalInt to asIntFeature(0),
-        FeatureName.repositoriesMaxCountActiveInt to asIntFeature(0),
-        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(0),
-        FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(0),
-
-        FeatureName.canJoinPlanWaitList to asBoolFeature(false),
-        FeatureName.canActivatePlan to asBoolFeature(false),
-        FeatureName.canLogin to asBoolFeature(true),
-        FeatureName.canSignUp to asBoolFeature(true),
-        FeatureName.canCreateUser to asBoolFeature(true),
-
-        FeatureName.itemEmailForwardBool to asBoolFeature(false),
-        FeatureName.itemWebhookForwardBool to asBoolFeature(false),
-      )
-    )
-
-    if (isSelfHosted()) {
+    runBlocking {
       featureService.assignFeatureValues(
         baseFeatureGroup, features = mapOf(
-//          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
-//          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
-          FeatureName.publicRepositoryBool to asBoolFeature(true),
-          FeatureName.pluginsBool to asBoolFeature(true),
-          FeatureName.legacyAnonymousFeedSupportEolInt to asIntFeature(null),
-//          FeatureName.legacyApiBool to asBoolFeature(true),
+          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
+          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(5),
+          FeatureName.publicRepositoryBool to asBoolFeature(false),
+          FeatureName.pluginsBool to asBoolFeature(false),
+          FeatureName.legacyApiBool to asBoolFeature(true),
 
-          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
-          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(0),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(0),
+          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(0),
 
-          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(10000),
-          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(10000),
-          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(2),
+          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(0),
+          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(0),
+          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(0),
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(0),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(0),
 
-//          FeatureName.hasWaitList to asBoolFeature(false),
+          FeatureName.canJoinPlanWaitList to asBoolFeature(false),
+          FeatureName.canActivatePlan to asBoolFeature(false),
           FeatureName.canLogin to asBoolFeature(true),
           FeatureName.canSignUp to asBoolFeature(true),
           FeatureName.canCreateUser to asBoolFeature(true),
 
-//          FeatureName.itemEmailForwardBool to asBoolFeature(false),
-//          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
+          FeatureName.itemEmailForwardBool to asBoolFeature(false),
+          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
         )
       )
+    }
+
+    if (isSelfHosted()) {
+      runBlocking {
+        featureService.assignFeatureValues(
+          baseFeatureGroup, features = mapOf(
+//          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
+//          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
+            FeatureName.publicRepositoryBool to asBoolFeature(true),
+            FeatureName.pluginsBool to asBoolFeature(true),
+//          FeatureName.legacyApiBool to asBoolFeature(true),
+
+            FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
+            FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
+            FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(2),
+
+            FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
+            FeatureName.repositoriesMaxCountTotalInt to asIntFeature(10000),
+            FeatureName.repositoriesMaxCountActiveInt to asIntFeature(10000),
+            FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+            FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(2),
+
+//          FeatureName.hasWaitList to asBoolFeature(false),
+            FeatureName.canLogin to asBoolFeature(true),
+            FeatureName.canSignUp to asBoolFeature(true),
+            FeatureName.canCreateUser to asBoolFeature(true),
+
+//          FeatureName.itemEmailForwardBool to asBoolFeature(false),
+//          FeatureName.itemWebhookForwardBool to asBoolFeature(false),
+          )
+        )
+      }
     } else {
       val feedlessFree = createProduct(
         "feedless Free",
@@ -323,14 +319,14 @@ class Seeder {
           FeatureName.pluginsBool to asBoolFeature(true),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(1000),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(300),
           FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
           FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
           FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
           FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(1000),
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
           FeatureName.canActivatePlan to asBoolFeature(true),
@@ -342,27 +338,27 @@ class Seeder {
         )
       )
 
-      val feedlessSupporter = createProduct(
-        "feedless Supporter",
-        "Getting Started",
-        group = Vertical.feedless,
-        isBaseProduct = false,
-        saas = true,
-        prices = listOf(
-          createPricedProduct(
-            unit = "Per Month",
-            recurringInterval = ChronoUnit.MONTHS,
-            price = 4.9
-          ),
-          createPricedProduct(
-            unit = "Per Year",
-            recurringInterval = ChronoUnit.YEARS,
-            price = 49.0
-          )
-        ),
-        parentFeatureGroupId = feedlessFree.featureGroupId,
-        features = emptyMap()
-      )
+//      val feedlessSupporter = createProduct(
+//        "feedless Supporter",
+//        "Getting Started",
+//        group = Vertical.feedless,
+//        isBaseProduct = false,
+//        saas = true,
+//        prices = listOf(
+//          createPricedProduct(
+//            unit = "Per Month",
+//            recurringInterval = ChronoUnit.MONTHS,
+//            price = 4.9
+//          ),
+//          createPricedProduct(
+//            unit = "Per Year",
+//            recurringInterval = ChronoUnit.YEARS,
+//            price = 49.0
+//          )
+//        ),
+//        parentFeatureGroupId = feedlessFree.featureGroupId,
+//        features = emptyMap()
+//      )
 
 
       createProduct(
@@ -400,21 +396,21 @@ class Seeder {
         features = mapOf(
 //          FeatureName.requestPerMinuteUpperLimitInt to asIntFeature(40),
 //          FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(120),
-//          FeatureName.publicRepositoryBool to asBoolFeature(false),
-          FeatureName.pluginsBool to asBoolFeature(true),
+          FeatureName.publicRepositoryBool to asBoolFeature(true),
+//          FeatureName.pluginsBool to asBoolFeature(true),
+//
+//          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
+          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(10000),
+//          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
 
-          FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(2),
-          FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(1000),
-          FeatureName.repositoryRetentionMaxDaysLowerLimitInt to asIntFeature(7),
-
-          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
-          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
-          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
-          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
-          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
+//          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
+//          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
+//          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
+//          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
+          FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(1000),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
-          FeatureName.canActivatePlan to asBoolFeature(true),
+//          FeatureName.canActivatePlan to asBoolFeature(true),
 //          FeatureName.canLoginWithCredentials to asBoolFeature(true),
 //          FeatureName.signUpRequiresInvitationKeyOnly to asBoolFeature(true),
         )
@@ -423,20 +419,18 @@ class Seeder {
     }
   }
 
-  private suspend fun resolveFeatureGroup(
+  private fun resolveFeatureGroup(
     name: String,
     parentFeatureGroupId: UUID,
     features: Map<FeatureName, FeatureValueEntity>
   ): FeatureGroupEntity {
     log.info("resolveFeatureGroup $name")
-    val group = withContext(Dispatchers.IO) {
-      featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: run {
+    val group = featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: run {
         val group = FeatureGroupEntity()
         group.name = name
         group.parentFeatureGroupId = parentFeatureGroupId
         featureGroupDAO.save(group)
       }
-    }
 
     featureService.assignFeatureValues(group, features)
     return group
@@ -457,7 +451,7 @@ class Seeder {
     return priced
   }
 
-  private suspend fun createProduct(
+  private fun createProduct(
     name: String,
     description: String,
     group: Vertical? = null,
@@ -472,7 +466,7 @@ class Seeder {
     selfHostingOther: Boolean = false,
   ): ProductEntity {
 
-    val product = withContext(Dispatchers.IO) { productDAO.findByNameEqualsIgnoreCase(name) } ?: ProductEntity()
+    val product = productDAO.findByNameEqualsIgnoreCase(name) ?: ProductEntity()
 
     product.name = name
     product.saas = saas
@@ -484,7 +478,7 @@ class Seeder {
     product.baseProduct = isBaseProduct
     product.partOf = group
 
-    withContext(Dispatchers.IO) { productDAO.save(product) }
+    productDAO.save(product)
 
     if (saas) {
       product.featureGroupId = parentFeatureGroupId
@@ -493,17 +487,15 @@ class Seeder {
         val featureGroup = resolveFeatureGroup(name, parentFeatureGroupId, features)
         product.featureGroupId = featureGroup.id
       }
-      withContext(Dispatchers.IO) { productDAO.save(product) }
+      productDAO.save(product)
     }
 
 
-    withContext(Dispatchers.IO) {
-      pricedProductDAO.deleteAllByProductId(product.id)
-      pricedProductDAO.saveAll(prices.map {
-        it.productId = product.id
-        it
-      })
-    }
+    pricedProductDAO.deleteAllByProductId(product.id)
+    pricedProductDAO.saveAll(prices.map {
+      it.productId = product.id
+      it
+    })
 
     return product
   }

@@ -6,9 +6,7 @@
   type="file"
 />
 <ion-toolbar style="--background: transparent">
-  <ion-title>
-    Sources
-  </ion-title>
+  <ion-title> Sources </ion-title>
   <ion-buttons slot="end">
     <ion-button
       (click)="fetchCurrentPage('network-only')"
@@ -22,10 +20,7 @@
       Reload Data
     </ion-button>
     <ion-button (click)="jsonPicker.click()">
-      <ion-icon
-        name="cloud-upload-outline"
-        slot="start"
-      ></ion-icon>
+      <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
       <ion-label>Import JSON</ion-label>
     </ion-button>
     <ion-button (click)="editOrAddSource()">
@@ -37,6 +32,17 @@
     </ion-button>
   </ion-buttons>
 </ion-toolbar>
+<!--<ion-toolbar>-->
+<!--  <div class="filters">-->
+<!--    <ion-select label="Status" fill="outline">-->
+
+<!--    </ion-select>-->
+<!--    <ion-select label="Geo Tag" fill="outline">-->
+
+<!--    </ion-select>-->
+<!--  </div>-->
+
+<!--</ion-toolbar>-->
 <ion-list>
   @if (repository().sourcesCount === 0) {
     <ion-item>
@@ -46,25 +52,18 @@
 
   <ion-row style="opacity: 0.5">
     <ion-col size="1" class="ion-text-center">Status</ion-col>
-    <ion-col size="5" class="ion-padding-start"
-    >Description</ion-col
-    >
+    <ion-col size="5" class="ion-padding-start">Description</ion-col>
     <ion-col size="2">Refreshed Last</ion-col>
     <ion-col size="2">Retrieved Last</ion-col>
   </ion-row>
   @if (loadingSources) {
-    <ion-progress-bar
-      color="medium"
-      type="indeterminate"
-    ></ion-progress-bar>
+    <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
   }
 
   @for (source of sources; track source.id) {
     <ion-row>
       <ion-col size="1" class="ion-text-center">
-        <app-bubble
-          [color]="getHealthColorForSource(source)"
-        ></app-bubble>
+        <app-bubble [color]="getHealthColorForSource(source)"></app-bubble>
       </ion-col>
       <ion-col size="5">
         <div style="padding-left: 10px">
@@ -73,17 +72,15 @@
         <ion-buttons>
           <ion-button
             (click)="editTags(source)"
-            [color]="
-                            source.tags?.length > 0 ? 'medium' : 'primary'
-                          "
+            [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
             fill="clear"
-          >{{ stringifyTags(source) }}
+            >{{ stringifyTags(source) }}
           </ion-button>
           <ion-button
             (click)="editLatLon(source)"
             [color]="source.latLng ? 'medium' : 'primary'"
             fill="clear"
-          >{{ stringifyLocalization(source) }}
+            >{{ stringifyLocalization(source) }}
           </ion-button>
         </ion-buttons>
 
@@ -112,11 +109,7 @@
           <ion-text
             class="nowrap"
             title="last items retrieved"
-            [color]="
-                            source.lastRecordsRetrieved === 0
-                              ? 'danger'
-                              : undefined
-                          "
+            [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
           >
             {{ source.lastRecordsRetrieved }} items
           </ion-text>
@@ -125,10 +118,7 @@
         }
       </ion-col>
       <ion-col size="2">
-        <ion-buttons
-          [collapse]="true"
-          style="justify-self: flex-end"
-        >
+        <ion-buttons [collapse]="true" style="justify-self: flex-end">
           @if (source.disabled) {
             <ion-button
               (click)="setDisabledForSource(source, false)"
@@ -138,11 +128,12 @@
               Enable
             </ion-button>
           }
-          <ion-button (click)="editOrAddSource(source)">
-            Edit
-          </ion-button>
+          <ion-button (click)="editOrAddSource(source)"> Edit </ion-button>
           <ion-button (click)="showSourceOptions(source)">
-            <ion-icon name="ellipsis-vertical-outline" slot="icon-only"></ion-icon>
+            <ion-icon
+              name="ellipsis-vertical-outline"
+              slot="icon-only"
+            ></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-col>

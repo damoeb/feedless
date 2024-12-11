@@ -115,9 +115,9 @@ class FeatureServiceTest {
     val otherRandomInt = randomInt + 2
 
     // when
-    featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameA to createFeatureValue(randomInt)))
-    featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameB to createFeatureValue(randomInt)))
-    featureService.assignFeatureValues(childFeatureGroup, mapOf(featureNameA to createFeatureValue(otherRandomInt)))
+    featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameA to createFeatureValue(randomInt)), false)
+    featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameB to createFeatureValue(randomInt)), false)
+    featureService.assignFeatureValues(childFeatureGroup, mapOf(featureNameA to createFeatureValue(otherRandomInt)), false)
 
     // then
     val parentValue = featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, featureA.name)

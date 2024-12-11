@@ -13,12 +13,10 @@ import {
 import {
   IonBadge,
   IonContent,
-  IonHeader,
   IonIcon,
   IonItem,
   IonList,
   IonListHeader,
-  IonToolbar,
 } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';
@@ -50,7 +48,7 @@ import { PromotionHeaderComponent } from '../../../components/promotion-header/p
     IonIcon,
     RemoveIfProdDirective,
     IonBadge,
-    PromotionHeaderComponent
+    PromotionHeaderComponent,
   ],
   standalone: true,
 })

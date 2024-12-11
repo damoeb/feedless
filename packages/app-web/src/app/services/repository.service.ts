@@ -34,7 +34,7 @@ import {
   RepositoryById,
   SourcesByRepository,
   SourcesWithFlowByRepository,
-  UpdateRepository
+  UpdateRepository,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import {
@@ -218,7 +218,7 @@ export class RepositoryService {
             },
           },
           cursor,
-          where
+          where,
         },
       })
       .then((response) => response.data.repository);

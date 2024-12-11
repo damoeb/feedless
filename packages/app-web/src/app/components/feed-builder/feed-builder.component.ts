@@ -51,6 +51,7 @@ import { RepositoryService } from '../../services/repository.service';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
 import {
+  checkmarkDoneOutline,
   checkmarkOutline,
   logoJavascript,
   settingsOutline,
@@ -168,6 +169,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   readonly standaloneFeedMode = input(false);
 
   readonly hideCustomizeFeed = input(false);
+  readonly allowDraft = input(false);
 
   readonly selectedFeedChanged = output<FeedWithRequest>();
 
@@ -180,7 +182,12 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   protected sourceBuilder: SourceBuilder;
 
   constructor() {
-    addIcons({ logoJavascript, settingsOutline, checkmarkOutline });
+    addIcons({
+      logoJavascript,
+      settingsOutline,
+      checkmarkOutline,
+      checkmarkDoneOutline,
+    });
   }
 
   async ngOnInit() {
@@ -274,8 +281,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async createOrRefineFeed(refine: boolean) {
-    this.sourceBuilder.patch({ tags: this.tags });
+  async createOrRefineFeed(refine: boolean, draft: boolean = false) {
+    this.sourceBuilder.patch({ tags: this.tags, draft });
 
     // console.log('this.location', this.geoLocation);
     if (this.geoLocation) {

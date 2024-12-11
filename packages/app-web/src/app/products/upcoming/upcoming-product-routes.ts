@@ -67,10 +67,14 @@ export const upcomingBaseRoute = route(
     terms: route('agb', {}, {}),
     login: route('login', {}, {}),
     about: route('ueber-uns', {}, {}),
-    management: route('management', {}, {
-      sources: route('sources', {}, {}),
-      documents: route('documents', {}, {}),
-    }),
+    management: route(
+      'management',
+      {},
+      {
+        sources: route('sources', {}, {}),
+        documents: route('documents', {}, {}),
+      },
+    ),
     events: route(
       'events/in',
       {},
@@ -127,7 +131,7 @@ export const UPCOMING_ROUTES: Routes = [
           import('./terms/terms.page').then((m) => m.TermsPage),
       },
       {
-        path: upcomingBaseRoute.children.terms.template,
+        path: upcomingBaseRoute.children.login.template,
         loadComponent: () =>
           import('../../pages/login/login.page').then((m) => m.LoginPage),
       },
@@ -136,19 +140,26 @@ export const UPCOMING_ROUTES: Routes = [
         canActivate: [AuthGuardService],
         children: [
           {
-            path: upcomingBaseRoute.children.management.children.sources.template,
-            data: {sources: true},
+            path: upcomingBaseRoute.children.management.children.sources
+              .template,
+            data: { sources: true },
             loadComponent: () =>
-              import('./management/management.page').then((m) => m.ManagementPage)
+              import('./management/management.page').then(
+                (m) => m.ManagementPage,
+              ),
           },
           {
-            path: upcomingBaseRoute.children.management.children.documents.template,
+            path: upcomingBaseRoute.children.management.children.documents
+              .template,
             loadComponent: () =>
-              import('./management/management.page').then((m) => m.ManagementPage)
+              import('./management/management.page').then(
+                (m) => m.ManagementPage,
+              ),
           },
           {
             path: '**',
-            redirectTo: '/'+upcomingBaseRoute({}).management({}).sources({}).$
+            redirectTo:
+              '/' + upcomingBaseRoute({}).management({}).sources({}).$,
           },
         ],
       },

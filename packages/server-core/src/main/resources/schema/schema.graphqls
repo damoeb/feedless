@@ -1080,6 +1080,8 @@ enum FeatureName {
   repositoryRetentionMaxDaysLowerLimitInt
   repositoryCapacityLowerLimitInt
   repositoryCapacityUpperLimitInt
+  repositoriesMaxCountTotalInt
+  sourceMaxCountPerRepositoryInt
 #  itemEmailForward
 #  itemWebhookForward
   plugins
@@ -1590,7 +1592,7 @@ input SourceInput {
   id: ID
   title: String!
   flow: ScrapeFlowInput!
-  ok: Boolean
+  draft: Boolean
   latLng: GeoPointInput
   tags: [String!]
   lastErrorMessage: String

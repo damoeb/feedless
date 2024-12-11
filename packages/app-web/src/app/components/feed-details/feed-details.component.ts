@@ -1,7 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, viewChild } from '@angular/core';
-import { GqlFeedlessPlugins, GqlRecordField, GqlVertical, GqlVisibility } from '../../../generated/graphql';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  viewChild,
+} from '@angular/core';
+import {
+  GqlFeedlessPlugins,
+  GqlRecordField,
+  GqlVertical,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { Annotation, Record, RepositoryFull } from '../../graphql/types';
-import { RepositoryModalAccordion, RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
+import {
+  RepositoryModalAccordion,
+  RepositoryModalComponentProps,
+} from '../../modals/repository-modal/repository-modal.component';
 import { ModalName, ModalService } from '../../services/modal.service';
 import {
   AlertController,
@@ -29,11 +46,10 @@ import {
   IonToolbar,
   ModalController,
   PopoverController,
-  ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
 import { tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService } from '../../services/repository.service';
-import { BubbleComponent } from '../bubble/bubble.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
@@ -63,7 +79,7 @@ import {
   settingsOutline,
   star,
   starOutline,
-  trashOutline
+  trashOutline,
 } from 'ionicons/icons';
 import { FileService } from '../../services/file.service';
 import { DatePipe, NgClass } from '@angular/common';
@@ -109,7 +125,6 @@ type Pair<A, B> = {
     IonButton,
     IonIcon,
     IonLabel,
-    BubbleComponent,
     IonContent,
     IonList,
     IonItem,
@@ -138,7 +153,7 @@ type Pair<A, B> = {
     CodeEditorModalModule,
     SearchAddressModalModule,
     RepositoryModalModule,
-    SourcesComponent
+    SourcesComponent,
   ],
   standalone: true,
 })

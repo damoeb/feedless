@@ -27,7 +27,6 @@ enum class FeatureName {
   publicRepositoryBool,
   pluginsBool,
   legacyApiBool,
-  legacyAnonymousFeedSupportEolInt,
 
   repositoryCapacityUpperLimitInt,
   repositoryCapacityLowerLimitInt,
@@ -43,6 +42,7 @@ enum class FeatureName {
   scrapeRequestTimeoutMsecInt,
   repositoriesMaxCountActiveInt,
   sourceMaxCountPerRepositoryInt,
+  @Deprecated("will be removed")
   scrapeRequestActionMaxCountInt,
   repositoriesMaxCountTotalInt,
 }

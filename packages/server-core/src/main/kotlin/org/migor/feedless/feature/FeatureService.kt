@@ -98,47 +98,48 @@ class FeatureService(
   }
 
   @Transactional
-  suspend fun assignFeatureValues(
+  fun assignFeatureValues(
     featureGroup: FeatureGroupEntity,
-    features: Map<FeatureName, FeatureValueEntity>
+    features: Map<FeatureName, FeatureValueEntity>, resetFeatureGroup: Boolean = true
   ) {
-    features.forEach { (featureName, nextFeatureValue) ->
-      withContext(Dispatchers.IO) {
-        val feature = featureDAO.findByName(featureName.name) ?: createFeature(featureName)
 
-        featureValueDAO.findByFeatureGroupIdAndFeatureId(featureGroup.id, feature.id)
-          ?.let { currentFeatureValue ->
-            val logValueUpdate =
-              { current: Any?, next: Any? -> log.warn("Patching value feature $featureName for ${featureGroup.name} $current -> $next") }
-            if (currentFeatureValue.valueBoolean != nextFeatureValue.valueBoolean) {
-              logValueUpdate(currentFeatureValue.valueBoolean, nextFeatureValue.valueBoolean)
-              currentFeatureValue.valueBoolean = nextFeatureValue.valueBoolean
-            }
-            if (currentFeatureValue.valueInt != nextFeatureValue.valueInt) {
-              logValueUpdate(currentFeatureValue.valueInt, nextFeatureValue.valueInt)
-              currentFeatureValue.valueInt = nextFeatureValue.valueInt
-            }
-            featureValueDAO.save(currentFeatureValue)
+    if (resetFeatureGroup) {
+      featureValueDAO.deleteAllByFeatureGroupId(featureGroup.id)
+    }
+
+    features.forEach { (featureName, nextFeatureValue) ->
+      val feature = featureDAO.findByName(featureName.name) ?: createFeature(featureName)
+
+      featureValueDAO.findByFeatureGroupIdAndFeatureId(featureGroup.id, feature.id)
+        ?.let { currentFeatureValue ->
+          val logValueUpdate =
+            { current: Any?, next: Any? -> log.warn("Patching value feature $featureName for ${featureGroup.name} $current -> $next") }
+          if (currentFeatureValue.valueBoolean != nextFeatureValue.valueBoolean) {
+            logValueUpdate(currentFeatureValue.valueBoolean, nextFeatureValue.valueBoolean)
+            currentFeatureValue.valueBoolean = nextFeatureValue.valueBoolean
           }
-          ?: run {
-            val value = FeatureValueEntity()
-            value.featureGroupId = featureGroup.id
-            value.featureId = feature.id
-            value.valueType = nextFeatureValue.valueType
-            value.valueBoolean = nextFeatureValue.valueBoolean
-            value.valueInt = nextFeatureValue.valueInt
-            featureValueDAO.save(value)
+          if (currentFeatureValue.valueInt != nextFeatureValue.valueInt) {
+            logValueUpdate(currentFeatureValue.valueInt, nextFeatureValue.valueInt)
+            currentFeatureValue.valueInt = nextFeatureValue.valueInt
           }
-      }
+          featureValueDAO.save(currentFeatureValue)
+        }
+        ?: run {
+          val value = FeatureValueEntity()
+          value.featureGroupId = featureGroup.id
+          value.featureId = feature.id
+          value.valueType = nextFeatureValue.valueType
+          value.valueBoolean = nextFeatureValue.valueBoolean
+          value.valueInt = nextFeatureValue.valueInt
+          featureValueDAO.save(value)
+        }
     }
   }
 
-  private suspend fun createFeature(featureName: FeatureName): FeatureEntity {
+  private fun createFeature(featureName: FeatureName): FeatureEntity {
     val feature = FeatureEntity()
     feature.name = featureName.name
-    return withContext(Dispatchers.IO) {
-      featureDAO.save(feature)
-    }
+    return featureDAO.save(feature)
   }
 
   @Transactional(readOnly = true)
@@ -178,11 +179,13 @@ val mapFeatureName2Dto = mapOf(
   FeatureName.scrapeRequestTimeoutMsecInt to FeatureNameDto.scrapeRequestTimeoutMsec,
   FeatureName.repositoryRetentionMaxDaysLowerLimitInt to FeatureNameDto.repositoryRetentionMaxDaysLowerLimitInt,
   FeatureName.repositoryCapacityUpperLimitInt to FeatureNameDto.repositoryCapacityUpperLimitInt,
+  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.repositoriesMaxCountTotalInt,
+  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.sourceMaxCountPerRepositoryInt,
 
   FeatureName.pluginsBool to FeatureNameDto.plugins,
-  FeatureName.repositoriesMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
-  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
-  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
+//  FeatureName.repositoriesMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
+//  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
+//  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
 )
 
 private fun FeatureEntity.toDto(): FeatureNameDto? {

@@ -13,10 +13,7 @@ import {
   IonRouterOutlet,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import {
-  needsPlanSubscription,
-  SessionService,
-} from '../../services/session.service';
+import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 

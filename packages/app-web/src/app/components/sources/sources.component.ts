@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, input, OnInit, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  effect,
+  inject,
+  input,
+  OnInit,
+  output,
+} from '@angular/core';
 
 import {
   ActionSheetController,
@@ -15,23 +24,35 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
-  ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { BubbleColor, BubbleComponent } from '../bubble/bubble.component';
 import { RepositoryFull, RepositorySource } from '../../graphql/types';
 import { FetchPolicy } from '@apollo/client/core';
 import { ArrayElement, Nullable } from '../../types';
-import { GqlRepositoryCreateInput, GqlSourceInput, GqlSourcesWhereInput } from '../../../generated/graphql';
+import {
+  GqlRepositoryCreateInput,
+  GqlSourceInput,
+  GqlSourcesWhereInput,
+} from '../../../generated/graphql';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
 import { sortBy } from 'lodash-es';
-import { FeedOrRepository, tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  FeedOrRepository,
+  tagsToString,
+} from '../feed-builder/feed-builder.component';
 import { RepositoryService, Source } from '../../services/repository.service';
 import { FileService } from '../../services/file.service';
 import { ModalService } from '../../services/modal.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
-import { addOutline, cloudUploadOutline, ellipsisVerticalOutline, refreshOutline } from 'ionicons/icons';
+import {
+  addOutline,
+  cloudUploadOutline,
+  ellipsisVerticalOutline,
+  refreshOutline,
+} from 'ionicons/icons';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 
 @Component({
@@ -54,12 +75,11 @@ import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-bui
     IonIcon,
     IonTitle,
     IonToolbar,
-    FeedBuilderModalModule
+    FeedBuilderModalModule,
   ],
   standalone: true,
 })
 export class SourcesComponent implements OnInit {
-
   private readonly alertCtrl = inject(AlertController);
   private readonly repositoryService = inject(RepositoryService);
   private readonly changeRef = inject(ChangeDetectorRef);
@@ -78,15 +98,20 @@ export class SourcesComponent implements OnInit {
   protected readonly fromNow = relativeTimeOrElse;
 
   constructor() {
-    addIcons({ addOutline, cloudUploadOutline, refreshOutline, ellipsisVerticalOutline });
+    addIcons({
+      addOutline,
+      cloudUploadOutline,
+      refreshOutline,
+      ellipsisVerticalOutline,
+    });
     effect(() => {
       console.log('change', this.sourcesFilter());
-      this.fetchCurrentPage()
+      this.fetchCurrentPage();
     });
   }
 
   ngOnInit() {
-    this.fetchCurrentPage()
+    this.fetchCurrentPage();
   }
 
   async importFeedlessJson(uploadEvent: Event) {
@@ -142,7 +167,6 @@ export class SourcesComponent implements OnInit {
       await toast.present();
     }
   }
-
 
   async deleteSource(source: RepositorySource) {
     console.log('deleteSource', source);
@@ -227,11 +251,11 @@ export class SourcesComponent implements OnInit {
                 data: {
                   latLng: geoTag
                     ? {
-                      set: {
-                        lat: parseFloat(`${geoTag.lat}`),
-                        lng: parseFloat(`${geoTag.lng}`),
-                      },
-                    }
+                        set: {
+                          lat: parseFloat(`${geoTag.lat}`),
+                          lng: parseFloat(`${geoTag.lng}`),
+                        },
+                      }
                     : null,
                 },
               },
@@ -310,16 +334,21 @@ export class SourcesComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
-
   async editOrAddSource(source: Nullable<RepositorySource> = null) {
-    await this.modalService.openFeedBuilder(
-      {
-        source: this.repositoryService.toSourceInput(
+    const toSource = async () => {
+      if (source) {
+        return this.repositoryService.toSourceInput(
           await this.repositoryService.getSourceFullByRepository(
             this.repository().id,
-            source?.id,
+            source.id,
           ),
-        ),
+        );
+      }
+    };
+
+    await this.modalService.openFeedBuilder(
+      {
+        source: await toSource(),
       },
       async (data: FeedOrRepository) => {
         if (data?.repository) {
@@ -382,7 +411,6 @@ export class SourcesComponent implements OnInit {
     );
   }
 
-
   async fetchCurrentPage(fetchPolicy: FetchPolicy = 'cache-first') {
     await this.fetchSources(this.currentSourcesPage, fetchPolicy);
   }
@@ -396,13 +424,13 @@ export class SourcesComponent implements OnInit {
           role: 'destructive',
           handler: () => {
             this.setDisabledForSource(source, true);
-          }
+          },
         },
         {
           text: 'Delete',
           handler: () => {
-            this.deleteSource(source)
-          }
+            this.deleteSource(source);
+          },
         },
         {
           text: 'Cancel',

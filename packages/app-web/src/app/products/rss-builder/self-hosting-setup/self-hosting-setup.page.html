@@ -1,0 +1,52 @@
+<ion-header style="box-shadow: none">
+  <ion-toolbar style="--background: transparent">
+    <ion-buttons slot="end">
+      <app-dark-mode-button></app-dark-mode-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div style="flex: 1; display: flex">
+    <div style="flex: 1; display: flex">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Self-Hosting Setup</ion-card-title>
+          <ion-card-subtitle
+            >Pick and choose what you want to achieve, setup instructions on the right will be adjusted accordingly.</ion-card-subtitle
+          >
+        </ion-card-header>
+        <ion-card-content style="flex: 1; display: flex; flex-direction: column;">
+          <div style="flex: 1; display: flex; flex-direction: column">
+            <ion-searchbar></ion-searchbar>
+            <div style="flex: 1; overflow-y: auto;">
+              <div>
+                <ion-list>
+                  @for (f of list; track f.name) {
+                    <ion-item>
+                      <ion-checkbox
+                        labelPlacement="start"
+                        [checked]="f.checked"
+                        [disabled]="f.disabled"
+                      >
+                        {{ f.name }}
+                        <ion-note>({{ f.group }})</ion-note>
+                        @if (f.description) {
+                          <ion-label>
+                            <ion-note>{{ f.description }}</ion-note>
+                          </ion-label>
+                        }
+                      </ion-checkbox>
+                    </ion-item>
+                  }
+                </ion-list>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <div style="flex: 1; display: flex">
+      <app-code-editor style="flex: 1"></app-code-editor>
+    </div>
+  </div>
+</ion-content>
