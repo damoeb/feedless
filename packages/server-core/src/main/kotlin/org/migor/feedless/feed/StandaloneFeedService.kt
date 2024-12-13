@@ -11,8 +11,6 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.feature.FeatureName
-import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.ItemFilterParamsInput
@@ -36,6 +34,8 @@ import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
@@ -63,31 +63,27 @@ class StandaloneFeedService(
   private val repositoryService: RepositoryService,
   private val userService: UserService,
   private val sourceService: SourceService,
-  private val featureService: FeatureService,
   private val documentService: DocumentService,
-  private val filterPlugin: CompositeFilterPlugin
+  private val filterPlugin: CompositeFilterPlugin,
+  private val environment: Environment
 ) {
 
   private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
 
   fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #sourceId")
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun getFeed(sourceId: UUID, feedUrl: String): JsonFeed {
-    return if (standaloneSupport()) {
-      val feed =
-        sourceService.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
-      feed.items =
-        documentService.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
-          .map { it.asJsonItem() }
+    val feed =
+      sourceService.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
+    feed.items =
+      documentService.findAllBySourceId(sourceId, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "publishedAt")))
+        .map { it.asJsonItem() }
 
-      appendNotifications(feed)
-    } else {
-      createEolFeed(feedUrl)
-    }
+    return appendNotifications(feed)
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #url + #linkXPath + #contextXPath + #filter")
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun webToFeed(
     url: String,
     linkXPath: String,
@@ -96,10 +92,11 @@ class StandaloneFeedService(
     dateXPath: String?,
     prerender: Boolean,
     filter: String?,
+    ts: LocalDateTime? = null,
     feedUrl: String
   ): JsonFeed {
     val corrId = coroutineContext.corrId()
-    return if (standaloneSupport()) {
+    return if (standaloneSupport(ts)) {
       val source = SourceEntity()
       source.title = "Feed from $url"
       val fetch = FetchActionEntity()
@@ -153,7 +150,7 @@ class StandaloneFeedService(
 
       appendNotifications(feed)
     } else {
-      createEolFeed(url)
+      createEolFeed(feedUrl)
     }
   }
 
@@ -171,9 +168,9 @@ class StandaloneFeedService(
     )
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #nativeFeedUrl + #filter")
-  suspend fun transformFeed(nativeFeedUrl: String, filter: String?, feedUrl: String): JsonFeed {
-    return if (standaloneSupport()) {
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  suspend fun transformFeed(nativeFeedUrl: String, filter: String?, ts: LocalDateTime? = null, feedUrl: String): JsonFeed {
+    return if (standaloneSupport(ts)) {
       val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
       filter?.let {
         val params = convertFilterStringToPluginParams(filter)
@@ -188,6 +185,7 @@ class StandaloneFeedService(
       }
 
       appendNotifications(feed)
+      feed
     } else {
       createEolFeed(feedUrl)
     }
@@ -221,14 +219,15 @@ class StandaloneFeedService(
     return feed
   }
 
-  private suspend fun standaloneSupport(): Boolean {
-    return !featureService.isDisabled(FeatureName.legacyApiBool)
+  suspend fun standaloneSupport(ts: LocalDateTime?): Boolean {
+    return environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted)) || (ts != null && ts.isAfter(LocalDateTime.now().minusMonths(2)))
+//    return !featureService.isDisabled(FeatureName.legacyApiBool)
   }
 
   private fun createEolFeed(feedUrl: String): JsonFeed {
     val feed = JsonFeed()
     feed.id = "rss-proxy:2"
-    feed.title = "End Of Life"
+    feed.title = "End Of Trial"
     feed.feedUrl = feedUrl
     feed.expired = true
     feed.publishedAt = LocalDateTime.now()
@@ -254,27 +253,18 @@ class StandaloneFeedService(
     return feed
   }
 
-  private fun createEolArticle(url: String): JsonItem {
+  private fun createEolArticle(feedUrl: String): JsonItem {
     val article = JsonItem()
-    val preregistrationLink = "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
-    article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
-    article.title = "SERVICE ANNOUNCEMENT: RSS-Proxy Urls have reached End-of-life"
-    article.html = """Dear User,
-
-I hope this message finds you well. As of now, RSS-Proxy urls are no longer supported.
-
-However, you can easily migrate to feedless and take advantage of all new features.
-
-$preregistrationLink
-
-Should you have any questions or concerns, reach out to me.
-
-Regards,
-Markus
-
+    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
+    article.title = "ACTION REQUIRED – Reenable Your Feed"
+    article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
+      <p>If you liked it, restore your feed simply by <a href="$feedActivationLink">reenabling it</a>, it is just a couple of clicks.</p>
+<p>Reenable your feed today to get back to seamless service.</p>
+<p>Thanks!</p>
     """.trimIndent()
 //    article.text = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
-    article.url = preregistrationLink
+    article.url = feedActivationLink
     article.publishedAt = LocalDateTime.now()
     return article
   }

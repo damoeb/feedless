@@ -30,11 +30,11 @@
 //   parse: parse(defaultValue),
 // });
 
-import { booleanParser, route } from 'typesafe-routes';
+import { booleanParser, intParser, route } from 'typesafe-routes';
 import { strParser } from './products/default-routes';
 
 export const standaloneV2WebToFeedRoute = route(
-  'api/w2f&:url&:link&:context&:q&:out&:date&:dateIsEvent',
+  'api/w2f&:url&:link&:context&:q&:out&:date&:dateIsEvent&:ts',
   {
     url: strParser,
     link: strParser,
@@ -43,6 +43,7 @@ export const standaloneV2WebToFeedRoute = route(
     dateIsEvent: booleanParser,
     q: strParser,
     out: strParser,
+    ts: intParser
   },
   {},
 );
@@ -58,11 +59,12 @@ export const standaloneV1WebToFeedRoute = route(
 );
 
 export const standaloneV2FeedTransformRoute = route(
-  'api/tf&:url&:q&:out',
+  'api/tf&:url&:q&:out&:ts',
   {
     url: strParser,
     q: strParser,
     out: strParser,
+    ts: intParser
   },
   {},
 );

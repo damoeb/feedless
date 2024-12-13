@@ -67,9 +67,6 @@ class RepositoryResolver {
   @Autowired
   private lateinit var sourceService: SourceService
 
-  @Autowired
-  private lateinit var annotationService: AnnotationService
-
   @Throttled
   @DgsQuery
   suspend fun repositories(
@@ -220,22 +217,6 @@ class RepositoryResolver {
       .flatten()
       .distinct()
   }
-
-
-  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
-  suspend fun annotations(
-    dfe: DgsDataFetchingEnvironment
-  ): Annotations = coroutineScope {
-    val repository: Repository = dfe.getSource()
-
-    val repositoryId = UUID.fromString(repository.id)
-    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
-    Annotations(
-      upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
-      downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
-    )
-  }
-
 }
 
 //private fun VoteEntity.toDto(): Annotation {

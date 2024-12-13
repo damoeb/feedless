@@ -93,6 +93,7 @@ class StandaloneFeedControllerTest {
         any2(),
         anyOrNull2(),
         any2(),
+        any2(),
       )
     ).thenReturn(mockFeed)
 
@@ -129,6 +130,7 @@ class StandaloneFeedControllerTest {
         anyOrNull(String::class.java),
         any(Boolean::class.java),
         anyOrNull(String::class.java),
+        any2(),
         any(String::class.java),
       )
     ).thenReturn(mockFeed)

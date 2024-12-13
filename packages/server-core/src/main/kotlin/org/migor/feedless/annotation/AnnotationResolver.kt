@@ -16,9 +16,11 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Annotation
+import org.migor.feedless.generated.types.Annotations
 import org.migor.feedless.generated.types.BoolAnnotation
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
+import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.TextAnnotation
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -72,6 +75,20 @@ class AnnotationResolver(
         annotationService.findAllVotesByUserIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
       } ?: annotationService.findAllVotesByUserIdAndDocumentId(userId, context.documentId!!).map { it.toDto() }
     } ?: emptyList()
+  }
+
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
+  suspend fun annotations(
+    dfe: DgsDataFetchingEnvironment
+  ): Annotations = coroutineScope {
+    val repository: Repository = dfe.getSource()
+
+    val repositoryId = UUID.fromString(repository.id)
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
+    Annotations(
+      upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
+      downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
+    )
   }
 }
 

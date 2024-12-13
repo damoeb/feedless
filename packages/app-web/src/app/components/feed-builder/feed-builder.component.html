@@ -8,9 +8,20 @@
           [color]="url?.length > 0 ? undefined : 'primary'"
           [loading]="loading"
           [value]="url"
-          buttonText="Go"
-          placeholder="Enter Url of a website or RSS feed"
-        ></app-searchbar>
+          buttonText=""
+          placeholder="Enter the url of your source"
+        >
+          <input
+            #filePicker
+            (change)="uploadFile($event)"
+            accept="application/json"
+            style="display: none"
+            type="file"
+          />
+          <ion-button title="Upload" color="light" appDev (click)="filePicker.click()">
+            <ion-icon name="attach-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </app-searchbar>
         @if (errorMessage) {
           <p class="ion-margin" style="color: var(--ion-color-danger)">
             We ran into a problem! {{ errorMessage }}.
