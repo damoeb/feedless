@@ -3,20 +3,17 @@ package org.migor.feedless.feed
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.feature.FeatureName
-import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.anyOrNull2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.scrape.HttpFetchOutput
 import org.migor.feedless.scrape.ScrapeActionOutput
@@ -31,6 +28,9 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import java.time.LocalDateTime
 import java.util.*
 
@@ -39,19 +39,17 @@ class StandaloneFeedServiceTest {
   private lateinit var standaloneFeedService: StandaloneFeedService
   private lateinit var feedParserService: FeedParserService
   private lateinit var filterPlugin: CompositeFilterPlugin
-  private lateinit var featureService: FeatureService
   private lateinit var userService: UserService
   private lateinit var webToFeedTransformer: WebToFeedTransformer
   private lateinit var scrapeService: ScrapeService
   private lateinit var sourceService: SourceService
   private lateinit var documentService: DocumentService
+  private lateinit var environment: Environment
 
   @BeforeEach
   fun beforeEach() = runTest {
     feedParserService = mock(FeedParserService::class.java)
     filterPlugin = mock(CompositeFilterPlugin::class.java)
-    featureService = mock(FeatureService::class.java)
-    `when`(featureService.isDisabled(eq(FeatureName.legacyApiBool), anyOrNull2())).thenReturn(false)
 
     userService = mock(UserService::class.java)
     val adminUser = mock(UserEntity::class.java)
@@ -62,6 +60,8 @@ class StandaloneFeedServiceTest {
     scrapeService = mock(ScrapeService::class.java)
     sourceService = mock(SourceService::class.java)
     documentService = mock(DocumentService::class.java)
+    environment = mock(Environment::class.java)
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
 
     standaloneFeedService = StandaloneFeedService(
       mock(PropertyService::class.java),
@@ -71,9 +71,9 @@ class StandaloneFeedServiceTest {
       mock(RepositoryService::class.java),
       userService,
       sourceService,
-      featureService,
       documentService,
       filterPlugin,
+      environment
     )
   }
 
@@ -112,17 +112,56 @@ class StandaloneFeedServiceTest {
     `when`(scrapeService.scrape(any2(), any2())).thenReturn(scrapeOutput)
 
     // when
-    standaloneFeedService.webToFeed("url",
+    standaloneFeedService.webToFeed(
+      "url",
       "linkXPath",
       "extendContext",
       "contextXPath",
       "dateXPath",
       prerender = false,
-    "filter",
-    "feedUrl")
+      filter = "filter",
+      feedUrl = "feedUrl"
+    )
 
-
+    // then
     verify(filterPlugin, times(2)).filterEntity(any2(), any2(), any(Int::class.java), any2())
+  }
+
+  @Test
+  fun `given self-hosted, standalone is supported`() = runTest {
+    // given
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
+
+    // when
+    assertThat(standaloneFeedService.standaloneSupport(null)).isTrue()
+    assertThat(standaloneFeedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isTrue()
+  }
+
+  @Test
+  fun `given saas, standalone is supported within 2 month`() = runTest {
+    // given
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+
+    // when
+    assertThat(standaloneFeedService.standaloneSupport(LocalDateTime.now())).isTrue()
+  }
+
+  @Test
+  fun `given saas, standalone is not supported if ts is null`() = runTest {
+    // given
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+
+    // when
+    assertThat(standaloneFeedService.standaloneSupport(null)).isFalse()
+  }
+
+  @Test
+  fun `given saas, standalone is not supported if ts is older than 2 month`() = runTest {
+    // given
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+
+    // when
+    assertThat(standaloneFeedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isFalse()
   }
 
   @Test
@@ -132,8 +171,10 @@ class StandaloneFeedServiceTest {
     `when`(feedParserService.parseFeedFromUrl(any2())).thenReturn(feed)
     `when`(filterPlugin.filterEntity(any2(), any2(), any(Int::class.java), any2())).thenReturn(true)
 
-    standaloneFeedService.transformFeed("nativeFeedUrl", "filter", "feedUrl")
+    // when
+    standaloneFeedService.transformFeed("nativeFeedUrl", filter = "filter", feedUrl = "feedUrl")
 
+    // then
     verify(filterPlugin, times(2)).filterEntity(any2(), any2(), any(Int::class.java), any2())
   }
 

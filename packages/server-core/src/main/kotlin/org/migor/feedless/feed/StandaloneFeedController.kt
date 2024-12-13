@@ -17,6 +17,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.util.toLocalDateTime
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -110,6 +111,7 @@ class StandaloneFeedController {
         null,
         false,
         null,
+        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
         feedUrl
       )
     }
@@ -132,7 +134,8 @@ class StandaloneFeedController {
         request.paramOptional("date"),
         request.paramBool("pp"),
         request.paramOptional("q"),
-        toFullUrlString(request)
+        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
+        feedUrl
       )
     }
     feed.export(request.param("out", "atom"))
@@ -152,6 +155,7 @@ class StandaloneFeedController {
       standaloneFeedService.transformFeed(
         request.param("url"),
         request.paramOptional("q"),
+        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
         feedUrl
       )
     }
@@ -163,8 +167,7 @@ class StandaloneFeedController {
     feedProvider: suspend () -> JsonFeed
   ): JsonFeed {
     return try {
-      val f = feedProvider()
-      f
+      feedProvider()
     } catch (t: Throwable) {
       standaloneFeedService.createErrorFeed(feedUrl, t)
     }

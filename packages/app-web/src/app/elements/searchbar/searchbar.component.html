@@ -9,7 +9,14 @@
       style="--padding-start: 10px"
     ></ion-input>
 
-    @if (!loading()) {
+    <ng-content></ng-content>
+
+    @if (loading()) {
+      <ion-button color="danger">
+        <ion-spinner class="ion-margin-end" name="crescent"></ion-spinner>
+        Busy
+      </ion-button>
+    } @else {
       <ion-button
         (click)="triggerUpdate()"
         [color]="color() ?? 'light'"
@@ -23,13 +30,6 @@
           [slot]="buttonText() ? 'end' : ''"
           name="chevron-forward-outline"
         ></ion-icon>
-      </ion-button>
-    }
-
-    @if (loading()) {
-      <ion-button color="danger">
-        <ion-spinner class="ion-margin-end" name="crescent"></ion-spinner>
-        Busy
       </ion-button>
     }
   </form>
