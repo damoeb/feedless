@@ -1,3 +1,6 @@
+const chromiumBin = process.env.CHROMIUM_BIN;
+console.log(`Using chronmium bin ${chromiumBin}`);
+
 module.exports = function (config) {
   config.set({
     basePath: process.cwd(),
@@ -20,6 +23,7 @@ module.exports = function (config) {
     customLaunchers: {
       ChromiumHeadlessCI: {
         base: "ChromiumHeadless",
+        executable: chromiumBin,
         flags: [
           "--disable-translate",
           "--disable-extensions",

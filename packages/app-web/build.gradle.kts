@@ -82,14 +82,17 @@ val buildTask = tasks.register<YarnTask>("build") {
 
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
-  val gitHash = grgit.head().id
+  val semver = findProperty("feedlessVersion") as String
+  val gitHash = grgit.head().id.take(7)
   val baseTag = findProperty("dockerImageTag")
 
   inputs.property("baseTag", findProperty("dockerImageTag"))
   inputs.property("gitHash", gitHash)
 
   commandLine(
-    "docker", "build",
+    podmanOrDocker(), "build",
+    "--build-arg", "APP_VERSION=$semver",
+    "--build-arg", "APP_GIT_HASH=$gitHash",
     "-t", "$baseTag:app-latest",
     "-t", "$baseTag:app-$gitHash",
     "."
@@ -106,4 +109,12 @@ tasks.register("clean", Exec::class) {
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
   dependsOn(yarnInstallTask, codegenTask)
+}
+
+fun podmanOrDocker(): String {
+  val env = "DOCKER_BIN"
+  val podmanOrDocker = System.getenv(env) ?: "podman"
+
+  println("Using DOCKER_BIN $podmanOrDocker")
+  return podmanOrDocker
 }

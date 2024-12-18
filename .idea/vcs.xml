@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/packages/agent/ghostery-extension" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/products/rss-proxy" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/products/visual-diff" vcs="Git" />
   </component>

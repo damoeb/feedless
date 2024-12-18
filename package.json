@@ -2,6 +2,7 @@
   "name": "feedless",
   "private": true,
   "devDependencies": {
+    "dotenv-cli": "^7.4.4",
     "mustache": "^4.2.0"
   },
   "scripts": {
