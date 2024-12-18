@@ -18,7 +18,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
 
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
-  val gitHash = grgit.head().id
+  val gitHash = grgit.head().id.take(7)
 
   inputs.property("baseTag", findProperty("dockerImageTag"))
   inputs.property("gitHash", gitHash)
@@ -75,7 +75,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
 
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
-  val gitHash = grgit.head().id
+  val gitHash = grgit.head().id.take(7)
 
   inputs.property("baseTag", findProperty("dockerImageTag"))
   inputs.property("gitHash", gitHash)
@@ -98,7 +98,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
 tasks.register("bundle", Exec::class) {
   val baseTag = findProperty("dockerImageTag")
 
-  val gitHash = grgit.head().id
+  val gitHash = grgit.head().id.take(7)
 
   inputs.property("baseTag", findProperty("dockerImageTag"))
   inputs.property("gitHash", gitHash)

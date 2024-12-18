@@ -56,6 +56,21 @@ tasks.jacocoTestReport {
 //  }
 //}
 
+tasks.test {
+  val osName = System.getProperty("os.name").lowercase()
+  if (osName.contains("linux")) {
+    val process = ProcessBuilder("id", "-u").start()
+    val uid = process.inputStream.bufferedReader().readText().trim()
+    environment("DOCKER_HOST", "unix:///run/user/$uid/podman/podman.sock")
+  } else {
+    throw IllegalArgumentException("test currently only run on linux")
+  }
+//  } else if (os.isMacOsX) {
+//    environment("DOCKER_HOST", "unix:///tmp/podman.sock")
+//  }
+  environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+}
+
 tasks.check {
   dependsOn(tasks.jacocoTestCoverageVerification)
 }
@@ -273,7 +288,7 @@ tasks.register("start") {
 }
 
 val testDocker = tasks.register("testDocker", Exec::class) {
-  val gitHash = grgit.head().id
+  val gitHash = grgit.head().id.take(7)
   commandLine(
     "sh", "./test/test-docker.sh", gitHash
   )
@@ -285,7 +300,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
-  val gitHash = grgit.head().id
+  val gitHash = grgit.head().id.take(7)
 
   environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
 
@@ -294,7 +309,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   inputs.property("semver", semver)
 
   commandLine(
-    "docker", "build",
+    podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
@@ -309,4 +324,12 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
 tasks.register("bundle") {
   dependsOn(dockerAmdBuild)
   finalizedBy(testDocker)
+}
+
+fun podmanOrDocker(): String {
+  val env = "DOCKER_BIN"
+  val podmanOrDocker = System.getenv(env) ?: "podman"
+
+  println("Using DOCKER_BIN $podmanOrDocker")
+  return podmanOrDocker
 }
