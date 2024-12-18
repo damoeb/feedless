@@ -11,6 +11,8 @@ import {
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
+  GqlRepositoryCreateInput,
+  GqlSourceInput,
   GqlVertical,
   GqlVisibility,
 } from '../../../generated/graphql';
@@ -54,7 +56,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isUndefined, without } from 'lodash-es';
+import { isUndefined, sortBy, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
@@ -96,6 +98,7 @@ import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-edito
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { SourcesComponent } from '../sources/sources.component';
+import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -544,5 +547,57 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   async openSourcesModal() {
     await this.sourcesModal().present();
+  }
+
+  async importFeedlessJson(uploadEvent: Event) {
+    const data = await this.fileService.uploadAsText(uploadEvent);
+    const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
+    const selectables: SelectableEntity<GqlSourceInput>[] = sortBy(
+      repositories
+        .filter((r) => r.sources)
+        .flatMap((r) => r.sources)
+        .map<SelectableEntity<GqlSourceInput>>((source) => {
+          const disabled = this.repository().sources.some(
+            (existingSource) => existingSource.title == source.title,
+          );
+          return {
+            entity: source,
+            disabled,
+            note: disabled ? 'Already exists by name' : null,
+            label: source.title,
+          };
+        }),
+      (selectable) => selectable.entity.title,
+    );
+
+    const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
+      {
+        selectables,
+        title: 'Import new sources',
+        description: 'Select those sources you want to import',
+      },
+    );
+
+    if (selected.length > 0) {
+      await this.repositoryService.updateRepository({
+        where: {
+          id: this.repository().id,
+        },
+        data: {
+          sources: {
+            add: selected,
+          },
+        },
+      });
+      this.changeRef.detectChanges();
+
+      const toast = await this.toastCtrl.create({
+        message: `Added ${selected.length} sources`,
+        duration: 3000,
+        color: 'success',
+      });
+
+      await toast.present();
+    }
   }
 }

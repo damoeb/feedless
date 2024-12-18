@@ -21,8 +21,6 @@ import { settingsOutline } from 'ionicons/icons';
 import { IonContent, IonItem } from '@ionic/angular/standalone';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { SearchbarComponent } from '../../../elements/searchbar/searchbar.component';
-import { ImportButtonComponent } from '../../../components/import-button/import-button.component';
-import { PromotionHeaderComponent } from '../../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-about-rss-builder',
@@ -35,9 +33,7 @@ import { PromotionHeaderComponent } from '../../../components/promotion-header/p
     ProductHeaderComponent,
     SearchbarComponent,
     RouterLink,
-    ImportButtonComponent,
     IonItem,
-    PromotionHeaderComponent
   ],
   standalone: true,
 })

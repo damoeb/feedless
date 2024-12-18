@@ -17,7 +17,7 @@
   <ion-list>
     @if (latLon) {
       <ion-item (click)="pickLatLon()" [button]="true" color="primary">
-        Use point {{ latLon.lat }}, {{ latLon.lon }}
+        Use point {{ latLon.lat }}, {{ latLon.lng }}
       </ion-item>
     }
     @for (match of matches; track match) {

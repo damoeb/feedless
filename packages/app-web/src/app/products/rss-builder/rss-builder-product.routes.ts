@@ -7,7 +7,10 @@ import { ProfileGuardService } from '../../guards/profile-guard.service';
 export const RSS_BUILDER_ROUTES: Routes = [
   {
     path: 'setup',
-    loadComponent: () => import('./self-hosting-setup/self-hosting-setup.page').then((m) => m.SelfHostingSetupPage),
+    loadComponent: () =>
+      import('./self-hosting-setup/self-hosting-setup.page').then(
+        (m) => m.SelfHostingSetupPage,
+      ),
   },
   {
     path: '',
