@@ -4,7 +4,6 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import {
-  IonButton,
   IonButtons,
   IonCard,
   IonCardContent,
@@ -22,7 +21,6 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
-import { CodeEditorComponent } from '../../../elements/code-editor/code-editor.component';
 
 export type FunctionalityGroup =
   | 'Database'
@@ -55,7 +53,6 @@ export type Functionality = {
     IonButtons,
     IonHeader,
     IonToolbar,
-    IonButton,
     IonList,
     IonItem,
     IonCheckbox,
@@ -64,7 +61,6 @@ export type Functionality = {
     IonNote,
     IonSearchbar,
     IonLabel,
-    CodeEditorComponent
   ],
   standalone: true,
 })
@@ -122,7 +118,7 @@ export class SelfHostingSetupPage {
     },
     {
       name: 'Website Click Flows',
-      group: 'Agent'
+      group: 'Agent',
     },
     {
       name: 'JavaScript Support',

@@ -152,6 +152,13 @@
                 <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
                 <ion-label>Download as JSON</ion-label>
               </ion-item>
+              <input
+                #jsonPicker
+                (change)="importFeedlessJson($event)"
+                accept="application/json"
+                style="display: none"
+                type="file"
+              />
               <ion-item (click)="jsonPicker.click()" button="true">
                 <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
                 <ion-label>Import JSON</ion-label>

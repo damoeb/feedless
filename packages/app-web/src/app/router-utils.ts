@@ -43,7 +43,7 @@ export const standaloneV2WebToFeedRoute = route(
     dateIsEvent: booleanParser,
     q: strParser,
     out: strParser,
-    ts: intParser
+    ts: intParser,
   },
   {},
 );
@@ -64,7 +64,7 @@ export const standaloneV2FeedTransformRoute = route(
     url: strParser,
     q: strParser,
     out: strParser,
-    ts: intParser
+    ts: intParser,
   },
   {},
 );

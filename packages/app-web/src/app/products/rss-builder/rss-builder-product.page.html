@@ -19,12 +19,10 @@
     </div>
     <ion-buttons slot="end">
       @if (!serverConfig.isSelfHosted()) {
-        <ion-button routerLink="/setup"
-                    fill="solid"
-                    color="primary">
-          <ion-icon name="settings-outline" slot="start"></ion-icon>
-          Self Hosting
-        </ion-button>
+      <ion-button routerLink="/setup" fill="solid" color="primary">
+        <ion-icon name="settings-outline" slot="start"></ion-icon>
+        Self Hosting
+      </ion-button>
       }
       <!--        <ion-button href="https://gihub.com/damoeb/rss-proxy" target="_blank">-->
       <!--          <ion-icon name="logo-github" slot="start"></ion-icon>-->

@@ -35,7 +35,6 @@ import { RepositoriesButtonComponent } from '../../components/repositories-butto
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
-import { PromotionHeaderComponent } from '../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -57,7 +56,6 @@ import { PromotionHeaderComponent } from '../../components/promotion-header/prom
     LoginButtonComponent,
     IonContent,
     IonRouterOutlet,
-    PromotionHeaderComponent,
   ],
   standalone: true,
 })

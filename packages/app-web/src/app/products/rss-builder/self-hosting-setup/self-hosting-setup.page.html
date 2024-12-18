@@ -12,31 +12,34 @@
         <ion-card-header>
           <ion-card-title>Setup your Self-Hosting</ion-card-title>
           <ion-card-subtitle
-            >Pick and choose what you want to achieve, setup instructions on the right will be adjusted accordingly.</ion-card-subtitle
+            >Pick and choose what you want to achieve, setup instructions on the
+            right will be adjusted accordingly.</ion-card-subtitle
           >
         </ion-card-header>
-        <ion-card-content style="flex: 1; display: flex; flex-direction: column;">
+        <ion-card-content
+          style="flex: 1; display: flex; flex-direction: column"
+        >
           <div style="flex: 1; display: flex; flex-direction: column">
             <ion-searchbar></ion-searchbar>
             <div style="flex: 1; overflow-y: auto; position: relative">
-              <div style="position: absolute; width: 100%;">
+              <div style="position: absolute; width: 100%">
                 <ion-list>
                   @for (f of list; track f.name) {
-                    <ion-item>
-                      <ion-checkbox
-                        labelPlacement="start"
-                        [checked]="f.checked"
-                        [disabled]="f.disabled"
-                      >
-                        {{ f.name }}
-                        <ion-note>({{ f.group }})</ion-note>
-                        @if (f.description) {
-                          <ion-label>
-                            <ion-note>{{ f.description }}</ion-note>
-                          </ion-label>
-                        }
-                      </ion-checkbox>
-                    </ion-item>
+                  <ion-item>
+                    <ion-checkbox
+                      labelPlacement="start"
+                      [checked]="f.checked"
+                      [disabled]="f.disabled"
+                    >
+                      {{ f.name }}
+                      <ion-note>({{ f.group }})</ion-note>
+                      @if (f.description) {
+                      <ion-label>
+                        <ion-note>{{ f.description }}</ion-note>
+                      </ion-label>
+                      }
+                    </ion-checkbox>
+                  </ion-item>
                   }
                 </ion-list>
               </div>
@@ -46,8 +49,11 @@
       </ion-card>
     </div>
     <div style="flex: 1; display: flex">
-<!--      <app-code-editor style="flex: 1"></app-code-editor>-->
-      <p>I haven't finished this part yet, you can use the older versions of rss-proxy as seen on the github repo for rss-proxy.</p>
+      <!--      <app-code-editor style="flex: 1"></app-code-editor>-->
+      <p>
+        I haven't finished this part yet, you can use the older versions of
+        rss-proxy as seen on the github repo for rss-proxy.
+      </p>
       <p></p>
     </div>
   </div>
