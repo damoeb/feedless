@@ -20,7 +20,7 @@ object AppProfiles {
   const val source = "source"
   const val standaloneFeeds = "legacy"
   const val analytics = "analytics"
-  const val authSSO = "sso"
+  const val oauth = "sso"
   const val agent = "agent"
   const val feed = "feed"
   const val seed = "seed"

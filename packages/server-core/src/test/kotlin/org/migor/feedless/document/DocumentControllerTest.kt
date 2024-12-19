@@ -12,11 +12,11 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.verify
@@ -43,6 +43,7 @@ import java.util.*
   MockBean(HttpService::class),
   MockBean(AuthService::class),
   MockBean(UserService::class),
+  MockBean(SessionService::class),
   MockBean(PropertyService::class),
   MockBean(TokenProvider::class),
   MockBean(CookieProvider::class),
@@ -51,6 +52,7 @@ import java.util.*
   "test",
   AppLayer.api,
   AppProfiles.document,
+  AppProfiles.session,
   AppLayer.security,
 )
 @Import(

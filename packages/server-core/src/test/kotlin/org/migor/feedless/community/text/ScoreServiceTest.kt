@@ -1,17 +1,12 @@
 package org.migor.feedless.community.text
 
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
-import io.jenetics.DoubleChromosome
 import io.jenetics.DoubleGene
 import io.jenetics.Genotype
-import io.jenetics.engine.Engine
-import io.jenetics.engine.EvolutionResult
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -30,11 +25,9 @@ import org.migor.feedless.community.text.simple.EngagementScorer
 import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.secrets.UserSecretService
 import org.mockito.Mockito
-import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -42,7 +35,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import java.util.*
 import kotlin.math.pow
 
 

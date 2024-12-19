@@ -77,7 +77,7 @@ export class PuppeteerService {
     isMobile: false,
   };
 
-  constructor(config: VerboseConfigService) {
+  constructor(private readonly config: VerboseConfigService) {
     const isProd: boolean = config.get('NODE_ENV')?.startsWith('prod');
     this.isDebug = config.getBoolean('DEBUG') && !isProd;
     this.maxWorkers = config.getInt('APP_MAX_WORKERS', { fallback: 5 });
@@ -107,7 +107,9 @@ export class PuppeteerService {
       headless: this.isDebug ? false : 'new',
       devtools: false,
       defaultViewport: viewport,
-      executablePath: '/usr/bin/chromium-browser',
+      executablePath: this.config.getString('APP_CHROMIUM_BIN', {
+        fallback: '/usr/bin/chromium-browser',
+      }),
       timeout: getHttpGet(source).timeout || 30000,
       dumpio: this.isDebug,
       args: [

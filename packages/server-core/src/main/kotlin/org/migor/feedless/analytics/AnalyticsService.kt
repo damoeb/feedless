@@ -1,5 +1,6 @@
 package org.migor.feedless.analytics
 
+import com.google.gson.Gson
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.future.await
@@ -14,7 +15,6 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.HttpResponseStatus
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -110,7 +110,7 @@ class AnalyticsService {
           .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
           .addHeader(HttpHeaders.REFERER, getHeader(HttpHeaders.REFERER))
           .addHeader(forwardedForHeader, getHeader(forwardedForHeader))
-          .setBody(JsonUtil.gson.toJson(event))
+          .setBody(Gson().toJson(event))
           .execute(CompletionHandlerBase(expectedStatusCode))
       }
     } catch (e: Exception) {
@@ -138,7 +138,7 @@ class AnalyticsService {
   }
 
   suspend fun parseStatsResponse(responseBody: String): Int {
-    return JsonUtil.gson.fromJson(responseBody, PlausibleStatsResults::class.java).results.sumOf { it.visitors }
+    return Gson().fromJson(responseBody, PlausibleStatsResults::class.java).results.sumOf { it.visitors }
   }
 
   fun canPullEvents(): Boolean {

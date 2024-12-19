@@ -20,6 +20,7 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
@@ -41,7 +42,8 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Transactional(propagation = Propagation.NEVER)
 class HttpService(
-  private val propertyService: PropertyService
+  @Value("\${app.apiGatewayUrl}")
+  private val apiGatewayUrl: String
 ) {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
@@ -63,7 +65,7 @@ class HttpService(
 
   @PostConstruct
   fun postConstruct() {
-    gatewayHost = URL(propertyService.apiGatewayUrl).host
+    gatewayHost = URL(apiGatewayUrl).host
   }
 
   suspend fun prepareGet(url: String): BoundRequestBuilder {

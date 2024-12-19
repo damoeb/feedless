@@ -62,6 +62,7 @@
 
     @if (sourceBuilder && sourceBuilder.response) {
       <app-transform-website-to-feed
+        #webToFeedTransformer
         (selectedFeedChange)="selectedFeed = $event"
         (statusChange)="hasValidFeed = $event === 'valid'"
         [sourceBuilder]="sourceBuilder"
@@ -164,7 +165,7 @@
               <ion-icon name="checkmark-done-outline" slot="end"></ion-icon>
             </ion-item>
           } @else {
-            @if (allowDraft) {
+            @if (allowDraft && !hasValidFeed) {
               <ion-item
                 (click)="createOrRefineFeed(false, true)"
                 [button]="true"

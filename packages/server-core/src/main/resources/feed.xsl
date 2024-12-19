@@ -96,6 +96,7 @@
 <!--                </section>-->
                 <section>
                   <h1><xsl:value-of select="atom:feed/atom:title"/></h1>
+                  <p><xsl:value-of select="atom:feed/atom:link[@rel='alternate']/@href"/></p>
                   <p>This RSS feed is provided by
                     <a class="head_link" target="_blank" href="https://feedless.org">
                       feedless.org

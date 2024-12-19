@@ -30,12 +30,15 @@ class PostgreSQLExtension : BeforeAllCallback, AfterAllCallback {
     System.setProperty("spring.datasource.password", postgis.password)
     System.setProperty("spring.flyway.baseline-on-migrate", "true")
     System.setProperty("spring.flyway.baseline-version", "1")
-    System.setProperty("spring.flyway.target", "61")
+//    System.setProperty("spring.flyway.target", "72")
     System.setProperty("spring.flyway.enabled", "true")
   }
 
   override fun afterAll(context: ExtensionContext) {
-    // do nothing, Testcontainers handles container shutdown
+    // when using podman, either explicitly stop() the container or set reuse=true, cause podman runs with disabled ryuk TESTCONTAINERS_RYUK_DISABLED
+//    Runtime.getRuntime().addShutdownHook(Thread { postgis.stop() })
+    postgis.stop()
+//    postgis.close()
   }
 }
 

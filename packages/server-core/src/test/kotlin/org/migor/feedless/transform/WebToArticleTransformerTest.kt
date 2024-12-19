@@ -1,5 +1,6 @@
 package org.migor.feedless.transform
 
+import com.google.gson.Gson
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -7,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.scrape.PageInspectionService
 import org.migor.feedless.scrape.WebToArticleTransformer
-import org.migor.feedless.util.JsonUtil
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 
@@ -36,7 +36,7 @@ internal class WebToArticleTransformerTest {
   fun `article can be extracted from markup`(name: String, url: String) = runTest {
     val actual = extractor.fromHtml(readFile("${name}.html"), url, false)
     val rawJson = readFile("${name}.json")
-    val expected = JsonUtil.gson.fromJson(rawJson, Map::class.java)
+    val expected = Gson().fromJson(rawJson, Map::class.java)
 //    assertThat(expected.contentHtml).isEqualTo(actual.contentHtml)
 //    assertThat(expected.contentText).isEqualTo(actual.contentText)
 //    assertThat(expected.publishedAt).isEqualTo(actual.publishedAt)

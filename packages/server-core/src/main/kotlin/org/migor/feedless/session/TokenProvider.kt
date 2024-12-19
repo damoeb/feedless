@@ -22,13 +22,16 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.time.Duration
 import java.time.LocalDateTime
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+import kotlin.time.toJavaDuration
 
 
 @Service
@@ -63,11 +66,11 @@ class TokenProvider(
     log.debug("signedToken for anonymous")
     return encodeJwt(
       mapOf(
-        JwtParameterNames.TYPE to AuthTokenType.ANON.value,
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
         JwtParameterNames.USER_ID to "",
         attrAuthorities to toAuthorities(listOf(Authority.ANONYMOUS)),
       ),
-      Duration.ofHours(12)
+      getExpiration(AuthTokenType.ANONYMOUS)
     )
   }
 
@@ -78,7 +81,6 @@ class TokenProvider(
       mapOf(
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
-//        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
         attrAuthorities to toAuthorities(
           listOf(
             Authority.ANONYMOUS,
@@ -86,7 +88,7 @@ class TokenProvider(
           )
         ),
       ),
-      getUserTokenExpiration()
+      getExpiration(AuthTokenType.USER)
     )
   }
 
@@ -97,14 +99,13 @@ class TokenProvider(
       mapOf(
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.API.value,
-//        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
         attrAuthorities to toAuthorities(
           listOf(
             Authority.ANONYMOUS
           )
         ),
       ),
-      getApiTokenExpiration()
+      getExpiration(AuthTokenType.ANONYMOUS)
     )
   }
 
@@ -117,11 +118,11 @@ class TokenProvider(
         JwtParameterNames.TYPE to AuthTokenType.AGENT.value,
         attrAuthorities to toAuthorities(
           listOf(
-            Authority.PROVIDE_HTTP_RESPONSE
+            Authority.AGENT
           )
         ),
       ),
-      Duration.ofDays(356)
+      getExpiration(AuthTokenType.AGENT)
     )
   }
 
@@ -131,10 +132,10 @@ class TokenProvider(
     val claimsSet = JwtClaimsSet.builder()
       .issuer(propertyService.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
-      .claims { c -> c[JwtParameterNames.ID] = "rich" }
+      .claims { c -> c[JwtParameterNames.ID] = "feedless" }
       .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().toMillis() }
       .claims { c ->
-        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn).toMillis()
+        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn.toJavaDuration()).toMillis()
       }
       .build()
     val params = JwtEncoderParameters.from(jwsHeader, claimsSet)
@@ -142,8 +143,15 @@ class TokenProvider(
       .encode(params)
   }
 
-  fun getUserTokenExpiration(): Duration = Duration.ofHours(48) // todo from proverties
-  fun getApiTokenExpiration(): Duration = Duration.ofDays(356)
+  suspend fun getExpiration(authority: AuthTokenType): Duration {
+    // todo from properties
+    return when(authority) {
+      AuthTokenType.ANONYMOUS -> 1.days
+      AuthTokenType.USER -> 48.hours
+      AuthTokenType.AGENT -> 356.days
+      AuthTokenType.API -> 48.hours
+    }
+  }
 
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")

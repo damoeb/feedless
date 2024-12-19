@@ -29,7 +29,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
-import org.springframework.context.ApplicationContext
 import org.springframework.core.env.Environment
 import java.util.*
 

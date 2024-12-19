@@ -79,7 +79,7 @@ class ServerConfigResolver {
       profiles = environment.activeProfiles.map {
         when (it) {
           AppProfiles.mail -> ProfileName.authMail
-          AppProfiles.authSSO -> ProfileName.authSSO
+          AppProfiles.oauth -> ProfileName.authSSO
           AppProfiles.selfHosted -> ProfileName.selfHosted
           AppProfiles.DEV_ONLY -> ProfileName.dev
           else -> null

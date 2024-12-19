@@ -2,7 +2,6 @@ package org.migor.feedless.pipeline.plugins
 
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -17,10 +16,8 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.scrape.ExtendContext
-import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector
 import org.mockito.Mockito.`when`

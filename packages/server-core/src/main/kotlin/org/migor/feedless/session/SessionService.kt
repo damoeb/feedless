@@ -2,15 +2,12 @@ package org.migor.feedless.session
 
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -72,7 +69,7 @@ class RequestContext(
 class SessionService {
 
   @Autowired
-  private lateinit var userDAO: UserDAO
+  private lateinit var authService: AuthService
 
   suspend fun isUser(): Boolean = StringUtils.isNotBlank(coroutineContext[RequestContext]!!.userId?.toString())
 
@@ -80,7 +77,7 @@ class SessionService {
   suspend fun user(): UserEntity {
     val notFoundException = IllegalArgumentException("user not found")
     return coroutineContext.userIdOptional()
-      ?.let { withContext(Dispatchers.IO) { userDAO.findById(it).orElseThrow { notFoundException } } }
+      ?.let { authService.findUserById(it) ?: throw notFoundException }
       ?: throw notFoundException
   }
 

@@ -24,7 +24,6 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.document.DocumentDAO
-import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourceUpdateInput

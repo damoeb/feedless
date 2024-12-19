@@ -4,6 +4,8 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.PropertyService
@@ -28,7 +30,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import java.time.LocalDateTime
@@ -164,15 +165,21 @@ class StandaloneFeedServiceTest {
     assertThat(standaloneFeedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isFalse()
   }
 
-  @Test
-  fun `transformFeed will filter`() = runTest {
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "[{\"composite\":{\"exclude\":{\"title\":{\"value\":\"Der\",\"operator\":\"contains\"}}}}]",
+      "contains(title, 'foo')",
+    ]
+  )
+  fun `transformFeed will filter`(filter: String) = runTest {
     // given
     val feed = createJsonFeed()
     `when`(feedParserService.parseFeedFromUrl(any2())).thenReturn(feed)
     `when`(filterPlugin.filterEntity(any2(), any2(), any(Int::class.java), any2())).thenReturn(true)
 
     // when
-    standaloneFeedService.transformFeed("nativeFeedUrl", filter = "filter", feedUrl = "feedUrl")
+    standaloneFeedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl")
 
     // then
     verify(filterPlugin, times(2)).filterEntity(any2(), any2(), any(Int::class.java), any2())

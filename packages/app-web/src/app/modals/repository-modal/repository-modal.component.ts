@@ -406,4 +406,8 @@ export class RepositoryModalComponent
   handleFilterChange(filterParams: GqlItemFilterParamsInput[]) {
     this.filterParams = filterParams;
   }
+
+  getPathname(): string {
+    return encodeURI(location.href);
+  }
 }

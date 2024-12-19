@@ -7,13 +7,13 @@
     </ion-buttons>
     <ion-title>Options</ion-title>
     <ion-buttons slot="end">
-      <ion-button
-        (click)="createOrUpdateFeed()"
-        [disabled]="loading"
-        color="success"
-        fill="solid"
-      >
-        @if (isLoggedIn) {
+      @if (isLoggedIn) {
+        <ion-button
+          (click)="createOrUpdateFeed()"
+          [disabled]="loading"
+          color="primary"
+          fill="solid"
+        >
           <ion-label>
             @if (isUpdate()) {
               <span>Update</span>
@@ -23,19 +23,17 @@
             }
             Feed
           </ion-label>
-        }
-        @if (!isLoggedIn) {
-          <ion-label>
-            @if (isUpdate()) {
-              <span>Update</span>
-            }
-            @if (!isUpdate()) {
-              <span>Create</span>
-            }
-            Trial Feed
-          </ion-label>
-        }
-      </ion-button>
+        </ion-button>
+      } @else {
+        <ion-button
+          [routerLink]="'/login?redirectUrl='+getPathname()"
+          [disabled]="loading"
+          color="primary"
+          fill="solid"
+        >
+          <ion-label>Login</ion-label>
+        </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

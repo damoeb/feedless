@@ -17,7 +17,6 @@ import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
-import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.argThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify

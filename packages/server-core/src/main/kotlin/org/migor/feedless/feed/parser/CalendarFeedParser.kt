@@ -52,7 +52,7 @@ private fun VEvent.toJsonItem(): JsonItem {
   item.tags = categories.getOrNull()?.categories?.texts?.toList()
   item.startingAt = getDateTimeStart<OffsetDateTime>().get().date.toLocalDateTime()
   item.endingAt = getDateTimeEnd<OffsetDateTime>().get().date.toLocalDateTime()
-  val lastModified = lastModified?.getOrNull()?.date?.let { LocalDateTime.ofInstant(it, ZoneOffset.systemDefault()) }
+  val lastModified = lastModified?.getOrNull()?.date?.let { LocalDateTime.ofInstant(it, ZoneOffset.UTC) }
   item.publishedAt = lastModified ?: LocalDateTime.now()
   item.modifiedAt = lastModified
   return item

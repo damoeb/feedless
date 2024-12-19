@@ -1,7 +1,6 @@
 package org.migor.feedless.repository
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.scheduling.annotation.Scheduled
 

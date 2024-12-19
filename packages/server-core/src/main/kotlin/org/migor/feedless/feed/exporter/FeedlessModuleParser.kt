@@ -1,11 +1,11 @@
 package org.migor.feedless.feed.exporter
 
+import com.google.gson.Gson
 import com.rometools.rome.feed.module.Module
 import com.rometools.rome.io.ModuleParser
 import com.rometools.rome.io.impl.DateParser
 import org.jdom2.Element
 import org.migor.feedless.feed.parser.json.JsonPoint
-import org.migor.feedless.util.JsonUtil
 import java.util.*
 
 
@@ -31,7 +31,7 @@ class FeedlessModuleParser : ModuleParser {
       val point = JsonPoint()
       point.x = latLngElement.getAttribute(FeedlessModuleImpl.ATTR_LAT).doubleValue
       point.y = latLngElement.getAttribute(FeedlessModuleImpl.ATTR_LNG).doubleValue
-      module.setLatLng(JsonUtil.gson.toJson(point))
+      module.setLatLng(Gson().toJson(point))
     }
 
     val dataElement = element.getChild(FeedlessModuleImpl.ELEMENT_DATA, FeedlessModuleImpl.NAMESPACE)

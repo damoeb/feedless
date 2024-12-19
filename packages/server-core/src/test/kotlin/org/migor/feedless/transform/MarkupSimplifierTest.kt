@@ -1,5 +1,6 @@
 package org.migor.feedless.transform
 
+import com.google.gson.Gson
 import kotlinx.coroutines.test.runTest
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.scrape.MarkupSimplifier
-import org.migor.feedless.util.JsonUtil
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 
@@ -97,7 +97,7 @@ internal class MarkupSimplifierTest {
   }
 
   private fun resolveRef(ref: String): Element? {
-    val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), JsonItem::class.java)
+    val expected = Gson().fromJson(readFile("${ref}.json"), JsonItem::class.java)
     return parse(expected.html!!)
   }
 

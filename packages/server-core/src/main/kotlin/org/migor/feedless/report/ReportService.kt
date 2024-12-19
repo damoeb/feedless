@@ -1,14 +1,12 @@
 package org.migor.feedless.report
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.generated.types.GeoPointInput
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput

@@ -1,5 +1,6 @@
 package org.migor.feedless.transport
 
+import com.google.gson.Gson
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -18,7 +19,6 @@ import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.user.TelegramConnectionEntity
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -201,7 +201,7 @@ class TelegramBotService(
   }
 
   private suspend fun toDocument(update: Update): DocumentEntity {
-    println(JsonUtil.gson.toJson(update.message))
+    println(Gson().toJson(update.message))
     val doc = DocumentEntity()
     doc.url = "https://telegram.com/${update.updateId}"
     doc.status = ReleaseStatus.released

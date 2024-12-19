@@ -9,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.config.SystemSettingsDAO
 import org.migor.feedless.config.SystemSettingsEntity
-import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService

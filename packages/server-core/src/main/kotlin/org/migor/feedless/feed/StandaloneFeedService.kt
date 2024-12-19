@@ -1,5 +1,8 @@
 package org.migor.feedless.feed
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
@@ -30,12 +33,10 @@ import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
@@ -44,7 +45,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.StringUtils
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -120,17 +120,20 @@ class StandaloneFeedService(
         dateXPath = dateXPath,
       )
 
+      val document = HtmlUtil.parseHtml(
+        scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+          StandardCharsets.UTF_8
+        ), url
+      )
       val feed = webToFeedTransformer.getFeedBySelectors(
         selectors,
-        HtmlUtil.parseHtml(
-          scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-            StandardCharsets.UTF_8
-          ), url
-        ),
+        document,
         URI(url),
         LogCollector()
       )
+      feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
       feed.feedUrl = feedUrl
+      feed.websiteUrl = url
 
       try {
         filter?.let {
@@ -157,7 +160,7 @@ class StandaloneFeedService(
   private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): PluginExecutionParamsInput {
     return PluginExecutionParamsInput(
       org_feedless_filter = try {
-        JsonUtil.gson.fromJson<List<ItemFilterParamsInput>>(jsonOrExpressionFilter, List::class.java)
+        stringToArray(jsonOrExpressionFilter, Array<ItemFilterParamsInput>::class.java)
       } catch (e: Exception) {
         listOf(
           ItemFilterParamsInput(
@@ -166,6 +169,11 @@ class StandaloneFeedService(
         )
       }
     )
+  }
+
+  private fun <T> stringToArray(s: String, clazz: Class<Array<T>>): List<T> {
+    val arr: Array<T> = Gson().fromJson(s, clazz)
+    return arr.toList()
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
@@ -220,8 +228,10 @@ class StandaloneFeedService(
   }
 
   suspend fun standaloneSupport(ts: LocalDateTime?): Boolean {
-    return environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted)) || (ts != null && ts.isAfter(LocalDateTime.now().minusMonths(2)))
+//    return environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted)) || (ts != null && ts.isAfter(LocalDateTime.now().minusMonths(2)))
 //    return !featureService.isDisabled(FeatureName.legacyApiBool)
+    // todo enable some time
+    return true
   }
 
   private fun createEolFeed(feedUrl: String): JsonFeed {

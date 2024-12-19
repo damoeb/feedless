@@ -13,22 +13,16 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.NotFoundException
-import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.Session
-import org.migor.feedless.secrets.UserSecretService
-import org.migor.feedless.user.UserService
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -45,16 +39,10 @@ class SessionResolver {
   private lateinit var tokenProvider: TokenProvider
 
   @Autowired
-  private lateinit var environment: Environment
-
-  @Autowired
   private lateinit var propertyService: PropertyService
 
   @Autowired
-  private lateinit var userService: UserService
-
-  @Autowired
-  private lateinit var userSecretService: UserSecretService
+  private lateinit var authService: AuthService
 
   @Autowired
   private lateinit var sessionService: SessionService
@@ -99,22 +87,17 @@ class SessionResolver {
     @InputArgument(DgsConstants.MUTATION.AUTHUSER_INPUT_ARGUMENT.Data) data: AuthUserInput,
   ): Authentication = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("authUser")
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
-      log.debug("authRoot")
-      val root = userService.findByEmail(data.email) ?: throw NotFoundException("user not found")
-      if (!root.admin) {
-        throw PermissionDeniedException("account is not root")
-      }
-      userSecretService.findBySecretKeyValue(data.secretKey, data.email)
-        ?: throw IllegalArgumentException("secretKey does not match")
-      val jwt = tokenProvider.createJwtForUser(root)
+    try {
+      val user = authService.authenticateUser(data.email, data.secretKey)
+      val jwt = tokenProvider.createJwtForUser(user)
       addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       Authentication(
         token = jwt.tokenValue,
         corrId = CryptUtil.newCorrId()
       )
-    } else {
-      throw PermissionDeniedException("authRoot profile is not active")
+    } catch (e: Exception) {
+      log.error(e.message, e)
+      throw e
     }
   }
 

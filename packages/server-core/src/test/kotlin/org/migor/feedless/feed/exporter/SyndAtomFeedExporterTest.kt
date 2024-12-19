@@ -1,5 +1,6 @@
 package org.migor.feedless.feed.exporter
 
+import com.google.gson.Gson
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
@@ -9,7 +10,6 @@ import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
-import org.migor.feedless.util.JsonUtil
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -87,8 +87,8 @@ class SyndAtomFeedExporterTest {
     feed.items.forEach { it.authors = emptyList() }
     actualFeed.items.forEach { it.id = "" }
     feed.items.forEach { it.id = "" }
-    val actualFeedMap = JsonUtil.gson.fromJson(JsonUtil.gson.toJson(actualFeed), Map::class.java)
-    val expectedFeedMap = JsonUtil.gson.fromJson(JsonUtil.gson.toJson(feed), Map::class.java)
+    val actualFeedMap = Gson().fromJson(Gson().toJson(actualFeed), Map::class.java)
+    val expectedFeedMap = Gson().fromJson(Gson().toJson(feed), Map::class.java)
 
     assertThat(actualFeedMap).isEqualTo(expectedFeedMap)
   }

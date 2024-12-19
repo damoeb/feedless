@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
@@ -16,7 +17,6 @@ import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -91,7 +91,7 @@ class DetectMediaPlugin : MapEntityPlugin {
   private fun ytdl(corrId: String, url: String, attachments: MutableList<MediaItem>) {
     log.info("[$corrId] yt-dlp $url")
     val stdout = execCmd("yt-dlp -J $url")
-    val json = JsonUtil.gson.fromJson(stdout, YoutubeDlJson::class.java)
+    val json = Gson().fromJson(stdout, YoutubeDlJson::class.java)
     json?.let {
 
       json.url?.let {
