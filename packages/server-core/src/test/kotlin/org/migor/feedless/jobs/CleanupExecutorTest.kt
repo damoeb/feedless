@@ -9,7 +9,6 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -18,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import org.springframework.scheduling.annotation.Scheduled
-import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)

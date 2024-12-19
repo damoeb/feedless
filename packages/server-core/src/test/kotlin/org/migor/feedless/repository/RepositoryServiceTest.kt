@@ -27,8 +27,6 @@ import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.source.SourceDAO
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService

@@ -4,8 +4,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 import java.net.MalformedURLException
 
 class HttpServiceTest {
@@ -14,9 +12,7 @@ class HttpServiceTest {
 
   @BeforeEach
   fun setUp() {
-    val propertyService = mock(PropertyService::class.java)
-    `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")
-    httpService = HttpService(propertyService)
+    httpService = HttpService("https://localhost")
     httpService.postConstruct()
   }
 

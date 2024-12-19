@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -17,7 +7,7 @@ import {
   GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -31,45 +21,36 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
-  InteractiveWebsiteModalComponentProps,
+  InteractiveWebsiteModalComponentProps
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
 import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
-import { RepositoryService } from '../../services/repository.service';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
-import {
-  attachOutline,
-  checkmarkDoneOutline,
-  checkmarkOutline,
-  logoJavascript,
-  settingsOutline,
-} from 'ionicons/icons';
+import { attachOutline, checkmarkDoneOutline, checkmarkOutline, logoJavascript, settingsOutline } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
-import {
-  standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { LatLng } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { intersection, isArray, xor } from 'lodash-es';
+import { booleanParser, intParser, RouteNode } from 'typesafe-routes';
+import { Parser } from 'typesafe-routes/src/parser';
+import { strParser } from '../../products/default-routes';
 
 /**
  * IDEEN
@@ -113,6 +94,17 @@ export type FeedWithRequest = {
   refine: boolean;
 };
 
+export type StandaloneUrlParams = {
+  url: string,
+  link: string,
+  context: string,
+  date?: string,
+  dateIsEvent?: boolean,
+  q?: string,
+  out?: string,
+  ts?: number,
+}
+
 @Component({
   selector: 'app-feed-builder',
   templateUrl: './feed-builder.component.html',
@@ -148,7 +140,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly modalCtrl = inject(ModalController);
   private readonly alertCtrl = inject(AlertController);
-  private readonly repositoryService = inject(RepositoryService);
   private readonly serverConfigService = inject(ServerConfigService);
   private readonly toastCtrl = inject(ToastController);
   private readonly changeRef = inject(ChangeDetectorRef);
@@ -380,7 +371,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         header: 'Standalone URL detected',
         backdropDismiss: false,
         message:
-          'This URL looks like an standalone RSS-proxy url, do you want to convert it?',
+          'This URL looks like an standalone RSS-proxy url, do you want to convert it so you can edit it?',
         cssClass: 'primary-alert',
         buttons: [
           {
@@ -391,7 +382,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           {
             role: 'ok',
             cssClass: 'confirm-button',
-            text: 'Convert',
+            text: 'Convert and Edit',
             handler: () => this.convertStandaloneRssProxyUrl(),
           },
         ],
@@ -401,39 +392,91 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async convertStandaloneRssProxyUrl() {
-    await this.alertCtrl.dismiss();
-    const url = new URL(this.url);
-    const params = url.search
+  parseStandaloneUrl(url: string): StandaloneUrlParams {
+    const params = new URL(url).search
       .substring(1)
       .split('&')
       .reduce(
         (params, param) => {
           const parts = param.split('=', 2);
-          params[parts[0]] = decodeURIComponent(parts[1]);
+          if (parts && parts[0]) {
+            params[parts[0]] = decodeURIComponent(parts[1]);
+          }
           return params;
         },
         {} as { [s: string]: string },
       );
-    console.log('legacy url params', params);
 
-    this.url = params['url'];
-    await this.scrapeUrl();
-    setTimeout(() => {
-      this.webToFeedTransformerComponent().pickGenericFeed({
+    const keys = Object.keys(params);
+
+    const canParseUrl = <PM extends Record<string, Parser<any>>, C extends {}>(route: RouteNode<string, PM, C>): boolean => {
+      return intersection(Object.keys(route.parserMap), keys).length === keys.length
+    }
+
+    if (canParseUrl(standaloneV2WebToFeedRoute)) {
+      return standaloneV2WebToFeedRoute.parseParams(params as any)
+    } else {
+      if (canParseUrl(standaloneV1WebToFeedRoute)) {
+        const parsed = standaloneV1WebToFeedRoute.parseParams(params as any);
+        return {
+          url: parsed.url,
+          context: parsed.pContext,
+          link: parsed.pLink
+        };
+      } else {
+        throw new Error('not a standalone url')
+      }
+    }
+  }
+
+  private async convertStandaloneRssProxyUrl() {
+    await this.alertCtrl.dismiss();
+    const params = this.parseStandaloneUrl(this.url);
+    console.log('parsed url with params', params);
+    this.url = params.url;
+    this.changeRef.detectChanges();
+    if (params.q) {
+      try {
+        const filter = JSON.parse(params.q);
+        console.log('with filter', filter);
+        if (isArray(filter)) {
+          todo fix
+          // this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+          //   execute: {
+          //     pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+          //     params: {
+          //       org_feedless_filter: filter
+          //     }
+          //   }
+          // });
+        }
+      } catch (e) {
+        // ignored
+      }
+    }
+
+    if (params.context) {
+      await this.webToFeedTransformerComponent().pickGenericFeed({
         selectors: {
-          contextXPath: params['contextXPath'],
-          linkXPath: params['linkXPath'],
-          dateIsStartOfEvent: false,
+          contextXPath: params.context,
+          linkXPath: params.link,
+          dateIsStartOfEvent: params.dateIsEvent,
           extendContext: GqlExtendContentOptions.None,
           paginationXPath: '',
-          dateXPath: '',
+          dateXPath: params.date,
         },
         hash: '',
         score: 0,
         count: 0,
       });
-    }, 200);
+    } else {
+      await this.webToFeedTransformerComponent().pickNativeFeed({
+        feedUrl: params.url,
+        items: [],
+        title: 'Feed',
+        publishedAt: new Date()
+      });
+    }
   }
 
   private async patchUrlInAddressBar() {
@@ -487,6 +530,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           value: this.createStandaloneFeedUrl(),
           attributes: {
             readonly: true,
+            style: { fontSize: '1.2rem', minHeight: '150px', fontWeight: 'bold' }
           },
         },
       ],

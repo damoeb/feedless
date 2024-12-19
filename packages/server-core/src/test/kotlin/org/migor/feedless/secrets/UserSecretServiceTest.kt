@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
@@ -14,6 +13,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.security.oauth2.jwt.Jwt
 import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 class UserSecretServiceTest {
 
@@ -36,6 +36,7 @@ class UserSecretServiceTest {
     val jwt = mock(Jwt::class.java)
     `when`(jwt.tokenValue).thenReturn("jwt")
     `when`(tokenProvider.createJwtForApi(any2())).thenReturn(jwt)
+    `when`(tokenProvider.getExpiration(any2())).thenReturn(2.seconds)
 
     userSecretService = UserSecretService(userSecretDAO, tokenProvider)
 

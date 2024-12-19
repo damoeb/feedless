@@ -1,7 +1,6 @@
 package org.migor.feedless.report
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
@@ -14,7 +13,6 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.secrets.EncryptionConverter
 import org.migor.feedless.user.UserEntity
 import java.time.LocalDateTime
 import java.util.*

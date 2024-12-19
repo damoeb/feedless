@@ -41,7 +41,6 @@ class DocumentController(
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
   ): ResponseEntity<String> = coroutineScope {
-    log.info("here")
     documentService.findById(UUID.fromString(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(

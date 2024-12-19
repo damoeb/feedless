@@ -13,7 +13,7 @@
     "prestart": "yarn clean && yarn codegen",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "APP_VERSION=dev nest start",
+    "start": "dotenv -e ../../.env -- nest start",
     "start:debug": "APP_VERSION=dev APP_PRERENDER_TIMEOUT_MILLIS=60000 DEBUG=true nest start --debug",
     "start:prod": "APP_VERSION=prod node dist/main",
     "lint": "prettier --write --log-level=warn .",

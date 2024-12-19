@@ -51,7 +51,7 @@ import java.security.spec.X509EncodedKeySpec
 import java.text.DateFormat
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.coroutines.coroutineContext
@@ -73,7 +73,7 @@ data class LicensePayload(
 
     val trunc = { date: LocalDateTime? ->
       date
-        ?.atZone(ZoneId.systemDefault())
+        ?.atZone(ZoneOffset.UTC)
         ?.toLocalDateTime()
         ?.truncatedTo(ChronoUnit.DAYS)
     }

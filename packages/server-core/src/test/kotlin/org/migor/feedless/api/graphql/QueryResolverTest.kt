@@ -11,6 +11,7 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserDAO
@@ -39,6 +40,7 @@ import org.springframework.test.context.ActiveProfiles
   MockBean(UserDAO::class),
   MockBean(ServerConfigResolver::class),
   MockBean(UserSecretService::class),
+  MockBean(UserSecretDAO::class),
   MockBean(PermissionService::class),
 )
 @Import(

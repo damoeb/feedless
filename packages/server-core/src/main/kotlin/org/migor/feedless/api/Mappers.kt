@@ -1,5 +1,6 @@
 package org.migor.feedless.api
 
+import com.google.gson.Gson
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.actions.ClickPositionActionEntity
@@ -23,7 +24,6 @@ import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -140,7 +140,7 @@ fun GenericFeedRule.toDto(): TransientGenericFeed {
 
   return TransientGenericFeed(
     count = count,
-    hash = CryptUtil.sha1(JsonUtil.gson.toJson(selectors)),
+    hash = CryptUtil.sha1(Gson().toJson(selectors)),
     selectors = selectors,
     score = score,
   )

@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import kotlinx.coroutines.test.runTest
-import org.jsoup.nodes.Document
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,10 +12,8 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.scrape.Selectors
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -27,7 +24,6 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
-import java.net.URI
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)

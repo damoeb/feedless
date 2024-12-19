@@ -4,6 +4,7 @@ import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.feedless.AppLayer
@@ -83,7 +84,7 @@ class IpThrottleService(
       AuthTokenType.AGENT -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
       AuthTokenType.USER -> Bandwidth.classic(300, Refill.intervally(300, Duration.ofMinutes(1)))
       AuthTokenType.API -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
-      AuthTokenType.ANON -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
+      AuthTokenType.ANONYMOUS -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
     }
   }
 
@@ -92,12 +93,14 @@ class IpThrottleService(
   }
 
   private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
-    return runCatching {
-      val jwt = authService.interceptJwt(request)
-      listOf(resolveTokenBucket(jwt))
-    }.getOrElse {
-      val remoteAddr = HttpUtil.getRemoteAddr(request)
-      listOf(resolveIpBucket(remoteAddr))
+    return runBlocking {
+      runCatching {
+        val token = authService.interceptToken(request)
+        listOf(resolveTokenBucket(token))
+      }.getOrElse {
+        val remoteAddr = HttpUtil.getRemoteAddr(request)
+        listOf(resolveIpBucket(remoteAddr))
+      }
     }
   }
 }

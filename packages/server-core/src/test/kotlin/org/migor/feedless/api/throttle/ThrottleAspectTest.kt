@@ -5,7 +5,6 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -34,6 +33,9 @@ import org.springframework.context.annotation.Import
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.client.WebClient
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -79,10 +81,11 @@ class ThrottleAspectTest {
     runTest {
       val jwt = mock(Jwt::class.java)
       `when`(jwt.tokenValue).thenReturn("jwt")
+      `when`(jwt.expiresAt).thenReturn(LocalDateTime.now().toInstant(ZoneOffset.UTC))
       `when`(tokenProvider.createJwtForAnonymous()).thenReturn(jwt)
+      `when`(tokenProvider.getExpiration(any2())).thenReturn(2.hours)
+      `when`(authService.isWhitelisted(any2())).thenReturn(false)
     }
-    `when`(authService.isWhitelisted(any2())).thenReturn(false)
-
     val webClient = WebClient.create("http://localhost:$port/graphql")
     this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
   }

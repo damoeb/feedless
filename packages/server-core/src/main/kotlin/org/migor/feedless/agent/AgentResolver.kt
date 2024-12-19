@@ -49,9 +49,9 @@ class AgentResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.SubmitAgentData)
-  @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
+  @PreAuthorize("hasAuthority('AGENT')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
-    log.debug("[${data.corrId}] submitAgentData")
+    log.info("[${data.corrId}] submitAgentData")
     agentService.handleScrapeResponse(data.callbackId, data.scrapeResponse)
     true
   }

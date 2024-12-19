@@ -3,7 +3,6 @@ package org.migor.feedless.repository
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
@@ -18,8 +17,6 @@ import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.RecordDateFieldUpdateOperationsInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.RetentionUpdateInput
-import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
@@ -29,7 +26,6 @@ import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserService
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify

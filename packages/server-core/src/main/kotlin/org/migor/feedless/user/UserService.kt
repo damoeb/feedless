@@ -39,7 +39,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.user} & ${AppLayer.service}")
+@Profile("${AppProfiles.user} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserService(
   private var userDAO: UserDAO,
   private var productDAO: ProductDAO,

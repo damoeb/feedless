@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.ExecuteActionEntity
@@ -19,7 +20,6 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -53,7 +53,7 @@ class FeedPlugin : FragmentTransformerPlugin {
     logger: LogCollector,
   ): FragmentOutput {
     val executorParams = action.executorParams!!
-    logger.log("transformFragment using selectors ${JsonUtil.gson.toJson(executorParams.org_feedless_feed)}")
+    logger.log("transformFragment using selectors ${Gson().toJson(executorParams.org_feedless_feed)}")
 
     val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
 

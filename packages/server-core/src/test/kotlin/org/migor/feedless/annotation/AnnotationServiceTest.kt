@@ -14,9 +14,7 @@ import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.repository.any
-import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.anyOrNull
-import org.migor.feedless.repository.anyOrNull2
 import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
 import org.migor.feedless.session.RequestContext

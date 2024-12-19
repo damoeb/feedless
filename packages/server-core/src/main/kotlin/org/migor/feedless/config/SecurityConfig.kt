@@ -58,11 +58,11 @@ class SecurityConfig {
   @Value("\${app.cors.allowedOrigins:}")
   lateinit var allowedOrigins: String
 
-  @Autowired
-  private lateinit var userService: UserService
-
   @Autowired(required = false)
-  lateinit var jwtRequestFilter: JwtRequestFilter
+  private var userService: UserService? = null
+
+  @Autowired
+  private lateinit var jwtRequestFilter: JwtRequestFilter
 
   @Autowired
   private lateinit var propertyService: PropertyService
@@ -127,7 +127,7 @@ class SecurityConfig {
       "/a/**",
       "/attachment/**",
     )
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.oauth))) {
       urls.add("/login/oauth2/**")
     }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.mail))) {
@@ -146,7 +146,7 @@ class SecurityConfig {
   }
 
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
-    return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
+    return if (environment.acceptsProfiles(Profiles.of(AppProfiles.oauth))) {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
         .oauth2Login {
@@ -187,15 +187,15 @@ class SecurityConfig {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
-    return resolveUserByGithubId(githubId)?.also { userService.updateLegacyUser(it, githubId) }
-      ?: userService.createUser(
+    return resolveUserByGithubId(githubId)?.also { userService!!.updateLegacyUser(it, githubId) }
+      ?: userService!!.createUser(
         email = email,
         githubId = githubId,
       )
   }
 
   private suspend fun resolveUserByGithubId(githubId: String): UserEntity? {
-    return userService.findByGithubId(githubId)
+    return userService!!.findByGithubId(githubId)
       .also {
         it?.let {
           meterRegistry.counter(AppMetrics.userLogin).increment()

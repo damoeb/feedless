@@ -1,9 +1,9 @@
 package org.migor.feedless.scrape
 
+import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
-import org.migor.feedless.util.JsonUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -72,7 +72,7 @@ class PageInspectionService {
   fun jsonLdOf(document: Document): Map<String, String> {
     return try {
       val script = document.select("script[type=\"application/ld+json\"]")
-      val json = JsonUtil.gson.fromJson<Map<String, Any>>(script.html(), Map::class.java)
+      val json = Gson().fromJson<Map<String, Any>>(script.html(), Map::class.java)
 
       return mapOf(
         title to json["headline"] as String,

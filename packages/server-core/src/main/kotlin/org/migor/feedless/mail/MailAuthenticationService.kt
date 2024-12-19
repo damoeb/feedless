@@ -91,14 +91,10 @@ class MailAuthenticationService(
 
   private suspend fun resolveUserByMail(data: AuthViaMailInput): UserEntity? {
     return withContext(Dispatchers.IO) { userDAO.findByEmail(data.email) } ?: if (data.allowCreate) {
-      createUser(data.email)
+      userService.createUser(data.email)
     } else {
       null
     }
-  }
-
-  private suspend fun createUser(email: String): UserEntity {
-    return userService.createUser(email)
   }
 
   suspend fun confirmAuthCode(codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {

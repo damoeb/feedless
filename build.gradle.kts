@@ -26,7 +26,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
 
   // with web
   commandLine(
-    "docker", "build",
+    podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
@@ -61,7 +61,7 @@ tasks.register("startServices", Exec::class) {
     cleanServices
   )
   commandLine(
-    "docker-compose",
+    "${podmanOrDocker()}-compose",
     "up",
     "--detach",
     "feedless-app",
@@ -83,7 +83,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
 
   // with chromium
   commandLine(
-    "docker", "build",
+    podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
@@ -104,7 +104,7 @@ tasks.register("bundle", Exec::class) {
   inputs.property("gitHash", gitHash)
 
   commandLine(
-    "docker", "build",
+    podmanOrDocker(), "build",
     "-t", "$baseTag:ingress-latest",
     "-t", "$baseTag:ingress-$gitHash",
     "docker/ingress"
@@ -136,3 +136,11 @@ subprojects {
 fun appWebDockerImageTask() = tasks.findByPath("packages:app-web:bundle")
 fun serverCoreDockerImageTask() = tasks.findByPath("packages:server-core:bundle")
 fun agentDockerImageTask() = tasks.findByPath("packages:agent:bundle")
+
+fun podmanOrDocker(): String {
+  val env = "DOCKER_BIN"
+  val podmanOrDocker = System.getenv(env) ?: "podman"
+
+  println("Using DOCKER_BIN $podmanOrDocker")
+  return podmanOrDocker
+}

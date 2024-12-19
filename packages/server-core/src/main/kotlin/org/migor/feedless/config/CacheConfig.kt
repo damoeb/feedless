@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import com.google.gson.Gson
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheEventListenerConfigurationBuilder
 import org.ehcache.config.builders.ExpiryPolicyBuilder
@@ -14,7 +15,6 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.JsonUtil
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.interceptor.KeyGenerator
 import org.springframework.cache.jcache.JCacheCacheManager
@@ -36,7 +36,7 @@ object CacheNames {
 
 class AgentResponseCacheKeyGenerator : KeyGenerator {
   override fun generate(target: Any, method: Method, vararg params: Any?): Any {
-    return CryptUtil.sha1(JsonUtil.gson.toJson(params[1]))
+    return CryptUtil.sha1(Gson().toJson(params[1]))
   }
 
 }

@@ -17,7 +17,6 @@ import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatchers.anyString
@@ -30,8 +29,18 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.client.WebClient
 
+
+const val rootEmail = "fooEmail"
+const val rootSecretKey = "barBarBarKey"
+
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  properties = [
+    "app.rootEmail=$rootEmail",
+    "app.rootSecretKey=$rootSecretKey",
+    "app.apiGatewayUrl=https://localhost",
+    "app.actuatorPassword=s3cr3t",
+  ],
 )
 @ActiveProfiles(
   "test",
@@ -44,7 +53,6 @@ import org.springframework.web.reactive.function.client.WebClient
 )
 @MockBeans(
   MockBean(ServerConfigResolver::class),
-  MockBean(UserDAO::class),
   MockBean(PermissionService::class),
 )
 @Import(DisableDatabaseConfiguration::class)
@@ -97,7 +105,7 @@ class AuthenticationTest {
 
     // when
     val graphQLMutation = DgsClient.buildMutation {
-      authUser(data = AuthUserInput(email = "fooEmail", secretKey = "barKey")) {
+      authUser(data = AuthUserInput(email = rootEmail, secretKey = rootSecretKey)) {
         token
         corrId
       }

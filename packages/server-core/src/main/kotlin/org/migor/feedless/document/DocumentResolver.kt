@@ -31,7 +31,6 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.UpdateRecordInput
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.repository.toPageRequest
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService

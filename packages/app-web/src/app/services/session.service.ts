@@ -161,7 +161,7 @@ export class SessionService {
   }
 
   isAuthenticated() {
-    return this.getUserId()?.length != 0;
+    return this.getUserId()?.length > 0;
   }
 
   async deleteUserSecret(data: GqlDeleteUserSecretInput) {

@@ -1,5 +1,6 @@
 package org.migor.feedless.feed.parser
 
+import com.google.gson.Gson
 import com.rometools.modules.georss.GeoRSSModule
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
@@ -24,7 +25,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import java.io.StringReader
@@ -154,7 +154,7 @@ class XmlFeedParser : FeedBodyParser {
 
     feedlessModule?.let {
       feedlessModule.getLatLng()?.let {
-        article.latLng = JsonUtil.gson.fromJson(it, JsonPoint::class.java)
+        article.latLng = Gson().fromJson(it, JsonPoint::class.java)
       }
       article.startingAt = feedlessModule.getStartingAt()?.toLocalDateTime()
       article.rawBase64 = feedlessModule.getData()

@@ -1,5 +1,6 @@
 package org.migor.feedless.agent
 
+import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,13 +19,12 @@ import org.migor.feedless.generated.types.OsInfo
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
 import org.migor.feedless.user.corrId
-import org.migor.feedless.util.JsonUtil
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
@@ -44,7 +44,7 @@ import kotlin.coroutines.coroutineContext
 class AgentResponse(private val scrapeResponse: String) : Serializable {
 
   fun get(): ScrapeResponse {
-    return JsonUtil.gson.fromJson(scrapeResponse, ScrapeResponse::class.java)
+    return Gson().fromJson(scrapeResponse, ScrapeResponse::class.java)
   }
 }
 
@@ -52,9 +52,9 @@ class AgentResponse(private val scrapeResponse: String) : Serializable {
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.service}")
 class AgentService(
-  private val userSecretService: UserSecretService,
+  private val authService: AuthService,
   private val tokenProvider: TokenProvider,
-  private val agentDAO: AgentDAO,
+  private val agentRegistry: AgentRegistry,
   private val meterRegistry: MeterRegistry,
   private val context: ApplicationContext
 ) {
@@ -65,14 +65,14 @@ class AgentService(
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       CoroutineScope(RequestContext()).launch {
-        userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
+        authService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
           ?.let { securityKey ->
             val now = LocalDateTime.now()
             if (securityKey.validUntil.isBefore(now)) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
             } else {
-              userSecretService.updateLastUsed(securityKey.id, now)
+              authService.updateLastUsed(securityKey.id, now)
               val agentRef =
                 AgentRef(
                   securityKey.id,
@@ -131,7 +131,7 @@ class AgentService(
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.ok) {
-        it.next(AgentResponse(JsonUtil.gson.toJson(scrapeResponse.fromDto())))
+        it.next(AgentResponse(Gson().toJson(scrapeResponse.fromDto())))
       } else {
         it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
       }
@@ -141,9 +141,7 @@ class AgentService(
 
   @Transactional(readOnly = true)
   suspend fun findAllByUserId(userId: UUID?): List<AgentEntity> {
-    return withContext(Dispatchers.IO) {
-      agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
-    }
+    return agentRegistry.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
 
   @Transactional(propagation = Propagation.SUPPORTS)
@@ -186,8 +184,8 @@ class AgentService(
     log.info("[$corrId] Added Agent $agentRef")
 
     withContext(Dispatchers.IO) {
-      agentDAO.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
-        agentDAO.delete(it)
+      agentRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+        agentRegistry.delete(it)
       }
 
       val agent = AgentEntity()
@@ -198,7 +196,7 @@ class AgentService(
       agent.connectionId = agentRef.connectionId
       agent.ownerId = agentRef.ownerId
       agent.openInstance = true
-      agentDAO.save(agent)
+      agentRegistry.save(agent)
     }
 
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
@@ -210,8 +208,8 @@ class AgentService(
     agentRefs.remove(agentRef)
     log.info("[$corrId] Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
     withContext(Dispatchers.IO) {
-      agentDAO.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
-        agentDAO.delete(it)
+      agentRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+        agentRegistry.delete(it)
       }
     }
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
