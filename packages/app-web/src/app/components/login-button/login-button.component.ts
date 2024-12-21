@@ -47,8 +47,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   authorization: Authentication;
   private subscriptions: Subscription[] = [];
 
-  @Input()
-  label: string;
+  readonly label = input<string>();
   readonly expand = input<string>();
   readonly color = input<string>();
 

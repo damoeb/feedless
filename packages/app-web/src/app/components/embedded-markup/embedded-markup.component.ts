@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  effect,
   ElementRef,
   EventEmitter,
   inject,
@@ -18,7 +19,7 @@ import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { debounce, distinct, interval, Subscription } from 'rxjs';
-import { NgStyle } from '@angular/common';
+import { NgClass, NgStyle } from '@angular/common';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath
@@ -47,7 +48,7 @@ function makeid(length: number) {
 interface IframeMessage {
   id: string;
   type: 'height' | 'xpath' | 'show-boxes';
-  data: string | number;
+  data: string | number | boolean;
 }
 
 @Component({
@@ -55,21 +56,19 @@ interface IframeMessage {
   templateUrl: './embedded-markup.component.html',
   styleUrls: ['./embedded-markup.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgStyle],
+  imports: [NgStyle, NgClass],
   standalone: true,
 })
 export class EmbeddedMarkupComponent
-  implements OnInit, AfterViewInit, OnChanges, OnDestroy
+  implements OnInit, AfterViewInit, OnDestroy
 {
   private readonly changeRef = inject(ChangeDetectorRef);
 
   readonly iframeRef = viewChild<ElementRef>('iframeElement');
 
-  @Input({ required: true })
-  embed: Embeddable;
+  readonly embed = input<Embeddable>();
 
-  @Input()
-  sourceBuilder: SourceBuilder;
+  readonly sourceBuilder = input.required<SourceBuilder>();
 
   readonly maxHeight = input<boolean>(false);
 
@@ -84,6 +83,21 @@ export class EmbeddedMarkupComponent
   private unbindMessageListener: () => void;
   private subscriptions: Subscription[] = [];
   protected currentXpath: string = '';
+  protected pickElement: boolean = false;
+
+  constructor() {
+    effect(async () => {
+      this.assignToIframe();
+
+      if (this.showBoxes()) {
+        await this.postIframeMessage({
+          id: '',
+          type: 'show-boxes',
+          data: this.showBoxes(),
+        });
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>((resolve) => {
@@ -96,9 +110,9 @@ export class EmbeddedMarkupComponent
           this.currentXpath = xpath;
           this.changeRef.detectChanges();
         }),
-      this.sourceBuilder.events.extractElements.subscribe((params) => {
+      this.sourceBuilder().events.extractElements.subscribe((params) => {
         const document = new DOMParser().parseFromString(
-          this.embed.data,
+          this.embed().data,
           'text/html',
         );
         const xpathResult = document.evaluate(
@@ -116,14 +130,17 @@ export class EmbeddedMarkupComponent
         }
         params.callback(elements);
       }),
-      this.sourceBuilder.events.pickElement.subscribe((callback) => {
+      this.sourceBuilder().events.pickElement.subscribe((callback) => {
+        console.log('pickElement');
+        this.pickElement = true;
         const unsubscribe = this.pickedXpath.subscribe((xpath) => {
+          this.pickElement = false;
           unsubscribe.unsubscribe();
           callback(xpath);
         });
       }),
-      this.sourceBuilder.events.showElements
-        .pipe(distinct())
+      this.sourceBuilder()
+        .events.showElements.pipe(distinct())
         .subscribe((xpath) => {
           console.log(`showElements ${xpath}`);
           this.postIframeMessage({
@@ -145,42 +162,22 @@ export class EmbeddedMarkupComponent
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async ngOnChanges(changes: SimpleChanges) {
-    if (isDefined(changes.showBoxes?.currentValue)) {
-      await this.postIframeMessage({
-        id: '',
-        type: 'show-boxes',
-        data: changes.showBoxes?.currentValue,
-      });
-      this.changeRef.detectChanges();
-    }
-    if (
-      changes.embed?.currentValue &&
-      changes.embed.currentValue.mimeType.toLowerCase().startsWith('text/') &&
-      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data
-    ) {
-      this.embed = changes.embed.currentValue;
-      this.changeRef.detectChanges();
-      this.assignToIframe();
-    }
-  }
-
   async ngAfterViewInit() {
     this.assignToIframe();
     this.changeRef.detectChanges();
   }
 
   getWidth() {
-    if (this.embed.viewport) {
-      return this.embed.viewport.width + 'px';
+    if (this.embed()?.viewport) {
+      return this.embed().viewport.width + 'px';
     } else {
       return '100%';
     }
   }
 
   getHeight() {
-    if (this.embed.viewport) {
-      return this.embed.viewport.height + 'px';
+    if (this.embed()?.viewport) {
+      return this.embed().viewport.height + 'px';
     } else {
       if (this.iframeRefHeight) {
         return this.iframeRefHeight + 'px';
@@ -341,16 +338,22 @@ window.addEventListener('message', (message) => {
   }
 
   private assignToIframe() {
-    const document = this.embed;
-    if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
-      const html = this.patchHtml(this.embed.data, this.embed.url);
+    const document = this.embed();
+    const iframe = this.iframeRef();
+    if (
+      iframe &&
+      document &&
+      document.mimeType &&
+      !document.mimeType?.startsWith('text/xml')
+    ) {
+      const html = this.patchHtml(this.embed().data, this.embed().url);
       this.proxyUrl = URL.createObjectURL(
         new Blob([html], {
           type: 'text/html;charset=UTF-8',
         }),
       );
       // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
-      this.iframeRef().nativeElement.src = this.proxyUrl;
+      iframe.nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();
     }
   }

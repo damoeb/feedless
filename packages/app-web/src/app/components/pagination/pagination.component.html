@@ -1,13 +1,15 @@
 <ion-toolbar style="--background: transparent">
   <ion-buttons class="ion-justify-content-center">
-    @if (currentPage !== 0) {
-      <ion-button (click)="pageChange.emit(currentPage - 1)">
+    @if (currentPage() !== 0) {
+      <ion-button (click)="pageChange.emit(currentPage() - 1)">
         Previous
       </ion-button>
     }
-    <ion-button>{{ currentPage + 1 }}</ion-button>
+    <ion-button>{{ currentPage() + 1 }}</ion-button>
     @if (!isLastPage()) {
-      <ion-button (click)="pageChange.emit(currentPage + 1)"> Next </ion-button>
+      <ion-button (click)="pageChange.emit(currentPage() + 1)">
+        Next
+      </ion-button>
     }
   </ion-buttons>
 </ion-toolbar>

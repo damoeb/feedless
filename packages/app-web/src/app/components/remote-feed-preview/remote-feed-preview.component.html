@@ -8,14 +8,14 @@
     <div
       style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1"
     >
-      @if (items) {
+      @if (items()) {
         <ion-list style="position: absolute; width: 100%; opacity: 0.6">
-          @if (items.length === 0) {
+          @if (items().length === 0) {
             <ion-item>
               <ion-label>Feed is empty</ion-label>
             </ion-item>
           }
-          @for (item of items; track item; let feedIndex = $index) {
+          @for (item of items(); track item; let feedIndex = $index) {
             <app-remote-feed-item
               [feedItemIndex]="feedIndex + 1"
               [feedItem]="item"

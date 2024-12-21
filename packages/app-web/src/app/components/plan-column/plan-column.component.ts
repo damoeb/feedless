@@ -30,8 +30,7 @@ export class PlanColumnComponent {
 
   readonly imploded = input<boolean>();
 
-  @Input()
-  featureGroups: StringFeatureGroup[];
+  readonly featureGroups = input<StringFeatureGroup[]>();
 
   readonly pricePerUnit = input<string>('/ Month');
 

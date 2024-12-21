@@ -31,34 +31,33 @@ export type SegmentedOutput = {
   standalone: true,
 })
 export class SegmentedOutputComponent implements OnInit {
-  @Input({ required: true })
-  segmented: SegmentedOutput;
+  readonly segmented = input.required<SegmentedOutput>();
 
   readonly fields = input.required<Field[]>();
 
   readonly segmentedChanged = output<SegmentedOutput>();
 
-  sortDirection: KeyLabelOption<SortDirection>[] = [
-    {
-      key: 'asc',
-      label: 'Ascending',
-    },
-    {
-      key: 'desc',
-      label: 'Descending',
-    },
-  ];
+  // sortDirection: KeyLabelOption<SortDirection>[] = [
+  //   {
+  //     key: 'asc',
+  //     label: 'Ascending',
+  //   },
+  //   {
+  //     key: 'desc',
+  //     label: 'Descending',
+  //   },
+  // ];
 
-  timeSegments: KeyLabelOption<number>[] = this.getTimeSegments();
+  // timeSegments: KeyLabelOption<number>[] = this.getTimeSegments();
 
   constructor() {}
 
   ngOnInit() {
-    if (this.segmented) {
-      this.segmented = {
-        // todo fill
-      };
-    }
+    // if (this.segmented) {
+    //   this.segmented = {
+    //     // todo fill
+    //   };
+    // }
   }
 
   private getTimeSegments(): KeyLabelOption<number>[] {

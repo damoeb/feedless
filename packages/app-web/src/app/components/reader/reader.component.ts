@@ -38,8 +38,7 @@ export class ReaderComponent implements OnChanges {
 
   readonly textTransform = input<ReaderTextTransform>('normal');
 
-  @Input({ required: true })
-  html: string;
+  readonly html = input.required<string>();
 
   readonly showImages = input<boolean>(false);
 
@@ -49,10 +48,6 @@ export class ReaderComponent implements OnChanges {
   private showLinksHostname: boolean;
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes.html && changes.html.currentValue) {
-      this.html = changes.html.currentValue;
-    }
-
     if (changes.linkTarget && changes.linkTarget.currentValue) {
       const currentLinkTarget: ReaderLinkTarget =
         changes.linkTarget.currentValue;
@@ -79,7 +74,10 @@ export class ReaderComponent implements OnChanges {
 
   private getContent(): string {
     if (this.hasReadability()) {
-      const document = new DOMParser().parseFromString(this.html, 'text/html');
+      const document = new DOMParser().parseFromString(
+        this.html(),
+        'text/html',
+      );
       Array.from(document.body.querySelectorAll('img[src]'))
         .filter((img) => img.getAttribute('src').startsWith('http'))
         .forEach((img) => {

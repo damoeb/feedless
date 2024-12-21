@@ -114,8 +114,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   protected readonly CUSTOM_HASH = 'custom-hash';
 
-  @Input({ required: true })
-  sourceBuilder: SourceBuilder;
+  readonly sourceBuilder = input.required<SourceBuilder>();
 
   readonly interactiveWebsiteComponent =
     viewChild<InteractiveWebsiteComponent>('interactiveWebsite');
@@ -178,7 +177,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     try {
-      const genericFeedParams = this.sourceBuilder.findFirstByPluginsId(
+      const genericFeedParams = this.sourceBuilder().findFirstByPluginsId(
         GqlFeedlessPlugins.OrgFeedlessFeed,
       )?.execute?.params?.org_feedless_feed?.generic;
 
@@ -212,8 +211,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       this.changeRef.detectChanges();
 
       this.subscriptions.push(
-        this.sourceBuilder.events.stateChange
-          .pipe(rxDebounce(() => interval(200)))
+        this.sourceBuilder()
+          .events.stateChange.pipe(rxDebounce(() => interval(200)))
           .subscribe((state) => {
             this.shouldRefresh = state === 'DIRTY';
             this.changeRef.detectChanges();
@@ -228,11 +227,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
           .pipe(rxDebounce(() => interval(500)))
           .subscribe((xpath) => {
             if (this.activeSegment !== 'feed') {
-              this.sourceBuilder.events.showElements.next(`${xpath}`);
+              this.sourceBuilder().events.showElements.next(`${xpath}`);
             }
           }),
       );
-      const elementWithFeeds = this.sourceBuilder.response.outputs.find(
+      const elementWithFeeds = this.sourceBuilder().response.outputs.find(
         (o) => o.response?.extract?.feeds,
       );
       if (elementWithFeeds) {
@@ -273,7 +272,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       this.selectedFeed = {
         nativeFeed: this.currentNativeFeed,
       };
-      this.sourceBuilder
+      this.sourceBuilder()
         .patchFetch({
           url: {
             literal: feed.feedUrl,
@@ -301,7 +300,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     const url = this.router
       .createUrlTree(this.activatedRoute.snapshot.url, {
         queryParams: {
-          url: this.sourceBuilder.getUrl(),
+          url: this.sourceBuilder().getUrl(),
           ...queryParams,
         },
         relativeTo: this.activatedRoute,
@@ -335,7 +334,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     this.selectedFeedChange.emit(this.selectedFeed);
     if (this.isValid()) {
-      this.sourceBuilder.events.stateChange.next('DIRTY');
+      this.sourceBuilder().events.stateChange.next('DIRTY');
     }
     if (!this.feedItems) {
       this.fetchFeedPreview(false);
@@ -347,7 +346,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   }
 
   async pickElementWithin(xpath: string, fc: FormControl<string>) {
-    this.sourceBuilder.events.extractElements.next({
+    this.sourceBuilder().events.extractElements.next({
       xpath,
       callback: async (elements: HTMLElement[]) => {
         const componentProps: CodeEditorModalComponentProps = {
@@ -374,12 +373,12 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       try {
         this.loadingFeedPreview = true;
         const response = await this.scrapeService.scrape(
-          this.sourceBuilder.build(),
+          this.sourceBuilder().build(),
         );
         this.feedItems = last(response.outputs).response.extract.items;
         this.feedLogs = response.logs;
 
-        this.sourceBuilder.events.stateChange.next('PRISTINE');
+        this.sourceBuilder().events.stateChange.next('PRISTINE');
       } finally {
         this.loadingFeedPreview = false;
       }
@@ -401,7 +400,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     );
     this.genFeedXpathsFg.markAsPristine();
 
-    this.sourceBuilder.events.showElements.next(
+    this.sourceBuilder().events.showElements.next(
       genericFeed.selectors.contextXPath,
     );
 
@@ -445,7 +444,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       genericFeed: this.currentGenericFeed,
     };
 
-    this.sourceBuilder.addOrUpdatePluginById(
+    this.sourceBuilder().addOrUpdatePluginById(
       GqlFeedlessPlugins.OrgFeedlessFeed,
       {
         execute: {

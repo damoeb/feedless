@@ -24,11 +24,8 @@ import { CodeEditorComponent } from '../../elements/code-editor/code-editor.comp
 export class TextDiffComponent implements OnInit {
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @Input({ required: true })
-  before: Record;
-
-  @Input()
-  after: Record;
+  readonly before = input.required<Record>();
+  readonly after = input<Record>();
 
   readonly compareBy = input<GqlRecordField>(GqlRecordField.Markup);
 
@@ -40,8 +37,8 @@ export class TextDiffComponent implements OnInit {
   compareByMarkup = GqlRecordField.Markup;
 
   async ngOnInit() {
-    const textBefore = this.getText(this.before);
-    const textAfter = this.getText(this.after);
+    const textBefore = this.getText(this.before());
+    const textAfter = this.getText(this.after());
 
     const textBeforeLines = textBefore.split(/\n/);
     const textAfterLines = textAfter.split(/\n/);

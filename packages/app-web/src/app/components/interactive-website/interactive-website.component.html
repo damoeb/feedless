@@ -138,14 +138,14 @@
         @if (embedScreenshot && viewModeFc.value === viewModeImage) {
           <app-embedded-image
             [embed]="embedScreenshot"
-            [sourceBuilder]="sourceBuilder"
+            [sourceBuilder]="sourceBuilder()"
           >
           </app-embedded-image>
         }
         @if (embedMarkup && viewModeFc.value === viewModeMarkup) {
           <app-embedded-markup
             [embed]="embedMarkup"
-            [sourceBuilder]="sourceBuilder"
+            [sourceBuilder]="sourceBuilder()"
           >
           </app-embedded-markup>
         }

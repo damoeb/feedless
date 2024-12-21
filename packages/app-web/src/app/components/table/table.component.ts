@@ -25,13 +25,11 @@ export class TableComponent<T> implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  @Input({ required: true })
-  rows: T[];
+  readonly rows = input.required<T[]>();
 
   readonly columns = input<(keyof T)[]>();
 
   async ngOnInit(): Promise<void> {
-    console.log(this.rows);
     this.subscriptions.push();
   }
 
@@ -52,8 +50,8 @@ export class TableComponent<T> implements OnInit, OnDestroy {
   }
 
   private getColumnIds() {
-    if (this.rows) {
-      const allColumns = Object.keys(this.rows[0]) as (keyof T)[];
+    if (this.rows()) {
+      const allColumns = Object.keys(this.rows()[0]) as (keyof T)[];
       const columns = this.columns();
       if (columns) {
         return intersection(columns, allColumns);
@@ -66,7 +64,7 @@ export class TableComponent<T> implements OnInit, OnDestroy {
   }
 
   getRows() {
-    return this.rows.map((row) =>
+    return this.rows().map((row) =>
       this.getColumnIds().map((column) => ({ value: row[column] })),
     );
   }

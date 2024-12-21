@@ -83,8 +83,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   protected readonly serverConfig = inject(ServerConfigService);
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @Input({ required: true })
-  sourceBuilder: SourceBuilder;
+  readonly sourceBuilder = input.required<SourceBuilder>();
 
   readonly showUrl = input<boolean>(false);
 
@@ -138,12 +137,12 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.formFg.patchValue({
-      url: this.sourceBuilder.getUrl(),
+      url: this.sourceBuilder().getUrl(),
     });
     this.segmentChange.emit(this.viewModeFc.value);
 
-    if (this.sourceBuilder.response) {
-      this.handleScrapeResponse(this.sourceBuilder.response);
+    if (this.sourceBuilder().response) {
+      this.handleScrapeResponse(this.sourceBuilder().response);
     } else {
       this.scrape();
     }
@@ -153,31 +152,31 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         this.formFg.valueChanges,
         this.formFg.controls.prerenderingOptions.controls.additionalWait.valueChanges.pipe(
           map((wait) =>
-            this.sourceBuilder.patchFetch({ additionalWaitSec: wait }),
+            this.sourceBuilder().patchFetch({ additionalWaitSec: wait }),
           ),
         ),
       ).subscribe(() => {
-        this.sourceBuilder.events.actionsChanges.emit();
+        this.sourceBuilder().events.actionsChanges.emit();
       }),
       this.viewModeFc.valueChanges.subscribe((value) =>
         this.segmentChange.emit(value),
       ),
-      this.sourceBuilder.events.pickPoint.subscribe(() => {
+      this.sourceBuilder().events.pickPoint.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
-      // this.sourceBuilder.events.showElements.subscribe(() => {
+      // this.sourceBuilder().events.showElements.subscribe(() => {
       //   this.viewModeFc.patchValue(this.viewModeMarkup);
       // }),
-      this.sourceBuilder.events.actionsChanges.subscribe(() => {
+      this.sourceBuilder().events.actionsChanges.subscribe(() => {
         this.scrape();
       }),
-      this.sourceBuilder.events.pickElement.subscribe(() => {
+      this.sourceBuilder().events.pickElement.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeMarkup);
       }),
-      this.sourceBuilder.events.pickArea.subscribe(() => {
+      this.sourceBuilder().events.pickArea.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
-      this.sourceBuilder.events.cancel.subscribe(() => {
+      this.sourceBuilder().events.cancel.subscribe(() => {
         this.pickMode = false;
         this.changeRef.detectChanges();
       }),
@@ -207,7 +206,8 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     try {
-      const scrapeResponse = await this.sourceBuilder.fetchFeedsUsingBrowser();
+      const scrapeResponse =
+        await this.sourceBuilder().fetchFeedsUsingBrowser();
 
       this.handleScrapeResponse(scrapeResponse);
     } catch (e: any) {
@@ -220,11 +220,11 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   }
 
   cancelPickMode() {
-    this.sourceBuilder.events.cancel.emit();
+    this.sourceBuilder().events.cancel.emit();
   }
 
   private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
-    const url = this.sourceBuilder.getUrl();
+    const url = this.sourceBuilder().getUrl();
 
     this.embedScreenshot = null;
     this.embedMarkup = null;

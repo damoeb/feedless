@@ -118,11 +118,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   protected currentLatLon: LatLng;
   protected readonly now = dayjs();
 
-  @Input({ required: true })
-  date: Dayjs;
+  readonly date = input.required<Dayjs>();
 
-  @Input({ required: true })
-  location: Nullable<NamedLatLon>;
+  readonly location = input.required<Nullable<NamedLatLon>>();
 
   readonly perimeter = input<number>(10);
 
@@ -168,8 +166,8 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   async ngOnInit() {
     this.perimeterFc.patchValue(this.perimeter(), { emitEvent: false });
     this.locationNotAvailable = false;
-    await this.changeLocation(this.location, false);
-    await this.changeDate(this.date, false);
+    await this.changeLocation(this.location(), false);
+    await this.changeDate(this.date(), false);
     this.changeRef.detectChanges();
     dayjs.locale('de');
 
@@ -428,7 +426,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   return days.filter((day) => day.isFirstWeek);
   // }
 
-  async changeLocation(location: NamedLatLon, triggerUrlUpdate = true) {
+  async changeLocation(
+    location: Nullable<NamedLatLon>,
+    triggerUrlUpdate = true,
+  ) {
     this.expand = null;
     this.currentLocation = location;
     if (location) {

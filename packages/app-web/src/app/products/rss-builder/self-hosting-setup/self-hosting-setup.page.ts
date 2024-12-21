@@ -1,10 +1,10 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
 } from '@angular/core';
 import {
-  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -12,7 +12,6 @@ import {
   IonCardTitle,
   IonCheckbox,
   IonContent,
-  IonHeader,
   IonItem,
   IonLabel,
   IonList,
@@ -20,39 +19,43 @@ import {
   IonSearchbar,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { map, merge } from 'rxjs';
+import { sortBy, values } from 'lodash-es';
 
-export type FunctionalityGroup =
-  | 'Database'
-  | 'Core'
-  | 'Plugin'
-  | 'Agent'
-  | 'Telegram'
-  | 'SMTP'
-  | 'Auth';
 export type Functionality = {
   name: string;
   description?: string;
-  disabled?: boolean;
-  checked?: boolean;
-  group: FunctionalityGroup;
+  groups: FeatureGroup[];
 };
+
+type FeatureGroup = {
+  control: FormControl<boolean>;
+  name: string;
+};
+
+function disabled(c: FormControl<boolean>): FormControl<boolean> {
+  c.disable();
+  return c;
+}
+
+function group(name: string, control: FormControl<boolean>): FeatureGroup {
+  return {
+    name,
+    control,
+  };
+}
 
 @Component({
   selector: 'app-self-hosting-setup',
   templateUrl: './self-hosting-setup.page.html',
   styleUrls: ['./self-hosting-setup.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     IonContent,
     IonCard,
     IonCardHeader,
     IonCardContent,
-    DarkModeButtonComponent,
-    IonButtons,
-    IonHeader,
-    IonToolbar,
     IonList,
     IonItem,
     IonCheckbox,
@@ -61,86 +64,148 @@ export type Functionality = {
     IonNote,
     IonSearchbar,
     IonLabel,
+    ReactiveFormsModule,
+    IonToolbar,
   ],
   standalone: true,
 })
-export class SelfHostingSetupPage {
-  list: Functionality[] = [
+export class SelfHostingSetupPage implements OnInit {
+  queryFc = new FormControl<string>('');
+
+  private readonly groups = {
+    database: group('Database', new FormControl(false)),
+    api: group('API', new FormControl(false)),
+    core: group('Core', disabled(new FormControl(true))),
+    agent: group('Agent', new FormControl(false)),
+    plugin: group('Plugin', new FormControl(false)),
+    telegram: group('Push', new FormControl(false)),
+    mail: group('Mail', new FormControl(false)),
+    oauth: group('oauth', new FormControl(false)),
+  };
+
+  private readonly features: Functionality[] = [
     {
       name: 'Aggregate Feeds',
       description: 'Merge multiple feeds into one',
-      group: 'Database',
+      groups: [this.groups.database],
     },
     {
       name: 'Fulltext Feeds',
-      group: 'Database',
+      groups: [this.groups.database],
+    },
+    {
+      name: 'Digest',
+      description: 'Aggregate multiple items into one',
+      groups: [this.groups.database],
     },
     {
       name: 'Web to Feed',
       description: 'HTML markup to a feed-compatible list using XPaths',
-      checked: true,
-      disabled: true,
-      group: 'Core',
+      groups: [this.groups.core],
     },
     {
       name: 'Web to Change Series Feed',
       description:
         'Website fragment into into a series of versions with custom change-trigger rules',
-      group: 'Core',
+      groups: [this.groups.agent],
     },
     {
       name: 'CSV to Feed',
       // description: 'CSV to a feed',
-      group: 'Core',
+      groups: [this.groups.core],
     },
     {
       name: 'ICS to Feed',
       description: 'ICS (Internet Calendar Scheduling) to a feed',
-      group: 'Core',
+      groups: [this.groups.core],
     },
     {
       name: 'Filters Items',
       description: 'Include or exclude feed items based on filters',
-      group: 'Plugin',
+      groups: [this.groups.plugin],
     },
     {
       name: 'Aggregate Items',
       description: 'Merge multiple feed items into one (Digest)',
-      group: 'Plugin',
+      groups: [this.groups.plugin],
     },
-    // {
-    //   name: 'API',
-    //   group: 'Core'
-    // },
+    {
+      name: 'API',
+      description: '',
+      groups: [this.groups.api],
+    },
     {
       name: 'Visual',
-      group: 'Agent',
+      description: '',
+      groups: [this.groups.agent],
     },
     {
       name: 'Website Click Flows',
-      group: 'Agent',
+      groups: [this.groups.agent],
     },
     {
       name: 'JavaScript Support',
-      group: 'Agent',
+      groups: [this.groups.agent],
     },
     {
       name: 'Push Notification',
-      group: 'Telegram',
+      groups: [this.groups.telegram, this.groups.database],
     },
     {
       name: 'Feed to Email',
-      group: 'SMTP',
+      groups: [this.groups.mail],
     },
-    // {
-    //   name: 'Newsletter to Feed',
-    //   group: 'SMTP',
-    // },
     {
       name: 'OAuth2 Authentication',
-      group: 'Auth',
+      groups: [this.groups.oauth],
     },
   ];
 
-  constructor() {}
+  protected filteredFeatures: Functionality[] = sortBy(this.features, 'name');
+
+  constructor(private changeRef: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    merge(
+      ...values(this.groups).map((group) => group.control.valueChanges),
+    ).subscribe(() => this.changeRef.detectChanges());
+
+    this.queryFc.valueChanges
+      .pipe(map((q) => q.trim().toLowerCase()))
+      .subscribe((query) => {
+        if (query) {
+          this.filteredFeatures = sortBy(
+            this.features.filter((feature) => {
+              return (
+                feature.name.toLowerCase().indexOf(query) > -1 ||
+                (feature.description || '').toLowerCase().indexOf(query) > -1
+              );
+            }),
+            'name',
+          );
+        } else {
+          this.filteredFeatures = sortBy(this.features, 'name');
+        }
+        this.changeRef.detectChanges();
+      });
+  }
+
+  activeGroups(): FeatureGroup[] {
+    return sortBy(
+      values(this.groups).filter((group) => group.control.value),
+      'name',
+    );
+  }
+
+  toggle(f: Functionality) {
+    // f.groups.forEach(g => g.)
+  }
+
+  value(f: Functionality): boolean {
+    return f.groups.every((g) => g.control.value);
+  }
+
+  isDisabled(f: Functionality): boolean {
+    return f.groups.every((g) => g.control.disabled);
+  }
 }

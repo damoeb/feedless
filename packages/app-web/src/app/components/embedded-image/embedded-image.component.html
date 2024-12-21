@@ -1,7 +1,6 @@
 <div class="flex__column">
   <div
-    #wrapper
-    [ngClass]="{ point: mode === 'position' }"
+    [ngClass]="{ 'highlight-border': mode === 'position' || mode === 'mark' }"
     style="position: relative; flex: 1; overflow: auto"
   >
     <div

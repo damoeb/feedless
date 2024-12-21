@@ -1,10 +1,3 @@
-<ion-header style="box-shadow: none">
-  <ion-toolbar style="--background: transparent">
-    <ion-buttons slot="end">
-      <app-dark-mode-button></app-dark-mode-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
 <ion-content>
   <div style="flex: 1; display: flex">
     <div style="flex: 1; display: flex">
@@ -20,19 +13,20 @@
           style="flex: 1; display: flex; flex-direction: column"
         >
           <div style="flex: 1; display: flex; flex-direction: column">
-            <ion-searchbar></ion-searchbar>
+            <ion-searchbar [formControl]="queryFc"></ion-searchbar>
             <div style="flex: 1; overflow-y: auto; position: relative">
               <div style="position: absolute; width: 100%">
                 <ion-list>
-                  @for (f of list; track f.name) {
+                  @for (f of filteredFeatures; track f.name) {
                   <ion-item>
                     <ion-checkbox
                       labelPlacement="start"
-                      [checked]="f.checked"
-                      [disabled]="f.disabled"
+                      [checked]="value(f)"
+                      [disabled]="isDisabled(f)"
+                      (ionChange)="toggle(f)"
                     >
                       {{ f.name }}
-                      <ion-note>({{ f.group }})</ion-note>
+                      <ion-note>({{ f.groups }})</ion-note>
                       @if (f.description) {
                       <ion-label>
                         <ion-note>{{ f.description }}</ion-note>
@@ -48,13 +42,20 @@
         </ion-card-content>
       </ion-card>
     </div>
-    <div style="flex: 1; display: flex">
+    <div style="flex: 1; display: flex; flex-direction: column">
       <!--      <app-code-editor style="flex: 1"></app-code-editor>-->
-      <p>
-        I haven't finished this part yet, you can use the older versions of
-        rss-proxy as seen on the github repo for rss-proxy.
-      </p>
-      <p></p>
+      <ion-toolbar color="warning" class="ion-padding-horizontal">
+        <ion-label>
+          I haven't finished this part yet, you can use the older versions of
+          rss-proxy as seen on the github repo for rss-proxy.
+        </ion-label>
+      </ion-toolbar>
+      <p>Setup Requirements:</p>
+      <ul>
+        @for (group of activeGroups(); track group.name) {
+        <li>{{ group.name }}</li>
+        }
+      </ul>
     </div>
   </div>
 </ion-content>

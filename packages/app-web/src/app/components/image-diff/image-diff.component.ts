@@ -4,6 +4,7 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
+  input,
   Input,
   OnDestroy,
   OnInit,
@@ -35,11 +36,9 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly domSanitizer = inject(DomSanitizer);
 
-  @Input({ required: true })
-  before: Record;
+  readonly before = input.required<Record>();
 
-  @Input()
-  after: Record;
+  readonly after = input<Record>();
 
   safeDiffImageUrl: SafeResourceUrl;
   private diffImageUrl: string;
@@ -53,10 +52,10 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    if (this.after) {
+    if (this.after()) {
       this.diffImageUrl = await this.createImageDiff(
-        this.before.rawBase64,
-        this.after.rawBase64,
+        this.before().rawBase64,
+        this.after().rawBase64,
       );
       this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
         this.diffImageUrl,

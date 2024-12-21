@@ -22,11 +22,12 @@ describe('InteractiveWebsiteComponent', () => {
 
     fixture = TestBed.createComponent(InteractiveWebsiteComponent);
     component = fixture.componentInstance;
-
-    component.sourceBuilder = SourceBuilder.fromUrl(
-      '',
-      TestBed.inject(ScrapeService),
+    const componentRef = fixture.componentRef;
+    componentRef.setInput(
+      'sourceBuilder',
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
     );
+
     fixture.detectChanges();
   }));
 

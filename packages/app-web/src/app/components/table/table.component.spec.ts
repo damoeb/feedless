@@ -14,7 +14,8 @@ xdescribe('TableComponent', () => {
 
     fixture = TestBed.createComponent(TableComponent);
     component = fixture.componentInstance;
-    component.rows = [];
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('rows', []);
     fixture.detectChanges();
   }));
 

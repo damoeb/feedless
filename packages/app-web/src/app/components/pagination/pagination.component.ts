@@ -16,8 +16,7 @@ import { IonButton, IonButtons, IonToolbar } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class PaginationComponent {
-  @Input({ required: true })
-  currentPage: number;
+  readonly currentPage = input.required<number>();
 
   readonly isLastPage = input<boolean>();
 

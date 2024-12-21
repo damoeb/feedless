@@ -18,7 +18,8 @@ describe('RemoteFeedItemComponent', () => {
 
     fixture = TestBed.createComponent(RemoteFeedItemComponent);
     component = fixture.componentInstance;
-    component.feedItem = {
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('feedItem', {
       url: 'https://example.com',
       id: '1',
       publishedAt: 0,
@@ -26,8 +27,9 @@ describe('RemoteFeedItemComponent', () => {
       createdAt: 0,
       title: '',
       text: '',
-    };
-    component.feedItemIndex = 1;
+    });
+
+    componentRef.setInput('feedItemIndex', 1);
 
     fixture.detectChanges();
   }));

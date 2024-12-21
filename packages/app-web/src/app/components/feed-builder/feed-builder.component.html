@@ -73,17 +73,21 @@
           beforeFeedsSlot
           class="cy-enable-js-button"
         >
-          @if (!needsJavaScript()) {
-            <ion-label color="medium"> Use JavaScript </ion-label>
-          }
           @if (needsJavaScript()) {
-            <ion-label color="primary"> Using JavaScript </ion-label>
+            <ion-label color="dark"> Enabled JavaScript </ion-label>
+            <ion-icon
+              color="success"
+              name="logo-javascript"
+              slot="end"
+            ></ion-icon>
+          } @else {
+            <ion-label color="medium">Disabled JavaScript </ion-label>
+            <ion-icon
+              color="medium"
+              name="logo-javascript"
+              slot="end"
+            ></ion-icon>
           }
-          <ion-icon
-            color="warning"
-            name="logo-javascript"
-            slot="end"
-          ></ion-icon>
         </ion-item>
         <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
           <ion-item slot="header">
@@ -140,6 +144,16 @@
         <!--        ></ion-icon>-->
         <!--      </ion-item>-->
         <ion-list bottomSlot>
+          @if (allowDraft) {
+            <ion-item
+              appDev
+              (click)="createOrRefineFeed(false, true)"
+              [button]="true"
+            >
+              <ion-label> Save as Draft </ion-label>
+              <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+            </ion-item>
+          }
           @if (!hideCustomizeFeed()) {
             <ion-item
               (click)="createOrRefineFeed(true)"
@@ -147,40 +161,29 @@
               [disabled]="!hasValidFeed"
             >
               @if (standaloneFeedMode()) {
-                <ion-label>Persisted Feed Options...</ion-label>
+                <ion-label>Save Feed</ion-label>
+                <ion-icon name="arrow-redo-outline" slot="end"></ion-icon>
               } @else {
-                <ion-label>Advanced Options</ion-label>
+                <ion-label>Create Feed with Options</ion-label>
+                <ion-icon name="arrow-redo-outline" slot="end"></ion-icon>
               }
-              <ion-icon name="settings-outline" slot="end"></ion-icon>
             </ion-item>
           }
           @if (standaloneFeedMode()) {
             <ion-item
               (click)="createFeedUrl()"
               [button]="true"
-              [disabled]="!hasValidFeed"
               color="primary"
+              [disabled]="!hasValidFeed || needsJavaScript()"
             >
               <ion-label> Show Feed URL </ion-label>
               <ion-icon name="checkmark-done-outline" slot="end"></ion-icon>
             </ion-item>
           } @else {
-            @if (allowDraft && !hasValidFeed) {
-              <ion-item
-                (click)="createOrRefineFeed(false, true)"
-                [button]="true"
-                [disabled]="hasValidFeed"
-                color="primary"
-              >
-                <ion-label> Save as Draft </ion-label>
-                <ion-icon name="checkmark-outline" slot="end"></ion-icon>
-              </ion-item>
-            }
             <ion-item
               (click)="createOrRefineFeed(false)"
               [button]="true"
               [disabled]="!hasValidFeed"
-              color="primary"
             >
               <ion-label>
                 {{ submitButtonText() }}

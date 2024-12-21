@@ -6,17 +6,17 @@ import { ProfileGuardService } from '../../guards/profile-guard.service';
 
 export const RSS_BUILDER_ROUTES: Routes = [
   {
-    path: 'setup',
-    loadComponent: () =>
-      import('./self-hosting-setup/self-hosting-setup.page').then(
-        (m) => m.SelfHostingSetupPage,
-      ),
-  },
-  {
     path: '',
     loadComponent: () =>
       import('./rss-builder-product.page').then((m) => m.RssBuilderProductPage),
     children: [
+      {
+        path: 'setup',
+        loadComponent: () =>
+          import('./self-hosting-setup/self-hosting-setup.page').then(
+            (m) => m.SelfHostingSetupPage,
+          ),
+      },
       {
         path: '',
         canActivate: [ProfileGuardService],

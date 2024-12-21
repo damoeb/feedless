@@ -55,7 +55,7 @@
             </div>
           </div>
         </ion-accordion>
-        @if (sourceBuilder.hasFetchActionReturnedHtml()) {
+        @if (sourceBuilder().hasFetchActionReturnedHtml()) {
           <ion-accordion toggleIconSlot="start" value="custom">
             <ion-item
               [color]="
@@ -214,7 +214,7 @@
       <app-interactive-website
         #interactiveWebsite
         (segmentChange)="handleSegmentChange($event)"
-        [sourceBuilder]="sourceBuilder"
+        [sourceBuilder]="sourceBuilder()"
         style="flex: 1; display: flex"
       >
         <ion-segment-button

@@ -38,7 +38,6 @@ export class ImportOpmlModalComponent
   private readonly modalCtrl = inject(ModalController);
   private readonly repositoryService = inject(RepositoryService);
 
-  @Input()
   outlines: Outline[];
   fcOutlines: FcOutline[];
 

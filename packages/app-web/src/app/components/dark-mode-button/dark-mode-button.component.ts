@@ -25,8 +25,7 @@ export class DarkModeButtonComponent implements OnInit, OnDestroy {
   darkMode: boolean;
   private subscriptions: Subscription[] = [];
 
-  @Input()
-  label: string;
+  label = input<string>();
   readonly expand = input<string>();
   readonly color = input<string>();
 

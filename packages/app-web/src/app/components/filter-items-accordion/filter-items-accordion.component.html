@@ -112,7 +112,7 @@
       <ion-item
         (click)="addGeneralFilter()"
         [button]="true"
-        [color]="filters.length == 0 ? 'primary' : undefined"
+        [color]="filters.length === 0 ? 'primary' : undefined"
         [disabled]="filters.length >= 10"
         class="ion-margin-top"
       >

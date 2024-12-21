@@ -64,6 +64,7 @@ import { FeedlessHeaderComponent } from '../../components/feedless-header/feedle
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
+import { Nullable } from '../../types';
 
 type Email = string;
 
@@ -121,7 +122,7 @@ export class TrackerEditPage
   //   Validators.min(0),
   //   Validators.max(10),
   // ]);
-  form = new FormGroup(
+  formGroup = new FormGroup(
     {
       url: new FormControl<string>('', [
         Validators.required,
@@ -162,7 +163,6 @@ export class TrackerEditPage
   );
   // errorMessage: null;
   showErrors: boolean;
-  isThrottled: boolean;
   screenArea: Screen = 'area';
   screenPage: Screen = 'page';
   screenElement: Screen = 'element';
@@ -178,7 +178,6 @@ export class TrackerEditPage
 
   ngOnInit() {
     this.appConfig.setPageTitle('Tracker Builder');
-    this.isThrottled = !this.serverConfig.isSelfHosted();
     this.subscriptions.push(
       this.actionsFg.valueChanges
         .pipe(debounce(() => interval(800)))
@@ -189,8 +188,8 @@ export class TrackerEditPage
           }
         }),
 
-      this.form.controls.url.valueChanges.subscribe((url) => {
-        if (this.form.controls.url.valid) {
+      this.formGroup.controls.url.valueChanges.subscribe((url) => {
+        if (this.formGroup.controls.url.valid) {
           return this.initialize(url);
         }
       }),
@@ -199,24 +198,26 @@ export class TrackerEditPage
       //     this.form.controls.url.setValue(queryParams.url);
       //   }
       // }),
-      this.form.controls.screen.valueChanges.subscribe((screen) => {
+      this.formGroup.controls.screen.valueChanges.subscribe((screen) => {
         if (screen === 'area') {
-          this.form.controls.areaBoundingBox.enable();
+          this.formGroup.controls.areaBoundingBox.enable();
         } else {
-          this.form.controls.areaBoundingBox.disable();
+          this.formGroup.controls.areaBoundingBox.disable();
         }
         this.changeRef.detectChanges();
       }),
-      this.form.controls.compareType.valueChanges.subscribe((compareType) => {
-        if (compareType === 'pixel') {
-          this.form.controls.screen.enable();
-          this.form.controls.elementXpath.disable();
-        } else {
-          this.form.controls.screen.disable();
-          this.form.controls.elementXpath.enable();
-        }
-        this.changeRef.detectChanges();
-      }),
+      this.formGroup.controls.compareType.valueChanges.subscribe(
+        (compareType) => {
+          if (compareType === 'pixel') {
+            this.formGroup.controls.screen.enable();
+            this.formGroup.controls.elementXpath.disable();
+          } else {
+            this.formGroup.controls.screen.disable();
+            this.formGroup.controls.elementXpath.enable();
+          }
+          this.changeRef.detectChanges();
+        },
+      ),
     );
 
     this.changeRef.detectChanges();
@@ -243,7 +244,7 @@ export class TrackerEditPage
 
   pickArea() {
     this.sourceBuilder.events.pickArea.next((boundingBox: BoundingBox) => {
-      this.form.controls.areaBoundingBox.patchValue(boundingBox);
+      this.formGroup.controls.areaBoundingBox.patchValue(boundingBox);
       this.changeRef.detectChanges();
     });
   }
@@ -258,45 +259,41 @@ export class TrackerEditPage
 
   pickXPath() {
     this.sourceBuilder.events.pickElement.next((xpath: string) => {
-      this.form.controls.elementXpath.setValue(xpath);
+      this.formGroup.controls.elementXpath.setValue(xpath);
       this.changeRef.detectChanges();
     });
   }
 
-  getPositionLabel(action: FormGroup<BrowserAction>) {
+  getPositionLabel(action: FormGroup<BrowserAction>): Nullable<string> {
     const clickParams = action.value.clickParams;
     if (clickParams) {
       return `(${clickParams.x}, ${clickParams.y})`;
-    } else {
-      return 'Click on Screenshot';
     }
   }
 
-  getBoundingBoxLabel(action: FormControl<BoundingBox | null>) {
+  getBoundingBoxLabel(
+    action: FormControl<BoundingBox | null>,
+  ): Nullable<string> {
     const boundingBox = action.value;
     if (boundingBox) {
       return `(${boundingBox.x}, ${boundingBox.y}; ${boundingBox.w}, ${boundingBox.h})`;
-    } else {
-      return 'Draw Area';
     }
   }
 
   handleQuery(url: string) {
-    if (this.form.value.url !== url) {
+    if (this.formGroup.value.url !== url) {
       if (isValidUrl(url)) {
-        this.form.controls.url.setValue(url);
+        this.formGroup.controls.url.setValue(url);
       } else {
         const fixedUrl = fixUrl(url);
-        this.form.controls.url.setValue(fixedUrl);
+        this.formGroup.controls.url.setValue(fixedUrl);
       }
     }
   }
 
-  getXPathLabel(formControl: FormControl<string | null>) {
+  getXPathLabel(formControl: FormControl<string | null>): Nullable<string> {
     if (formControl.valid) {
       return formControl.value;
-    } else {
-      return 'Choose Element';
     }
   }
 
@@ -343,7 +340,7 @@ export class TrackerEditPage
   }
 
   private async createSubscription() {
-    if (this.form.invalid) {
+    if (this.formGroup.invalid) {
       return;
     }
     throw new Error('not implemented');
@@ -432,12 +429,12 @@ export class TrackerEditPage
   // }
 
   private getEmit(): GqlScrapeActionInput {
-    if (this.form.value.screen === 'area') {
+    if (this.formGroup.value.screen === 'area') {
       return {
         extract: {
           fragmentName: 'element from bounding box',
           imageBased: {
-            boundingBox: this.form.value.areaBoundingBox,
+            boundingBox: this.formGroup.value.areaBoundingBox,
           },
         },
       };
@@ -448,8 +445,8 @@ export class TrackerEditPage
           selectorBased: {
             fragmentName: '',
             xpath: {
-              value: this.form.controls.elementXpath.enabled
-                ? this.form.value.elementXpath
+              value: this.formGroup.controls.elementXpath.enabled
+                ? this.formGroup.value.elementXpath
                 : '/',
             },
             emit: [GqlScrapeEmit.Pixel, GqlScrapeEmit.Html],

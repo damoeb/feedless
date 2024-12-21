@@ -82,8 +82,7 @@ export class PricingComponent implements OnInit {
   paymentIntervalYearly: PaymentInterval = GqlRecurringPaymentInterval.Yearly;
   private products: ProductWithFeatureGroups[];
 
-  @Input({ required: true })
-  vertical: GqlVertical;
+  readonly vertical = input.required<GqlVertical>();
 
   readonly serviceFlavor = input<ServiceFlavor>();
 
@@ -97,7 +96,7 @@ export class PricingComponent implements OnInit {
       this.serviceFlavorFc.setValue(serviceFlavor);
     }
     const products = await this.productService.listProducts({
-      category: this.vertical,
+      category: this.vertical(),
     });
 
     this.products = await Promise.all(

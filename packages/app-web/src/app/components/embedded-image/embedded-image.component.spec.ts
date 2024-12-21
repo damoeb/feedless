@@ -16,16 +16,16 @@ describe('EmbeddedImageComponent', () => {
 
     fixture = TestBed.createComponent(EmbeddedImageComponent);
     component = fixture.componentInstance;
-    component.sourceBuilder = SourceBuilder.fromUrl(
-      '',
-      TestBed.inject(ScrapeService),
+    const componentRef = fixture.componentRef;
+    componentRef.setInput(
+      'sourceBuilder',
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
     );
-
-    component.embed = {
+    componentRef.setInput('embed', {
       data: '',
       url: '',
       mimeType: '',
-    };
+    });
     fixture.detectChanges();
   });
 

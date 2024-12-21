@@ -77,16 +77,16 @@ type GeneralFilterParams = ArrayElement<
   standalone: true,
 })
 export class FilterItemsAccordionComponent implements OnInit {
-  formFg = new FormGroup({
+  protected formFg = new FormGroup({
     applyFiltersLast: new FormControl<boolean>(false),
     filterExpression: new FormControl<string>(''),
   });
-  filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
+  protected filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
 
-  @Input({ required: true })
-  filterPlugin: ArrayElement<
-    RepositoryFull['plugins']
-  >['params']['org_feedless_filter'];
+  readonly filterPlugin =
+    input.required<
+      ArrayElement<RepositoryFull['plugins']>['params']['org_feedless_filter']
+    >();
 
   readonly labelPrefix = input.required<string>();
 
@@ -171,8 +171,8 @@ export class FilterItemsAccordionComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    if (this.filterPlugin) {
-      this.filterPlugin.forEach((f) => this.addGeneralFilter(f, false));
+    if (this.filterPlugin()) {
+      this.filterPlugin().forEach((f) => this.addGeneralFilter(f, false));
 
       if (!this.hasCompositeFilters()) {
         this.addGeneralFilter(null, true);
