@@ -7,7 +7,10 @@ import {
   mockRepository,
 } from '../../app-test.module';
 import { FeedBuilderComponent } from './feed-builder.component';
-import { standaloneV1WebToFeedRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
+import {
+  standaloneV1WebToFeedRoute,
+  standaloneV2WebToFeedRoute,
+} from '../../router-utils';
 
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
@@ -53,10 +56,12 @@ describe('FeedBuilderComponent', () => {
         dateIsEvent: true,
         link: 'link',
         ts: 0,
-        q: 'q'
+        q: 'q',
       };
-      const url = standaloneV2WebToFeedRoute(input).$
-      const output = component.parseStandaloneUrl('http://localhost:8080/'+url);
+      const url = standaloneV2WebToFeedRoute(input).$;
+      const output = component.parseStandaloneUrl(
+        'http://localhost:8080/' + url,
+      );
       expect(output).toEqual(input);
     });
     it('V1', () => {
@@ -66,8 +71,10 @@ describe('FeedBuilderComponent', () => {
         dateIsEvent: true,
         pLink: 'link',
       };
-      const url = standaloneV1WebToFeedRoute(input).$
-      const output = component.parseStandaloneUrl('http://localhost:8080/'+url);
+      const url = standaloneV1WebToFeedRoute(input).$;
+      const output = component.parseStandaloneUrl(
+        'http://localhost:8080/' + url,
+      );
       expect(output).toEqual({
         url: 'url',
         context: 'context',

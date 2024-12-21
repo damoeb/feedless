@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TextDiffComponent } from './text-diff.component';
 import { AppTestModule } from '../../app-test.module';
 import { Record } from '../../graphql/types';
+import { SourceBuilder } from '../interactive-website/source-builder';
+import { ScrapeService } from '../../services/scrape.service';
 
 describe('TextDiffComponent', () => {
   let component: TextDiffComponent;
@@ -14,16 +16,19 @@ describe('TextDiffComponent', () => {
 
     fixture = TestBed.createComponent(TextDiffComponent);
     component = fixture.componentInstance;
-    component.before = {
+
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('before', {
       html: '',
       text: '',
       rawBase64: '',
-    } as Record;
-    component.after = {
+    });
+    componentRef.setInput('after', {
       html: '',
       text: '',
       rawBase64: '',
-    } as Record;
+    });
+
     fixture.detectChanges();
   });
 

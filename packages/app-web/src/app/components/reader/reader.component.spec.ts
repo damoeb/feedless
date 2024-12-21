@@ -14,7 +14,9 @@ describe('ReaderComponent', () => {
 
     fixture = TestBed.createComponent(ReaderComponent);
     component = fixture.componentInstance;
-    component.html = '';
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('html', '');
+
     fixture.detectChanges();
   });
 

@@ -12,8 +12,7 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
   standalone: true,
 })
 export class RemoteFeedPreviewComponent {
-  @Input()
-  items: Record[];
+  readonly items = input<Record[]>();
   readonly noMetaColumn = input<boolean>(false);
 
   constructor() {}

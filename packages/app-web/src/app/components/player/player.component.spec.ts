@@ -14,7 +14,9 @@ describe('PlayerComponent', () => {
 
     fixture = TestBed.createComponent(PlayerComponent);
     component = fixture.componentInstance;
-    component.document = { attachments: [] } as any;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('document', { attachments: [] });
+
     fixture.detectChanges();
   });
 

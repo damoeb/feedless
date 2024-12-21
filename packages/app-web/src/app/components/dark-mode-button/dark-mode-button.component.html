@@ -4,16 +4,16 @@
   [expand]="expand()"
   aria-label="Toggle light mode"
 >
-  @if (label) {
+  @if (label()) {
     @if (darkMode) {
       <ion-icon name="sunny-outline" slot="start"></ion-icon>
     }
     @if (!darkMode) {
       <ion-icon name="moon-outline" slot="start"></ion-icon>
     }
-    {{ label }}
+    {{ label() }}
   }
-  @if (!label) {
+  @if (!label()) {
     @if (darkMode) {
       <ion-icon name="sunny-outline" slot="icon-only"></ion-icon>
     }

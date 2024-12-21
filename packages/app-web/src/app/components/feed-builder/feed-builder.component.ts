@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  output,
+  viewChild,
+} from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -7,7 +17,7 @@ import {
   GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -21,15 +31,18 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
-import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
+import {
+  AppConfigService,
+  VerticalSpecWithRoutes,
+} from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
-  InteractiveWebsiteModalComponentProps
+  InteractiveWebsiteModalComponentProps,
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -37,14 +50,25 @@ import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
-import { attachOutline, checkmarkDoneOutline, checkmarkOutline, logoJavascript, settingsOutline } from 'ionicons/icons';
+import {
+  arrowRedoOutline,
+  attachOutline,
+  checkmarkDoneOutline,
+  checkmarkOutline,
+  logoJavascript,
+  settingsOutline,
+} from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
-import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
+import {
+  standaloneV1WebToFeedRoute,
+  standaloneV2FeedTransformRoute,
+  standaloneV2WebToFeedRoute,
+} from '../../router-utils';
 import { LatLng } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { intersection, isArray, xor } from 'lodash-es';
@@ -95,15 +119,15 @@ export type FeedWithRequest = {
 };
 
 export type StandaloneUrlParams = {
-  url: string,
-  link: string,
-  context: string,
-  date?: string,
-  dateIsEvent?: boolean,
-  q?: string,
-  out?: string,
-  ts?: number,
-}
+  url: string;
+  link: string;
+  context: string;
+  date?: string;
+  dateIsEvent?: boolean;
+  q?: string;
+  out?: string;
+  ts?: number;
+};
 
 @Component({
   selector: 'app-feed-builder',
@@ -184,6 +208,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       checkmarkOutline,
       checkmarkDoneOutline,
       attachOutline,
+      arrowRedoOutline,
     });
   }
 
@@ -409,22 +434,26 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
     const keys = Object.keys(params);
 
-    const canParseUrl = <PM extends Record<string, Parser<any>>, C extends {}>(route: RouteNode<string, PM, C>): boolean => {
-      return intersection(Object.keys(route.parserMap), keys).length === keys.length
-    }
+    const canParseUrl = <PM extends Record<string, Parser<any>>, C extends {}>(
+      route: RouteNode<string, PM, C>,
+    ): boolean => {
+      return (
+        intersection(Object.keys(route.parserMap), keys).length === keys.length
+      );
+    };
 
     if (canParseUrl(standaloneV2WebToFeedRoute)) {
-      return standaloneV2WebToFeedRoute.parseParams(params as any)
+      return standaloneV2WebToFeedRoute.parseParams(params as any);
     } else {
       if (canParseUrl(standaloneV1WebToFeedRoute)) {
         const parsed = standaloneV1WebToFeedRoute.parseParams(params as any);
         return {
           url: parsed.url,
           context: parsed.pContext,
-          link: parsed.pLink
+          link: parsed.pLink,
         };
       } else {
-        throw new Error('not a standalone url')
+        throw new Error('not a standalone url');
       }
     }
   }
@@ -440,7 +469,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         const filter = JSON.parse(params.q);
         console.log('with filter', filter);
         if (isArray(filter)) {
-          todo fix
+          // todo fix
           // this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
           //   execute: {
           //     pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
@@ -474,7 +503,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         feedUrl: params.url,
         items: [],
         title: 'Feed',
-        publishedAt: new Date()
+        publishedAt: new Date(),
       });
     }
   }
@@ -530,7 +559,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           value: this.createStandaloneFeedUrl(),
           attributes: {
             readonly: true,
-            style: { fontSize: '1.2rem', minHeight: '150px', fontWeight: 'bold' }
+            style: {
+              fontSize: '1.2rem',
+              minHeight: '150px',
+              fontWeight: 'bold',
+            },
           },
         },
       ],

@@ -26,12 +26,12 @@
         </ion-button>
       } @else {
         <ion-button
-          [routerLink]="'/login?redirectUrl='+getPathname()"
+          [routerLink]="'/login?redirectUrl=' + getPathname()"
           [disabled]="loading"
           color="primary"
           fill="solid"
         >
-          <ion-label>Login</ion-label>
+          <ion-label>Login to continue</ion-label>
         </ion-button>
       }
     </ion-buttons>

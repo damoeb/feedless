@@ -13,7 +13,8 @@ describe('PlanColumnComponent', () => {
 
     fixture = TestBed.createComponent(PlanColumnComponent);
     component = fixture.componentInstance;
-    component.featureGroups = [];
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('featureGroups', []);
     fixture.detectChanges();
   });
 

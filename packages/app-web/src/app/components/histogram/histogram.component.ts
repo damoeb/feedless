@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, input, Input, OnInit } from '@angular/core';
 import { GqlRecordFrequency } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
@@ -13,8 +13,7 @@ import { NgClass } from '@angular/common';
   standalone: true,
 })
 export class HistogramComponent implements OnInit {
-  @Input({ required: true })
-  data: GqlRecordFrequency[];
+  readonly data = input.required<GqlRecordFrequency[]>();
   path: string;
   rate: number;
 
@@ -23,7 +22,7 @@ export class HistogramComponent implements OnInit {
   ngOnInit() {
     const currentDate = dayjs();
     const maxPerDay = 5;
-    this.rate = sumBy(this.data, 'count');
+    this.rate = sumBy(this.data(), 'count');
     const scaleCount = scaleLinear().domain([0, maxPerDay]).range([0, -20]);
 
     const path = times(28)
@@ -32,7 +31,7 @@ export class HistogramComponent implements OnInit {
       .map((dateStr, index) => ({
         index,
         count:
-          this.data.find((i) => dayjs(i.group).format('YYYYMMDD') === dateStr)
+          this.data().find((i) => dayjs(i.group).format('YYYYMMDD') === dateStr)
             ?.count || 0,
       }))
       .map(

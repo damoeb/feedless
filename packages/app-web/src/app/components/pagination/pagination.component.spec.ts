@@ -45,6 +45,9 @@ describe('PaginationComponent', () => {
 
     fixture = TestBed.createComponent(PaginationComponent);
     component = fixture.componentInstance;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('currentPage', 0);
+
     fixture.detectChanges();
   });
 

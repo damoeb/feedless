@@ -1,4 +1,4 @@
-import { Component, inject, Input, output } from '@angular/core';
+import { Component, inject, input, Input, output } from '@angular/core';
 import { GetElementType, Record } from '../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
@@ -19,11 +19,9 @@ type Enclosure = GetElementType<Record['attachments']>;
 export class PlayerComponent {
   private readonly domSanitizer = inject(DomSanitizer);
 
-  @Input({ required: true })
-  document: Record;
+  readonly document = input.required<Record>();
 
-  @Input()
-  isPlaying: boolean;
+  protected isPlaying = false;
 
   readonly playback = output<void>();
 

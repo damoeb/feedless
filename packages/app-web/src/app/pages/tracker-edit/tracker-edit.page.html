@@ -2,7 +2,7 @@
 <ion-content>
   <div [ngClass]="{'show-errors': showErrors}" class="viewport">
     <h2 class="ion-padding-horizontal">Page Tracker Builder</h2>
-    @if (!form.value.url) {
+    @if (!formGroup.value.url) {
     <p class="ion-padding pitch">
       Feedless allows you to monitor changes on any website, whether it's a
       shift in pixels, markup or text. You can track changes to an entire
@@ -20,8 +20,8 @@
               <ion-col size="12">
                 <app-searchbar
                   (querySubmit)="handleQuery($event)"
-                  [color]="form.value.url.length > 0 ? undefined : 'primary'"
-                  [value]="form.value.url"
+                  [color]="formGroup.value.url.length > 0 ? undefined : 'primary'"
+                  [value]="formGroup.value.url"
                   buttonText="Go"
                   placeholder="Enter a website: www.google.com"
                 ></app-searchbar>
@@ -110,11 +110,12 @@
                               </div>
                               <ion-button
                                 (click)="pickPoint(action)"
-                                [color]="action.invalid ? 'primary' : 'light'"
+                                [color]="action.invalid ? 'danger' : 'light'"
                                 expand="block"
                                 style="flex: 1"
                               >
-                                {{ getPositionLabel(action) }}
+                                {{ getPositionLabel(action) ||
+                              'Click on Screenshot' }}
                               </ion-button>
                               <ion-button
                                 (click)="removeAction(i)"
@@ -151,7 +152,7 @@
               <ion-row>
                 <ion-col class="flex" size="5">
                   <ion-radio-group
-                    [formControl]="form.controls.compareType"
+                    [formControl]="formGroup.controls.compareType"
                     class="ion-hide-md-down"
                   >
                     <ion-radio
@@ -174,7 +175,7 @@
                     </ion-radio>
                   </ion-radio-group>
                   <ion-select
-                    [formControl]="form.controls.compareType"
+                    [formControl]="formGroup.controls.compareType"
                     class="ion-hide-md-up"
                     fill="outline"
                     interface="popover"
@@ -196,9 +197,9 @@
                   size="7"
                   style="align-items: end"
                 >
-                  @if (form.value.compareType === GqlRecordField.Pixel) {
+                  @if (formGroup.value.compareType === GqlRecordField.Pixel) {
                   <ion-select
-                    [formControl]="form.controls.screen"
+                    [formControl]="formGroup.controls.screen"
                     fill="outline"
                     interface="popover"
                     placeholder="Screen"
@@ -213,25 +214,27 @@
                       >Element
                     </ion-select-option>
                   </ion-select>
-                  } @if (form.value.compareType !== GqlRecordField.Pixel ||
-                  form.value.screen === screenElement) {
+                  } @if (formGroup.value.compareType !== GqlRecordField.Pixel ||
+                  formGroup.value.screen === screenElement) {
                   <ion-button
                     (click)="pickXPath()"
-                    [color]="form.controls.elementXpath.invalid ? 'primary' : 'light'"
+                    [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
                     class="ion-margin-end"
                   >
-                    {{ getXPathLabel(form.controls.elementXpath) }}
+                    {{ getXPathLabel(formGroup.controls.elementXpath) ||
+                  'Choose Element' }}
                   </ion-button>
-                  } @if (form.controls.areaBoundingBox.enabled) {
+                  } @if (formGroup.controls.areaBoundingBox.enabled) {
                   <ion-button
                     (click)="pickArea()"
-                    [color]="form.controls.areaBoundingBox.invalid ? 'primary' : 'light'"
+                    [color]="formGroup.controls.areaBoundingBox.invalid ? 'danger' : 'light'"
                   >
-                    {{ getBoundingBoxLabel(form.controls.areaBoundingBox) }}
+                    {{ getBoundingBoxLabel(formGroup.controls.areaBoundingBox)
+                    || 'Draw Area' }}
                   </ion-button>
                   }
                   <ion-select
-                    [formControl]="form.controls.sinkCondition"
+                    [formControl]="formGroup.controls.sinkCondition"
                     fill="outline"
                     interface="popover"
                     placeholder="Trigger"
@@ -259,7 +262,7 @@
               <ion-row>
                 <ion-col size="12" size-md="6">
                   <ion-select
-                    [formControl]="form.controls.screen"
+                    [formControl]="formGroup.controls.screen"
                     [multiple]="true"
                     fill="outline"
                     interface="popover"
@@ -275,34 +278,24 @@
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-select
-                    [formControl]="form.controls.fetchFrequency"
+                    [formControl]="formGroup.controls.fetchFrequency"
                     fill="outline"
                     interface="popover"
                     placeholder="Frequency"
                   >
-                    <ion-select-option
-                      [disabled]="isThrottled"
-                      value="0 */15 * * * *"
+                    <ion-select-option value="0 */15 * * * *"
                       >Every 15 min
                     </ion-select-option>
-                    <ion-select-option
-                      [disabled]="isThrottled"
-                      value="0 */30 * * * *"
+                    <ion-select-option value="0 */30 * * * *"
                       >Every 30 min
                     </ion-select-option>
-                    <ion-select-option
-                      [disabled]="isThrottled"
-                      value="0 0 * * * *"
+                    <ion-select-option value="0 0 * * * *"
                       >Every hour
                     </ion-select-option>
-                    <ion-select-option
-                      [disabled]="isThrottled"
-                      value="0 0 */8 * * *"
+                    <ion-select-option value="0 0 */8 * * *"
                       >Every 6 hours
                     </ion-select-option>
-                    <ion-select-option
-                      [disabled]="isThrottled"
-                      value="0 0 */12 * * *"
+                    <ion-select-option value="0 0 */12 * * *"
                       >Every 12 hours
                     </ion-select-option>
                     <ion-select-option value="0 0 0 * * *"
@@ -343,7 +336,7 @@
                 <ion-col>
                   <ion-button
                     (click)="startMonitoring()"
-                    [disabled]="form.invalid"
+                    [disabled]="formGroup.invalid"
                     class="cy-start-monitoring-button"
                     expand="block"
                   >

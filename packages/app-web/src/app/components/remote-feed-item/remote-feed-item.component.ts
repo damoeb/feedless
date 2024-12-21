@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  Input,
+} from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
@@ -22,10 +27,8 @@ import { PlayerComponent } from '../player/player.component';
 export class RemoteFeedItemComponent {
   protected readonly dateFormat = dateFormat;
 
-  @Input({ required: true })
-  feedItem: Record;
-  @Input({ required: true })
-  feedItemIndex: number;
+  readonly feedItem = input.required<Record>();
+  readonly feedItemIndex = input.required<number>();
 
   constructor() {}
 

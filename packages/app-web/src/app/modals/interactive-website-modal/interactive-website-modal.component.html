@@ -92,7 +92,7 @@
       <ion-button (click)="dismissModal()"> Cancel</ion-button>
       <ion-button
         (click)="applyChanges()"
-        [disabled]="actionsFg.invalid"
+        [disabled]="actionsFg.invalid || !sourceBuilder.response"
         color="success"
         expand="full"
         fill="solid"

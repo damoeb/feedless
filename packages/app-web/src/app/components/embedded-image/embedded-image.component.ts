@@ -57,25 +57,21 @@ export class EmbeddedImageComponent
 {
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  @Input({ required: true })
-  embed!: Embeddable;
+  readonly embed = input.required<Embeddable>();
 
   readonly strokeStyle = input<string>('red');
 
-  @Input({ required: true })
-  sourceBuilder!: SourceBuilder;
+  readonly sourceBuilder = input.required<SourceBuilder>();
 
-  pickedBoundingBox: EventEmitter<BoundingBox | null> =
+  private pickedBoundingBox: EventEmitter<BoundingBox | null> =
     new EventEmitter<BoundingBox | null>();
 
-  pickedPosition: EventEmitter<XyPosition | null> =
+  private pickedPosition: EventEmitter<XyPosition | null> =
     new EventEmitter<XyPosition | null>();
 
   readonly imageLayerCanvas = viewChild.required<ElementRef>('imageLayer');
 
   readonly overlayCanvas = viewChild.required<ElementRef>('overlay');
-
-  readonly wrapper = viewChild.required<ElementRef>('wrapper');
 
   drag: boolean = false;
   mode: OperatorMode = 'move';
@@ -169,7 +165,7 @@ export class EmbeddedImageComponent
     const image = new Image();
     this.revokeImageUrl();
     this.imageUrl = URL.createObjectURL(
-      this.b64toBlob(this.embed.data, this.embed.mimeType),
+      this.b64toBlob(this.embed().data, this.embed().mimeType),
     );
     image.src = this.imageUrl;
 
@@ -270,7 +266,7 @@ export class EmbeddedImageComponent
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.sourceBuilder.events.pickPoint.subscribe(
+      this.sourceBuilder().events.pickPoint.subscribe(
         (callback: (position: Nullable<XyPosition>) => void) => {
           console.log('pickPoint');
           this.mode = 'position';
@@ -283,7 +279,7 @@ export class EmbeddedImageComponent
           });
         },
       ),
-      this.sourceBuilder.events.pickArea.subscribe(
+      this.sourceBuilder().events.pickArea.subscribe(
         (callback: (box: Nullable<BoundingBox>) => void) => {
           console.log('pickArea');
           this.mode = 'mark';

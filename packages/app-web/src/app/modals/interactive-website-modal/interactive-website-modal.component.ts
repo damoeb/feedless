@@ -35,7 +35,6 @@ export class InteractiveWebsiteModalComponent
   readonly scrapeService = inject(ScrapeService);
   readonly serverConfig = inject(ServerConfigService);
 
-  @Input({ required: true })
   source: GqlSourceInput;
 
   hideNonUiActions: boolean = true;

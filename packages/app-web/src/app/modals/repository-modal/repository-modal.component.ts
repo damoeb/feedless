@@ -88,9 +88,7 @@ export class RepositoryModalComponent
   noTransformer: FulltextTransformer = 'none';
   readabilityTransformer: FulltextTransformer = 'readability';
 
-  @Input({ required: true })
   repository: RepositoryFull;
-  @Input()
   openAccordions: RepositoryModalAccordion[] = [];
 
   loading = false;

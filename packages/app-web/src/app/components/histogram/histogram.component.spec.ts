@@ -14,7 +14,8 @@ describe('HistogramComponent', () => {
 
     fixture = TestBed.createComponent(HistogramComponent);
     component = fixture.componentInstance;
-    component.data = [];
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('data', []);
     fixture.detectChanges();
   });
 

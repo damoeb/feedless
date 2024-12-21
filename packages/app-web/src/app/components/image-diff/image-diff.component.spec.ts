@@ -14,7 +14,8 @@ describe('ImageDiffComponent', () => {
 
     fixture = TestBed.createComponent(ImageDiffComponent);
     component = fixture.componentInstance;
-    component.before = {} as Record;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('before', {});
     fixture.detectChanges();
   });
 

@@ -1,48 +1,48 @@
 <ion-item class="cy-feed-item">
   <div class="ion-margin-end">{{ feedItemIndex }}.</div>
   <ion-label>
-    @if (feedItem.title) {
+    @if (feedItem().title) {
       <h2 class="cy-remote-feed__title">
-        {{ feedItem.title }}
+        {{ feedItem().title }}
       </h2>
     }
-    @if (!feedItem.title) {
+    @if (!feedItem().title) {
       <h2 class="cy-remote-feed__title">
         <del>Empty Title</del>
       </h2>
     }
     <p>
       <a
-        [href]="feedItem.url"
+        [href]="feedItem().url"
         class="title"
         referrerpolicy="no-referrer"
         target="_blank"
-        >{{ feedItem.url }}</a
+        >{{ feedItem().url }}</a
       >
     </p>
     <p class="cy-remote-feed__date-published">
       Published
-      {{ toDate(feedItem.publishedAt) | date: dateFormat }}
+      {{ toDate(feedItem().publishedAt) | date: dateFormat }}
     </p>
-    @if (feedItem.tags?.length > 0) {
+    @if (feedItem().tags?.length > 0) {
       <p>
-        @for (tag of feedItem.tags; track tag) {
+        @for (tag of feedItem().tags; track tag) {
           <ion-chip>{{ tag }}</ion-chip>
         }
       </p>
     }
-    @if (feedItem.startingAt) {
+    @if (feedItem().startingAt) {
       <p>
         <ion-badge color="success">
           Starting
-          {{ toDate(feedItem.startingAt) | date: dateFormat }}
+          {{ toDate(feedItem().startingAt) | date: dateFormat }}
         </ion-badge>
       </p>
     }
     <p class="cy-remote-feed__body ion-text-wrap">
-      {{ feedItem.text }}
+      {{ feedItem().text }}
     </p>
 
-    <app-player [document]="feedItem"></app-player>
+    <app-player [document]="feedItem()"></app-player>
   </ion-label>
 </ion-item>

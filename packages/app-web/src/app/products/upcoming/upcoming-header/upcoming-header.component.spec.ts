@@ -33,8 +33,9 @@ describe('UpcomingHeaderComponent', () => {
 
     fixture = TestBed.createComponent(UpcomingHeaderComponent);
     component = fixture.componentInstance;
-    component.date = dayjs();
-    component.location = getCachedLocations()[0];
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('date', dayjs());
+    componentRef.setInput('location', getCachedLocations()[0]);
     fixture.detectChanges();
   }));
 

@@ -27,7 +27,9 @@ describe('PricingComponent', () => {
 
     fixture = TestBed.createComponent(PricingComponent);
     component = fixture.componentInstance;
-    component.vertical = GqlVertical.RssProxy;
+    const componentRef = fixture.componentRef;
+    componentRef.setInput('vertical', GqlVertical.RssProxy);
+
     fixture.detectChanges();
   }));
 
