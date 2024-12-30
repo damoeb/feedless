@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.PermissionDeniedException
@@ -22,6 +21,8 @@ import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.ScrapeActionInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
+import org.migor.feedless.generated.types.SourceUpdateInput
+import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.plan.PlanConstraintsService
@@ -36,17 +37,12 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.junit.jupiter.MockitoSettings
-import org.mockito.quality.Strictness
 import org.springframework.context.ApplicationContext
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-@ExtendWith(MockitoExtension::class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryServiceTest {
 
   private lateinit var repositoryDAO: RepositoryDAO
@@ -56,6 +52,7 @@ class RepositoryServiceTest {
   private lateinit var planConstraintsService: PlanConstraintsService
 
   private lateinit var repositoryService: RepositoryService
+  private lateinit var sourceService: SourceService
 
   private lateinit var userId: UUID
   private lateinit var applicationContext: ApplicationContext
@@ -66,6 +63,7 @@ class RepositoryServiceTest {
     sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     applicationContext = mock(ApplicationContext::class.java)
+    sourceService = mock(SourceService::class.java)
 
     repositoryService = RepositoryService(
 //      mock(UserDAO::class.java),
@@ -75,7 +73,7 @@ class RepositoryServiceTest {
       planConstraintsService,
       mock(DocumentService::class.java),
       mock(PropertyService::class.java),
-      mock(SourceService::class.java),
+      sourceService,
       applicationContext
     )
     `when`(applicationContext.getBean(eq(RepositoryService::class.java))).thenReturn(repositoryService)
@@ -176,7 +174,7 @@ class RepositoryServiceTest {
 
   @Test
   fun `given user is owner, updating repository works`() = runTest(context = RequestContext(userId = userId)) {
-    val ssId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
     val data = RepositoryUpdateDataInput(
       nextUpdateAt = NullableLongUpdateOperationsInput(set = null)
     )
@@ -187,7 +185,7 @@ class RepositoryServiceTest {
       .thenReturn(Optional.of(mockRepository))
 
     // when
-    val update = repositoryService.updateRepository(ssId, data)
+    val update = repositoryService.updateRepository(repositoryId, data)
 
     // then
     verify(mockRepository).triggerScheduledNextAt = any2()
@@ -196,7 +194,7 @@ class RepositoryServiceTest {
 
   @Test
   fun `given user is not owner, updating repository fails`() {
-    val ssId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
 
@@ -206,14 +204,83 @@ class RepositoryServiceTest {
         `when`(repositoryDAO.findById(any(UUID::class.java)))
           .thenReturn(Optional.of(mockRepository))
 
-        repositoryService.updateRepository(ssId, mockInput)
+        repositoryService.updateRepository(repositoryId, mockInput)
       }
     }
   }
 
   @Test
+  fun `given updateRepository call, sources can be removed`() = runTest(context = RequestContext(userId = userId)) {
+    val repositoryId = UUID.randomUUID()
+    val removeSources = listOf(UUID.randomUUID())
+    val data = RepositoryUpdateDataInput(
+      sources = SourcesUpdateInput(
+        remove = removeSources.map { it.toString() }
+      )
+    )
+    val mockRepository = mock(RepositoryEntity::class.java)
+    `when`(mockRepository.ownerId).thenReturn(userId)
+    `when`(mockRepository.id).thenReturn(repositoryId)
+
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(mockRepository))
+
+    // when
+    repositoryService.updateRepository(repositoryId, data)
+
+    // then
+    verify(sourceService).deleteAllById(eq(repositoryId), eq(removeSources))
+  }
+
+  @Test
+  fun `given updateRepository call, sources can be updated`() = runTest(context = RequestContext(userId = userId)) {
+    val repositoryId = UUID.randomUUID()
+    val updateSources = listOf(mock(SourceUpdateInput::class.java))
+    val data = RepositoryUpdateDataInput(
+      sources = SourcesUpdateInput(
+        update = updateSources,
+      )
+    )
+    val repository = mock(RepositoryEntity::class.java)
+    `when`(repository.ownerId).thenReturn(userId)
+    `when`(repository.id).thenReturn(repositoryId)
+
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(repository))
+
+    // when
+    repositoryService.updateRepository(repositoryId, data)
+
+    // then
+    verify(sourceService).updateSources(eq(repository), eq(updateSources))
+  }
+
+  @Test
+  fun `given updateRepository call, sources can be added`() = runTest(context = RequestContext(userId = userId)) {
+    val repositoryId = UUID.randomUUID()
+    val addSources = listOf(mock(SourceInput::class.java))
+    val data = RepositoryUpdateDataInput(
+      sources = SourcesUpdateInput(
+        add = addSources,
+      )
+    )
+    val repository = mock(RepositoryEntity::class.java)
+    `when`(repository.ownerId).thenReturn(userId)
+    `when`(repository.id).thenReturn(repositoryId)
+
+    `when`(repositoryDAO.findById(any(UUID::class.java)))
+      .thenReturn(Optional.of(repository))
+
+    // when
+    repositoryService.updateRepository(repositoryId, data)
+
+    // then
+    verify(sourceService).createSources(eq(userId), eq(addSources), eq(repository))
+  }
+
+  @Test
   fun `given user is not owner, deleting repository fails`() {
-    val ssId = UUID.randomUUID()
+    val repositoryId = UUID.randomUUID()
     val mockRepository = mock(RepositoryEntity::class.java)
     `when`(mockRepository.ownerId).thenReturn(UUID.randomUUID())
 
@@ -222,7 +289,7 @@ class RepositoryServiceTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = userId)) {
-        repositoryService.delete(ssId)
+        repositoryService.delete(repositoryId)
       }
     }
   }

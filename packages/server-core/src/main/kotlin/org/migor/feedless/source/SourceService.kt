@@ -272,31 +272,35 @@ class SourceService(
   suspend fun updateSources(repository: RepositoryEntity, updateInputs: List<SourceUpdateInput>) {
     log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
 
+    // todo check owner
+
     withContext(Dispatchers.IO) {
-      val sources =
-        sourceDAO.findAllByRepositoryIdAndIdIn(repository.id, updateInputs.map { UUID.fromString(it.where.id) })
-
-      if (sources.size != updateInputs.size) {
-        throw IllegalArgumentException("no permissions")
-      }
-
       val modifiedSources = mutableListOf<SourceEntity>()
       val deleteScrapeActions = mutableListOf<ScrapeActionEntity>()
       val saveScrapeActions = mutableListOf<ScrapeActionEntity>()
 
       updateInputs.map { sourceUpdate ->
-        val source = sources.firstOrNull { it.id.toString() == sourceUpdate.where.id }!!
+        val source = sourceDAO.findById(UUID.fromString(sourceUpdate.where.id)).orElseThrow()
+        if (source.repositoryId != repository.id) {
+          throw IllegalArgumentException("source does not belong to repository")
+        }
+
+        var changed = false
+
         sourceUpdate.data.tags?.let {
           source.tags = sourceUpdate.data.tags.set.toTypedArray()
+          changed = true
         }
         sourceUpdate.data.latLng?.let { point ->
           point.set?.let {
             source.latLon = JtsUtil.createPoint(it.lat, it.lng)
           } ?: run { source.latLon = null }
+          changed = true
         }
         sourceUpdate.data.disabled?.let { disabled ->
           source.disabled = disabled.set
           source.errorsInSuccession = 0
+          changed = true
         }
 
         sourceUpdate.data.flow?.let { flow ->
@@ -315,7 +319,10 @@ class SourceService(
         }
 
         source.actions = mutableListOf()
-        source
+
+        if (changed) {
+          modifiedSources.add(source)
+        }
       }
 
       scrapeActionDAO.deleteAll(deleteScrapeActions)
