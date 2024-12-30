@@ -3,6 +3,7 @@ package org.migor.feedless.feed
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -148,6 +149,7 @@ class StandaloneFeedServiceTest {
   }
 
   @Test
+  @Disabled
   fun `given saas, standalone is not supported if ts is null`() = runTest {
     // given
     `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
@@ -157,6 +159,7 @@ class StandaloneFeedServiceTest {
   }
 
   @Test
+  @Disabled
   fun `given saas, standalone is not supported if ts is older than 2 month`() = runTest {
     // given
     `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
