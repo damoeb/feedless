@@ -191,26 +191,100 @@ describe('sourceBuilder', () => {
         expect(substitute).toEqual(after.execute);
       });
 
-      it('when plugin is not present', () => {
-        const notPresentPluginId = GqlFeedlessPlugins.OrgFeedlessFulltext;
-        const before = sourceBuilder.findFirstByPluginsId(notPresentPluginId);
-        expect(before).toBeFalsy();
+      describe('when plugin is not present', () => {
+        describe('with before', () => {
+          beforeEach(() => {
+            sourceBuilder.overwriteFlow([
+              {
+                fetch: {
+                  get: {
+                    url: {
+                      literal: '',
+                    },
+                  },
+                },
+              },
+            ]);
+          });
 
-        const substitute: GqlPluginExecutionInput = {
-          pluginId: notPresentPluginId,
-          params: {
-            org_feedless_fulltext: {
-              inheritParams: false,
-              readability: true,
-              summary: false,
-            },
-          },
-        };
-        sourceBuilder.addOrUpdatePluginById(notPresentPluginId, {
-          execute: substitute,
+          it('when before is not present', () => {
+            sourceBuilder.addOrUpdatePluginById(
+              GqlFeedlessPlugins.OrgFeedlessFulltext,
+              {
+                execute: {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+                  params: {},
+                },
+              },
+              GqlFeedlessPlugins.OrgFeedlessFilter,
+            );
+            // expect(flowLength(sourceBuilder)).toBe(2);
+            expect(sourceBuilder.build().flow.sequence.length).toBe(2);
+            expect(sourceBuilder.build().flow.sequence[0].fetch).toBeDefined();
+            expect(
+              sourceBuilder.build().flow.sequence[1].execute,
+            ).toBeDefined();
+          });
+          it('when before is present', () => {
+            sourceBuilder.addOrUpdatePluginById(
+              GqlFeedlessPlugins.OrgFeedlessFilter,
+              {
+                execute: {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+                  params: {},
+                },
+              },
+            );
+            sourceBuilder.addOrUpdatePluginById(
+              GqlFeedlessPlugins.OrgFeedlessFulltext,
+              {
+                execute: {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
+                  params: {},
+                },
+              },
+              GqlFeedlessPlugins.OrgFeedlessFilter,
+            );
+            // expect(flowLength(sourceBuilder)).toBe(2);
+            console.log(sourceBuilder.build().flow.sequence);
+            expect(sourceBuilder.build().flow.sequence.length).toBe(3);
+            expect(sourceBuilder.build().flow.sequence[0].fetch).toBeDefined();
+            expect(
+              sourceBuilder.build().flow.sequence[1].execute,
+            ).toBeDefined();
+            expect(
+              sourceBuilder.build().flow.sequence[1].execute.pluginId,
+            ).toEqual(GqlFeedlessPlugins.OrgFeedlessFulltext);
+            expect(
+              sourceBuilder.build().flow.sequence[2].execute,
+            ).toBeDefined();
+            expect(
+              sourceBuilder.build().flow.sequence[2].execute.pluginId,
+            ).toEqual(GqlFeedlessPlugins.OrgFeedlessFilter);
+          });
         });
-        const after = sourceBuilder.findFirstByPluginsId(notPresentPluginId);
-        expect(substitute).toEqual(after.execute);
+
+        it('without before', () => {
+          const notPresentPluginId = GqlFeedlessPlugins.OrgFeedlessFulltext;
+          const before = sourceBuilder.findFirstByPluginsId(notPresentPluginId);
+          expect(before).toBeFalsy();
+
+          const substitute: GqlPluginExecutionInput = {
+            pluginId: notPresentPluginId,
+            params: {
+              org_feedless_fulltext: {
+                inheritParams: false,
+                readability: true,
+                summary: false,
+              },
+            },
+          };
+          sourceBuilder.addOrUpdatePluginById(notPresentPluginId, {
+            execute: substitute,
+          });
+          const after = sourceBuilder.findFirstByPluginsId(notPresentPluginId);
+          expect(substitute).toEqual(after.execute);
+        });
       });
     });
 

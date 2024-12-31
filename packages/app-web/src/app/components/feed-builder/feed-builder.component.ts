@@ -71,7 +71,7 @@ import {
 } from '../../router-utils';
 import { LatLng } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { intersection, isArray, xor } from 'lodash-es';
+import { assignIn, intersection, isArray, xor } from 'lodash-es';
 import { booleanParser, intParser, RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
 import { strParser } from '../../products/default-routes';
@@ -267,13 +267,12 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (!isValidUrl(this.url)) {
       this.url = fixUrl(this.url);
     }
-    await this.patchUrlInAddressBar();
-    await this.detectLegacyRssProxy();
-
     try {
-      console.log(`scrape ${this.url}`);
       this.errorMessage = null;
       this.loading = true;
+      this.changeRef.detectChanges();
+
+      this.sourceBuilder = null;
       this.changeRef.detectChanges();
 
       if (this.sourceBuilder) {
@@ -289,7 +288,19 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           this.scrapeService,
         );
       }
+      this.changeRef.detectChanges();
 
+      const didConvert = await this.detectLegacyRssProxy();
+      if (didConvert) {
+        this.sourceBuilder.patchFetch({
+          url: {
+            literal: this.url,
+          },
+        });
+      }
+      await this.patchUrlInAddressBar();
+
+      console.log(`scrape ${this.url} ${this.sourceBuilder.getUrl()}`);
       await this.sourceBuilder.fetchFeedsUsingStatic();
     } catch (e: any) {
       this.errorMessage = e?.message;
@@ -392,6 +403,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         (pathFragment) => this.url.indexOf(pathFragment) > -1,
       )
     ) {
+      const convertRole = 'convert';
       const alert = await this.alertCtrl.create({
         header: 'Standalone URL detected',
         backdropDismiss: false,
@@ -402,10 +414,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           {
             role: 'cancel',
             text: 'Skip',
-            handler: () => {},
           },
           {
-            role: 'ok',
+            role: convertRole,
             cssClass: 'confirm-button',
             text: 'Convert and Edit',
             handler: () => this.convertStandaloneRssProxyUrl(),
@@ -414,10 +425,18 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       });
 
       await alert.present();
+      const dismissal = await alert.onDidDismiss();
+      return dismissal.role === convertRole;
     }
+    return false;
   }
 
   parseStandaloneUrl(url: string): StandaloneUrlParams {
+    const defaultParams: Partial<StandaloneUrlParams> = {
+      date: '',
+      dateIsEvent: false,
+    };
+
     const params = new URL(url).search
       .substring(1)
       .split('&')
@@ -443,15 +462,18 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     };
 
     if (canParseUrl(standaloneV2WebToFeedRoute)) {
-      return standaloneV2WebToFeedRoute.parseParams(params as any);
+      return assignIn(
+        defaultParams,
+        standaloneV2WebToFeedRoute.parseParams(params as any),
+      );
     } else {
       if (canParseUrl(standaloneV1WebToFeedRoute)) {
         const parsed = standaloneV1WebToFeedRoute.parseParams(params as any);
-        return {
+        return assignIn(defaultParams, {
           url: parsed.url,
           context: parsed.pContext,
           link: parsed.pLink,
-        };
+        });
       } else {
         throw new Error('not a standalone url');
       }
@@ -459,7 +481,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   private async convertStandaloneRssProxyUrl() {
-    await this.alertCtrl.dismiss();
     const params = this.parseStandaloneUrl(this.url);
     console.log('parsed url with params', params);
     this.url = params.url;
@@ -469,43 +490,47 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         const filter = JSON.parse(params.q);
         console.log('with filter', filter);
         if (isArray(filter)) {
-          // todo fix
-          // this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
-          //   execute: {
-          //     pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-          //     params: {
-          //       org_feedless_filter: filter
-          //     }
-          //   }
-          // });
+          this.sourceBuilder.addOrUpdatePluginById(
+            GqlFeedlessPlugins.OrgFeedlessFilter,
+            {
+              execute: {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+                params: {
+                  org_feedless_filter: filter,
+                },
+              },
+            },
+          );
         }
       } catch (e) {
         // ignored
       }
     }
 
-    if (params.context) {
-      await this.webToFeedTransformerComponent().pickGenericFeed({
-        selectors: {
-          contextXPath: params.context,
-          linkXPath: params.link,
-          dateIsStartOfEvent: params.dateIsEvent,
-          extendContext: GqlExtendContentOptions.None,
-          paginationXPath: '',
-          dateXPath: params.date,
-        },
-        hash: '',
-        score: 0,
-        count: 0,
-      });
-    } else {
-      await this.webToFeedTransformerComponent().pickNativeFeed({
-        feedUrl: params.url,
-        items: [],
-        title: 'Feed',
-        publishedAt: new Date(),
-      });
-    }
+    setTimeout(async () => {
+      if (params.context) {
+        await this.webToFeedTransformerComponent().pickGenericFeed({
+          selectors: {
+            contextXPath: params.context,
+            linkXPath: params.link,
+            dateIsStartOfEvent: params.dateIsEvent,
+            extendContext: GqlExtendContentOptions.None,
+            paginationXPath: '',
+            dateXPath: params.date,
+          },
+          hash: '',
+          score: 0,
+          count: 0,
+        });
+      } else {
+        await this.webToFeedTransformerComponent().pickNativeFeed({
+          feedUrl: params.url,
+          items: [],
+          title: 'Feed',
+          publishedAt: new Date(),
+        });
+      }
+    }, 500);
   }
 
   private async patchUrlInAddressBar() {

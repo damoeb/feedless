@@ -68,7 +68,6 @@ describe('FeedBuilderComponent', () => {
       const input = {
         url: 'url',
         pContext: 'context',
-        dateIsEvent: true,
         pLink: 'link',
       };
       const url = standaloneV1WebToFeedRoute(input).$;
@@ -79,6 +78,8 @@ describe('FeedBuilderComponent', () => {
         url: 'url',
         context: 'context',
         link: 'link',
+        date: '',
+        dateIsEvent: false,
       });
     });
   });

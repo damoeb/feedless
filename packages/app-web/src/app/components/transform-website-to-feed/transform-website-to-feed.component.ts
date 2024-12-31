@@ -278,12 +278,16 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             literal: feed.feedUrl,
           },
         })
-        .addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFeed, {
-          execute: {
-            pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-            params: {},
+        .addOrUpdatePluginById(
+          GqlFeedlessPlugins.OrgFeedlessFeed,
+          {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+              params: {},
+            },
           },
-        });
+          GqlFeedlessPlugins.OrgFeedlessFilter,
+        );
 
       this.emitSelectedFeed();
       this.patchCurrentUrl({ url: this.currentNativeFeed.feedUrl });
@@ -456,6 +460,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
           },
         },
       },
+      GqlFeedlessPlugins.OrgFeedlessFilter,
     );
 
     this.patchCurrentUrl(omit(this.currentGenericFeed.selectors, '__typename'));
