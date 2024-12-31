@@ -156,13 +156,35 @@ export class SourceBuilder {
   addOrUpdatePluginById(
     pluginId: GqlFeedlessPlugins,
     action: GqlScrapeActionInput,
+    before: GqlFeedlessPlugins = null,
   ) {
-    console.log('updatePluginById', pluginId);
-    const index = this.flow.findIndex((a) => a.execute?.pluginId === pluginId);
-    if (index > -1) {
-      this.flow[index] = action;
+    console.log('updatePluginById', pluginId, this.flow);
+
+    const updateIndex = this.flow.findIndex(
+      (a) => a.execute?.pluginId === pluginId,
+    );
+    if (updateIndex > -1) {
+      console.log(`update #${updateIndex}`);
+      this.flow[updateIndex] = action;
     } else {
-      this.flow.push(action);
+      console.log('add');
+
+      if (before) {
+        const addBeforeIndex = this.flow.findIndex(
+          (a) => a.execute?.pluginId === before,
+        );
+        if (addBeforeIndex > -1) {
+          this.flow = [
+            ...this.flow.slice(0, addBeforeIndex),
+            action,
+            ...this.flow.slice(addBeforeIndex),
+          ];
+        } else {
+          this.flow.push(action);
+        }
+      } else {
+        this.flow.push(action);
+      }
     }
     this.validateFlow();
     this.events.stateChange.next('DIRTY');

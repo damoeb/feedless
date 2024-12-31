@@ -114,8 +114,8 @@
                                 expand="block"
                                 style="flex: 1"
                               >
-                                {{ getPositionLabel(action) ||
-                              'Click on Screenshot' }}
+                                {{ getPositionLabel(action) || 'Click on
+                                Screenshot' }}
                               </ion-button>
                               <ion-button
                                 (click)="removeAction(i)"
@@ -221,8 +221,8 @@
                     [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
                     class="ion-margin-end"
                   >
-                    {{ getXPathLabel(formGroup.controls.elementXpath) ||
-                  'Choose Element' }}
+                    {{ getXPathLabel(formGroup.controls.elementXpath) || 'Choose
+                    Element' }}
                   </ion-button>
                   } @if (formGroup.controls.areaBoundingBox.enabled) {
                   <ion-button
