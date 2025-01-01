@@ -1,5 +1,5 @@
-const chromiumBin = process.env.CHROMIUM_BIN;
-console.log(`Using chronmium bin ${chromiumBin}`);
+const chromiumBin = process.env.CHROME_BIN;
+console.log(`Using env.CHROME_BIN -> ${chromiumBin}`);
 
 module.exports = function (config) {
   config.set({
