@@ -290,14 +290,14 @@ class RepositoryService(
 //  }
 
   @Transactional
-  suspend fun delete(id: UUID) {
+  suspend fun delete(repositoryId: UUID) {
     withContext(Dispatchers.IO) {
-      val sub = repositoryDAO.findById(id).orElseThrow()
-      if (sub.ownerId != coroutineContext.userId()) {
+      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      if (repository.ownerId != coroutineContext.userId()) {
         throw PermissionDeniedException("not authorized")
       }
-      log.info("[${coroutineContext.corrId()}] removing repository $id")
-      repositoryDAO.delete(sub)
+      log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
+      repositoryDAO.delete(repository)
     }
   }
 
