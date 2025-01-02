@@ -44,7 +44,7 @@ open class SourceEntity : EntityWithUUID() {
   open var language: String? = null
 
   @Column(name = "title", nullable = false)
-  @Size(message = "title", min = 1, max = LEN_STR_DEFAULT)
+  @Size(message = "title", min = 0, max = LEN_STR_DEFAULT)
   open lateinit var title: String
 
   @Column(nullable = true, name = "lat_lon", columnDefinition = "geometry")
@@ -73,7 +73,7 @@ open class SourceEntity : EntityWithUUID() {
   open var errorsInSuccession: Int = 0
 
   @Column(name = "last_error_message")
-  @Size(message = "lastErrorMessage", min = 1, max = LEN_STR_DEFAULT)
+  @Size(message = "lastErrorMessage", min = 0, max = LEN_STR_DEFAULT)
   open var lastErrorMessage: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
@@ -95,7 +95,7 @@ open class SourceEntity : EntityWithUUID() {
     if (tags != null && tags?.size!! > 10) {
       throw IllegalArgumentException("too many tags")
     }
-    title = StringUtils.abbreviate(title, LEN_STR_DEFAULT)
+    title = StringUtils.defaultIfBlank(StringUtils.abbreviate(title, LEN_STR_DEFAULT), "None")
     lastErrorMessage = StringUtils.abbreviate(lastErrorMessage, LEN_STR_DEFAULT)
   }
 }
