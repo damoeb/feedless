@@ -49,7 +49,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @PropertySource("classpath:application.properties")
-@Profile(AppLayer.security)
+@Profile("${AppLayer.security} & ${AppLayer.api}")
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)

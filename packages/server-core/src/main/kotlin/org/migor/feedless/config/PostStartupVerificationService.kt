@@ -29,12 +29,22 @@ class PostStartupVerificationService {
   }
 
   private fun verifyGeneralEnvironment() {
-    verifyEnvironment("general", arrayOf(AppProfiles.scrape, AppLayer.scheduler, AppLayer.repository, AppLayer.api, AppProfiles.standaloneFeeds))
+    verifyEnvironment("general", arrayOf(AppProfiles.scrape, AppLayer.repository, AppProfiles.standaloneFeeds))
   }
 
   private fun verifySaasEnvironment() {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      verifyEnvironment("saas", arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.standaloneFeeds, AppProfiles.analytics ))
+      verifyEnvironment("saas", arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.standaloneFeeds ))
+
+      if (environment.acceptsProfiles(Profiles.of(AppLayer.api))) {
+        log.info("api instance")
+      } else {
+        if (environment.acceptsProfiles(Profiles.of(AppLayer.scheduler))) {
+          log.info("jobs instance")
+        } else {
+          throw IllegalArgumentException("No runtime profile of [api,jobs] is active")
+        }
+      }
     }
   }
 
