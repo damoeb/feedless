@@ -72,9 +72,8 @@ import {
 import { LatLng } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { assignIn, intersection, isArray, xor } from 'lodash-es';
-import { booleanParser, intParser, RouteNode } from 'typesafe-routes';
+import { RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
-import { strParser } from '../../products/default-routes';
 
 /**
  * IDEEN

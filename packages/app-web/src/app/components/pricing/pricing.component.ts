@@ -8,10 +8,10 @@ import {
   OnInit,
   output,
 } from '@angular/core';
-import { filter } from 'lodash-es';
+import { filter, first } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
-import { FeatureGroup, Product } from '../../graphql/types';
+import { FeatureGroup, Product, Session } from '../../graphql/types';
 import {
   GqlFeatureName,
   GqlPricedProduct,
@@ -34,6 +34,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
+import { SessionService } from '../../services/session.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -43,6 +44,8 @@ type ProductWithFeatureGroups = Product & {
   stringifiedFeatureGroups: StringFeatureGroup[];
   featureGroups: FeatureGroup[];
 };
+
+type Plan = Session['user']['plan']
 
 @Component({
   selector: 'app-pricing',
@@ -67,6 +70,7 @@ export class PricingComponent implements OnInit {
   private readonly featureService = inject(FeatureService);
   private readonly productService = inject(ProductService);
   private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly sessionService = inject(SessionService);
 
   targetGroupFc = new FormControl<TargetGroup>('individual');
   paymentIntervalFc = new FormControl<PaymentInterval>(
@@ -89,6 +93,7 @@ export class PricingComponent implements OnInit {
   readonly hideServiceFlavor = input<boolean>();
 
   readonly selectionChange = output<Product>();
+  protected subscribedPlans: Plan[] = [];
 
   async ngOnInit() {
     const serviceFlavor = this.serviceFlavor();
@@ -98,6 +103,13 @@ export class PricingComponent implements OnInit {
     const products = await this.productService.listProducts({
       category: this.vertical(),
     });
+
+    this.sessionService.getSession().subscribe(async (session) => {
+      if (session.isLoggedIn) {
+        this.subscribedPlans = [session.user.plan];
+        this.changeRef.detectChanges();
+      }
+    })
 
     this.products = await Promise.all(
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
@@ -217,5 +229,13 @@ export class PricingComponent implements OnInit {
       case GqlFeatureName.SourceMaxCountPerRepositoryInt:
         return 'Sources per Feed';
     }
+  }
+
+  hasSubscribed(product: ProductWithFeatureGroups): boolean {
+    return product.isCloud && this.subscribedPlans.some(subscribedPlan => subscribedPlan.productId === product.id)
+  }
+
+  cancelSubscription(product: ProductWithFeatureGroups) {
+
   }
 }

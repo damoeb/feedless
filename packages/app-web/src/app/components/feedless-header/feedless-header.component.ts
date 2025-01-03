@@ -28,11 +28,11 @@ import {
 
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { RepositoriesButtonComponent } from '../repositories-button/repositories-button.component';
-import { AgentsButtonComponent } from '../agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../login-button/login-button.component';
 import { addIcons } from 'ionicons';
-import { logoGithub, logoSlack } from 'ionicons/icons';
+import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 
 @Component({
   selector: 'app-feedless-header',
@@ -47,11 +47,11 @@ import { logoGithub, logoSlack } from 'ionicons/icons';
     IonMenuButton,
     RouterLink,
     RepositoriesButtonComponent,
-    AgentsButtonComponent,
     DarkModeButtonComponent,
     LoginButtonComponent,
     IonIcon,
     RouterLinkActive,
+    RemoveIfProdDirective,
   ],
   standalone: true,
 })
@@ -74,6 +74,7 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
     addIcons({
       logoSlack,
       logoGithub,
+      notificationsOutline,
     });
   }
 

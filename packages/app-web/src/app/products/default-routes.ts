@@ -20,11 +20,6 @@ export const DefaultRoutes: Routes = [
       import('../pages/login/login.routes').then((m) => m.LOGIN_ROUTES),
   },
   {
-    path: 'contact',
-    loadChildren: () =>
-      import('../pages/contact/contact.routes').then((m) => m.CONTACT_ROUTES),
-  },
-  {
     path: 'feeds/:feedId',
     loadChildren: () =>
       import('../pages/feed-details/feed-details.routes').then(
@@ -108,6 +103,26 @@ export const DefaultRoutes: Routes = [
         path: 'agents',
         loadChildren: () =>
           import('../pages/agents/agents.routes').then((m) => m.AGENTS_ROUTES),
+      },
+      {
+        path: 'services',
+        loadChildren: () =>
+          import('../pages/services/services.routes').then((m) => m.SERVICES_ROUTES),
+      },
+      {
+        path: 'plugins',
+        loadChildren: () =>
+          import('../pages/plugins/plugins.routes').then((m) => m.PLUGINS_ROUTES),
+      },
+      {
+        path: 'applications',
+        loadChildren: () =>
+          import('../pages/applications/applications.routes').then((m) => m.APPLICATIONS_ROUTES),
+      },
+      {
+        path: 'plans',
+        loadChildren: () =>
+          import('../pages/plans/plans.routes').then((m) => m.PLAN_ROUTES),
       },
       {
         path: 'settings',

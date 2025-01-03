@@ -12,14 +12,17 @@ import { RepositoryService } from '../../../services/repository.service';
 import { AuthService } from '../../../services/auth.service';
 import { GqlVertical } from '../../../../generated/graphql';
 import {
+  IonAccordion,
+  IonAccordionGroup,
   IonChip,
-  IonItem,
-  IonList,
-  IonMenuToggle,
+  IonItem, IonLabel,
+  IonList, IonListHeader,
+  IonMenuToggle
 } from '@ionic/angular/standalone';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { BubbleComponent } from '../../../components/bubble/bubble.component';
+import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 
 @Component({
   selector: 'app-feedless-menu',
@@ -34,6 +37,11 @@ import { BubbleComponent } from '../../../components/bubble/bubble.component';
     RouterLinkActive,
     IonChip,
     BubbleComponent,
+    IonListHeader,
+    IonAccordionGroup,
+    IonAccordion,
+    IonLabel,
+    RemoveIfProdDirective,
   ],
   standalone: true,
 })

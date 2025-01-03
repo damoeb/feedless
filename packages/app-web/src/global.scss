@@ -293,9 +293,9 @@ a {
 }
 
 ion-accordion.accordion-expanded {
-  box-shadow: 0px 0px 17px 10px var(--ion-item-background);
-  border-radius: 1rem;
-  border: 2px solid rgba(var(--app-foreground-rgb), 0.4);
+  //box-shadow: 0px 0px 17px 10px var(--ion-item-background);
+  //border-radius: 1rem;
+  border: 2px solid rgba(var(--app-foreground-rgb), 0.3);
   margin-bottom: 10px;
   margin-top: 10px;
 }
@@ -316,4 +316,9 @@ ion-accordion.accordion-expanded {
 
 ion-modal {
   --backdrop-opacity: 0.5 !important;
+}
+
+.menu-content-open {
+  filter: grayscale(0.4) brightness(0.4);
+  transition: filter 0.5s ease-in-out;
 }

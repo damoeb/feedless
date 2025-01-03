@@ -1,60 +1,11 @@
 @if (authorization?.loggedIn) {
-  <ion-button
-    [color]="color()"
-    [expand]="expand()"
-    class="cy-profile-button"
-    id="open-settings-popover"
-  >
-    @if (label()) {
-      <ion-icon name="apps-outline" slot="start"></ion-icon>
-      {{ label() }}
-    } @else {
-      <ion-icon name="apps-outline"></ion-icon>
-    }
-    <ion-popover trigger="open-settings-popover" triggerAction="click">
-      <ng-template>
-        <ion-list>
-          <ion-item [button]="true" routerLink="/profile">
-            <ion-icon name="person-outline" slot="start"></ion-icon>
-            Profile
-          </ion-item>
-          <!--        <ion-item [button]="true" routerLink="/secrets">-->
-          <!--          <ion-icon name="key-outline" slot="start"></ion-icon>-->
-          <!--          Secrets-->
-          <!--        </ion-item>-->
-          <!--        <ion-item-->
-          <!--          [button]="true"-->
-          <!--          routerLink="/orders"-->
-          <!--          *ngIf="serverConfig.isSaas()"-->
-          <!--        >-->
-          <!--          <ion-icon name="card-outline" slot="start"></ion-icon>-->
-          <!--          Billings-->
-          <!--        </ion-item>-->
-          @if (serverConfig.isSelfHosted()) {
-            <ion-item [button]="true" routerLink="/settings">
-              <ion-icon name="settings-outline" slot="start"></ion-icon>
-              Settings
-            </ion-item>
-          }
-          @if (serverConfig.isSelfHosted()) {
-            <ion-item [button]="true" routerLink="/license">
-              <ion-icon name="card-outline" slot="start"></ion-icon>
-              License
-            </ion-item>
-          }
-          <ion-item (click)="logout()" [button]="true">
-            <ion-icon name="exit-outline" slot="start"></ion-icon>
-            Logout
-          </ion-item>
-        </ion-list>
-      </ng-template>
-    </ion-popover>
+  <ion-button routerLink="/profile">
+    <ion-icon name="person-outline" slot="icon-only"></ion-icon>
   </ion-button>
 } @else {
   <ion-button
     [color]="color()"
     [expand]="expand()"
-    class="cy-login-button"
     routerLink="/login"
   >
     Login
