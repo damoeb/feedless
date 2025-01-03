@@ -14,3 +14,4 @@ packages/server-mgmt
 build-cache
 .env
 LAST_BUILD_COMMIT
+.postgres-data

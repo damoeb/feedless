@@ -5,19 +5,38 @@ version: '3.4'
 services:
 
   postgis:
-    image: postgis/postgis:15-3.4-alpine
+    image: postgis/postgis:17-3.5-alpine
     container_name: postgis
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - volumes/postgres:/var/lib/postgresql/data
     logging:
       driver: json-file
       options:
         max-size: 10m
     expose:
       - 5433
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c maintenance_work_mem=256MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2621kB
+      -c huge_pages=off
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
     ports:
       - "5433:5432"
     networks:

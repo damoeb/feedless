@@ -50,7 +50,7 @@ services:
 # /usr/share/postgresql/15/extension/postgis.control
   # https://github.com/postgis/docker-postgis
   postgis:
-    image: postgis/postgis:15-3.4-alpine
+    image: postgis/postgis:17-3.5-alpine
     container_name: postgis
     restart: unless-stopped
     environment:
@@ -62,6 +62,8 @@ services:
       -c shared_preload_libraries=pg_stat_statements
       -c pg_stat_statements.track=all
       -c max_connections=100
+    volumes:
+      - .postgres-data:/var/lib/postgresql/data
     expose:
       - 5433
     ports:
