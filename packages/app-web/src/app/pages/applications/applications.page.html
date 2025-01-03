@@ -1,0 +1,27 @@
+<app-feedless-header></app-feedless-header>
+<ion-content>
+  <div class="limited-width-pane">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+      <ion-breadcrumb>Applications</ion-breadcrumb>
+    </ion-breadcrumbs>
+
+    <ion-row style="width: 100%">
+      <ion-col size="6">
+        <h3>Applications</h3>
+      </ion-col>
+      <ion-col size="6" class="ion-text-right">
+        <ion-button color="primary">
+          Create application
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-list>
+      <ion-item>
+<!-- name, authorized origins, clientId, client secret  -->
+        <ion-label>No applications found</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

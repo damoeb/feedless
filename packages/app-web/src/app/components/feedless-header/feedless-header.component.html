@@ -31,17 +31,14 @@
           link="/feeds"
           name="Feeds"
         ></app-repositories-button>
-        <app-agents-button></app-agents-button>
         <ion-button
           href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"
           target="_blank"
         >
-          <ion-icon name="logo-slack" slot="start"></ion-icon>
-          Slack
+          <ion-icon name="logo-slack" slot="icon-only"></ion-icon>
         </ion-button>
         <ion-button href="https://github.com/damoeb/feedless" target="_blank">
-          <ion-icon name="logo-github" slot="start"></ion-icon>
-          Github
+          <ion-icon name="logo-github" slot="icon-only"></ion-icon>
         </ion-button>
       </ion-buttons>
     </div>
@@ -54,6 +51,9 @@
         routerLinkActive="hidden"
       >
         Create Feed
+      </ion-button>
+      <ion-button routerLink="/notifications" appDev>
+        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
       </ion-button>
       <app-dark-mode-button></app-dark-mode-button>
       <!--      <ion-button routerLink="/plans">-->

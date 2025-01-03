@@ -1014,6 +1014,7 @@ type Plan {
   product: Product!
   startedAt: Long
   terminatedAt: Long
+#  recurringYearly: Boolean!
 }
 
 type UserSecret {
