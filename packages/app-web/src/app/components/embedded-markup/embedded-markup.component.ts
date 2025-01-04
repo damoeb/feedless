@@ -135,8 +135,9 @@ export class EmbeddedMarkupComponent
         this.pickElement = true;
         const unsubscribe = this.pickedXpath.subscribe((xpath) => {
           this.pickElement = false;
-          unsubscribe.unsubscribe();
+          console.log('callback(xpath)', xpath)
           callback(xpath);
+          unsubscribe.unsubscribe();
         });
       }),
       this.sourceBuilder()
@@ -207,6 +208,10 @@ body { cursor: pointer; }
   }
 
   private registerMessageListener() {
+    if (this.unbindMessageListener) {
+      this.unbindMessageListener();
+    }
+
     const messageListener = (e: MessageEvent) => {
       const data: IframeMessage = e.data;
       switch (data.type) {
@@ -352,7 +357,6 @@ window.addEventListener('message', (message) => {
           type: 'text/html;charset=UTF-8',
         }),
       );
-      // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
       iframe.nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();
     }
