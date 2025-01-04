@@ -17,20 +17,21 @@ import {
 import { GqlVertical } from '../generated/graphql';
 import { kebabCase } from 'lodash-es';
 import {
-  IonApp, IonAvatar,
+  IonApp,
   IonButtons,
   IonContent,
   IonFooter,
   IonHeader,
   IonIcon,
-  IonItem, IonLabel,
+  IonItem,
+  IonLabel,
   IonList,
   IonMenu,
   IonMenuButton,
   IonRouterOutlet,
   IonSplitPane,
   IonToolbar,
-  MenuController
+  MenuController,
 } from '@ionic/angular/standalone';
 import { ProductTitleComponent } from './components/product-title/product-title.component';
 import { ServerConfigService } from './services/server-config.service';
@@ -64,7 +65,6 @@ import {
     IonList,
     IonItem,
     RouterLink,
-    IonAvatar,
     IonLabel,
   ],
   standalone: true,

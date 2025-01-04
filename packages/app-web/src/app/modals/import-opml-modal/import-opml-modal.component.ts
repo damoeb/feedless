@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular/standalone';
 import { FormControl, FormGroup } from '@angular/forms';

@@ -26,11 +26,9 @@ import {
   gitNetworkOutline,
   listOutline,
 } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../../components/feedless-header/feedless-header.component';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { RouterLink } from '@angular/router';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
-import { PromotionHeaderComponent } from '../../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-about-feedless-page',
@@ -38,7 +36,6 @@ import { PromotionHeaderComponent } from '../../../components/promotion-header/p
   styleUrls: ['./about-feedless.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     ProductHeaderComponent,
     IonList,
@@ -48,7 +45,6 @@ import { PromotionHeaderComponent } from '../../../components/promotion-header/p
     IonIcon,
     RemoveIfProdDirective,
     IonBadge,
-    PromotionHeaderComponent,
   ],
   standalone: true,
 })

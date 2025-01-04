@@ -1,4 +1,4 @@
-import { Component, Input, input, OnInit, output } from '@angular/core';
+import { Component, input, OnInit, output } from '@angular/core';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { IonButton, IonCol, IonGrid, IonRow } from '@ionic/angular/standalone';
 import { InputComponent } from '../../elements/input/input.component';

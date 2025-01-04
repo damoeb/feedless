@@ -7,15 +7,11 @@ import {
   ElementRef,
   EventEmitter,
   inject,
-  Input,
   input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  SimpleChanges,
   viewChild,
 } from '@angular/core';
-import { isDefined } from '../../types';
 import { Embeddable } from '../embedded-image/embedded-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { debounce, distinct, interval, Subscription } from 'rxjs';
@@ -135,7 +131,7 @@ export class EmbeddedMarkupComponent
         this.pickElement = true;
         const unsubscribe = this.pickedXpath.subscribe((xpath) => {
           this.pickElement = false;
-          console.log('callback(xpath)', xpath)
+          console.log('callback(xpath)', xpath);
           callback(xpath);
           unsubscribe.unsubscribe();
         });

@@ -1,124 +1,97 @@
 <ion-accordion-group>
-  <ion-item [button]="true" routerLink="/agents">
-    Agents
-  </ion-item>
+  <ion-item [button]="true" routerLink="/agents"> Agents </ion-item>
   <div appDev>
-  <ion-item [button]="true">
-    Analytics
-  </ion-item>
-  <ion-accordion>
-    <ion-item slot="header">
-      <ion-label>API & Services</ion-label>
-    </ion-item>
-    <ion-list slot="content">
-      <ion-item [button]="true" routerLink="/applications">
-        Applications
+    <ion-item [button]="true"> Analytics </ion-item>
+    <ion-accordion>
+      <ion-item slot="header">
+        <ion-label>API & Services</ion-label>
       </ion-item>
-      <ion-item [button]="true" routerLink="/services">
-        Connected Services
+      <ion-list slot="content">
+        <ion-item [button]="true" routerLink="/applications">
+          Applications
+        </ion-item>
+        <ion-item [button]="true" routerLink="/services">
+          Connected Services
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+    <ion-accordion>
+      <ion-item slot="header">
+        <ion-label>IAM & Admin</ion-label>
       </ion-item>
-    </ion-list>
-  </ion-accordion>
-  <ion-accordion>
-    <ion-item slot="header">
-      <ion-label>IAM & Admin</ion-label>
-    </ion-item>
-    <ion-list slot="content">
-      <ion-item [button]="true">
-        Secrets
+      <ion-list slot="content">
+        <ion-item [button]="true"> Secrets </ion-item>
+        <ion-item [button]="true"> User &amp; Groups </ion-item>
+      </ion-list>
+    </ion-accordion>
+    <ion-accordion>
+      <ion-item slot="header">
+        <ion-label>Billings &amp; Plans</ion-label>
       </ion-item>
-      <ion-item [button]="true">
-        User &amp; Groups
+      <ion-list slot="content">
+        <ion-item [button]="true" routerLink="/billings"> Billing </ion-item>
+        <ion-item [button]="true" routerLink="/plans"> Plans </ion-item>
+      </ion-list>
+    </ion-accordion>
+    <ion-accordion>
+      <ion-item slot="header">
+        <ion-label>Feeds</ion-label>
       </ion-item>
-    </ion-list>
-  </ion-accordion>
-  <ion-accordion>
-    <ion-item slot="header">
-      <ion-label>Billings &amp; Plans</ion-label>
-    </ion-item>
-    <ion-list slot="content">
-      <ion-item [button]="true" routerLink="/billings">
-        Billing
-      </ion-item>
-      <ion-item [button]="true" routerLink="/plans">
-        Plans
-      </ion-item>
-    </ion-list>
-  </ion-accordion>
-  <ion-accordion>
-    <ion-item slot="header">
-      <ion-label>Feeds</ion-label>
-    </ion-item>
-    <ion-list slot="content">
-      <ion-item [button]="true">
-        Sources
-      </ion-item>
-      <ion-item [button]="true">
-        Sinks
-      </ion-item>
-      <ion-item [button]="true">
-        Repositories
-      </ion-item>
-    </ion-list>
-  </ion-accordion>
-  <ion-item [button]="true">
-    Storage
-  </ion-item>
+      <ion-list slot="content">
+        <ion-item [button]="true"> Sources </ion-item>
+        <ion-item [button]="true"> Sinks </ion-item>
+        <ion-item [button]="true"> Repositories </ion-item>
+      </ion-list>
+    </ion-accordion>
+    <ion-item [button]="true"> Storage </ion-item>
   </div>
-  <ion-item [button]="true" routerLink="/feeds">
-    Feeds
-  </ion-item>
-  <ion-item [button]="true" routerLink="/plugins">
-    Plugins
-  </ion-item>
-  <ion-item [button]="true"
-            routerLink="/profile">
-    Profile
-  </ion-item>
-<!--  <ion-item [button]="true">-->
-<!--    Genesis-->
-<!--  </ion-item>-->
+  <ion-item [button]="true" routerLink="/feeds"> Feeds </ion-item>
+  <ion-item [button]="true" routerLink="/plugins"> Plugins </ion-item>
+  <ion-item [button]="true" routerLink="/profile"> Profile </ion-item>
+  <!--  <ion-item [button]="true">-->
+  <!--    Genesis-->
+  <!--  </ion-item>-->
 </ion-accordion-group>
 <ion-list>
   <!--  <ion-item routerLink="/feeds" routerLinkActive="active">-->
   <!--    Libraries-->
   <!--    <ion-chip slot="end" *ngIf="loggedIn">{{ libraryCount }}</ion-chip>-->
   <!--  </ion-item>-->
-<!--  <ion-menu-toggle>-->
-<!--    <ion-item-->
-<!--      [queryParams]="{ types: ['feed'] }"-->
-<!--      routerLink="/feeds"-->
-<!--      routerLinkActive="active"-->
-<!--    >-->
-<!--      Feeds-->
-<!--    </ion-item>-->
-<!--  </ion-menu-toggle>-->
-<!--  <ion-menu-toggle>-->
-<!--    <ion-item-->
-<!--      [queryParams]="{ types: ['page-tracker'] }"-->
-<!--      routerLink="/feeds"-->
-<!--      routerLinkActive="active"-->
-<!--    >-->
-<!--      Trackers-->
-<!--    </ion-item>-->
-<!--  </ion-menu-toggle>-->
-<!--  <div-->
-<!--    class="ion-margin-vertical"-->
-<!--    style="border-top: 1px solid rgba(var(&#45;&#45;app-foreground-rgb), 0.2)"-->
-<!--  ></div>-->
-<!--  <ion-menu-toggle>-->
-<!--    <ion-item href="/agents" routerLinkActive="active">-->
-<!--      Agents-->
-<!--      @if (loggedIn) {-->
-<!--        @if (agentCount) {-->
-<!--          <ion-chip slot="end">{{ agentCount }}</ion-chip>-->
-<!--        }-->
-<!--        @if (!agentCount) {-->
-<!--          <app-bubble color="red"></app-bubble>-->
-<!--        }-->
-<!--      }-->
-<!--    </ion-item>-->
-<!--  </ion-menu-toggle>-->
+  <!--  <ion-menu-toggle>-->
+  <!--    <ion-item-->
+  <!--      [queryParams]="{ types: ['feed'] }"-->
+  <!--      routerLink="/feeds"-->
+  <!--      routerLinkActive="active"-->
+  <!--    >-->
+  <!--      Feeds-->
+  <!--    </ion-item>-->
+  <!--  </ion-menu-toggle>-->
+  <!--  <ion-menu-toggle>-->
+  <!--    <ion-item-->
+  <!--      [queryParams]="{ types: ['page-tracker'] }"-->
+  <!--      routerLink="/feeds"-->
+  <!--      routerLinkActive="active"-->
+  <!--    >-->
+  <!--      Trackers-->
+  <!--    </ion-item>-->
+  <!--  </ion-menu-toggle>-->
+  <!--  <div-->
+  <!--    class="ion-margin-vertical"-->
+  <!--    style="border-top: 1px solid rgba(var(&#45;&#45;app-foreground-rgb), 0.2)"-->
+  <!--  ></div>-->
+  <!--  <ion-menu-toggle>-->
+  <!--    <ion-item href="/agents" routerLinkActive="active">-->
+  <!--      Agents-->
+  <!--      @if (loggedIn) {-->
+  <!--        @if (agentCount) {-->
+  <!--          <ion-chip slot="end">{{ agentCount }}</ion-chip>-->
+  <!--        }-->
+  <!--        @if (!agentCount) {-->
+  <!--          <app-bubble color="red"></app-bubble>-->
+  <!--        }-->
+  <!--      }-->
+  <!--    </ion-item>-->
+  <!--  </ion-menu-toggle>-->
 
   <!--  <ion-item routerLink="/feeds">-->
   <!--    Notes-->

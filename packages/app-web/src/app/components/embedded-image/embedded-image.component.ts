@@ -6,7 +6,6 @@ import {
   ElementRef,
   EventEmitter,
   inject,
-  Input,
   input,
   OnDestroy,
   OnInit,

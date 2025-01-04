@@ -1,4 +1,4 @@
-import { Component, Input, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { Record } from '../../graphql/types';
 
 import { IonItem, IonLabel, IonList } from '@ionic/angular/standalone';

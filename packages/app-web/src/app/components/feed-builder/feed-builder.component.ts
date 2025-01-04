@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -17,7 +7,7 @@ import {
   GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -31,18 +21,15 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
-  InteractiveWebsiteModalComponentProps,
+  InteractiveWebsiteModalComponentProps
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -50,28 +37,17 @@ import { ModalService } from '../../services/modal.service';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { addIcons } from 'ionicons';
-import {
-  arrowRedoOutline,
-  attachOutline,
-  checkmarkDoneOutline,
-  checkmarkOutline,
-  logoJavascript,
-  settingsOutline,
-} from 'ionicons/icons';
+import { arrowRedoOutline, attachOutline, checkmarkDoneOutline, checkmarkOutline, logoJavascript, settingsOutline } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
 import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
 import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
 import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
-import {
-  standaloneV1WebToFeedRoute,
-  standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { LatLng } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { assignIn, intersection, isArray, xor } from 'lodash-es';
+import { assignIn, intersection, isArray } from 'lodash-es';
 import { RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
 

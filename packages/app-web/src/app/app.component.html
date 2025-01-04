@@ -1,75 +1,72 @@
 @if (verticalConfig) {
   <ion-app>
-      <ion-split-pane [when]="'10000'"
-                      (click)="toggleMenu()"
-                      contentId="main-content">
-        <ion-menu contentId="main-content"
-                  type="push"
-                  (click)="$event.stopPropagation()">
-          <ion-header>
-            <ion-toolbar>
-              <ion-buttons slot="start">
-                <ion-menu-button></ion-menu-button>
-              </ion-buttons>
-              <app-product-title class="ion-margin-horizontal"></app-product-title>
-            </ion-toolbar>
-            <ion-list>
-              @if (serverConfig.isSelfHosted()) {
-                <ion-item [button]="true" routerLink="/settings">
-                  <ion-icon name="settings-outline" slot="start"></ion-icon>
-                  Settings
-                </ion-item>
-                <ion-item [button]="true" routerLink="/license">
-                  <ion-icon name="card-outline" slot="start"></ion-icon>
-                  License
-                </ion-item>
-              }
-            </ion-list>
-          </ion-header>
-          <ion-content>
-            <ion-router-outlet
-              name="sidemenu"
-            ></ion-router-outlet>
-          </ion-content>
-          <ion-footer>
-            <ion-list>
-              <ion-item [button]="true" routerLink="/docs/contact">
-                <!--                <ion-icon name="person-outline" slot="start"></ion-icon>-->
-                <ion-label color="medium">
-                  Contact
-                </ion-label>
+    <ion-split-pane
+      [when]="'10000'"
+      (click)="toggleMenu()"
+      contentId="main-content"
+    >
+      <ion-menu
+        contentId="main-content"
+        type="push"
+        (click)="$event.stopPropagation()"
+      >
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-menu-button></ion-menu-button>
+            </ion-buttons>
+            <app-product-title
+              class="ion-margin-horizontal"
+            ></app-product-title>
+          </ion-toolbar>
+          <ion-list>
+            @if (serverConfig.isSelfHosted()) {
+              <ion-item [button]="true" routerLink="/settings">
+                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                Settings
               </ion-item>
-              <ion-item [button]="true" routerLink="/docs/terms">
-                <!--                <ion-icon name="person-outline" slot="start"></ion-icon>-->
-                <ion-label color="medium">
-                  Imprint &amp; Terms
-                </ion-label>
+              <ion-item [button]="true" routerLink="/license">
+                <ion-icon name="card-outline" slot="start"></ion-icon>
+                License
               </ion-item>
-              <!--              <ion-item [button]="true" routerLink="/about">-->
-              <!--&lt;!&ndash;                <ion-icon name="person-outline" slot="start"></ion-icon>&ndash;&gt;-->
-              <!--                About-->
-              <!--              </ion-item>-->
-              @if (sessionService.isAuthenticated()) {
-                <p class="ion-margin">
-                  <strong>You are logged in.</strong>
-                </p>
-                <ion-item (click)="logout()"
-                          [button]="true"
-                          color="danger">
-                  <!--                <ion-icon name="exit-outline" slot="start"></ion-icon>-->
-                  Logout
-                </ion-item>
-              } @else {
-                <ion-item routerLink="/login"
-                          [button]="true">
-                  <!--                <ion-icon name="exit-outline" slot="start"></ion-icon>-->
-                  Login
-                </ion-item>
-              }
-            </ion-list>
-          </ion-footer>
-        </ion-menu>
-        <ion-router-outlet id="main-content"></ion-router-outlet>
-      </ion-split-pane>
+            }
+          </ion-list>
+        </ion-header>
+        <ion-content>
+          <ion-router-outlet name="sidemenu"></ion-router-outlet>
+        </ion-content>
+        <ion-footer>
+          <ion-list>
+            <ion-item [button]="true" routerLink="/docs/contact">
+              <!--                <ion-icon name="person-outline" slot="start"></ion-icon>-->
+              <ion-label color="medium"> Contact </ion-label>
+            </ion-item>
+            <ion-item [button]="true" routerLink="/docs/terms">
+              <!--                <ion-icon name="person-outline" slot="start"></ion-icon>-->
+              <ion-label color="medium"> Imprint &amp; Terms </ion-label>
+            </ion-item>
+            <!--              <ion-item [button]="true" routerLink="/about">-->
+            <!--&lt;!&ndash;                <ion-icon name="person-outline" slot="start"></ion-icon>&ndash;&gt;-->
+            <!--                About-->
+            <!--              </ion-item>-->
+            @if (sessionService.isAuthenticated()) {
+              <p class="ion-margin">
+                <strong>You are logged in.</strong>
+              </p>
+              <ion-item (click)="logout()" [button]="true" color="danger">
+                <!--                <ion-icon name="exit-outline" slot="start"></ion-icon>-->
+                Logout
+              </ion-item>
+            } @else {
+              <ion-item routerLink="/login" [button]="true">
+                <!--                <ion-icon name="exit-outline" slot="start"></ion-icon>-->
+                Login
+              </ion-item>
+            }
+          </ion-list>
+        </ion-footer>
+      </ion-menu>
+      <ion-router-outlet id="main-content"></ion-router-outlet>
+    </ion-split-pane>
   </ion-app>
 }
