@@ -95,8 +95,6 @@ type Screen = 'area' | 'page' | 'element';
     IonButton,
     IonIcon,
     IonReorder,
-    IonRadioGroup,
-    IonRadio,
   ],
   standalone: true,
 })
@@ -237,7 +235,6 @@ export class TrackerEditPage
     } catch (e) {
       this.showErrors = false;
     }
-    this.changeRef.detectChanges();
   }
 
   pickArea() {

@@ -108,12 +108,12 @@
                               </div>
                               <ion-button
                                 (click)="pickPoint(action)"
-                                [color]="action.invalid ? 'danger' : 'light'"
+                                [color]="action.invalid ? 'primary' : 'light'"
                                 expand="block"
                                 style="flex: 1"
                               >
-                                {{ getPositionLabel(action) || 'Click on
-                                Screenshot' }}
+                                {{ getPositionLabel(action)
+                              || 'Click on Screenshot' }}
                               </ion-button>
                               <ion-button
                                 (click)="removeAction(i)"
@@ -143,38 +143,14 @@
                 <ion-col size="5">
                   <ion-label class="ion-text-left">Compare type</ion-label>
                 </ion-col>
-                <ion-col class="ion-hide-md-down" size="7">
+                <ion-col size="7">
                   <ion-label class="ion-text-left">Compare by</ion-label>
                 </ion-col>
               </ion-row>
               <ion-row>
                 <ion-col class="flex" size="5">
-                  <ion-radio-group
-                    [formControl]="formGroup.controls.compareType"
-                    class="ion-hide-md-down"
-                  >
-                    <ion-radio
-                      [value]="GqlRecordField.Pixel"
-                      labelPlacement="end"
-                    >
-                      Visual
-                    </ion-radio>
-                    <ion-radio
-                      [value]="GqlRecordField.Text"
-                      labelPlacement="end"
-                    >
-                      Text
-                    </ion-radio>
-                    <ion-radio
-                      [value]="GqlRecordField.Markup"
-                      labelPlacement="end"
-                    >
-                      Element
-                    </ion-radio>
-                  </ion-radio-group>
                   <ion-select
                     [formControl]="formGroup.controls.compareType"
-                    class="ion-hide-md-up"
                     fill="outline"
                     interface="popover"
                     placeholder="Compare Type"
@@ -219,8 +195,8 @@
                     [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
                     class="ion-margin-end"
                   >
-                    {{ getXPathLabel(formGroup.controls.elementXpath) || 'Choose
-                    Element' }}
+                    {{ getXPathLabel(formGroup.controls.elementXpath)
+                  || 'Choose Element' }}
                   </ion-button>
                   } @if (formGroup.controls.areaBoundingBox.enabled) {
                   <ion-button
@@ -334,8 +310,7 @@
                 <ion-col>
                   <ion-button
                     (click)="startMonitoring()"
-                    [disabled]="formGroup.invalid"
-                    class="cy-start-monitoring-button"
+                    [color]="formGroup.invalid ? 'medium': 'primary'"
                     expand="block"
                   >
                     Create Tracker
