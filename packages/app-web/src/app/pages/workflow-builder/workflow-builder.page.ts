@@ -11,7 +11,6 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
 import { WorkflowBuilderComponent } from '../../components/workflow-builder/workflow-builder.component';
 
@@ -20,7 +19,7 @@ import { WorkflowBuilderComponent } from '../../components/workflow-builder/work
   templateUrl: './workflow-builder.page.html',
   styleUrls: ['./workflow-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, WorkflowBuilderComponent],
+  imports: [IonContent, WorkflowBuilderComponent],
   standalone: true,
 })
 export class WorkflowBuilderPage implements OnInit, OnDestroy {

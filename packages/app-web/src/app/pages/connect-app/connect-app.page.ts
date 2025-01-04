@@ -19,7 +19,6 @@ import {
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 
 @Component({
   selector: 'app-connect-app-page',
@@ -27,7 +26,6 @@ import { FeedlessHeaderComponent } from '../../components/feedless-header/feedle
   styleUrls: ['./connect-app.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonSpinner,
     IonCard,

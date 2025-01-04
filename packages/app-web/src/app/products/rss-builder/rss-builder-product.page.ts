@@ -16,7 +16,6 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
-import { GqlVertical } from '../../../generated/graphql';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
@@ -35,6 +34,7 @@ import { RepositoriesButtonComponent } from '../../components/repositories-butto
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { PromotionHeaderComponent } from '../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -56,6 +56,7 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     LoginButtonComponent,
     IonContent,
     IonRouterOutlet,
+    PromotionHeaderComponent,
   ],
   standalone: true,
 })
@@ -107,6 +108,4 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
-  protected readonly GqlProductName = GqlVertical;
 }

@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -16,7 +15,6 @@ import { AgentsComponent } from '../../components/agents/agents.component';
   templateUrl: './agents.page.html',
   styleUrls: ['./agents.page.scss'],
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonBreadcrumbs,
     IonBreadcrumb,

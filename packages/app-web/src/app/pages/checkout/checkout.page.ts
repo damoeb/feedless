@@ -31,7 +31,6 @@ import {
   GqlUserCreateOrConnectInput,
 } from '../../../generated/graphql';
 import { SessionService } from '../../services/session.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonButton,
   IonCheckbox,
@@ -317,7 +316,6 @@ type PaymentOption = {
   styleUrls: ['./checkout.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonSpinner,
     IonList,

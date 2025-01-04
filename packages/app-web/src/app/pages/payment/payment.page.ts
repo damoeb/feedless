@@ -10,7 +10,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent, IonSpinner } from '@ionic/angular/standalone';
 
 @Component({
@@ -18,7 +17,7 @@ import { IonContent, IonSpinner } from '@ionic/angular/standalone';
   templateUrl: './payment.page.html',
   styleUrls: ['./payment.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, IonSpinner],
+  imports: [IonContent, IonSpinner],
   standalone: true,
 })
 export class PaymentPage implements OnInit, OnDestroy {

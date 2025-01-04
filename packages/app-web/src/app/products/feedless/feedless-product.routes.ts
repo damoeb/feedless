@@ -56,11 +56,8 @@ export const FEEDLESS_ROUTES: Routes = [
             path: '',
             component: AboutFeedlessPage,
           },
+          ...DefaultRoutes
         ],
-      },
-      {
-        path: '',
-        children: [...DefaultRoutes],
       },
       {
         path: '**',

@@ -16,6 +16,8 @@ import {
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
+import { PromotionHeaderComponent } from '../../components/promotion-header/promotion-header.component';
 
 @Component({
   selector: 'app-feedless-product-page',
@@ -30,6 +32,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     IonButton,
     RouterLinkActive,
     RouterLink,
+    FeedlessHeaderComponent,
+    PromotionHeaderComponent,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

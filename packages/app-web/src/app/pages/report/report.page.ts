@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonCol, IonContent, IonRow } from '@ionic/angular/standalone';
 
 @Component({
@@ -15,7 +14,7 @@ import { IonCol, IonContent, IonRow } from '@ionic/angular/standalone';
   templateUrl: './report.page.html',
   styleUrls: ['./report.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, IonRow, IonCol],
+  imports: [IonContent, IonRow, IonCol],
   standalone: true,
 })
 export class ReportPage implements OnInit, OnDestroy {

@@ -60,7 +60,6 @@ import {
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { trashOutline } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
@@ -76,7 +75,6 @@ type Screen = 'area' | 'page' | 'element';
   styleUrls: ['./tracker-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     NgClass,
     FormsModule,

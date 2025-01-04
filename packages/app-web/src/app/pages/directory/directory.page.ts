@@ -17,7 +17,6 @@ import { FormControl } from '@angular/forms';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { trendingDownOutline } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonButton,
   IonChip,
@@ -44,7 +43,6 @@ type ViewMode = 'list' | 'grid';
   styleUrls: ['./directory.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonHeader,
     IonProgressBar,
     IonContent,

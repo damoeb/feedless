@@ -14,7 +14,6 @@ import { debounce, interval, Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonButton,
   IonCard,
@@ -37,7 +36,6 @@ import { EmailLoginComponent } from '../../components/email-login/email-login.co
   styleUrls: ['./login.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonSpinner,
     FormsModule,

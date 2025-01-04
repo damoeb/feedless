@@ -27,7 +27,6 @@ import {
   checkmarkDoneOutline,
   timeOutline,
 } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonButton,
   IonCol,
@@ -48,7 +47,6 @@ import { DatePipe } from '@angular/common';
   styleUrls: ['./license.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonList,
     IonItem,
