@@ -46,7 +46,6 @@ import { GqlVertical } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { addIcons } from 'ionicons';
 import { cardOutline, cloudDownloadOutline } from 'ionicons/icons';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { DatePipe } from '@angular/common';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { RouterLink } from '@angular/router';
@@ -57,7 +56,6 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./profile.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonRow,
     IonCol,

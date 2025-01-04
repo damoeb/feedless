@@ -29,7 +29,6 @@ import { environment } from '../../../environments/environment';
 import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
 import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
@@ -39,12 +38,7 @@ import { DEFAULT_FETCH_CRON } from '../../defaults';
   templateUrl: './feed-builder.page.html',
   styleUrls: ['./feed-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FeedlessHeaderComponent,
-    IonContent,
-    FeedBuilderComponent,
-    RepositoryModalModule,
-  ],
+  imports: [IonContent, FeedBuilderComponent, RepositoryModalModule],
   standalone: true,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {

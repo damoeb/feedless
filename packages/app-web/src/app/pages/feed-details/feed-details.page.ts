@@ -35,7 +35,6 @@ import { FeedDetailsComponent } from '../../components/feed-details/feed-details
   styleUrls: ['./feed-details.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonHeader,
     IonToolbar,
     IonText,

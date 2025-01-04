@@ -24,7 +24,6 @@ import {
 } from '@ionic/angular/standalone';
 import { sortBy } from 'lodash-es';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 
 type FeatureWithFormControl = Feature & { fc: FormControl };
 
@@ -34,7 +33,6 @@ type FeatureWithFormControl = Feature & { fc: FormControl };
   styleUrls: ['./settings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonList,
     IonItem,

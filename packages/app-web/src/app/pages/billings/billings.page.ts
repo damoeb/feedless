@@ -9,7 +9,6 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonCol,
   IonContent,
@@ -24,15 +23,7 @@ import {
   templateUrl: './billings.page.html',
   styleUrls: ['./billings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FeedlessHeaderComponent,
-    IonContent,
-    IonRow,
-    IonCol,
-    IonList,
-    IonItem,
-    IonLabel,
-  ],
+  imports: [IonContent, IonRow, IonCol, IonList, IonItem, IonLabel],
   standalone: true,
 })
 export class BillingsPage implements OnInit {

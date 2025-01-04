@@ -11,7 +11,6 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import { IonContent } from '@ionic/angular/standalone';
 import { NotebooksComponent } from '../../components/notebooks/notebooks.component';
 
@@ -20,7 +19,7 @@ import { NotebooksComponent } from '../../components/notebooks/notebooks.compone
   templateUrl: './notebooks.page.html',
   styleUrls: ['./notebooks.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FeedlessHeaderComponent, IonContent, NotebooksComponent],
+  imports: [IonContent, NotebooksComponent],
   standalone: true,
 })
 export class NotebooksPage implements OnInit, OnDestroy {

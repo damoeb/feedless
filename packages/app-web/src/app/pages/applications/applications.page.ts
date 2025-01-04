@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonBreadcrumb,
-  IonBreadcrumbs, IonButton,
+  IonBreadcrumbs,
+  IonButton,
   IonCol,
   IonContent,
   IonItem,
   IonLabel,
   IonList,
-  IonRow
+  IonRow,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 
@@ -18,7 +18,6 @@ import { RouterLink } from '@angular/router';
   templateUrl: './applications.page.html',
   styleUrls: ['./applications.page.scss'],
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     IonBreadcrumbs,
     IonBreadcrumb,

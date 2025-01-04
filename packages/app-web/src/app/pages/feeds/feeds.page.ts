@@ -18,7 +18,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FetchPolicy } from '@apollo/client/core';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 import {
   IonBreadcrumb,
   IonBreadcrumbs,
@@ -46,7 +45,6 @@ type ViewMode = 'list' | 'table';
   styleUrls: ['./feeds.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FeedlessHeaderComponent,
     IonContent,
     NgClass,
     IonBreadcrumbs,
