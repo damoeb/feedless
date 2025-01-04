@@ -3,7 +3,6 @@ import {
   Component,
   inject,
   input,
-  Input,
 } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';

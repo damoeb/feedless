@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ServerConfigService } from '../../services/server-config.service';
 
-import { IonButton, IonIcon, IonMenuButton } from '@ionic/angular/standalone';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { personOutline } from 'ionicons/icons';
@@ -21,7 +21,7 @@ import { personOutline } from 'ionicons/icons';
   templateUrl: './login-button.component.html',
   styleUrls: ['./login-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, RouterLink, IonMenuButton, IonIcon],
+  imports: [IonButton, RouterLink, IonIcon],
   standalone: true,
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
@@ -37,7 +37,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   readonly color = input<string>();
 
   constructor() {
-    addIcons({personOutline})
+    addIcons({ personOutline });
   }
 
   async ngOnInit(): Promise<void> {

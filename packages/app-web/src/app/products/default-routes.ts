@@ -107,17 +107,23 @@ export const DefaultRoutes: Routes = [
       {
         path: 'services',
         loadChildren: () =>
-          import('../pages/services/services.routes').then((m) => m.SERVICES_ROUTES),
+          import('../pages/services/services.routes').then(
+            (m) => m.SERVICES_ROUTES,
+          ),
       },
       {
         path: 'plugins',
         loadChildren: () =>
-          import('../pages/plugins/plugins.routes').then((m) => m.PLUGINS_ROUTES),
+          import('../pages/plugins/plugins.routes').then(
+            (m) => m.PLUGINS_ROUTES,
+          ),
       },
       {
         path: 'applications',
         loadChildren: () =>
-          import('../pages/applications/applications.routes').then((m) => m.APPLICATIONS_ROUTES),
+          import('../pages/applications/applications.routes').then(
+            (m) => m.APPLICATIONS_ROUTES,
+          ),
       },
       {
         path: 'plans',

@@ -1,11 +1,4 @@
-import {
-  Component,
-  inject,
-  Input,
-  input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';

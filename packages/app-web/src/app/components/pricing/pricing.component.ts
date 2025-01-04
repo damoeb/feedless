@@ -3,12 +3,11 @@ import {
   ChangeDetectorRef,
   Component,
   inject,
-  Input,
   input,
   OnInit,
   output,
 } from '@angular/core';
-import { filter, first } from 'lodash-es';
+import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { FeatureGroup, Product, Session } from '../../graphql/types';
@@ -45,7 +44,7 @@ type ProductWithFeatureGroups = Product & {
   featureGroups: FeatureGroup[];
 };
 
-type Plan = Session['user']['plan']
+type Plan = Session['user']['plan'];
 
 @Component({
   selector: 'app-pricing',
@@ -109,7 +108,7 @@ export class PricingComponent implements OnInit {
         this.subscribedPlans = [session.user.plan];
         this.changeRef.detectChanges();
       }
-    })
+    });
 
     this.products = await Promise.all(
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
@@ -232,10 +231,13 @@ export class PricingComponent implements OnInit {
   }
 
   hasSubscribed(product: ProductWithFeatureGroups): boolean {
-    return product.isCloud && this.subscribedPlans.some(subscribedPlan => subscribedPlan.productId === product.id)
+    return (
+      product.isCloud &&
+      this.subscribedPlans.some(
+        (subscribedPlan) => subscribedPlan.productId === product.id,
+      )
+    );
   }
 
-  cancelSubscription(product: ProductWithFeatureGroups) {
-
-  }
+  cancelSubscription(product: ProductWithFeatureGroups) {}
 }

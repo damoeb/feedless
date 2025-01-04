@@ -3,7 +3,6 @@ import {
   ChangeDetectorRef,
   Component,
   inject,
-  Input,
   OnInit,
 } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular/standalone';

@@ -14,7 +14,6 @@ import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { AppConfigService } from '../../services/app-config.service';
-import { FeedlessHeaderComponent } from '../../components/feedless-header/feedless-header.component';
 
 import {
   IonBreadcrumb,

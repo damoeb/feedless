@@ -1,4 +1,4 @@
-import { Component, input, Input, OnInit } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { GqlRecordFrequency } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';

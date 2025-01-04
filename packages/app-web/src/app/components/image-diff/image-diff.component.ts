@@ -5,7 +5,6 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
   input,
-  Input,
   OnDestroy,
   OnInit,
 } from '@angular/core';

@@ -3,7 +3,6 @@ import {
   ChangeDetectorRef,
   Component,
   inject,
-  Input,
   input,
   OnChanges,
   OnDestroy,
@@ -55,7 +54,6 @@ import {
 } from '@ionic/angular/standalone';
 
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../../../components/login-button/login-button.component';
 
 type Day = {
   day: Dayjs | null;
@@ -101,7 +99,6 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonItem,
     IonIcon,
     RouterLink,
-    LoginButtonComponent,
   ],
   standalone: true,
 })

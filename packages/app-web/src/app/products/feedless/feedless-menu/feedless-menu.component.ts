@@ -14,14 +14,11 @@ import { GqlVertical } from '../../../../generated/graphql';
 import {
   IonAccordion,
   IonAccordionGroup,
-  IonChip,
-  IonItem, IonLabel,
-  IonList, IonListHeader,
-  IonMenuToggle
+  IonItem,
+  IonLabel,
+  IonList,
 } from '@ionic/angular/standalone';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-
-import { BubbleComponent } from '../../../components/bubble/bubble.component';
+import { RouterLink } from '@angular/router';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 
 @Component({
@@ -31,13 +28,8 @@ import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonList,
-    IonMenuToggle,
     IonItem,
     RouterLink,
-    RouterLinkActive,
-    IonChip,
-    BubbleComponent,
-    IonListHeader,
     IonAccordionGroup,
     IonAccordion,
     IonLabel,

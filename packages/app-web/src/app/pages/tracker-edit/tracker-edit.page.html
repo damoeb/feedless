@@ -3,10 +3,10 @@
     <h2 class="ion-padding-horizontal">Page Tracker Builder</h2>
     @if (!formGroup.value.url) {
     <p class="ion-padding pitch">
-      Monitor changes on any website, whether it's a
-      shift in pixels, markup or text. You can track changes of an entire
-      webpage or just a specific section, and get notified as soon as something
-      is updated without manually checking sites.
+      Monitor changes on any website, whether it's a shift in pixels, markup or
+      text. You can track changes of an entire webpage or just a specific
+      section, and get notified as soon as something is updated without manually
+      checking sites.
     </p>
     }
 
@@ -112,8 +112,8 @@
                                 expand="block"
                                 style="flex: 1"
                               >
-                                {{ getPositionLabel(action)
-                              || 'Click on Screenshot' }}
+                                {{ getPositionLabel(action) || 'Click on
+                                Screenshot' }}
                               </ion-button>
                               <ion-button
                                 (click)="removeAction(i)"
@@ -195,8 +195,8 @@
                     [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
                     class="ion-margin-end"
                   >
-                    {{ getXPathLabel(formGroup.controls.elementXpath)
-                  || 'Choose Element' }}
+                    {{ getXPathLabel(formGroup.controls.elementXpath) || 'Choose
+                    Element' }}
                   </ion-button>
                   } @if (formGroup.controls.areaBoundingBox.enabled) {
                   <ion-button

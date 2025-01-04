@@ -37,8 +37,6 @@ import {
   IonItem,
   IonLabel,
   IonList,
-  IonRadio,
-  IonRadioGroup,
   IonReorder,
   IonReorderGroup,
   IonRow,

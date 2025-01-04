@@ -1,9 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TextDiffComponent } from './text-diff.component';
 import { AppTestModule } from '../../app-test.module';
-import { Record } from '../../graphql/types';
-import { SourceBuilder } from '../interactive-website/source-builder';
-import { ScrapeService } from '../../services/scrape.service';
 
 describe('TextDiffComponent', () => {
   let component: TextDiffComponent;

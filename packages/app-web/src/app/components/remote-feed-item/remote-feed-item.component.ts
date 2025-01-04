@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { Record } from '../../graphql/types';
 import { dateFormat } from '../../services/session.service';
