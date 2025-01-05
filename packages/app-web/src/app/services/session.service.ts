@@ -36,13 +36,6 @@ export const dateFormat = 'dd.MM.YYYY';
 export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
 export const TimeFormat = 'HH:mm, dd.MM.YYYY';
 
-export function needsPlanSubscription(
-  user: User,
-  serverConfig: ServerConfigService,
-): boolean {
-  return serverConfig.isSaas() && !user?.plan;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -77,13 +70,7 @@ export class SessionService {
     await this.apollo
       .query<GqlSessionQuery, GqlSessionQueryVariables>({
         query: SessionQuery,
-        variables: {
-          product: (
-            await firstValueFrom(
-              this.appConfigService.getActiveProductConfigChange(),
-            )
-          ).product,
-        },
+        variables: {},
         fetchPolicy,
       })
       .then((response) => response.data.session)

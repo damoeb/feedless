@@ -445,6 +445,7 @@ enum Vertical {
 #  digest
 #  featureFlags
   feedDump
+#  seed
 #  openRoadmap
 #  commentOn
 }
@@ -513,6 +514,7 @@ type Query {
 
   products(data: ProductsWhereInput!): [Product!]!
   orders(data: OrdersInput!): [Order!]!
+  plans(cursor: Cursor!): [Plan!]!
 }
 
 type ConnectedApp {
@@ -537,7 +539,7 @@ input BillingsWhereInput {
 
 input ProductsWhereInput {
   id: StringFilterInput
-  category: Vertical
+  vertical: Vertical
 }
 
 type Product {
@@ -994,7 +996,6 @@ type User {
   connectedApps: [ConnectedApp]!
   secrets: [UserSecret!]!
   groups: [GroupAssignment!]!
-  plan(product: Vertical!): Plan
 }
 
 type GroupAssignment {
@@ -1010,11 +1011,12 @@ enum Role {
 }
 
 type Plan {
+  id: ID!
   productId: ID!
   product: Product!
   startedAt: Long
   terminatedAt: Long
-#  recurringYearly: Boolean!
+  recurringYearly: Boolean!
 }
 
 type UserSecret {

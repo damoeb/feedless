@@ -32,14 +32,7 @@ import { createEmailFormControl } from '../../form-controls';
 import { Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ConnectedAppService } from '../../services/connected-app.service';
-import {
-  Product,
-  RepositoryFull,
-  Session,
-  UserSecret,
-} from '../../graphql/types';
-import { ProductService } from '../../services/product.service';
-import { first } from 'lodash-es';
+import { RepositoryFull, Session, UserSecret } from '../../graphql/types';
 import { AppConfigService } from '../../services/app-config.service';
 import dayjs from 'dayjs';
 import { GqlVertical } from '../../../generated/graphql';
@@ -79,7 +72,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   protected readonly sessionService = inject(SessionService);
   protected readonly repositoryService = inject(RepositoryService);
   protected readonly changeRef = inject(ChangeDetectorRef);
-  protected readonly productService = inject(ProductService);
   protected readonly alertCtrl = inject(AlertController);
   protected readonly connectedAppService = inject(ConnectedAppService);
   private readonly appConfig = inject(AppConfigService);
@@ -102,7 +94,6 @@ export class ProfilePage implements OnInit, OnDestroy {
       Validators.maxLength(50),
     ]),
   });
-  protected product: Product;
   protected readonly dateTimeFormat = dateTimeFormat;
   private subscriptions: Subscription[] = [];
   private connectedApps: Session['user']['connectedApps'] = [];
@@ -134,12 +125,6 @@ export class ProfilePage implements OnInit, OnDestroy {
         if (session.isLoggedIn) {
           this.connectedApps = session.user.connectedApps;
           this.secrets = session.user.secrets;
-
-          this.product = first(
-            await this.productService.listProducts({
-              id: { eq: session.user.plan.productId },
-            }),
-          );
 
           this.formFg.patchValue({
             email: session.user.email,

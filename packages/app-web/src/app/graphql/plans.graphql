@@ -1,0 +1,5 @@
+query plans($cursor: Cursor!) {
+  plans(cursor: $cursor) {
+    ...PlanFragment
+  }
+}

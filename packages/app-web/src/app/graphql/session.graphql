@@ -1,7 +1,11 @@
 fragment PlanFragment on Plan {
+  id
   productId
   startedAt
   terminatedAt
+  product {
+    ...ProductFragment
+  }
 }
 
 fragment UserFragment on User {
@@ -25,11 +29,8 @@ fragment UserFragment on User {
   secrets {
     ...SecretFragment
   }
-  plan(product: $product) {
-    ...PlanFragment
-  }
 }
-query session($product: Vertical!) {
+query session {
   session {
     isLoggedIn
     user {

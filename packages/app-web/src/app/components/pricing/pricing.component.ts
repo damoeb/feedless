@@ -34,6 +34,8 @@ import {
   IonSegmentButton,
 } from '@ionic/angular/standalone';
 import { SessionService } from '../../services/session.service';
+import { ArrayElement } from '../../types';
+import { Plan, PlanService } from '../../services/plan.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -43,8 +45,6 @@ type ProductWithFeatureGroups = Product & {
   stringifiedFeatureGroups: StringFeatureGroup[];
   featureGroups: FeatureGroup[];
 };
-
-type Plan = Session['user']['plan'];
 
 @Component({
   selector: 'app-pricing',
@@ -69,7 +69,7 @@ export class PricingComponent implements OnInit {
   private readonly featureService = inject(FeatureService);
   private readonly productService = inject(ProductService);
   private readonly changeRef = inject(ChangeDetectorRef);
-  private readonly sessionService = inject(SessionService);
+  private readonly planService = inject(PlanService);
 
   targetGroupFc = new FormControl<TargetGroup>('individual');
   paymentIntervalFc = new FormControl<PaymentInterval>(
@@ -100,15 +100,10 @@ export class PricingComponent implements OnInit {
       this.serviceFlavorFc.setValue(serviceFlavor);
     }
     const products = await this.productService.listProducts({
-      category: this.vertical(),
+      vertical: this.vertical(),
     });
 
-    this.sessionService.getSession().subscribe(async (session) => {
-      if (session.isLoggedIn) {
-        this.subscribedPlans = [session.user.plan];
-        this.changeRef.detectChanges();
-      }
-    });
+    this.subscribedPlans = await this.planService.fetchPlans({page: 0});
 
     this.products = await Promise.all(
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {

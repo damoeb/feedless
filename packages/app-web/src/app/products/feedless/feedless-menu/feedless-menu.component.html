@@ -1,12 +1,12 @@
 <ion-accordion-group>
   <ion-item [button]="true" routerLink="/agents"> Agents </ion-item>
   <div appDev>
-    <ion-item [button]="true"> Analytics </ion-item>
     <ion-accordion>
       <ion-item slot="header">
         <ion-label>API & Services</ion-label>
       </ion-item>
       <ion-list slot="content">
+        <ion-item [button]="true"> Analytics </ion-item>
         <ion-item [button]="true" routerLink="/applications">
           Applications
         </ion-item>
@@ -17,20 +17,12 @@
     </ion-accordion>
     <ion-accordion>
       <ion-item slot="header">
-        <ion-label>IAM & Admin</ion-label>
+        <ion-label>Billings</ion-label>
       </ion-item>
       <ion-list slot="content">
-        <ion-item [button]="true"> Secrets </ion-item>
-        <ion-item [button]="true"> User &amp; Groups </ion-item>
-      </ion-list>
-    </ion-accordion>
-    <ion-accordion>
-      <ion-item slot="header">
-        <ion-label>Billings &amp; Plans</ion-label>
-      </ion-item>
-      <ion-list slot="content">
-        <ion-item [button]="true" routerLink="/billings"> Billing </ion-item>
+        <ion-item [button]="true" routerLink="/billings"> Billings </ion-item>
         <ion-item [button]="true" routerLink="/plans"> Plans </ion-item>
+        <ion-item [button]="true" routerLink="/pricing/feedless"> Pricing </ion-item>
       </ion-list>
     </ion-accordion>
     <ion-accordion>
@@ -43,11 +35,25 @@
         <ion-item [button]="true"> Repositories </ion-item>
       </ion-list>
     </ion-accordion>
-    <ion-item [button]="true"> Storage </ion-item>
+    <ion-item [button]="true">
+      <ion-label>Inbox</ion-label>
+    </ion-item>
+    <ion-item [button]="true"> User &amp; Groups </ion-item>
+<!--    <ion-item [button]="true"> Storage </ion-item>-->
   </div>
   <ion-item [button]="true" routerLink="/feeds"> Feeds </ion-item>
   <ion-item [button]="true" routerLink="/plugins"> Plugins </ion-item>
-  <ion-item [button]="true" routerLink="/profile"> Profile </ion-item>
+
+  <ion-accordion>
+    <ion-item slot="header">
+      <ion-label>Account</ion-label>
+    </ion-item>
+    <ion-list slot="content">
+      <ion-item [button]="true" routerLink="/profile"> Profile </ion-item>
+      <ion-item appDev [button]="true" routerLink="/seed"> Seed </ion-item>
+      <ion-item appDev [button]="true"> Secrets </ion-item>
+    </ion-list>
+  </ion-accordion>
   <!--  <ion-item [button]="true">-->
   <!--    Genesis-->
   <!--  </ion-item>-->
