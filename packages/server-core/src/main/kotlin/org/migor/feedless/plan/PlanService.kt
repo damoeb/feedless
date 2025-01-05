@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.slf4j.LoggerFactory
@@ -36,9 +35,9 @@ class PlanService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun findActiveByUserAndProductIn(userId: UUID, products: List<Vertical>): PlanEntity? {
+  suspend fun findAllByUser(userId: UUID): List<PlanEntity> {
     return withContext(Dispatchers.IO) {
-      planDAO.findActiveByUserAndProductIn(userId, products, LocalDateTime.now())
+      planDAO.findAllByUser(userId)
     }
   }
 }

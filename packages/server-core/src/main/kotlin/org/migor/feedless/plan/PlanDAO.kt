@@ -20,6 +20,18 @@ interface PlanDAO : JpaRepository<PlanEntity, UUID> {
     select PL from PlanEntity PL
     LEFT JOIN FETCH PL.product
     inner join ProductEntity P on P.id = PL.productId
+    where PL.userId = :userId
+  """
+  )
+  fun findAllByUser(
+    @Param("userId") userId: UUID,
+  ): List<PlanEntity>
+
+  @Query(
+    """
+    select PL from PlanEntity PL
+    LEFT JOIN FETCH PL.product
+    inner join ProductEntity P on P.id = PL.productId
     where PL.userId = :userId and P.partOf IN :products AND (PL.terminatedAt IS NULL OR PL.terminatedAt > :now)
   """
   )

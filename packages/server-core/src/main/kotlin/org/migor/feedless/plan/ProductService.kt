@@ -51,7 +51,10 @@ class ProductService(
     return withContext(Dispatchers.IO) {
       data.id?.eq?.let {
         listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
-      } ?: productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.category!!.fromDto())
+      } ?: data.id?.`in`?.let { ids ->
+        productDAO.findAllByIdIn(ids.map { UUID.fromString(it) })
+      } ?: data.vertical?.let {  productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical?.fromDto() ?: Vertical.feedless)
+    } ?: throw IllegalArgumentException("Insufficient filter params")
     }
   }
 
