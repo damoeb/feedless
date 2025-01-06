@@ -20,7 +20,7 @@
     </div>
     <ion-buttons slot="end">
       @if (!serverConfig.isSelfHosted()) {
-      <ion-button routerLink="/setup" fill="solid" color="primary">
+      <ion-button (click)="openSelfHostingSetup()" fill="solid" color="primary">
         <ion-icon name="settings-outline" slot="start"></ion-icon>
         Self Hosting
       </ion-button>

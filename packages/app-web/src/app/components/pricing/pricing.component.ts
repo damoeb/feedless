@@ -103,7 +103,7 @@ export class PricingComponent implements OnInit {
       vertical: this.vertical(),
     });
 
-    this.subscribedPlans = await this.planService.fetchPlans({page: 0});
+    this.subscribedPlans = await this.planService.fetchPlans({ page: 0 });
 
     this.products = await Promise.all(
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {

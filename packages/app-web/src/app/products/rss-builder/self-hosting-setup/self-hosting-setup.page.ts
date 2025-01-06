@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   OnInit,
 } from '@angular/core';
 import {
+  IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -12,16 +15,22 @@ import {
   IonCardTitle,
   IonCheckbox,
   IonContent,
+  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonNote,
   IonSearchbar,
+  IonTitle,
   IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map, merge } from 'rxjs';
 import { sortBy, values } from 'lodash-es';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 
 export type Functionality = {
   name: string;
@@ -66,10 +75,16 @@ function group(name: string, control: FormControl<boolean>): FeatureGroup {
     IonLabel,
     ReactiveFormsModule,
     IonToolbar,
+    IonHeader,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
   ],
   standalone: true,
 })
 export class SelfHostingSetupPage implements OnInit {
+  private readonly modalCtrl = inject(ModalController);
   queryFc = new FormControl<string>('');
 
   private readonly groups = {
@@ -163,7 +178,11 @@ export class SelfHostingSetupPage implements OnInit {
 
   protected filteredFeatures: Functionality[] = sortBy(this.features, 'name');
 
-  constructor(private changeRef: ChangeDetectorRef) {}
+  constructor(private changeRef: ChangeDetectorRef) {
+    addIcons({
+      closeOutline,
+    });
+  }
 
   ngOnInit(): void {
     merge(
@@ -207,5 +226,13 @@ export class SelfHostingSetupPage implements OnInit {
 
   isDisabled(f: Functionality): boolean {
     return f.groups.every((g) => g.control.disabled);
+  }
+
+  getGroups(f: Functionality): string {
+    return f.groups.map((it) => it.name).join(', ');
+  }
+
+  closeModal() {
+    return this.modalCtrl.dismiss([]);
   }
 }

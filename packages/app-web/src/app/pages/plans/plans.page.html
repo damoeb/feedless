@@ -13,19 +13,17 @@
 
     <ion-list>
       @if (plans.length === 0) {
-        <ion-item>
-          <ion-label>No plans found</ion-label>
-        </ion-item>
-      } @else {
-        @for (plan of plans; track plan.id) {
-          <ion-item>
-            <ion-label>
-              <h3>{{ plan.product.name }}</h3>
-              <p>{{ plan.product.description }}</p>
-            </ion-label>
-          </ion-item>
-        }
-      }
+      <ion-item>
+        <ion-label>No plans found</ion-label>
+      </ion-item>
+      } @else { @for (plan of plans; track plan.id) {
+      <ion-item>
+        <ion-label>
+          <h3>{{ plan.product.name }}</h3>
+          <p>{{ plan.product.description }}</p>
+        </ion-label>
+      </ion-item>
+      } }
     </ion-list>
   </div>
 </ion-content>

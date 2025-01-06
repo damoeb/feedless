@@ -1,61 +1,63 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title> RSS-proxy Self-Hosting Setup </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
-  <div style="flex: 1; display: flex">
-    <div style="flex: 1; display: flex">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Setup your Self-Hosting</ion-card-title>
-          <ion-card-subtitle
-            >Pick and choose what you want to achieve, setup instructions on the
-            right will be adjusted accordingly.</ion-card-subtitle
-          >
-        </ion-card-header>
-        <ion-card-content
-          style="flex: 1; display: flex; flex-direction: column"
-        >
-          <div style="flex: 1; display: flex; flex-direction: column">
-            <ion-searchbar [formControl]="queryFc"></ion-searchbar>
-            <div style="flex: 1; overflow-y: auto; position: relative">
-              <div style="position: absolute; width: 100%">
-                <ion-list>
-                  @for (f of filteredFeatures; track f.name) {
-                  <ion-item>
-                    <ion-checkbox
-                      labelPlacement="start"
-                      [checked]="value(f)"
-                      [disabled]="isDisabled(f)"
-                      (ionChange)="toggle(f)"
-                    >
-                      {{ f.name }}
-                      <ion-note>({{ f.groups }})</ion-note>
-                      @if (f.description) {
-                      <ion-label>
-                        <ion-note>{{ f.description }}</ion-note>
-                      </ion-label>
-                      }
-                    </ion-checkbox>
-                  </ion-item>
-                  }
-                </ion-list>
-              </div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+  <div style="flex: 1; display: flex; column-gap: 10px">
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <p class="ion-padding">
+        Pick and choose what you want to achieve, setup instructions on the
+        right will be adjusted accordingly.
+      </p>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <ion-searchbar
+          [formControl]="queryFc"
+          placeholder="Type to search features"
+        ></ion-searchbar>
+        <ion-list>
+          @for (f of filteredFeatures; track f.name) {
+          <ion-item>
+            <ion-checkbox
+              labelPlacement="start"
+              [checked]="value(f)"
+              [disabled]="isDisabled(f)"
+              (ionChange)="toggle(f)"
+            >
+              {{ f.name }}
+              <ion-note>({{ getGroups(f) }})</ion-note>
+              @if (f.description) {
+              <ion-label>
+                <ion-note>{{ f.description }}</ion-note>
+              </ion-label>
+              }
+            </ion-checkbox>
+          </ion-item>
+          }
+        </ion-list>
+      </div>
     </div>
     <div style="flex: 1; display: flex; flex-direction: column">
       <!--      <app-code-editor style="flex: 1"></app-code-editor>-->
-      <ion-toolbar color="warning" class="ion-padding-horizontal">
-        <ion-label>
-          I haven't finished this part yet, you can use the older versions of
-          rss-proxy as seen on the github repo for rss-proxy.
-        </ion-label>
-      </ion-toolbar>
-      <p>Setup Requirements:</p>
-      <ul>
-        @for (group of activeGroups(); track group.name) {
-        <li>{{ group.name }}</li>
-        }
-      </ul>
+      <h1>Work in Progress</h1>
+      <p>
+        I am still working on the
+        <strong>incremental setup for self-hosting</strong>, you have to stick
+        to the older versions of rss-proxy as seen on the github repo for
+        rss-proxy.
+      </p>
+
+      <!--      <p>Setup Requirements:</p>-->
+      <!--      <ul>-->
+      <!--        @for (group of activeGroups(); track group.name) {-->
+      <!--        <li>{{ group.name }}</li>-->
+      <!--        }-->
+      <!--      </ul>-->
     </div>
   </div>
 </ion-content>
