@@ -24,6 +24,8 @@ type ToastOptions = {
   buttons?: AlertButton[];
 };
 
+export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -34,7 +36,7 @@ export class ServerConfigService {
   apiUrl!: string;
   private features!: Feature[];
   private profiles!: GqlProfileName[];
-  private buildFrom!: number;
+  private build!: BuildInfo;
   private version!: string;
   private license: LocalizedLicense;
 
@@ -91,7 +93,7 @@ export class ServerConfigService {
       this.features = response.features;
       this.profiles = response.profiles;
       this.version = response.version;
-      this.buildFrom = response.build.date;
+      this.build = response.build;
       this.license = response.license;
     } catch (e) {
       if (!environment.offlineSupport) {
@@ -142,8 +144,8 @@ export class ServerConfigService {
     return !this.isSelfHosted();
   }
 
-  getBuildFrom() {
-    return this.buildFrom;
+  getBuild(): BuildInfo {
+    return this.build;
   }
 
   getVersion() {

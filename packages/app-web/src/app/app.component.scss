@@ -29,3 +29,11 @@ ion-menu::part(container) {
     min-width: var(--sidemenu-width) !important;
   }
 }
+
+.version {
+  text-align: right;
+  font-size: small;
+  a {
+    color: var(--ion-color-medium);
+  }
+}

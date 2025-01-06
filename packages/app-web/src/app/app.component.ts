@@ -28,6 +28,7 @@ import {
   IonList,
   IonMenu,
   IonMenuButton,
+  IonNote,
   IonRouterOutlet,
   IonSplitPane,
   IonToolbar,
@@ -43,6 +44,7 @@ import {
   personOutline,
   settingsOutline,
 } from 'ionicons/icons';
+import dayjs from 'dayjs';
 
 @Component({
   selector: 'app-root',
@@ -66,6 +68,7 @@ import {
     IonItem,
     RouterLink,
     IonLabel,
+    IonNote,
   ],
   standalone: true,
 })
@@ -129,6 +132,14 @@ export class AppComponent implements OnDestroy, OnInit {
           this.propagateColorModeAndProduct();
         }),
     );
+  }
+
+  getBuildCommit(): string {
+    return this.serverConfig.getBuild().commit.substring(0, 6);
+  }
+
+  getBuildDate(): string {
+    return dayjs(this.serverConfig.getBuild().date).format('YY-MM-DD');
   }
 
   ngOnDestroy(): void {

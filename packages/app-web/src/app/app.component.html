@@ -37,6 +37,18 @@
         </ion-content>
         <ion-footer>
           <ion-list>
+            <div class="version ion-padding">
+              version
+              <a
+                [href]="
+                  'https://github.com/damoeb/feedless/commit/' +
+                  serverConfig.getBuild().commit
+                "
+              >
+                {{ getBuildCommit() }}
+              </a>
+              from {{ getBuildDate() }}
+            </div>
             <ion-item [button]="true" routerLink="/docs/contact">
               <!--                <ion-icon name="person-outline" slot="start"></ion-icon>-->
               <ion-label color="medium"> Contact </ion-label>
