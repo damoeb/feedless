@@ -24,7 +24,9 @@ import {
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
   GqlOrdersQuery,
-  GqlOrdersQueryVariables, GqlPlansQuery, GqlPlansQueryVariables,
+  GqlOrdersQueryVariables,
+  GqlPlansQuery,
+  GqlPlansQueryVariables,
   GqlRecordByIdsQuery,
   GqlRecordByIdsQueryVariables,
   GqlRepository,
@@ -46,7 +48,7 @@ import {
   RecordByIds,
   RepositoryById,
   Scrape,
-  ServerSettings
+  ServerSettings,
 } from '../generated/graphql';
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -283,10 +285,7 @@ export function mockProducts(apolloMockController: ApolloMockController) {
 
 export function mockPlans(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlPlansQuery,
-      GqlPlansQueryVariables
-    >(Plans)
+    .mockQuery<GqlPlansQuery, GqlPlansQueryVariables>(Plans)
     .and.resolveOnce(async () => {
       return {
         data: {

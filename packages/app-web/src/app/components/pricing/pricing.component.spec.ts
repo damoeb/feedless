@@ -18,7 +18,7 @@ describe('PricingComponent', () => {
           configurer: (apolloMockController) => {
             mockProducts(apolloMockController);
             mockPlans(apolloMockController);
-          }
+          },
         }),
         RouterTestingModule.withRoutes([]),
       ],

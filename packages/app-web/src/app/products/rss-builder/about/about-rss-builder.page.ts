@@ -68,12 +68,6 @@ export class AboutRssBuilderPage implements OnInit {
     }
   }
 
-  getLicenseExpiry() {
-    return new Date(
-      this.serverConfig.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
-    );
-  }
-
   async ngOnInit() {
     const products = await this.appConfigService.getAllAppConfigs();
     const source = this.activatedRoute.snapshot.queryParams['source'];

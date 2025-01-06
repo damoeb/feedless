@@ -48,10 +48,4 @@ export class AboutTrackerPage {
       console.warn(e);
     }
   }
-
-  getLicenseExpiry() {
-    return new Date(
-      this.serverConfig.getBuildFrom() + 1000 * 60 * 60 * 24 * 265 * 2,
-    );
-  }
 }
