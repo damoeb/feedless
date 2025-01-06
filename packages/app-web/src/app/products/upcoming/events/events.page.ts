@@ -21,7 +21,7 @@ import {
 } from 'schema-dts';
 import { getCachedLocations } from '../places';
 import { PageService, PageTags } from '../../../services/page.service';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location, NgClass } from '@angular/common';
 import {
   parseDateFromUrl,
@@ -141,6 +141,7 @@ export class EventsPage implements OnInit, OnDestroy {
   private readonly pageService = inject(PageService);
   private readonly openStreetMapService = inject(OpenStreetMapService);
   private readonly appConfigService = inject(AppConfigService);
+  private readonly router = inject(Router);
 
   date: Dayjs = dayjs();
   now: Dayjs = dayjs();
@@ -180,7 +181,7 @@ export class EventsPage implements OnInit, OnDestroy {
             );
 
           this.perimeter = perimeter || 10;
-          this.changeDate(parseDateFromUrl(params));
+          await this.changeDate(parseDateFromUrl(params));
 
           this.changeRef.detectChanges();
 
@@ -193,13 +194,25 @@ export class EventsPage implements OnInit, OnDestroy {
           //   this.geoService.getCurrentLatLon(),
           // );
 
-          this.headerComponent().fetchSuggestions('');
+          await this.headerComponent().fetchSuggestions('');
         } finally {
           this.loading = false;
         }
         this.changeRef.detectChanges();
       }),
     );
+
+    if (
+      !this.location &&
+      Object.keys(this.activatedRoute.snapshot.params).length === 0
+    ) {
+      const savedLocations: NamedLatLon[] = this.getSavedLocations();
+      if (savedLocations.length > 0) {
+        await this.router.navigateByUrl(
+          this.getDateUrl(dayjs(), savedLocations[0]),
+        );
+      }
+    }
   }
 
   formatDate(date: Dayjs, format: string) {
@@ -438,9 +451,9 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  getDateUrl(date: Dayjs) {
-    const { countryCode, region, place, year, month, day } =
-      this.activatedRoute.snapshot.params;
+  getDateUrl(date: Nullable<Dayjs>, location: Nullable<NamedLatLon> = null) {
+    const { countryCode, region, place } = this.getLocationOrElse(location);
+    const { year, month, day } = this.getDateOrElse(date);
 
     return (
       '/' +
@@ -543,14 +556,16 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
-    const savedLocations: NamedLatLon[] = JSON.parse(
-      localStorage.getItem('savedLocations') || '[]',
-    );
+    const savedLocations: NamedLatLon[] = this.getSavedLocations();
     const locations = uniqBy(
       [location, ...savedLocations],
       (l) => `${l.lat}:${l.lng}`,
     ).filter((_, index) => index < 4);
     localStorage.setItem('savedLocations', JSON.stringify(locations));
+  }
+
+  private getSavedLocations(): NamedLatLon[] {
+    return JSON.parse(localStorage.getItem('savedLocations') || '[]');
   }
 
   private createDateWindow(dateP: Dayjs) {
@@ -641,6 +656,38 @@ export class EventsPage implements OnInit, OnDestroy {
       } else {
         return date;
       }
+    }
+  }
+
+  private getDateOrElse(date: Dayjs): {
+    year: number;
+    month: number;
+    day: number;
+  } {
+    if (date) {
+      return {
+        year: parseInt(date.format('YYYY')),
+        month: parseInt(date.format('MM')),
+        day: parseInt(date.format('DD')),
+      };
+    } else {
+      return this.activatedRoute.snapshot.params as any;
+    }
+  }
+
+  private getLocationOrElse(location: NamedLatLon): {
+    countryCode: string;
+    region: string;
+    place: string;
+  } {
+    if (location) {
+      return {
+        countryCode: location.countryCode,
+        region: location.area,
+        place: location.place,
+      };
+    } else {
+      return this.activatedRoute.snapshot.params as any;
     }
   }
 }

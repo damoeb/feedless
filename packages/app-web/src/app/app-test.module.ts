@@ -24,7 +24,7 @@ import {
   GqlListRepositoriesQuery,
   GqlListRepositoriesQueryVariables,
   GqlOrdersQuery,
-  GqlOrdersQueryVariables,
+  GqlOrdersQueryVariables, GqlPlansQuery, GqlPlansQueryVariables,
   GqlRecordByIdsQuery,
   GqlRecordByIdsQueryVariables,
   GqlRepository,
@@ -39,13 +39,14 @@ import {
   GqlVertical,
   GqlVisibility,
   ListPlugins,
+  Plans,
   ListProducts,
   ListRepositories,
   Orders,
   RecordByIds,
   RepositoryById,
   Scrape,
-  ServerSettings,
+  ServerSettings
 } from '../generated/graphql';
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
@@ -275,6 +276,21 @@ export function mockProducts(apolloMockController: ApolloMockController) {
       return {
         data: {
           products: [],
+        },
+      };
+    });
+}
+
+export function mockPlans(apolloMockController: ApolloMockController) {
+  return apolloMockController
+    .mockQuery<
+      GqlPlansQuery,
+      GqlPlansQueryVariables
+    >(Plans)
+    .and.resolveOnce(async () => {
+      return {
+        data: {
+          plans: [],
         },
       };
     });
