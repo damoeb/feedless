@@ -28,6 +28,7 @@ import {
   IonMenuButton,
   IonRouterOutlet,
   IonToolbar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
@@ -35,6 +36,7 @@ import { AgentsButtonComponent } from '../../components/agents-button/agents-but
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 import { PromotionHeaderComponent } from '../../components/promotion-header/promotion-header.component';
+import { SelfHostingSetupPage } from './self-hosting-setup/self-hosting-setup.page';
 
 @Component({
   selector: 'app-rss-builder-product-page',
@@ -66,6 +68,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
   private readonly licenseService = inject(LicenseService);
   readonly serverConfig = inject(ServerConfigService);
   private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly modalCtrl = inject(ModalController);
 
   scrapeResponse: ScrapeResponse;
   productConfig: VerticalSpecWithRoutes;
@@ -107,5 +110,13 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  async openSelfHostingSetup() {
+    const modal = await this.modalCtrl.create({
+      component: SelfHostingSetupPage,
+      cssClass: 'fullscreen-modal',
+    });
+    await modal.present();
   }
 }

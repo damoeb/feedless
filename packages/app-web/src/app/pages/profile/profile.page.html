@@ -89,66 +89,66 @@
       </ion-row>
     </ion-list>
 
-<!--    @if (serverConfig.isSaas()) {-->
-<!--    <div appDev>-->
-<!--      <ion-list>-->
-        <!--      <ion-list-header> General</ion-list-header>-->
-        <!--      <ion-item>-->
-        <!--        <ion-select label="Feature State" value="stable">-->
-        <!--          <ion-select-option value="experimental"-->
-        <!--            >Experimental-->
-        <!--          </ion-select-option>-->
-        <!--          <ion-select-option value="beta">Beta</ion-select-option>-->
-        <!--          <ion-select-option value="stable">Stable</ion-select-option>-->
-        <!--        </ion-select>-->
-        <!--      </ion-item>-->
-        <!--      <ion-list-header>-->
-        <!--        <a-->
-        <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
-        <!--          referrerpolicy="no-referrer"-->
-        <!--          target="_blank"-->
-        <!--          >Plugins</a-->
-        <!--        ></ion-list-header-->
-        <!--      >-->
-        <!--      <ion-item>-->
-        <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-        <!--      </ion-item>-->
-        <!--      <ion-item *ngFor="let ref of plugins">-->
-        <!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
-        <!--          <span>{{ref.plugin.id}}</span>-->
-        <!--          <ion-note class="ion-padding-start"-->
-        <!--            >{{ref.plugin.description}}</ion-note-->
-        <!--          >-->
-        <!--        </ion-checkbox>-->
-        <!--      </ion-item>-->
-        <!--      <ion-item *ngFor="let plugin of plugins">-->
-        <!--        <ion-checkbox [checked]="true" -->
-        <!--                      [disabled]="true" -->
-        <!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
-        <!--      </ion-item>-->
-        <!--      <ion-row>-->
-        <!--        <ion-col size="6">-->
-        <!--          <ion-item>-->
-        <!--            <ion-label>Plan</ion-label>-->
-        <!--          </ion-item>-->
-        <!--        </ion-col>-->
-        <!--        <ion-col size="6">-->
-        <!--          <ion-item color="primary">-->
-        <!--            <ion-label>Free Plan</ion-label>-->
-        <!--          </ion-item>-->
-        <!--        </ion-col>-->
-        <!--      </ion-row>-->
-        <!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
-        <!--      <ion-item (click)="importAny()" [button]="true">-->
-        <!--        <ion-label>Import</ion-label>-->
-        <!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
-        <!--      </ion-item>-->
-        <!--      <ion-item (click)="exportOPML()" [button]="true">-->
-        <!--        <ion-label> Export OPML </ion-label>-->
-        <!--      </ion-item>-->
-<!--      </ion-list>-->
-<!--    </div>-->
-<!--    }-->
+    <!--    @if (serverConfig.isSaas()) {-->
+    <!--    <div appDev>-->
+    <!--      <ion-list>-->
+    <!--      <ion-list-header> General</ion-list-header>-->
+    <!--      <ion-item>-->
+    <!--        <ion-select label="Feature State" value="stable">-->
+    <!--          <ion-select-option value="experimental"-->
+    <!--            >Experimental-->
+    <!--          </ion-select-option>-->
+    <!--          <ion-select-option value="beta">Beta</ion-select-option>-->
+    <!--          <ion-select-option value="stable">Stable</ion-select-option>-->
+    <!--        </ion-select>-->
+    <!--      </ion-item>-->
+    <!--      <ion-list-header>-->
+    <!--        <a-->
+    <!--          href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"-->
+    <!--          referrerpolicy="no-referrer"-->
+    <!--          target="_blank"-->
+    <!--          >Plugins</a-->
+    <!--        ></ion-list-header-->
+    <!--      >-->
+    <!--      <ion-item>-->
+    <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+    <!--      </ion-item>-->
+    <!--      <ion-item *ngFor="let ref of plugins">-->
+    <!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
+    <!--          <span>{{ref.plugin.id}}</span>-->
+    <!--          <ion-note class="ion-padding-start"-->
+    <!--            >{{ref.plugin.description}}</ion-note-->
+    <!--          >-->
+    <!--        </ion-checkbox>-->
+    <!--      </ion-item>-->
+    <!--      <ion-item *ngFor="let plugin of plugins">-->
+    <!--        <ion-checkbox [checked]="true" -->
+    <!--                      [disabled]="true" -->
+    <!--                      labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
+    <!--      </ion-item>-->
+    <!--      <ion-row>-->
+    <!--        <ion-col size="6">-->
+    <!--          <ion-item>-->
+    <!--            <ion-label>Plan</ion-label>-->
+    <!--          </ion-item>-->
+    <!--        </ion-col>-->
+    <!--        <ion-col size="6">-->
+    <!--          <ion-item color="primary">-->
+    <!--            <ion-label>Free Plan</ion-label>-->
+    <!--          </ion-item>-->
+    <!--        </ion-col>-->
+    <!--      </ion-row>-->
+    <!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
+    <!--      <ion-item (click)="importAny()" [button]="true">-->
+    <!--        <ion-label>Import</ion-label>-->
+    <!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
+    <!--      </ion-item>-->
+    <!--      <ion-item (click)="exportOPML()" [button]="true">-->
+    <!--        <ion-label> Export OPML </ion-label>-->
+    <!--      </ion-item>-->
+    <!--      </ion-list>-->
+    <!--    </div>-->
+    <!--    }-->
 
     <ion-row class="ion-margin-top">
       <ion-col size="8">

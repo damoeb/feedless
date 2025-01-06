@@ -11,13 +11,6 @@ export const RSS_BUILDER_ROUTES: Routes = [
       import('./rss-builder-product.page').then((m) => m.RssBuilderProductPage),
     children: [
       {
-        path: 'setup',
-        loadComponent: () =>
-          import('./self-hosting-setup/self-hosting-setup.page').then(
-            (m) => m.SelfHostingSetupPage,
-          ),
-      },
-      {
         path: '',
         canActivate: [ProfileGuardService],
         children: [
