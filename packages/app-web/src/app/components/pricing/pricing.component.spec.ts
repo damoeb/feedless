@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PricingComponent } from './pricing.component';
-import { AppTestModule, mockProducts } from '../../app-test.module';
+import { AppTestModule, mockPlans, mockProducts } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
 import { GqlVertical } from '../../../generated/graphql';
@@ -15,8 +15,10 @@ describe('PricingComponent', () => {
       imports: [
         PricingComponent,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockProducts(apolloMockController),
+          configurer: (apolloMockController) => {
+            mockProducts(apolloMockController);
+            mockPlans(apolloMockController);
+          }
         }),
         RouterTestingModule.withRoutes([]),
       ],
