@@ -117,7 +117,7 @@ type Repository {
   frequency(groupBy: RecordDateField!): [RecordFrequency!]
   plugins: [PluginExecution!]
   retention: Retention!
-  sources(cursor: Cursor!, where: SourcesWhereInput, orderBy: SourceOrderByInput): [Source!]
+  sources(cursor: Cursor!, where: SourcesWhereInput, order: [SourceOrderByInput!]): [Source!]
 }
 
 input SourcesWhereInput {
@@ -127,8 +127,9 @@ input SourcesWhereInput {
 
 input SourceOrderByInput {
   title: SortOrder
-  status: SortOrder
+#  status: SortOrder
   lastRecordsRetrieved: SortOrder
+  lastRefreshedAt: SortOrder
 }
 
 type Harvest {
@@ -428,20 +429,19 @@ enum Vertical {
   all,
   rssProxy
   visualDiff
-  reader
+  reader # =feedReader
   feedless
 
 #  shouldWeLaunchThis
 #  automatedBrowser
-#  feedAnanlytics
+#  feedAnalytics
 #  communityThreads
 #  localLink like ngrok, traffic forwarding needed for browser life feed
 #  teamDraft
-#  feedReader
 #  blog
   upcoming
   untoldNotes
-#  pageChangeTracker
+  pageChangeTracker
 #  digest
 #  featureFlags
   feedDump
@@ -1117,7 +1117,11 @@ enum SortField {
 
 enum SortOrder {
   asc
+#  ascNullsLast
+#  ascNullsFirst
   desc
+#  descNullsLast
+#  descNullsFirst
 }
 
 enum UserSecretType {

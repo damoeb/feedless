@@ -11,6 +11,16 @@
           buttonText=""
           placeholder="Enter the url of your source"
         >
+          @if (url?.length > 0) {
+            <ion-button
+              title="Clear"
+              fill="clear"
+              color="dark"
+              (click)="reset()"
+            >
+              <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          }
           <input
             #filePicker
             (change)="uploadFile($event)"
@@ -65,6 +75,7 @@
         #webToFeedTransformer
         (selectedFeedChange)="selectedFeed = $event"
         (statusChange)="hasValidFeed = $event === 'valid'"
+        [feed]="getFeed()"
         [sourceBuilder]="sourceBuilder"
       >
         <ion-item

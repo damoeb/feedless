@@ -218,8 +218,9 @@
             </dd>
           }
           @if (isOwner) {
-            <dt>Retention Strategy</dt>
+            <dt>Capacity and Retention</dt>
             <dd>
+              {{ repository().documentCount }} of
               {{ getRetentionStrategy() }}
               @if (isOwner) {
                 <ion-button
@@ -269,19 +270,26 @@
         }
       </h3>
       <div style="align-content: center">
-        <ion-segment
-          [formControl]="viewModeFc"
-          mode="ios"
-          style="max-width: 300px"
-        >
-          <ion-segment-button [value]="viewModeList">List</ion-segment-button>
-          <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
-          @if (repository().product === GqlProductName.VisualDiff) {
-            <ion-segment-button [value]="viewModeDiff"
-              >Diff
-            </ion-segment-button>
+        <div style="display: flex">
+          <ion-segment
+            [formControl]="viewModeFc"
+            mode="ios"
+            style="max-width: 300px"
+          >
+            <ion-segment-button [value]="viewModeList">List</ion-segment-button>
+            <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
+            @if (repository().product === GqlProductName.VisualDiff) {
+              <ion-segment-button [value]="viewModeDiff"
+                >Diff
+              </ion-segment-button>
+            }
+          </ion-segment>
+          @if (supportTable && isOwner) {
+            <ion-button size="small" (click)="openDataModal()" appDev>
+              Data
+            </ion-button>
           }
-        </ion-segment>
+        </div>
       </div>
     </div>
     @if (loading) {

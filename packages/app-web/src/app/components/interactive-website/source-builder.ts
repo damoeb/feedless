@@ -107,6 +107,7 @@ export class SourceBuilder {
   ) {
     this.patch(pick(source, ['latLng', 'tags', 'title']));
     this.flow = cloneDeep(source.flow.sequence);
+    console.log('this.flow', this.flow);
     this.validateFlow();
   }
 

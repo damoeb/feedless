@@ -14,6 +14,7 @@ import {
   AlertController,
   IonButton,
   IonButtons,
+  IonChip,
   IonCol,
   IonIcon,
   IonItem,
@@ -33,6 +34,7 @@ import { FetchPolicy } from '@apollo/client/core';
 import { ArrayElement, Nullable } from '../../types';
 import {
   GqlRepositoryCreateInput,
+  GqlSortOrder,
   GqlSourceInput,
   GqlSourcesWhereInput,
 } from '../../../generated/graphql';
@@ -76,6 +78,7 @@ import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-bui
     IonTitle,
     IonToolbar,
     FeedBuilderModalModule,
+    IonChip,
   ],
   standalone: true,
 })
@@ -96,6 +99,7 @@ export class SourcesComponent implements OnInit {
   currentSourcesPage: number = 0;
   sources: Source[] = [];
   protected readonly fromNow = relativeTimeOrElse;
+  protected pageSize = 10;
 
   constructor() {
     addIcons({
@@ -213,8 +217,12 @@ export class SourcesComponent implements OnInit {
         this.repository().id,
         {
           page,
+          pageSize: this.pageSize,
         },
         this.sourcesFilter(),
+        {
+          lastRecordsRetrieved: GqlSortOrder.Asc,
+        },
         fetchPolicy,
       );
       this.sourceChange.emit(this.sources);
@@ -386,6 +394,7 @@ export class SourcesComponent implements OnInit {
                 },
               },
             });
+            await this.fetchSources(this.currentSourcesPage, 'network-only');
           } else {
             await this.repositoryService.updateRepository({
               where: {
@@ -404,6 +413,7 @@ export class SourcesComponent implements OnInit {
                 },
               },
             });
+            await this.fetchSources(0, 'network-only');
           }
           this.changeRef.detectChanges();
         }
@@ -440,5 +450,10 @@ export class SourcesComponent implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  async handlePageSizeChange(pageSize: number) {
+    this.pageSize = pageSize;
+    await this.fetchSources(this.currentSourcesPage);
   }
 }

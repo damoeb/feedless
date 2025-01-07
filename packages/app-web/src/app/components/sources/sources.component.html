@@ -52,9 +52,9 @@
 
   <ion-row style="opacity: 0.5">
     <ion-col size="1" class="ion-text-center">Status</ion-col>
-    <ion-col size="5" class="ion-padding-start">Description</ion-col>
-    <ion-col size="2">Refreshed Last</ion-col>
-    <ion-col size="2">Retrieved Last</ion-col>
+    <ion-col size="7" class="ion-padding-start">Description</ion-col>
+    <ion-col size="1">Refreshed Last</ion-col>
+    <ion-col size="1">Retrieved Last</ion-col>
   </ion-row>
   @if (loadingSources) {
     <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
@@ -65,7 +65,7 @@
       <ion-col size="1" class="ion-text-center">
         <app-bubble [color]="getHealthColorForSource(source)"></app-bubble>
       </ion-col>
-      <ion-col size="5">
+      <ion-col size="7">
         <div style="padding-left: 10px">
           {{ source.title }}
         </div>
@@ -93,25 +93,25 @@
           </p>
         }
       </ion-col>
-      <ion-col size="2">
+      <ion-col size="1" style="align-content: center">
         @if (source.lastRefreshedAt) {
           <ion-text class="nowrap" title="last fetch">
-            {{ fromNow(source.lastRefreshedAt) }} ago
+            {{ fromNow(source.lastRefreshedAt) }}
           </ion-text>
         } @else {
           <ion-text class="nowrap" title="last fetch" color="">
-            Never fetched
+            Never
           </ion-text>
         }
       </ion-col>
-      <ion-col size="2">
+      <ion-col size="1" style="align-content: center">
         @if (source.lastRefreshedAt) {
           <ion-text
             class="nowrap"
             title="last items retrieved"
             [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
           >
-            {{ source.lastRecordsRetrieved }} items
+            {{ source.lastRecordsRetrieved }}
           </ion-text>
         } @else {
           -
@@ -142,7 +142,9 @@
 
   <app-pagination
     (pageChange)="fetchSources($event)"
+    (pageSizeChange)="handlePageSizeChange($event)"
     [currentPage]="currentSourcesPage"
     [isLastPage]="sources.length === 0"
+    [showPageSize]="true"
   ></app-pagination>
 </ion-list>

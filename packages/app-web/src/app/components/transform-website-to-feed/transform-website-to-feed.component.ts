@@ -60,6 +60,7 @@ import {
   IonProgressBar,
   IonSegmentButton,
   IonSpinner,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { BubbleComponent } from '../bubble/bubble.component';
 import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
@@ -110,6 +111,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly modalService = inject(ModalService);
+  private readonly toastCtrl = inject(ToastController);
 
   protected readonly CUSTOM_HASH = 'custom-hash';
 
@@ -176,17 +178,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     try {
-      const genericFeedParams = this.sourceBuilder().findFirstByPluginsId(
-        GqlFeedlessPlugins.OrgFeedlessFeed,
-      )?.execute?.params?.org_feedless_feed?.generic;
-
-      if (genericFeedParams) {
-        this.customizeGenericFeed({
-          selectors: genericFeedParams,
-          count: 0,
-          score: 0,
-          hash: '',
-        });
+      if (this.feed()?.genericFeed) {
+        this.customizeGenericFeed(this.feed().genericFeed);
       } else {
         this.genFeedXpathsFg.patchValue(
           this.activatedRoute.snapshot.queryParams,
@@ -349,18 +342,30 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   }
 
   async pickElementWithin(xpath: string, fc: FormControl<string>) {
+    console.log('pickElementWithin');
     this.sourceBuilder().events.extractElements.next({
       xpath,
       callback: async (elements: HTMLElement[]) => {
-        const componentProps: CodeEditorModalComponentProps = {
-          title: 'HTML Editor',
-          text: await format(elements[0].innerHTML, {
-            parser: 'html',
-            plugins: [htmlPlugin],
-          }),
-          contentType: 'html',
-        };
-        await this.modalService.openCodeEditorModal(componentProps);
+        if (elements.length > 0) {
+          const componentProps: CodeEditorModalComponentProps = {
+            title: 'HTML Editor',
+            text: await format(elements[0].innerHTML, {
+              parser: 'html',
+              plugins: [htmlPlugin],
+            }),
+            contentType: 'html',
+            readOnly: true,
+          };
+          await this.modalService.openCodeEditorModal(componentProps);
+        } else {
+          const toast = await this.toastCtrl.create({
+            message: 'Item XPath does not return matches',
+            duration: 3000,
+            color: 'medium',
+          });
+
+          await toast.present();
+        }
       },
     });
   }

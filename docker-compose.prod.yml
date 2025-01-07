@@ -61,6 +61,8 @@ services:
 
   feedless-agent:
     image: damoeb/feedless:agent-latest
+    dns:
+      - "8.8.8.8"
     security_opt:
       - seccomp=./chrome.json
     restart: unless-stopped
@@ -101,6 +103,8 @@ services:
 
   feedless-core:
     image: damoeb/feedless:core-latest
+    dns:
+      - "8.8.8.8"
     restart: unless-stopped
 #    healthcheck:
 #      test: curl -f http://localhost:8080
