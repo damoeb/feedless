@@ -31,6 +31,10 @@ import {
   SelectionModalComponent,
   SelectionModalComponentProps,
 } from '../modals/selection-modal/selection-modal.component';
+import {
+  DataTableModalComponent,
+  DataTableModalProps,
+} from '../modals/data-table-modal/data-table-modal.component';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -176,6 +180,17 @@ export class ModalService {
     const response = await modal.onDidDismiss<NamedLatLon>();
     await this.updateUrlParams();
     return response.data!;
+  }
+
+  async openDataTableModal(params: DataTableModalProps): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: DataTableModalComponent,
+      cssClass: 'fullscreen-modal',
+      showBackdrop: true,
+      backdropDismiss: true,
+    });
+    await modal.present();
+    await modal.onDidDismiss<NamedLatLon>();
   }
 
   async openRepositoryEditor(componentProps: RepositoryModalComponentProps) {

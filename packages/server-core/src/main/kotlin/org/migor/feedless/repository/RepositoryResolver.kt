@@ -142,7 +142,7 @@ class RepositoryResolver {
   suspend fun sources(
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Cursor) cursor: Cursor,
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Where) where: SourcesWhereInput?,
-    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.OrderBy) orderBy: SourceOrderByInput?,
+    @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Order) order: List<SourceOrderByInput>?,
     dfe: DgsDataFetchingEnvironment,
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
@@ -151,7 +151,7 @@ class RepositoryResolver {
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
-        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, where, orderBy)
+        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, where, order)
           .toList()
           .map { it.toDto() }
       }

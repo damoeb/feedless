@@ -99,6 +99,7 @@ import { SearchAddressModalModule } from '../../modals/search-address-modal/sear
 import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { SourcesComponent } from '../sources/sources.component';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
+import { TableComponent } from '../table/table.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -182,6 +183,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   readonly sources = viewChild<SourcesComponent>('sources');
 
   readonly track = input<boolean>();
+  readonly supportTable = input<boolean>(false);
 
   protected documents: RecordWithFornmControl[] = [];
   protected feedUrl: string;
@@ -599,5 +601,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
       await toast.present();
     }
+  }
+
+  async openDataModal() {
+    await this.modalService.openDataTableModal({});
   }
 }

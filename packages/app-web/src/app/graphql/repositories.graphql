@@ -77,9 +77,10 @@ query sourcesByRepository(
   $repository: RepositoryWhereInput!
   $cursor: Cursor!
   $where: SourcesWhereInput
+  $order: [SourceOrderByInput!]
 ) {
   repository(data: $repository) {
-    sources(cursor: $cursor, where: $where) {
+    sources(cursor: $cursor, where: $where, order: $order) {
       ...SourceFragment
     }
   }

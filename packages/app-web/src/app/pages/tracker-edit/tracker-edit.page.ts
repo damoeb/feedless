@@ -187,11 +187,17 @@ export class TrackerEditPage
           return this.initialize(url);
         }
       }),
-      // this.activatedRoute.queryParams.subscribe((queryParams) => {
-      //   if (queryParams.url && queryParams.url != this.form.value.url) {
-      //     this.form.controls.url.setValue(queryParams.url);
+
+      // this.activatedRoute.params.subscribe(params => {
+      //   if (params.url) {
+      //     this.formGroup.controls.url.setValue(params.url);
       //   }
       // }),
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
+        if (queryParams.url && queryParams.url != this.formGroup.value.url) {
+          this.formGroup.controls.url.setValue(queryParams.url);
+        }
+      }),
       this.formGroup.controls.screen.valueChanges.subscribe((screen) => {
         if (screen === 'area') {
           this.formGroup.controls.areaBoundingBox.enable();

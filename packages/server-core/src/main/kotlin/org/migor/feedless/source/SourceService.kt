@@ -167,7 +167,7 @@ class SourceService(
     repositoryId: UUID,
     pageable: Pageable,
     where: SourcesWhereInput? = null,
-    orderBy: SourceOrderByInput? = null
+    orders: List<SourceOrderByInput>? = null
   ): List<SourceEntity> {
     val whereStatements = mutableListOf<Predicatable>()
     val query = jpql {
@@ -208,9 +208,8 @@ class SourceService(
           *whereStatements.toTypedArray()
         )
         .orderBy(
-          orderBy?.lastRecordsRetrieved?.let {
-            path(SourceEntity::lastRecordsRetrieved).desc()
-          }
+          path(SourceEntity::lastRecordsRetrieved).asc(),
+          path(SourceEntity::lastRefreshedAt).asc().nullsFirst(),
         )
     }
 

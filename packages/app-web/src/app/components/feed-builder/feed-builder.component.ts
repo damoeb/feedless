@@ -55,6 +55,7 @@ import {
   attachOutline,
   checkmarkDoneOutline,
   checkmarkOutline,
+  closeOutline,
   logoJavascript,
   settingsOutline,
 } from 'ionicons/icons';
@@ -69,9 +70,9 @@ import {
   standaloneV2FeedTransformRoute,
   standaloneV2WebToFeedRoute,
 } from '../../router-utils';
-import { LatLng } from '../../types';
+import { LatLng, Nullable } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { assignIn, intersection, isArray } from 'lodash-es';
+import { assignIn, first, intersection, isArray } from 'lodash-es';
 import { RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
 
@@ -207,6 +208,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       checkmarkOutline,
       checkmarkDoneOutline,
       attachOutline,
+      closeOutline,
       arrowRedoOutline,
     });
   }
@@ -271,8 +273,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.changeRef.detectChanges();
 
-      this.sourceBuilder = null;
-      this.changeRef.detectChanges();
+      // this.sourceBuilder = null;
+      // this.changeRef.detectChanges();
 
       if (this.sourceBuilder) {
         console.log('patch fetch');
@@ -307,6 +309,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
     this.loading = false;
     this.changeRef.detectChanges();
+    console.log('done');
   }
 
   ngOnDestroy(): void {
@@ -356,6 +359,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   receiveUrl(url: string) {
+    this.sourceBuilder = null;
+    this.changeRef.detectChanges();
     this.url = url;
     return this.scrapeUrl();
   }
@@ -649,6 +654,47 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   uploadFile($event: Event) {}
+
+  getFeed(): Nullable<NativeOrGenericFeed> {
+    if (this.source()) {
+      const feedPlugin = first(
+        this.source().flow.sequence.filter(
+          (a) => a.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
+        ),
+      )?.execute?.params?.org_feedless_feed;
+      const fetchPlugin = first(
+        this.source().flow.sequence.filter((a) => a.fetch),
+      )?.fetch;
+      if (feedPlugin) {
+        if (feedPlugin.generic) {
+          return {
+            genericFeed: {
+              count: 0,
+              hash: '',
+              score: 0,
+              selectors: feedPlugin.generic,
+            },
+            // nativeFeed: null
+          };
+        } else {
+          return {
+            nativeFeed: {
+              feedUrl: fetchPlugin?.get?.url?.literal,
+              title: '',
+              items: [],
+              publishedAt: new Date(),
+            },
+          };
+        }
+      }
+    }
+  }
+
+  reset() {
+    this.url = '';
+    this.sourceBuilder = null;
+    this.changeRef.detectChanges();
+  }
 }
 
 export function tagsToString(tags: string[]): string {

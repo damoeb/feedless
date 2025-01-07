@@ -22,6 +22,7 @@ import {
   GqlRepositoryUniqueWhereInput,
   GqlRepositoryUpdateInput,
   GqlSourceInput,
+  GqlSourceOrderByInput,
   GqlSourcesByRepositoryQuery,
   GqlSourcesByRepositoryQueryVariables,
   GqlSourcesWhereInput,
@@ -228,6 +229,7 @@ export class RepositoryService {
     id: string,
     cursor: GqlCursor,
     where: GqlSourcesWhereInput,
+    order: GqlSourceOrderByInput,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<Source[]> {
     return this.apollo
@@ -242,6 +244,7 @@ export class RepositoryService {
               },
             },
             where,
+            order,
             cursor,
           },
         },

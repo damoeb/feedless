@@ -139,7 +139,7 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   getBuildDate(): string {
-    return dayjs(this.serverConfig.getBuild().date).format('YY-MM-DD');
+    return dayjs(this.serverConfig.getBuild().date).format('DD-MM-YYYY');
   }
 
   ngOnDestroy(): void {
