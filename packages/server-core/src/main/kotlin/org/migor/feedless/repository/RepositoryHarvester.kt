@@ -161,8 +161,8 @@ class RepositoryHarvester(
 
             if (source.errorsInSuccession > 0) {
               source.errorsInSuccession = 0
-              source.lastErrorMessage = null
             }
+            source.lastErrorMessage = null
             source.lastRecordsRetrieved = retrieved
             source.lastRefreshedAt = LocalDateTime.now()
             sourceService.save(source)
@@ -205,7 +205,9 @@ class RepositoryHarvester(
     logCollector: LogCollector
   ) {
     val corrId = coroutineContext.corrId()
-    log.error("scrape failed ${e?.message}")
+    log.error("[$corrId] scrape failed ${e?.message}")
+    source.lastErrorMessage = e?.message
+
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
       logCollector.log("[$corrId] scrape error '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
@@ -226,8 +228,8 @@ class RepositoryHarvester(
           log.info("source ${source.id} disabled")
         }
       }
-      sourceService.save(source)
     }
+    sourceService.save(source)
   }
 
   suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Pair<Int,Int> {

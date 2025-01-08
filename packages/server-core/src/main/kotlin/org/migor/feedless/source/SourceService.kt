@@ -210,6 +210,7 @@ class SourceService(
         .orderBy(
           path(SourceEntity::lastRecordsRetrieved).asc(),
           path(SourceEntity::lastRefreshedAt).asc().nullsFirst(),
+          path(SourceEntity::createdAt).desc()
         )
     }
 

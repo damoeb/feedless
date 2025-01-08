@@ -54,7 +54,7 @@ export function relativeTimeOrElse(
   const now = dayjs();
   const ts = dayjs(futureTimestamp);
   if (now.subtract(2, 'weeks').isAfter(ts)) {
-    return ts.format('DD.MMMM YYYY');
+    return ts.format('DD.MM YYYY');
   } else {
     return compact([ts.toNow(true), suffix]).join(' ');
   }

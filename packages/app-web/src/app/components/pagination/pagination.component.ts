@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
-  Component,
+  Component, effect,
   input,
-  output,
+  output
 } from '@angular/core';
 import {
   IonButton,
@@ -35,17 +35,22 @@ export class PaginationComponent {
 
   readonly isLastPage = input<boolean>();
   readonly showPageSize = input<boolean>(false);
+  readonly pageSize = input<number>(10);
 
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
 
-  pageSizeFc = new FormControl<number>(10, [
+  pageSizeFc = new FormControl<number>(this.pageSize(), [
     Validators.min(1),
     Validators.max(50),
     Validators.required,
   ]);
 
   constructor() {
+    effect(() => {
+      this.pageSizeFc.setValue(this.pageSize(), {emitEvent: false});
+    })
+
     this.pageSizeFc.valueChanges.subscribe((pageSize) => {
       if (this.pageSizeFc.valid) {
         this.pageSizeChange.emit(pageSize);
