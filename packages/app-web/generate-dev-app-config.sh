@@ -1,10 +1,15 @@
 PRODUCT=$1
 OFFLINE_SUPPORT=$2
-echo "width product $PRODUCT $OFFLINE_SUPPORT"
+eventRepositoryId=$EVENT_REPOSITORY_ID
+echo "with product $PRODUCT $OFFLINE_SUPPORT"
+if [ -z "${eventRepositoryId}" ]; then
+  echo 'EVENT_REPOSITORY_ID not found (please patch .env)'
+  exit 1
+fi
 echo "{
   \"apiUrl\": \"http://localhost:8080\",
   \"product\": \"${PRODUCT}\",
-  \"eventRepositoryId\": \"262758e7-1d41-4097-ba08-f5c8bc21559f\",
+  \"eventRepositoryId\": \"${eventRepositoryId}\",
   \"operatorName\": \"your name\",
   \"operatorAddress\": \"your address\",
   \"operatorEmail\": \"your email\",
