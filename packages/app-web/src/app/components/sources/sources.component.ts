@@ -52,7 +52,7 @@ import { addIcons } from 'ionicons';
 import {
   addOutline,
   cloudUploadOutline,
-  ellipsisVerticalOutline,
+  ellipsisHorizontalOutline,
   refreshOutline,
 } from 'ionicons/icons';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
@@ -78,7 +78,6 @@ import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-bui
     IonTitle,
     IonToolbar,
     FeedBuilderModalModule,
-    IonChip,
   ],
   standalone: true,
 })
@@ -99,14 +98,14 @@ export class SourcesComponent implements OnInit {
   currentSourcesPage: number = 0;
   sources: Source[] = [];
   protected readonly fromNow = relativeTimeOrElse;
-  protected pageSize = 10;
+  protected pageSize = 20;
 
   constructor() {
     addIcons({
       addOutline,
       cloudUploadOutline,
       refreshOutline,
-      ellipsisVerticalOutline,
+      ellipsisHorizontalOutline,
     });
     effect(() => {
       console.log('change', this.sourcesFilter());

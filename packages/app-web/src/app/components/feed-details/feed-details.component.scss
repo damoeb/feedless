@@ -49,3 +49,14 @@ dl {
 ion-col {
   align-content: center;
 }
+
+app-sources {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
