@@ -131,15 +131,17 @@
             >
               Edit</ion-button
             >
+            @if (source.lastRefreshedAt !== null) {
+              <ion-button fill="solid" color="light" (click)="showLogs(source)"
+                >Logs</ion-button
+              >
+            }
             <ion-button
               fill="solid"
               color="light"
               (click)="showSourceOptions(source)"
             >
-              <ion-icon
-                name="ellipsis-horizontal-outline"
-                slot="icon-only"
-              ></ion-icon>
+              More
             </ion-button>
           </ion-buttons>
         </ion-col>

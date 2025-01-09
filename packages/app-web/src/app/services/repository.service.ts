@@ -11,6 +11,8 @@ import {
   GqlCursor,
   GqlDeleteRepositoryMutation,
   GqlDeleteRepositoryMutationVariables,
+  GqlLastHarvestsFromSourcesByRepositoryQuery,
+  GqlLastHarvestsFromSourcesByRepositoryQueryVariables,
   GqlListPublicRepositoriesQuery,
   GqlListPublicRepositoriesQueryVariables,
   GqlListRepositoriesQuery,
@@ -30,6 +32,7 @@ import {
   GqlSourcesWithFlowByRepositoryQueryVariables,
   GqlUpdateRepositoryMutation,
   GqlUpdateRepositoryMutationVariables,
+  LastHarvestsFromSourcesByRepository,
   ListPublicRepositories,
   ListRepositories,
   RepositoryById,
@@ -53,6 +56,11 @@ import dayjs from 'dayjs';
 import { ArrayElement } from '../types';
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
+export type Harvest = ArrayElement<
+  ArrayElement<
+    GqlLastHarvestsFromSourcesByRepositoryQuery['repository']['sources']
+  >['harvests']
+>;
 
 @Injectable({
   providedIn: 'root',
@@ -250,6 +258,26 @@ export class RepositoryService {
         },
       )
       .then((response) => response.data.repository.sources);
+  }
+
+  async getLastHarvestFromSourcesByRepository(
+    repositoryId: string,
+    sourceId: string,
+    fetchPolicy: FetchPolicy = 'cache-first',
+  ): Promise<Harvest> {
+    return this.apollo
+      .query<
+        GqlLastHarvestsFromSourcesByRepositoryQuery,
+        GqlLastHarvestsFromSourcesByRepositoryQueryVariables
+      >({
+        query: LastHarvestsFromSourcesByRepository,
+        fetchPolicy,
+        variables: {
+          repositoryId,
+          sourceId,
+        },
+      })
+      .then((response) => response.data.repository.sources[0].harvests[0]);
   }
 
   async getSourceFullByRepository(

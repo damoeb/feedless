@@ -18,6 +18,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
+import org.migor.feedless.generated.types.Harvest
 import org.migor.feedless.generated.types.RepositoriesInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -53,15 +54,13 @@ fun Cursor.toPageable(): Pageable {
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
-class RepositoryResolver {
+class RepositoryResolver(
+  private val repositoryService: RepositoryService,
+  private val sourceService: SourceService,
+  private val harvestService: HarvestService
+) {
 
   private val log = LoggerFactory.getLogger(RepositoryResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var repositoryService: RepositoryService
-
-  @Autowired
-  private lateinit var sourceService: SourceService
 
   @Throttled
   @DgsQuery
@@ -147,7 +146,7 @@ class RepositoryResolver {
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      val pageable = cursor.toPageable() ?: PageRequest.of(0, 10)
+      val pageable = cursor.toPageable()
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
@@ -180,22 +179,13 @@ class RepositoryResolver {
     sourceService.countDocumentsBySourceId(UUID.fromString(source.id))
   }
 
-//  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Harvests)
-//  suspend fun harvests(
-//    dfe: DgsDataFetchingEnvironment,
-//  ): List<Harvest> = coroutineScope {
-//    emptyList()
-//    val repository: Repository = dfe.getSource()
-//    if (repository.currentUserIsOwner) {
-//      val harvests = withContext(Dispatchers.IO) {
-//        val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
-//        harvestDAO.findAllByRepositoryId(UUID.fromString(repository.id), pageable).map { it.toDto() }
-//      }
-//      harvests
-//    } else {
-//      emptyList()
-//    }
-//  }
+  @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.Harvests)
+  suspend fun harvests(
+    dfe: DgsDataFetchingEnvironment,
+  ): List<Harvest> = coroutineScope {
+    val source: Source = dfe.getSource()
+    harvestService.lastHarvests(UUID.fromString(source.id)).map{it.toDto()}
+  }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCountWithProblems)
   suspend fun sourcesCountWithProblems(
