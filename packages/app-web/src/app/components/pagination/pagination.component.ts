@@ -1,8 +1,9 @@
 import {
   ChangeDetectionStrategy,
-  Component, effect,
+  Component,
+  effect,
   input,
-  output
+  output,
 } from '@angular/core';
 import {
   IonButton,
@@ -48,8 +49,8 @@ export class PaginationComponent {
 
   constructor() {
     effect(() => {
-      this.pageSizeFc.setValue(this.pageSize(), {emitEvent: false});
-    })
+      this.pageSizeFc.setValue(this.pageSize(), { emitEvent: false });
+    });
 
     this.pageSizeFc.valueChanges.subscribe((pageSize) => {
       if (this.pageSizeFc.valid) {

@@ -1,7 +1,9 @@
 package org.migor.feedless.source
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
+import com.linecorp.kotlinjdsl.querymodel.jpql.path.Path
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
+import com.linecorp.kotlinjdsl.querymodel.jpql.sort.Sortable
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
 import jakarta.persistence.EntityManager
@@ -24,6 +26,7 @@ import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.actions.WaitActionEntity
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.generated.types.SortOrder
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourceUpdateInput
@@ -170,6 +173,7 @@ class SourceService(
     orders: List<SourceOrderByInput>? = null
   ): List<SourceEntity> {
     val whereStatements = mutableListOf<Predicatable>()
+    val sortableStatements = mutableListOf<Sortable>()
     val query = jpql {
       where?.let {
         it.id?.let {
@@ -198,18 +202,39 @@ class SourceService(
           }
         }
       }
+      val applySortDirection = { path: Path<*>, direction: SortOrder -> when (direction) {
+        SortOrder.asc -> path.asc().nullsFirst()
+        SortOrder.desc -> path.desc().nullsLast()
+      } }
+
+      orders?.let {
+        sortableStatements.addAll(
+          orders.map {
+            if (it.title != null) {
+              applySortDirection(path(SourceEntity::title), it.title)
+            } else {
+              if (it.lastRecordsRetrieved != null) {
+                applySortDirection(path(SourceEntity::lastRecordsRetrieved), it.lastRecordsRetrieved)
+              } else {
+                if (it.lastRefreshedAt != null) {
+                  applySortDirection(path(SourceEntity::lastRefreshedAt), it.lastRefreshedAt)
+                } else {
+                  throw IllegalArgumentException("Underspecified source order params")
+                }
+              }
+            }
+          }
+        )
+      }
 
       select(path(SourceEntity::id))
         .from(entity(SourceEntity::class))
         .whereAnd(
           path(SourceEntity::repositoryId).eq(repositoryId),
-//            path(DocumentEntity::status).`in`(status),
-//            path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
           *whereStatements.toTypedArray()
         )
         .orderBy(
-          path(SourceEntity::lastRecordsRetrieved).asc(),
-          path(SourceEntity::lastRefreshedAt).asc().nullsFirst(),
+          *sortableStatements.toTypedArray(),
           path(SourceEntity::createdAt).desc()
         )
     }
