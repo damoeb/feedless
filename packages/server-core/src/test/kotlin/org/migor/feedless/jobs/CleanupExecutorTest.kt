@@ -9,6 +9,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.repository.any2
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -28,6 +29,7 @@ class CleanupExecutorTest {
   private lateinit var documentService: DocumentService
   private lateinit var documentPipelineService: DocumentPipelineService
   private lateinit var cleanupExecutor: CleanupExecutor
+  private lateinit var harvestService: HarvestService
 
   @BeforeEach
   fun setUp() {
@@ -36,11 +38,13 @@ class CleanupExecutorTest {
     sourcePipelineService = mock(SourcePipelineService::class.java)
     documentService = mock(DocumentService::class.java)
     documentPipelineService = mock(DocumentPipelineService::class.java)
+    harvestService = mock(HarvestService::class.java)
     cleanupExecutor = CleanupExecutor(
       Optional.of(oneTimePasswordService),
       sourcePipelineService,
       documentService,
-      documentPipelineService
+      documentPipelineService,
+      harvestService
     )
   }
 
@@ -72,6 +76,12 @@ class CleanupExecutorTest {
   fun `executeCleanup applies RetentionStrategy by capacity`() {
     cleanupExecutor.executeCleanup()
     verify(documentService).applyRetentionStrategyByCapacity()
+  }
+
+  @Test
+  fun `executeCleanup removes harvests`() {
+    cleanupExecutor.executeCleanup()
+    verify(harvestService).deleteAllTailing()
   }
 
 }

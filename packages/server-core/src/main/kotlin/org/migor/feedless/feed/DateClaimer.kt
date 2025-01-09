@@ -188,7 +188,7 @@ class DateClaimer {
           val matches = regex.find(dateString)
           val doesMatch = matches?.groups?.isEmpty() == false
           if (doesMatch) {
-            logger.log("satisfies $dateFormat")
+//            logger.log("satisfies $dateFormat")
             Triple(dateFormat, matches?.groups?.get(0)?.value!!, hasTime)
           } else {
             null

@@ -603,7 +603,5 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async openDataModal() {
-    await this.modalService.openDataTableModal({});
-  }
+  async openDataModal() {}
 }

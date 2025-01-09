@@ -36,6 +36,7 @@ import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -64,6 +65,7 @@ class RepositoryHarvester(
   private val scrapeService: ScrapeService,
   private val meterRegistry: MeterRegistry,
   private val repositoryService: RepositoryService,
+  private val harvestService: HarvestService,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
@@ -84,11 +86,6 @@ class RepositoryHarvester(
     runCatching {
       log.info("[${corrId}] handleRepository $repositoryId")
 
-      val logCollector = LogCollector()
-//      val harvest = HarvestEntity()
-//      harvest.repositoryId = repositoryId
-//      harvest.startedAt = LocalDateTime.now()
-
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "repository"),
@@ -100,17 +97,14 @@ class RepositoryHarvester(
 
       repository.triggerScheduledNextAt?.let {
         val diffInMillis = Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it))
-        logCollector.log("harvest offset is ${diffInMillis.toMillis()} min")
         harvestOffsetTimer.record(diffInMillis)
       }
 
-      val appendCount = scrapeSources(repositoryId, logCollector)
+      val appendCount = scrapeSources(repositoryId)
 
       if (appendCount > 0) {
-//        harvest.itemsAdded = appendCount
         val message = "[$corrId] appending ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
         log.info(message)
-        logCollector.log(message)
       }
 
       val scheduledNextAt = repositoryService.calculateScheduledNextAt(
@@ -124,15 +118,6 @@ class RepositoryHarvester(
       repository.lastUpdatedAt = LocalDateTime.now()
       repositoryService.save(repository)
 
-//        harvest.finishedAt = LocalDateTime.now()
-//        harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
-//          "${
-//            it.time.toLocalDateTime().format(iso8601DateFormat)
-//          }  ${it.message}"
-//        }
-//          .joinToString("\n"), "...", 5000)
-//        harvestDAO.save(harvest)
-
     }.onFailure {
       log.error("[$corrId] handleRepository failed: ${it.message}", it)
     }
@@ -140,7 +125,6 @@ class RepositoryHarvester(
 
   private suspend fun scrapeSources(
     repositoryId: UUID,
-    logCollector: LogCollector
   ): Int {
     val corrId = coroutineContext.corrId()
     var sources: List<SourceEntity>
@@ -150,11 +134,15 @@ class RepositoryHarvester(
       sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
-      logCollector.log("[$corrId] queueing ${sources.size} sources")
       log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
 
       totalAppended += sources
-        .foldIndexed(0) { index, agg, source ->
+        .foldIndexed(0) { index, agg, source -> run {
+          val logCollector = LogCollector()
+          val harvest = HarvestEntity()
+          harvest.sourceId = source.id
+          harvest.startedAt = LocalDateTime.now()
+
           try {
             log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
             val (retrieved, appended) = scrapeSource(source, logCollector)
@@ -172,7 +160,18 @@ class RepositoryHarvester(
           } catch (e: Throwable) {
             handleScrapeException(e, source, logCollector)
             agg
+          } finally {
+
+            harvest.finishedAt = LocalDateTime.now()
+            harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
+              "${
+                it.time.toLocalDateTime().format(iso8601DateFormat)
+              }  ${it.message}"
+            }
+              .joinToString("\n"), "...", 32000)
+            harvestService.saveLast(harvest)
           }
+        }
         }
     } while (sources.isNotEmpty())
 
@@ -207,6 +206,7 @@ class RepositoryHarvester(
   ) {
     val corrId = coroutineContext.corrId()
     log.error("[$corrId] scrape failed ${e?.message}")
+    logCollector.log("[$corrId] scrape failed ${e?.message}")
 
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
       logCollector.log("[$corrId] scrape error '${e?.message}'")
@@ -234,7 +234,7 @@ class RepositoryHarvester(
     sourceService.save(source)
   }
 
-  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Pair<Int,Int> {
+  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Pair<Int, Int> {
     val output = scrapeService.scrape(source, logCollector)
     return importElement(output, source.repositoryId, source, logCollector)
   }
@@ -244,7 +244,7 @@ class RepositoryHarvester(
     repositoryId: UUID,
     source: SourceEntity,
     logCollector: LogCollector
-  ): Pair<Int,Int> {
+  ): Pair<Int, Int> {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] importElement")
     return if (output.outputs.isEmpty()) {
@@ -261,7 +261,7 @@ class RepositoryHarvester(
             logCollector
           )
         }
-      } ?: Pair(0,0)
+      } ?: Pair(0, 0)
     }
 //    lastAction.extract.image?.let {
 //      importImageElement(corrId, it, repositoryId, source)

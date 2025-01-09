@@ -116,6 +116,7 @@ fun SourceEntity.toDto(): Source {
     recordCount = 0,
     lastRecordsRetrieved = lastRecordsRetrieved,
     lastRefreshedAt = lastRefreshedAt?.toMillis(),
+    harvests = emptyList(),
     flow = ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { it.toDto() })
   )
 }

@@ -13,7 +13,7 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
-  fun findAllByRepositoryId(id: UUID, pageable: PageRequest): List<HarvestEntity>
+  fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<HarvestEntity>
 
   @Modifying
   @Query(
@@ -21,8 +21,8 @@ interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
     WITH ranked_entities AS (
     SELECT
         id,
-        repository_id,
-        ROW_NUMBER() OVER (PARTITION BY repository_id ORDER BY created_at DESC) AS row_num
+        source_id,
+        ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY created_at DESC) AS row_num
     FROM
         t_harvest
 )
@@ -32,5 +32,5 @@ DELETE FROM t_harvest WHERE EXISTS(
 )
   """, nativeQuery = true
   )
-  fun deleteAllTailingByRepositoryId()
+  fun deleteAllTailingBySourceId()
 }

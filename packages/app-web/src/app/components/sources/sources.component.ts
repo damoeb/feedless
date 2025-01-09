@@ -52,10 +52,12 @@ import { addIcons } from 'ionicons';
 import {
   addOutline,
   cloudUploadOutline,
+  documentTextOutline,
   ellipsisHorizontalOutline,
   refreshOutline,
 } from 'ionicons/icons';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
+import dayjs from 'dayjs';
 
 @Component({
   selector: 'app-sources',
@@ -105,7 +107,6 @@ export class SourcesComponent implements OnInit {
       addOutline,
       cloudUploadOutline,
       refreshOutline,
-      ellipsisHorizontalOutline,
     });
     effect(() => {
       console.log('change', this.sourcesFilter());
@@ -427,17 +428,18 @@ export class SourcesComponent implements OnInit {
 
   async showSourceOptions(source: ArrayElement<RepositoryFull['sources']>) {
     const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Actions',
+      header: 'Source Actions',
       buttons: [
         {
           text: 'Disable',
+          disabled: source.disabled,
           role: 'destructive',
           handler: () => {
             this.setDisabledForSource(source, true);
           },
         },
         {
-          text: 'Delete',
+          text: 'Delete Source',
           handler: () => {
             this.deleteSource(source);
           },
@@ -455,5 +457,26 @@ export class SourcesComponent implements OnInit {
   async handlePageSizeChange(pageSize: number) {
     this.pageSize = pageSize;
     await this.fetchSources(this.currentSourcesPage);
+  }
+
+  async showLogs(source: Source) {
+    const harvest =
+      await this.repositoryService.getLastHarvestFromSourcesByRepository(
+        this.repository().id,
+        source.id,
+      );
+    await this.modalService.openCodeEditorModal({
+      readOnly: true,
+      contentType: 'text',
+      text: `ok: ${harvest.ok}
+startedAt: ${dayjs(harvest.startedAt).format()}
+finishedAt: ${dayjs(harvest.finishedAt).format()}
+new items: ${harvest.itemsAdded}
+filtered items: ${harvest.itemsIgnored}
+-------------
+
+${harvest.logs}`,
+      title: 'Harvest Logs',
+    });
   }
 }

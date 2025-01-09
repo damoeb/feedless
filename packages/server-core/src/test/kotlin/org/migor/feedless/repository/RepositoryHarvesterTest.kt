@@ -80,6 +80,7 @@ class RepositoryHarvesterTest {
       scrapeService,
       meterRegistry,
       repositoryService,
+      mock(HarvestService::class.java),
     )
 
     `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))

@@ -86,6 +86,24 @@ query sourcesByRepository(
   }
 }
 
+query lastHarvestsFromSourcesByRepository(
+  $repositoryId: ID!
+  $sourceId: String!
+) {
+  repository(data: { where: { id: $repositoryId } }) {
+    sources(where: { id: { eq: $sourceId } }, cursor: { page: 0 }) {
+      harvests {
+        startedAt
+        finishedAt
+        itemsAdded
+        itemsIgnored
+        logs
+        ok
+      }
+    }
+  }
+}
+
 query sourcesWithFlowByRepository(
   $repository: RepositoryWhereInput!
   $cursor: Cursor!

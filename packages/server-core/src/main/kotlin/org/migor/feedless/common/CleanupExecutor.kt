@@ -5,6 +5,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.repository.HarvestService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
@@ -22,6 +23,7 @@ class CleanupExecutor(
   private val sourcePipelineService: SourcePipelineService,
   private val documentService: DocumentService,
   private val documentPipelineService: DocumentPipelineService,
+  private val harvestService: HarvestService,
 ) {
 
   private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
@@ -33,5 +35,6 @@ class CleanupExecutor(
     documentService.applyRetentionStrategyByCapacity()
     sourcePipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
     documentPipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
+    harvestService.deleteAllTailing()
   }
 }
