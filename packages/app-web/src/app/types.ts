@@ -52,6 +52,7 @@ export type NamedLatLon = {
   lat: number;
   lng: number;
   place: string;
+  zip?: string;
   displayName: string;
   index?: string;
   area: string;

@@ -55,6 +55,7 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
   return {
     lat: parseFloat(osmMatch.lat),
     lng: parseFloat(osmMatch.lon),
+    zip: osmMatch.address.postcode,
     countryCode: country_code,
     area: state,
     place,
