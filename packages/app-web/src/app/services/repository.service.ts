@@ -114,8 +114,10 @@ export class RepositoryService {
       new Blob(
         [
           JSON.stringify(
-            repositories.map((it) =>
-              this.getRepositoryInputWithSourcesAndFlow(it),
+            await Promise.all(
+              repositories.map((it) =>
+                this.getRepositoryInputWithSourcesAndFlow(it),
+              ),
             ),
             null,
             2,
@@ -322,7 +324,7 @@ export class RepositoryService {
         GqlSourcesWithFlowByRepositoryQuery,
         GqlSourcesWithFlowByRepositoryQueryVariables
       >({
-        query: SourcesByRepository,
+        query: SourcesWithFlowByRepository,
         fetchPolicy,
         variables: {
           repository: {
@@ -343,6 +345,7 @@ export class RepositoryService {
     for (let page = 0; ; ) {
       const sourcesPage = await this.getSourcesFullByRepository(repository.id, {
         page,
+        pageSize: 10,
       });
       if (sourcesPage.length === 0) {
         break;

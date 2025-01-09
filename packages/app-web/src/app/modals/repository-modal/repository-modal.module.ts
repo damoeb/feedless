@@ -30,6 +30,7 @@ import {
 import { FilterItemsAccordionComponent } from '../../components/filter-items-accordion/filter-items-accordion.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
+import { BubbleComponent } from '../../components/bubble/bubble.component';
 
 @NgModule({
   declarations: [RepositoryModalComponent],
@@ -65,6 +66,7 @@ import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordi
     FilterItemsAccordionComponent,
     JsonPipe,
     KeyValuePipe,
+    BubbleComponent,
   ],
 })
 export class RepositoryModalModule {}
