@@ -16,12 +16,11 @@
         >
           <ion-label>
             @if (isUpdate()) {
-              <span>Update</span>
+              <span>Save</span>
             }
             @if (!isUpdate()) {
               <span>Create</span>
             }
-            Feed
           </ion-label>
         </ion-button>
       } @else {
@@ -305,6 +304,13 @@
       <ion-item slot="header">
         <ion-label>
           Storage
+          @if (
+            formFg.controls.maxAgeDays.invalid ||
+            formFg.controls.ageReferenceField.invalid ||
+            formFg.controls.maxCapacity.invalid
+          ) {
+            <app-bubble color="red"></app-bubble>
+          }
           <ion-note class="ion-margin-start">
             @if (formFg.value.maxCapacity) {
               max {{ formFg.value.maxCapacity }} items
