@@ -164,6 +164,31 @@ export class EventsPage implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.pageService.setMetaTags(this.getPageTags());
+
+    // const fgl: PlacesLatLon[] = [];
+    // for (let index in sg) {
+    //   try {
+    //     const place = sg[index];
+    //     const matches = await this.openStreetMapService.searchByQuery(
+    //       `Schweiz ${place.area} ${place.place}`,
+    //     );
+    //     console.log(matches[0]);
+    //     fgl.push({
+    //       lat: matches[0].lat,
+    //       lng: matches[0].lng,
+    //       language: 'de',
+    //       place: place.place,
+    //       zip: matches[0].zip,
+    //       area: place.area,
+    //     });
+    //   } catch (e) {
+    //     console.error(e);
+    //     fgl.push(sg[index]);
+    //   }
+    // }
+    //
+    // console.log(JSON.stringify(fgl, null, 2));
+
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         try {
@@ -372,23 +397,18 @@ export class EventsPage implements OnInit, OnDestroy {
         groupedPlaces.push({
           distance: parseInt(eventGroup.distance),
           places: Object.keys(latLonGroups).map((latLonGroup) => {
-            const event = latLonGroups[latLonGroup][0];
-            const places = event.tags;
-            if (!places) {
-              console.error(`Cannot resolve latlon` + latLonGroup);
+            const latLon = latLonGroups[latLonGroup][0].latLng;
+            const place = places.find(
+              (place) =>
+                roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
+                roundLatLon(place.lng) == roundLatLon(latLon.lng),
+            );
+            if (!place) {
+              throw new Error(`Cannot resolve latlon` + latLon);
             }
-            const place = places[0];
-
             return {
               events: latLonGroups[latLonGroup],
-              place: {
-                lat: event.latLng.lat,
-                lng: event.latLng.lng,
-                place: places.join(' '),
-                displayName: places.join(' '),
-                area: '',
-                countryCode: 'ch',
-              },
+              place: place,
             };
           }),
         });
