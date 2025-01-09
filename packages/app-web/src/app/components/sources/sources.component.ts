@@ -219,9 +219,10 @@ export class SourcesComponent implements OnInit {
           pageSize: this.pageSize,
         },
         this.sourcesFilter(),
-        {
-          lastRecordsRetrieved: GqlSortOrder.Asc,
-        },
+        [
+          { lastRecordsRetrieved: GqlSortOrder.Asc },
+          { lastRefreshedAt: GqlSortOrder.Asc },
+        ],
         fetchPolicy,
       );
       this.sourceChange.emit(this.sources);

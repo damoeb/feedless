@@ -199,7 +199,7 @@ class RepositoryHarvesterTest {
         any(LogCollector::class.java)
       )
     ).thenThrow(
-      ResumableHarvestException("", Duration.ofMinutes(5))
+      ResumableHarvestException("they warned us about this", Duration.ofMinutes(5))
     )
 
     // when
@@ -211,7 +211,10 @@ class RepositoryHarvesterTest {
       any(SourceEntity::class.java),
       any(LogCollector::class.java)
     )
-    verify(sourceService, times(0)).save(source)
+
+    verify(source).errorsInSuccession = 0
+    verify(source).lastErrorMessage = "they warned us about this"
+    verify(sourceService, times(1)).save(source)
   }
 
   @Test

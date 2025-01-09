@@ -361,7 +361,7 @@ export class EventsPage implements OnInit, OnDestroy {
       this.placesByDistance = sortBy(
         Object.keys(groups).map((distance) => ({
           distance,
-          place: null,
+          places: [] as string[],
           events: groups[distance],
         })),
         (event) => parseInt(event.distance),
@@ -372,18 +372,23 @@ export class EventsPage implements OnInit, OnDestroy {
         groupedPlaces.push({
           distance: parseInt(eventGroup.distance),
           places: Object.keys(latLonGroups).map((latLonGroup) => {
-            const latLon = latLonGroups[latLonGroup][0].latLng;
-            const place = places.find(
-              (place) =>
-                roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lng) == roundLatLon(latLon.lng),
-            );
-            if (!place) {
-              throw new Error(`Cannot resolve latlon` + latLon);
+            const event = latLonGroups[latLonGroup][0];
+            const places = event.tags;
+            if (!places) {
+              console.error(`Cannot resolve latlon` + latLonGroup);
             }
+            const place = places[0];
+
             return {
               events: latLonGroups[latLonGroup],
-              place: place,
+              place: {
+                lat: event.latLng.lat,
+                lng: event.latLng.lng,
+                place: places.join(' '),
+                displayName: places.join(' '),
+                area: '',
+                countryCode: 'ch',
+              },
             };
           }),
         });

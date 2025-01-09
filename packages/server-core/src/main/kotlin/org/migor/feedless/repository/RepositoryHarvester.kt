@@ -147,15 +147,16 @@ class RepositoryHarvester(
     var currentPage = 0
     var totalAppended = 0
     do {
-      sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 20))
+      sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
       logCollector.log("[$corrId] queueing ${sources.size} sources")
-      log.info("[$corrId] queueing ${sources.size} sources")
+      log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
 
       totalAppended += sources
-        .fold(0) { agg, source ->
+        .foldIndexed(0) { index, agg, source ->
           try {
+            log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
             val (retrieved, appended) = scrapeSource(source, logCollector)
             log.info("[$corrId] retrieved=$retrieved appended=$appended")
 
@@ -206,28 +207,29 @@ class RepositoryHarvester(
   ) {
     val corrId = coroutineContext.corrId()
     log.error("[$corrId] scrape failed ${e?.message}")
-    source.lastErrorMessage = e?.message
 
-    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException) {
+    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
       logCollector.log("[$corrId] scrape error '${e?.message}'")
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
       source.lastRecordsRetrieved = 0
       source.lastRefreshedAt = LocalDateTime.now()
 
-      if (e !is NoItemsRetrievedException) {
-        val maxErrorCount = 3
-        source.errorsInSuccession += 1
-        logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
-        log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
-        source.disabled = source.errorsInSuccession >= maxErrorCount
-        source.lastErrorMessage = e?.message
+      val maxErrorCount = 3
+      source.errorsInSuccession += 1
+      logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
+      log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
+      source.disabled = source.errorsInSuccession >= maxErrorCount
+      source.lastErrorMessage = e?.message
 
-        if (source.disabled) {
-          logCollector.log("[$corrId] disabled source")
-          log.info("source ${source.id} disabled")
-        }
+      if (source.disabled) {
+        logCollector.log("[$corrId] disabled source")
+        log.info("source ${source.id} disabled")
       }
+    } else {
+      source.errorsInSuccession = 0
+      source.lastErrorMessage = e.message
+      source.lastRefreshedAt = LocalDateTime.now()
     }
     sourceService.save(source)
   }

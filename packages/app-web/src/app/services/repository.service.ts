@@ -229,7 +229,7 @@ export class RepositoryService {
     id: string,
     cursor: GqlCursor,
     where: GqlSourcesWhereInput,
-    order: GqlSourceOrderByInput,
+    order: GqlSourceOrderByInput[],
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<Source[]> {
     return this.apollo

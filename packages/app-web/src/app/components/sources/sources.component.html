@@ -60,7 +60,6 @@
       <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
     }
 
-
     @for (source of sources; track source.id) {
       <ion-row>
         <ion-col size="1" class="ion-text-center">
@@ -75,21 +74,19 @@
               (click)="editTags(source)"
               [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
               fill="clear"
-            >{{ stringifyTags(source) }}
+              >{{ stringifyTags(source) }}
             </ion-button>
             <ion-button
               (click)="editLatLon(source)"
               [color]="source.latLng ? 'medium' : 'primary'"
               fill="clear"
-            >{{ stringifyLocalization(source) }}
+              >{{ stringifyLocalization(source) }}
             </ion-button>
           </ion-buttons>
 
           @if (source.disabled) {
             <p>
-              <ion-label color="danger">
-                  Disabled.
-              </ion-label>
+              <ion-label color="danger"> Disabled. </ion-label>
             </p>
           }
         </ion-col>
@@ -110,7 +107,6 @@
                 {{ source.lastErrorMessage }}
               </ion-label>
             </p>
-
           } @else {
             <ion-text class="nowrap" title="last fetch" color="">
               Never
@@ -128,12 +124,18 @@
                 Enable
               </ion-button>
             }
-            <ion-button fill="solid"
-                        color="light"
-                        (click)="editOrAddSource(source)"> Edit</ion-button>
-            <ion-button fill="solid"
-                        color="light"
-                        (click)="showSourceOptions(source)">
+            <ion-button
+              fill="solid"
+              color="light"
+              (click)="editOrAddSource(source)"
+            >
+              Edit</ion-button
+            >
+            <ion-button
+              fill="solid"
+              color="light"
+              (click)="showSourceOptions(source)"
+            >
               <ion-icon
                 name="ellipsis-horizontal-outline"
                 slot="icon-only"
@@ -143,7 +145,6 @@
         </ion-col>
       </ion-row>
     }
-
 
     <app-pagination
       (pageChange)="fetchSources($event)"
