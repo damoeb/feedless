@@ -26,7 +26,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
         select d1.id from DocumentEntity d1
         where d1.repositoryId = ?1
         and d1.status = ?2
-        order by d1.startingAt asc, d1.publishedAt desc
+        order by d1.startingAt desc nulls last, d1.publishedAt desc nulls last
         offset ?3 ROWS
     )
     """
