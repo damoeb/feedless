@@ -167,7 +167,7 @@ class DocumentService(
 
   @Transactional
   fun applyRetentionStrategyByCapacity() {
-    repositoryDAO.findAllByLastUpdatedAtAfter(LocalDateTime.now().minusDays(1))
+    repositoryDAO.findAllByLastUpdatedAtBefore(LocalDateTime.now().minusDays(1))
       .forEach { repository ->
         val retentionSize = runBlocking {
           planConstraintsService.coerceRetentionMaxCapacity(
@@ -179,6 +179,7 @@ class DocumentService(
         if (retentionSize != null && retentionSize > 0) {
           log.info("applying retention for repo ${repository.id} with maxItems=$retentionSize")
           documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
+          documentDAO.deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(repository.id, LocalDateTime.now().minusDays(7), ReleaseStatus.unreleased)
         } else {
           log.info("no retention with maxItems given repo ${repository.id}")
         }

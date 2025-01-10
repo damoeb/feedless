@@ -26,6 +26,7 @@ import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.any2
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
@@ -33,6 +34,7 @@ import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.JtsUtil
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -88,6 +90,9 @@ class IntegrationTest {
   @Autowired
   lateinit var documentDAO: DocumentDAO
 
+  @Autowired
+  lateinit var planConstraintsService: PlanConstraintsService
+
   val past = LocalDateTime.now().minusDays(1)
   val future = LocalDateTime.now().plusDays(1)
 
@@ -100,12 +105,14 @@ class IntegrationTest {
 
     repository = createRepository("A", user)
     createRepository("B", user)
+
+    assertThat(documentDAO.countByRepositoryId(repository.id)).isEqualTo(4)
   }
 
   private fun addDocuments(it: RepositoryEntity) {
-//    val plusTwoDays = LocalDateTime.now().plusDays(1)
     createDocument(
       it,
+      title = "past-released",
       status = ReleaseStatus.released,
       publishedAt = past,
       startingAt = past,
@@ -114,6 +121,16 @@ class IntegrationTest {
     )
     createDocument(
       it,
+      title = "future-released",
+      status = ReleaseStatus.released,
+      publishedAt = future,
+      startingAt = future,
+      createdAt = future,
+      latlon = JtsUtil.createPoint(1.0, 1.0)
+    )
+    createDocument(
+      it,
+      title = "3",
       status = ReleaseStatus.unreleased,
       publishedAt = past,
       startingAt = past,
@@ -122,6 +139,7 @@ class IntegrationTest {
     )
     createDocument(
       it,
+      title = "4",
       status = ReleaseStatus.unreleased,
       publishedAt = future,
       startingAt = future,
@@ -137,12 +155,14 @@ class IntegrationTest {
     repository.sourcesSyncCron = ""
     repository.product = Vertical.rssProxy
     repository.ownerId = user.id
+    repository.lastUpdatedAt = LocalDateTime.now().minusDays(2)
 
     return repositoryDAO.save(repository).also { addDocuments(it) }
   }
 
   private fun createDocument(
     repository: RepositoryEntity,
+    title: String,
     status: ReleaseStatus,
     publishedAt: LocalDateTime,
     startingAt: LocalDateTime,
@@ -151,6 +171,7 @@ class IntegrationTest {
   ) {
     val d = DocumentEntity()
     d.url = "http://localhost:8080"
+    d.title = title
     d.text = ""
     d.repositoryId = repository.id
     d.status = status
@@ -171,14 +192,23 @@ class IntegrationTest {
   @Test
   fun `given where is null, findAll filters repoId and status`() = runTest {
     val documents = documentService.findAllByRepositoryId(
-      repository.id,
-      null,
-      null,
-      ReleaseStatus.released,
-      null,
-      PageRequest.of(0, 10),
+      repositoryId = repository.id,
+      status = ReleaseStatus.released,
+      pageable = PageRequest.of(0, 10),
     )
     assertThat(documents.size).isEqualTo(1)
+  }
+
+  @Test
+  fun `given retention by capacity given, delete old items first`() = runTest {
+
+    `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2(), any2())).thenReturn(1)
+    documentService.applyRetentionStrategyByCapacity()
+
+    val documents = documentDAO.findAllByRepositoryId(repository.id)
+    assertThat(documents.size).isEqualTo(3)
+    assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
+    assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
   }
 
 }
