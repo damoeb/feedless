@@ -45,6 +45,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   fun findByTitleInAndRepositoryId(titles: List<String>, repositoryId: UUID): DocumentEntity?
 
   fun countByRepositoryId(id: UUID): Long
+  fun findAllByRepositoryId(id: UUID): List<DocumentEntity>
 
   fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>): List<DocumentEntity>
   fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity>
