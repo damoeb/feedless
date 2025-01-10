@@ -106,11 +106,11 @@ services:
     dns:
       - "8.8.8.8"
     restart: unless-stopped
-#    healthcheck:
-#      test: curl -f http://localhost:8080
-#      interval: 60s
-#      timeout: 10s
-#      retries: 10
+    healthcheck:
+      test: curl -f http://localhost:8082
+      interval: 20s
+      timeout: 6s
+      retries: 4
     depends_on:
       - postgis
     ports:

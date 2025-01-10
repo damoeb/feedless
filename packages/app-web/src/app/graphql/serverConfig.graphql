@@ -6,9 +6,6 @@ query serverSettings($data: ServerSettingsContextInput!) {
       date
     }
     version
-    features {
-      ...FeatureFragment
-    }
     license {
       ...LocalizedLicenseFragment
     }

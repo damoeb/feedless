@@ -455,7 +455,6 @@ export async function mockServerSettings(
         },
         profiles: [],
         version: '',
-        features: [],
         license: {
           isLocated: false,
           isTrial: true,

@@ -22,11 +22,12 @@ import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isDefined } from '../../types';
+import { isDefined, Nullable } from '../../types';
 import { omit } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
+import { FeatureService } from '../../services/feature.service';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -75,6 +76,7 @@ export class RepositoryModalComponent
   private readonly modalCtrl = inject(ModalController);
   private readonly toastCtrl = inject(ToastController);
   private readonly sessionService = inject(SessionService);
+  private readonly featureService = inject(FeatureService);
   readonly serverConfig = inject(ServerConfigService);
   private readonly router = inject(Router);
   private readonly changeRef = inject(ChangeDetectorRef);
@@ -101,6 +103,7 @@ export class RepositoryModalComponent
   accordionStorage: RepositoryModalAccordion = 'storage';
 
   private filterParams: GqlItemFilterParamsInput[];
+  protected repositoryMaxItemsUpperLimit: Nullable<number> = null;
 
   constructor() {
     addIcons({ closeOutline });
@@ -287,7 +290,6 @@ export class RepositoryModalComponent
   }
 
   async ngOnInit() {
-    console.log('wefwef');
     this.formFg = new FormGroup({
       title: new FormControl<string>('', [
         Validators.required,
@@ -313,7 +315,7 @@ export class RepositoryModalComponent
     });
     this.isLoggedIn = this.sessionService.isAuthenticated();
 
-    const canPublicRepository = this.serverConfig.getFeatureValueBool(
+    const canPublicRepository = this.featureService.getFeatureValueBool(
       GqlFeatureName.PublicRepository,
     );
     if (!canPublicRepository) {
@@ -323,7 +325,7 @@ export class RepositoryModalComponent
       });
     }
 
-    const maxItemsLowerLimit = this.serverConfig.getFeatureValueInt(
+    const maxItemsLowerLimit = this.featureService.getFeatureValueInt(
       GqlFeatureName.RepositoryCapacityLowerLimitInt,
     );
     if (maxItemsLowerLimit) {
@@ -331,16 +333,17 @@ export class RepositoryModalComponent
         Validators.min(maxItemsLowerLimit),
       ]);
     }
-    const maxItemsUpperLimit = this.serverConfig.getFeatureValueInt(
+    const maxItemsUpperLimit = this.featureService.getFeatureValueInt(
       GqlFeatureName.RepositoryCapacityUpperLimitInt,
     );
     if (maxItemsUpperLimit) {
-      this.formFg.controls.maxCapacity.addValidators([
-        Validators.max(maxItemsUpperLimit),
-      ]);
+      this.repositoryMaxItemsUpperLimit = maxItemsUpperLimit;
+      // this.formFg.controls.maxCapacity.addValidators([
+      //   Validators.max(maxItemsUpperLimit),
+      // ]);
     }
 
-    const maxDaysLowerLimit = this.serverConfig.getFeatureValueInt(
+    const maxDaysLowerLimit = this.featureService.getFeatureValueInt(
       GqlFeatureName.RepositoryRetentionMaxDaysLowerLimitInt,
     );
     if (maxDaysLowerLimit) {

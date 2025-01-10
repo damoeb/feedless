@@ -4,19 +4,23 @@ import {
   GqlFeatureGroupsQuery,
   GqlFeatureGroupsQueryVariables,
   GqlFeatureGroupWhereInput,
+  GqlFeatureName,
   GqlUpdateFeatureValueInput,
   GqlUpdateFeatureValueMutation,
   GqlUpdateFeatureValueMutationVariables,
   UpdateFeatureValue,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { FeatureGroup } from '../graphql/types';
+import { Feature, FeatureGroup } from '../graphql/types';
+import { SessionService } from './session.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeatureService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
+  private readonly sessionService = inject(SessionService);
+  private features!: Feature[];
 
   findAll(
     where: GqlFeatureGroupWhereInput,
@@ -47,5 +51,21 @@ export class FeatureService {
         },
       })
       .then((response) => response.data!.updateFeatureValue);
+  }
+
+  getFeatureValueInt(featureName: GqlFeatureName): number | undefined {
+    const feature = this.sessionService.getFeature(featureName);
+    if (feature) {
+      return feature.value.numVal!.value;
+    }
+  }
+
+  getFeatureValueBool(featureName: GqlFeatureName): boolean {
+    const feature = this.sessionService.getFeature(featureName);
+    if (feature) {
+      return feature.value.boolVal!.value;
+    }
+    console.warn(`Feature ${featureName} not listed`);
+    return false;
   }
 }

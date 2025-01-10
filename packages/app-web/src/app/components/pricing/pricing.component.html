@@ -42,6 +42,7 @@
 
   <ion-segment
     mode="ios"
+    appDev
     [formControl]="paymentIntervalFc"
     style="max-width: 300px; height: 50px"
   >
@@ -96,6 +97,9 @@
             }
           </div>
           <div planAction>
+            <ion-button expand="full" color="light" appDev
+              >Show Details</ion-button
+            >
             @if (hasSubscribed(product)) {
               <ion-button
                 (click)="cancelSubscription(product)"
@@ -104,7 +108,7 @@
               >
                 Cancel Subscription
               </ion-button>
-              <p>Subscription Info</p>
+              <!--              <p>Subscription Info</p>-->
             } @else {
               <ion-button
                 (click)="checkout(product)"

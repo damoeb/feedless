@@ -7,6 +7,8 @@ import {
 } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import {
+  IonAccordion,
+  IonAccordionGroup,
   IonBreadcrumb,
   IonBreadcrumbs,
   IonCol,
@@ -19,11 +21,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Plan, PlanService } from '../../services/plan.service';
+import { FeatureComponent } from '../../components/feature/feature.component';
 
 @Component({
-  selector: 'app-plans-page',
-  templateUrl: './plans.page.html',
-  styleUrls: ['./plans.page.scss'],
+  selector: 'app-subscriptions-page',
+  templateUrl: './subscriptions.page.html',
+  styleUrls: ['./subscriptions.page.scss'],
   imports: [
     IonContent,
     IonBreadcrumbs,
@@ -34,11 +37,14 @@ import { Plan, PlanService } from '../../services/plan.service';
     IonList,
     IonItem,
     IonLabel,
+    IonAccordionGroup,
+    IonAccordion,
+    FeatureComponent,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlansPage implements OnInit {
+export class SubscriptionsPage implements OnInit {
   private readonly appConfigService = inject(AppConfigService);
   private readonly productService = inject(ProductService);
   private readonly planService = inject(PlanService);

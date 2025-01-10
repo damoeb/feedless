@@ -7,6 +7,7 @@ import {
   GqlDeleteUserSecretInput,
   GqlDeleteUserSecretMutation,
   GqlDeleteUserSecretMutationVariables,
+  GqlFeatureName,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
   GqlSessionQuery,
@@ -20,7 +21,7 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
-import { Product, Session, UserSecret } from '../graphql/types';
+import { Feature, Product, Session, UserSecret } from '../graphql/types';
 import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { AppConfigService } from './app-config.service';
 import { isNonNull, Nullable } from '../types';
@@ -57,6 +58,10 @@ export class SessionService {
 
   setColorScheme(dark: boolean): void {
     this.darkModePipe.next(dark);
+  }
+
+  getFeature(featureName: GqlFeatureName): Nullable<Feature> {
+    return this.session?.user?.features.find((ft) => ft.name === featureName)!;
   }
 
   async fetchSession(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {

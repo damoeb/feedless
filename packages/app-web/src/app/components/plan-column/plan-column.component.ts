@@ -1,28 +1,19 @@
 import { Component, input } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
-
-import { IonCol, IonIcon, IonRow } from '@ionic/angular/standalone';
-
-export type StringFeature = {
-  title: string;
-  subtitle?: string;
-  valueHtml?: string;
-  valueBool?: {
-    value: boolean;
-  };
-};
+import { FeatureComponent } from '../feature/feature.component';
+import { Feature } from '../../graphql/types';
 
 export type StringFeatureGroup = {
   groupLabel: string;
-  features: StringFeature[];
+  features: Feature[];
 };
 
 @Component({
   selector: 'app-plan-column',
   templateUrl: './plan-column.component.html',
   styleUrls: ['./plan-column.component.scss'],
-  imports: [IonRow, IonCol, IonIcon],
+  imports: [FeatureComponent],
   standalone: true,
 })
 export class PlanColumnComponent {

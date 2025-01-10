@@ -10,6 +10,7 @@ import org.migor.feedless.generated.types.FeatureBooleanValueInput
 import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.FeatureIntValueInput
+import org.migor.feedless.plan.PlanDAO
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
@@ -26,6 +28,7 @@ import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 class FeatureService(
   private val sessionService: SessionService,
   private val productDAO: ProductDAO,
+  private val planDAO: PlanDAO,
   private val featureDAO: FeatureDAO,
   private val featureGroupDAO: FeatureGroupDAO,
   private val featureValueDAO: FeatureValueDAO
@@ -48,12 +51,13 @@ class FeatureService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByProduct(product: Vertical): List<Feature> {
+  suspend fun findAllByProductAndUserId(product: Vertical, userId: UUID): List<Feature> {
     return withContext(Dispatchers.IO) {
-      val featureGroup = productDAO.findByPartOfAndBaseProductIsTrue(product)?.featureGroup
-        ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!
-      val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(featureGroup.id)
-      toDTO(productFeatures)
+      val plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product), LocalDateTime.now())
+      plan?.let {
+        val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(plan.product!!.featureGroupId)
+        toDTO(productFeatures)
+      } ?: emptyList()
     }
   }
 

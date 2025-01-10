@@ -78,6 +78,7 @@ class ProductService(
   // todo thats bad transactional code
   suspend fun enableSaasProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
+    log.error("enableSaasProduct WAAAAAAAAAAAAAAAAAAAAAAAAAA")
     val prices = withContext(Dispatchers.IO) {
       pricedProductDAO.findAllByProductId(product.id)
     }

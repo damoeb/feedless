@@ -552,7 +552,7 @@ type Product {
   other: Boolean!
   partOf: Vertical
   featureGroupId: ID
-#  featureGroup: FeatureGroup
+  featureGroup: FeatureGroup
   prices: [PricedProduct!]!
 }
 
@@ -909,7 +909,6 @@ type Selectors {
 type ServerSettings {
   build: BuildInfo!
   version: String!
-  features: [Feature!]!
   profiles: [ProfileName!]!
   license: LocalizedLicense
 }
@@ -996,6 +995,7 @@ type User {
   connectedApps: [ConnectedApp]!
   secrets: [UserSecret!]!
   groups: [GroupAssignment!]!
+  features: [Feature!]!
 }
 
 type GroupAssignment {
