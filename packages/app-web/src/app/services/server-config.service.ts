@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  GqlFeatureName,
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
@@ -11,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular/standalone';
-import { Feature, LocalizedLicense } from '../graphql/types';
+import { LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import { VerticalAppConfig } from '../types';
@@ -34,7 +33,6 @@ export class ServerConfigService {
   private readonly alertCtrl = inject(AlertController);
 
   apiUrl!: string;
-  private features!: Feature[];
   private profiles!: GqlProfileName[];
   private build!: BuildInfo;
   private version!: string;
@@ -90,7 +88,6 @@ export class ServerConfigService {
           },
         })
         .then((response) => response.data.serverSettings);
-      this.features = response.features;
       this.profiles = response.profiles;
       this.version = response.version;
       this.build = response.build;
@@ -150,26 +147,6 @@ export class ServerConfigService {
 
   getVersion() {
     return this.version;
-  }
-
-  getFeatureValueInt(featureName: GqlFeatureName): number | undefined {
-    const feature = this.getFeature(featureName);
-    if (feature) {
-      return feature.value.numVal!.value;
-    }
-  }
-
-  getFeatureValueBool(featureName: GqlFeatureName): boolean {
-    const feature = this.getFeature(featureName);
-    if (feature) {
-      return feature.value.boolVal!.value;
-    }
-    console.warn(`Feature ${featureName} not listed`);
-    return false;
-  }
-
-  private getFeature(featureName: GqlFeatureName): Feature {
-    return this.features.find((ft) => ft.name === featureName)!;
   }
 
   getLicense(): LocalizedLicense {

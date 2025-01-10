@@ -1,0 +1,44 @@
+<ion-content>
+  <div class="limited-width-pane">
+    <ion-breadcrumbs>
+      <ion-breadcrumb routerLink="/">Home</ion-breadcrumb>
+      <ion-breadcrumb>Subscriptions</ion-breadcrumb>
+    </ion-breadcrumbs>
+
+    <ion-row style="width: 100%">
+      <ion-col size="6">
+        <h3>Subscriptions</h3>
+      </ion-col>
+    </ion-row>
+
+    <ion-list>
+      @if (plans.length === 0) {
+      <ion-item>
+        <ion-label>No subscriptions found</ion-label>
+      </ion-item>
+      } @else {
+      <ion-accordion-group>
+        @for (plan of plans; track plan.id) {
+        <ion-accordion>
+          <ion-item slot="header">
+            <ion-label>
+              <h3>{{ plan.product.name }}</h3>
+              <p>{{ plan.product.description }}</p>
+            </ion-label>
+          </ion-item>
+          <div slot="content" class="ion-padding">
+            <p>
+              <strong>Features Overview</strong>
+            </p>
+            @for (feature of plan.product.featureGroup.features; track
+            feature.id) {
+            <app-feature [feature]="feature"></app-feature>
+            }
+          </div>
+        </ion-accordion>
+        }
+      </ion-accordion-group>
+      }
+    </ion-list>
+  </div>
+</ion-content>

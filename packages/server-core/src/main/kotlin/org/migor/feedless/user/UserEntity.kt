@@ -162,7 +162,8 @@ fun UserEntity.toDTO(): User =
     notificationRepositoryId = inboxRepositoryId?.toString(),
     secrets = emptyList(),
     connectedApps = emptyList(),
-    groups = emptyList()
+    groups = emptyList(),
+    features = emptyList()
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
   )

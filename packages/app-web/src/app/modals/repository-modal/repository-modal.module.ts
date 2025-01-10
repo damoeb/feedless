@@ -23,6 +23,7 @@ import {
   IonRow,
   IonSelect,
   IonSelectOption,
+  IonText,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -67,6 +68,7 @@ import { BubbleComponent } from '../../components/bubble/bubble.component';
     JsonPipe,
     KeyValuePipe,
     BubbleComponent,
+    IonText,
   ],
 })
 export class RepositoryModalModule {}

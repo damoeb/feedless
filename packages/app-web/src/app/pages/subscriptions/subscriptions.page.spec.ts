@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PlansPage } from './plans.page';
+import { SubscriptionsPage } from './subscriptions.page';
 import {
   ApolloMockController,
   AppTestModule,
@@ -9,13 +9,13 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('PlansPage', () => {
-  let component: PlansPage;
-  let fixture: ComponentFixture<PlansPage>;
+describe('SubscriptionsPage', () => {
+  let component: SubscriptionsPage;
+  let fixture: ComponentFixture<SubscriptionsPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PlansPage, AppTestModule.withDefaults()],
+      imports: [SubscriptionsPage, AppTestModule.withDefaults()],
       providers: [],
     }).compileComponents();
 
@@ -25,7 +25,7 @@ describe('PlansPage', () => {
       TestBed.inject(ApolloClient),
     );
 
-    fixture = TestBed.createComponent(PlansPage);
+    fixture = TestBed.createComponent(SubscriptionsPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

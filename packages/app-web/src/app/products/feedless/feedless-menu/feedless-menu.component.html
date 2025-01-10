@@ -17,11 +17,13 @@
     </ion-accordion>
     <ion-accordion>
       <ion-item slot="header">
-        <ion-label>Billings</ion-label>
+        <ion-label>Plans</ion-label>
       </ion-item>
       <ion-list slot="content">
         <ion-item [button]="true" routerLink="/billings"> Billings </ion-item>
-        <ion-item [button]="true" routerLink="/plans"> Plans </ion-item>
+        <ion-item [button]="true" routerLink="/subscriptions">
+          Subscriptions
+        </ion-item>
         <ion-item [button]="true" routerLink="/pricing/feedless">
           Pricing
         </ion-item>

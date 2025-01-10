@@ -383,6 +383,16 @@
                 {{ error.value | json }}
               </p>
             }
+            @if (repositoryMaxItemsUpperLimit < formFg.value.maxCapacity) {
+              <p>
+                <ion-text color="warning">
+                  <em
+                    >Your setting will be overrules to
+                    {{ repositoryMaxItemsUpperLimit }} as per your plan</em
+                  >
+                </ion-text>
+              </p>
+            }
           </ion-col>
         </ion-row>
       </ion-list>

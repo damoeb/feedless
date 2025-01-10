@@ -13,8 +13,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.data.jpa.enums.Vertical
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.ConnectedApp
+import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.Session
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
@@ -22,7 +25,6 @@ import org.migor.feedless.generated.types.User
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
@@ -32,15 +34,13 @@ import java.util.*
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
-class UserResolver {
+class UserResolver(
+  private val userService: UserService,
+  private val connectedAppService: ConnectedAppService,
+  private val featureService: FeatureService
+) {
 
   private val log = LoggerFactory.getLogger(UserResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var userService: UserService
-
-  @Autowired
-  private lateinit var connectedAppService: ConnectedAppService
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateCurrentUser)
@@ -82,7 +82,7 @@ class UserResolver {
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.ConnectedApp)
   @PreAuthorize("hasAuthority('USER')")
-  suspend fun connectedApp(
+  suspend fun getConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,
   ): ConnectedApp = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
@@ -91,17 +91,23 @@ class UserResolver {
   }
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
-  suspend fun userForSession(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
+  suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val session: Session = dfe.getSource()!!
     session.userId?.let { userService.findById(UUID.fromString(it)).orElseThrow().toDTO() }
   }
 
 
   @DgsData(field = DgsConstants.USER.ConnectedApps, parentType = DgsConstants.USER.TYPE_NAME)
-  suspend fun connectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedApp> = coroutineScope {
+  suspend fun getConnectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedApp> = coroutineScope {
     val user: User = dfe.getSource()!!
     connectedAppService.findAllByUserId(UUID.fromString(user.id)).filterIsInstance<TelegramConnectionEntity>()
       .map { it.toDto() }
+  }
+
+  @DgsData(field = DgsConstants.USER.Features, parentType = DgsConstants.USER.TYPE_NAME)
+  suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
+    val user: User = dfe.getSource()!!
+    featureService.findAllByProductAndUserId(Vertical.feedless, UUID.fromString(user.id))
   }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)

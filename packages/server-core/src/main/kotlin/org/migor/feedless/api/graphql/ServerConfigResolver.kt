@@ -85,7 +85,6 @@ class ServerConfigResolver {
           else -> null
         }
       }.filterNotNull(),
-      features = featureService.findAllByProduct(product),
     )
   }
 }

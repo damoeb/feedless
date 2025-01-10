@@ -19,7 +19,6 @@ import {
 } from '../../../generated/graphql';
 import {
   PlanColumnComponent,
-  StringFeature,
   StringFeatureGroup,
 } from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
@@ -34,6 +33,7 @@ import {
   IonSegmentButton,
 } from '@ionic/angular/standalone';
 import { Plan, PlanService } from '../../services/plan.service';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -60,6 +60,7 @@ type ProductWithFeatureGroups = Product & {
     IonCol,
     IonNote,
     IonButton,
+    RemoveIfProdDirective,
   ],
   standalone: true,
 })
@@ -167,20 +168,7 @@ export class PricingComponent implements OnInit {
   ): Promise<StringFeatureGroup> {
     return {
       groupLabel: 'Features',
-      features:
-        featureGroups[0].features
-          ?.filter((feature) => this.localise(feature.name))
-          ?.map<StringFeature>((feature) => ({
-            title: this.localise(feature.name),
-            valueBool: feature.value.boolVal,
-            valueHtml:
-              feature.value.numVal != null
-                ? feature.value.numVal.value == -1
-                  ? 'Infinite'
-                  : `${feature.value.numVal.value}`
-                : null,
-            subtitle: '',
-          })) || [],
+      features: featureGroups[0].features,
     };
   }
 
@@ -206,21 +194,6 @@ export class PricingComponent implements OnInit {
 
   formatPrice(price: number) {
     return price.toFixed(2);
-  }
-
-  private localise(feature: GqlFeatureName): string {
-    switch (feature) {
-      case GqlFeatureName.Plugins:
-        return 'Plugins';
-      case GqlFeatureName.PublicRepository:
-        return 'Public Feed Listing';
-      case GqlFeatureName.RepositoryCapacityUpperLimitInt:
-        return 'Feed Capacity';
-      case GqlFeatureName.RepositoriesMaxCountTotalInt:
-        return 'Feeds';
-      case GqlFeatureName.SourceMaxCountPerRepositoryInt:
-        return 'Sources per Feed';
-    }
   }
 
   hasSubscribed(product: ProductWithFeatureGroups): boolean {

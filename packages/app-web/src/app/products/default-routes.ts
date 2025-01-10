@@ -126,9 +126,11 @@ export const DefaultRoutes: Routes = [
           ),
       },
       {
-        path: 'plans',
+        path: 'subscriptions',
         loadChildren: () =>
-          import('../pages/plans/plans.routes').then((m) => m.PLAN_ROUTES),
+          import('../pages/subscriptions/subscriptions.routes').then(
+            (m) => m.SUBSCRIPTIONS_ROUTES,
+          ),
       },
       {
         path: 'settings',
