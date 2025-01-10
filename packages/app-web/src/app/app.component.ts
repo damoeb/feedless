@@ -28,7 +28,6 @@ import {
   IonList,
   IonMenu,
   IonMenuButton,
-  IonNote,
   IonRouterOutlet,
   IonSplitPane,
   IonToolbar,
@@ -68,7 +67,6 @@ import dayjs from 'dayjs';
     IonItem,
     RouterLink,
     IonLabel,
-    IonNote,
   ],
   standalone: true,
 })

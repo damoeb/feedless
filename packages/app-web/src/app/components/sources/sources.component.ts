@@ -14,7 +14,6 @@ import {
   AlertController,
   IonButton,
   IonButtons,
-  IonChip,
   IonCol,
   IonIcon,
   IonItem,
@@ -49,13 +48,7 @@ import { FileService } from '../../services/file.service';
 import { ModalService } from '../../services/modal.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-  cloudUploadOutline,
-  documentTextOutline,
-  ellipsisHorizontalOutline,
-  refreshOutline,
-} from 'ionicons/icons';
+import { addOutline, cloudUploadOutline, refreshOutline } from 'ionicons/icons';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 import dayjs from 'dayjs';
 

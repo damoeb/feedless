@@ -17,7 +17,6 @@ import { filter, map, Subscription } from 'rxjs';
 import { GqlVertical } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -47,7 +46,6 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    IonButton,
     LoginButtonComponent,
     IonContent,
     IonRouterOutlet,

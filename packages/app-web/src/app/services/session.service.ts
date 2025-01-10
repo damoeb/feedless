@@ -20,15 +20,8 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
-import { Product, Session, User, UserSecret } from '../graphql/types';
-import {
-  BehaviorSubject,
-  filter,
-  firstValueFrom,
-  Observable,
-  ReplaySubject,
-} from 'rxjs';
-import { ServerConfigService } from './server-config.service';
+import { Product, Session, UserSecret } from '../graphql/types';
+import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { AppConfigService } from './app-config.service';
 import { isNonNull, Nullable } from '../types';
 

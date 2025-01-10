@@ -10,7 +10,7 @@ import {
 import { filter } from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
-import { FeatureGroup, Product, Session } from '../../graphql/types';
+import { FeatureGroup, Product } from '../../graphql/types';
 import {
   GqlFeatureName,
   GqlPricedProduct,
@@ -33,8 +33,6 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
-import { SessionService } from '../../services/session.service';
-import { ArrayElement } from '../../types';
 import { Plan, PlanService } from '../../services/plan.service';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
