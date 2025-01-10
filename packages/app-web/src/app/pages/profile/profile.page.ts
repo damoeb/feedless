@@ -97,6 +97,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   protected readonly dateTimeFormat = dateTimeFormat;
   private subscriptions: Subscription[] = [];
   private connectedApps: Session['user']['connectedApps'] = [];
+  protected userId: string;
 
   constructor() {
     addIcons({ cardOutline, cloudDownloadOutline });
@@ -126,6 +127,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           this.connectedApps = session.user.connectedApps;
           this.secrets = session.user.secrets;
 
+          this.userId = session.user.id;
           this.formFg.patchValue({
             email: session.user.email,
             firstName: session.user.firstName,
