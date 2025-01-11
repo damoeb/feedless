@@ -29,7 +29,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 
 @Component
-@Profile("${AppProfiles.session} & ${AppLayer.api}")
+@Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtRequestFilter : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
