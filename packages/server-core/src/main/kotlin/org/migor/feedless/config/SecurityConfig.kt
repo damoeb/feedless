@@ -109,6 +109,7 @@ class SecurityConfig {
   private fun whitelistedUrls(): Array<String> {
     val urls = mutableListOf(
       "/graphql",
+      "/actuator/health",
       "/subscriptions",
       ApiUrls.transformFeed,
       ApiUrls.webToFeed,

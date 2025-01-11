@@ -107,7 +107,7 @@ services:
       - "8.8.8.8"
     restart: unless-stopped
     healthcheck:
-      test: curl -f http://localhost:8082
+      test: curl -f http://localhost:8082/actuator/health
       interval: 20s
       timeout: 6s
       retries: 4
@@ -122,7 +122,7 @@ services:
       - .env
     environment:
       - APP_DATABASE_URL=jdbc:postgresql://postgis:5432/${POSTGRES_DB}
-      - APP_ACTIVE_PROFILES=saas
+      - APP_ACTIVE_PROFILES=saas,api
       - APP_PEM_FILE=./feedless.pem
       - APP_WHITELISTED_HOSTS=feedless-core,172.26.0.1
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
@@ -135,6 +135,41 @@ services:
     networks:
       - postgis
       - public
+      - monitoring
+      - puppeteer
+
+  feedless-jobs:
+    image: damoeb/feedless:core-latest
+    dns:
+      - "8.8.8.8"
+    restart: unless-stopped
+    healthcheck:
+      test: curl -f http://localhost:8082/actuator/health
+      interval: 20s
+      timeout: 6s
+      retries: 4
+    depends_on:
+      - postgis
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./feedless.pem:/usr/feedless/feedless.pem
+      - ./debug/:/usr/feedless/debug/ # heap dump directory
+    env_file:
+      - .env
+    environment:
+      - APP_DATABASE_URL=jdbc:postgresql://postgis:5432/${POSTGRES_DB}
+      - APP_ACTIVE_PROFILES=saas,jobs
+      - APP_PEM_FILE=./feedless.pem
+      - APP_WHITELISTED_HOSTS=feedless-core,172.26.0.1
+      - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
+      - app.cors.allowedOrigins=https://feedless.org,https://lokale.events
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - postgis
       - monitoring
       - puppeteer
 
