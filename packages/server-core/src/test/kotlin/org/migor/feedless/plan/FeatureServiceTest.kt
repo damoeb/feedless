@@ -40,6 +40,7 @@ import java.util.*
 @MockBeans(
   MockBean(SessionService::class),
   MockBean(ProductDAO::class),
+  MockBean(PlanDAO::class),
 )
 class FeatureServiceTest {
 
