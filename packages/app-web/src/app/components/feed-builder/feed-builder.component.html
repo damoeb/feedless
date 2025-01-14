@@ -107,6 +107,16 @@
             >
           </ion-item>
           <ion-list class="ion-no-padding" slot="content">
+            <ion-item>
+              <ion-input
+                [formControl]="titleFc"
+                color="primary"
+                label="Title"
+                labelPlacement="stacked"
+                name="title"
+                placeholder="Source title"
+              ></ion-input>
+            </ion-item>
             <ion-item (click)="showTagsModal()" [button]="true">
               <ion-label>
                 Tags

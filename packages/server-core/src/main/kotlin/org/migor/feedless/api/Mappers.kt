@@ -158,6 +158,7 @@ fun Selectors.fromDto(): GenericFeedSelectors = GenericFeedSelectors(
 fun SourceInput.fromDto(): SourceEntity {
   val source = SourceEntity()
   source.title = title
+  source.tags = tags?.toTypedArray() ?: emptyArray<String>()
   source.latLon = latLng?.let { JtsUtil.createPoint(it.lat, it.lng) }
   source.actions = flow.fromDto()
   return source
