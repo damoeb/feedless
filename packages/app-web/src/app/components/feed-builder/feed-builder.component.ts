@@ -23,7 +23,8 @@ import {
   AlertController,
   IonAccordion,
   IonButton,
-  IonIcon, IonInput,
+  IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonList,
@@ -31,7 +32,7 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -322,7 +323,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async createOrRefineFeed(refine: boolean, draft: boolean = false) {
-    this.sourceBuilder.patch({ tags: this.tags, draft, title: this.titleFc.value });
+    this.sourceBuilder.patch({
+      tags: this.tags,
+      draft,
+      title: this.titleFc.value,
+    });
 
     // console.log('this.location', this.geoLocation);
     if (this.geoLocation) {
