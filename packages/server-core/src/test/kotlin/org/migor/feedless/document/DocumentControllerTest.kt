@@ -16,6 +16,7 @@ import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserService
@@ -47,6 +48,7 @@ import java.util.*
   MockBean(PropertyService::class),
   MockBean(TokenProvider::class),
   MockBean(CookieProvider::class),
+  MockBean(PermissionService::class),
 )
 @ActiveProfiles(
   "test",
@@ -54,6 +56,7 @@ import java.util.*
   AppProfiles.document,
   AppProfiles.session,
   AppLayer.security,
+  AppLayer.service,
 )
 @Import(
   DisableDatabaseConfiguration::class,
