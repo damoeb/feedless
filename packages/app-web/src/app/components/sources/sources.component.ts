@@ -38,7 +38,7 @@ import {
   GqlSourcesWhereInput,
 } from '../../../generated/graphql';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
-import { sortBy } from 'lodash-es';
+import { cloneDeep, omit, sortBy } from 'lodash-es';
 import {
   FeedOrRepository,
   tagsToString,
@@ -336,6 +336,12 @@ export class SourcesComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
+  async forkSource(source: RepositorySource) {
+    const fork = cloneDeep(source);
+    fork.id = null;
+    await this.editOrAddSource(fork)
+  }
+
   async editOrAddSource(source: Nullable<RepositorySource> = null) {
     const toSource = async () => {
       if (source) {
@@ -353,11 +359,12 @@ export class SourcesComponent implements OnInit {
         source: await toSource(),
       },
       async (data: FeedOrRepository) => {
+        console.log(data)
         if (data?.repository) {
           console.warn('not implemented');
         }
         if (data?.feed) {
-          if (source) {
+          if (source?.id) {
             await this.repositoryService.updateRepository({
               where: {
                 id: this.repository().id,
@@ -423,6 +430,13 @@ export class SourcesComponent implements OnInit {
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Source Actions',
       buttons: [
+        {
+          text: 'Fork',
+          role: 'destructive',
+          handler: () => {
+            this.forkSource(source);
+          },
+        },
         {
           text: 'Disable',
           disabled: source.disabled,
