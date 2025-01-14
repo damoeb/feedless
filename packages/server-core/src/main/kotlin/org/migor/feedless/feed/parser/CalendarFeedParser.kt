@@ -11,6 +11,7 @@ import java.io.StringReader
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.temporal.Temporal
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -50,8 +51,8 @@ private fun VEvent.toJsonItem(): JsonItem {
   item.url = url.getOrNull()?.value ?: ""
   item.text = description.getOrNull()?.value ?: ""
   item.tags = categories.getOrNull()?.categories?.texts?.toList()
-  item.startingAt = getDateTimeStart<OffsetDateTime>().get().date.toLocalDateTime()
-  item.endingAt = getDateTimeEnd<OffsetDateTime>().get().date.toLocalDateTime()
+  item.startingAt = LocalDateTime.from(getDateTimeStart<Temporal>().get().date)
+  item.endingAt = LocalDateTime.from(getDateTimeEnd<Temporal>().get().date)
   val lastModified = lastModified?.getOrNull()?.date?.let { LocalDateTime.ofInstant(it, ZoneOffset.UTC) }
   item.publishedAt = lastModified ?: LocalDateTime.now()
   item.modifiedAt = lastModified

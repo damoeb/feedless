@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.HttpResponse
 
-class CalendarFeedParserTest {
+class   CalendarFeedParserTest {
   @Test
   fun `can parse a list of ical events`() = runTest {
     val calendarFeedParser = CalendarFeedParser()
