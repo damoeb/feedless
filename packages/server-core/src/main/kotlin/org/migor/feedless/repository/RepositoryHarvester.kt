@@ -392,6 +392,7 @@ class RepositoryHarvester(
     )
 
     log.debug("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
+    logCollector.log("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
     val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {

@@ -137,11 +137,11 @@
               @for (place of placesGroup.places; track place) {
               <h2 class="ion-padding-top">
                 <a
-                  [routerLink]="getPlaceUrl(place.place)"
-                  [title]="'Wechsle nach ' + place.place.place"
+                  [routerLink]="getPlaceUrl(place?.place)"
+                  [title]="'Wechsle nach ' + place?.place?.place"
                   style="color: var(--ion-color-dark)"
                 >
-                  {{ place.place.place }}</a
+                  {{ place?.place?.place }}</a
                 >
                 @if (placesGroup?.distance && placesGroup.distance > 0) {
                 <ion-note> ~ {{ placesGroup.distance }} Km entfernt </ion-note>

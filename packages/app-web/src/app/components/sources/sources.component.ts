@@ -339,7 +339,7 @@ export class SourcesComponent implements OnInit {
   async forkSource(source: RepositorySource) {
     const fork = cloneDeep(source);
     fork.id = null;
-    await this.editOrAddSource(fork)
+    await this.editOrAddSource(fork);
   }
 
   async editOrAddSource(source: Nullable<RepositorySource> = null) {
@@ -359,7 +359,6 @@ export class SourcesComponent implements OnInit {
         source: await toSource(),
       },
       async (data: FeedOrRepository) => {
-        console.log(data)
         if (data?.repository) {
           console.warn('not implemented');
         }

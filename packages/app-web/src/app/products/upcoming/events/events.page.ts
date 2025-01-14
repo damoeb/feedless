@@ -404,7 +404,7 @@ export class EventsPage implements OnInit, OnDestroy {
                 roundLatLon(place.lng) == roundLatLon(latLon.lng),
             );
             if (!place) {
-              throw new Error(`Cannot resolve latlon` + latLon);
+              console.warn(`Cannot resolve latlon` + JSON.stringify(latLon));
             }
             return {
               events: latLonGroups[latLonGroup],
