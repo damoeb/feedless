@@ -3,12 +3,17 @@
     position: absolute;
     bottom: 0;
     width: 100%;
+    pointer-events: none;
     margin-bottom: 20px;
     z-index: 1000;
     text-align: center;
   "
 >
-  <ion-button (click)="openModal()" size="small" color="dark" shape="round">
+  <ion-button (click)="openModal()"
+              style="pointer-events: all"
+              size="small"
+              color="dark"
+              shape="round">
     Console Output
   </ion-button>
 </div>
