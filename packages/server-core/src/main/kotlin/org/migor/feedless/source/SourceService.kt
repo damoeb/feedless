@@ -316,6 +316,10 @@ class SourceService(
           source.tags = sourceUpdate.data.tags.set.toTypedArray()
           changed = true
         }
+        sourceUpdate.data.title?.let {
+          source.title = sourceUpdate.data.title.set
+          changed = true
+        }
         sourceUpdate.data.latLng?.let { point ->
           point.set?.let {
             source.latLon = JtsUtil.createPoint(it.lat, it.lng)

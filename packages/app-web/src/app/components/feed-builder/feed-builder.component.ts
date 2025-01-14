@@ -23,7 +23,7 @@ import {
   AlertController,
   IonAccordion,
   IonButton,
-  IonIcon,
+  IonIcon, IonInput,
   IonItem,
   IonLabel,
   IonList,
@@ -31,7 +31,7 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -75,6 +75,7 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
 import { assignIn, first, intersection, isArray } from 'lodash-es';
 import { RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 /**
  * IDEEN
@@ -151,6 +152,8 @@ export type StandaloneUrlParams = {
     InteractiveWebsiteModalModule,
     IonButton,
     RemoveIfProdDirective,
+    IonInput,
+    ReactiveFormsModule,
   ],
   standalone: true,
 })
@@ -197,6 +200,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   protected tags: string[] = [];
   protected geoLocation: LatLng;
+  protected titleFc = new FormControl<string>('');
   // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
@@ -219,6 +223,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       console.log('this.source', source);
       this.tags = source.tags;
       this.geoLocation = source.latLng;
+      this.titleFc.setValue(source.title);
       this.sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
       this.url = this.sourceBuilder.getUrl();
       await this.scrapeUrl();
@@ -317,7 +322,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async createOrRefineFeed(refine: boolean, draft: boolean = false) {
-    this.sourceBuilder.patch({ tags: this.tags, draft });
+    this.sourceBuilder.patch({ tags: this.tags, draft, title: this.titleFc.value });
 
     // console.log('this.location', this.geoLocation);
     if (this.geoLocation) {
@@ -387,7 +392,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (this.tags) {
       return tagsToString(this.tags);
     } else {
-      return '';
+      return '-';
     }
   }
 
