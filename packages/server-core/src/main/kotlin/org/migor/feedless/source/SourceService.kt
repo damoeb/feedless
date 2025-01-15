@@ -176,6 +176,15 @@ class SourceService(
     val sortableStatements = mutableListOf<Sortable>()
     val query = jpql {
       where?.let {
+        it.like?.let { like ->
+          if (like.length > 2) {
+            whereStatements.add(or(
+              path(SourceEntity::title).like("%$like%"),
+              path(FetchActionEntity::url).like("%$like%"),
+            )
+            )
+          }
+        }
         it.id?.let {
           it.eq?.let {
             whereStatements.add(path(SourceEntity::id).eq(UUID.fromString(it)))
@@ -228,10 +237,12 @@ class SourceService(
       }
 
       select(path(SourceEntity::id))
-        .from(entity(SourceEntity::class))
+        .from(
+          entity(SourceEntity::class),
+          join(FetchActionEntity::class).on(path(FetchActionEntity::sourceId).eq(path(SourceEntity::id))))
         .whereAnd(
           path(SourceEntity::repositoryId).eq(repositoryId),
-          *whereStatements.toTypedArray()
+          *whereStatements.toTypedArray(),
         )
         .orderBy(
           *sortableStatements.toTypedArray(),

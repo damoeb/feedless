@@ -6,8 +6,11 @@
     style="display: none"
     type="file"
   />
-  <ion-toolbar style="--background: transparent">
-    <ion-title> Sources</ion-title>
+  <ion-toolbar style="--background: transparent" class="ion-margin-bottom">
+    <ion-searchbar
+      [formControl]="queryFc"
+      placeholder="Search url or title"
+    ></ion-searchbar>
     <ion-buttons slot="end">
       <ion-button
         (click)="fetchCurrentPage('network-only')"
