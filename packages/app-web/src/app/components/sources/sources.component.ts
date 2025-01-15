@@ -21,8 +21,8 @@ import {
   IonList,
   IonProgressBar,
   IonRow,
+  IonSearchbar,
   IonText,
-  IonTitle,
   IonToolbar,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -38,7 +38,7 @@ import {
   GqlSourcesWhereInput,
 } from '../../../generated/graphql';
 import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
-import { cloneDeep, omit, sortBy } from 'lodash-es';
+import { cloneDeep, sortBy } from 'lodash-es';
 import {
   FeedOrRepository,
   tagsToString,
@@ -51,6 +51,8 @@ import { addIcons } from 'ionicons';
 import { addOutline, cloudUploadOutline, refreshOutline } from 'ionicons/icons';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 import dayjs from 'dayjs';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounce, interval } from 'rxjs';
 
 @Component({
   selector: 'app-sources',
@@ -70,9 +72,10 @@ import dayjs from 'dayjs';
     IonText,
     PaginationComponent,
     IonIcon,
-    IonTitle,
     IonToolbar,
     FeedBuilderModalModule,
+    IonSearchbar,
+    ReactiveFormsModule,
   ],
   standalone: true,
 })
@@ -94,6 +97,7 @@ export class SourcesComponent implements OnInit {
   sources: Source[] = [];
   protected readonly fromNow = relativeTimeOrElse;
   protected pageSize = 20;
+  protected queryFc = new FormControl<string>('');
 
   constructor() {
     addIcons({
@@ -108,6 +112,11 @@ export class SourcesComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.queryFc.valueChanges
+      .pipe(debounce(() => interval(400)))
+      .subscribe((query) => {
+        this.fetchCurrentPage();
+      });
     this.fetchCurrentPage();
   }
 
@@ -135,7 +144,7 @@ export class SourcesComponent implements OnInit {
     const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
       {
         selectables,
-        title: 'Import new sources',
+        title: 'Import Sources',
         description: 'Select those sources you want to import',
       },
     );
@@ -212,7 +221,10 @@ export class SourcesComponent implements OnInit {
           page,
           pageSize: this.pageSize,
         },
-        this.sourcesFilter(),
+        {
+          ...this.sourcesFilter(),
+          like: this.queryFc.value,
+        },
         [
           { lastRecordsRetrieved: GqlSortOrder.Asc },
           { lastRefreshedAt: GqlSortOrder.Asc },

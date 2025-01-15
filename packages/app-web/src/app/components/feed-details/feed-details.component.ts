@@ -574,7 +574,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
       {
         selectables,
-        title: 'Import new sources',
+        title: 'Import Sources',
         description: 'Select those sources you want to import',
       },
     );

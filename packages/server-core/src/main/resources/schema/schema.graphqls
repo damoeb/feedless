@@ -123,6 +123,7 @@ type Repository {
 input SourcesWhereInput {
   id: StringFilterInput
   latLng: GeoPointWhereInput
+  like: String
 }
 
 input SourceOrderByInput {
