@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -18,17 +19,18 @@ class DateClaimer {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
 
+  private val allMonth = (1..12).map { LocalDate.parse("2018-${StringUtils.leftPad("$it",2,'0')}-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")) }
   private val days = listOf(Pair("\\d{1}", "d"), Pair("\\d{2}", "dd"))
   private val months =
-    listOf(Pair("\\d{1}", "M"), Pair("\\d{2}", "MM"), Pair("[a-z]{3}", "LLL"), Pair("[a-z]{4,}", "MMMM"))
+    listOf(Pair("\\d{1}", "M"), Pair("\\d{2}", "MM"), Pair("[a-z]{3}", "LLL"), Pair("[a-z]{3,}", "MMMM"))
   private val years = listOf(Pair("\\d{2}", "yy"), Pair("\\d{4}", "yyyy"))
 
   // credits https://stackoverflow.com/a/3390252
   private val dateFormatToRegexp = mutableListOf(
     Triple(toRegex("\\d{8}"), "yyyyMMdd", false),
     Triple(toRegex("\\d{1,2}\\s[a-z]{3}\\s\\d{4}"), "dd MMM yyyy", false),
-    Triple(toRegex("\\d{1}\\s[a-z]{4,}\\s\\d{4}"), "d MMMM yyyy", false),
-    Triple(toRegex("\\d{2}\\s[a-z]{4,}\\s\\d{4}"), "dd MMMM yyyy", false),
+    Triple(toRegex("\\d{1}\\s[a-z]{3,}\\s\\d{4}"), "d MMMM yyyy", false),
+    Triple(toRegex("\\d{2}\\s[a-z]{3,}\\s\\d{4}"), "dd MMMM yyyy", false),
     Triple(toRegex("[a-z]{3,}\\s\\d{1}\\s\\d{4}"), "MMMM d yyyy", false), // December 8, 2020
     Triple(toRegex("[a-z]{3,}\\s\\d{2}\\s\\d{4}"), "MMMM dd yyyy", false), // December 15, 2020
     Triple(toRegex("\\d{12}"), "yyyyMMddHHmm", true),
@@ -123,17 +125,14 @@ class DateClaimer {
       return date
     }
 
-//    runCatching {
-//      val date = toDate(LocalDate.parse(dateTimeStrParam).atTime(8, 0))
-//      logger.log("[${corrId}] -> $date")
-//      return date
-//    }
+    val relevantChars =
+      allMonth.joinToString("") { DateTimeFormatter.ofPattern("MMMM", locale).format(it) }.lowercase().split("").distinct().joinToString("")
 
     return runCatching {
       val simpleDateTimeStr = dateTimeStrParam
         .trim().replace(".", " ")
         .replace("\n", " ")
-        .replace("[^a-z0-9:]".toRegex(RegexOption.IGNORE_CASE), " ")
+        .replace("[^\\p{Alnum}$relevantChars:]".toRegex(RegexOption.IGNORE_CASE), " ") // todo fix and replace just special chars
         .replace("T", " ")
         .replace("\\s+".toRegex(), " ")
       val date = guessDateFormats(simpleDateTimeStr, logger)
@@ -179,17 +178,20 @@ class DateClaimer {
     dateString: String,
     logger: LogCollector
   ): List<Triple<String, String, Boolean>> {
-    logger.log("guessDateFormat for '$dateString'")
+    val normalizedDateString = StringUtils.stripAccents(dateString)
+    logger.log("guessDateFormat for '$dateString' as '${normalizedDateString}")
     return dateFormatToRegexp
       .sortedByDescending { it.second.length }
       .sortedByDescending { it.third }
       .mapNotNullTo(ArrayList()) { (regex, dateFormat, hasTime) ->
         run {
-          val matches = regex.find(dateString)
+          val matches = regex.find(normalizedDateString)
           val doesMatch = matches?.groups?.isEmpty() == false
           if (doesMatch) {
 //            logger.log("satisfies $dateFormat")
-            Triple(dateFormat, matches?.groups?.get(0)?.value!!, hasTime)
+            matches?.groups?.get(0)?.range?.let {
+              Triple(dateFormat, dateString.substring(it), hasTime)
+            }
           } else {
             null
           }
