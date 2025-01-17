@@ -88,11 +88,11 @@ class DocumentService(
     where: RecordsWhereInput? = null,
     orderBy: RecordOrderByInput? = null,
     status: ReleaseStatus = ReleaseStatus.released,
-    tag: String? = null,
+    tags: List<String> = emptyList(),
     pageable: Pageable,
   ): List<DocumentEntity> {
     val query = jpql {
-      val whereStatements = prepareWhereStatements(where)
+      val whereStatements = prepareWhereStatements(where, tags)
 
       select(
         path(DocumentEntity::id),
@@ -121,7 +121,7 @@ class DocumentService(
     }
   }
 
-  private fun prepareWhereStatements(where: RecordsWhereInput?): MutableList<Predicatable> {
+  private fun prepareWhereStatements(where: RecordsWhereInput?, tags: List<String> = emptyList()): MutableList<Predicatable> {
     val whereStatements = mutableListOf<Predicatable>()
     jpql {
       val addDateConstraint = { it: DatesWhereInput, field: Path<LocalDateTime> ->
@@ -131,6 +131,10 @@ class DocumentService(
         it.after?.let {
           whereStatements.add(field.ge(it.toLocalDateTime()))
         }
+      }
+
+      if (tags.isNotEmpty()) {
+        // todo one of
       }
 
       where?.let {

@@ -108,11 +108,11 @@ class RepositoryService(
     return data.map { createRepository(ownerId, it).toDto(true) }
   }
 
-  @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tag")
+  @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tags")
   suspend fun getFeedByRepositoryId(
     repositoryId: UUID,
     page: Int,
-    tag: String? = null,
+    tags: List<String>,
   ): JsonFeed {
     val repository = context.getBean(RepositoryService::class.java).findById(repositoryId).orElseThrow()
 
@@ -122,7 +122,7 @@ class RepositoryService(
       documentService.findAllByRepositoryId(
         repositoryId,
         status = ReleaseStatus.released,
-        tag = tag,
+        tags = tags,
         pageable = pageable,
       ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 

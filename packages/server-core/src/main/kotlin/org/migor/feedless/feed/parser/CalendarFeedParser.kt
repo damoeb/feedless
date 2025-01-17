@@ -9,7 +9,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.Temporal
 import kotlin.jvm.optionals.getOrNull
@@ -28,7 +27,11 @@ class CalendarFeedParser : FeedBodyParser {
   }
 
   override suspend fun process(response: HttpResponse): JsonFeed {
-    val sin = StringReader(String(response.responseBody))
+    return parse(String(response.responseBody), response.url)
+  }
+
+  suspend fun parse(response: String, url: String): JsonFeed {
+    val sin = StringReader(response)
     val builder = CalendarBuilder()
     val calendar = builder.build(sin)
 
@@ -36,7 +39,7 @@ class CalendarFeedParser : FeedBodyParser {
     feed.id = "calendar.uid.value"
     feed.title = "vcalendar"
     feed.publishedAt = LocalDateTime.now()
-    feed.feedUrl = response.url
+    feed.feedUrl = url
     feed.items = calendar.getComponents<CalendarComponent>()
       .filterIsInstance<VEvent>()
       .map { it.toJsonItem() }
