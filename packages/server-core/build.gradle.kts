@@ -15,7 +15,8 @@ plugins {
   id("com.adarshr.test-logger") version "3.2.0"
   id("org.ajoberstar.grgit")
   id("jacoco")
-  id("org.javacc.javacc") version "3.0.2"
+  id("org.javacc.javacc") version "3.0.3"
+//  id("org.openapi.generator") version "7.9.0" // rest
 //  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.9.20"
   kotlin("plugin.spring") version "1.9.20"
@@ -33,6 +34,7 @@ repositories {
 sourceSets.getByName("main") {
   java.srcDir("src/main/java")
   java.srcDir("src/generated/java")
+//  java.srcDir("$buildDir/generated/src/main/java")
 //  java.srcDir("src/main/kotlin")
   resources.srcDir("src/main/resources")
 }
@@ -238,6 +240,24 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
 //  generateKotlinNullableClasses = true
   generateKotlinClosureProjections = true
 }
+
+//val restCodegen = tasks.withType<org.openapitools.generator.gradle.plugin.tasks.GenerateTask> {
+//  generatorName.set("spring")
+//  inputSpec.set(project.file("src/main/resources/schema/openapi.yaml").path)
+//  outputDir.set("$buildDir/generated")
+//  apiPackage.set("org.migor.feedless.api")
+////  modelPackage.set("com.example.model")
+////  invokerPackage.set("com.example.invoker")
+//
+//  configOptions.putAll(
+//    mapOf(
+//      "dateLibrary" to "java8",
+////      "library" to "spring-boot",
+//      "enumPropertyNaming" to "camelCase",
+//      "useTags" to "true"
+//    )
+//  )
+//}
 
 val codegen = tasks.register("codegen") {
   dependsOn(graphqlCodegen)
