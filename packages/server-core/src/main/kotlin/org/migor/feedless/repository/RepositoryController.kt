@@ -8,8 +8,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.Tracked
-import org.migor.feedless.api.ApiParams
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +20,8 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
@@ -42,16 +42,20 @@ class RepositoryController {
   @Autowired
   private lateinit var feedExporter: FeedExporter
 
-  @Tracked
-  @GetMapping(
-    "/f/{repositoryId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+  @RequestMapping(
+    method = [RequestMethod.GET],
+    value = ["/f/{repositoryId}/{format}"],
+    produces = [
+      "application/atom+xml;charset=UTF-8",
+      "text/calendar;charset=UTF-8",
+      "application/json;charset=UTF-8"
+    ]
   )
-  suspend fun atomFeed(
-    request: HttpServletRequest,
-    @PathVariable("repositoryId") repositoryId: String,
-    @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
-    @RequestParam("skey", required = false) shareKey: String? = null,
-    @RequestParam(ApiParams.tag, required = false) tag: String?
+  suspend fun feed(
+    @PathVariable(name = "repositoryId") repositoryId: String,
+    @PathVariable(name = "format") format: String,
+    @RequestParam(value = "page", required = false, defaultValue = "0") page: Int,
+    @RequestParam(value = "tags", required = false) tags: List<String>,
   ): ResponseEntity<String> = coroutineScope {
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -59,40 +63,12 @@ class RepositoryController {
         Tag.of("id", repositoryId),
       )
     ).increment()
-    log.debug("GET feed/atom id=$repositoryId page=$page")
-    feedExporter.to(
-      HttpStatus.OK,
-      "atom",
-      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tag)
-    )
-  }
+    log.debug("GET feed/$format} id=$repositoryId page=$page")
 
-  @Tracked
-  @GetMapping(
-//    "/feed/{repositoryId}/json",
-//    "/feed/{repositoryId}",
-    "/f/{repositoryId}/json",
-    "/f/{repositoryId}",
-    produces = ["application/json;charset=UTF-8"]
-  )
-  suspend fun jsonFeed(
-    request: HttpServletRequest,
-    @PathVariable("repositoryId") repositoryId: String,
-    @RequestParam("skey", required = false) shareKey: String? = null,
-    @RequestParam(ApiParams.page, required = false, defaultValue = "0") page: Int,
-    @RequestParam(ApiParams.tag, required = false) tag: String?
-  ): ResponseEntity<String> = coroutineScope {
-    meterRegistry.counter(
-      AppMetrics.fetchRepository, listOf(
-        Tag.of("type", "repository"),
-        Tag.of("id", repositoryId),
-      )
-    ).increment()
-    log.debug("GET feed/json id=$repositoryId page=$page tag=$tag")
     feedExporter.to(
       HttpStatus.OK,
-      "json",
-      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tag)
+      format,
+      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tags)
     )
   }
 
