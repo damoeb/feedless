@@ -92,7 +92,7 @@ class SourceService(
       }
 
     } catch (e: Exception) {
-      log.warn("[$corrId] aborting scrape job, cause ${e.message}", e)
+      log.warn("[$corrId] aborting scrape job, cause ${e.message}")
       job.status = PipelineJobStatus.FAILED
       job.updateStatus()
       job.logs = e.message

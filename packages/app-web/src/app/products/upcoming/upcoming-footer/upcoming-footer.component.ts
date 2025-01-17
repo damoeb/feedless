@@ -1,6 +1,7 @@
 import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
 import { NamedLatLon } from '../../../types';
 import {
+  ActionSheetController,
   AlertController,
   IonButton,
   IonFooter,
@@ -9,7 +10,15 @@ import {
 } from '@ionic/angular/standalone';
 import { AppConfigService } from '../../../services/app-config.service';
 import { addIcons } from 'ionicons';
-import { heart, locateOutline, sendOutline } from 'ionicons/icons';
+import {
+  calendarNumberOutline,
+  closeOutline,
+  heart,
+  locateOutline,
+  logoRss,
+  mailOutline,
+  sendOutline,
+} from 'ionicons/icons';
 import {
   SubmitModalComponent,
   SubmitModalComponentProps,
@@ -40,13 +49,22 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   private readonly alertCtrl = inject(AlertController);
   private readonly appConfigService = inject(AppConfigService);
   private readonly geoService = inject(GeoService);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
 
   readonly location = input<NamedLatLon>();
 
   private subscriptions: Subscription[] = [];
 
   constructor() {
-    addIcons({ sendOutline, heart, locateOutline });
+    addIcons({
+      sendOutline,
+      heart,
+      locateOutline,
+      mailOutline,
+      calendarNumberOutline,
+      logoRss,
+      closeOutline,
+    });
   }
 
   private getRepositoryId(): string {
@@ -143,5 +161,36 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
 
   useUsersPosition() {
     this.geoService.requestLocationFromBrowser();
+  }
+
+  async createSubscription() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Veranstaltungen abonieren',
+      buttons: [
+        {
+          icon: 'mail-outline',
+          text: 'Email Abo',
+          handler: () => this.createMailSubscription(),
+        },
+        {
+          icon: 'calendar-number-outline',
+          text: 'Calendar Import (iCal)',
+        },
+        {
+          icon: 'logo-rss',
+          text: 'RSS Feed',
+        },
+        {
+          icon: 'close-outline',
+          text: 'Abbrechen',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
   }
 }

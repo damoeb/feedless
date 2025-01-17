@@ -1632,6 +1632,7 @@ input ConditionalTagInput {
   tag: String!
   filter: CompositeFieldFilterParamsInput!
 }
+# todo allow filter startingAt exists
 input ItemFilterParamsInput {
   composite: CompositeFilterParamsInput
   expression: String
@@ -1730,17 +1731,17 @@ type PluginExecutionParams {
   org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
-#  org_feedless_conditional_tag: [ConditionalTag!]
+  org_feedless_conditional_tag: [ConditionalTag!]
 }
 
 type FeedParams {
   generic: Selectors
 }
 
-#type ConditionalTag {
-#  tag: String!
-#  filter: CompositeFieldFilterParams!
-#}
+type ConditionalTag {
+  tag: String!
+  filter: CompositeFieldFilterParams!
+}
 
 
 type ItemFilterParams {

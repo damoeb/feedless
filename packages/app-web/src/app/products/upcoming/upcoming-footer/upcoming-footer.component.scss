@@ -17,13 +17,13 @@ li {
   }
 }
 
-.pulsating-shadow {
-  background-color: var(--ion-color-primary);
-  border-radius: 5px;
-  margin: auto;
-  box-shadow: 0 0 5px var(--ion-color-primary-shade);
-  animation: pulse-shadow 2s infinite;
-}
+//.pulsating-shadow {
+//  background-color: var(--ion-color-primary);
+//  border-radius: 5px;
+//  margin: auto;
+//  box-shadow: 0 0 5px var(--ion-color-primary-shade);
+//  animation: pulse-shadow 2s infinite;
+//}
 
 @keyframes pulse-shadow {
   0% {

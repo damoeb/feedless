@@ -15,6 +15,7 @@ import {
   IonIcon,
   IonInput,
   IonItem,
+  IonItemDivider,
   IonLabel,
   IonList,
   IonNote,
@@ -32,6 +33,7 @@ import { FilterItemsAccordionComponent } from '../../components/filter-items-acc
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
 import { BubbleComponent } from '../../components/bubble/bubble.component';
+import { FlowModalModule } from '../flow-modal/flow-modal.module';
 
 @NgModule({
   declarations: [RepositoryModalComponent],
@@ -69,6 +71,8 @@ import { BubbleComponent } from '../../components/bubble/bubble.component';
     KeyValuePipe,
     BubbleComponent,
     IonText,
+    IonItemDivider,
+    FlowModalModule,
   ],
 })
 export class RepositoryModalModule {}

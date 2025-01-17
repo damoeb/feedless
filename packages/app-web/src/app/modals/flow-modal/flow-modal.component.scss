@@ -1,0 +1,4 @@
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
