@@ -31,6 +31,10 @@ import {
   SelectionModalComponent,
   SelectionModalComponentProps,
 } from '../modals/selection-modal/selection-modal.component';
+import {
+  FlowModalComponent,
+  FlowModalComponentProps,
+} from '../modals/flow-modal/flow-modal.component';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -101,6 +105,20 @@ export class ModalService {
     await modal.present();
     const { data } = await modal.onDidDismiss<string[]>();
     await this.updateUrlParams();
+    return data!;
+  }
+
+  async openFlowModal(
+    componentProps: FlowModalComponentProps,
+  ): Promise<string[]> {
+    const modal = await this.modalCtrl.create({
+      component: FlowModalComponent,
+      componentProps,
+      showBackdrop: true,
+      backdropDismiss: true,
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss<string[]>();
     return data!;
   }
 

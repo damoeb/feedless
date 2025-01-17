@@ -16,7 +16,7 @@
         >
           <ion-label>
             @if (isUpdate()) {
-              <span>Save</span>
+              <span>Save Changes</span>
             }
             @if (!isUpdate()) {
               <span>Create</span>
@@ -202,101 +202,6 @@
             Inline Images
           </ion-label>
         </ion-item>
-      </ion-list>
-    </ion-accordion>
-
-    <ion-accordion toggleIconSlot="start" value="contentTags" appDev>
-      <ion-item slot="header">
-        <ion-label>
-          Content-based Tags
-          <!--          <ion-note class="ion-margin-start">Improve feed items</ion-note>-->
-        </ion-label>
-      </ion-item>
-      <ion-list slot="content">
-        <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
-
-        <ion-row>
-          <ion-col
-            size="3"
-            style="align-content: center"
-            class="ion-text-right"
-          >
-            Conditional Tags
-          </ion-col>
-          <ion-col size="9">
-            <!--              <ion-button [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"-->
-            <!--                          (click)="addConditionalTag()"-->
-            <!--                          [disabled]="conditionalTags.length >= 4">-->
-            <!--                <ion-icon name="add-outline"-->
-            <!--                          slot="start"></ion-icon>-->
-            <!--                Add Tag-->
-            <!--              </ion-button>-->
-            <!--            </ion-col>-->
-            <!--          </ion-row>-->
-
-            <!--          <div-->
-            <!--            *ngFor="let conditionalTag of conditionalTags; let i = index"-->
-            <!--            class="flex ion-align-items-center"-->
-            <!--          >-->
-            <!--            <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>-->
-            <!--            <ion-input-->
-            <!--              [formControl]="conditionalTag.controls.tag"-->
-            <!--              placeholder="Tag"-->
-            <!--              fill="outline"-->
-            <!--            ></ion-input>-->
-            <!--            <ion-text class="ion-padding-horizontal">if</ion-text>-->
-            <!--            <ion-select-->
-            <!--              [formControl]="conditionalTag.controls.field"-->
-            <!--              fill="outline"-->
-            <!--              interface="popover"-->
-            <!--              [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"-->
-            <!--            >-->
-            <!--              <ion-select-option [value]="FilterFieldLink"-->
-            <!--                >link</ion-select-option-->
-            <!--              >-->
-            <!--              <ion-select-option [value]="FilterFieldTitle"-->
-            <!--                >title-->
-            <!--              </ion-select-option>-->
-            <!--              <ion-select-option [value]="FilterFieldContent"-->
-            <!--                >content-->
-            <!--              </ion-select-option>-->
-            <!--            </ion-select>-->
-            <!--            <ion-select-->
-            <!--              [formControl]="conditionalTag.controls.operator"-->
-            <!--              fill="outline"-->
-            <!--              class="ion-margin-horizontal"-->
-            <!--              interface="popover"-->
-            <!--              [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"-->
-            <!--            >-->
-            <!--              <ion-select-option [value]="GqlStringFilterOperator.Contains"-->
-            <!--                >contains-->
-            <!--              </ion-select-option>-->
-            <!--              <ion-select-option [value]="GqlStringFilterOperator.Matches"-->
-            <!--                >matches-->
-            <!--              </ion-select-option>-->
-            <!--              <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"-->
-            <!--                >starts with-->
-            <!--              </ion-select-option>-->
-            <!--              <ion-select-option [value]="GqlStringFilterOperator.EndsWith"-->
-            <!--                >ends with-->
-            <!--              </ion-select-option>-->
-            <!--            </ion-select>-->
-            <!--            <ion-input-->
-            <!--              [formControl]="conditionalTag.controls.value"-->
-            <!--              placeholder="Type a value"-->
-            <!--              fill="outline"-->
-            <!--            ></ion-input>-->
-
-            <!--            <ion-button-->
-            <!--              (click)="removeConditionalTag(i)"-->
-            <!--              color="medium"-->
-            <!--              fill="clear"-->
-            <!--            >-->
-            <!--              <ion-icon name="trash-outline"></ion-icon>-->
-            <!--            </ion-button>-->
-            <!--          </div>-->
-          </ion-col>
-        </ion-row>
       </ion-list>
     </ion-accordion>
 
@@ -491,11 +396,127 @@
       </ion-list>
     </ion-accordion>
 
-    <app-filter-feed-accordion
-      (filterChange)="handleFilterChange($event)"
-      [filterPlugin]="getFilterPlugin()"
-      [hideIfEmpty]="true"
-      labelPrefix="Repository"
-    ></app-filter-feed-accordion>
+    @if (showExpertOptions) {
+      <ion-item-divider></ion-item-divider>
+      <div>
+        <ion-text color="medium"> Expert Options </ion-text>
+      </div>
+      <ion-accordion toggleIconSlot="start" value="contentTags" appDev>
+        <ion-item slot="header">
+          <ion-label>
+            Content-based Tags
+            <!--          <ion-note class="ion-margin-start">Improve feed items</ion-note>-->
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
+
+          <ion-row>
+            <ion-col
+              size="3"
+              style="align-content: center"
+              class="ion-text-right"
+            >
+              Conditional Tags
+            </ion-col>
+            <ion-col size="9">
+              <ion-button
+                [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"
+                (click)="addConditionalTag()"
+                [disabled]="conditionalTags.length >= 4"
+              >
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add Tag
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col>
+              <div
+                *ngFor="let conditionalTag of conditionalTags; let i = index"
+                class="flex ion-align-items-center"
+              >
+                <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
+                <ion-input
+                  [formControl]="conditionalTag.controls.tag"
+                  placeholder="Tag"
+                  fill="outline"
+                ></ion-input>
+                <ion-text class="ion-padding-horizontal">if</ion-text>
+                <ion-select
+                  [formControl]="conditionalTag.controls.field"
+                  fill="outline"
+                  interface="popover"
+                  [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
+                >
+                  <ion-select-option [value]="FilterFieldLink"
+                    >link</ion-select-option
+                  >
+                  <ion-select-option [value]="FilterFieldTitle"
+                    >title
+                  </ion-select-option>
+                  <ion-select-option [value]="FilterFieldContent"
+                    >content
+                  </ion-select-option>
+                </ion-select>
+                <ion-select
+                  [formControl]="conditionalTag.controls.operator"
+                  fill="outline"
+                  class="ion-margin-horizontal"
+                  interface="popover"
+                  [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
+                >
+                  <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                    >contains
+                  </ion-select-option>
+                  <ion-select-option [value]="GqlStringFilterOperator.Matches"
+                    >matches
+                  </ion-select-option>
+                  <ion-select-option
+                    [value]="GqlStringFilterOperator.StartsWidth"
+                    >starts with
+                  </ion-select-option>
+                  <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                    >ends with
+                  </ion-select-option>
+                </ion-select>
+                <ion-input
+                  [formControl]="conditionalTag.controls.value"
+                  placeholder="Type a value"
+                  fill="outline"
+                ></ion-input>
+
+                <ion-button
+                  (click)="removeConditionalTag(i)"
+                  color="medium"
+                  fill="clear"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-list>
+      </ion-accordion>
+      <app-filter-feed-accordion
+        (filterChange)="handleFilterChange($event)"
+        [filterPlugin]="getFilterPlugin()"
+        [hideIfEmpty]="!showExpertOptions"
+        labelPrefix="Repository"
+      ></app-filter-feed-accordion>
+
+      <ion-item appDev [button]="true" (click)="openFlowModal()">
+        <ion-icon name="flask-outline" slot="start"></ion-icon>
+        Flow
+      </ion-item>
+    } @else {
+      <ion-item
+        [button]="true"
+        (click)="showExpertOptions = !showExpertOptions"
+      >
+        <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
+      </ion-item>
+    }
   </ion-accordion-group>
 </ion-content>

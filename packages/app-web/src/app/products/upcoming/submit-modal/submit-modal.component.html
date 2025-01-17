@@ -89,15 +89,20 @@
         </ion-label>
       </ion-checkbox>
     </ion-item>
-    <ion-button
-      color="primary"
-      class="ion-margin"
-      expand="block"
-      (click)="createMailSubscription()"
-      shape="round"
-    >
-      Jetzt Abonnieren
-      <ion-icon name="send-outline" slot="end"></ion-icon>
-    </ion-button>
+    <div style="display: flex">
+      <ion-button expand="block" fill="empty" (click)="closeModal()">
+        Abbrechen
+      </ion-button>
+      <ion-button
+        style="flex: 1"
+        color="primary"
+        expand="block"
+        (click)="createMailSubscription()"
+        shape="round"
+      >
+        Jetzt Abonnieren
+        <ion-icon name="send-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
   </ion-list>
 </ion-footer>

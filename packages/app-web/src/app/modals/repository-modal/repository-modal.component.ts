@@ -9,12 +9,14 @@ import { ModalController, ToastController } from '@ionic/angular/standalone';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
+  GqlConditionalTagInput,
   GqlFeatureName,
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
   GqlPluginExecutionInput,
   GqlRecordDateField,
   GqlSourceInput,
+  GqlStringFilterOperator,
   GqlVisibility,
 } from '../../../generated/graphql';
 import { Router } from '@angular/router';
@@ -22,32 +24,48 @@ import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RepositoryFull } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isDefined, Nullable } from '../../types';
-import { omit } from 'lodash-es';
+import { ArrayElement, isDefined, Nullable, TypedFormGroup } from '../../types';
+import { omit, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
-import { closeOutline } from 'ionicons/icons';
+import {
+  closeOutline,
+  ellipsisHorizontalOutline,
+  extensionPuzzleOutline,
+  flaskOutline,
+} from 'ionicons/icons';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
 import { FeatureService } from '../../services/feature.service';
+import {
+  FilterField,
+  FilterOperator,
+} from '../../components/filter-items-accordion/filter-items-accordion.component';
+import { ModalService } from '../../services/modal.service';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
   openAccordions?: RepositoryModalAccordion[];
 }
 
-// interface TagConditionData {
-//   tag: string;
-//   field: FilterField;
-//   operator: FilterOperator;
-//   value: string;
-// }
+interface TagConditionData {
+  tag: string;
+  field: FilterField;
+  operator: FilterOperator;
+  value: string;
+}
 
-// type ConditionalTagParams = ArrayElement<
-//   ArrayElement<Repository['plugins']>['params']['org_feedless_conditional_tag']
-// >;
+type ConditionalTagParams = ArrayElement<
+  ArrayElement<
+    RepositoryFull['plugins']
+  >['params']['org_feedless_conditional_tag']
+>;
 
 export type FulltextTransformer = 'none' | 'summary' | 'readability';
 
-export type RepositoryModalAccordion = 'privacy' | 'storage' | 'notifications';
+export type RepositoryModalAccordion =
+  | 'privacy'
+  | 'storage'
+  | 'notifications'
+  | 'plugins';
 
 type RepositoryFormGroupDef = {
   title: FormControl<string>;
@@ -81,9 +99,10 @@ export class RepositoryModalComponent
   private readonly router = inject(Router);
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly repositoryService = inject(RepositoryService);
+  private readonly modalService = inject(ModalService);
 
   formFg: FormGroup<RepositoryFormGroupDef>;
-  // conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
+  conditionalTags: FormGroup<TypedFormGroup<TagConditionData>>[] = [];
 
   summaryTransformer: FulltextTransformer = 'summary';
   noTransformer: FulltextTransformer = 'none';
@@ -95,72 +114,94 @@ export class RepositoryModalComponent
   loading = false;
   errorMessage: string;
   isLoggedIn: boolean;
+  showExpertOptions: boolean = false;
 
   protected readonly dateFormat = dateFormat;
   protected readonly GqlRecordDateField = GqlRecordDateField;
   accordionPrivacy: RepositoryModalAccordion = 'privacy';
   accordionNotifications: RepositoryModalAccordion = 'notifications';
+  accordionCustomPlugins: RepositoryModalAccordion = 'plugins';
   accordionStorage: RepositoryModalAccordion = 'storage';
+  protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
+  protected FilterFieldLink: FilterField = 'link';
+  protected FilterFieldTitle: FilterField = 'title';
+  protected FilterFieldContent: FilterField = 'content';
 
   private filterParams: GqlItemFilterParamsInput[];
   protected repositoryMaxItemsUpperLimit: Nullable<number> = null;
 
   constructor() {
-    addIcons({ closeOutline });
+    addIcons({ closeOutline, ellipsisHorizontalOutline, flaskOutline });
   }
 
   closeModal() {
     return this.modalCtrl.dismiss();
   }
 
-  // addConditionalTag(data: ConditionalTagParams = null) {
-  //   if (this.conditionalTags.some((filter) => filter.invalid)) {
-  //     return;
-  //   }
-  //
-  //   const filter = new FormGroup({
-  //     tag: new FormControl<string>('', [Validators.required]),
-  //     field: new FormControl<FilterField>('title', [Validators.required]),
-  //     operator: new FormControl<FilterOperator>(
-  //       GqlStringFilterOperator.Contains,
-  //       [Validators.required],
-  //     ),
-  //     value: new FormControl<string>('', [
-  //       Validators.required,
-  //       Validators.minLength(1),
-  //     ]),
-  //   });
-  //
-  //   // if (data) {
-  //   //   const type = Object.keys(data).find(
-  //   //     (field) => field != '__typename' && !!data[field],
-  //   //   );
-  //   //   const field = Object.keys(data[type]).find(
-  //   //     (field) => field != '__typename' && !!data[type][field],
-  //   //   );
-  //   //   filter.patchValue({
-  //   //     tag: type as any,
-  //   //     field: field as any,
-  //   //     value: data[type][field].value,
-  //   //     operator: data[type][field].operator,
-  //   //   });
-  //   // }
-  //
-  //   this.conditionalTags.push(filter);
-  //   filter.statusChanges.subscribe((status) => {
-  //     if (status === 'VALID') {
-  //       this.filterChanges.next();
-  //     }
-  //   });
-  // }
+  addConditionalTag(data: ConditionalTagParams = null) {
+    if (this.conditionalTags.some((filter) => filter.invalid)) {
+      return;
+    }
 
-  // removeConditionalTag(index: number) {
-  //   this.conditionalTags = without(
-  //     this.conditionalTags,
-  //     this.conditionalTags[index],
-  //   );
-  //   this.filterChanges.next();
-  // }
+    const filter = new FormGroup({
+      tag: new FormControl<string>('', [Validators.required]),
+      field: new FormControl<FilterField>('title', [Validators.required]),
+      operator: new FormControl<FilterOperator>(
+        GqlStringFilterOperator.Contains,
+        [Validators.required],
+      ),
+      value: new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(1),
+      ]),
+    });
+
+    // todo implement
+    // if (data) {
+    //   const type = Object.keys(data).find(
+    //     (field) => field != '__typename' && !!data[field],
+    //   );
+    //   const field = Object.keys(data[type]).find(
+    //     (field) => field != '__typename' && !!data[type][field],
+    //   );
+    //   filter.patchValue({
+    //     tag: type as any,
+    //     field: field as any,
+    //     value: data[type][field].value,
+    //     operator: data[type][field].operator,
+    //   });
+    // }
+
+    this.conditionalTags.push(filter);
+    filter.statusChanges.subscribe((status) => {
+      if (status === 'VALID') {
+        // this.filterChanges.next();
+      }
+    });
+  }
+
+  removeConditionalTag(index: number) {
+    this.conditionalTags = without(
+      this.conditionalTags,
+      this.conditionalTags[index],
+    );
+    // this.filterChanges.next();
+  }
+
+  private getConditionalTagsParams(): GqlConditionalTagInput[] {
+    return this.conditionalTags
+      .filter((filterFg) => filterFg.valid)
+      .map((filterFg) => filterFg.value)
+      .map<GqlConditionalTagInput>((data) => ({
+        tag: data.tag,
+        filter: {
+          [data.field]: {
+            value: data.value,
+            operator: data.operator,
+          },
+        },
+      }));
+  }
 
   async createOrUpdateFeed() {
     if (this.formFg.invalid) {
@@ -181,7 +222,7 @@ export class RepositoryModalComponent
           pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
           params: {
             org_feedless_filter: this.filterParams,
-            // org_feedless_conditional_tag: this.getConditionalTagsParams(),
+            org_feedless_conditional_tag: this.getConditionalTagsParams(),
           },
         });
       };
@@ -378,21 +419,6 @@ export class RepositoryModalComponent
     this.formFg.markAllAsTouched();
   }
 
-  // private getConditionalTagsParams(): GqlConditionalTagInput[] {
-  //   return this.conditionalTags
-  //     .filter((filterFg) => filterFg.valid)
-  //     .map((filterFg) => filterFg.value)
-  //     .map<GqlConditionalTagInput>((data) => ({
-  //       tag: data.tag,
-  //       filter: {
-  //         [data.field]: {
-  //           value: data.value,
-  //           operator: data.operator,
-  //         },
-  //       },
-  //     }));
-  // }
-
   isUpdate() {
     return isDefined(this.repository.id);
   }
@@ -409,5 +435,9 @@ export class RepositoryModalComponent
 
   getPathname(): string {
     return encodeURI(location.href);
+  }
+
+  openFlowModal() {
+    return this.modalService.openFlowModal({});
   }
 }

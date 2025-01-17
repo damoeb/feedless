@@ -11,6 +11,16 @@
           Veranstaltungskalender per E-Mail
           <ion-icon name="send-outline" slot="end"></ion-icon>
         </ion-button>
+
+        <ion-button
+          color="primary"
+          appDev
+          shape="round"
+          (click)="createSubscription()"
+        >
+          Veranstaltungskalender abonnieren 2
+          <ion-icon name="send-outline" slot="end"></ion-icon>
+        </ion-button>
       </div>
     }
     @if (!location()) {
@@ -26,7 +36,7 @@
         </ion-button>
       </div>
     }
-    <div style="padding-top: 5px; opacity: 0.5; text-align: center">
+    <div style="opacity: 0.5; text-align: center">
       <ion-button fill="empty" routerLink="/management">
         <ion-icon name="heart" slot="start"></ion-icon>
         aus dem Aargau
