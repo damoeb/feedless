@@ -29,8 +29,8 @@ open class FetchActionEntity : ScrapeActionEntity() {
   open var timeout: Int? = null
 
   @URL
-  @Size(message = "url", max = 900)
-  @Column(name = "url", nullable = false, length = 900)
+  @Size(message = "url", max = 1200)
+  @Column(name = "url", nullable = false, length = 1200)
   open lateinit var url: String
 
   @Size(message = "language", min = 1, max = 30)
