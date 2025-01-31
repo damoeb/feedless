@@ -51,7 +51,7 @@
     "@codemirror/search": "^6.5.5",
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.23.0",
-    "@ionic/angular": "8.4.0",
+    "@ionic/angular": "8.4.3",
     "@justinribeiro/lite-youtube": "1.5.0",
     "@ngx-translate/core": "^16.0.3",
     "@ngx-translate/http-loader": "^16.0.0",
