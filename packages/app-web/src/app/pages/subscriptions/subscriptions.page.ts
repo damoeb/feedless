@@ -17,11 +17,14 @@ import {
   IonLabel,
   IonList,
   IonRow,
+  IonText,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../services/product.service';
 import { Plan, PlanService } from '../../services/plan.service';
 import { FeatureComponent } from '../../components/feature/feature.component';
+import { DatePipe } from '@angular/common';
+import { dateFormat } from '../../services/session.service';
+import dayjs from 'dayjs';
 
 @Component({
   selector: 'app-subscriptions-page',
@@ -40,16 +43,18 @@ import { FeatureComponent } from '../../components/feature/feature.component';
     IonAccordionGroup,
     IonAccordion,
     FeatureComponent,
+    DatePipe,
+    IonText,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionsPage implements OnInit {
   private readonly appConfigService = inject(AppConfigService);
-  private readonly productService = inject(ProductService);
   private readonly planService = inject(PlanService);
   private readonly changeRef = inject(ChangeDetectorRef);
   protected plans: Plan[] = [];
+  protected readonly dateFormat = dateFormat;
 
   constructor() {
     this.appConfigService.setPageTitle('Plugins');
@@ -61,5 +66,13 @@ export class SubscriptionsPage implements OnInit {
     //   id: { in: session.user.plans.map(it => it.productId) },
     // });
     this.changeRef.detectChanges();
+  }
+
+  toDate(date: number) {
+    return new Date(date);
+  }
+
+  getNextPaymentDate(plan: Plan) {
+    return dayjs(plan.startedAt).add(1, 'years').toDate();
   }
 }

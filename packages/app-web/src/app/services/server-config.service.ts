@@ -95,8 +95,8 @@ export class ServerConfigService {
     } catch (e) {
       if (!environment.offlineSupport) {
         await this.showToast({
-          header: 'Temporary Connection Issue',
-          message: `Our servers are currently unavailable, and we're working to restore access as quickly as possible. Please try again in a few minutes. Thank you for your patience!`,
+          header: 'Offline',
+          message: `Our servers are currently unavailable, and we're working to restore access as quickly as possible. Thank you for your patience!`,
         });
         throw e;
       }
@@ -123,7 +123,7 @@ export class ServerConfigService {
       message,
       subHeader,
       cssClass,
-      buttons,
+      buttons: buttons ?? [],
     });
 
     await alert.present();

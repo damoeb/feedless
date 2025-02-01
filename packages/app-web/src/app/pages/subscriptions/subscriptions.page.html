@@ -21,10 +21,28 @@
         @for (plan of plans; track plan.id) {
         <ion-accordion>
           <ion-item slot="header">
-            <ion-label>
-              <h3>{{ plan.product.name }}</h3>
+            @if (plan.terminatedAt) {
+            <ion-label color="medium">
+              <h3>
+                <ion-text> {{ plan.product.name }} </ion-text>
+              </h3>
               <p>{{ plan.product.description }}</p>
             </ion-label>
+            <ion-label color="medium">
+              terminated {{ toDate(plan.terminatedAt)| date: dateFormat}}
+            </ion-label>
+            } @else {
+            <ion-label>
+              <h3>
+                <ion-text color="success"> {{ plan.product.name }} </ion-text>
+              </h3>
+              <p></p>
+            </ion-label>
+            <ion-label>
+              until {{ getNextPaymentDate(plan) | date: dateFormat }}
+              (recurring)
+            </ion-label>
+            }
           </ion-item>
           <div slot="content" class="ion-padding">
             <p>
@@ -34,6 +52,18 @@
             feature.id) {
             <app-feature [feature]="feature"></app-feature>
             }
+
+            <ion-list>
+              @if (!plan.terminatedAt) {
+              <ion-item
+                color="primary"
+                [button]="true"
+                routerLink="/pricing/feedless"
+              >
+                <ion-label> Change </ion-label>
+              </ion-item>
+              }
+            </ion-list>
           </div>
         </ion-accordion>
         }

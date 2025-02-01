@@ -241,27 +241,14 @@
               ></ion-progress-bar>
             }
             @if (shouldRefresh && !loadingFeedPreview) {
-              <div
-                style="
-                  position: absolute;
-                  display: flex;
-                  left: 0;
-                  top: 0;
-                  z-index: 1001;
-                  height: 100%;
-                  width: 100%;
-                  background: rgba(var(--app-background-rgb), 0.4);
-                "
-              >
-                <div style="margin: auto">
-                  <ion-button (click)="fetchFeedPreview(false)" size="small">
-                    <ion-label>
-                      <ion-icon name="refresh-outline" slot="start"></ion-icon>
-                      Refresh Feed
-                    </ion-label>
-                  </ion-button>
-                </div>
-              </div>
+              <app-block-element>
+                <ion-button (click)="fetchFeedPreview(false)" size="small">
+                  <ion-label>
+                    <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                    Refresh Feed
+                  </ion-label>
+                </ion-button>
+              </app-block-element>
             }
             @if (!feedItems) {
               <ion-spinner name="dots"></ion-spinner>

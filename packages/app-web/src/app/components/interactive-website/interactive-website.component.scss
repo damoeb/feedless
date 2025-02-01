@@ -31,4 +31,6 @@ app-embedded-image > div {
 
 ion-segment-button {
   width: 75px;
+  --indicator-color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-medium-rgb), 0.4);
 }
