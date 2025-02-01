@@ -66,6 +66,7 @@ import { BubbleComponent } from '../bubble/bubble.component';
 import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
+import { BlockElementComponent } from '../block-element/block-element.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -101,6 +102,7 @@ export type ComponentStatus = 'valid' | 'invalid';
     RemoteFeedPreviewComponent,
     ConsoleButtonComponent,
     CodeEditorModalModule,
+    BlockElementComponent,
   ],
   standalone: true,
 })

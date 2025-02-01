@@ -216,6 +216,7 @@ export class PuppeteerService {
         await new Promise((resolve) =>
           setTimeout(resolve, additionalWaitSec * 1000),
         );
+        appendLog(`waiting done`);
       }
 
       return {

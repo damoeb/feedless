@@ -58,4 +58,8 @@ export class InteractiveWebsiteModalComponent
   applyChanges() {
     return this.modalCtrl.dismiss(this.sourceBuilder);
   }
+
+  handleActionReorder(event: any) {
+    console.log(event);
+  }
 }

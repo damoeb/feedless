@@ -30,13 +30,13 @@ export abstract class InteractiveWebsiteController {
   protected subscriptions: Subscription[] = [];
   actionTypes: (keyof GqlScrapeActionInput)[] = [
     'click',
-    'type',
-    'fetch',
-    'execute',
-    'extract',
-    'header',
-    'select',
-    'waitFor',
+    // 'type',
+    // 'fetch',
+    // 'execute',
+    // 'extract',
+    // 'header',
+    // 'select',
+    // 'waitFor',
   ];
 
   initializeController() {

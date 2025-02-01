@@ -9,9 +9,12 @@ import {
   IonFooter,
   IonHeader,
   IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonList,
+  IonReorder,
+  IonReorderGroup,
   IonRow,
   IonSelect,
   IonSelectOption,
@@ -19,6 +22,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
+import { InputComponent } from '../../elements/input/input.component';
 
 @NgModule({
   imports: [
@@ -41,6 +45,10 @@ import { InteractiveWebsiteComponent } from '../../components/interactive-websit
     IonLabel,
     IonFooter,
     JsonPipe,
+    IonReorderGroup,
+    IonReorder,
+    IonInput,
+    InputComponent,
   ],
   declarations: [InteractiveWebsiteModalComponent],
   exports: [InteractiveWebsiteModalComponent],

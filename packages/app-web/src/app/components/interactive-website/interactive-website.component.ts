@@ -18,7 +18,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { SourceBuilder } from './source-builder';
-import { map, merge, Subscription } from 'rxjs';
+import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
   Embeddable,
@@ -46,6 +46,7 @@ import {
 import { NgStyle } from '@angular/common';
 import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
+import { BlockElementComponent } from '../block-element/block-element.component';
 
 type ViewMode = 'markup' | 'image';
 
@@ -75,6 +76,7 @@ type ViewMode = 'markup' | 'image';
     ConsoleButtonComponent,
     IonItem,
     IonProgressBar,
+    BlockElementComponent,
   ],
   standalone: true,
 })
@@ -94,6 +96,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   minScaleFactor: number = 0.5;
   maxScaleFactor: number = 1.3;
   loading = false;
+  shouldScrape = false;
 
   embedScreenshot: Embeddable;
   embedMarkup: Embeddable;
@@ -154,9 +157,33 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
             this.sourceBuilder().patchFetch({ additionalWaitSec: wait }),
           ),
         ),
-      ).subscribe(() => {
-        this.sourceBuilder().events.actionsChanges.emit();
-      }),
+        merge(
+          this.formFg.controls.prerenderingOptions.controls.resolutionX
+            .valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.resolutionY
+            .valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.mobile.valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.landscape
+            .valueChanges,
+        )
+          .pipe(debounce(() => interval(100)))
+          .pipe(
+            map(() =>
+              this.sourceBuilder().patchFetch({
+                viewport: {
+                  height: this.formFg.value.prerenderingOptions.resolutionY,
+                  width: this.formFg.value.prerenderingOptions.resolutionX,
+                  isLandscape: this.formFg.value.prerenderingOptions.landscape,
+                  isMobile: this.formFg.value.prerenderingOptions.mobile,
+                },
+              }),
+            ),
+          ),
+      )
+        .pipe(debounce(() => interval(100)))
+        .subscribe(() => {
+          this.sourceBuilder().events.actionsChanges.emit();
+        }),
       this.viewModeFc.valueChanges.subscribe((value) =>
         this.segmentChange.emit(value),
       ),
@@ -167,7 +194,8 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       //   this.viewModeFc.patchValue(this.viewModeMarkup);
       // }),
       this.sourceBuilder().events.actionsChanges.subscribe(() => {
-        this.scrape();
+        this.shouldScrape = true;
+        this.changeRef.detectChanges();
       }),
       this.sourceBuilder().events.pickElement.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeMarkup);
@@ -194,8 +222,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.scaleFactor = Math.max(this.scaleFactor - 0.05, 0.5);
   }
 
-  private async scrape() {
+  protected async scrape() {
     console.log('scrape');
+    this.shouldScrape = false;
     if (this.loading) {
       return;
     }

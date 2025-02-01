@@ -68,6 +68,16 @@
       </ion-toolbar>
     }
 
+    @if (shouldScrape) {
+      <app-block-element [blocking]="false">
+        <ion-button (click)="scrape()" size="small" color="danger">
+          <ion-label>
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Reload to see changes
+          </ion-label>
+        </ion-button>
+      </app-block-element>
+    }
     @if (!errorMessage) {
       @if (viewModeFc.value === viewModeImage) {
         <div class="prerender-options">
@@ -96,16 +106,19 @@
               />Mobile
             </label>
           </div>
-          <div class="prerender-options__line">
-            <label>
-              <input
-                [formControl]="
-                  formFg.controls.prerenderingOptions.controls.landscape
-                "
-                type="checkbox"
-              />Landscape
-            </label>
-          </div>
+          @if (formFg.value.prerenderingOptions.mobile) {
+            <div class="prerender-options__line">
+              <label>
+                <input
+                  [formControl]="
+                    formFg.controls.prerenderingOptions.controls.landscape
+                  "
+                  type="checkbox"
+                />Landscape
+              </label>
+            </div>
+          }
+
           <div class="prerender-options__line">
             <label>
               <ion-range

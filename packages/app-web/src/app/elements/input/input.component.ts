@@ -27,7 +27,7 @@ export class InputComponent<T>
 {
   readonly placeholder = input<string>('');
 
-  readonly type = input<string>('');
+  readonly type = input<string>('text');
 
   readonly color = input<string>('light');
 

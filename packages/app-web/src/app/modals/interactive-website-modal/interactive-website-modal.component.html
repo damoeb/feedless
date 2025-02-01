@@ -22,11 +22,11 @@
       [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }"
       class="flex__column"
     >
-      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorder($any($event))">-->
+      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleActionReorder($any($event))">-->
       @for (action of getActionFgs(); track action; let i = $index) {
         <ion-item [ngClass]="{ action__raw: !!action.value.raw }">
           <!--          <ion-reorder slot="start"></ion-reorder>-->
-          <div class="flex__row">
+          <div class="flex__row" style="column-gap: 5px">
             <div>
               <ion-select
                 [formControl]="action.controls.type"
@@ -53,11 +53,15 @@
                 color="medium"
                 expand="block"
                 fill="outline"
-                style="flex: 1"
               >
                 {{ getPositionLabel(action) }}
               </ion-button>
             }
+            @if (action.value.type === "header") {
+              <app-input placeholder="Header Name"> </app-input>
+              <app-input placeholder="Header Value"> </app-input>
+            }
+            <div class="filler"></div>
             <ion-button (click)="removeAction(i)" color="medium" fill="clear">
               <ion-icon name="trash-outline"></ion-icon>
             </ion-button>

@@ -119,10 +119,16 @@ export class SourceBuilder {
     params: Partial<
       Pick<
         GqlHttpGetRequestInput,
-        'additionalWaitSec' | 'url' | 'timeout' | 'language' | 'forcePrerender'
+        | 'additionalWaitSec'
+        | 'url'
+        | 'timeout'
+        | 'language'
+        | 'forcePrerender'
+        | 'viewport'
       >
     >,
   ) {
+    console.log(params);
     const fetchAction = getFirstFetch(this.flow);
 
     // @ts-ignore
