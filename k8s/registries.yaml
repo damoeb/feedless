@@ -1,0 +1,14 @@
+mirrors:
+  "localhost:5000":
+    endpoint:
+      - "http://localhost:5000"
+
+#  kubectl apply -f k8s/local-registry
+#  docker tag localhost/damoeb/feedless:app-latest localhost:32000/damoeb/feedless:app-latest
+#  docker push localhost:32000/damoeb/feedless:app-latest
+
+#sudo echo '[[registry]]\
+#location = "localhost:32000"\
+#insecure = true' >> /etc/containers/registries.conf
+
+

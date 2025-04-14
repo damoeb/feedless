@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedless-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedless-web
+  template:
+    metadata:
+      labels:
+        app: feedless-web
+    spec:
+      containers:
+        - name: feedless-web
+          image: localhost:5000/damoeb/feedless:app-latest
+          imagePullPolicy: Always

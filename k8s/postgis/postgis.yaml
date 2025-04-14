@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgis-config
+  namespace: default  # or your target namespace
+data:
+  POSTGRES_DB: "feedless"
+  POSTGRES_USER: "postgres"
+  postgresql.conf: |
+    # Your custom PostgreSQL settings here
+    shared_preload_libraries = 'pg_stat_statements'
+    pg_stat_statements.track = all
+    max_connections = 200
+    shared_buffers = 1GB
+    effective_cache_size = 3GB
+    maintenance_work_mem = 256MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 2621kB
+    huge_pages = off
+    min_wal_size = 1GB
+    max_wal_size = 4GB
