@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          env:
+            - name: APP_ACTUATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-secret
+                  key: APP_ACTUATOR_PASSWORD
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config

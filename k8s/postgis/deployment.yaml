@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgis
+  template:
+    metadata:
+      labels:
+        app: postgis
+    spec:
+      initContainers:
+        - name: fix-data-perms
+          image: busybox
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
+          volumeMounts:
+            - name: postgis-data
+              mountPath: /var/lib/postgresql/data
+      containers:
+        - name: postgis
+          image: postgis/postgis:17-3.5
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f "/var/lib/postgresql/data/PG_VERSION" ]; then
+                echo "Running initdb..."
+                cd /var/lib/postgresql/data && rm postgresql.auto.conf postgresql.conf
+                initdb -D /var/lib/postgresql/data
+              fi
+              echo "Starting PostgreSQL..."
+              exec postgres -c config_file=/var/lib/postgresql/conf/postgresql.conf
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgis-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgis-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgis-secret
+                  key: POSTGRES_PASSWORD
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+          volumeMounts:
+            - name: postgis-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgis-conf
+              mountPath: /var/lib/postgresql/conf/postgresql.conf
+              subPath: postgresql.conf
+      volumes:
+        - name: postgis-data
+          persistentVolumeClaim:
+            claimName: postgis-data-pvc
+        - name: postgis-conf
+          configMap:
+            name: postgis-config
