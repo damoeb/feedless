@@ -43,8 +43,15 @@ else
   echo "$LATEST_COMMIT" > "$PWD"/LAST_BUILD_COMMIT
 
   if [ "$BUILD_EXIT_CODE" = "0" ]; then
-    echo "Build was successful, triggering deploy script ${DEPLOY_SCRIPT}"
-    cd $(dirname ${DEPLOY_SCRIPT}) && sh $(basename ${DEPLOY_SCRIPT})
+    echo "Build was successful"
+
+    if [ -n "$DEPLOY_SCRIPT" ]; then
+      echo "Triggering deploy script $DEPLOY_SCRIPT"
+      cd $(dirname "${DEPLOY_SCRIPT}") && sh $(basename "${DEPLOY_SCRIPT}")
+    else
+      echo "Error: DEPLOY_SCRIPT is not set." >&2
+      exit 1
+    fi
   fi
 fi
 
