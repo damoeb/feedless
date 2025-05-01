@@ -1,8 +1,8 @@
 # test DNS
-GIT_HASH=$1
+GIT_HASH=latest
 echo "Using gitHash $GIT_HASH"
-# Use DOCKER_BIN if set, otherwise fallback to podman
-CONTAINER_BIN="${DOCKER_BIN:-podman}"
+# Use DOCKER_BIN if set, otherwise fallback to docker
+CONTAINER_BIN="${DOCKER_BIN:-docker}"
 
 # Run the container and check DNS resolution for br.de
 if "$CONTAINER_BIN" run --rm damoeb/feedless:core-"${GIT_HASH}" nslookup br.de | grep -q br.de; then
