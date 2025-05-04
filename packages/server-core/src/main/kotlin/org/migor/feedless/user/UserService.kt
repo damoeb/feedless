@@ -51,7 +51,7 @@ class UserService(
   private var githubConnectionService: GithubConnectionDAO,
   private var connectedAppDAO: ConnectedAppDAO,
   @Lazy
-  private var telegramBotService: Optional<TelegramBotService>
+  private var telegramBotServiceMaybe: Optional<TelegramBotService>
 ) {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
@@ -270,7 +270,7 @@ class UserService(
       app.userId = userId
 
       connectedAppDAO.save(app)
-      telegramBotService.getOrNull()?.let {
+      telegramBotServiceMaybe.getOrNull()?.let {
         if (app is TelegramConnectionEntity) {
           it.showOptionsForKnownUser(app.chatId)
         }
@@ -290,7 +290,7 @@ class UserService(
 //      }
 
       if (app is TelegramConnectionEntity) {
-        telegramBotService.getOrNull()?.let { it.sendMessage(app.chatId, "Disconnected") }
+        telegramBotServiceMaybe.getOrNull()?.let { it.sendMessage(app.chatId, "Disconnected") }
       } else {
         throw IllegalArgumentException("github connection cannot be removed")
       }

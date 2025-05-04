@@ -21,6 +21,7 @@ import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.user.TelegramConnectionEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -38,10 +39,10 @@ import java.util.*
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.telegram} & ${AppLayer.service} & ${AppProfiles.prod}")
+@Profile("${AppProfiles.telegram} & ${AppLayer.service}")
+@ConditionalOnBean(TelegramConnectionDAO::class, TelegramProperties::class)
 class TelegramBotService(
-  @Value("\${app.telegram.bot.token}")
-  private val botToken: String,
+  private val telegramProperties: TelegramProperties,
   @Value("\${app.appHost}")
   private val appHost: String,
   private val telegramConnectionDAO: TelegramConnectionDAO,
@@ -78,7 +79,7 @@ class TelegramBotService(
     val isSaas = environment.acceptsProfiles(Profiles.of(AppProfiles.saas))
 
     val chats = telegramConnectionDAO.findAllByAuthorizedIsTrue()
-    log.info("Using bot token ${StringUtils.abbreviate(botToken, "...", 4)}")
+    log.info("Using bot token ${StringUtils.abbreviate(telegramProperties.token, "...", 4)}")
     log.info("Subscribing to ${chats.size} telegram chats")
 
     createTelegramPublisher(subscribeToChats(chats))
@@ -109,7 +110,7 @@ class TelegramBotService(
   @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
     try {
-      val url = "https://api.telegram.org/bot$botToken/getUpdates"
+      val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"
       val uri = URI.create(url)
 
       val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
@@ -196,7 +197,7 @@ class TelegramBotService(
 
   fun sendMessage(chatId: Long, message: String) {
     log.info(message)
-    val url = "https://api.telegram.org/bot$botToken/sendMessage?chat_id=$chatId&text=$message"
+    val url = "https://api.telegram.org/bot${telegramProperties.token}/sendMessage?chat_id=$chatId&text=$message"
     restTemplate.getForObject(url, String::class.java)
   }
 
@@ -237,11 +238,11 @@ class TelegramBotService(
   }
 
   private suspend fun getTelegramFile(fileId: String, mimeType: String): AttachmentEntity? {
-    val getFileUrl = "https://api.telegram.org/bot$botToken/getFile?file_id=${fileId}"
+    val getFileUrl = "https://api.telegram.org/bot${telegramProperties.token}/getFile?file_id=${fileId}"
     val getFile = restTemplate.getForObject<TelegramGetFileResponse>(URI.create(getFileUrl))
     return if (getFile.ok) {
       val response =
-        restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot$botToken/${getFile.result.file_path}"))
+        restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot${telegramProperties.token}/${getFile.result.file_path}"))
       val a = AttachmentEntity()
       a.size = getFile.result.file_size
       a.mimeType = mimeType

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plausible-env
+data:
+  BASE_URL: "https://feedles.org"
+  # see https://github.com/plausible/community-edition/tree/v2.1.0?tab=readme-ov-file#secret_key_base
+  SECRET_KEY_BASE: "B79eOyceUn6NHigYUrWrda3p7uMX2CruAleh8fft+XQ1P2mh53Sdrzlq4bFmWpH4"
+  TOTP_VAULT_KEY: "R1j1GZgjbrl/oJtg5o4OXsbwMssUgiN45iP3CeqD8Bo="
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: plausible-db-user
+type: Opaque
+stringData:
+  username: "admin"
+  password: "admin"
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: plausible-events-db-user
+type: Opaque
+stringData:
+  username: "admin"
+  password: "admin"

@@ -6,7 +6,7 @@ data:
   prometheus.yml: |
     # my global config
     global:
-      scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+      scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
       evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
       # scrape_timeout is set to the global default (10s).
 
@@ -30,9 +30,7 @@ data:
         scheme: http
         scrape_interval: 5s
         static_configs:
-          #      - targets: [api.feedless.org]
-          - targets: ['feedless-core:8080']
+          - targets: [ 'feedless-core.default.svc.cluster.local:8080' ]
         basic_auth:
           username: 'actuator'
           password: '%{APP_ACTUATOR_PASSWORD}'
-

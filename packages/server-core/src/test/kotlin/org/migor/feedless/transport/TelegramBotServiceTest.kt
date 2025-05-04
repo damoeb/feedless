@@ -61,8 +61,10 @@ class TelegramBotServiceTest {
     messageService = mock(MessageService::class.java)
     systemSettingsDAO = mock(SystemSettingsDAO::class.java)
     inboxService = mock(InboxService::class.java)
+    val properties = mock(TelegramProperties::class.java)
+    `when`(properties.token).thenReturn(botToken)
     telegramBotService = TelegramBotService(
-      botToken,
+      properties,
       appHost,
       telegramLinkDAO,
       mock(Environment::class.java),

@@ -95,22 +95,6 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
   )
 }
 
-tasks.register("bundle", Exec::class) {
-  val baseTag = findProperty("dockerImageTag")
-
-  val gitHash = grgit.head().id.take(7)
-
-  inputs.property("baseTag", findProperty("dockerImageTag"))
-  inputs.property("gitHash", gitHash)
-
-  commandLine(
-    podmanOrDocker(), "build",
-    "-t", "$baseTag:ingress-latest",
-    "-t", "$baseTag:ingress-$gitHash",
-    "docker/ingress"
-  )
-}
-
 
 //tasks.register("publish", Exec::class) {
 ////  dependsOn(buildTask)

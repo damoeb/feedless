@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedless-agent
+spec:
+  replicas: 1  # You can change this to 2 to match the commented docker-compose value
+  selector:
+    matchLabels:
+      app: feedless-agent
+  template:
+    metadata:
+      labels:
+        app: feedless-agent
+    spec:
+#      securityContext:
+#        seccompProfile:
+#          type: Localhost
+#          localhostProfile: ./chrome.json
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+      containers:
+        - name: feedless-agent
+          image: localhost:5000/damoeb/feedless:agent-latest
+          imagePullPolicy: Always
+          env:
+            - name: APP_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_ROOT_EMAIL
+            - name: APP_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_ROOT_SECRET_KEY
+            - name: APP_HOST
+              value: "feedless-core.default.svc.cluster.local:8080"
+            - name: APP_PRERENDER_TIMEOUT_MILLIS
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_PRERENDER_TIMEOUT_MILLIS
+            - name: APP_SECURE
+              value: "false"
+          ports:
+            - containerPort: 3000
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedless-agent
+spec:
+  selector:
+    app: feedless-agent
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

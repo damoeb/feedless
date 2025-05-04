@@ -307,13 +307,6 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
-val testDocker = tasks.register("testDocker", Exec::class) {
-  val gitHash = grgit.head().id.take(7)
-  commandLine(
-    "sh", "./test/test-docker.sh", gitHash
-  )
-}
-
 val buildTask = tasks.findByPath("build")!!.dependsOn(lintTask, "test", "bootJar")
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
@@ -334,7 +327,6 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
-//    "-t", "$baseTag:core",
     "-t", "$baseTag:core-latest",
     "-t", "$baseTag:core-$gitHash",
     "."
@@ -343,7 +335,6 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
 
 tasks.register("bundle") {
   dependsOn(dockerAmdBuild)
-  finalizedBy(testDocker)
 }
 
 fun podmanOrDocker(): String {
