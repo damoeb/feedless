@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedless-core
+  annotations:
+    app.kubernetes.io/name: feedless-core
+    app.kubernetes.io/component: core
+    app.kubernetes.io/part-of: feedless
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedless-core
+  template:
+    metadata:
+      labels:
+        app: feedless-core
+    spec:
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
+      containers:
+        - name: feedless-core
+          image: localhost:5000/damoeb/feedless:core-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          #          command: ["sleep"]
+          #          args: ["3600"]
+          env:
+            - name: APP_DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_DATABASE_URL
+            - name: APP_ACTIVE_PROFILES
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_ACTIVE_PROFILES
+            - name: APP_AUTHENTICATION
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_AUTHENTICATION
+            - name: APP_WHITELISTED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_WHITELISTED_HOSTS
+            - name: AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS
+            - name: app.cors.allowedOrigins
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: app.cors.allowedOrigins
+            - name: APP_PLAUSIBLE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_PLAUSIBLE_URL
+            - name: APP_PEM_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_PEM_FILE
+            - name: APP_ROOT_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_ROOT_EMAIL
+            - name: APP_ROOT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_ROOT_SECRET_KEY
+            - name: APP_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_JWT_SECRET
+            - name: SSO_GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: SSO_GITHUB_CLIENT_ID
+            - name: SSO_GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: SSO_GITHUB_CLIENT_SECRET
+            - name: APP_ANALYTICS_PLAUSIBLEURL
+              value: "plausible.default.svc.cluster.local:8000"
+            - name: APP_ANALYTICS_PLAUSIBLESITE
+              value: "feedless.org"
+            - name: APP_API_GATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_API_GATEWAY_URL
+            - name: APP_HOST_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_HOST_URL
+            - name: APP_ACTUATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_ACTUATOR_PASSWORD
+            - name: APP_TELEGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_TELEGRAM_TOKEN
+            - name: APP_TIMEZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_TIMEZONE
+            - name: APP_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_LOG_LEVEL
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgis-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgis-secrets
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: debug-volume
+              mountPath: /usr/feedless/debug
+            - name: feedless-cert-volume
+              mountPath: /usr/feedless/feedless.pem
+              subPath: feedless.pem
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 6
+            failureThreshold: 4
+      volumes:
+        - name: feedless-cert-volume
+          secret:
+            secretName: feedless-secrets
+        - name: debug-volume
+          emptyDir: { } # Or use a PersistentVolume if you want persistence
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedless-core
+spec:
+  selector:
+    app: feedless-core
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

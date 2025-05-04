@@ -7,7 +7,6 @@ data:
   POSTGRES_DB: "feedless"
   POSTGRES_USER: "postgres"
   postgresql.conf: |
-    # Your custom PostgreSQL settings here
     shared_preload_libraries = 'pg_stat_statements'
     pg_stat_statements.track = all
     max_connections = 200
@@ -21,5 +20,24 @@ data:
     effective_io_concurrency = 200
     work_mem = 2621kB
     huge_pages = off
+    ssl = off
+    listen_addresses = '*'
     min_wal_size = 1GB
     max_wal_size = 4GB
+    hba_file = '/var/lib/postgresql/conf/pg_hba.conf'
+
+  pg_hba.conf: |
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            trust
+    host    all             all             ::1/128                 trust
+    host    all             all             0.0.0.0/0               trust
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgis-secrets
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "admin"

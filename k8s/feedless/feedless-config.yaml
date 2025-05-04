@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: feedless-secrets
+type: Opaque
+stringData:
+  APP_ROOT_SECRET_KEY: "password"
+  APP_TELEGRAM_TOKEN: ""
+  APP_ACTUATOR_PASSWORD: "password"
+  APP_JWT_SECRET: "60ae393744191ee58869f700c1d27647b0b64d42"
+  feedless.pem: ""
+  SSO_GITHUB_CLIENT_ID: ""
+  SSO_GITHUB_CLIENT_SECRET: ""
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedless-config
+data:
+  APP_PRERENDER_TIMEOUT_MILLIS: "10000"
+  APP_DATABASE_URL: "jdbc:postgresql://postgis.default.svc.cluster.local:5432/feedless?ssl=false"
+  APP_ACTIVE_PROFILES: "saas,api"
+  APP_PEM_FILE: "/usr/feedless/feedless.pem"
+  APP_WHITELISTED_HOSTS: "feedless-core.default.svc.cluster.local,172.26.0.1"
+  AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS: "3"
+  app.cors.allowedOrigins: "https://feedless.org,https://lokale.events"
+  APP_PLAUSIBLE_URL: "http://plausible-service.default.svc.cluster.local"
+  APP_AUTHENTICATION: "sso"
+
+  APP_ROOT_EMAIL: "admin@localhost"
+  APP_API_GATEWAY_URL: "http://localhost:8080"
+  APP_HOST_URL: "http://localhost:4200"
+  APP_TIMEZONE: "Europe/Berlin"
+  APP_LOG_LEVEL: "info"
+

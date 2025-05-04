@@ -1,3 +1,35 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgis-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /opt/feedless/data/postgis
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgis-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,7 +45,7 @@ spec:
         app: postgis
     spec:
       initContainers:
-        - name: fix-data-perms
+        - name: postgis-init
           image: busybox
           command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && chmod 700 /var/lib/postgresql/data"]
           volumeMounts:
@@ -22,6 +54,8 @@ spec:
       containers:
         - name: postgis
           image: postgis/postgis:17-3.5
+          ports:
+            - containerPort: 5432
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -48,7 +82,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgis-secret
+                  name: postgis-secrets
                   key: POSTGRES_PASSWORD
           securityContext:
             runAsUser: 999
@@ -59,10 +93,28 @@ spec:
             - name: postgis-conf
               mountPath: /var/lib/postgresql/conf/postgresql.conf
               subPath: postgresql.conf
+            - name: postgis-conf
+              mountPath: /var/lib/postgresql/conf/pg_hba.conf
+              subPath: pg_hba.conf
       volumes:
         - name: postgis-data
           persistentVolumeClaim:
-            claimName: postgis-data-pvc
+            claimName: postgis-pvc
         - name: postgis-conf
           configMap:
             name: postgis-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgis
+spec:
+  selector:
+    app: postgis
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

@@ -1,3 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: http-grafana
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: LoadBalancer
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,7 +57,7 @@ spec:
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /robots.txt
+              path: /health
               port: 3000
               scheme: HTTP
             initialDelaySeconds: 10
@@ -40,6 +69,10 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
             tcpSocket:
               port: 3000
             timeoutSeconds: 1

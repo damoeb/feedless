@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +33,7 @@ spec:
             - name: APP_ACTUATOR_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: prometheus-secret
+                  name: feedless-secrets
                   key: APP_ACTUATOR_PASSWORD
           volumeMounts:
             - name: prometheus-config-volume

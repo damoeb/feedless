@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: plausible-basic-auth
+  namespace: default
+type: Opaque
+data:
+  # htpasswd -c auth myuser
+  auth: bXl1c2VyOiRhcHIxJEg4NmhBdkZyJGxmU0pXTjVockU4N2U2b0p2WGc4VjEK

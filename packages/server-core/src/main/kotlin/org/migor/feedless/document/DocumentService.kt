@@ -69,7 +69,7 @@ class DocumentService(
   private val documentPipelineJobDAO: DocumentPipelineJobDAO,
   private val pluginService: PluginService,
   private val permissionService: PermissionService,
-  private val telegramBotService: Optional<TelegramBotService>,
+  private val telegramBotServiceMaybe: Optional<TelegramBotService>,
   private val messageService: MessageService,
 ) {
 
@@ -400,7 +400,7 @@ class DocumentService(
     repository: RepositoryEntity,
   ) {
     if (repository.pushNotificationsEnabled) {
-      telegramBotService.getOrNull()?.let { telegramBot ->
+      telegramBotServiceMaybe.getOrNull()?.let { telegramBot ->
         telegramBot.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { telegramLink ->
           documents.forEach {
             messageService.publishMessage(
