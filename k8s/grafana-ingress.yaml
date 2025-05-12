@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: grafana-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - grafana.feedless.org
+      secretName: feedless-org-tls
   rules:
     - host: grafana.feedless.org
       http:

@@ -2,11 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: feedless-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: api.feedless.org
+    - host: api.staging.feedless.org
       http:
         paths:
           - path: /
@@ -16,7 +14,7 @@ spec:
                 name: feedless-core
                 port:
                   number: 8080
-    - host: feedless.org
+    - host: staging.feedless.org
       http:
         paths:
           - path: /
