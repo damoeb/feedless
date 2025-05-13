@@ -2,7 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: feedless-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - api.staging.feedless.org
+        - staging.feedless.org
+      secretName: feedless-org-tls
   rules:
     - host: api.staging.feedless.org
       http:
