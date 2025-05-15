@@ -25,7 +25,7 @@ data:
   APP_PEM_FILE: "/usr/feedless/feedless.pem"
   APP_WHITELISTED_HOSTS: "feedless-core.default.svc.cluster.local,172.26.0.1"
   AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS: "3"
-  app.cors.allowedOrigins: "https://feedless.org,https://lokale.events"
+  app.cors.allowedOrigins: "https://feedless.org,https://staging.feedless.org,https://rssproxy.staging.migor.org,https://rssproxy.migor.org,https://lokale.events"
   APP_PLAUSIBLE_URL: "http://plausible-service.default.svc.cluster.local"
   APP_AUTHENTICATION: "sso"
 
