@@ -5,12 +5,13 @@ metadata:
 data:
   loki.yml: |
     auth_enabled: false
-
     server:
       http_listen_port: 3100
       grpc_listen_port: 9096
-
+      log_level: debug
+      grpc_server_max_concurrent_streams: 1000
     common:
+      instance_addr: 127.0.0.1
       path_prefix: /tmp/loki
       storage:
         filesystem:
@@ -18,23 +19,23 @@ data:
           rules_directory: /tmp/loki/rules
       replication_factor: 1
       ring:
-        instance_addr: 127.0.0.1
         kvstore:
           store: inmemory
-
     schema_config:
       configs:
         - from: 2020-10-24
-          store: boltdb-shipper
+          store: tsdb
           object_store: filesystem
-          schema: v11
+          schema: v13
           index:
             prefix: index_
             period: 24h
-
     ruler:
       alertmanager_url: http://localhost:9093
-
+    compactor:
+      working_directory: /tmp/loki/compactor
+      retention_enabled: true
+      retention_delete_delay: 30m
+      compaction_retention: 30d
     analytics:
       reporting_enabled: false
-
