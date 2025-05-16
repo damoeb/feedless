@@ -1,6 +1,6 @@
-import { SitemapItemLoose, SitemapStream, streamToPromise } from 'sitemap';
-import { VerticalSpec, allVerticals } from './src/app/all-verticals';
-import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { allVerticals, VerticalSpec } from './src/app/all-verticals';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { VerticalAppConfig } from './src/app/types';
 import { Readable } from 'node:stream';
@@ -26,7 +26,7 @@ class AppsDataGenerator {
       this.generateSiteMap(app, outDir);
       this.generateRobotsTxt(app, outDir);
       this.generateAppConfig(app, outDir);
-      const index = String(readFileSync('src/index.html'));
+      const index = String(readFileSync('www/browser/index.html'));
       this.generateIndex(app, outDir, index);
     }
   }
@@ -117,7 +117,13 @@ Sitemap: ${domain}/sitemap.xml
     const data = `<link rel="preconnect" href="${api}">`;
     this.writeFile(
       join(outDir, `index.html`),
-      index.replace('<!--  FEEDLESS PLACEHOLDER -->', data),
+      index
+        .replace('<!-- FEEDLESS_META -->', data)
+        .replace('<!-- FEEDLESS_TITLE -->', app.title)
+        .replace(
+          '<meta name="description" content="">',
+          `<meta name="description" content="${app.summary}">`,
+        ),
     );
   }
 

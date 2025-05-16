@@ -31,7 +31,12 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.files("../server-core/src/main/resources/schema/schema.graphqls", "generate-verticals-data.ts")
 
-  outputs.files("build/generate-verticals-data.js", "src/generated/graphql.ts", "all-verticals.json", "build/generate-verticals-data.js")
+  outputs.files(
+    "build/generate-verticals-data.js",
+    "src/generated/graphql.ts",
+    "all-verticals.json",
+    "build/generate-verticals-data.js"
+  )
   outputs.dir("build/generated")
 }
 
@@ -113,7 +118,7 @@ tasks.register<YarnTask>("start") {
 
 fun podmanOrDocker(): String {
   val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "podman"
+  val podmanOrDocker = System.getenv(env) ?: "docker"
 
   println("Using DOCKER_BIN $podmanOrDocker")
   return podmanOrDocker

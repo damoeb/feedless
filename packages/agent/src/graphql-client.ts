@@ -4,12 +4,11 @@ import {
   HttpLink,
   InMemoryCache,
 } from '@apollo/client/core';
-import { WebSocket } from 'ws';
+import { ErrorEvent, WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient } from 'graphql-ws';
+import { ClientOptions, createClient } from 'graphql-ws';
 import { Observable } from '@apollo/client';
-import { ClientOptions } from 'graphql-ws/lib/client';
 import { arch, platform } from 'os';
 import {
   AgentEvent,
@@ -21,6 +20,7 @@ import {
   SubmitAgentJobDataMutation,
   SubmitAgentJobDataMutationVariables,
 } from './generated/graphql';
+import { Logger } from '@nestjs/common';
 
 // should be a builder
 export class GraphqlClient {
@@ -30,6 +30,7 @@ export class GraphqlClient {
   constructor(
     private readonly host: string,
     private readonly useSsl: boolean,
+    private readonly log: Logger,
   ) {}
 
   authenticateAgent(
@@ -99,7 +100,7 @@ export class GraphqlClient {
       .map((response) => response.data.registerAgent)
       .filter((event: AgentEvent) => {
         if (event.authentication) {
-          console.log('[graphql-client] Connected');
+          this.log.log('[graphql-client] Connected');
           this.createHttpClient(event.authentication.token);
           return false;
         } else {
@@ -112,7 +113,7 @@ export class GraphqlClient {
     const url = this.useSsl
       ? `wss://${this.host}/subscriptions`
       : `ws://${this.host}/subscriptions`;
-    console.log(`[graphql-client] Subscribing to ${url}`);
+    this.log.log(`[graphql-client] Subscribing to ${url}`);
     this.subscriptionClient = new ApolloClient<any>({
       link: ApolloLink.from([
         new GraphQLWsLink(
@@ -121,12 +122,8 @@ export class GraphqlClient {
             webSocketImpl: WebSocket,
             url,
             on: {
-              error: (err: any) => {
-                if (process.env.DEBUG) {
-                  console.error(`[graphql-client] ${err}`);
-                } else {
-                  console.error(`[graphql-client] ${err?.message}`);
-                }
+              error: (err: ErrorEvent) => {
+                this.log.error('graphql ws connection failed', err.error);
                 process.exit(1);
               },
             },

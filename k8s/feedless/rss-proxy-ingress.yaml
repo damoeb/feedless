@@ -15,8 +15,9 @@ kind: Middleware
 metadata:
   name: rss-proxy-root-rewrite
 spec:
-  replacePath:
-    path: /verticals-data/rss-proxy/index.html
+  replacePathRegex:
+    regex: ^/$
+    replacement: /verticals-data/rss-proxy/index.html
 
 ---
 
@@ -29,7 +30,7 @@ spec:
     - web
   routes:
     # Handle `/`
-    - match: Host(`rssproxy.staging.migor.org`) && Path(`/`)
+    - match: Host(`rssproxy.local.migor.org`) && PathPrefix(`/`)
       kind: Rule
       services:
         - name: feedless-web
@@ -37,15 +38,14 @@ spec:
       middlewares:
         - name: rss-proxy-root-rewrite
 
-    # Handle everything else
-    - match: Host(`rssproxy.staging.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
+    # Handle vertical configs
+    - match: Host(`rssproxy.local.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`) || Path(`/index.html`))
       kind: Rule
       services:
         - name: feedless-web
           port: 80
       middlewares:
         - name: rss-proxy-rewrite
-
 
 ---
 

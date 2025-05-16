@@ -10,6 +10,8 @@ data:
       grpc_listen_port: 9096
       log_level: debug
       grpc_server_max_concurrent_streams: 1000
+    limits_config:
+      retention_period: 2160h  # 90 days
     common:
       instance_addr: 127.0.0.1
       path_prefix: /tmp/loki
@@ -36,6 +38,6 @@ data:
       working_directory: /tmp/loki/compactor
       retention_enabled: true
       retention_delete_delay: 30m
-      compaction_retention: 30d
+      delete_request_store: filesystem
     analytics:
       reporting_enabled: false

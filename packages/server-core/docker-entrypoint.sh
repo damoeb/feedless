@@ -19,4 +19,5 @@ java -XX:+UseContainerSupport \
   -Dspring.profiles.active="${spring_profiles}" \
   -XX:+HeapDumpOnOutOfMemoryError \
   -Dfile.encoding=UTF-8 \
+  -Dlogging.config=classpath:logback-loki.xml \
   -jar app.jar

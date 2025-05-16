@@ -21,12 +21,12 @@
     "prestart:visual-diff": "yarn codegen && dotenv -c .env -- sh generate-dev-app-config.sh visualDiff false",
     "start:visual-diff": "ng serve",
     "build": "ng build",
-    "build:prod": "ng build -c production",
+    "build:prod": "ng build -c production && yarn generate-verticals-data",
     "test": "ng test",
     "test:ci": "npx dotenv -e .env -- ng test -c ci",
     "lint": "yarn prettier --write --log-level=warn .",
     "outdated": "upgrade-interactive --latest",
-    "codegen": "graphql-codegen --config codegen.yml && yarn generate-verticals-data"
+    "codegen": "graphql-codegen --config codegen.yml"
   },
   "private": true,
   "dependencies": {

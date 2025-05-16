@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { getHttpGet, PuppeteerService } from '../puppeteer/puppeteer.service';
+import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { GraphqlClient } from '../../graphql-client';
@@ -24,7 +24,11 @@ export class AgentService implements OnModuleInit {
   }
 
   private init() {
-    const graphqlClient = new GraphqlClient(this.host(), this.useSecure());
+    const graphqlClient = new GraphqlClient(
+      this.host(),
+      this.useSecure(),
+      this.log,
+    );
     const email = this.config.getString('APP_EMAIL', {
       fallback: 'admin@localhost',
     });

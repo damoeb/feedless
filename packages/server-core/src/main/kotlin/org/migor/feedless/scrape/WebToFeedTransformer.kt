@@ -221,7 +221,7 @@ class WebToFeedTransformer(
     groupedLinks: HashMap<String, MutableList<LinkPointer>>,
     url: String
   ): Element? {
-    val ed = org.apache.commons.text.similarity.LevenshteinDistance()
+    val ed = org.apache.commons.text.similarity.LevenshteinDistance(1)
     return groupedLinks
       .values
       .filter { it.size > 2 }

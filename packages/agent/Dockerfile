@@ -1,4 +1,4 @@
-FROM zenika/alpine-chrome:117-with-node as build
+FROM zenika/alpine-chrome:124-with-node as build
 USER root
 WORKDIR /usr/node/agent
 #RUN apt-get update \
@@ -11,8 +11,7 @@ COPY yarn.lock .
 #    &&  \
 RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --slient --network-timeout 600000
 
-# todo replace with node22 image
-FROM zenika/alpine-chrome:117-with-node
+FROM zenika/alpine-chrome:124-with-node
 WORKDIR /usr/node/agent
 ARG APP_VERSION
 ARG APP_GIT_HASH
