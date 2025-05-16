@@ -49,14 +49,14 @@ class CalendarFeedParser : FeedBodyParser {
 
 private fun VEvent.toJsonItem(): JsonItem {
   val item = JsonItem()
-  item.id = uid.get().value
-  item.title = summary.get().value
-  item.url = url.getOrNull()?.value ?: ""
-  item.text = description.getOrNull()?.value ?: ""
-  item.tags = categories.getOrNull()?.categories?.texts?.toList()
-  item.startingAt = LocalDateTime.from(getDateTimeStart<Temporal>().get().date)
-  item.endingAt = LocalDateTime.from(getDateTimeEnd<Temporal>().get().date)
-  val lastModified = lastModified?.getOrNull()?.date?.let { LocalDateTime.ofInstant(it, ZoneOffset.UTC) }
+  item.id = uid.getOrNull()?.value ?: ""
+  item.title = summary?.value ?: ""
+  item.url = url?.value ?: ""
+  item.text = description?.value ?: ""
+  item.tags = categories?.map { it.value }?.toList()
+  item.startingAt = LocalDateTime.from(getDateTimeStart<Temporal>().date)
+  item.endingAt = LocalDateTime.from(getDateTimeEnd<Temporal>().date)
+  val lastModified = lastModified?.date?.let { LocalDateTime.ofInstant(it, ZoneOffset.UTC) }
   item.publishedAt = lastModified ?: LocalDateTime.now()
   item.modifiedAt = lastModified
   return item

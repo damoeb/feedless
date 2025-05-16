@@ -33,7 +33,7 @@ internal class MarkupSimplifierTest {
     val actual =
       simplifier.simplify(parse("<article><header>title</header><section>lorem ipsum</section> <a href=\"http://google.de\">or</a> <p>that</p><footer>the foot</footer></article>"))
     assertEquals(
-      """<article><header> title </header> <section> lorem ipsum </section> <a href="http://google.de">or</a> <p>that</p> <footer> the foot </footer></article>""",
+      """<article><header>title</header> <section>lorem ipsum</section> <a href="http://google.de">or</a> <p>that</p> <footer>the foot</footer></article>""",
       actual
     )
   }
@@ -75,7 +75,7 @@ internal class MarkupSimplifierTest {
     val actual =
       simplifier.simplify(parse("<article><header></header><section>lorem ipsum<em></em></section> or <p>that</p><footer>the foot</footer></article><div><div><div><div><div></div></div></div>"))
     assertEquals(
-      "<article><section> lorem ipsum </section> or <p>that</p> <footer> the foot </footer></article>",
+      "<article><section>lorem ipsum</section> or <p>that</p> <footer>the foot</footer></article>",
       actual
     )
   }
@@ -83,7 +83,7 @@ internal class MarkupSimplifierTest {
   @Test
   fun flattensStructure() = runTest {
     val actual = simplifier.simplify(parse("<div><div><div><div>Hase</div></div></div></div>"))
-    assertEquals("<article><div> Hase </div></article>", actual)
+    assertEquals("<article><div>Hase</div></article>", actual)
   }
 
   @Test

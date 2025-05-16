@@ -26,7 +26,7 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     // http://www.patorjk.com/software/taag/#p=display&f=Shimrod&t=feedless
-    System.out.println(
+    println(
       """"
               . .
  ,-           | |

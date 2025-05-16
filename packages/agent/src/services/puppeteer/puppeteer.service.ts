@@ -29,8 +29,8 @@ import {
   ScrapeExtract,
   ScrapeExtractResponseInput,
   ScrapeOutputResponseInput,
-  Source,
   ScrapeResponseInput,
+  Source,
 } from '../../generated/graphql';
 
 interface EvaluateResponse {
@@ -104,7 +104,7 @@ export class PuppeteerService {
   async newBrowser(source: Source): Promise<Browser> {
     const viewport: Viewport = this.resolveViewport(source);
     return puppeteer.launch({
-      headless: this.isDebug ? false : 'new',
+      headless: this.isDebug ? false : 'shell',
       devtools: false,
       defaultViewport: viewport,
       executablePath: this.config.getString('APP_CHROMIUM_BIN', {
@@ -361,6 +361,7 @@ export class PuppeteerService {
       ],
     };
   }
+
   private async grabBoundingBox(
     page: Page,
     fragmentName: string,

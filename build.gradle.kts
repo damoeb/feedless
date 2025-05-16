@@ -123,7 +123,7 @@ fun agentDockerImageTask() = tasks.findByPath("packages:agent:bundle")
 
 fun podmanOrDocker(): String {
   val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "podman"
+  val podmanOrDocker = System.getenv(env) ?: "docker"
 
   println("Using DOCKER_BIN $podmanOrDocker")
   return podmanOrDocker

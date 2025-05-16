@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -78,8 +79,8 @@ class AnalyticsService {
     canPull = canPush && hasKey
 
     val builderConfig = Dsl.config()
-      .setConnectTimeout(60000)
-      .setReadTimeout(60000)
+      .setConnectTimeout(Duration.ofSeconds(60))
+      .setReadTimeout(Duration.ofSeconds(60))
       .setFollowRedirect(true)
       .setMaxRedirects(8)
       .build()

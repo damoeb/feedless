@@ -51,8 +51,8 @@ class HttpService(
   private lateinit var gatewayHost: String
 
   private val builderConfig = Dsl.config()
-    .setConnectTimeout(60000)
-    .setReadTimeout(60000)
+    .setConnectTimeout(Duration.ofSeconds(60))
+    .setReadTimeout(Duration.ofSeconds(60))
 //    .setMaxConnections(20)
 //    .setProxyServerSelector({ uri -> proxyUrl(uri) })
     .setFollowRedirect(true)

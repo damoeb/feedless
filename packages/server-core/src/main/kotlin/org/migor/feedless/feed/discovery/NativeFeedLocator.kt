@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.net.URL
+import java.net.URI
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -36,7 +36,9 @@ class NativeFeedLocator {
 
   private suspend fun absUrl(baseUrl: String, relativeUrl: String): String {
     return try {
-      URL(URL(baseUrl), relativeUrl).toURI().toString()
+      val baseUri = URI(baseUrl)
+      val resolvedUri = baseUri.resolve(relativeUrl)
+      resolvedUri.toString()
     } catch (e: Exception) {
       relativeUrl
     }

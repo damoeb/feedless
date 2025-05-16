@@ -187,8 +187,8 @@ class XmlFeedParser : FeedBodyParser {
         article.rawBase64 = it.value
       }
     }
-    val assignTextContent = { text: String ->
-      article.text = text
+    val assignTextContent = { textContent: String ->
+      article.text = textContent
     }
 
     // content

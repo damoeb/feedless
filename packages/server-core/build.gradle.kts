@@ -4,7 +4,7 @@ import java.util.*
 val versions = mapOf(
   "kotlinxCoroutines" to "1.7.2",
   "dgs-framework" to "8.7.1",
-  "testcontainers" to "1.20.1",
+  "testcontainers" to "1.21.0",
 )
 
 plugins {
@@ -12,10 +12,10 @@ plugins {
   id("org.springframework.boot") version "3.2.5"
   id("com.netflix.dgs.codegen") version "6.3.0"
 
-  id("com.adarshr.test-logger") version "3.2.0"
+  id("com.adarshr.test-logger") version "4.0.0"
   id("org.ajoberstar.grgit")
   id("jacoco")
-  id("org.javacc.javacc") version "3.0.3"
+  id("org.javacc.javacc") version "4.0.1"
 //  id("org.openapi.generator") version "7.9.0" // rest
 //  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.9.20"
@@ -61,16 +61,17 @@ tasks.jacocoTestReport {
 tasks.test {
   val osName = System.getProperty("os.name").lowercase()
   if (osName.contains("linux")) {
-    val process = ProcessBuilder("id", "-u").start()
-    val uid = process.inputStream.bufferedReader().readText().trim()
-    environment("DOCKER_HOST", "unix:///run/user/$uid/podman/podman.sock")
+//    val process = ProcessBuilder("id", "-u").start()
+//    val uid = process.inputStream.bufferedReader().readText().trim()
+//    environment("DOCKER_HOST", "unix:///run/user/$uid/podman/podman.sock")
+    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
   } else {
     throw IllegalArgumentException("test currently only run on linux")
   }
 //  } else if (os.isMacOsX) {
 //    environment("DOCKER_HOST", "unix:///tmp/podman.sock")
 //  }
-  environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+//  environment("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
 
 tasks.check {
@@ -110,13 +111,13 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 //  implementation("org.springframework.boot:spring-boot-starter-amqp")
-  implementation("org.apache.tika:tika-core:2.9.0")
-  implementation("org.apache.pdfbox:pdfbox-tools:2.0.29")
+  implementation("org.apache.tika:tika-core:3.1.0")
+  implementation("org.apache.pdfbox:pdfbox-tools:3.0.5")
   implementation("net.sf.cssbox:pdf2dom:2.0.3")
-  implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
+  implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:8.0.1")
 //  implementation("org.redundent:kotlin-xml-builder:1.7.4")
   // https://mvnrepository.com/artifact/org.apache.commons/commons-text
-  implementation("org.apache.commons:commons-text:1.10.0")
+  implementation("org.apache.commons:commons-text:1.13.1")
   implementation("org.sejda.webp-imageio:webp-imageio-sejda:0.1.0")
 
 
@@ -142,25 +143,26 @@ dependencies {
 
   // mail
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("com.mailgun:mailgun-java:1.1.3")
+  implementation("com.mailgun:mailgun-java:1.1.6")
   // https://github.com/micrometer-metrics/micrometer
-  implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+  implementation("io.micrometer:micrometer-registry-prometheus:1.15.0")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
+  implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
   // security
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
-  implementation("com.nimbusds:nimbus-jose-jwt:9.37.3")
+  implementation("com.nimbusds:nimbus-jose-jwt:10.3")
 
   // json feed
   implementation("org.json:json:20240303")
-  implementation("com.google.guava:guava:33.1.0-jre")
+  implementation("com.google.guava:guava:33.4.8-jre")
 // https://mvnrepository.com/artifact/org.mnode.ical4j/ical4j
-  implementation("org.mnode.ical4j:ical4j:4.0.5")
+  implementation("org.mnode.ical4j:ical4j:4.1.1")
 
-  implementation("org.apache.commons:commons-lang3:3.11")
-  implementation("commons-io:commons-io:2.11.0")
+  implementation("org.apache.commons:commons-lang3:3.17.0")
+  implementation("commons-io:commons-io:2.19.0")
 
   // readability
   implementation("net.dankito.readability4j:readability4j:1.0.8")
@@ -171,7 +173,7 @@ dependencies {
   implementation("io.projectreactor:reactor-test:3.5.0")
 
   // database
-  implementation("org.postgresql:postgresql:42.7.4")
+  implementation("org.postgresql:postgresql:42.7.5")
   implementation("org.hibernate.orm:hibernate-spatial:6.4.10.Final")
   // https://kotlin-jdsl.gitbook.io/docs/jpql-with-kotlin-jdsl/expressions
   implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.1")
@@ -188,18 +190,18 @@ dependencies {
   implementation("org.languagetool:language-de:6.4")
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
-  implementation("org.flywaydb:flyway-core:9.16.1")
+  implementation("org.flywaydb:flyway-core:9.22.3")
 
-  implementation("org.asynchttpclient:async-http-client:2.12.3")
+  implementation("org.asynchttpclient:async-http-client:3.0.2")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.18.0")
   implementation("com.rometools:rome-modules:1.16.0")
-  implementation("org.jsoup:jsoup:1.15.3")
-  implementation("us.codecraft:xsoup:0.3.2")
-  implementation("com.google.code.gson:gson:2.8.9")
+  implementation("org.jsoup:jsoup:1.20.1")
+  implementation("us.codecraft:xsoup:0.3.7")
+  implementation("com.google.code.gson:gson:2.13.1")
 
   // https://github.com/shyiko/skedule
-  implementation("com.github.shyiko.skedule:skedule:0.4.0")
+//  implementation("com.github.shyiko.skedule:skedule:0.4.0")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -209,17 +211,13 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers:${versions["testcontainers"]}")
   testImplementation("org.testcontainers:junit-jupiter:${versions["testcontainers"]}")
 // Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
-  testImplementation("net.jqwik:jqwik:1.9.0")
+  testImplementation("net.jqwik:jqwik:1.9.2")
 
 
-//  testImplementation("org.powermock:powermock-api-mockito:2.0.9")
-//  testImplementation("org.powermock:powermock-module-junit4:2.0.9")
-
-
-  implementation("org.telegram:telegrambots-spring-boot-starter:6.1.0")
+  implementation("org.telegram:telegrambots-spring-boot-starter:6.9.0")
 
   // payments
-  implementation("com.stripe:stripe-java:25.0.0")
+  implementation("com.stripe:stripe-java:29.1.0")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
@@ -339,7 +337,7 @@ tasks.register("bundle") {
 
 fun podmanOrDocker(): String {
   val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "podman"
+  val podmanOrDocker = System.getenv(env) ?: "docker"
 
   println("Using DOCKER_BIN $podmanOrDocker")
   return podmanOrDocker

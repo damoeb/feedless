@@ -1,7 +1,7 @@
 package org.migor.feedless.common
 
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.fit.pdfdom.PDFDomTree
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.tools.PDFText2HTML
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
-import java.io.PrintWriter
-import java.nio.charset.StandardCharsets
 
 
 @Service
@@ -26,14 +24,18 @@ class PdfService {
   }
 
   private suspend fun toHTML(inputStream: InputStream): String {
-    PDDocument.load(inputStream).use { pdf ->
-      val parser = PDFDomTree()
-      ByteArrayOutputStream().use { baos ->
-        PrintWriter(baos, true, StandardCharsets.UTF_8).use { output ->
-          parser.writeText(pdf, output)
-        }
-        return String(baos.toByteArray(), StandardCharsets.UTF_8)
+    val outputStream = ByteArrayOutputStream()
+    inputStream.use { input ->
+      outputStream.use { output ->
+        input.copyTo(output)
       }
+    }
+    val byteArray = outputStream.toByteArray()
+    return Loader.loadPDF(byteArray).use { pdf ->
+      val text2HTML = PDFText2HTML()
+      text2HTML.getText(pdf)
+//      val textStripper = PDFTextStripper()
+//      textStripper.getText(pdf);
     }
   }
 

@@ -12,7 +12,7 @@ class PostgreSQLExtension : BeforeAllCallback, AfterAllCallback {
   private lateinit var postgis: JdbcDatabaseContainer<*>
 
   override fun beforeAll(context: ExtensionContext) {
-    val imageTag = "15-3.4-alpine"
+    val imageTag = "17-3.5-alpine"
     postgis = PostgisContainerProvider().newInstance(imageTag)
       .withLogConsumer(Slf4jLogConsumer(log))
       .withDatabaseName("feedless-test")
