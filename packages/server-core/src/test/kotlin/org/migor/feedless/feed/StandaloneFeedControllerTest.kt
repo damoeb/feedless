@@ -12,6 +12,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -68,6 +69,9 @@ class StandaloneFeedControllerTest {
 
   @MockBean
   lateinit var standaloneFeedService: StandaloneFeedService
+
+  @MockBean
+  lateinit var analyticsService: AnalyticsService
 
   lateinit var mockFeed: JsonFeed
 

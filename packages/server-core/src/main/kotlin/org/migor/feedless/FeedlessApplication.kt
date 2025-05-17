@@ -10,10 +10,8 @@ import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElastic
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.EnableAspectJAutoProxy
 
 @Configuration
-@EnableAspectJAutoProxy
 @SpringBootApplication(
   exclude = [
     ReactiveElasticsearchRepositoriesAutoConfiguration::class,

@@ -9,6 +9,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -69,6 +70,9 @@ class DocumentControllerTest {
 
   @MockBean
   lateinit var documentService: DocumentService
+
+  @MockBean
+  lateinit var analyticsService: AnalyticsService
 
   @Autowired
   private lateinit var template: TestRestTemplate

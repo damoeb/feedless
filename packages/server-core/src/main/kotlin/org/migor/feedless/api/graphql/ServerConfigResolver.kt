@@ -8,7 +8,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.feature.FeatureService
@@ -36,7 +36,7 @@ class ServerConfigResolver {
   private val log = LoggerFactory.getLogger(ServerConfigResolver::class.simpleName)
 
   @Value("\${APP_GIT_HASH}")
-  lateinit var commit: String
+  private lateinit var commit: String
 
   @Autowired
   private lateinit var environment: Environment
@@ -45,12 +45,14 @@ class ServerConfigResolver {
   private lateinit var featureService: FeatureService
 
   @Value("\${APP_VERSION}")
-  lateinit var version: String
+  private lateinit var version: String
 
   @Autowired
   private lateinit var licenseService: LicenseService
 
-  @Tracked
+  @Autowired
+  private lateinit var analyticsService: AnalyticsService
+
   @DgsQuery(field = DgsConstants.QUERY.ServerSettings)
   @Cacheable(
     value = [CacheNames.SERVER_SETTINGS],
@@ -61,6 +63,7 @@ class ServerConfigResolver {
     @InputArgument(DgsConstants.QUERY.SERVERSETTINGS_INPUT_ARGUMENT.Data) data: ServerSettingsContextInput,
   ): ServerSettings = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("serverSettings $data")
+    analyticsService.track()
     val product = data.product.fromDto()
 
     if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(

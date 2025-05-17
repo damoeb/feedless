@@ -5,9 +5,6 @@ import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.future.await
 import org.apache.commons.lang3.StringUtils
-import org.aspectj.lang.JoinPoint
-import org.aspectj.lang.annotation.Aspect
-import org.aspectj.lang.annotation.Before
 import org.asynchttpclient.AsyncCompletionHandlerBase
 import org.asynchttpclient.AsyncHandler
 import org.asynchttpclient.AsyncHttpClient
@@ -40,7 +37,6 @@ fun toFullUrlString(request: HttpServletRequest): String {
   }
 }
 
-@Aspect
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.analytics} & ${AppLayer.service}")
@@ -58,20 +54,20 @@ class AnalyticsService {
   private var canPull: Boolean = true
 
   @PostConstruct
-  fun postConstruct() {
+  private fun postConstruct() {
 
     log.info("plausibleUrl: $plausibleUrl")
-    val hasUrl = plausibleUrl.isBlank()
-    if (hasUrl) {
+    val hasUrl = plausibleUrl.isNotBlank()
+    if (!hasUrl) {
       log.error("plausibleUrl is empty")
     }
     log.info("plausibleSite: $plausibleSite")
-    val hasSite = plausibleSite.isBlank()
-    if (hasSite) {
+    val hasSite = plausibleSite.isNotBlank()
+    if (!hasSite) {
       log.error("plausibleSite is empty")
     }
-    val hasKey = plausibleApiKey.isBlank()
-    if (hasKey) {
+    val hasKey = plausibleApiKey.isNotBlank()
+    if (!hasKey) {
       log.error("plausibleApiKey is empty")
     }
 
@@ -88,8 +84,7 @@ class AnalyticsService {
     httpClient = Dsl.asyncHttpClient(builderConfig)
   }
 
-  @Before("@annotation(org.migor.feedless.analytics.Tracked)")
-  fun track(joinPoint: JoinPoint) {
+  suspend fun track() {
     try {
       if (canPush) {
         val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request

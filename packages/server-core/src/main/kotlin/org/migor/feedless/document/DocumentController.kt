@@ -7,7 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.analytics.AnalyticsService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
@@ -27,12 +27,12 @@ import java.util.*
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentController(
   private val documentService: DocumentService,
-  private val meterRegistry: MeterRegistry
+  private val meterRegistry: MeterRegistry,
+  private val analyticsService: AnalyticsService
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentController::class.simpleName)
 
-  @Tracked
   @GetMapping(
     "article/{documentId}",
     "a/{documentId}",
@@ -41,6 +41,7 @@ class DocumentController(
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
   ): ResponseEntity<String> = coroutineScope {
+    analyticsService.track()
     documentService.findById(UUID.fromString(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(

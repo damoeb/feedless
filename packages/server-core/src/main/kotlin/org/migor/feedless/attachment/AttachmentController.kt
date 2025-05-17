@@ -4,9 +4,8 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
@@ -23,12 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam
 @Profile("${AppProfiles.attachment} & ${AppLayer.api}")
 class AttachmentController(
   private val attachmentService: AttachmentService,
-  private val httpService: HttpService
+  private val httpService: HttpService,
+  private val analyticsService: AnalyticsService
 ) {
 
   private val log = LoggerFactory.getLogger(AttachmentController::class.simpleName)
 
-  @Tracked
   @GetMapping(
     "/attachment/{attachmentId}",
   )
@@ -36,8 +35,7 @@ class AttachmentController(
     request: HttpServletRequest,
     @PathVariable("attachmentId") attachmentId: String,
   ): ResponseEntity<ByteArray> = coroutineScope {
-    val corrId = createCorrId(request)
-    log.info("[$corrId] GET attachmentId id=$attachmentId")
+    analyticsService.track()
     val attachment = attachmentService.findById(attachmentId)
 
     if (attachment.isPresent) {
