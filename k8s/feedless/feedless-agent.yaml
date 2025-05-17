@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: feedless-agent
 spec:
-  replicas: 1  # You can change this to 2 to match the commented docker-compose value
+  replicas: 2
   selector:
     matchLabels:
       app: feedless-agent
@@ -12,10 +12,10 @@ spec:
       labels:
         app: feedless-agent
     spec:
-#      securityContext:
-#        seccompProfile:
-#          type: Localhost
-#          localhostProfile: ./chrome.json
+      #      securityContext:
+      #        seccompProfile:
+      #          type: Localhost
+      #          localhostProfile: ./chrome.json
       dnsPolicy: ClusterFirst
       dnsConfig:
         nameservers:

@@ -15,8 +15,9 @@ kind: Middleware
 metadata:
   name: feedless-root-rewrite
 spec:
-  replacePath:
-    path: /verticals-data/feedless/index.html
+  replacePathRegex:
+    regex: ^/$
+    replacement: /verticals-data/feedless/index.html
 
 ---
 
@@ -37,7 +38,7 @@ spec:
       middlewares:
         - name: feedless-root-rewrite
 
-    # Handle everything else
+    # Handle vertical configs
     - match: Host(`staging.feedless.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
       kind: Rule
       services:
@@ -45,7 +46,6 @@ spec:
           port: 80
       middlewares:
         - name: feedless-rewrite
-
 
 ---
 
