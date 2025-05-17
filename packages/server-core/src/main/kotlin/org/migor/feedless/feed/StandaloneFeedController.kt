@@ -4,13 +4,14 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.Tracked
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.throttle.Throttled
@@ -18,7 +19,6 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.util.toLocalDateTime
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,18 +43,14 @@ import kotlin.time.toDuration
 @Controller
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppLayer.api} & ${AppProfiles.standaloneFeeds}")
-class StandaloneFeedController {
+class StandaloneFeedController(
+  val feedExporter: FeedExporter,
+  val standaloneFeedService: StandaloneFeedService,
+  val meterRegistry: MeterRegistry,
+  val analyticsService: AnalyticsService
+) {
 
-  @Autowired
-  private lateinit var feedExporter: FeedExporter
 
-  @Autowired
-  private lateinit var standaloneFeedService: StandaloneFeedService
-
-  @Autowired
-  private lateinit var meterRegistry: MeterRegistry
-
-  @Tracked
   @GetMapping(
     "/stream/bucket/{repositoryId}",
     "/bucket/{repositoryId}",
@@ -66,11 +62,13 @@ class StandaloneFeedController {
   fun bucketFeedWithFormat(
     @PathVariable("repositoryId") repositoryId: String,
   ): ResponseEntity<String> {
+    runBlocking {
+      analyticsService.track()
+    }
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "repositoryId"))).increment()
     return standaloneFeedService.getRepository(repositoryId)
   }
 
-  @Tracked
   @GetMapping(
     "/stream/feed/{feedId}/atom",
     "/feed/{feedId}/atom",
@@ -83,6 +81,7 @@ class StandaloneFeedController {
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
   ): ResponseEntity<String> = withContext(createRequestContext()) {
+    analyticsService.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
@@ -94,11 +93,11 @@ class StandaloneFeedController {
     feed.export("atom")
   }
 
-  @Tracked
   @GetMapping(
     "/api/feed",
   )
   suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
+    analyticsService.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl)
@@ -118,11 +117,11 @@ class StandaloneFeedController {
     feed.export(request.param("out", "atom"))
   }
 
-  @Tracked
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
+    analyticsService.track()
     val feedUrl = toFullUrlString(request)
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
     val feed = resolveFeedCatching(feedUrl) {
@@ -141,7 +140,6 @@ class StandaloneFeedController {
     feed.export(request.param("out", "atom"))
   }
 
-  @Tracked
   @Throttled
   @Timed
   @GetMapping(
@@ -149,6 +147,7 @@ class StandaloneFeedController {
     ApiUrls.transformFeed
   )
   suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
+    analyticsService.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {

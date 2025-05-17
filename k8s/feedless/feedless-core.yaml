@@ -113,6 +113,11 @@ spec:
                 secretKeyRef:
                   name: feedless-secrets
                   key: APP_ACTUATOR_PASSWORD
+            - name: APP_PLAUSIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_PLAUSIBLE_API_KEY
             - name: APP_TELEGRAM_TOKEN
               valueFrom:
                 secretKeyRef:

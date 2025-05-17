@@ -63,7 +63,7 @@ class AnalyticsSyncExecutor internal constructor(
                 }
               }.awaitAll()
             }
-            log.info("done")
+            log.debug("done")
           }.onFailure {
             log.error("[$corrId] batch refresh done: ${it.message}")
           }
