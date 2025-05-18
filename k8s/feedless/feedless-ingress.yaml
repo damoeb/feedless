@@ -5,7 +5,7 @@ metadata:
 spec:
   replacePathRegex:
     regex: ^/(config.json|index.html|robots.txt|sitemap.xml)$
-    replacement: /verticals-data/feedless/${1}
+    replacement: /verticals-data/feedless/$1
 
 
 ---
@@ -28,9 +28,10 @@ metadata:
 spec:
   entryPoints:
     - web
+    - websecure
   routes:
     # Handle `/`
-    - match: Host(`staging.feedless.org`) && Path(`/`)
+    - match: Host(`staging.feedless.org`) && PathPrefix(`/`)
       kind: Rule
       services:
         - name: feedless-web

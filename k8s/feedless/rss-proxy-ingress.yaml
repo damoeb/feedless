@@ -28,6 +28,7 @@ metadata:
 spec:
   entryPoints:
     - web
+    - websecure
   routes:
     # Handle `/`
     - match: Host(`rss-proxy.staging.migor.org`) && PathPrefix(`/`)
@@ -39,7 +40,7 @@ spec:
         - name: rss-proxy-root-rewrite
 
     # Handle vertical configs
-    - match: Host(`rss-proxy.staging.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`) || Path(`/index.html`))
+    - match: Host(`rss-proxy.staging.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
       kind: Rule
       services:
         - name: feedless-web
