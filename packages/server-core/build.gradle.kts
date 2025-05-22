@@ -145,7 +145,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-mail")
   implementation("com.mailgun:mailgun-java:1.1.6")
   // https://github.com/micrometer-metrics/micrometer
-  implementation("io.micrometer:micrometer-registry-prometheus:1.15.0")
+  implementation("io.micrometer:micrometer-registry-prometheus")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
   implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
