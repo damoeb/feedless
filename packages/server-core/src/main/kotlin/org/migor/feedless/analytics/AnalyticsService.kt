@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -52,6 +53,7 @@ class AnalyticsService {
   private lateinit var httpClient: AsyncHttpClient
   private var canPush: Boolean = true
   private var canPull: Boolean = true
+  private var disabledAt: LocalDateTime = LocalDateTime.MIN
 
   @PostConstruct
   private fun postConstruct() {
@@ -86,7 +88,7 @@ class AnalyticsService {
 
   suspend fun track() {
     try {
-      if (canPush) {
+      if (canPush || disabledAt.isBefore(LocalDateTime.now().minusMinutes(5))) {
         val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
         val url = toFullUrlString(request)
@@ -109,9 +111,11 @@ class AnalyticsService {
           .setBody(Gson().toJson(event))
           .execute(CompletionHandlerBase(expectedStatusCode))
       }
+      canPush = true
     } catch (e: Exception) {
       log.error("track failed: ${e.message}", e)
       canPush = false
+      disabledAt = LocalDateTime.now()
     }
   }
 
