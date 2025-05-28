@@ -16,6 +16,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: feedless-web
+  labels:
+    app: feedless-web
 spec:
   replicas: 1
   selector:
