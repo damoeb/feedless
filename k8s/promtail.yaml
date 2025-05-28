@@ -1,5 +1,5 @@
 # https://grafana.com/docs/loki/latest/send-data/promtail/installation/
-# helm upgrade --values values.yaml --install promtail grafana/promtail
+# helm upgrade --values promtail.yaml --install promtail grafana/promtail
 config:
   clients:
     - url: http://loki.default.svc.cluster.local:3100/loki/api/v1/push
