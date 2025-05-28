@@ -28,9 +28,9 @@ data:
       - job_name: 'spring-actuator'
         metrics_path: '/actuator/prometheus'
         scheme: http
-        scrape_interval: 5s
+        scrape_interval: 30s
         static_configs:
           - targets: [ 'feedless-core.default.svc.cluster.local:8080' ]
         basic_auth:
           username: 'actuator'
-          password: '%{APP_ACTUATOR_PASSWORD}'
+          password_file: /etc/prometheus/secrets/actuator_password

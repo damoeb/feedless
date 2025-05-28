@@ -29,17 +29,20 @@ spec:
       containers:
         - name: prometheus
           image: prom/prometheus
-          env:
-            - name: APP_ACTUATOR_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: feedless-secrets
-                  key: APP_ACTUATOR_PASSWORD
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
+            - name: actuator-password
+              mountPath: /etc/prometheus/secrets
+              readOnly: true
       volumes:
         - name: prometheus-config-volume
           configMap:
             name: prometheus-config
+        - name: actuator-password
+          secret:
+            secretName: feedless-secrets
+            items:
+              - key: APP_ACTUATOR_PASSWORD
+                path: actuator_password
