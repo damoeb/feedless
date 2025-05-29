@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.Assert
-import java.net.URL
 import java.util.*
 
 @Service
@@ -23,7 +22,6 @@ class PropertyService {
   val anonymousEmail: String = "anonymous@localhost"
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
-  lateinit var domain: String
   lateinit var apiGatewayUrl: String
   lateinit var appHost: String
   lateinit var dateFormat: String
@@ -38,8 +36,7 @@ class PropertyService {
 
   @PostConstruct
   fun onInit() {
-    domain = URL(apiGatewayUrl).host
-    logProperty("apiGatewayUrl = $apiGatewayUrl ($domain)")
+    logProperty("apiGatewayUrl = $apiGatewayUrl")
     logProperty("appHost = $appHost")
     logProperty("dateFormat = $dateFormat")
     logProperty("timeFormat = $timeFormat")

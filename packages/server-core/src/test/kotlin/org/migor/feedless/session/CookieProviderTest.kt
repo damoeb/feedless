@@ -4,7 +4,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.common.PropertyService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.security.oauth2.jwt.Jwt
@@ -17,9 +16,7 @@ class CookieProviderTest {
 
   @BeforeEach
   fun setUp() {
-    val propertyService = mock(PropertyService::class.java)
-    `when`(propertyService.domain).thenReturn("foo.bar")
-    cookieProvider = CookieProvider(propertyService)
+    cookieProvider = CookieProvider()
   }
 
   @Test
