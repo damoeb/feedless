@@ -69,7 +69,7 @@ export const allVerticals: AllVerticals = {
       title: 'RSS-proxy',
       titleHtml: '<strong>RSS</strong><em>Proxy</em>',
       pageTitle: 'RSS Proxy',
-      domain: 'rss-proxy.staging.migor.org',
+      domain: 'rssproxy.staging.migor.org',
       subtitle: 'RSS Feed Builder',
       version: [3, 0, 0, 'rc-1'],
       phase: 'rc',

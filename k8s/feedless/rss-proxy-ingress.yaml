@@ -31,7 +31,7 @@ spec:
     - websecure
   routes:
     # Handle `/`
-    - match: Host(`rss-proxy.staging.migor.org`) && PathPrefix(`/`)
+    - match: Host(`rssproxy.staging.migor.org`) && PathPrefix(`/`)
       kind: Rule
       services:
         - name: feedless-web
@@ -40,7 +40,7 @@ spec:
         - name: rss-proxy-root-rewrite
 
     # Handle vertical configs
-    - match: Host(`rss-proxy.staging.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
+    - match: Host(`rssproxy.staging.migor.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
       kind: Rule
       services:
         - name: feedless-web
@@ -61,11 +61,11 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - api.rss-proxy.staging.migor.org
-        - rss-proxy.staging.migor.org
+        - api.rssproxy.staging.migor.org
+        - rssproxy.staging.migor.org
       secretName: feedless-org-tls
   rules:
-    - host: api.rss-proxy.staging.migor.org
+    - host: api.rssproxy.staging.migor.org
       http:
         paths:
           - path: /
@@ -75,7 +75,7 @@ spec:
                 name: feedless-core
                 port:
                   number: 8080
-    - host: rss-proxy.staging.migor.org
+    - host: rssproxy.staging.migor.org
       http:
         paths:
           - path: /
