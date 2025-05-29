@@ -6,4 +6,12 @@ docker tag damoeb/feedless:agent-latest localhost:5000/damoeb/feedless:agent-lat
 docker push localhost:5000/damoeb/feedless:app-latest
 docker push localhost:5000/damoeb/feedless:core-latest
 docker push localhost:5000/damoeb/feedless:agent-latest
-kubectl apply -f k8s/feedless-agent.yaml k8s/feedless-web.yaml k8s/feedless-core.yaml k8s/grafana.yaml k8s/prometheus.yaml k8s/loki.yaml k8s/plausible.yaml k8s/postgis.yaml
+
+kubectl apply -f ../k8s/feedless-agent.yaml
+kubectl rollout restart deployment feedless-agent
+
+kubectl apply -f ../k8s/feedless-web.yaml
+kubectl rollout restart deployment feedless-web
+
+kubectl apply -f ../k8s/feedless-core.yaml
+kubectl rollout restart deployment feedless-core
