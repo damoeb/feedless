@@ -28,8 +28,8 @@ spec:
     - staging.feedless.org
     - api.staging.feedless.org
     - plausible.feedless.org
-    - api.rss-proxy.staging.migor.org
-    - rss-proxy.staging.migor.org
+    - api.rssproxy.staging.migor.org
+    - rssproxy.staging.migor.org
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer

@@ -109,7 +109,6 @@ class SessionResolver {
     log.debug("logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true
-    cookie.domain = propertyService.domain
     cookie.maxAge = 0
     addCookie(dfe, cookie)
     true
