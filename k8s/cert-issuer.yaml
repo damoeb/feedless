@@ -30,6 +30,8 @@ spec:
     - plausible.feedless.org
     - api.rssproxy.staging.migor.org
     - rssproxy.staging.migor.org
+    - rssproxy-v1.migor.org
+    - rssproxy.migor.org
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
