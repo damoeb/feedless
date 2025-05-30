@@ -63,6 +63,8 @@ spec:
     - hosts:
         - api.rssproxy.staging.migor.org
         - rssproxy.staging.migor.org
+        - rssproxy.migor.org
+        - rssproxy-v1.migor.org
       secretName: feedless-org-tls
   rules:
     - host: api.rssproxy.staging.migor.org
@@ -75,9 +77,43 @@ spec:
                 name: feedless-core
                 port:
                   number: 8080
+    - host: rssproxy-v1.migor.org
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: feedless-core
+                port:
+                  number: 8080
     - host: rssproxy.staging.migor.org
       http:
         paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: feedless-core
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: feedless-web
+                port:
+                  number: 80
+    - host: rssproxy.migor.org
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: feedless-core
+                port:
+                  number: 8080
           - path: /
             pathType: Prefix
             backend:
