@@ -98,15 +98,15 @@ type Repository {
   visibility: Visibility!
   refreshCron: String!
   tags: [String!]!
-#  harvests: [Harvest!]!
-#  pulls: Int
+  #  harvests: [Harvest!]!
+  #  pulls: Int
   sunset: SunSetPolicy
   createdAt: Long!
   lastUpdatedAt: Long!
   nextUpdateAt: Long
   documentCount: Long!
   annotations: Annotations
-#  documentCountSinceCreation: Long!
+  #  documentCountSinceCreation: Long!
   disabledFrom: Long
   archived: Boolean!
   pullsPerMonth: Int!
@@ -128,7 +128,7 @@ input SourcesWhereInput {
 
 input SourceOrderByInput {
   title: SortOrder
-#  status: SortOrder
+  #  status: SortOrder
   lastRecordsRetrieved: SortOrder
   lastRefreshedAt: SortOrder
 }
@@ -237,14 +237,14 @@ type Order {
   price: Float!
   paymentDueTo: Long
   paymentMethod: PaymentMethod
-#  isPaymentFailed: Boolean!
+  #  isPaymentFailed: Boolean!
   isPaid: Boolean!
   paidAt: Long
   invoiceRecipientName: String!
   invoiceRecipientEmail: String!
 
   licenses: [License!]
-#  invoices: [Invoice!]
+  #  invoices: [Invoice!]
 }
 
 enum PaymentMethod {
@@ -370,7 +370,7 @@ input RepositoryUpdateDataInput {
   pushNotificationsMuted: BoolUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
   retention: RetentionUpdateInput
-#  location: LatLonLocationInput
+  #  location: LatLonLocationInput
   plugins: [PluginExecutionInput!]
   nextUpdateAt: NullableLongUpdateOperationsInput
   sources: SourcesUpdateInput
@@ -426,29 +426,30 @@ input RecordUpdateInput {
 #}
 
 enum Vertical {
-#  system
+  #  system
   all,
   rssProxy
   visualDiff
   reader # =feedReader
   feedless
 
-#  shouldWeLaunchThis
-#  automatedBrowser
-#  feedAnalytics
-#  communityThreads
-#  localLink like ngrok, traffic forwarding needed for browser life feed
-#  teamDraft
-#  blog
+  #  shouldWeLaunchThis
+  #  feed 2 telegram
+  #  automatedBrowser
+  #  feedAnalytics
+  #  communityThreads
+  #  localLink like ngrok, traffic forwarding needed for browser life feed
+  #  teamDraft
+  #  blog
   upcoming
   untoldNotes
   pageChangeTracker
-#  digest
-#  featureFlags
+  #  digest
+  #  featureFlags
   feedDump
-#  seed
-#  openRoadmap
-#  commentOn
+  #  seed
+  #  openRoadmap
+  #  commentOn
 }
 
 type Agent {
@@ -473,7 +474,7 @@ type Plugin {
   name: String!
   type: PluginType!
   listed: Boolean!
-#  params: PluginParamsSchema
+  #  params: PluginParamsSchema
 }
 
 #type PluginParamsSchema {
@@ -505,7 +506,7 @@ type Query {
   session: Session!
 
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
-#  license: License!
+  #  license: License!
 
   record(data: RecordWhereInput!): Record!
   records(data: RecordsInput!): [Record!]!
@@ -652,7 +653,7 @@ input RequestHeaderInput {
 
 type ScrapeFlow {
   sequence: [ScrapeAction!]!
-#  then: [ScrapeFlow!]
+  #  then: [ScrapeFlow!]
 }
 
 type ScrapeAction {
@@ -803,7 +804,7 @@ input DOMElementByNameInput {
 
 input ScrapeFlowInput {
   sequence: [ScrapeActionInput!]!
-#  then: [ScrapeFlowInput!]
+  #  then: [ScrapeFlowInput!]
 }
 
 type HttpGetRequest {
@@ -857,7 +858,7 @@ type FetchActionDebugResponse {
   statusCode: Int
   contentType: String
   viewport: ViewPort!
-#  metrics: ScrapeDebugTimes!
+  #  metrics: ScrapeDebugTimes!
 }
 input FetchActionDebugResponseInput {
   corrId: String!
@@ -871,7 +872,7 @@ input FetchActionDebugResponseInput {
   statusCode: Int
   contentType: String
   viewport: ViewPortInput!
-#  metrics: ScrapeDebugTimesInput!
+  #  metrics: ScrapeDebugTimesInput!
 }
 
 type NetworkRequest {
@@ -893,7 +894,7 @@ input NetworkRequestInput {
 }
 
 enum IntervalUnit {
-#  DAY
+  #  DAY
   WEEK
   MONTH
 }
@@ -1086,10 +1087,10 @@ enum FeatureName {
   repositoryCapacityUpperLimitInt
   repositoriesMaxCountTotalInt
   sourceMaxCountPerRepositoryInt
-#  itemEmailForward
-#  itemWebhookForward
+  #  itemEmailForward
+  #  itemWebhookForward
   plugins
-#  scrapeSourceExpiryInDays
+  #  scrapeSourceExpiryInDays
   scrapeSourceMaxCountActive
   scrapeRequestMaxCountPerSource
   scrapeRequestActionMaxCount
@@ -1118,11 +1119,11 @@ enum SortField {
 
 enum SortOrder {
   asc
-#  ascNullsLast
-#  ascNullsFirst
+  #  ascNullsLast
+  #  ascNullsFirst
   desc
-#  descNullsLast
-#  descNullsFirst
+  #  descNullsLast
+  #  descNullsFirst
 }
 
 enum UserSecretType {
@@ -1375,13 +1376,13 @@ input SegmentRecordsWhereInput {
 
 input SegmentReportInput {
   plugin: PluginExecutionInput!
-#  orderAsc: Boolean!
-#  orderBy: String!
+  #  orderAsc: Boolean!
+  #  orderBy: String!
 }
 
 input TimeSegmentInput {
   scheduled: ScheduledSegmentInput!
-#  live: LiveSegmentInput
+  #  live: LiveSegmentInput
 }
 #input LiveSegmentInput {
 #  criticality: Int!
@@ -1409,19 +1410,19 @@ input StringArrayFilter {
 input StringFilterInput {
   eq: String
   in: [String!]
-#  notIn: [String!]
+  #  notIn: [String!]
 }
 
 input VisibilityFilter {
-#  eq: Visibility
+  #  eq: Visibility
   in: [Visibility!]
-#  notIn: [String!]
+  #  notIn: [String!]
 }
 
 input VerticalFilter {
   eq: Vertical
   in: [Vertical!]
-#  notIn: [Vertical!]
+  #  notIn: [Vertical!]
 }
 
 input StringUpdateOperationsInput {
@@ -1501,24 +1502,24 @@ type ScrapeOutputResponse {
 type ScrapeActionResponse {
   fetch: HttpFetchResponse
   extract: ScrapeExtractResponse
-#  click: DOMElement
-#  type: DOMActionType
-#  waitFor: WaitForAction
-#  select: DOMActionSelect
-#  header: RequestHeader
-#  purge: DOMElementByXPath
+  #  click: DOMElement
+  #  type: DOMActionType
+  #  waitFor: WaitForAction
+  #  select: DOMActionSelect
+  #  header: RequestHeader
+  #  purge: DOMElementByXPath
 }
 
 input ScrapeActionResponseInput {
   fetch: HttpFetchResponseInput
   extract: ScrapeExtractResponseInput
-#  execute: PluginExecutionResponseInput
-#  click: DOMElement
-#  type: DOMActionType
-#  waitFor: WaitForAction
-#  select: DOMActionSelect
-#  header: RequestHeader
-#  purge: DOMElementByXPath
+  #  execute: PluginExecutionResponseInput
+  #  click: DOMElement
+  #  type: DOMActionType
+  #  waitFor: WaitForAction
+  #  select: DOMActionSelect
+  #  header: RequestHeader
+  #  purge: DOMElementByXPath
 }
 
 type HttpFetchResponse {
@@ -1617,7 +1618,7 @@ input ScrapeBoundingBoxInput {
 
 input PluginExecutionParamsInput {
   org_feedless_feed: FeedParamsInput
-  org_feedless_diff_email_forward: DiffEmailForwardParamsInput
+  org_feedless_diff_records: DiffRecordsParamsInput
   org_feedless_filter: [ItemFilterParamsInput!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
@@ -1659,7 +1660,7 @@ input NumericalFilterParamsInput {
   value: Int!
 }
 
-input DiffEmailForwardParamsInput {
+input DiffRecordsParamsInput {
   nextItemMinIncrement: Float!
   compareBy: CompareByInput!
   inlineDiffImage: Boolean
@@ -1688,7 +1689,7 @@ enum FeedlessPlugins {
   org_feedless_conditional_tag
   org_feedless_privacy
   org_feedless_detect_media
-  org_feedless_diff_email_forward
+  org_feedless_diff_records
 }
 
 enum RecordField {
@@ -1727,7 +1728,7 @@ type PluginExecution {
 
 type PluginExecutionParams {
   org_feedless_feed: FeedParams
-  org_feedless_diff_email_forward: DiffEmailForwardParams
+  org_feedless_diff_records: DiffRecordsParams
   org_feedless_filter: [ItemFilterParams!]
   jsonData: String
   org_feedless_fulltext: FulltextPluginParams
@@ -1771,7 +1772,7 @@ type NumericalFilterParams {
 }
 
 
-type DiffEmailForwardParams {
+type DiffRecordsParams {
   nextItemMinIncrement: Float!
   compareBy: CompareBy!
   inlineDiffImage: Boolean

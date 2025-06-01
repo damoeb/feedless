@@ -39,8 +39,8 @@ import org.migor.feedless.generated.types.CompositeFieldFilterParams
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParams
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
-import org.migor.feedless.generated.types.DiffEmailForwardParams
-import org.migor.feedless.generated.types.DiffEmailForwardParamsInput
+import org.migor.feedless.generated.types.DiffRecordsParams
+import org.migor.feedless.generated.types.DiffRecordsParamsInput
 import org.migor.feedless.generated.types.FeedParams
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.FulltextPluginParams
@@ -75,7 +75,8 @@ enum class MaxAgeDaysDateField {
 
 
 @Entity
-@Table(name = "t_repository",
+@Table(
+  name = "t_repository",
   indexes = [
     Index(name = "repository_created_at_idx", columnList = StandardJpaFields.createdAt),
   ]
@@ -233,10 +234,10 @@ fun RepositoryEntity.toDto(currentUserIsOwner: Boolean): Repository {
     plugins = plugins.map { it.toDto() },
     archived = archived,
     retention =
-    Retention(
-      maxCapacity = retentionMaxCapacity,
-      maxAgeDays = retentionMaxAgeDays
-    ),
+      Retention(
+        maxCapacity = retentionMaxCapacity,
+        maxAgeDays = retentionMaxAgeDays
+      ),
     shareKey = if (currentUserIsOwner) {
       shareKey
     } else {
@@ -272,7 +273,7 @@ fun PluginExecutionJsonEntity.toDto(): PluginExecutionParams {
   return PluginExecutionParams(
     org_feedless_fulltext = org_feedless_fulltext?.toDto(),
     org_feedless_feed = org_feedless_feed?.toDto(),
-    org_feedless_diff_email_forward = org_feedless_diff_email_forward?.toDto(),
+    org_feedless_diff_records = org_feedless_diff_records?.toDto(),
     jsonData = jsonData,
     org_feedless_filter = org_feedless_filter?.map { it.toDto() },
   )
@@ -321,8 +322,8 @@ private fun StringFilterParamsInput.toDto(): StringFilterParams {
   )
 }
 
-private fun DiffEmailForwardParamsInput.toDto(): DiffEmailForwardParams {
-  return DiffEmailForwardParams(
+private fun DiffRecordsParamsInput.toDto(): DiffRecordsParams {
+  return DiffRecordsParams(
     compareBy = compareBy.toDto(),
     nextItemMinIncrement = nextItemMinIncrement,
     inlineDiffImage = inlineDiffImage,

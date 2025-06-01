@@ -226,7 +226,7 @@ export class PuppeteerService {
       };
     } catch (e) {
       appendLog(e.message);
-      this.log.error(e.message);
+      this.log.error(e.message, e);
       return {
         ok: false,
         logs,

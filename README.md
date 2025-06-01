@@ -1,31 +1,33 @@
-# feedless
+# Feedless
 
-`feedless` is a feed service to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. 
-It's goal is to keep the web open and accessible and to create shareable data streams.
-
-You may Self-host or use [feedless.org](https://feedless.org) to create and share feeds. For troubleshooting please join
-the [discord channel](https://discord.gg/8Tu742HQkr).
-
-
-[![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
+Time is precious, let&#39;s automate the web, build our custom well-behaving deterministic bots. _feedless_ is a middleware/web-app to
+build web-based workflows. Extendable using plugins.
 
 ## Features
-- Content enrichment with Full(-text)
-- Web-to-Feed
-- Web-to-Fragment-Feed as pixel, text or markup
-- Aggregation of multiple feeds
-- Filters
-- [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
-- Inline Images for archive/privacy purposes
 
+* create feed from website
+* merge multiple feeds
+* use feed and filter title not includes &#39;Ad&#39;
+* track pixel page changes of [url], but ship latest text and latest image
+* track text page changes of [url], but ship diff to first for 2 weeks
+* track price of product on [url] by extracting field, but shipping product fragment as pixel and markup
+* use existing feed -&gt; readability, inline images and untrack urls
+* generate feed, fix title by removing prefix, trim after length 20
+* inbox: select feeds, filter last 24h, order by quality, pick best 12
+* digest: select feed, send best 10 end of week as digest via mail
+* create feed activate tracking
+* create just the document repository
 
-## In Progress
-- Workflow Builder
-- Self-Hosting
+[![Watch the video](screenshot.png)]()
 
-## Verticals
-Due to the general use case of feedless, I can build plenty of verticals on top of it.
-- [locale.events](https://lokale.events) event listing by geo position
+## Version 3.x (Latest)
+
+You need [docker-compose](https://docs.docker.com/compose/install/) or [podman-compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), here is the basic setup.
+
+# Support & Contact
+
+- Public Mail Group feedless@googlegroups.com
+- Contact feedlessapp@proton.me
 
 ## License
 

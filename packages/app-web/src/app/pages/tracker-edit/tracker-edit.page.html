@@ -173,23 +173,23 @@
                 >
                   @if (formGroup.value.compareType === GqlRecordField.Pixel) {
                   <ion-select
-                    [formControl]="formGroup.controls.screen"
+                    [formControl]="formGroup.controls.compareBy"
                     fill="outline"
                     interface="popover"
                     placeholder="Screen"
                   >
-                    <ion-select-option [value]="screenArea"
+                    <ion-select-option [value]="pageFragmentArea"
                       >Area
                     </ion-select-option>
-                    <ion-select-option [value]="screenPage"
+                    <ion-select-option [value]="pageFragmentPage"
                       >All page
                     </ion-select-option>
-                    <ion-select-option [value]="screenElement"
+                    <ion-select-option [value]="pageFragmentElement"
                       >Element
                     </ion-select-option>
                   </ion-select>
                   } @if (formGroup.value.compareType !== GqlRecordField.Pixel ||
-                  formGroup.value.screen === screenElement) {
+                  formGroup.value.compareBy === pageFragmentElement) {
                   <ion-button
                     (click)="pickXPath()"
                     [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
@@ -234,23 +234,41 @@
                 </ion-col>
               </ion-row>
               <ion-row>
-                <ion-col size="12" size-md="6">
+                <ion-col class="flex" size="6" size-md="4">
                   <ion-select
-                    [formControl]="formGroup.controls.screen"
+                    [formControl]="formGroup.controls.outputTypes"
+                    fill="outline"
                     [multiple]="true"
+                    interface="popover"
+                    placeholder="Output"
+                  >
+                    <ion-select-option [value]="GqlRecordField.Pixel"
+                      >Visual
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Text"
+                      >Text
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Markup"
+                      >Markup
+                    </ion-select-option>
+                  </ion-select>
+                </ion-col>
+                <ion-col size="6" size-md="4">
+                  <ion-select
+                    [formControl]="formGroup.controls.output"
                     fill="outline"
                     interface="popover"
                     placeholder="Screen"
                   >
-                    <ion-select-option [value]="screenArea"
+                    <ion-select-option [value]="pageFragmentArea"
                       >Area
                     </ion-select-option>
-                    <ion-select-option [value]="screenPage"
+                    <ion-select-option [value]="pageFragmentPage"
                       >All page
                     </ion-select-option>
                   </ion-select>
                 </ion-col>
-                <ion-col size="12" size-md="6">
+                <ion-col size="12" size-md="4">
                   <ion-select
                     [formControl]="formGroup.controls.fetchFrequency"
                     fill="outline"
@@ -281,35 +299,35 @@
                   </ion-select>
                 </ion-col>
               </ion-row>
-              <!--            <ion-row class="ion-margin-top">-->
-              <!--              <ion-col>-->
-              <!--                <ion-label> Send Notification</ion-label>-->
-              <!--              </ion-col>-->
-              <!--            </ion-row>-->
-              <!--            <ion-row>-->
-              <!--              <ion-col size="6">-->
-              <!--                <ion-input-->
-              <!--                  [formControl]="form.controls.email"-->
-              <!--                  fill="outline"-->
-              <!--                  class="cy-email-input"-->
-              <!--                  placeholder="email@domain.com"-->
-              <!--                  type="email"-->
-              <!--                ></ion-input>-->
-              <!--              </ion-col>-->
-              <!--              <ion-col size="6">-->
-              <!--                <ion-input-->
-              <!--                  [formControl]="form.controls.subject"-->
-              <!--                  fill="outline"-->
-              <!--                  class="cy-subject-input"-->
-              <!--                  placeholder="Subject"-->
-              <!--                  type="text"-->
-              <!--                ></ion-input>-->
-              <!--              </ion-col>-->
-              <!--            </ion-row>-->
+              <ion-row class="ion-margin-top">
+                <!--                            <ion-col>-->
+                <!--                <ion-label> Send Notification</ion-label>-->
+                <!--              </ion-col>-->
+                <!--            </ion-row>-->
+                <!--            <ion-row>-->
+                <!--              <ion-col size="6">-->
+                <!--                <ion-input-->
+                <!--                  [formControl]="form.controls.email"-->
+                <!--                  fill="outline"-->
+                <!--                  class="cy-email-input"-->
+                <!--                  placeholder="email@domain.com"-->
+                <!--                  type="email"-->
+                <!--                ></ion-input>-->
+                <!--              </ion-col>-->
+                <ion-col size="12">
+                  <ion-input
+                    [formControl]="formGroup.controls.subject"
+                    fill="outline"
+                    class="cy-subject-input"
+                    placeholder="Tracker Title"
+                    type="text"
+                  ></ion-input>
+                </ion-col>
+              </ion-row>
               <ion-row>
                 <ion-col>
                   <ion-button
-                    (click)="startMonitoring()"
+                    (click)="createTracker()"
                     [color]="formGroup.invalid ? 'medium': 'primary'"
                     expand="block"
                   >

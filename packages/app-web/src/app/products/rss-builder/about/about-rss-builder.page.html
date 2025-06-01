@@ -14,65 +14,64 @@
     ></app-searchbar>
 
     @if (serverConfig.isSelfHosted()) {
-      <div>
-        <div style="margin-top: 50px"></div>
-        <div class="ion-margin-vertical">
-          <h2>Hello, fellow Self-Hoster,</h2>
-          <p>
-            I commend your fortitude in undertaking the noble endeavor of
-            self-hosting. Should you encounter challenges of a more profound
-            nature—ones that linger, sting, and remain unresolved—you are
-            encouraged, with a demeanor of humility, to present your grievances to
-            the esteemed mail group at
-            <a href="mailto:feedless@googlegroups.com"
+    <div>
+      <div style="margin-top: 50px"></div>
+      <div class="ion-margin-vertical">
+        <h2>Hello, fellow Self-Hoster,</h2>
+        <p>
+          I commend your fortitude in undertaking the noble endeavor of
+          self-hosting. Should you encounter challenges of a more profound
+          nature—ones that linger, sting, and remain unresolved—you are
+          encouraged, with a demeanor of humility, to present your grievances to
+          the esteemed mail group at
+          <a href="mailto:feedless@googlegroups.com"
             >feedless{{ '@' }}googlegroups.com</a
-            >.
-          </p>
-          <p>
-            The path to self-hosting is not one to be undertaken lightly. Let's
-            make the web great again!
-          </p>
-          <!--        <p>-->
-          <!--          Customize constraints of-->
-          <!--          <ion-button routerLink="/settings" size="small">-->
-          <!--            <ion-icon name="settings-outline" slot="start"></ion-icon>-->
-          <!--            server settings-->
-          <!--          </ion-button>-->
-          <!--        </p>-->
-          <!--        <p>Now, fastest way to get started is by importing an OPML XML or feedless Json file.</p>-->
-        </div>
-        @if (license?.isLocated) {
-          <div style="margin-top: 50px">
-            <h2>License Prompt</h2>
-            <ion-item [button]="true" color="success" routerLink="/license">
-              Registered to {{ license.data.name }}
-            </ion-item>
-          </div>
-        }
+          >.
+        </p>
+        <p>
+          The path to self-hosting is not one to be undertaken lightly. Let's
+          make the web great again!
+        </p>
+        <!--        <p>-->
+        <!--          Customize constraints of-->
+        <!--          <ion-button routerLink="/settings" size="small">-->
+        <!--            <ion-icon name="settings-outline" slot="start"></ion-icon>-->
+        <!--            server settings-->
+        <!--          </ion-button>-->
+        <!--        </p>-->
+        <!--        <p>Now, fastest way to get started is by importing an OPML XML or feedless Json file.</p>-->
       </div>
-    }
-    @if (!serverConfig.isSelfHosted()) {
+      @if (license?.isLocated) {
+      <div style="margin-top: 50px">
+        <h2>License Prompt</h2>
+        <ion-item [button]="true" color="success" routerLink="/license">
+          Registered to {{ license.data.name }}
+        </ion-item>
+      </div>
+      }
+    </div>
+    } @if (!serverConfig.isSelfHosted()) {
+    <div>
+      <div style="margin-top: 50px"></div>
       <div>
-        <div style="margin-top: 50px"></div>
-        <div>
-          <h2>Why choose RSS Proxy?</h2>
-          <p>
-            Transform different kind of sources like websites, CVS and others into
-            a feed-like structure like RSS, ATOM, JSON or ICAL. Source is on
-            github, actively developed and you can self-host without limitations.
-            No vendor lock-in, so import and export all your data as you wish.
-          </p>
-          <p>Give it a go and see if it fits your needs!</p>
-          <h2>Open Source</h2>
-          <p>
-            RSS-proxy is a flavor of
-            <a href="https://feedless.org">feedless</a> which is released under
-            non-competitive FSL license, that defaults to Open Source Apache 2
-            after two years (<a href="https://fsl.software/">FSL-1.0-Apache-2.0</a
+        <h2>Why choose RSS Proxy?</h2>
+        <p>
+          Transform different kind of sources like websites, CVS and others into
+          a feed-like structure like RSS, ATOM, JSON or ICAL. Source is on
+          github, actively developed and you can self-host without limitations.
+          No vendor lock-in, so import and export all your data as you wish.
+        </p>
+        <p>Give it a go and see if it fits your needs!</p>
+        <h2>Open Source</h2>
+        <p>
+          RSS-proxy is a flavor of
+          <a href="https://feedless.org">feedless</a> which is released under
+          non-competitive FSL license, that defaults to Open Source Apache 2
+          after two years (<a href="https://fsl.software/">FSL-1.0-Apache-2.0</a
           >).
-          </p>
-        </div>
+        </p>
       </div>
+    </div>
     }
   </app-product-header>
 </ion-content>

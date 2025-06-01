@@ -214,6 +214,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private seed = Math.random();
   // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
   settingsModalId: string = `open-settings-modal-${this.seed}`;
+
   // protected loadingSources: boolean = false;
 
   constructor() {
@@ -280,9 +281,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.viewModeFc.setValue('diff');
     }
     this.compareByField = repository.plugins.find(
-      (plugin) =>
-        plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
-    )?.params?.org_feedless_diff_email_forward?.compareBy?.field;
+      (plugin) => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffRecords,
+    )?.params?.org_feedless_diff_records?.compareBy?.field;
 
     if (
       repository.visibility === GqlVisibility.IsPrivate &&

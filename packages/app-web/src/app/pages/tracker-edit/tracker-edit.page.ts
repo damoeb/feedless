@@ -20,10 +20,12 @@ import {
   XyPosition,
 } from '../../components/embedded-image/embedded-image.component';
 import {
+  GqlFeedlessPlugins,
   GqlRecordField,
   GqlScrapeActionInput,
   GqlScrapeEmit,
   GqlSourceInput,
+  GqlVertical,
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -34,6 +36,7 @@ import {
   IonContent,
   IonGrid,
   IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonList,
@@ -49,7 +52,6 @@ import { fixUrl, isValidUrl } from '../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { createEmailFormControl } from '../../form-controls';
 import { ScrapeService } from '../../services/scrape.service';
 import {
   BrowserAction,
@@ -65,7 +67,7 @@ import { Nullable } from '../../types';
 
 type Email = string;
 
-type Screen = 'area' | 'page' | 'element';
+type PageFragmentType = 'area' | 'page' | 'element';
 
 @Component({
   selector: 'app-tracker-edit-page',
@@ -93,6 +95,7 @@ type Screen = 'area' | 'page' | 'element';
     IonButton,
     IonIcon,
     IonReorder,
+    IonInput,
   ],
   standalone: true,
 })
@@ -132,8 +135,11 @@ export class TrackerEditPage
         Validators.min(0),
         Validators.max(1),
       ]),
-      email: createEmailFormControl<Email>(''),
-      screen: new FormControl<Screen>('page', [Validators.required]),
+      // email: createEmailFormControl<Email>(''),
+      compareBy: new FormControl<PageFragmentType>('page', [
+        Validators.required,
+      ]),
+      output: new FormControl<PageFragmentType>('page', [Validators.required]),
       fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, [
         Validators.required,
       ]),
@@ -145,6 +151,10 @@ export class TrackerEditPage
       compareType: new FormControl<GqlRecordField>(GqlRecordField.Pixel, [
         Validators.required,
       ]),
+      outputTypes: new FormControl<GqlRecordField[]>(
+        [GqlRecordField.Pixel, GqlRecordField.Markup],
+        [Validators.required],
+      ),
       areaBoundingBox: new FormControl<BoundingBox>(
         { disabled: true, value: null },
         [Validators.required],
@@ -157,9 +167,9 @@ export class TrackerEditPage
   );
   // errorMessage: null;
   showErrors: boolean;
-  screenArea: Screen = 'area';
-  screenPage: Screen = 'page';
-  screenElement: Screen = 'element';
+  pageFragmentArea: PageFragmentType = 'area';
+  pageFragmentPage: PageFragmentType = 'page';
+  pageFragmentElement: PageFragmentType = 'element';
   source: GqlSourceInput;
   protected readonly GqlRecordField = GqlRecordField;
   protected isLoading: boolean = false;
@@ -198,21 +208,29 @@ export class TrackerEditPage
           this.formGroup.controls.url.setValue(queryParams.url);
         }
       }),
-      this.formGroup.controls.screen.valueChanges.subscribe((screen) => {
-        if (screen === 'area') {
-          this.formGroup.controls.areaBoundingBox.enable();
-        } else {
+      this.formGroup.controls.compareBy.valueChanges.subscribe(
+        (pageFragmentType) => {
+          console.log('compareBy', pageFragmentType);
+          this.formGroup.controls.elementXpath.disable();
           this.formGroup.controls.areaBoundingBox.disable();
-        }
-        this.changeRef.detectChanges();
-      }),
+
+          if (pageFragmentType === 'area') {
+            this.formGroup.controls.areaBoundingBox.enable();
+          }
+          if (pageFragmentType === 'element') {
+            this.formGroup.controls.elementXpath.enable();
+          }
+
+          this.changeRef.detectChanges();
+        },
+      ),
       this.formGroup.controls.compareType.valueChanges.subscribe(
         (compareType) => {
           if (compareType === 'pixel') {
-            this.formGroup.controls.screen.enable();
+            this.formGroup.controls.compareBy.enable();
             this.formGroup.controls.elementXpath.disable();
           } else {
-            this.formGroup.controls.screen.disable();
+            this.formGroup.controls.compareBy.disable();
             this.formGroup.controls.elementXpath.enable();
           }
           this.changeRef.detectChanges();
@@ -232,13 +250,14 @@ export class TrackerEditPage
     ev.detail.complete();
   }
 
-  async startMonitoring() {
+  async createTracker() {
     this.showErrors = true;
     try {
       await this.createSubscription();
     } catch (e) {
       this.showErrors = false;
     }
+    this.changeRef.detectChanges();
   }
 
   pickArea() {
@@ -258,7 +277,10 @@ export class TrackerEditPage
 
   pickXPath() {
     this.sourceBuilder.events.pickElement.next((xpath: string) => {
+      console.log('assign xpath', xpath);
       this.formGroup.controls.elementXpath.setValue(xpath);
+      console.log('valid', this.formGroup.controls.elementXpath.valid);
+      console.log('disabled', this.formGroup.controls.elementXpath.disabled);
       this.changeRef.detectChanges();
     });
   }
@@ -342,68 +364,67 @@ export class TrackerEditPage
     if (this.formGroup.invalid) {
       return;
     }
-    throw new Error('not implemented');
-    // const sub = await this.repositoryService.createRepositories({
-    //   repositories: [
-    //     {
-    //       sources: [
-    //         {
-    //           title: `From ${this.form.value.url}`,
-    //           tags: [],
-    //           flow: {
-    //             sequence: [
-    //               {
-    //                 fetch: {
-    //                   get: {
-    //                     url: {
-    //                       literal: this.form.value.url,
-    //                     },
-    //                     additionalWaitSec: this.additionalWait.value,
-    //                   },
-    //                 },
-    //               },
-    //               ...this.getActionsRequestFragment(),
-    //               this.getEmit(),
-    //             ],
-    //           },
-    //         },
-    //       ],
-    //       product: environment.product,
-    //       additionalSinks: [
-    //         {
-    //           email: this.form.value.email,
-    //         },
-    //       ],
-    //       title: this.form.value.subject,
-    //       description: 'Visual Diff',
-    //       withShareKey: false,
-    //       refreshCron: this.form.value.fetchFrequency,
-    //       retention: {
-    //         maxCapacity: 2,
-    //       },
-    //       plugins: [
-    //         {
-    //           pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
-    //           params: {
-    //             [GqlFeedlessPlugins.OrgFeedlessDiffEmailForward]: {
-    //               inlineDiffImage: true,
-    //               inlineLatestImage: true,
-    //               compareBy: {
-    //                 field: this.form.value.compareType,
-    //               },
-    //               nextItemMinIncrement: this.form.value.sinkCondition,
-    //             },
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
-    //
+    const sources: GqlSourceInput[] = [
+      {
+        title: `From ${this.formGroup.value.url}`,
+        tags: [],
+        flow: {
+          sequence: [
+            {
+              fetch: {
+                get: {
+                  url: {
+                    literal: this.formGroup.value.url,
+                  },
+                  // additionalWaitSec: this.additionalWait.value,
+                },
+              },
+            },
+            ...this.getActionsRequestFragment(),
+            this.getEmit(),
+          ],
+        },
+      },
+    ];
+
+    const sub = await this.repositoryService.createRepositories([
+      {
+        sources,
+        product: GqlVertical.VisualDiff,
+        // additionalSinks: [
+        //   {
+        //     email: this.form.value.email,
+        //   },
+        // ],
+        title: this.formGroup.value.subject,
+        description: 'Visual Diff',
+        // withShareKey: false,
+        refreshCron: this.formGroup.value.fetchFrequency,
+        retention: {
+          maxCapacity: 2,
+        },
+        plugins: [
+          {
+            pluginId: GqlFeedlessPlugins.OrgFeedlessDiffRecords,
+            params: {
+              [GqlFeedlessPlugins.OrgFeedlessDiffRecords]: {
+                inlineDiffImage: true,
+                inlineLatestImage: true,
+                compareBy: {
+                  field: this.formGroup.value.compareType,
+                },
+                nextItemMinIncrement: this.formGroup.value.sinkCondition,
+              },
+            },
+          },
+        ],
+      },
+    ]);
+
     // if (!this.sessionService.isAuthenticated()) {
     //   await this.showAnonymousSuccessAlert();
     // }
-    // await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
+    await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
 
   private async patchUrlInAddressBar() {
@@ -428,7 +449,7 @@ export class TrackerEditPage
   // }
 
   private getEmit(): GqlScrapeActionInput {
-    if (this.formGroup.value.screen === 'area') {
+    if (this.formGroup.value.output === 'area') {
       return {
         extract: {
           fragmentName: 'element from bounding box',
