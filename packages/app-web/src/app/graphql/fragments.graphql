@@ -43,7 +43,7 @@ fragment ConditionalTagFragment on ConditionalTag {
   }
 }
 
-fragment DiffEmailForwardParamsFragment on DiffEmailForwardParams {
+fragment DiffRecordsParamsFragment on DiffRecordsParams {
   inlineDiffImage
   inlineLatestImage
   inlinePreviousImage
@@ -60,8 +60,8 @@ fragment PluginExecutionParamsFragment on PluginExecutionParams {
       ...SelectorsFragment
     }
   }
-  org_feedless_diff_email_forward {
-    ...DiffEmailForwardParamsFragment
+  org_feedless_diff_records {
+    ...DiffRecordsParamsFragment
   }
   org_feedless_filter {
     composite {

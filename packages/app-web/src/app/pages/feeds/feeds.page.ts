@@ -135,7 +135,11 @@ export class FeedsPage implements OnInit, OnDestroy {
           },
           where: {
             product: {
-              eq: GqlVertical.Feedless,
+              in: [
+                GqlVertical.Feedless,
+                GqlVertical.VisualDiff,
+                GqlVertical.RssProxy,
+              ],
             },
           },
         },

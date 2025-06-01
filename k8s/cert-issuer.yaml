@@ -28,8 +28,10 @@ spec:
     - staging.feedless.org
     - api.staging.feedless.org
     - plausible.feedless.org
-    - api.rssproxy.staging.migor.org
-    - rssproxy.staging.migor.org
+    - api.rssproxy.feedless.org
+    - rssproxy.feedless.org
+    - api.visualdiff.feedless.org
+    - visualdiff.feedless.org
     - rssproxy-v1.migor.org
     - rssproxy.migor.org
   issuerRef:

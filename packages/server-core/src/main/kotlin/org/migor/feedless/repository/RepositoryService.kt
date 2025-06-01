@@ -316,7 +316,8 @@ class RepositoryService(
   }
 
   suspend fun updateRepository(id: UUID, data: RepositoryUpdateDataInput) {
-    val repository = context.getBean(RepositoryService::class.java).findById(id).orElseThrow { NotFoundException("Repository $id not found") }
+    val repository = context.getBean(RepositoryService::class.java).findById(id)
+      .orElseThrow { NotFoundException("Repository $id not found") }
     val corrId = coroutineContext.corrId()
     if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("not authorized")
@@ -545,7 +546,7 @@ fun PluginExecutionParamsInput.toEntity(): PluginExecutionJsonEntity {
   return PluginExecutionJsonEntity(
     org_feedless_filter = org_feedless_filter,
     org_feedless_feed = org_feedless_feed,
-    org_feedless_diff_email_forward = org_feedless_diff_email_forward,
+    org_feedless_diff_records = org_feedless_diff_records,
     jsonData = jsonData,
     org_feedless_conditional_tag = org_feedless_conditional_tag,
     org_feedless_fulltext = org_feedless_fulltext

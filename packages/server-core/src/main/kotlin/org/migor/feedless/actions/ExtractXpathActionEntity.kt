@@ -5,6 +5,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
+import jakarta.persistence.PostLoad
+import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
@@ -35,8 +37,20 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
   @Basic(fetch = FetchType.EAGER)
   @JdbcTypeCode(Types.ARRAY)
   @Column(name = "emit", nullable = false, columnDefinition = "text[]")
+  open var emitRaw: Array<String> = emptyArray()
+
+  @Transient
   open var emit: Array<ExtractEmit> = emptyArray()
 
+  @PostLoad
+  fun postLoad() {
+    emit = emitRaw.map { ExtractEmit.valueOf(it) }.toTypedArray()
+  }
+
+  @PrePersist
+  fun prePersist() {
+    emitRaw = emit.map { it.name }.toTypedArray()
+  }
 }
 
 enum class ExtractEmit {

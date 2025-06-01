@@ -10,7 +10,7 @@ Agents authenticate using a personalized token. They don't need a public IP, so 
 The minimal way to run an agent, you need a secret key of a user.
 
 ```
-APP_SECRET_KEY=${key} APP_CHROMIUM_BIN=brave-browser yarn start
+APP_SECRET_KEY=${key} APP_CHROMIUM_BIN=/usr/bin/brave-browser yarn start
 ```
 
 ## Envs
