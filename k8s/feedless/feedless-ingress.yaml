@@ -55,6 +55,7 @@ kind: Ingress
 metadata:
   name: feedless-ingress
   annotations:
+    app.kubernetes.io/name: feedless-ingress
     cert-manager.io/cluster-issuer: letsencrypt
     traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
