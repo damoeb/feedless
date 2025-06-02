@@ -19,8 +19,8 @@ metadata:
 spec:
   redirectRegex:
     regex: ^.*$
-    replacement: "https://rssproxy.feedless.org"
-    permanent: false
+    replacement: "https://rssproxy.local.feedless.org"
+    permanent: true
 
 ---
 
@@ -47,9 +47,9 @@ spec:
     - websecure
   routes:
     # Handle `/`
-    - match: Host(`rssproxy.feedless.org`) && Path(`/`)
+    - match: Host(`rssproxy.local.feedless.org`) && Path(`/`)
       kind: Rule
-      priority: 100 # note: higher wins
+      priority: 100
       services:
         - name: feedless-web
           port: 80
@@ -57,7 +57,7 @@ spec:
         - name: rss-proxy-root-rewrite
 
     # Handle vertical configs
-    - match: Host(`rssproxy.feedless.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
+    - match: Host(`rssproxy.local.feedless.org`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
       kind: Rule
       priority: 200
       services:
@@ -67,7 +67,7 @@ spec:
         - name: rss-proxy-rewrite
 
     # Redirect rssproxy.migor.org
-    - match: Host(`rssproxy.staging.migor.org`) && Path(`/`)
+    - match: Host(`rssproxy.local.migor.org`) && Path(`/`)
       kind: Rule
       priority: 8
       services:
@@ -76,8 +76,8 @@ spec:
       middlewares:
         - name: redirect-to-rssproxy-feedless
 
-    # Redirect rssproxy-v1.migor.org
-    - match: Host(`rssproxy-v1.migor.org`) && Path(`/`)
+    # Redirect rssproxy.migor.org
+    - match: Host(`rssproxy-v1.local.migor.org`) && Path(`/`)
       kind: Rule
       priority: 7
       services:
@@ -101,13 +101,13 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - api.rssproxy.staging.migor.org
-        - rssproxy.feedless.org
-        - rssproxy.staging.migor.org
-        - rssproxy-v1.migor.org
+        - api.rssproxy.local.migor.org
+        - rssproxy.local.feedless.org
+        - rssproxy.local.migor.org
+        - rssproxy-v1.local.migor.org
       secretName: feedless-org-tls
   rules:
-    - host: api.rssproxy.feedless.org
+    - host: api.rssproxy.local.feedless.org
       http:
         paths:
           - path: /
@@ -117,7 +117,7 @@ spec:
                 name: feedless-core
                 port:
                   number: 8080
-    - host: rssproxy.feedless.org
+    - host: rssproxy.local.feedless.org
       http:
         paths:
           - path: /feed/static
@@ -142,7 +142,7 @@ spec:
                 port:
                   number: 80
 
-    - host: rssproxy.staging.migor.org
+    - host: rssproxy.local.migor.org
       http:
         paths:
           - path: /feed/static
@@ -160,7 +160,7 @@ spec:
                 port:
                   number: 8080
 
-    - host: rssproxy-v1.migor.org
+    - host: rssproxy-v1.local.migor.org
       http:
         paths:
           - path: /feed/static

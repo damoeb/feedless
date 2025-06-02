@@ -113,7 +113,7 @@ class AnalyticsService {
       }
       canPush = true
     } catch (e: Exception) {
-      log.error("track failed: ${e.message}", e)
+      log.error("track failed: ${e.message}")
       canPush = false
       disabledAt = LocalDateTime.now()
     }

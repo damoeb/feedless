@@ -3,6 +3,7 @@ kind: Ingress
 metadata:
   name: plausible-ingress
   annotations:
+    app.kubernetes.io/name: plausible-ingress
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: plausible-basic-auth
     nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
