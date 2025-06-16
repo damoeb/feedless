@@ -37,3 +37,39 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rssproxy-migor-org-tls
+spec:
+  secretName: rssproxy-migor-org-tls
+  duration: 2160h  # 90d
+  renewBefore: 360h  # 15d
+  privateKey:
+    rotationPolicy: Never
+  issuerRef:
+    name: letsencrypt
+    kind: Issuer
+  dnsNames:
+    - rssproxy.migor.org
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rssproxy-v1-migor-org-tls
+spec:
+  secretName: rssproxy-v1-migor-org-tls
+  duration: 2160h  # 90d
+  renewBefore: 360h  # 15d
+  privateKey:
+    rotationPolicy: Never
+  issuerRef:
+    name: letsencrypt
+    kind: Issuer
+  dnsNames:
+    - rssproxy-v1.migor.org
