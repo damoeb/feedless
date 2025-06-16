@@ -142,6 +142,24 @@ spec:
                 port:
                   number: 80
 
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rss-proxy-migor-org-ingress
+  #  namespace: feedless
+  annotations:
+    app.kubernetes.io/name: rss-proxy-migor-org-ingress
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - rssproxy.migor.org
+      secretName: rssproxy-migor-org-tls
+  rules:
     - host: rssproxy.staging.migor.org
       http:
         paths:
@@ -160,6 +178,24 @@ spec:
                 port:
                   number: 8080
 
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rss-proxy-v1-migor-org-ingress
+  #  namespace: feedless
+  annotations:
+    app.kubernetes.io/name: rss-proxy-v1-migor-org-ingress
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - rssproxy-v1.migor.org
+      secretName: rssproxy-v1-migor-org-tls
+  rules:
     - host: rssproxy-v1.migor.org
       http:
         paths:
