@@ -13,7 +13,7 @@
           [disabled]="loading"
           color="primary"
           fill="solid"
-        >
+          >
           <ion-label>
             @if (isUpdate()) {
               <span>Save Changes</span>
@@ -422,21 +422,21 @@
             <ion-col size="9">
               <ion-button
                 [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"
-                (click)="addConditionalTag()"
-                [disabled]="conditionalTags.length >= 4"
+              (click)="addConditionalTag()"
+              [disabled]="conditionalTags.length >= 4"
               >
-                <ion-icon name="add-outline" slot="start"></ion-icon>
-                Add Tag
-              </ion-button>
-            </ion-col>
-          </ion-row>
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Add Tag
+            </ion-button>
+          </ion-col>
+        </ion-row>
 
-          <ion-row>
-            <ion-col>
+        <ion-row>
+          <ion-col>
+            @for (conditionalTag of conditionalTags; track conditionalTag; let i = $index) {
               <div
-                *ngFor="let conditionalTag of conditionalTags; let i = index"
                 class="flex ion-align-items-center"
-              >
+                >
                 <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
                 <ion-input
                   [formControl]="conditionalTag.controls.tag"
@@ -449,52 +449,52 @@
                   fill="outline"
                   interface="popover"
                   [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
-                >
+                  >
                   <ion-select-option [value]="FilterFieldLink"
                     >link</ion-select-option
-                  >
-                  <ion-select-option [value]="FilterFieldTitle"
-                    >title
-                  </ion-select-option>
-                  <ion-select-option [value]="FilterFieldContent"
-                    >content
-                  </ion-select-option>
-                </ion-select>
-                <ion-select
-                  [formControl]="conditionalTag.controls.operator"
-                  fill="outline"
-                  class="ion-margin-horizontal"
-                  interface="popover"
-                  [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
-                >
-                  <ion-select-option [value]="GqlStringFilterOperator.Contains"
-                    >contains
-                  </ion-select-option>
-                  <ion-select-option [value]="GqlStringFilterOperator.Matches"
-                    >matches
-                  </ion-select-option>
-                  <ion-select-option
-                    [value]="GqlStringFilterOperator.StartsWidth"
-                    >starts with
-                  </ion-select-option>
-                  <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-                    >ends with
-                  </ion-select-option>
-                </ion-select>
-                <ion-input
-                  [formControl]="conditionalTag.controls.value"
-                  placeholder="Type a value"
-                  fill="outline"
-                ></ion-input>
-
-                <ion-button
-                  (click)="removeConditionalTag(i)"
-                  color="medium"
-                  fill="clear"
-                >
-                  <ion-icon name="trash-outline"></ion-icon>
-                </ion-button>
-              </div>
+                    >
+                    <ion-select-option [value]="FilterFieldTitle"
+                      >title
+                    </ion-select-option>
+                    <ion-select-option [value]="FilterFieldContent"
+                      >content
+                    </ion-select-option>
+                  </ion-select>
+                  <ion-select
+                    [formControl]="conditionalTag.controls.operator"
+                    fill="outline"
+                    class="ion-margin-horizontal"
+                    interface="popover"
+                    [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
+                    >
+                    <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                      >contains
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlStringFilterOperator.Matches"
+                      >matches
+                    </ion-select-option>
+                    <ion-select-option
+                      [value]="GqlStringFilterOperator.StartsWidth"
+                      >starts with
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                      >ends with
+                    </ion-select-option>
+                  </ion-select>
+                  <ion-input
+                    [formControl]="conditionalTag.controls.value"
+                    placeholder="Type a value"
+                    fill="outline"
+                  ></ion-input>
+                  <ion-button
+                    (click)="removeConditionalTag(i)"
+                    color="medium"
+                    fill="clear"
+                    >
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              }
             </ion-col>
           </ion-row>
         </ion-list>
@@ -514,7 +514,7 @@
       <ion-item
         [button]="true"
         (click)="showExpertOptions = !showExpertOptions"
-      >
+        >
         <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
       </ion-item>
     }

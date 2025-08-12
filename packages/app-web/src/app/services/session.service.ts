@@ -26,9 +26,9 @@ import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { AppConfigService } from './app-config.service';
 import { isNonNull, Nullable } from '../types';
 
-export const dateFormat = 'dd.MM.YYYY';
-export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
-export const TimeFormat = 'HH:mm, dd.MM.YYYY';
+export const dateFormat = 'dd.MM.yyyy';
+export const dateTimeFormat = 'HH:mm, dd.MM.yyyy';
+export const TimeFormat = 'HH:mm, dd.MM.yyyy';
 
 @Injectable({
   providedIn: 'root',
