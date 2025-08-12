@@ -43,6 +43,7 @@ import org.migor.feedless.session.PermissionService
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.corrId
+import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -121,7 +122,10 @@ class DocumentService(
     }
   }
 
-  private fun prepareWhereStatements(where: RecordsWhereInput?, tags: List<String> = emptyList()): MutableList<Predicatable> {
+  private fun prepareWhereStatements(
+    where: RecordsWhereInput?,
+    tags: List<String> = emptyList()
+  ): MutableList<Predicatable> {
     val whereStatements = mutableListOf<Predicatable>()
     jpql {
       val addDateConstraint = { it: DatesWhereInput, field: Path<LocalDateTime> ->
@@ -183,7 +187,11 @@ class DocumentService(
         if (retentionSize != null && retentionSize > 0) {
           log.info("applying retention for repo ${repository.id} with maxItems=$retentionSize")
           documentDAO.deleteAllByRepositoryIdAndStatusWithSkip(repository.id, ReleaseStatus.released, retentionSize)
-          documentDAO.deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(repository.id, LocalDateTime.now().minusDays(7), ReleaseStatus.unreleased)
+          documentDAO.deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+            repository.id,
+            LocalDateTime.now().minusDays(7),
+            ReleaseStatus.unreleased
+          )
         } else {
           log.info("no retention with maxItems given repo ${repository.id}")
         }
@@ -247,7 +255,8 @@ class DocumentService(
       }
 
       val documents = documentDAO
-        .findAllByRepositoryIdAndIdIn(repositoryId, if (documentIds.`in` != null) {
+        .findAllByRepositoryIdAndIdIn(
+          repositoryId, if (documentIds.`in` != null) {
           documentIds.`in`.map { UUID.fromString(it) }
         } else {
           if (documentIds.eq != null) {
@@ -256,7 +265,7 @@ class DocumentService(
             throw IllegalArgumentException("operation not supported")
           }
         }
-      )
+        )
 
       documentDAO.deleteAllById(documents.map { it.id });
     }
@@ -332,7 +341,8 @@ class DocumentService(
               is ReportPlugin -> log.info("[$corrId] ignoring ${plugin.id()} plugin")
               else -> {
                 if (plugin == null) {
-                  log.error("[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
+                  log.error(
+                    "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
                     pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
                   }]")
                 } else {
@@ -463,6 +473,7 @@ class DocumentService(
     document.text = data.text!!
     document.repositoryId = repositoryId
     document.status = ReleaseStatus.released
+    document.contentHash = CryptUtil.sha1(data.rawBase64 ?: document.id.toString())
 
     return withContext(Dispatchers.IO) {
       documentDAO.save(document)
