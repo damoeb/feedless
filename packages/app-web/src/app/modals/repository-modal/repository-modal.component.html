@@ -13,7 +13,7 @@
           [disabled]="loading"
           color="primary"
           fill="solid"
-          >
+        >
           <ion-label>
             @if (isUpdate()) {
               <span>Save Changes</span>
@@ -422,36 +422,38 @@
             <ion-col size="9">
               <ion-button
                 [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"
-              (click)="addConditionalTag()"
-              [disabled]="conditionalTags.length >= 4"
+                (click)="addConditionalTag()"
+                [disabled]="conditionalTags.length >= 4"
               >
-              <ion-icon name="add-outline" slot="start"></ion-icon>
-              Add Tag
-            </ion-button>
-          </ion-col>
-        </ion-row>
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add Tag
+              </ion-button>
+            </ion-col>
+          </ion-row>
 
-        <ion-row>
-          <ion-col>
-            @for (conditionalTag of conditionalTags; track conditionalTag; let i = $index) {
-              <div
-                class="flex ion-align-items-center"
-                >
-                <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
-                <ion-input
-                  [formControl]="conditionalTag.controls.tag"
-                  placeholder="Tag"
-                  fill="outline"
-                ></ion-input>
-                <ion-text class="ion-padding-horizontal">if</ion-text>
-                <ion-select
-                  [formControl]="conditionalTag.controls.field"
-                  fill="outline"
-                  interface="popover"
-                  [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
+          <ion-row>
+            <ion-col>
+              @for (
+                conditionalTag of conditionalTags;
+                track conditionalTag;
+                let i = $index
+              ) {
+                <div class="flex ion-align-items-center">
+                  <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
+                  <ion-input
+                    [formControl]="conditionalTag.controls.tag"
+                    placeholder="Tag"
+                    fill="outline"
+                  ></ion-input>
+                  <ion-text class="ion-padding-horizontal">if</ion-text>
+                  <ion-select
+                    [formControl]="conditionalTag.controls.field"
+                    fill="outline"
+                    interface="popover"
+                    [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
                   >
-                  <ion-select-option [value]="FilterFieldLink"
-                    >link</ion-select-option
+                    <ion-select-option [value]="FilterFieldLink"
+                      >link</ion-select-option
                     >
                     <ion-select-option [value]="FilterFieldTitle"
                       >title
@@ -466,8 +468,9 @@
                     class="ion-margin-horizontal"
                     interface="popover"
                     [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
-                    >
-                    <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                  >
+                    <ion-select-option
+                      [value]="GqlStringFilterOperator.Contains"
                       >contains
                     </ion-select-option>
                     <ion-select-option [value]="GqlStringFilterOperator.Matches"
@@ -477,7 +480,8 @@
                       [value]="GqlStringFilterOperator.StartsWidth"
                       >starts with
                     </ion-select-option>
-                    <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                    <ion-select-option
+                      [value]="GqlStringFilterOperator.EndsWith"
                       >ends with
                     </ion-select-option>
                   </ion-select>
@@ -490,7 +494,7 @@
                     (click)="removeConditionalTag(i)"
                     color="medium"
                     fill="clear"
-                    >
+                  >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
                 </div>
@@ -514,7 +518,7 @@
       <ion-item
         [button]="true"
         (click)="showExpertOptions = !showExpertOptions"
-        >
+      >
         <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
       </ion-item>
     }
