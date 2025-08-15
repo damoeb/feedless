@@ -19,7 +19,8 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
-import org.migor.feedless.pipeline.DocumentPipelineJobEntity
+import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
+import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
@@ -103,7 +104,7 @@ class RepositoryHarvesterTest {
       if ((it.arguments[1] as Pageable).pageNumber == 0) {
         mutableListOf(source)
       } else {
-        emptyList<SourceEntity>()
+        emptyList()
       }
     }
 
@@ -249,7 +250,51 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat<List<DocumentEntity>> { it.count() == 3 })
+      verify(documentService).saveAll(argThat { it.count() == 3 })
+    }
+
+  @Test
+  fun `given documents feature fragments, the fragments will be persisted`() =
+    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+
+      `when`(
+        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+          any(String::class.java),
+          any(String::class.java),
+          any(UUID::class.java)
+        )
+      ).thenReturn(null)
+      `when`(
+        scrapeService.scrape(
+          any(SourceEntity::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = listOf(
+                  ScrapeExtractFragment(
+                    data = MimeData(mimeType = "image/png", data = "aGFsbG8K"),
+                    html = TextData(data = "html"),
+                    text = TextData(data = "text"),
+                    uniqueBy = ScrapeExtractFragmentPart.html
+                  )
+                ),
+                items = emptyList(),
+              )
+            )
+          ),
+          time = 0
+        )
+      )
+
+      repositoryHarvester.handleRepository(repositoryId)
+
+      verify(documentService).saveAll(argThat { it.count() == 1 })
     }
 
   @Test
@@ -283,7 +328,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat<List<DocumentEntity>> { it.count() == 2 })
+      verify(documentService).saveAll(argThat { it.count() == 2 })
     }
 
   @Test
@@ -326,8 +371,8 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat<List<DocumentEntity>> {
-        it.count() == 0
+      verify(documentService).saveAll(argThat {
+        it.isEmpty()
       })
     }
 
@@ -384,7 +429,7 @@ class RepositoryHarvesterTest {
       verify(documentPipelineService).deleteAllByDocumentIdIn(argThat {
         it.count() == 1
       })
-      verify(documentPipelineService).saveAll(argThat<List<DocumentPipelineJobEntity>> {
+      verify(documentPipelineService).saveAll(argThat {
         it.count() == 2 // number of plugins
       })
       verify(existing).status = ReleaseStatus.unreleased
@@ -399,7 +444,7 @@ class RepositoryHarvesterTest {
 
       `when`(
         documentService.saveAll(any2())
-      ).thenAnswer{ it.arguments[0] }
+      ).thenAnswer { it.arguments[0] }
 //      `when`(
 //        documentService.findFirstByContentHashOrUrlAndRepositoryId(
 //          any2(),
@@ -531,7 +576,8 @@ class RepositoryHarvesterTest {
                   data = MimeData(
                     mimeType = MIME_URL,
                     data = "https://foo.bar/page/1"
-                  )
+                  ),
+                  uniqueBy = ScrapeExtractFragmentPart.data
                 )
               ),
               items = listOf(newJsonItem(url = "", title = "1"))

@@ -34,3 +34,6 @@ npm-debug.log*
 src/config.json
 all-verticals.json
 upcomingEventsRepositoryId.txt
+
+*storybook.log
+storybook-static

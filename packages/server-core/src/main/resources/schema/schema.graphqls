@@ -705,6 +705,7 @@ input DOMExtractInput {
   xpath: DOMElementByXPathInput!
   max: Int
   emit: [ScrapeEmit!]!
+  uniqueBy: ScrapeEmit!
   extract: [DOMExtractInput!]
 }
 
@@ -713,6 +714,7 @@ type DOMExtract {
   xpath: DOMElementByXPath!
   max: Int
   emit: [ScrapeEmit!]!
+  uniqueBy: ScrapeEmit!
   extract: [DOMExtract!]
 }
 
@@ -804,7 +806,12 @@ input DOMElementByNameInput {
 
 input ScrapeFlowInput {
   sequence: [ScrapeActionInput!]!
-  #  then: [ScrapeFlowInput!]
+  #  fold: ScrapeReduceFlowInput
+  #  #  then: [ScrapeFlowInput!]
+  #}
+  #input ScrapeReduceFlowInput {
+  #  sequence: [ScrapeActionInput!]!
+  #
 }
 
 type HttpGetRequest {
@@ -1548,13 +1555,21 @@ type ScrapeExtractFragment {
   html: TextData
   text: TextData
   data: MimeData
+  uniqueBy: ScrapeExtractFragmentPart!
   extracts: [ScrapeExtractResponse!]
+}
+
+enum ScrapeExtractFragmentPart {
+  html
+  text
+  data
 }
 
 input ScrapeExtractFragmentInput {
   html: TextDataInput
   text: TextDataInput
   data: MimeDataInput
+  uniqueBy: ScrapeExtractFragmentPart!
   extracts: [ScrapeExtractResponseInput!]
 }
 

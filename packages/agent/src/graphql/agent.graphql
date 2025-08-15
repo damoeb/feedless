@@ -41,11 +41,13 @@ subscription registerAgent($data: RegisterAgentInput!) {
               fragmentName
               max
               emit
+              uniqueBy
               xpath {
                 value
               }
               extract {
                 fragmentName
+                uniqueBy
                 max
                 emit
                 xpath {

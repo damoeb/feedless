@@ -2,16 +2,23 @@ package org.migor.feedless.source
 
 import jakarta.persistence.EntityManager
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.actions.ExtractEmit
+import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
+import org.migor.feedless.generated.types.DOMElementByXPathInput
+import org.migor.feedless.generated.types.DOMExtractInput
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
 import org.migor.feedless.generated.types.NullableUpdateFlowInput
 import org.migor.feedless.generated.types.ScrapeActionInput
+import org.migor.feedless.generated.types.ScrapeEmit
+import org.migor.feedless.generated.types.ScrapeExtractInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceUniqueWhereInput
@@ -85,9 +92,24 @@ class SourceServiceTest {
           set = ScrapeFlowInput(
             sequence = listOf(
               ScrapeActionInput(
-                fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput(
-                  literal = "https::foo.bar"
-                )))
+                fetch = HttpFetchInput(
+                  get = HttpGetRequestInput(
+                    url = StringLiteralOrVariableInput(
+                      literal = "https::foo.bar"
+                    )
+                  )
+                )
+              ),
+              ScrapeActionInput(
+                extract = ScrapeExtractInput(
+                  fragmentName = "foo",
+                  selectorBased = DOMExtractInput(
+                    fragmentName = "foo",
+                    emit = listOf(ScrapeEmit.text, ScrapeEmit.pixel),
+                    xpath = DOMElementByXPathInput("//bar"),
+                    uniqueBy = ScrapeEmit.text
+                  )
+                )
               )
             )
           )
@@ -104,7 +126,16 @@ class SourceServiceTest {
     val updates = listOf(update)
     sourceService.updateSources(repository, updates)
     verify(scrapeActionDAO).deleteAll(any2())
-    verify(scrapeActionDAO).saveAll(argThat<List<ScrapeActionEntity>> { it.size == 1 })
+    verify(scrapeActionDAO).saveAll(argThat<List<ScrapeActionEntity>> { it.size == 2 })
+    verify(scrapeActionDAO).saveAll(argThat<List<ScrapeActionEntity>> {
+      assertThat((it.get(1) as ExtractXpathActionEntity).getEmit()).isEqualTo(
+        arrayOf(
+          ExtractEmit.text,
+          ExtractEmit.pixel
+        )
+      )
+      true
+    })
     verify(sourceDAO).saveAll(argThat<List<SourceEntity>> { it.size == 1 })
   }
 
@@ -113,8 +144,8 @@ class SourceServiceTest {
     val sources = listOf(
       UUID.randomUUID(),
       UUID.randomUUID(),
-      ).map {
-        val source = mock(SourceEntity::class.java)
+    ).map {
+      val source = mock(SourceEntity::class.java)
       `when`(source.id).thenReturn(it)
       source
     }

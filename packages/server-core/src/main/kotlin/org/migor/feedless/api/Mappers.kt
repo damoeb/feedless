@@ -104,6 +104,7 @@ private fun ScrapeExtractFragmentInput.fromDto(): ScrapeExtractFragment {
     data = data?.fromDto(),
     html = html?.fromDto(),
     text = text?.fromDto(),
+    uniqueBy = uniqueBy,
     extracts = extracts?.map { it.fromDto() },
   )
 }
@@ -200,7 +201,8 @@ fun toExtractAction(extract: ScrapeExtractInput): ScrapeActionEntity? {
     val e = ExtractXpathActionEntity()
     e.fragmentName = extract.fragmentName
     e.xpath = it.xpath.value
-    e.emit = it.emit.map { it.fromDto() }.toTypedArray()
+    e.setEmit(it.emit.map { it.fromDto() }.toTypedArray())
+    e.uniqueBy = it.uniqueBy.fromDto()
     e
   } ?: extract.imageBased?.let {
     val e = ExtractBoundingBoxActionEntity()

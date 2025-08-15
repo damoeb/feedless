@@ -9,6 +9,7 @@ import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.util.toMillis
@@ -68,6 +69,7 @@ class WebExtractService(private val dateClaimer: DateClaimer) {
           } else {
             null
           },
+          uniqueBy = ScrapeExtractFragmentPart.html, // todo check this
           data = if (extract.emit.contains(ScrapeEmit.date)) {
             dateClaimer.claimDatesFromString(fragment.text(), locale, logger)?.let { date ->
               MimeData(

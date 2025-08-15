@@ -23,6 +23,8 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
+import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.pipeline.DocumentPipelineJobEntity
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineJobEntity
@@ -100,12 +102,7 @@ class RepositoryHarvester(
         harvestOffsetTimer.record(diffInMillis)
       }
 
-      val appendCount = scrapeSources(repositoryId)
-
-      if (appendCount > 0) {
-        val message = "[$corrId] appending ${StringUtils.leftPad("$appendCount", 4)} to repository $repositoryId"
-        log.info(message)
-      }
+      scrapeSources(repositoryId)
 
       val scheduledNextAt = repositoryService.calculateScheduledNextAt(
         repository.sourcesSyncCron,
@@ -125,57 +122,53 @@ class RepositoryHarvester(
 
   private suspend fun scrapeSources(
     repositoryId: UUID,
-  ): Int {
+  ) {
     val corrId = coroutineContext.corrId()
     var sources: List<SourceEntity>
     var currentPage = 0
-    var totalAppended = 0
     do {
       sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
       log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
 
-      totalAppended += sources
-        .foldIndexed(0) { index, agg, source -> run {
-          val logCollector = LogCollector()
-          val harvest = HarvestEntity()
-          harvest.sourceId = source.id
-          harvest.startedAt = LocalDateTime.now()
+      sources
+        .forEachIndexed { index, source ->
+          run {
+            val logCollector = LogCollector()
+            val harvest = HarvestEntity()
+            harvest.sourceId = source.id
+            harvest.startedAt = LocalDateTime.now()
 
-          try {
-            log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
-            val (retrieved, appended) = scrapeSource(source, logCollector)
-            log.info("[$corrId] retrieved=$retrieved appended=$appended")
+            try {
+              log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
+              val retrieved = scrapeSource(source, logCollector)
 
-            if (source.errorsInSuccession > 0) {
-              source.errorsInSuccession = 0
+              if (source.errorsInSuccession > 0) {
+                source.errorsInSuccession = 0
+              }
+              source.lastErrorMessage = null
+              source.lastRecordsRetrieved = retrieved
+              source.lastRefreshedAt = LocalDateTime.now()
+              sourceService.save(source)
+
+            } catch (e: Throwable) {
+              handleScrapeException(e, source, logCollector)
+            } finally {
+
+              harvest.finishedAt = LocalDateTime.now()
+              harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
+                "${
+                  it.time.toLocalDateTime().format(iso8601DateFormat)
+                }  ${it.message}"
+              }
+                .joinToString("\n"), "...", 32000)
+              harvestService.saveLast(harvest)
             }
-            source.lastErrorMessage = null
-            source.lastRecordsRetrieved = retrieved
-            source.lastRefreshedAt = LocalDateTime.now()
-            sourceService.save(source)
-
-            agg + appended
-          } catch (e: Throwable) {
-            handleScrapeException(e, source, logCollector)
-            agg
-          } finally {
-
-            harvest.finishedAt = LocalDateTime.now()
-            harvest.logs = StringUtils.abbreviate(logCollector.logs.map {
-              "${
-                it.time.toLocalDateTime().format(iso8601DateFormat)
-              }  ${it.message}"
-            }
-              .joinToString("\n"), "...", 32000)
-            harvestService.saveLast(harvest)
           }
-        }
         }
     } while (sources.isNotEmpty())
 
-    return totalAppended
 //    val defaultScheduledLastAt = Date.from(
 //      LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
 //        ZoneOffset.UTC
@@ -234,7 +227,7 @@ class RepositoryHarvester(
     sourceService.save(source)
   }
 
-  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Pair<Int, Int> {
+  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Int {
     val output = scrapeService.scrape(source, logCollector)
     return importElement(output, source.repositoryId, source, logCollector)
   }
@@ -244,24 +237,35 @@ class RepositoryHarvester(
     repositoryId: UUID,
     source: SourceEntity,
     logCollector: LogCollector
-  ): Pair<Int, Int> {
+  ): Int {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] importElement")
+    val repository = repositoryService.findById(repositoryId).orElseThrow()
     return if (output.outputs.isEmpty()) {
       throw NoItemsRetrievedException()
     } else {
       val lastAction = output.outputs.last()
-      lastAction.fragment?.let { fragment ->
-        fragment.items?.let {
+      val documents = lastAction.fragment?.let { fragment ->
+        if (fragment.items?.isEmpty() == false) {
           importItems(
-            repositoryId,
-            it,
+            repository,
+            fragment.items,
             fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data },
             source,
             logCollector
           )
+        } else {
+          if (fragment.fragments?.isEmpty() == false) {
+            fragment.fragments.flatMap { importFragment(repository, it, source, logCollector) }
+          } else {
+            emptyList()
+          }
         }
-      } ?: Pair(0, 0)
+      } ?: emptyList()
+
+      triggerPostReleaseEffects(repository, documents)
+      triggerPlugins(repository, documents)
+      documents.size
     }
 //    lastAction.extract.image?.let {
 //      importImageElement(corrId, it, repositoryId, source)
@@ -270,6 +274,61 @@ class RepositoryHarvester(
 //      importSelectorElement(corrId, it, repositoryId, source)
 //    }
   }
+
+  private suspend fun triggerPostReleaseEffects(
+    repository: RepositoryEntity,
+    documents: List<Pair<Boolean, DocumentEntity>>
+  ) {
+    documentService.triggerPostReleaseEffects(documents.map { it.second }, repository)
+  }
+
+  private suspend fun triggerPlugins(
+    repository: RepositoryEntity,
+    documents: List<Pair<Boolean, DocumentEntity>>
+  ) {
+    val corrId = coroutineContext.corrId()!!
+    if (repository.plugins.isNotEmpty()) {
+      try {
+        log.debug("[$corrId] delete all document job by documents")
+        documentPipelineService.deleteAllByDocumentIdIn(
+          documents.filter { (isNew, _) -> !isNew }
+            .map { (_, document) -> document.id })
+      } catch (e: Exception) {
+        log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
+      }
+    }
+    documentPipelineService.saveAll(
+      documents
+        .map { (_, document) -> document }
+        .flatMap {
+          repository.plugins
+            .mapIndexed { index, pluginRef -> toDocumentPipelineJob(pluginRef, it, index) }
+            .toMutableList()
+        }
+    )
+  }
+
+  private suspend fun importFragment(
+    repository: RepositoryEntity,
+    fragment: ScrapeExtractFragment,
+    source: SourceEntity,
+    logCollector: LogCollector
+  ): List<Pair<Boolean, DocumentEntity>> {
+    val corrId = coroutineContext.corrId()!!
+
+    log.info("[${corrId}] importImageElement")
+
+    val updated = fragment.asEntity(repository.id, source)
+    val existing =
+      documentService.findFirstByContentHashOrUrlAndRepositoryId(updated.contentHash, updated.url, repository.id)
+
+    val validNewOrUpdatedDocuments =
+      filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository, logCollector)!!))
+    documentService.saveAll(validNewOrUpdatedDocuments)
+
+    return listOf(Pair(existing != null, updated))
+  }
+
 
 //  private fun importSelectorElement(
 //    corrId: String,
@@ -314,18 +373,17 @@ class RepositoryHarvester(
 //  }
 
   private suspend fun importItems(
-    repositoryId: UUID,
+    repository: RepositoryEntity,
     items: List<JsonItem>,
     next: List<String>?,
     source: SourceEntity,
     logCollector: LogCollector
-  ): Pair<Int, Int> {
+  ): List<Pair<Boolean, DocumentEntity>> {
     val corrId = coroutineContext.corrId()!!
     if (items.isEmpty()) {
       throw NoItemsRetrievedException()
     }
 
-    val repository = repositoryService.findById(repositoryId).orElseThrow()
     log.info("[$corrId] importItems size=${items.size}")
     if (repository.plugins.isEmpty()) {
       logCollector.log("[$corrId] importItems size=${items.size}")
@@ -341,7 +399,7 @@ class RepositoryHarvester(
       .mapNotNull { updated ->
         try {
           val existing =
-            documentService.findFirstByContentHashOrUrlAndRepositoryId(updated.contentHash, updated.url, repositoryId)
+            documentService.findFirstByContentHashOrUrlAndRepositoryId(updated.contentHash, updated.url, repository.id)
           updated.imageUrl = detectMainImageUrl(updated.html)
           createOrUpdate(updated, existing, repository, logCollector)
         } catch (e: Exception) {
@@ -351,45 +409,12 @@ class RepositoryHarvester(
         }
       }
 
-    val validator = Validation.buildDefaultValidatorFactory().validator
-    val validNewOrUpdatedDocuments = newOrUpdatedDocuments
-      .filter { document ->
-        validator.validate(document).let { validation ->
-          if (validation.isEmpty()) {
-            true
-          } else {
-            log.warn("[$corrId] document ${StringUtils.substring(document.second.url, 100)} invalid: $validation")
-            false
-          }
-        }
-      }.map { (_, document) -> document }
+    val validNewOrUpdatedDocuments = filterInvalidDocuments(newOrUpdatedDocuments)
     documentService.saveAll(validNewOrUpdatedDocuments)
 
     if (validNewOrUpdatedDocuments.isNotEmpty()) {
-      log.info("[$corrId] $repositoryId/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
+      log.info("[$corrId] ${repository.id}/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
     }
-
-    documentService.triggerPostReleaseEffects(validNewOrUpdatedDocuments, repository)
-
-    if (repository.plugins.isNotEmpty()) {
-      try {
-        log.debug("[$corrId] delete all document job by documents")
-        documentPipelineService.deleteAllByDocumentIdIn(
-          newOrUpdatedDocuments.filter { (isNew, _) -> !isNew }
-            .map { (_, document) -> document.id })
-      } catch (e: Exception) {
-        log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
-      }
-    }
-    documentPipelineService.saveAll(
-      newOrUpdatedDocuments
-        .map { (_, document) -> document }
-        .flatMap {
-          repository.plugins
-            .mapIndexed { index, pluginRef -> toDocumentPipelineJob(pluginRef, it, index) }
-            .toMutableList()
-        }
-    )
 
     log.debug("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
     logCollector.log("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
@@ -413,7 +438,26 @@ class RepositoryHarvester(
         log.debug("[$corrId] wont follow page urls")
       }
     }
-    return Pair(items.size, newOrUpdatedDocuments.filter { (isNew, _) -> isNew }.size)
+    return newOrUpdatedDocuments
+  }
+
+  private suspend fun filterInvalidDocuments(
+    newOrUpdatedDocuments: List<Pair<Boolean, DocumentEntity>>,
+  ): List<DocumentEntity> {
+    val validator = Validation.buildDefaultValidatorFactory().validator
+    val validNewOrUpdatedDocuments = newOrUpdatedDocuments
+      .filter { document ->
+        validator.validate(document).let { validation ->
+          if (validation.isEmpty()) {
+            true
+          } else {
+            val corrId = coroutineContext.corrId()!!
+            log.warn("[$corrId] document ${StringUtils.substring(document.second.url, 100)} invalid: $validation")
+            false
+          }
+        }
+      }.map { (_, document) -> document }
+    return validNewOrUpdatedDocuments
   }
 
   suspend fun detectMainImageUrl(html: String?): String? {
@@ -507,21 +551,31 @@ class RepositoryHarvester(
     job.executorParams = plugin.params
     return job
   }
+}
 
-//  private fun importImageElement(
-//    corrId: String,
-//    scrapedData: ScrapedByBoundingBox,
-//    repositoryId: UUID,
-//    source: SourceEntity
-//  ) {
-//    log.info("[${corrId}] importImageElement")
-//    val id = CryptUtil.sha1(scrapedData.data.base64Data)
-//    if (!documentDAO.existsByContentTitleAndRepositoryId(id, repositoryId)) {
-//      log.info("[$corrId] create item $id")
-//      TODO("not implemented")
-////      recordDAO.save(entity)
-//    }
-//  }
+private fun ScrapeExtractFragment.asEntity(repositoryId: UUID, source: SourceEntity): DocumentEntity {
+  val d = DocumentEntity()
+  d.title = LocalDateTime.now().toString()
+  d.sourceId = source.id
+  d.repositoryId = repositoryId
+  if (data?.data != null) {
+    d.raw = Base64.getDecoder().decode(data.data)
+    d.rawMimeType = data.mimeType
+  }
+  d.tags = source.tags
+  d.contentHash = CryptUtil.sha1(
+    when (uniqueBy) {
+      ScrapeExtractFragmentPart.html -> html?.data
+      ScrapeExtractFragmentPart.text -> text?.data
+      ScrapeExtractFragmentPart.data -> data?.data
+    }!!
+  )
+  d.html = html?.data
+  d.imageUrl = ""
+  d.text = StringUtils.trimToEmpty(text?.data)
+  d.status = ReleaseStatus.released
+  d.url = "https://does-not-exist"
+  return d
 }
 
 //inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {

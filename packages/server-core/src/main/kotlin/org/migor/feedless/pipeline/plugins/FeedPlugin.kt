@@ -9,6 +9,7 @@ import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
@@ -72,7 +73,12 @@ class FeedPlugin : FragmentTransformerPlugin {
     return FragmentOutput(
       fragmentName = id(),
       items = feed.items,
-      fragments = feed.links?.map { ScrapeExtractFragment(data = MimeData(data = it, mimeType = MIME_URL)) }
+      fragments = feed.links?.map {
+        ScrapeExtractFragment(
+          data = MimeData(data = it, mimeType = MIME_URL),
+          uniqueBy = ScrapeExtractFragmentPart.data
+        )
+      }
     )
   }
 

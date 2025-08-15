@@ -46,6 +46,7 @@ class WebExtractServiceTest {
       fragmentName = "foo",
       xpath = DOMElementByXPath(value = "./"),
       emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+      uniqueBy = ScrapeEmit.html
     )
     val element = Jsoup.parse(html.trimIndent())
 
@@ -60,6 +61,7 @@ class WebExtractServiceTest {
       fragmentName = "foo",
       xpath = DOMElementByXPath(value = "//a"),
       emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+      uniqueBy = ScrapeEmit.html
     )
     val element = Jsoup.parse(html.trimIndent())
 

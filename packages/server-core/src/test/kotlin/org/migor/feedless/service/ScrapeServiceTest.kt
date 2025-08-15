@@ -93,7 +93,7 @@ class ScrapeServiceTest {
   @Test
   fun `prerenders with pixel-extract action`() {
     val action = mock(ExtractXpathActionEntity::class.java)
-    `when`(action.emit).thenReturn(arrayOf(ExtractEmit.pixel))
+    `when`(action.getEmit()).thenReturn(arrayOf(ExtractEmit.pixel))
     assertThat(needsPrerendering(sourceWithActions(listOf(action)), 0)).isTrue()
   }
 
@@ -199,7 +199,7 @@ class ScrapeServiceTest {
   fun `extract action`() = runTest {
     val extractAction = mock(ExtractXpathActionEntity::class.java)
     `when`(extractAction.xpath).thenReturn("//title")
-    `when`(extractAction.emit).thenReturn(arrayOf(ExtractEmit.html))
+    `when`(extractAction.getEmit()).thenReturn(arrayOf(ExtractEmit.html))
 
     val scrapeResponse =
       scrapeService.scrape(sourceWithActions(listOf(fetchAction, extractAction)), LogCollector())

@@ -3,17 +3,20 @@ package org.migor.feedless.actions
 import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
-import jakarta.persistence.PostLoad
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.generated.types.ScrapeEmit
 import java.sql.Types
+
 
 @Entity
 @Table(name = "t_action_extract_xpath")
@@ -39,17 +42,25 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
   @Column(name = "emit", nullable = false, columnDefinition = "text[]")
   open var emitRaw: Array<String> = emptyArray()
 
-  @Transient
-  open var emit: Array<ExtractEmit> = emptyArray()
+  @Enumerated(EnumType.STRING)
+  @Column(name = "unique_by", nullable = false)
+  open lateinit var uniqueBy: ExtractEmit
 
-  @PostLoad
-  fun postLoad() {
-    emit = emitRaw.map { ExtractEmit.valueOf(it) }.toTypedArray()
+  @Transient
+  fun getEmit(): Array<ExtractEmit> {
+    return emitRaw.map { ExtractEmit.valueOf(it) }.toTypedArray()
+  }
+
+  @Transient
+  fun setEmit(emit: Array<ExtractEmit>) {
+    emitRaw = emit.map { it.name }.toTypedArray()
   }
 
   @PrePersist
   fun prePersist() {
-    emitRaw = emit.map { it.name }.toTypedArray()
+    assert(
+      emitRaw.contains(uniqueBy.name),
+      { "uniqueBy '${uniqueBy}' must be part of emit types [${emitRaw.joinToString(", ")}]" })
   }
 }
 
