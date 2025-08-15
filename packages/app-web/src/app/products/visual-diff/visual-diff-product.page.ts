@@ -14,7 +14,6 @@ import {
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
 import { filter, map, Subscription } from 'rxjs';
-import { GqlVertical } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
   IonButtons,
@@ -87,6 +86,4 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
-  protected readonly GqlProductName = GqlVertical;
 }

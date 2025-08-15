@@ -24,6 +24,7 @@ import {
   GqlRecordField,
   GqlScrapeActionInput,
   GqlScrapeEmit,
+  GqlScrapeExtractInput,
   GqlSourceInput,
   GqlVertical,
 } from '../../../generated/graphql';
@@ -136,9 +137,9 @@ export class TrackerEditPage
         Validators.max(1),
       ]),
       // email: createEmailFormControl<Email>(''),
-      compareBy: new FormControl<PageFragmentType>('page', [
-        Validators.required,
-      ]),
+      // compareBy: new FormControl<PageFragmentType>('page', [
+      //   Validators.required,
+      // ]),
       output: new FormControl<PageFragmentType>('page', [Validators.required]),
       fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, [
         Validators.required,
@@ -208,7 +209,8 @@ export class TrackerEditPage
           this.formGroup.controls.url.setValue(queryParams.url);
         }
       }),
-      this.formGroup.controls.compareBy.valueChanges.subscribe(
+      // this.formGroup.controls.compareBy.valueChanges.subscribe(
+      this.formGroup.controls.output.valueChanges.subscribe(
         (pageFragmentType) => {
           console.log('compareBy', pageFragmentType);
           this.formGroup.controls.elementXpath.disable();
@@ -227,10 +229,12 @@ export class TrackerEditPage
       this.formGroup.controls.compareType.valueChanges.subscribe(
         (compareType) => {
           if (compareType === 'pixel') {
-            this.formGroup.controls.compareBy.enable();
+            // this.formGroup.controls.compareBy.enable();
+            this.formGroup.controls.output.enable();
             this.formGroup.controls.elementXpath.disable();
           } else {
-            this.formGroup.controls.compareBy.disable();
+            // this.formGroup.controls.compareBy.disable();
+            this.formGroup.controls.output.disable();
             this.formGroup.controls.elementXpath.enable();
           }
           this.changeRef.detectChanges();
@@ -336,7 +340,7 @@ export class TrackerEditPage
     // });
 
     this.source = {
-      title: `From ${url}`,
+      title: `Track ${url}`,
       flow: {
         sequence: [
           {
@@ -349,8 +353,7 @@ export class TrackerEditPage
               },
             },
           },
-          // ...this.getActionsRequestFragment(),
-          this.getEmit(),
+          // this.getEmit(),
         ],
       },
     };
@@ -366,23 +369,10 @@ export class TrackerEditPage
     }
     const sources: GqlSourceInput[] = [
       {
-        title: `From ${this.formGroup.value.url}`,
+        title: `Track ${this.formGroup.value.url}`,
         tags: [],
         flow: {
-          sequence: [
-            {
-              fetch: {
-                get: {
-                  url: {
-                    literal: this.formGroup.value.url,
-                  },
-                  // additionalWaitSec: this.additionalWait.value,
-                },
-              },
-            },
-            ...this.getActionsRequestFragment(),
-            this.getEmit(),
-          ],
+          sequence: [...this.getActionsRequestFragment(), this.getEmit()],
         },
       },
     ];
@@ -450,20 +440,22 @@ export class TrackerEditPage
 
   private getEmit(): GqlScrapeActionInput {
     if (this.formGroup.value.output === 'area') {
-      return {
-        extract: {
-          fragmentName: 'element from bounding box',
-          imageBased: {
-            boundingBox: this.formGroup.value.areaBoundingBox,
-          },
+      const extract: GqlScrapeExtractInput = {
+        fragmentName: 'output',
+        imageBased: {
+          boundingBox: this.formGroup.value.areaBoundingBox,
         },
+      };
+      return {
+        extract,
       };
     } else {
       return {
         extract: {
-          fragmentName: 'element from xpath',
+          fragmentName: 'output',
           selectorBased: {
-            fragmentName: '',
+            fragmentName: 'element from xpath',
+            uniqueBy: this.getUniqueBy(this.formGroup.value.compareType),
             xpath: {
               value: this.formGroup.controls.elementXpath.enabled
                 ? this.formGroup.value.elementXpath
@@ -474,5 +466,17 @@ export class TrackerEditPage
         },
       };
     }
+  }
+
+  private getUniqueBy(compareType: GqlRecordField): GqlScrapeEmit {
+    switch (compareType) {
+      case GqlRecordField.Markup:
+        return GqlScrapeEmit.Html;
+      case GqlRecordField.Text:
+        return GqlScrapeEmit.Text;
+      case GqlRecordField.Pixel:
+        return GqlScrapeEmit.Pixel;
+    }
+    throw new Error(`Cannot map compareType ${compareType} to GqlScrapeEmit`);
   }
 }

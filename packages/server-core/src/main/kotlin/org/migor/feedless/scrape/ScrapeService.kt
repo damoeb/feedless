@@ -27,6 +27,7 @@ import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.generated.types.ScrapeExtractFragment
+import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.TextData
@@ -179,7 +180,8 @@ class ScrapeService {
           }
 
           context.log("""filter params: ${action.executorParams}""")
-          val result = ScrapeActionOutput(index = index,
+          val result = ScrapeActionOutput(
+            index = index,
             fragment = FragmentOutput(
               fragmentName = "filter",
               items = output.fragment.items.filterIndexed { i, item ->
@@ -217,11 +219,11 @@ class ScrapeService {
   }
 
   private fun handleExtract(index: Int, action: ExtractXpathActionEntity, context: ScrapeContext) {
-    if (action.emit.contains(ExtractEmit.pixel)) {
+    if (action.getEmit().contains(ExtractEmit.pixel)) {
       this.noopAction(action)
     } else {
       context.log("handleExtract $action")
-      purgeOrExtract(index, action.xpath, false, action.emit, context)
+      purgeOrExtract(index, action.xpath, false, action.getEmit(), context)
     }
   }
 
@@ -243,24 +245,22 @@ class ScrapeService {
       elements.remove()
       listOf(
         ScrapeExtractFragment(
-          html = TextData(document.html())
+          html = TextData(document.html()),
+          uniqueBy = ScrapeExtractFragmentPart.html
         )
       )
     } else {
       context.log("extract xpath '${xpath}' -> ${elements.size} elements")
-      elements.map {
-        ScrapeExtractFragment(
-          html = if (emit.contains(ExtractEmit.html)) {
-            TextData(it.outerHtml())
+      elements.mapNotNull {
+        if (emit.contains(ExtractEmit.html)) {
+          ScrapeExtractFragment(html = TextData(it.outerHtml()), uniqueBy = ScrapeExtractFragmentPart.html)
+        } else {
+          if (emit.contains(ExtractEmit.text)) {
+            ScrapeExtractFragment(text = TextData(it.text()), uniqueBy = ScrapeExtractFragmentPart.text)
           } else {
             null
-          },
-          text = if (emit.contains(ExtractEmit.text)) {
-            TextData(it.text())
-          } else {
-            null
-          },
-        )
+          }
+        }
       }
     }
     val result = ScrapeActionOutput(
@@ -375,7 +375,7 @@ fun needsPrerendering(source: SourceEntity, currentActionIndex: Int): Boolean {
   val actions = source.actions.filterIndexed { index, _ -> index >= currentActionIndex }
   val hasClickPosition = actions.filterIsInstance<ClickPositionActionEntity>().isNotEmpty()
   val hasExtractBbox = actions.filterIsInstance<ExtractBoundingBoxActionEntity>().isNotEmpty()
-  val hasPixel = actions.filterIsInstance<ExtractXpathActionEntity>().any { it.emit.contains(ExtractEmit.pixel) }
+  val hasPixel = actions.filterIsInstance<ExtractXpathActionEntity>().any { it.getEmit().contains(ExtractEmit.pixel) }
   val hasForcedPrerendering = actions.filterIsInstance<FetchActionEntity>().any { it.forcePrerender }
   return hasClickPosition || hasExtractBbox || hasForcedPrerendering || hasPixel
 }

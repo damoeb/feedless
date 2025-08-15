@@ -26,7 +26,9 @@
     "test:ci": "npx dotenv -e .env -- ng test -c ci",
     "lint": "yarn prettier --write --log-level=warn .",
     "outdated": "upgrade-interactive --latest",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml",
+    "storybook": "ng run app:storybook",
+    "build-storybook": "ng run app:build-storybook"
   },
   "private": true,
   "dependencies": {
@@ -92,6 +94,9 @@
     "@graphql-codegen/typescript-document-nodes": "^4.0.16",
     "@graphql-codegen/typescript-operations": "^4.6.1",
     "@ionic/angular-toolkit": "^12.3.0",
+    "@storybook/addon-docs": "^9.1.2",
+    "@storybook/angular": "^9.1.2",
+    "@storybook/builder-vite": "^9.1.2",
     "@types/d3-scale": "^4.0.9",
     "@types/flexsearch": "^0.7.6",
     "@types/jasmine": "^5.1.4",
@@ -109,6 +114,7 @@
     "eslint-plugin-jsdoc": "^50.4.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-storybook": "^9.1.2",
     "jasmine-core": "^5.4.0",
     "jasmine-spec-reporter": "^7.0.0",
     "karma": "^6.4.4",
@@ -120,6 +126,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "prettier": "^3.3.3",
     "sitemap": "^8.0.0",
+    "storybook": "^9.1.2",
     "ts-node": "^10.9.2",
     "typescript": "5.8.3"
   }

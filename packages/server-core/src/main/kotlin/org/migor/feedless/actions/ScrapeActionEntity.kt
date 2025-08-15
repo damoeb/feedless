@@ -111,7 +111,8 @@ fun ScrapeActionEntity.toDto(): ScrapeAction {
         selectorBased = DOMExtract(
           fragmentName = fragmentName,
           xpath = DOMElementByXPath(xpath),
-          emit = emit.map { it.toDto() }
+          uniqueBy = uniqueBy.toDto(),
+          emit = getEmit().map { it.toDto() }
         )
       )
     )

@@ -13,6 +13,22 @@ describe('PuppeteerService', () => {
     service = module.get<PuppeteerService>(PuppeteerService);
   });
 
+  function mockNewPage(goto: () => string) {
+    return jest.fn().mockImplementation(() => {
+      return {
+        on: () => {},
+        setExtraHTTPHeaders: () => {},
+        goto,
+        evaluate: () => {},
+        viewport: () => {},
+        setRequestInterception: () => {},
+        cookies: () => Promise.resolve([]),
+        screenshot: () =>
+          Promise.resolve(Buffer.from('screenshot').toString('base64')),
+      };
+    });
+  }
+
   it('error will be returned if browser raises an error', async () => {
     // 'ERR_NAME_NOT_RESOLVED',
     //   'ERR_TIMED_OUT',
@@ -36,20 +52,8 @@ describe('PuppeteerService', () => {
         close: () => {},
       };
     });
-    service.newPage = jest.fn().mockImplementation(() => {
-      return {
-        on: () => {},
-        setExtraHTTPHeaders: () => {},
-        goto: () => {
-          throw new Error('ERR_CONNECTION_RESET');
-        },
-        evaluate: () => {},
-        viewport: () => {},
-        setRequestInterception: () => {},
-        cookies: () => Promise.resolve([]),
-        screenshot: () =>
-          Promise.resolve(Buffer.from('screenshot').toString('base64')),
-      };
+    service.newPage = mockNewPage(() => {
+      throw new Error('ERR_CONNECTION_RESET');
     });
 
     const response = await service.submit({
@@ -71,5 +75,48 @@ describe('PuppeteerService', () => {
     });
     expect(response.ok).toBeFalsy();
     expect(response.errorMessage).toEqual('ERR_CONNECTION_RESET');
+  });
+
+  xit('extract', async () => {
+    service.newBrowser = jest.fn().mockImplementation(() => {
+      return {
+        close: () => {},
+      };
+    });
+    service.newPage = mockNewPage(() => {
+      throw new Error('ERR_CONNECTION_RESET');
+    });
+
+    const response = await service.submit({
+      id: '',
+      title: '',
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: 'https://foo.bar',
+                },
+              },
+            },
+          },
+          {
+            extract: {
+              fragmentName: '',
+              selectorBased: {
+                emit: [],
+                fragmentName: '',
+                max: 1,
+                xpath: {
+                  value: '//',
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+    expect(response.ok).toBeTruthy();
   });
 });

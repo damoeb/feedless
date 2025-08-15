@@ -233,6 +233,7 @@ export class SourceBuilder {
             xpath: {
               value: '/',
             },
+            uniqueBy: GqlScrapeEmit.Html,
             emit: [GqlScrapeEmit.Html, GqlScrapeEmit.Text, GqlScrapeEmit.Pixel],
           },
         },

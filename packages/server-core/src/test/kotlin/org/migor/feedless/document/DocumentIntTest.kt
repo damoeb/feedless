@@ -1,4 +1,4 @@
-package org.migor.feedless
+package org.migor.feedless.document
 
 import PostgreSQLExtension
 import kotlinx.coroutines.test.runTest
@@ -7,14 +7,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.document.DocumentDAO
-import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.GroupService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO
@@ -74,7 +73,7 @@ import java.time.LocalDateTime
   MockBean(PermissionService::class),
 )
 @Testcontainers
-class IntegrationTest {
+class DocumentIntTest {
 
   lateinit var repository: RepositoryEntity
 

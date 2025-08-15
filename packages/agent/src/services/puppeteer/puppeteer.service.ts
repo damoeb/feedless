@@ -1,6 +1,7 @@
 import puppeteer, {
   Browser,
   Frame,
+  GoToOptions,
   HTTPResponse,
   Page,
   ScreenshotClip,
@@ -16,6 +17,7 @@ import {
   DomElement,
   DomElementByNameOrXPath,
   DomElementByXPath,
+  DomExtract,
   FetchActionDebugResponseInput,
   FieldWrapper,
   HttpFetch,
@@ -27,6 +29,7 @@ import {
   ScrapeActionResponseInput,
   ScrapeEmit,
   ScrapeExtract,
+  ScrapeExtractFragmentPart,
   ScrapeExtractResponseInput,
   ScrapeOutputResponseInput,
   ScrapeResponseInput,
@@ -105,6 +108,7 @@ export class PuppeteerService {
     const viewport: Viewport = this.resolveViewport(source);
     return puppeteer.launch({
       headless: this.isDebug ? false : 'shell',
+      // headless: false,
       devtools: false,
       defaultViewport: viewport,
       executablePath: this.config.getString('APP_CHROMIUM_BIN', {
@@ -292,9 +296,14 @@ export class PuppeteerService {
   private async grabElement(
     page: Page,
     fragmentName: string,
-    xpath: string,
-    exposePixel: boolean,
+    extract: DomExtract,
+    appendLog: (msg: string) => void,
   ): Promise<ScrapeExtractResponseInput> {
+    const xpath = extract.xpath.value;
+    const exposePixel = extract.emit.includes(ScrapeEmit.Pixel);
+    appendLog(
+      `fragment='${fragmentName}' xpath='${xpath}' pixel=${exposePixel}`,
+    );
     this.log.log(
       `grabElement fragmentName=${fragmentName} xpath=${xpath} exposePixel=${exposePixel}`,
     );
@@ -345,6 +354,7 @@ export class PuppeteerService {
       fragmentName,
       fragments: [
         {
+          uniqueBy: this.asScrapeEmit(extract.uniqueBy),
           html: {
             data: evaluateResponse.markup,
           },
@@ -389,6 +399,7 @@ export class PuppeteerService {
             mimeType: 'image/png',
             data: screenshot,
           },
+          uniqueBy: ScrapeExtractFragmentPart.Data,
         },
       ],
     };
@@ -449,7 +460,7 @@ export class PuppeteerService {
           await browser.close();
         }
         this.log.warn(
-          `prerendered within ${(Date.now() - queuedAt) / 1000}s ${e.message}`,
+          `prerendered failed after ${(Date.now() - queuedAt) / 1000}s ${e.message}`,
           e,
         );
         reject(e.message);
@@ -579,13 +590,13 @@ export class PuppeteerService {
   ): Promise<ScrapeActionResponseInput> {
     const fragmentName = extract.fragmentName;
     if (extract.selectorBased) {
-      const xpath = extract.selectorBased.xpath.value;
-      const exposePixel = extract.selectorBased.emit.includes(ScrapeEmit.Pixel);
-      appendLog(
-        `fragment='${fragmentName}' xpath='${xpath}' pixel=${exposePixel}`,
-      );
       return {
-        extract: await this.grabElement(page, fragmentName, xpath, exposePixel),
+        extract: await this.grabElement(
+          page,
+          fragmentName,
+          extract.selectorBased,
+          appendLog,
+        ),
       };
     } else {
       if (extract.imageBased.boundingBox) {
@@ -695,11 +706,16 @@ export class PuppeteerService {
   ): Promise<ScrapeActionResponseInput> {
     const networkDataHandle = this.interceptNetwork(page);
     const url = httpGet.get.url.literal;
-    appendLog(`fetch url ${url}`);
-    const response = await page.goto(url, {
+    const options: GoToOptions = {
       waitUntil: httpGet.get.waitUntil || PuppeteerWaitUntil.Load,
       timeout: httpGet.get.timeout,
-    });
+    };
+    if (this.isDebug) {
+      appendLog(`fetch url ${url} ${JSON.stringify(options, null, 2)}`);
+    } else {
+      appendLog(`fetch url ${url} ${JSON.stringify(options)}`);
+    }
+    const response = await page.goto(url, options);
 
     const logs: string[] = [];
     page.on('console', (consoleObj) => {
@@ -720,6 +736,22 @@ export class PuppeteerService {
         ),
       },
     };
+  }
+
+  private asScrapeEmit(scrapeEmit: ScrapeEmit): ScrapeExtractFragmentPart {
+    switch (scrapeEmit) {
+      case ScrapeEmit.Html:
+        return ScrapeExtractFragmentPart.Html;
+      case ScrapeEmit.Text:
+        return ScrapeExtractFragmentPart.Text;
+      case ScrapeEmit.Pixel:
+        return ScrapeExtractFragmentPart.Data;
+      case ScrapeEmit.Date:
+        return ScrapeExtractFragmentPart.Data;
+    }
+    throw new Error(
+      `Cannot map ScrapeEmit '${scrapeEmit}' as ScrapeExtractFragmentPart`,
+    );
   }
 }
 

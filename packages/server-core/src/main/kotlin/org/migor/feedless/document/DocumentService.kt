@@ -193,7 +193,7 @@ class DocumentService(
             ReleaseStatus.unreleased
           )
         } else {
-          log.info("no retention with maxItems given repo ${repository.id}")
+          log.debug("no retention with maxItems given repo ${repository.id}")
         }
       }
   }
@@ -257,14 +257,14 @@ class DocumentService(
       val documents = documentDAO
         .findAllByRepositoryIdAndIdIn(
           repositoryId, if (documentIds.`in` != null) {
-          documentIds.`in`.map { UUID.fromString(it) }
-        } else {
-          if (documentIds.eq != null) {
-            listOf(UUID.fromString(documentIds.eq))
+            documentIds.`in`.map { UUID.fromString(it) }
           } else {
-            throw IllegalArgumentException("operation not supported")
+            if (documentIds.eq != null) {
+              listOf(UUID.fromString(documentIds.eq))
+            } else {
+              throw IllegalArgumentException("operation not supported")
+            }
           }
-        }
         )
 
       documentDAO.deleteAllById(documents.map { it.id });
@@ -343,8 +343,8 @@ class DocumentService(
                 if (plugin == null) {
                   log.error(
                     "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
-                    pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
-                  }]")
+                      pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
+                    }]")
                 } else {
                   log.warn("[$corrId] resolved unsupported plugin ${plugin}")
                 }

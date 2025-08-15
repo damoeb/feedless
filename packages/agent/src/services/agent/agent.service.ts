@@ -36,9 +36,9 @@ export class AgentService implements OnModuleInit {
     const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
     graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
-        this.log.log('incoming event');
+        this.log.debug('incoming event');
         if (event.scrape) {
-          this.log.log(`harvestRequest ${JSON.stringify(event)}`);
+          this.log.debug(`harvestRequest ${JSON.stringify(event)}`);
           try {
             const scrapeResponse = await this.puppeteerService.submit(
               event.scrape as any,

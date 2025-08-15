@@ -319,6 +319,7 @@ class WebToFeedTransformer(
           fragmentName = "next",
           xpath = DOMElementByXPath(value = xpath),
           max = 10,
+          uniqueBy = ScrapeEmit.text,
           emit = listOf(ScrapeEmit.text)
         ),
         element,
@@ -893,6 +894,7 @@ private fun Selectors.toScrapeExtracts(): DOMExtract {
       fragmentName = JsonItem.URL,
       xpath = DOMElementByXPath(value = linkXPath),
       max = 1,
+      uniqueBy = ScrapeEmit.text,
       emit = listOf(ScrapeEmit.text, ScrapeEmit.html)
     )
   )
@@ -907,6 +909,7 @@ private fun Selectors.toScrapeExtracts(): DOMExtract {
         fragmentName = fragmentName,
         xpath = DOMElementByXPath(value = dateXPath!!),
         max = 1,
+        uniqueBy = ScrapeEmit.text,
         emit = listOf(ScrapeEmit.date, ScrapeEmit.html)
       )
     )
@@ -916,6 +919,7 @@ private fun Selectors.toScrapeExtracts(): DOMExtract {
     fragmentName = "feed",
     xpath = DOMElementByXPath(value = contextXPath),
     emit = listOf(ScrapeEmit.html, ScrapeEmit.text),
+    uniqueBy = ScrapeEmit.text,
     extract = extracts
   )
 }
