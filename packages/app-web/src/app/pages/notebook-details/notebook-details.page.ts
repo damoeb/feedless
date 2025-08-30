@@ -7,7 +7,6 @@ import {
   inject,
   OnDestroy,
   OnInit,
-  viewChild,
   viewChildren,
 } from '@angular/core';
 import { debounce, interval, Subscription } from 'rxjs';
@@ -16,10 +15,15 @@ import {
   Note,
   Notebook,
   NotebookService,
-  SearchResultGroup,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { debounce as debounceFn, DebouncedFunc, isNull, omit } from 'lodash-es';
+import {
+  debounce as debounceFn,
+  DebouncedFunc,
+  isNull,
+  isString,
+  omit,
+} from 'lodash-es';
 import {
   AlertController,
   IonButton,
@@ -31,15 +35,9 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
   IonMenu,
-  IonPopover,
   IonProgressBar,
-  IonSearchbar,
   IonSplitPane,
-  IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Completion } from '@codemirror/autocomplete';
@@ -65,23 +63,16 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
 import { NgClass } from '@angular/common';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
-
-type SearchResult = {
-  id?: string;
-  label: string;
-  text?: string;
-  isGroup?: boolean;
-  onClick?: () => void;
-};
+import {
+  TypeaheadSuggestion,
+  TypeheadComponent,
+} from '../../components/typeahead/typehead.component';
+import { notebookRepository } from '../../services/notebook-repository';
 
 interface OpenNote extends Note {
   formControl: FormControl<string>;
   subscriptions: Subscription[];
 }
-
-type NoteReferences = {
-  [name: string]: Note[];
-};
 
 @Component({
   selector: 'app-notebook-details-page',
@@ -100,11 +91,7 @@ type NoteReferences = {
     IonIcon,
     FormsModule,
     IonContent,
-    IonSearchbar,
     ReactiveFormsModule,
-    IonList,
-    IonItem,
-    IonLabel,
     NgClass,
     DarkModeButtonComponent,
     LoginButtonComponent,
@@ -112,10 +99,9 @@ type NoteReferences = {
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonText,
-    IonPopover,
     CodeEditorComponent,
     IonProgressBar,
+    TypeheadComponent,
   ],
   standalone: true,
 })
@@ -132,16 +118,11 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   busy = false;
   private subscriptions: Subscription[] = [];
   repository: RepositoryWithFrequency;
-  matches: SearchResult[] = [];
-  focussedMatchIndex: number = -1;
-
   openNotes: OpenNote[] = [];
-
   systemBusy: boolean;
   currentNote: OpenNote = null;
-  queryFc = new FormControl<string>('');
 
-  readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
+  // readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
 
   readonly codeEditorComponents = viewChildren(CodeEditorComponent);
 
@@ -159,10 +140,12 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     (searchMode?: boolean | null) => Promise<void>
   >;
   protected starredNotes: Note[];
+  protected suggestions: TypeaheadSuggestion[] = [];
 
   constructor() {
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
     this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 400);
+    this.searchNotes = this.searchNotes.bind(this);
     addIcons({
       cloudDownloadOutline,
       cloudUploadOutline,
@@ -175,11 +158,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    let query = '';
     this.subscriptions.push(
-      this.notebookService.searchResultsChanges.subscribe((groups) =>
-        this.handleSearchResults(groups),
-      ),
+      // this.notebookService.searchResultsChanges.subscribe((groups) =>
+      //   this.handleSearchResults(groups),
+      // ),
       this.activatedRoute.params.subscribe((params) =>
         this.handleParams(params),
       ),
@@ -187,34 +169,25 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         this.systemBusy = systemBusy;
         this.changeRef.detectChanges();
       }),
-      this.notebookService.queryChanges.subscribe(async (query) => {
-        if (this.queryFc.value !== query) {
-          this.queryFc.setValue(query);
-          await this.searchbarElement().setFocus();
-        }
-      }),
-      this.queryFc.valueChanges.subscribe((query) => {
-        this.notebookService.queryChanges.next(query);
-      }),
-      this.notebookService.notesChanges.subscribe(async () => {
-        if (query) {
-          this.notebookService.findAllAsync(query);
-        }
-        this.starredNotes = await this.notebookService
-          .findAll('true', ['isUpVoted'])[0]
-          .notes();
-        this.changeRef.detectChanges();
-      }),
+      // this.notebookService.notesChanges.subscribe(async () => {
+      //   if (query) {
+      //     this.notebookService.findAllAsync(query);
+      //   }
+      //   this.starredNotes = await this.notebookService
+      //     .findAll('true', ['isUpVoted'])[0]
+      //     .notes();
+      //   this.changeRef.detectChanges();
+      // }),
       this.notebookService.openNoteChanges.subscribe((note) =>
         this.openNote(note),
       ),
-      this.notebookService.queryChanges.subscribe((newQuery) => {
-        if (query != newQuery) {
-          console.log('query', newQuery);
-          query = newQuery;
-          this.notebookService.findAllAsync(newQuery);
-        }
-      }),
+      // this.notebookService.queryChanges.subscribe((newQuery) => {
+      //   if (query != newQuery) {
+      //     console.log('query', newQuery);
+      //     query = newQuery;
+      //     this.notebookService.findAllAsync(newQuery);
+      //   }
+      // }),
     );
   }
 
@@ -279,102 +252,16 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private async handleSearchResults(groups: SearchResultGroup[]) {
-    // console.log('handleSearchResults', groups);
-    this.matches = [];
-
-    await groups.reduce(
-      (waitFor: Promise<void>, group) =>
-        waitFor.then(async () => {
-          this.matches.push({
-            label: group.name,
-            isGroup: true,
-          });
-          const notes = await group.notes();
-          for (const note of notes) {
-            this.matches.push({
-              id: note.id,
-              label: note.title,
-              text: note.text,
-              onClick: () => {
-                this.openNote(note);
-              },
-            });
-          }
-        }),
-      Promise.resolve(),
-    );
-
-    this.focussedMatchIndex = -1;
-    this.busy = false;
-    this.changeRef.detectChanges();
-  }
-
-  @HostListener('window:keydown.arrowup', ['$event'])
-  handleKeyUp() {
-    console.log('up', this.focussedMatchIndex);
-    if (this.focussedMatchIndex === 0) {
-      return;
-    }
-    this.focussedMatchIndex--;
-    while (
-      this.focussedMatchIndex > 0 &&
-      this.matches[this.focussedMatchIndex].isGroup
-    ) {
-      this.focussedMatchIndex--;
-    }
-    if (this.focussedMatchIndex < 0) {
-      this.focussedMatchIndex = this.matches.length - 1;
-    }
-    this.changeRef.detectChanges();
-  }
-
-  @HostListener('window:keydown.arrowdown', ['$event'])
-  handleKeyDown() {
-    console.log('down', this.focussedMatchIndex);
-    if (this.focussedMatchIndex === this.matches.length - 1) {
-      return;
-    }
-    this.focussedMatchIndex++;
-    while (
-      this.focussedMatchIndex < this.matches.length - 1 &&
-      this.matches[this.focussedMatchIndex].isGroup
-    ) {
-      this.focussedMatchIndex++;
-    }
-    if (this.focussedMatchIndex > this.matches.length - 1) {
-      this.focussedMatchIndex = 0;
-    }
-    this.changeRef.detectChanges();
-  }
-
-  @HostListener('window:keydown.enter', ['$event'])
-  async handleEnter(event: KeyboardEvent) {
-    console.log('handleEnter', this.focussedMatchIndex);
-    if (this.focussedMatchIndex >= 0 && this.matches?.length > 0) {
-      const searchResult = this.matches[this.focussedMatchIndex];
-      if (!searchResult.isGroup) {
-        setTimeout(() => searchResult.onClick(), 1);
-      }
-    } else {
-      const note = await this.notebookService.createNote({
-        title: this.queryFc.value,
-      });
-      await this.openNote(note);
-    }
-    event.stopPropagation();
-  }
-
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   async openNote(note: Note) {
     console.log('note', note);
-    const inTabs = this.openNotes.find((it) => it.id == note.id);
-    if (inTabs) {
-      this.currentNote = inTabs;
-      this.scrollTo(inTabs);
+    const isAlreadyOpen = this.openNotes.find((it) => it.id == note.id);
+    if (isAlreadyOpen) {
+      this.currentNote = isAlreadyOpen;
+      this.scrollTo(isAlreadyOpen);
     } else {
       const formControl = new FormControl(note.text);
 
@@ -395,7 +282,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
             }),
         ],
       };
-      this.notebookService.findAllAsync(note.id);
+      // this.notebookService.findAll(note.id);
       // await this.refreshReferences(openNote);
       this.currentNote = null;
       this.changeRef.detectChanges();
@@ -407,10 +294,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.searchMode = false;
       this.changeRef.detectChanges();
     }
-  }
-
-  handleQuery(query: string) {
-    this.notebookService.queryChanges.next(query);
   }
 
   private async toggleSearchMode(searchMode: boolean | null = null) {
@@ -433,10 +316,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     this.changeRef.detectChanges();
   }
 
-  // createNote() {
-  //   const note = this.notebookService.createNote();
-  //   return this.openNote(note);
-  // }
+  async createNote() {
+    const note = await this.notebookService.createNote();
+    return this.openNote(note);
+  }
 
   // private async refreshReferences(openNote: OpenNote) {
   //   const search = async (query: string): Promise<Note[]> => {
@@ -480,13 +363,12 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   private async focusSearchElement() {
     console.log('focusSearchElement');
-    this.focussedMatchIndex = 0;
-    const searchbarElement = this.searchbarElement();
-    if (searchbarElement) {
-      await searchbarElement.setFocus();
-      const input = await searchbarElement.getInputElement();
-      input.select();
-    }
+    // const searchbarElement = this.searchbarElement();
+    // if (searchbarElement) {
+    //   await searchbarElement.setFocus();
+    //   const input = await searchbarElement.getInputElement();
+    //   input.select();
+    // }
   }
 
   private scrollTo = (note: OpenNote) => {
@@ -540,5 +422,51 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     const omitFields: (keyof OpenNote)[] = ['formControl', 'subscriptions'];
     const cleanNote: Note = omit(openNote, omitFields) as any;
     await this.notebookService.updateNote(cleanNote);
+  }
+
+  async searchNotes(query: string) {
+    console.log('?', query);
+    const parts = query
+      .split(' ')
+      .map((part) => part.trim())
+      .filter(Boolean);
+    this.suggestions = await this.notebookService
+      .findAll(query)
+      .then((notes) =>
+        notes.map((note) => this.toTypeaheadSuggestion(note, parts)),
+      );
+    this.changeRef.detectChanges();
+  }
+
+  private toTypeaheadSuggestion(
+    note: Note,
+    queryParts: string[],
+  ): TypeaheadSuggestion {
+    return {
+      id: note.id,
+      highlightedTitle: this.highlightMatches(note.text, queryParts),
+    };
+  }
+
+  private highlightMatches(haystack: string, parts: string[]) {
+    if (parts.length === 0) {
+      return haystack;
+    }
+
+    const escapedParts = parts.map((part) =>
+      part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    );
+
+    const regex = new RegExp(`(${escapedParts.join('|')})`, 'gi');
+
+    return haystack.replace(regex, '<strong>$1</strong>');
+  }
+
+  async pickSuggestionOrQuery(suggestionOrQuery: TypeaheadSuggestion | string) {
+    if (isString(suggestionOrQuery)) {
+    } else {
+      const note = await this.notebookService.findById(suggestionOrQuery.id);
+      await this.openNote(note);
+    }
   }
 }
