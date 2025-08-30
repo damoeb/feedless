@@ -1,31 +1,31 @@
-<ion-searchbar placeholder="Search your Notebook" [formControl]="queryControl"
+<ion-searchbar placeholder="Search your Notebook"
+               #searchbar
+               autofocus
+               (ionFocus)="onFocus()"
+               [formControl]="queryControl"
 ></ion-searchbar>
 <ion-list style="background: transparent">
-  @if (busy) {
-    <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
-  }
-  @if (getSuggestions().length === 0) {
-    <ion-item>
-      <ion-label>No matches</ion-label>
-    </ion-item>
-  }
+  <!--  @if (busy) {-->
+  <!--    <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>-->
+  <!--  }-->
+  <!--  @if (getSuggestions().length === 0) {-->
+  <!--    <ion-item>-->
+  <!--      <ion-label>No matches</ion-label>-->
+  <!--    </ion-item>-->
+  <!--  }-->
   @for (suggestion of getSuggestions(); track suggestion; let i = $index) {
     <ion-item
       (click)="pickSuggestion(suggestion)"
       (mouseenter)="focussedMatchIndex = i"
       [button]="true"
       [ngClass]="{
-        'ion-color': true,
-        'ion-color-medium': i === focussedMatchIndex,
+        'active': i === focussedMatchIndex,
       }"
       lines="none"
       tabindex="-1"
     >
-      <ion-label>
+      <ion-label class="ion-text-nowrap">
         <h3 [innerHTML]="suggestion.highlightedTitle"></h3>
-        <!--                <p *ngIf="!searchResult.isGroup" class="searchresult__text">-->
-        <!--                  {{ searchResult.text }}-->
-        <!--                </p>-->
       </ion-label>
     </ion-item>
   }

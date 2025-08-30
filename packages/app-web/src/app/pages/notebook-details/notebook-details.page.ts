@@ -7,40 +7,41 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  TrackByFunction,
+  viewChild,
   viewChildren,
 } from '@angular/core';
-import { debounce, interval, Subscription } from 'rxjs';
+import { BehaviorSubject, from, map, Observable, Subscription } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
+  ChangeModifier,
+  CreateNoteParams,
   Note,
   Notebook,
   NotebookService,
+  NoteId,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import {
-  debounce as debounceFn,
-  DebouncedFunc,
-  isNull,
-  isString,
-  omit,
-} from 'lodash-es';
+import { groupBy, isString, omit, uniq } from 'lodash-es';
 import {
   AlertController,
+  IonAccordion,
+  IonAccordionGroup,
   IonButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
+  IonCheckbox,
   IonContent,
   IonHeader,
   IonIcon,
+  IonItem,
+  IonLabel,
   IonMenu,
   IonProgressBar,
+  IonSpinner,
   IonSplitPane,
   IonToolbar,
+  ToastController,
 } from '@ionic/angular/standalone';
-import { Completion } from '@codemirror/autocomplete';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Extension } from '@codemirror/state';
 import { createNoteReferenceMarker } from './note-reference-marker';
@@ -51,28 +52,60 @@ import { AppConfigService } from '../../services/app-config.service';
 import { AnnotationService } from '../../services/annotation.service';
 import { addIcons } from 'ionicons';
 import {
+  attachOutline,
   closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
+  contractOutline,
   ellipsisVerticalOutline,
-  star,
-  starOutline,
+  expandOutline,
+  pinOutline,
+  returnDownForwardOutline,
+  returnUpForwardOutline,
+  swapVerticalOutline,
   trashOutline,
 } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { NgClass } from '@angular/common';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 import {
   TypeaheadSuggestion,
   TypeheadComponent,
 } from '../../components/typeahead/typehead.component';
-import { notebookRepository } from '../../services/notebook-repository';
+import { NoteDetailsComponent } from '../../components/note-details/note-details.component';
+import { JsonPipe, NgClass, NgStyle, NgTemplateOutlet } from '@angular/common';
+import { Completion } from '@codemirror/autocomplete';
+import { isDefined, Nullable } from '../../types';
+import { isNullish } from '@apollo/client/cache/inmemory/helpers';
+import {
+  CdkNestedTreeNode,
+  CdkTree,
+  CdkTreeNode,
+  CdkTreeNodeDef,
+  CdkTreeNodeOutlet,
+} from '@angular/cdk/tree';
+import { BubbleComponent } from '../../components/bubble/bubble.component';
 
-interface OpenNote extends Note {
+export type EditorHandle = {
+  maximized: boolean;
+  note: Note;
   formControl: FormControl<string>;
   subscriptions: Subscription[];
+};
+
+enum Focussable {
+  editor,
+  searchbar,
 }
+
+export type TreeNodeHandle = {
+  body: Note;
+  expanded: boolean;
+  level: number;
+  childrenCount: () => number;
+  children(): Observable<TreeNodeHandle[]>;
+  toggleUpvote(): void;
+};
 
 @Component({
   selector: 'app-notebook-details-page',
@@ -92,16 +125,28 @@ interface OpenNote extends Note {
     FormsModule,
     IonContent,
     ReactiveFormsModule,
-    NgClass,
     DarkModeButtonComponent,
     LoginButtonComponent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    CodeEditorComponent,
     IonProgressBar,
     TypeheadComponent,
+    NoteDetailsComponent,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonLabel,
+    NgClass,
+    CodeEditorComponent,
+    IonCheckbox,
+    IonSpinner,
+    CdkTree,
+    CdkNestedTreeNode,
+    CdkTreeNode,
+    CdkTreeNodeOutlet,
+    CdkTreeNodeDef,
+    JsonPipe,
+    NgTemplateOutlet,
+    NgStyle,
+    BubbleComponent,
   ],
   standalone: true,
 })
@@ -114,19 +159,19 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private readonly router = inject(Router);
   private readonly notebookService = inject(NotebookService);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly toastCtrl = inject(ToastController);
 
   busy = false;
   private subscriptions: Subscription[] = [];
   repository: RepositoryWithFrequency;
-  openNotes: OpenNote[] = [];
+  openEditors: EditorHandle[] = [];
   systemBusy: boolean;
-  currentNote: OpenNote = null;
+  currentEditorHandle: EditorHandle = null;
 
-  // readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
+  readonly searchbarElement = viewChild<TypeheadComponent>('searchbar');
 
   readonly codeEditorComponents = viewChildren(CodeEditorComponent);
 
-  searchMode = false;
   // incomingLinks: Note[];
   // outgoingLinks: NoteReferences;
   // hashtagLinks: NoteReferences;
@@ -136,68 +181,84 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     createNoteReferenceWidget(this.notebookService),
   ];
   protected notebook: Notebook;
-  protected toggleSearchModeDebounced: DebouncedFunc<
-    (searchMode?: boolean | null) => Promise<void>
-  >;
-  protected starredNotes: Note[];
   protected suggestions: TypeaheadSuggestion[] = [];
+  protected autosafe = new FormControl<boolean>(true);
+
+  private treeRootsData = new BehaviorSubject<TreeNodeHandle[]>([]);
+  treeRoots: Observable<TreeNodeHandle[]> = this.treeRootsData.asObservable();
+  private setSystemReady: (value: PromiseLike<void> | void) => void;
+  private waitForReady: Promise<void> = new Promise(
+    (resolve) => (this.setSystemReady = resolve),
+  );
 
   constructor() {
-    this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
-    this.toggleSearchModeDebounced = debounceFn(this.toggleSearchMode, 400);
     this.searchNotes = this.searchNotes.bind(this);
+    this.childrenAccessor = this.childrenAccessor.bind(this);
+    this.hasChild = this.hasChild.bind(this);
+    this.toTreeHandle = this.toTreeHandle.bind(this);
+    this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
     addIcons({
       cloudDownloadOutline,
       cloudUploadOutline,
-      star,
-      starOutline,
       ellipsisVerticalOutline,
       closeOutline,
       trashOutline,
+      expandOutline,
+      contractOutline,
+      returnDownForwardOutline,
+      returnUpForwardOutline,
+      swapVerticalOutline,
+      attachOutline,
+      pinOutline,
     });
   }
 
   ngOnInit() {
     this.subscriptions.push(
-      // this.notebookService.searchResultsChanges.subscribe((groups) =>
-      //   this.handleSearchResults(groups),
-      // ),
       this.activatedRoute.params.subscribe((params) =>
         this.handleParams(params),
       ),
       this.notebookService.systemBusyChanges.subscribe(async (systemBusy) => {
         this.systemBusy = systemBusy;
+        if (!systemBusy) {
+          this.setSystemReady();
+          // this.notebookService.deleteAll();
+          //
+          // const testNotes = this.generateTestNotes();
+          // for (let index in testNotes) {
+          //   await this.notebookService.createNote(testNotes[index]);
+          // }
+          this.loadTree();
+        }
+
         this.changeRef.detectChanges();
       }),
-      // this.notebookService.notesChanges.subscribe(async () => {
-      //   if (query) {
-      //     this.notebookService.findAllAsync(query);
-      //   }
-      //   this.starredNotes = await this.notebookService
-      //     .findAll('true', ['isUpVoted'])[0]
-      //     .notes();
-      //   this.changeRef.detectChanges();
-      // }),
-      this.notebookService.openNoteChanges.subscribe((note) =>
-        this.openNote(note),
-      ),
-      // this.notebookService.queryChanges.subscribe((newQuery) => {
-      //   if (query != newQuery) {
-      //     console.log('query', newQuery);
-      //     query = newQuery;
-      //     this.notebookService.findAllAsync(newQuery);
-      //   }
-      // }),
+      this.notebookService.openNoteChanges.subscribe((note) => {
+        return this.openNote(note);
+      }),
+      this.notebookService.notesChanges.subscribe(() => this.loadTree()),
     );
   }
 
-  @HostListener('window:keydown.esc', ['$event'])
-  async handleKeyEsc(event: KeyboardEvent) {
-    await this.toggleSearchModeDebounced();
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   loadAutoSuggestions(query: string, type: string): Promise<Completion[]> {
     return this.notebookService.suggestByType(query, type);
+  }
+
+  @HostListener('window:keydown.esc', ['$event'])
+  async handleKeyEsc(event: KeyboardEvent) {
+    // if (this.currentNote) {
+    //   if (this.searchbarElement().hasFocus()) {
+    //     await this.focusEditor();
+    //   } else {
+    //     this.searchbarElement().setFocus();
+    //   }
+    // } else {
+    this.searchbarElement().setFocus();
+    // }
   }
 
   private async handleParams(params: Params) {
@@ -252,186 +313,139 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
   async openNote(note: Note) {
     console.log('note', note);
-    const isAlreadyOpen = this.openNotes.find((it) => it.id == note.id);
-    if (isAlreadyOpen) {
-      this.currentNote = isAlreadyOpen;
-      this.scrollTo(isAlreadyOpen);
+    const matchingEditor = this.openEditors.find((it) => it.note.id == note.id);
+    if (matchingEditor) {
+      this.currentEditorHandle = matchingEditor;
+      this.scrollTo(matchingEditor);
     } else {
       const formControl = new FormControl(note.text);
 
-      const openNote: OpenNote = {
-        ...note,
+      const editor: EditorHandle = {
+        maximized: false,
+        note,
         // upVoteAnnotationId: upVoted?.id,
         formControl,
         subscriptions: [
-          formControl.valueChanges
-            .pipe(debounce(() => interval(4000)))
-            .subscribe(async (text) => {
-              if (openNote.text != text) {
-                openNote.text = text;
-                await this.updateNote(openNote);
-              }
+          formControl.valueChanges.subscribe(async (text) => {
+            if (editor.note.text != text) {
+              editor.note.text = text;
+              await this.updateNote(note);
+            }
 
-              formControl.markAsPristine();
-            }),
+            formControl.markAsPristine();
+          }),
         ],
       };
       // this.notebookService.findAll(note.id);
       // await this.refreshReferences(openNote);
-      this.currentNote = null;
+      this.currentEditorHandle = null;
       this.changeRef.detectChanges();
 
-      this.openNotes.push(openNote);
-      this.scrollTo(openNote);
-      await this.toggleSearchMode(false);
-      this.currentNote = openNote;
-      this.searchMode = false;
+      this.openEditors.push(editor);
+      this.scrollTo(editor);
+      this.currentEditorHandle = editor;
       this.changeRef.detectChanges();
+      setTimeout(async () => {
+        await this.setFocus(Focussable.editor);
+      }, 1000);
     }
   }
 
-  private async toggleSearchMode(searchMode: boolean | null = null) {
-    if (isNull(searchMode)) {
-      this.searchMode = !this.searchMode;
-    } else {
-      this.searchMode = searchMode;
+  private async setFocus(element: Focussable) {
+    console.log('setFocus', element);
+    switch (element) {
+      case Focussable.searchbar:
+        return await this.focusSearchElement();
+      case Focussable.editor:
+        return await this.focusEditor();
     }
-    console.log('toggleSearchMode', this.searchMode);
-    if (this.searchMode) {
-      await this.focusSearchElement();
-    } else {
-      const index = this.openNotes.findIndex(
-        (note) => note.id === this.currentNote?.id,
-      );
-      if (index > -1) {
-        this.codeEditorComponents().at(index).setFocus();
-      }
-    }
-    this.changeRef.detectChanges();
   }
 
-  async createNote() {
-    const note = await this.notebookService.createNote();
+  async createNote(parent: Nullable<string> = null) {
+    const note = await this.notebookService.createNote({ parent }, true);
     return this.openNote(note);
   }
 
-  // private async refreshReferences(openNote: OpenNote) {
-  //   const search = async (query: string): Promise<Note[]> => {
-  //     const notes = await Promise.all(this.notebookService.findAll(query).map(group => group.notes()))
-  //     return notes.flat().filter(note => note.id !== openNote.id);
-  //   }
-  //
-  //   // incoming links
-  //   const incomingRefs= await search(openNote.id)
-  //
-  //   // outgoing links
-  //   const { hashtags, links } = openNote.references;
-  //
-  //   const outlinkRefs: NoteReferences = {};
-  //   for (let index in links) {
-  //     const link = links[index];
-  //     outlinkRefs[link] = await search(link)
-  //   }
-  //   const hashtagRefs: NoteReferences = {};
-  //   for (let index in hashtags) {
-  //     const hashtag = hashtags[index];
-  //     hashtagRefs[hashtag] = await search(hashtag)
-  //   }
-  //   this.incomingLinks = incomingRefs;
-  //   this.outgoingLinks = outlinkRefs;
-  //   this.hashtagLinks = hashtagRefs;
-  //
-  //   console.log(incomingRefs);
-  //   console.log(outlinkRefs);
-  //   console.log(hashtagRefs);
+  // deleteCurrentNote() {
+  //   this.notebookService.deleteById(this.currentNote.id);
+  //   this.currentNote = null;
   // }
-
-  // linkTo(note: Note): string {
-  //   return `/notebook/${this.notebookId}/${encodeURIComponent(note.id)}`;
-  // }
-
-  deleteCurrentNote() {
-    this.notebookService.deleteById(this.currentNote.id);
-    this.currentNote = null;
-  }
 
   private async focusSearchElement() {
-    console.log('focusSearchElement');
-    // const searchbarElement = this.searchbarElement();
-    // if (searchbarElement) {
-    //   await searchbarElement.setFocus();
-    //   const input = await searchbarElement.getInputElement();
-    //   input.select();
-    // }
+    const searchbarElement = this.searchbarElement();
+    if (searchbarElement) {
+      console.log('focusSearchElement');
+      await searchbarElement.setFocus();
+    } else {
+      console.warn('cannot focusSearchElement');
+    }
   }
 
-  private scrollTo = (note: OpenNote) => {
+  private scrollTo = (editor: EditorHandle) => {
     setTimeout(() => {
-      const noteHandle = document.getElementById(`open-note-handle-${note.id}`);
-      console.log('scrollTo', noteHandle);
+      const noteHandle = document.getElementById(
+        createNoteHandleId(editor.note),
+      );
       noteHandle?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
 
   async ngAfterViewInit() {
-    await this.focusSearchElement();
+    setTimeout(async () => {
+      await this.focusSearchElement();
+    }, 3000);
   }
 
-  closeNote(openNote: OpenNote) {
-    openNote.subscriptions.forEach((subscription) =>
-      subscription.unsubscribe(),
-    );
-    this.openNotes = this.openNotes.filter((note) => note.id != openNote.id);
-  }
+  // closeNote(openNote: OpenNote) {
+  //   openNote.subscriptions.forEach((subscription) =>
+  //     subscription.unsubscribe(),
+  //   );
+  //   this.openNotes = this.openNotes.filter((note) => note.id != openNote.id);
+  // }
 
-  async toggleUpvote(note: OpenNote) {
-    if (note.isUpVoted) {
-      await this.annotationService.deleteAnnotation({
-        where: {
-          id: note.upVoteAnnotationId,
-        },
-      });
-      note.isUpVoted = false;
-      note.upVoteAnnotationId = null;
-    } else {
-      const annotation = await this.annotationService.createAnnotation({
-        where: {
-          repository: {
-            id: note.repositoryId,
-          },
-        },
-        annotation: {
-          upVote: {
-            set: true,
-          },
-        },
-      });
-      note.isUpVoted = true;
-      note.upVoteAnnotationId = annotation.id;
-    }
-    await this.updateNote(note);
-  }
+  // async toggleUpvote(note: OpenNote) {
+  //   if (note.isUpVoted) {
+  //     await this.annotationService.deleteAnnotation({
+  //       where: {
+  //         id: note.upVoteAnnotationId,
+  //       },
+  //     });
+  //     note.isUpVoted = false;
+  //     note.upVoteAnnotationId = null;
+  //   } else {
+  //     const annotation = await this.annotationService.createAnnotation({
+  //       where: {
+  //         repository: {
+  //           id: note.repositoryId,
+  //         },
+  //       },
+  //       annotation: {
+  //         upVote: {
+  //           set: true,
+  //         },
+  //       },
+  //     });
+  //     note.isUpVoted = true;
+  //     note.upVoteAnnotationId = annotation.id;
+  //   }
+  //   await this.updateNote(note);
+  // }
 
-  private async updateNote(openNote: OpenNote) {
-    const omitFields: (keyof OpenNote)[] = ['formControl', 'subscriptions'];
-    const cleanNote: Note = omit(openNote, omitFields) as any;
-    await this.notebookService.updateNote(cleanNote);
+  private async updateNote(note: Note) {
+    await this.notebookService.updateNote(note);
   }
 
   async searchNotes(query: string) {
+    await this.waitForReady;
     console.log('?', query);
     const parts = query
       .split(' ')
       .map((part) => part.trim())
       .filter(Boolean);
     this.suggestions = await this.notebookService
-      .findAll(query)
+      .findAll(query, null, 5)
       .then((notes) =>
         notes.map((note) => this.toTypeaheadSuggestion(note, parts)),
       );
@@ -469,4 +483,146 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       await this.openNote(note);
     }
   }
+
+  // async getParents(note: OpenNote, maxDepth: number = 10): Promise<Note[]> {
+  //   const parents: Note[] = [];
+  //   // let currentNote: Note = note;
+  //   // while (currentNote.parentId && parents.length < maxDepth) {
+  //   //   console.log(currentNote.parentId);
+  //   //   const parentNote = await this.notebookService.findById(
+  //   //     currentNote.parentId,
+  //   //   );
+  //   //   parents.push(parentNote);
+  //   //   currentNote = parentNote;
+  //   // }
+  //
+  //   return parents;
+  // }
+  trackByFn(index: number, item: TreeNodeHandle) {
+    return `${item.body.id}/${item.body.updatedAt}`;
+  }
+
+  private async loadTree() {
+    console.log('loadTree');
+    const treeRoots = await this.notebookService
+      .findAllRoots()
+      .then((roots) => {
+        return Promise.all(roots.map(this.toTreeHandle(0)));
+      });
+    this.treeRootsData.next(treeRoots);
+    this.changeRef.detectChanges();
+  }
+
+  private toTreeHandle(level: number): (note: Note) => Promise<TreeNodeHandle> {
+    return async (note: Note): Promise<TreeNodeHandle> => {
+      const count = await this.notebookService.countChildren(note.id);
+      return {
+        body: note,
+        expanded: true,
+        level,
+        childrenCount: () => count,
+        toggleUpvote: () => {
+          note.isUpVoted = !note.isUpVoted;
+          this.notebookService.updateNote(note);
+        },
+        children: () => {
+          return from(
+            this.notebookService
+              .findAllChildren(note.id)
+              .then((notes) =>
+                Promise.all(notes.map(this.toTreeHandle(level + 1))),
+              ),
+          );
+        },
+      };
+    };
+  }
+
+  childrenAccessor(node: TreeNodeHandle): Observable<TreeNodeHandle[]> {
+    return node.children();
+  }
+
+  hasChild(_: number, note: TreeNodeHandle): boolean {
+    return note.childrenCount() > 0;
+  }
+
+  closeNote() {
+    this.notebookService.closeNoteChanges.next(this.currentEditorHandle.note);
+    this.currentEditorHandle = null;
+    this.changeRef.detectChanges();
+  }
+
+  async deleteNote() {
+    await this.notebookService.deleteById(this.currentEditorHandle.note.id);
+    this.closeNote();
+    await this.showToast('Deleted');
+  }
+
+  async showToast(message: string) {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 200000,
+      color: 'light',
+      cssClass: 'toast-small',
+    });
+
+    await toast.present();
+  }
+
+  async createFollowUpNote() {
+    const editor = this.currentEditorHandle;
+    this.closeNote();
+    await this.createNote(editor.note.id);
+  }
+
+  private async focusEditor() {
+    const index = this.openEditors.findIndex(
+      (editor) => editor.note.id === this.currentEditorHandle?.note?.id,
+    );
+    if (index > -1 && this.codeEditorComponents().length > index) {
+      this.codeEditorComponents().at(index).setFocus();
+    } else {
+      console.warn('cannot focus');
+    }
+  }
+
+  private generateTestNote(
+    parent: Nullable<NoteId>,
+    index: number,
+  ): CreateNoteParams {
+    const noteId = parent ? `${parent}/${index}` : `id-${index}`;
+    return {
+      parent,
+      id: noteId,
+      title: noteId,
+      // text: `${parent}/${note},`,
+    };
+  }
+
+  private generateTestNotes(
+    depth: number = 0,
+    noteCount: number = 8,
+    parent: NoteId = null,
+  ): CreateNoteParams[] {
+    const maxDepth = 4;
+    if (depth >= maxDepth) {
+      return [];
+    }
+    console.log(`generate ${noteCount} @depth ${depth}`);
+
+    const notes: CreateNoteParams[] = [];
+    for (let i = 0; i < noteCount; i++) {
+      const note = this.generateTestNote(parent, i);
+      notes.push(note);
+      // this.generateTestNotes(depth + 1, noteCount, note.id);
+      notes.push(
+        ...this.generateTestNotes(depth + 1, maxDepth - depth - 1, note.id),
+      );
+    }
+    return notes;
+  }
+}
+
+export function createNoteHandleId(note: Note): string {
+  return `note-handle-${note.id}`;
 }

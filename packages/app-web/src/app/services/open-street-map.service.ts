@@ -84,10 +84,10 @@ export class OpenStreetMapService {
     if (matches.length > 0) {
       return matches;
     } else {
-      debugger;
       return this.searchByQuery(`${countryCode} ${area} ${place}`);
     }
   }
+
   async searchByQuery(query: string): Promise<NamedLatLon[]> {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
       query,

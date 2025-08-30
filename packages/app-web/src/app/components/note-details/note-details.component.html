@@ -1,0 +1,31 @@
+<div class="note"
+     [id]="getId()"
+     [ngClass]="{'note--open': isOpen}">
+  <div class="note-header" (click)="toggle()">
+    <div class="flex">
+      {{ note().title }}
+    </div>
+
+    <div style="opacity: 0.4">
+      {{ changeAgo() }}
+    </div>
+
+    <ul class="note-actions">
+      <li>
+        <a (click)="toggleUpvote($event)" href="javascript:void(0)">
+          @if (note().isUpVoted) {
+            Unpin
+          } @else {
+            Pin
+          }
+        </a>
+      </li>
+      <li>
+        <a (click)="extendNote($event)" href="javascript:void(0)">
+          Extend
+        </a>
+      </li>
+    </ul>
+  </div>
+
+</div>

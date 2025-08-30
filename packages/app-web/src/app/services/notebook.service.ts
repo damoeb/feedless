@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
-import Flexsearch from 'flexsearch';
+import { Document, DocumentSearchOptions } from 'flexsearch';
 import { AlertController } from '@ionic/angular/standalone';
-import { debounce, DebouncedFunc, uniq } from 'lodash-es';
+import { uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import { Completion } from '@codemirror/autocomplete';
@@ -16,9 +16,14 @@ import {
   GqlVertical,
   GqlVisibility,
 } from '../../generated/graphql';
-import { ArrayElement, isNonNull } from '../types';
+import { ArrayElement, isDefined, isNonNull } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
+import { isNullish } from '@apollo/client/cache/inmemory/helpers';
+
+export type CreateNoteParams = Partial<
+  Pick<Note, 'title' | 'id' | 'text' | 'parent'>
+>;
 
 export type Notebook = ArrayElement<
   GqlCreateRepositoriesMutation['createRepositories']
@@ -29,6 +34,7 @@ export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
     hashtags: string[];
     links: string[];
   };
+  parent?: string | undefined;
   repositoryId: string;
   isUpVoted: boolean;
   upVoteAnnotationId?: string;
@@ -41,102 +47,68 @@ export type AppAction = {
   callback: () => void;
 };
 
-export type SearchResultGroup = {
-  name: string;
-  notes?: () => Promise<Note[]>;
-  actions?: AppAction[];
+export type NotebookSettings = {};
+
+export const defaultSettings: NotebookSettings = {
+  extends: 'https://foo.bar/untold-dark.json',
+  storage: {
+    notesDirectory: './Notes',
+    extension: 'md',
+  },
+  editing: {
+    useMarkdown: true,
+    newNoteTemplate: '',
+  },
+  saving: {
+    mode: 'auto',
+    autoSaveInterval: 60,
+    manualSaveWithReview: false,
+  },
+  general: {
+    fontName: 'Menlo',
+    fontSize: 13,
+    theme: 'default',
+    startupNote: 'Scratchpad',
+    language: 'en',
+  },
+  search: {
+    showNoteTree: true,
+    sortOrder: 'modified',
+    searchType: 'fuzzy',
+    maxResults: 20,
+    autocomplete: {
+      labels: true,
+      actions: true,
+    },
+  },
+  hotkeys: {
+    createNewNote: 'Cmd+N',
+    searchNotes: 'Cmd+F',
+  },
 };
 
-const firstNoteBody = `# Start Typing here...`;
-// const firstNoteBody = `
-// First Note
-// ====
-//
-// ## Headings
-// # Heading level 1
-// ## Heading level 2
-// ### Heading level 3
-// #### Heading level 4
-//
-//
-// Heading level 1
-// ===============
-//
-// Heading level 2
-// ---------------
-//
-//
-// ## Hashtag
-//
-// #stronly-typed
-//
-// ## Urls
-// https://example.org/foo/bar.html
-//
-// ## Code
-// At the command prompt, type \`nano\`.
-//
-// ## Code Block
-// \`\`\`
-//   println('this')
-// \`\`\`
-//
-//
-// ## Horizontal Rules
-// ***
-//
-// ---
-//
-// _________________
-//
-// ## Bold
-// I just love **bold text**.
-// I just love __bold text__.
-// Love**is**bold
-//
-// ## Italic
-// Italicized text is the *cat's meow*.
-// Italicized text is the _cat's meow_.
-// A*cat*meow
-//
-// ## Blockquote
-// > Dorothy followed her through many of the beautiful rooms in her castle.
-//
-// > Dorothy followed her through many of the beautiful rooms in her castle.
-// >
-// > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-//
-// > Dorothy followed her through many of the beautiful rooms in her castle.
-// >
-// >> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-//
-// ## Lists
-// ### Ordered Lists
-// 1. First item
-// 2. Second item
-// 3. Third item
-//     1. Indented item
-//     2. Indented item
-// 4. Fourth item
-//
-// ### Unordered Lists
-// - First item
-// - Second item
-// - Third item
-// - Fourth item
-//
-// ## Inline Image
-//
-// ![foo](https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100)
-//
-//
-//     `;
+export type NoteId = string;
 
-type IndexDocument = {
+// | 'isUpVoted'
+// | 'references:links'
+// | 'references:hashtags'
+
+type NoteDocument = {
   id: string;
-  note?: Note;
-  action?: AppAction;
+  parent: string;
+  note: Note;
+  // action?: AppAction;
 };
+
+export enum ChangeModifier {
+  remove,
+  update,
+  create,
+}
+
+export type Tuple<A, B> = { a: A; b: B };
+
+export type NoteIndex = 'id' | 'note:parent';
 
 @Injectable({
   providedIn: 'root',
@@ -165,9 +137,10 @@ export class NotebookService {
 
   notebooksChanges = new ReplaySubject<Notebook[]>(1);
   openNoteChanges = new ReplaySubject<Note>(1);
-  notesChanges = new ReplaySubject<void>(1);
+  closeNoteChanges = new ReplaySubject<Note>(1);
+  notesChanges = new ReplaySubject<Tuple<NoteId, ChangeModifier>>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
-  private index!: Flexsearch.Document<IndexDocument>;
+  private index!: Document<NoteDocument>;
   private currentRepositoryId!: string;
 
   constructor() {
@@ -215,43 +188,43 @@ export class NotebookService {
 
   async findAll(
     query: string,
-    index: string[] = ['text', 'id', 'references:links', 'references:hashtags'],
+    index: NoteIndex[] = [],
+    limit: number = 200,
   ): Promise<Note[]> {
-    if (query.trim()) {
-      const results = this.index.search({
-        query,
-        index,
-        limit: this.LIMIT,
+    try {
+      const results = this.index.search(query, {
+        limit: 10,
+        index: index,
+        suggest: true,
+        highlight: '<b>$1</b>',
       });
 
       const ids = uniq(results.flatMap((result) => result.result));
       return notebookRepository.notes
         .bulkGet(ids.map((id) => `${id}`))
         .then((notes) => notes.filter(isNonNull));
-    } else {
-      return notebookRepository.notes
-        .where('repositoryId')
-        .equals(this.currentRepositoryId)
-        .limit(this.LIMIT)
-        .sortBy('updatedAt');
+    } catch (e) {
+      console.error(e);
+      return [];
     }
   }
 
   async createNote(
-    params: Partial<Pick<Note, 'title' | 'id' | 'text'>> = {},
+    params: CreateNoteParams = {},
     triggerOpen: boolean = false,
   ) {
-    console.log('create note', params, triggerOpen);
+    console.log('create note params', params);
     const title = params.title ?? '';
     const now = new Date();
     const note: Note = {
-      id: uuidv4(),
+      id: params.id ?? uuidv4(),
       title: title,
       text: `# ${title}\n\n${params.text ?? ''}`.trim(),
       references: {
         hashtags: [],
         links: [],
       },
+      parent: params.parent,
       url: '',
       isUpVoted: false,
       publishedAt: now,
@@ -260,12 +233,14 @@ export class NotebookService {
       // updatedAt: new Date(),
       repositoryId: this.currentRepositoryId,
     };
+
     notebookRepository.notes.add(note);
-    this.index.add({
-      id: note.id,
-      note,
-    });
-    await this.recordService.createRecords([this.covertNoteToRecord(note)]);
+    this.index.add(this.toIndexDocument(note));
+
+    console.log('new note', note);
+
+    this.notesChanges.next({ a: note.id, b: ChangeModifier.create });
+    // await this.recordService.createRecords([this.covertNoteToRecord(note)]);
 
     // this.findAllAsync(title);
     if (triggerOpen) {
@@ -302,45 +277,47 @@ export class NotebookService {
         .where({ repositoryId })
         .toArray();
 
-      notes.forEach((note) => this.index.add(note));
+      notes.forEach((note) => this.index.add(this.toIndexDocument(note)));
+      console.log('Notes indexed');
 
       // sync up
       const upSyncNew = notes.filter(
         (note) => note.createdAt > notebook.lastSyncedAt,
       );
-      await this.recordService.createRecords(
-        upSyncNew.map((note) => this.covertNoteToRecord(note)),
-      );
-      const upSyncChanged = notes.filter(
-        (note) => note.updatedAt > notebook.lastSyncedAt,
-      );
-      await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
+      // await this.recordService.createRecords(
+      //   upSyncNew.map((note) => this.covertNoteToRecord(note)),
+      // );
+      // todo activate
+      // const upSyncChanged = notes.filter(
+      //   (note) => note.updatedAt > notebook.lastSyncedAt,
+      // );
+      // await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
 
       // sync down
-      try {
-        let page = 0;
-        while (true) {
-          const records = await this.recordService.findAllFullByRepositoryId({
-            where: {
-              repository: {
-                id: notebook.id,
-              },
-              updatedAt: {
-                after: notebook.lastUpdatedAt,
-              },
-            },
-            cursor: {
-              page,
-            },
-          });
-          if (records.length == 0) {
-            break;
-          }
-          page++;
-        }
-      } catch (e) {
-        console.error(e);
-      }
+      // try {
+      //   let page = 0;
+      //   while (true) {
+      //     const records = await this.recordService.findAllFullByRepositoryId({
+      //       where: {
+      //         repository: {
+      //           id: notebook.id,
+      //         },
+      //         updatedAt: {
+      //           after: notebook.lastUpdatedAt,
+      //         },
+      //       },
+      //       cursor: {
+      //         page,
+      //       },
+      //     });
+      //     if (records.length == 0) {
+      //       break;
+      //     }
+      //     page++;
+      //   }
+      // } catch (e) {
+      //   console.error(e);
+      // }
 
       notebook.lastSyncedAt = new Date();
       notebookRepository.notebooks.update(notebook.id, notebook);
@@ -392,31 +369,31 @@ export class NotebookService {
   // }
 
   private createIndex() {
-    this.index = new Flexsearch.Document<IndexDocument>({
-      tokenize: 'full',
-      language: 'en',
-      preset: 'match',
-      cache: true,
-      context: true,
+    this.index = new Document<NoteDocument>({
+      cache: false,
+      store: true,
       document: {
         id: 'id',
         index: [
-          'id',
-          'action:name',
-          'text',
-          'isUpVoted',
-          'references:links',
-          'references:hashtags',
+          { field: 'id', tokenize: 'strict' },
+          { field: 'note:parent', tokenize: 'strict' },
+          { field: 'note:text', tokenize: 'full' },
+          { field: 'note:title', tokenize: 'full' },
+          // 'level',
+          // 'isUpVoted',
+          // 'references:links',
+          // 'references:hashtags',
         ],
       },
     });
+    console.log('Created index');
 
-    this.actions.forEach((action) => {
-      this.index.add({
-        id: action.id,
-        action,
-      });
-    });
+    // this.actions.forEach((action) => {
+    //   this.index.add({
+    //     id: action.id,
+    //     action,
+    //   });
+    // });
   }
 
   async updateNote(note: Note) {
@@ -443,23 +420,23 @@ export class NotebookService {
       links: extractByRegExp(reLink),
     };
 
-    await this.recordService.updateRecord({
-      data: {
-        title: {
-          set: note.title,
-        },
-        text: {
-          set: note.text,
-        },
-      },
-      where: {
-        id: note.id,
-      },
-    });
-    this.index.update(note);
+    // await this.recordService.updateRecord({
+    //   data: {
+    //     title: {
+    //       set: note.title,
+    //     },
+    //     text: {
+    //       set: note.text,
+    //     },
+    //   },
+    //   where: {
+    //     id: note.id,
+    //   },
+    // });
+    this.index.update(this.toIndexDocument(note));
     console.log('updateNote', note);
-    notebookRepository.notes.update(note.id, note);
-    this.notesChanges.next();
+    await notebookRepository.notes.update(note.id, note);
+    this.notesChanges.next({ a: note.id, b: ChangeModifier.update });
   }
 
   // private getHint(field: string, query: string, note: Note) {
@@ -539,6 +516,7 @@ export class NotebookService {
 
   existsById(noteId: string) {
     return (
+      // todo use this return notebookRepository.notes.get(noteId).then(isDefined)
       this.index.search({
         query: noteId,
         index: ['id'],
@@ -547,16 +525,25 @@ export class NotebookService {
     );
   }
 
-  async findById(noteId: string) {
-    const note = this.index.search({
+  findById(noteId: string) {
+    const resultGroups = this.index.search({
       query: noteId,
       index: ['id'],
       limit: 1,
     });
 
-    if (note.length > 0) {
-      return notebookRepository.notes.get(`${note[0].result[0]}`);
+    if (resultGroups.length > 0) {
+      return this.getById(`${resultGroups[0].result[0]}`);
     }
+  }
+
+  getById(noteId: string) {
+    return notebookRepository.notes.get(noteId);
+  }
+
+  async openNoteById(noteId: string) {
+    const note = await notebookRepository.notes.get(`${noteId}`);
+    this.openNote(note);
   }
 
   openNote(note: Note) {
@@ -564,18 +551,59 @@ export class NotebookService {
   }
 
   async deleteById(id: string) {
+    // todo check if children exist
+    const note = await notebookRepository.notes.get(id);
+
     this.index.remove(id);
-    await this.recordService.removeById({
-      where: {
-        id: {
-          eq: id,
-        },
-        repository: {
-          id: this.currentRepositoryId,
-        },
-      },
-    });
-    notebookRepository.notes.delete(id);
-    this.notesChanges.next();
+    await notebookRepository.notes.delete(id);
+    // await this.recordService.removeById({
+    //   where: {
+    //     id: {
+    //       eq: id,
+    //     },
+    //     repository: {
+    //       id: this.currentRepositoryId,
+    //     },
+    //   },
+    // });
+    this.notesChanges.next({ a: id, b: ChangeModifier.remove });
+
+    if (note.parent) {
+      const parent = await notebookRepository.notes.get(note.parent);
+      await this.updateNote(parent);
+    }
+  }
+
+  deleteAll() {
+    // debugger;
+    notebookRepository.notes.clear();
+  }
+
+  async findAllRoots(): Promise<Note[]> {
+    return notebookRepository.notes
+      .filter((note) => isNullish(note.parent))
+      .toArray();
+  }
+
+  private toIndexDocument(note: Note): NoteDocument {
+    return {
+      id: note.id,
+      parent: note.parent,
+      note,
+    };
+  }
+
+  async findAllChildren(id: string): Promise<Note[]> {
+    const children = await notebookRepository.notes
+      .where('parent')
+      .equals(id)
+      .limit(100)
+      .toArray();
+
+    return children;
+  }
+
+  countChildren(id: string): Promise<number> {
+    return notebookRepository.notes.where('parent').equals(id).count();
   }
 }

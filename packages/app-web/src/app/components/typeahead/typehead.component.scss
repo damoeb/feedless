@@ -1,0 +1,7 @@
+ion-item {
+  --background: var(--app-body-background);
+
+  .active {
+    --background: var(--app-foreground);
+  }
+}
