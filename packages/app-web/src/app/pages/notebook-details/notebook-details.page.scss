@@ -5,6 +5,16 @@ ion-content.main-content::part(scroll) {
   flex-direction: column;
 }
 
+.ion-page {
+  ion-header,
+  ion-content {
+    --background: var(--app-body-background);
+    background: var(--app-body-background);
+    //--background: color-mix(in srgb, var(--app-foreground) 10%, var(--app-background) 100%);
+    //background: var(--background);
+  }
+}
+
 ion-header {
   box-shadow: none;
 }
@@ -12,6 +22,11 @@ ion-header {
 app-code-editor {
   display: flex;
   flex: 1;
+}
+
+.tree-node--collapsed {
+  visibility: collapse;
+  height: 5px;
 }
 
 mark {
@@ -35,93 +50,98 @@ ion-button.active {
   --background: var(--ion-color-primary);
 }
 
-.note-ref {
+//.note-ref {
+//  display: flex;
+//  align-items: center;
+//  color: var(--ion-color-medium);
+//  background: var(--app-background);
+//  border-top-left-radius: 8px;
+//  border-top-right-radius: 8px;
+//  margin-right: 5px;
+//  //border-bottom: 2px solid transparent;
+//
+//  &.active {
+//    color: var(--ion-color-dark);
+//
+//    //border-bottom-color: rgba(var(--ion-color-dark-rgb), 0.8);
+//  }
+//}
+
+app-tree-view {
   display: flex;
-  align-items: center;
-  color: var(--ion-color-medium);
-  background: var(--app-background);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  margin-right: 5px;
-  //border-bottom: 2px solid transparent;
-
-  &.active {
-    color: var(--ion-color-dark);
-
-    //border-bottom-color: rgba(var(--ion-color-dark-rgb), 0.8);
-  }
+  flex: 0 1 650px;
+  flex-direction: column;
 }
 
 .all-notes-wrapper {
   flex: 1;
+  flex-direction: column;
   justify-content: center;
   display: flex;
-  flex-direction: row;
   column-gap: 5px;
+  position: relative;
 
-  .scroll-pane {
-    position: relative;
-    overflow-x: auto;
-  }
+  //.scroll-pane {
+  //  position: relative;
+  //  overflow-x: auto;
+  //}
 
-  .grid {
-    flex: 1;
-    display: flex;
-
-    ion-card {
-      height: 200px;
-      width: 300px;
-      //border-radius: 1rem;
-      cursor: pointer;
-      border: 2px solid transparent;
-
-      &:hover {
-        border-color: rgba(var(--ion-color-primary-rgb), 0.5);
-      }
-    }
-  }
+  //.grid {
+  //  flex: 1;
+  //  display: flex;
+  //
+  //  ion-card {
+  //    height: 200px;
+  //    width: 300px;
+  //    //border-radius: 1rem;
+  //    cursor: pointer;
+  //    border: 2px solid transparent;
+  //
+  //    &:hover {
+  //      border-color: rgba(var(--ion-color-primary-rgb), 0.5);
+  //    }
+  //  }
+  //}
 
   .note {
-    flex: 0 1 650px;
     overflow-y: auto;
-    //scrollbar-width: thin;
-    //background: var(--app-background);
-
-    &.opened {
-      //app-code-editor {
-      //  box-shadow: 0px 7px 46px -30px var(--ion-color-dark);
-      //}
-      //  --app-border-color: rgba(var(--ion-color-medium-rgb), 0.5);
-      //  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.5);
-      //  --app-border-color-focus: rgba(var(--ion-color-primary-rgb), 1);
-      //  background: var(--app-background);
-    }
-
-    &:not(.opened) {
-      --app-border-color: transparent;
-      opacity: 0.7;
-    }
   }
 
-  .code-editor-wrapper {
+}
+
+.footer-toolbar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+
+  .note-editor {
+    background: var(--background);
+    //padding-right: 15px;
+    //padding-bottom: 15px;
     max-height: 80vh;
     min-height: 400px;
     display: flex;
+    flex-direction: column;
+    width: 80%;
     overflow: auto;
-    border: 2px solid transparent;
+    height: 50vh;
+    border-top: 1px solid rgba(var(--app-foreground-rgb), 0.4);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 
-    &.focussed {
-      border-color: var(--ion-color-primary);
+    &.note-editor--maximized {
+      width: 100%;
+      height: 75vh;
+    }
+
+    app-code-editor {
+      display: flex;
+      flex: 1;
     }
   }
-
-  //.all-notes {
-  //  position: absolute;
-  //  display: flex;
-  //  height: 100%;
-  //  min-width: 100%;
-  //
-  //}
 }
 
 ion-accordion.accordion-expanded {
@@ -130,4 +150,54 @@ ion-accordion.accordion-expanded {
   border: none;
   margin-bottom: auto;
   margin-top: auto;
+}
+
+.branch {
+  display: flex;
+  --maxlevel: 6;
+  --line-width: 10px;
+  --line-marginright: 3px;
+  --line-color: rgba(var(--app-foreground-rgb), 0.5);
+
+  app-bubble {
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 20px;
+  }
+
+  .line {
+    cursor: pointer;
+
+    &:first-child {
+      border-top: 2px solid var(--line-color);
+    }
+
+    border-right: 2px solid var(--line-color);
+    width: var(--line-width);
+    margin-top: 5px;
+    margin-right: var(--line-marginright);
+
+    &.line--collapsed {
+      border-color: red;
+      border-style: none;
+    }
+
+    &:hover {
+      --line-color: var(--app-foreground);
+    }
+  }
+
+  .zigzag {
+    width: 100%;
+    --a: 90deg; /* control the angle */
+    --s: 10px; /* size of the zig-zag */
+    --b: 2px; /* control the thickness */
+
+    background: var(--line-color);
+    height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
+    //width: 100%;
+    --_g: var(--s) repeat-x conic-gradient(from calc(var(--a) / -2) at bottom,
+      #0000, #000 1deg calc(var(--a) - 1deg), #0000 var(--a));
+    mask: 50% calc(-1*var(--b))/var(--_g) exclude, 50%/var(--_g);
+  }
 }

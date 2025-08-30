@@ -1,0 +1,70 @@
+.note {
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  //background: rgba(var(--app-background-rgb), 1);
+  //background: linear-gradient(
+  //    to top,
+  //    rgba(var(--app-foreground-rgb), 0.1),
+  //    rgba(var(--app-background-rgb), 1) 30%);
+  border-radius: 7px;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+  --app-border-color: rgba(var(--app-foreground-rgb), 0.3);
+  //box-shadow: 0px -1px 1px 2px var(--app-border-color);
+  background: var(--app-background);
+  //background: linear-gradient(
+  //    to top,
+  //    var(--background),
+  //    rgba(var(--app-background-rgb), 0.6) 50%);
+  border: 1px solid var(--app-border-color);
+  //border-bottom: none;
+  //background: linear-gradient(to top, rgba(var(--ion-color-medium), 0.2), var(--app-background) 20%);
+  //background: var(--app-background-rgb);
+  --margin-offset: 2px;
+  margin-top: var(--margin-offset);
+
+  &:hover,
+  &.note--open {
+    margin-top: 0;
+    margin-bottom: var(--margin-offset);
+    color: rgba(var(--app-foreground-rgb), 1);
+    background: var(--app-background);
+    //border-bottom: 1px solid var(--app-border-color);
+    --app-border-color: rgba(var(--app-foreground-rgb), 0.5);
+    //box-shadow: 0px -2px 1px 1px rgba(var(--app-foreground-rgb), 0.2);
+    //transform: rotate(0.1deg);
+    transition: all 0.3s ease;
+    transform-origin: right center;
+
+    .note-actions {
+      display: block;
+    }
+  }
+
+  &.note--open {
+    margin-bottom: 20px;
+    --app-border-color: var(--ion-color-primary);
+  }
+}
+
+.note-header {
+  display: flex;
+  flex: 1;
+  padding: 15px;
+  min-height: 40px;
+  cursor: pointer;
+
+  .note-actions {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 5px;
+    display: none;
+
+    li {
+      display: inline-block;
+      margin-right: 5px;
+    }
+  }
+}
+

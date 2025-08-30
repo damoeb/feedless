@@ -10,7 +10,7 @@ class NotebookRepository extends Dexie {
   constructor() {
     super('notebooks');
     const notebookIds: (keyof Notebook)[] = ['id'];
-    const notesIds: (keyof Note)[] = ['id', 'repositoryId'];
+    const notesIds: (keyof Note)[] = ['id', 'repositoryId', 'parent'];
     this.version(1).stores({
       notebooks: notebookIds.join(', '),
       notes: notesIds.join(', '),

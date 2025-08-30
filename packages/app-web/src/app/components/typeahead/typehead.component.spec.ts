@@ -14,7 +14,7 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('AgentsButtonComponent', () => {
+describe('TypeaheadComponent', () => {
   let component: TypeheadComponent;
   let fixture: ComponentFixture<TypeheadComponent>;
 

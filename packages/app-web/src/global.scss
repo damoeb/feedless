@@ -37,6 +37,7 @@ app-bubble {
     --height: 900px;
   }
 }
+
 @media only screen and (min-width: 768px) and (max-width: 992px) {
   ion-modal {
     --width: 100%;
@@ -59,11 +60,13 @@ app-bubble {
 .flex {
   display: flex;
   flex: 1;
+
   &__column {
     display: flex;
     flex: 1;
     flex-direction: column;
   }
+
   &__row {
     display: flex;
     flex: 1;
@@ -100,8 +103,10 @@ ion-accordion-group {
 ion-list {
   &.grid {
     display: flex;
+
     ion-item {
       flex: 1;
+
       ion-checkbox {
         display: none;
       }
@@ -158,6 +163,7 @@ a {
   color: var(--ion-color-dark);
   //text-decoration: none;
   cursor: pointer;
+
   &:hover {
     border-bottom-style: none;
     text-decoration: none;
@@ -202,6 +208,7 @@ a {
 
     .alert-button-group {
       margin-bottom: 10px;
+
       & > button {
         text-transform: none;
         color: var(--app-foreground);
@@ -225,6 +232,7 @@ a {
 
     .alert-button-group {
       margin-bottom: 10px;
+
       & > button {
         text-transform: none;
         color: var(--app-foreground);
@@ -242,10 +250,12 @@ a {
 .success-alert {
   background: rgba(var(--ion-color-primary-rgb), 0.4);
 }
+
 .fullscreen-modal {
   --width: 100%;
   --height: 100%;
 }
+
 .tiny-modal,
 .medium-modal {
   &.tiny-modal {
@@ -277,17 +287,20 @@ a {
   &.dark {
     ion-content,
     ion-header {
-      --app-background: #21252b;
-      --app-body-background: #282c34;
-      --ion-item-background: var(--app-body-background);
+      --app-background: #0F0F0F;
+      --app-background-rgb: 15, 15, 15;
+      --app-body-background: #212121;
+      --app-body-background-rgb: 33, 33, 33;
     }
   }
+
   &.light {
     ion-content,
     ion-header {
-      --app-background: white;
-      --app-body-background: white;
-      --ion-item-background: var(--app-body-background);
+      --app-body-background: #e1e1e1;
+      --app-body-background-rgb: 235, 235, 235;
+      --app-background: #d2d2d2;
+      --app-background-rgb: 210, 210, 210;
     }
   }
 }
@@ -321,4 +334,8 @@ ion-modal {
 .menu-content-open {
   filter: grayscale(0.4) brightness(0.4);
   transition: filter 0.5s ease-in-out;
+}
+
+.toast-small {
+  --max-width: max-content;
 }
