@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import Flexsearch from 'flexsearch';
 import { AlertController } from '@ionic/angular/standalone';
-import { debounce, DebouncedFunc } from 'lodash-es';
+import { debounce, DebouncedFunc, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import { Completion } from '@codemirror/autocomplete';
@@ -159,22 +159,18 @@ export class NotebookService {
     // //   }
   ].map((action, index) => ({ id: `${index}`, ...action }));
 
-  private readonly LIMIT = 30;
+  private readonly LIMIT = 20;
 
   private notebooks: Notebook[] = [];
 
   notebooksChanges = new ReplaySubject<Notebook[]>(1);
   openNoteChanges = new ReplaySubject<Note>(1);
   notesChanges = new ReplaySubject<void>(1);
-  searchResultsChanges = new ReplaySubject<SearchResultGroup[]>(1);
-  queryChanges = new ReplaySubject<string>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
   private index!: Flexsearch.Document<IndexDocument>;
-  findAllAsync: DebouncedFunc<(query: string) => void>;
   private currentRepositoryId!: string;
 
   constructor() {
-    this.findAllAsync = debounce(this.findAllAsyncInternal, 200);
     this.init();
   }
 
@@ -204,51 +200,40 @@ export class NotebookService {
   }
 
   async suggestByType(query: string, type: string): Promise<Completion[]> {
-    switch (type) {
-      case 'Hashtag':
-        return [
-          {
-            label: 'Resolve',
-            apply: () => this.findAllAsync(query),
-          },
-        ];
-      default:
-        return this.suggestNotes(query);
-    }
+    // switch (type) {
+    //   case 'Hashtag':
+    //     return [
+    //       {
+    //         label: 'Resolve',
+    //         apply: () => this.findAllAsync(query),
+    //       },
+    //     ];
+    //   default:
+    return this.suggestNotes(query);
+    // }
   }
 
-  protected findAllAsyncInternal(query: string) {
-    console.log('searchAsync', query);
-    this.queryChanges.next(query);
-    if (query.trim()) {
-      const groups: SearchResultGroup[] = this.findAll(query);
-      this.searchResultsChanges.next(groups);
-    } else {
-      this.propagateRecentNotes();
-    }
-  }
-
-  findAll(
+  async findAll(
     query: string,
     index: string[] = ['text', 'id', 'references:links', 'references:hashtags'],
-  ): SearchResultGroup[] {
+  ): Promise<Note[]> {
     if (query.trim()) {
       const results = this.index.search({
         query,
         index,
         limit: this.LIMIT,
       });
-      return results.map((perField): SearchResultGroup => {
-        return {
-          name: perField.field,
-          notes: async (): Promise<Note[]> =>
-            notebookRepository.notes
-              .bulkGet(perField.result.map((id) => `${id}`))
-              .then((notes) => notes.filter(isNonNull)),
-        };
-      });
+
+      const ids = uniq(results.flatMap((result) => result.result));
+      return notebookRepository.notes
+        .bulkGet(ids.map((id) => `${id}`))
+        .then((notes) => notes.filter(isNonNull));
     } else {
-      return [];
+      return notebookRepository.notes
+        .where('repositoryId')
+        .equals(this.currentRepositoryId)
+        .limit(this.LIMIT)
+        .sortBy('updatedAt');
     }
   }
 
@@ -282,7 +267,7 @@ export class NotebookService {
     });
     await this.recordService.createRecords([this.covertNoteToRecord(note)]);
 
-    this.findAllAsync(title);
+    // this.findAllAsync(title);
     if (triggerOpen) {
       this.openNote(note);
     }
@@ -368,7 +353,7 @@ export class NotebookService {
       //   remoteNotebook.notes.push(...(await localNotebook?.notes()));
       //   this.persistLocalNotebook(remoteNotebook);
       // }
-      this.propagateRecentNotes();
+      // this.propagateRecentNotes();
 
       this.systemBusyChanges.next(false);
     } else {
@@ -392,19 +377,19 @@ export class NotebookService {
     return notebook;
   }
 
-  private propagateRecentNotes() {
-    this.searchResultsChanges.next([
-      {
-        name: 'Recent',
-        notes: () =>
-          notebookRepository.notes
-            .where('repositoryId')
-            .equals(this.currentRepositoryId)
-            .limit(this.LIMIT)
-            .sortBy('updatedAt'),
-      },
-    ]);
-  }
+  // private propagateRecentNotes() {
+  //   this.searchResultsChanges.next([
+  //     {
+  //       name: 'Recent',
+  //       notes: () =>
+  //         notebookRepository.notes
+  //           .where('repositoryId')
+  //           .equals(this.currentRepositoryId)
+  //           .limit(this.LIMIT)
+  //           .sortBy('updatedAt'),
+  //     },
+  //   ]);
+  // }
 
   private createIndex() {
     this.index = new Flexsearch.Document<IndexDocument>({

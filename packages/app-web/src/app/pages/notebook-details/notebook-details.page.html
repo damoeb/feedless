@@ -46,50 +46,12 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <!--      <ion-accordion-group value="search">-->
-      <!--        <ion-accordion toggleIconSlot="start" value="search">-->
-      <!--          <ion-item slot="header" style="&#45;&#45;background: transparent">-->
-      <!--            <ion-label> Search </ion-label>-->
-      <!--          </ion-item>-->
-      <!--          <div slot="content" class="ion-no-padding">-->
-      <ion-searchbar
-        #searchbar
-        (ionFocus)="currentNote = null"
-        [formControl]="queryFc"
-        [showClearButton]="true"
-        style="border-radius: 1rem"
-        placeholder="Search your Notebook"
-      ></ion-searchbar>
-      <ion-list class="results" style="background: transparent">
-        @if (!busy) { @if (matches.length === 0) {
-        <ion-item>
-          <ion-label>[Enter] to create note</ion-label>
-        </ion-item>
-        } @for (searchResult of matches; track searchResult; let i = $index) {
-        <ion-item
-          (click)="searchResult.onClick()"
-          (mouseenter)="focussedMatchIndex = i"
-          [button]="!searchResult.isGroup"
-          [ngClass]="{
-                      'in-focus': i === focussedMatchIndex,
-                      'is-group': searchResult.isGroup,
-                      }"
-          lines="none"
-          style="--background: transparent"
-          tabindex="-1"
-        >
-          <ion-label>
-            <h3>{{ searchResult.label || '[empty title]' }}</h3>
-            <!--                <p *ngIf="!searchResult.isGroup" class="searchresult__text">-->
-            <!--                  {{ searchResult.text }}-->
-            <!--                </p>-->
-          </ion-label>
-        </ion-item>
-        } }
-      </ion-list>
-      <!--          </div>-->
-      <!--        </ion-accordion>-->
-      <!--      </ion-accordion-group>-->
+      @if (!systemBusy) {
+        <app-typeahead [query]="'wef'"
+                       (queryChange)="searchNotes($event)"
+                       [suggestions]="suggestions"
+                       (pick)="pickSuggestionOrQuery($event)"></app-typeahead>
+      }
     </ion-content>
   </ion-menu>
 
@@ -161,148 +123,150 @@
       <!--      </div>-->
 
       @if (!systemBusy) {
-      <div class="all-notes-wrapper">
-        <!--        <div class="scroll-pane" style="flex: 1">-->
-        <!--          <div class="all-notes">-->
-        @if (openNotes.length === 0) {
-        <div class="grid">
-          @for (starredNote of starredNotes; track starredNote) {
-          <ion-card [button]="true" (click)="openNote(starredNote)">
-            <ion-card-header>
-              <ion-card-title> {{starredNote.title}} </ion-card-title>
-            </ion-card-header>
-            <ion-card-content> {{starredNote.text}} </ion-card-content>
-          </ion-card>
+        <div class="all-notes-wrapper">
+          <!--        <div class="scroll-pane" style="flex: 1">-->
+          <!--          <div class="all-notes">-->
+          @if (openNotes.length === 0) {
+            <div class="grid">
+              @for (starredNote of starredNotes; track starredNote) {
+                <ion-card [button]="true" (click)="openNote(starredNote)">
+                  <ion-card-header>
+                    <ion-card-title> {{ starredNote.title }}</ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content> {{ starredNote.text }}</ion-card-content>
+                </ion-card>
+              }
+            </div>
           }
-        </div>
-        } @for (note of openNotes; track note) {
-        <div [ngClass]="{opened: note.id === currentNote?.id}" class="note">
-          <div [id]="'open-note-handle-' + note.id"></div>
-          <ion-toolbar color="light">
-            <ion-buttons slot="start">
-              <ion-button (click)="toggleUpvote(note)" color="medium">
-                @if (note.isUpVoted) {
-                <ion-icon name="star" size="small" slot="icon-only"></ion-icon>
-                } @if (!note.isUpVoted) {
-                <ion-icon
-                  name="star-outline"
-                  size="small"
-                  slot="icon-only"
-                ></ion-icon>
-                }
-              </ion-button>
-            </ion-buttons>
-            <ion-text class="ion-margin-horizontal" color="medium">
-              {{ note.id }}
-            </ion-text>
-            <ion-buttons slot="end">
-              <ion-button id="open-note-settings-popover" size="small">
-                <ion-icon
-                  name="ellipsis-vertical-outline"
-                  size="small"
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
-              <ion-button (click)="closeNote(note)" size="small">
-                <ion-icon
-                  color="medium"
-                  name="close-outline"
-                  size="small"
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
-            </ion-buttons>
-            <ion-popover
-              trigger="open-note-settings-popover"
-              triggerAction="click"
-            >
-              <ng-template>
-                <ion-list>
-                  <ion-item (click)="deleteCurrentNote()" [button]="true">
-                    <ion-icon
-                      color="medium"
-                      name="trash-outline"
-                      size="small"
-                      slot="start"
-                    ></ion-icon>
-                    Delete
-                  </ion-item>
-                </ion-list>
-              </ng-template>
-            </ion-popover>
-          </ion-toolbar>
-          <!--          <div class="flex__column">-->
-          <div
-            [ngClass]="{'focussed': currentNote?.id == note?.id}"
-            class="code-editor-wrapper"
-          >
-            <app-code-editor
-              (blur)="currentNote = null"
-              (focus)="openNote(note)"
-              (triggerQuery)="handleQuery($event)"
-              [autoSuggestionsProvider]="loadAutoSuggestions"
-              [extensions]="extensions"
-              [lineNumbers]="false"
-              [formControl]="note.formControl"
-            ></app-code-editor>
-          </div>
-          <!--                    <div>-->
-          <!--                      <div style="border-top: 3px solid var(&#45;&#45;app-foreground); width: 100px; margin-top: 50px"></div>-->
-          <!--                      <div>-->
-          <!--                        <div>-->
-          <!--                          <h3>Incoming</h3>-->
-          <!--                          <div *ngFor="let note of incomingLinks">-->
-          <!--                            <ion-button fill="empty"-->
-          <!--                                        color="medium"-->
-          <!--                                        routerLinkActive="active"-->
-          <!--                                        [routerLink]="linkTo(note)">-->
-          <!--                              {{ note.id }} - {{ note.title }}-->
-          <!--                            </ion-button>-->
-          <!--                          </div>-->
-          <!--                        </div>-->
-          <!--                        <div>-->
-          <!--                          <h3>Outgoing</h3>-->
-          <!--                          <div *ngFor="let group of outgoingLinks | keyvalue">-->
-          <!--                            &lt;!&ndash;            <p>{{group.key}}</p>&ndash;&gt;-->
-          <!--                            <div *ngFor="let note of group.value">-->
-          <!--                              <ion-button fill="solid"-->
-          <!--                                          color="medium"-->
-          <!--                                          routerLinkActive="active"-->
-          <!--                                          [routerLink]="linkTo(note)">-->
-          <!--                                {{ note.id }} - {{ note.title }}-->
-          <!--                              </ion-button>-->
-          <!--                            </div>-->
-          <!--                          </div>-->
-          <!--                        </div>-->
-          <!--                        <div>-->
-          <!--                          <h3>Hastags</h3>-->
-          <!--                          <div *ngFor="let group of hashtagLinks | keyvalue">-->
-          <!--                            <p>{{group.key}}</p>-->
-          <!--                            <div *ngIf="group.value.length === 0">-->
-          <!--                              <em>empty</em>-->
-          <!--                            </div>-->
-          <!--                            <div *ngFor="let note of group.value">-->
-          <!--                              <ion-button fill="solid"-->
-          <!--                                          color="medium"-->
-          <!--                                          routerLinkActive="active"-->
-          <!--                                          [routerLink]="linkTo(note)">-->
-          <!--                                {{ note.id }} - {{ note.title }}-->
-          <!--                              </ion-button>-->
-          <!--                            </div>-->
-          <!--                          </div>-->
-          <!--                        </div>-->
-          <!--                      </div>-->
-          <!--                    </div>-->
+          @for (note of openNotes; track note) {
+            <div [ngClass]="{opened: note.id === currentNote?.id}" class="note">
+              <div [id]="'open-note-handle-' + note.id"></div>
+              <!--              <ion-toolbar color="light">-->
+              <!--                &lt;!&ndash;            <ion-text class="ion-margin-horizontal" color="medium">&ndash;&gt;-->
+              <!--                &lt;!&ndash;              {{ note.id }}&ndash;&gt;-->
+              <!--                &lt;!&ndash;            </ion-text>&ndash;&gt;-->
+              <!--                <ion-buttons slot="end">-->
+              <!--                  <ion-button id="open-note-settings-popover" size="small">-->
+              <!--                    <ion-icon-->
+              <!--                      name="ellipsis-vertical-outline"-->
+              <!--                      size="small"-->
+              <!--                      slot="icon-only"-->
+              <!--                    ></ion-icon>-->
+              <!--                  </ion-button>-->
+              <!--                  <ion-button (click)="closeNote(note)" size="small">-->
+              <!--                    <ion-icon-->
+              <!--                      color="medium"-->
+              <!--                      name="close-outline"-->
+              <!--                      size="small"-->
+              <!--                      slot="icon-only"-->
+              <!--                    ></ion-icon>-->
+              <!--                  </ion-button>-->
+              <!--                </ion-buttons>-->
+              <!--                <ion-popover-->
+              <!--                  trigger="open-note-settings-popover"-->
+              <!--                  triggerAction="click"-->
+              <!--                >-->
+              <!--                  <ng-template>-->
+              <!--                    <ion-list>-->
+              <!--                      <ion-item (click)="toggleUpvote(note)" [button]="true">-->
+              <!--                        @if (note.isUpVoted) {-->
+              <!--                          <ion-icon name="star" size="small" slot="icon-only"></ion-icon>-->
+              <!--                          Unpin-->
+              <!--                        } @else {-->
+              <!--                          <ion-icon-->
+              <!--                            name="star-outline"-->
+              <!--                            size="small"-->
+              <!--                            slot="icon-only"-->
+              <!--                          ></ion-icon>-->
+              <!--                          Pin-->
+              <!--                        }-->
+              <!--                      </ion-item>-->
+
+              <!--                      <ion-item (click)="deleteCurrentNote()" [button]="true">-->
+              <!--                        <ion-icon-->
+              <!--                          color="medium"-->
+              <!--                          name="trash-outline"-->
+              <!--                          size="small"-->
+              <!--                          slot="start"-->
+              <!--                        ></ion-icon>-->
+              <!--                        Delete-->
+              <!--                      </ion-item>-->
+              <!--                    </ion-list>-->
+              <!--                  </ng-template>-->
+              <!--                </ion-popover>-->
+              <!--              </ion-toolbar>-->
+              <!--          <div class="flex__column">-->
+              <div
+                [ngClass]="{'focussed': currentNote?.id === note?.id}"
+                class="code-editor-wrapper"
+              >
+                <app-code-editor
+                  (blur)="currentNote = null"
+                  (focus)="openNote(note)"
+                  (triggerQuery)="handleQuery($event)"
+                  [autoSuggestionsProvider]="loadAutoSuggestions"
+                  [extensions]="extensions"
+                  [lineNumbers]="false"
+                  [formControl]="note.formControl"
+                ></app-code-editor>
+              </div>
+              <!--                    <div>-->
+              <!--                      <div style="border-top: 3px solid var(&#45;&#45;app-foreground); width: 100px; margin-top: 50px"></div>-->
+              <!--                      <div>-->
+              <!--                        <div>-->
+              <!--                          <h3>Incoming</h3>-->
+              <!--                          <div *ngFor="let note of incomingLinks">-->
+              <!--                            <ion-button fill="empty"-->
+              <!--                                        color="medium"-->
+              <!--                                        routerLinkActive="active"-->
+              <!--                                        [routerLink]="linkTo(note)">-->
+              <!--                              {{ note.id }} - {{ note.title }}-->
+              <!--                            </ion-button>-->
+              <!--                          </div>-->
+              <!--                        </div>-->
+              <!--                        <div>-->
+              <!--                          <h3>Outgoing</h3>-->
+              <!--                          <div *ngFor="let group of outgoingLinks | keyvalue">-->
+              <!--                            &lt;!&ndash;            <p>{{group.key}}</p>&ndash;&gt;-->
+              <!--                            <div *ngFor="let note of group.value">-->
+              <!--                              <ion-button fill="solid"-->
+              <!--                                          color="medium"-->
+              <!--                                          routerLinkActive="active"-->
+              <!--                                          [routerLink]="linkTo(note)">-->
+              <!--                                {{ note.id }} - {{ note.title }}-->
+              <!--                              </ion-button>-->
+              <!--                            </div>-->
+              <!--                          </div>-->
+              <!--                        </div>-->
+              <!--                        <div>-->
+              <!--                          <h3>Hastags</h3>-->
+              <!--                          <div *ngFor="let group of hashtagLinks | keyvalue">-->
+              <!--                            <p>{{group.key}}</p>-->
+              <!--                            <div *ngIf="group.value.length === 0">-->
+              <!--                              <em>empty</em>-->
+              <!--                            </div>-->
+              <!--                            <div *ngFor="let note of group.value">-->
+              <!--                              <ion-button fill="solid"-->
+              <!--                                          color="medium"-->
+              <!--                                          routerLinkActive="active"-->
+              <!--                                          [routerLink]="linkTo(note)">-->
+              <!--                                {{ note.id }} - {{ note.title }}-->
+              <!--                              </ion-button>-->
+              <!--                            </div>-->
+              <!--                          </div>-->
+              <!--                        </div>-->
+              <!--                      </div>-->
+              <!--                    </div>-->
+              <!--          </div>-->
+            </div>
+          }
           <!--          </div>-->
+          <!--        </div>-->
         </div>
-        }
-        <!--          </div>-->
-        <!--        </div>-->
-      </div>
       }
     </ion-content>
   </div>
 </ion-split-pane>
 @if (systemBusy) {
-<ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
+  <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
 }
