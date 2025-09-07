@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { ReplaySubject } from 'rxjs';
-import { Document, DocumentSearchOptions } from 'flexsearch';
+import { Observable, ReplaySubject } from 'rxjs';
+import { Document } from 'flexsearch';
 import { AlertController } from '@ionic/angular/standalone';
 import { uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,10 +16,11 @@ import {
   GqlVertical,
   GqlVisibility,
 } from '../../generated/graphql';
-import { ArrayElement, isDefined, isNonNull } from '../types';
+import { ArrayElement, isNonNull } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
 import { isNullish } from '@apollo/client/cache/inmemory/helpers';
+import { liveQuery } from 'dexie';
 
 export type CreateNoteParams = Partial<
   Pick<Note, 'title' | 'id' | 'text' | 'parent'>
@@ -593,17 +594,62 @@ export class NotebookService {
     };
   }
 
-  async findAllChildren(id: string): Promise<Note[]> {
-    const children = await notebookRepository.notes
-      .where('parent')
-      .equals(id)
-      .limit(100)
-      .toArray();
-
-    return children;
+  findAllChildren(id: string): Observable<Note[]> {
+    return convertToRx<Note[]>(
+      liveQuery(() =>
+        notebookRepository.notes
+          .where('parent')
+          .equals(id)
+          .limit(100)
+          .toArray(),
+      ),
+    );
   }
 
-  countChildren(id: string): Promise<number> {
-    return notebookRepository.notes.where('parent').equals(id).count();
+  countChildren(id: string): Observable<number> {
+    return convertToRx<number>(
+      liveQuery(() =>
+        notebookRepository.notes.where('parent').equals(id).count(),
+      ),
+    );
   }
+
+  async openSettingsNote() {
+    const settingsQuery = notebookRepository.notes
+      .where('title')
+      .equals('notebook.json');
+    const exists = await settingsQuery.count().then((count) => count === 1);
+    if (exists) {
+      console.log('Open settings');
+      settingsQuery
+        .limit(1)
+        .toArray()
+        .then((settings) => this.openNote(settings[0]));
+    } else {
+      await this.createSettingsNote();
+    }
+  }
+
+  private createSettingsNote() {
+    return this.createNote(
+      {
+        title: 'notebook.json',
+        text: JSON.stringify(defaultSettings, null, 2),
+      },
+      true,
+    );
+  }
+}
+
+function convertToRx<T>(customObservable: any): Observable<T> {
+  return new Observable<T>((subscriber) => {
+    const unsubscribe = customObservable.subscribe((value: any) => {
+      subscriber.next(value);
+    });
+
+    // Return cleanup logic
+    return () => {
+      unsubscribe();
+    };
+  });
 }

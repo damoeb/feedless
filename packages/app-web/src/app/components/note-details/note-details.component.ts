@@ -11,7 +11,7 @@ import { Note, NotebookService } from '../../services/notebook.service';
 import { NgClass } from '@angular/common';
 import {
   createNoteHandleId,
-  TreeNodeHandle,
+  NoteHandle,
 } from '../../pages/notebook-details/notebook-details.page';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { Subscription } from 'rxjs';
@@ -28,7 +28,7 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly notebookService = inject(NotebookService);
 
-  readonly handle = input.required<TreeNodeHandle>();
+  readonly handle = input.required<NoteHandle>();
   isOpen: boolean = false;
   private subscriptions: Subscription[] = [];
 

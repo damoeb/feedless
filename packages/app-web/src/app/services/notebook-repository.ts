@@ -1,5 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Note, Notebook } from './notebook.service';
+import 'dexie-observable';
 
 class NotebookRepository extends Dexie {
   notebooks!: Table<Notebook, string>;
@@ -9,12 +10,13 @@ class NotebookRepository extends Dexie {
 
   constructor() {
     super('notebooks');
-    const notebookIds: (keyof Notebook)[] = ['id'];
-    const notesIds: (keyof Note)[] = ['id', 'repositoryId', 'parent'];
     this.version(1).stores({
-      notebooks: notebookIds.join(', '),
-      notes: notesIds.join(', '),
-      // openNotes: notesIds.join(', '),
+      notebooks: ['id'].join(', '),
+      notes: ['id', 'repositoryId', 'parent'].join(', '),
+    });
+    this.version(2).stores({
+      notebooks: ['id'].join(', '),
+      notes: ['id', 'repositoryId', 'parent', 'title'].join(', '),
     });
   }
 }

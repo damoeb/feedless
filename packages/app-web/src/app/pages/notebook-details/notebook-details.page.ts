@@ -11,7 +11,15 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { BehaviorSubject, from, map, Observable, Subscription } from 'rxjs';
+import {
+  BehaviorSubject,
+  flatMap,
+  from,
+  map,
+  mergeMap,
+  Observable,
+  Subscription,
+} from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   ChangeModifier,
@@ -22,7 +30,7 @@ import {
   NoteId,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { groupBy, isString, omit, uniq } from 'lodash-es';
+import { groupBy, isString, omit, uniq, without } from 'lodash-es';
 import {
   AlertController,
   IonAccordion,
@@ -39,6 +47,7 @@ import {
   IonProgressBar,
   IonSpinner,
   IonSplitPane,
+  IonText,
   IonToolbar,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -53,10 +62,14 @@ import { AnnotationService } from '../../services/annotation.service';
 import { addIcons } from 'ionicons';
 import {
   attachOutline,
+  chevronDownOutline,
+  chevronUpOutline,
   closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
   contractOutline,
+  ellipse,
+  ellipseOutline,
   ellipsisVerticalOutline,
   expandOutline,
   pinOutline,
@@ -88,7 +101,9 @@ import { BubbleComponent } from '../../components/bubble/bubble.component';
 
 export type EditorHandle = {
   maximized: boolean;
+  toolbar: boolean;
   note: Note;
+  noteHandle: NoteHandle;
   formControl: FormControl<string>;
   subscriptions: Subscription[];
 };
@@ -98,12 +113,12 @@ enum Focussable {
   searchbar,
 }
 
-export type TreeNodeHandle = {
+export type NoteHandle = {
   body: Note;
   expanded: boolean;
   level: number;
-  childrenCount: () => number;
-  children(): Observable<TreeNodeHandle[]>;
+  childrenCount: () => Observable<number>;
+  children(): Observable<NoteHandle[]>;
   toggleUpvote(): void;
 };
 
@@ -147,6 +162,7 @@ export type TreeNodeHandle = {
     NgTemplateOutlet,
     NgStyle,
     BubbleComponent,
+    IonText,
   ],
   standalone: true,
 })
@@ -164,7 +180,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   busy = false;
   private subscriptions: Subscription[] = [];
   repository: RepositoryWithFrequency;
-  openEditors: EditorHandle[] = [];
   systemBusy: boolean;
   currentEditorHandle: EditorHandle = null;
 
@@ -184,8 +199,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   protected suggestions: TypeaheadSuggestion[] = [];
   protected autosafe = new FormControl<boolean>(true);
 
-  private treeRootsData = new BehaviorSubject<TreeNodeHandle[]>([]);
-  treeRoots: Observable<TreeNodeHandle[]> = this.treeRootsData.asObservable();
+  private treeRootsData = new BehaviorSubject<NoteHandle[]>([]);
+  treeRoots: Observable<NoteHandle[]> = this.treeRootsData.asObservable();
   private setSystemReady: (value: PromiseLike<void> | void) => void;
   private waitForReady: Promise<void> = new Promise(
     (resolve) => (this.setSystemReady = resolve),
@@ -210,6 +225,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       swapVerticalOutline,
       attachOutline,
       pinOutline,
+      chevronUpOutline,
+      chevronDownOutline,
+      ellipseOutline,
+      ellipse,
     });
   }
 
@@ -314,43 +333,38 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async openNote(note: Note) {
-    console.log('note', note);
-    const matchingEditor = this.openEditors.find((it) => it.note.id == note.id);
-    if (matchingEditor) {
-      this.currentEditorHandle = matchingEditor;
-      this.scrollTo(matchingEditor);
-    } else {
-      const formControl = new FormControl(note.text);
+    console.log('openNote', note.title);
+    const formControl = new FormControl(note.text);
+    console.log('new editor');
+    const editor: EditorHandle = {
+      maximized: false,
+      toolbar: false,
+      note,
+      noteHandle: await this.toTreeHandle(0)(note),
+      // upVoteAnnotationId: upVoted?.id,
+      formControl,
+      subscriptions: [
+        formControl.valueChanges.subscribe(async (text) => {
+          if (editor.note.text != text) {
+            editor.note.text = text;
+            await this.updateNote(note);
+          }
 
-      const editor: EditorHandle = {
-        maximized: false,
-        note,
-        // upVoteAnnotationId: upVoted?.id,
-        formControl,
-        subscriptions: [
-          formControl.valueChanges.subscribe(async (text) => {
-            if (editor.note.text != text) {
-              editor.note.text = text;
-              await this.updateNote(note);
-            }
+          formControl.markAsPristine();
+        }),
+      ],
+    };
+    // this.notebookService.findAll(note.id);
+    // await this.refreshReferences(openNote);
+    this.currentEditorHandle = null;
+    this.changeRef.detectChanges();
 
-            formControl.markAsPristine();
-          }),
-        ],
-      };
-      // this.notebookService.findAll(note.id);
-      // await this.refreshReferences(openNote);
-      this.currentEditorHandle = null;
-      this.changeRef.detectChanges();
-
-      this.openEditors.push(editor);
-      this.scrollTo(editor);
-      this.currentEditorHandle = editor;
-      this.changeRef.detectChanges();
-      setTimeout(async () => {
-        await this.setFocus(Focussable.editor);
-      }, 1000);
-    }
+    this.scrollTo(editor);
+    this.currentEditorHandle = editor;
+    this.changeRef.detectChanges();
+    setTimeout(async () => {
+      await this.setFocus(Focussable.editor);
+    }, 1000);
   }
 
   private async setFocus(element: Focussable) {
@@ -498,7 +512,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   //
   //   return parents;
   // }
-  trackByFn(index: number, item: TreeNodeHandle) {
+  trackByFn(index: number, item: NoteHandle) {
     return `${item.body.id}/${item.body.updatedAt}`;
   }
 
@@ -513,37 +527,36 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     this.changeRef.detectChanges();
   }
 
-  private toTreeHandle(level: number): (note: Note) => Promise<TreeNodeHandle> {
-    return async (note: Note): Promise<TreeNodeHandle> => {
-      const count = await this.notebookService.countChildren(note.id);
+  private toTreeHandle(level: number): (note: Note) => Promise<NoteHandle> {
+    return async (note: Note): Promise<NoteHandle> => {
       return {
         body: note,
         expanded: true,
         level,
-        childrenCount: () => count,
+        childrenCount: () => this.notebookService.countChildren(note.id),
         toggleUpvote: () => {
           note.isUpVoted = !note.isUpVoted;
           this.notebookService.updateNote(note);
         },
         children: () => {
-          return from(
-            this.notebookService
-              .findAllChildren(note.id)
-              .then((notes) =>
-                Promise.all(notes.map(this.toTreeHandle(level + 1))),
+          return this.notebookService
+            .findAllChildren(note.id)
+            .pipe(
+              mergeMap((notes) =>
+                from(Promise.all(notes.map(this.toTreeHandle(level + 1)))),
               ),
-          );
+            );
         },
       };
     };
   }
 
-  childrenAccessor(node: TreeNodeHandle): Observable<TreeNodeHandle[]> {
+  childrenAccessor(node: NoteHandle): Observable<NoteHandle[]> {
     return node.children();
   }
 
-  hasChild(_: number, note: TreeNodeHandle): boolean {
-    return note.childrenCount() > 0;
+  hasChild(_: number, note: NoteHandle): boolean {
+    return true;
   }
 
   closeNote() {
@@ -576,11 +589,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async focusEditor() {
-    const index = this.openEditors.findIndex(
-      (editor) => editor.note.id === this.currentEditorHandle?.note?.id,
-    );
-    if (index > -1 && this.codeEditorComponents().length > index) {
-      this.codeEditorComponents().at(index).setFocus();
+    if (this.codeEditorComponents().length > 0) {
+      this.codeEditorComponents().at(0).setFocus();
     } else {
       console.warn('cannot focus');
     }
@@ -620,6 +630,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       );
     }
     return notes;
+  }
+
+  showSettingsNote() {
+    this.notebookService.openSettingsNote();
   }
 }
 
