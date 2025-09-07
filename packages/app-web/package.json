@@ -61,6 +61,7 @@
     "d3-scale": "4.0.2",
     "dayjs": "1.11.13",
     "dexie": "^3.2.5",
+    "dexie-observable": "^4.0.1-beta.13",
     "flexsearch": "^0.8.212",
     "graphql": "16.9.0",
     "graphql-ws": "5.16.0",
