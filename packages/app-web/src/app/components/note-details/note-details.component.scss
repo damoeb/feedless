@@ -38,7 +38,7 @@
     transform-origin: right center;
 
     .note-actions {
-      display: block;
+      display: flex;
     }
   }
 
@@ -56,15 +56,8 @@
   cursor: pointer;
 
   .note-actions {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0 5px;
     display: none;
-
-    li {
-      display: inline-block;
-      margin-right: 5px;
-    }
+    column-gap: 5px;
   }
 }
 

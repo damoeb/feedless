@@ -30,6 +30,31 @@ export type DeepPartial<T> = T extends object
     }
   : T;
 
+export type NestedKeys<T, Prev extends string = ''> = {
+  [K in keyof T]: T[K] extends object
+    ?
+        | `${Prev}${Extract<K, string>}`
+        | NestedKeys<T[K], `${Prev}${Extract<K, string>}.`>
+    : `${Prev}${Extract<K, string>}`;
+}[keyof T];
+
+type Split<S extends string, D extends string> = string extends S
+  ? string[]
+  : S extends ''
+    ? []
+    : S extends `${infer T}${D}${infer U}`
+      ? [T, ...Split<U, D>]
+      : [S];
+
+export type TypeAtPath<T, P extends string> =
+  Split<P, '.'> extends [infer Head extends keyof T, ...infer Tail]
+    ? Tail extends []
+      ? T[Head]
+      : T[Head] extends object
+        ? TypeAtPath<T[Head], Tail[number] & string>
+        : never
+    : never;
+
 export function isDefined(v: any | undefined): boolean {
   return !isNull(v) && !isUndefined(v);
 }

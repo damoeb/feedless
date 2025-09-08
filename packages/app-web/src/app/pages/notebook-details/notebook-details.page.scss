@@ -73,35 +73,24 @@ app-tree-view {
   flex-direction: column;
 }
 
-.all-notes-wrapper {
+.note-tree,
+.shortcuts {
+  --line-color: rgba(var(--app-foreground-rgb), 0.5);
+
+  app-bubble {
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 20px;
+  }
+}
+
+.note-tree {
   flex: 1;
   flex-direction: column;
   justify-content: center;
   display: flex;
   column-gap: 5px;
   position: relative;
-
-  //.scroll-pane {
-  //  position: relative;
-  //  overflow-x: auto;
-  //}
-
-  //.grid {
-  //  flex: 1;
-  //  display: flex;
-  //
-  //  ion-card {
-  //    height: 200px;
-  //    width: 300px;
-  //    //border-radius: 1rem;
-  //    cursor: pointer;
-  //    border: 2px solid transparent;
-  //
-  //    &:hover {
-  //      border-color: rgba(var(--ion-color-primary-rgb), 0.5);
-  //    }
-  //  }
-  //}
 
   .note {
     overflow-y: auto;
@@ -157,13 +146,6 @@ ion-accordion.accordion-expanded {
   --maxlevel: 6;
   --line-width: 10px;
   --line-marginright: 3px;
-  --line-color: rgba(var(--app-foreground-rgb), 0.5);
-
-  app-bubble {
-    position: absolute;
-    margin-left: -20px;
-    margin-top: 20px;
-  }
 
   .line {
     cursor: pointer;
@@ -186,18 +168,18 @@ ion-accordion.accordion-expanded {
       --line-color: var(--app-foreground);
     }
   }
+}
 
-  .zigzag {
-    width: 100%;
-    --a: 90deg; /* control the angle */
-    --s: 10px; /* size of the zig-zag */
-    --b: 2px; /* control the thickness */
+.zigzag {
+  width: 100%;
+  --a: 90deg; /* control the angle */
+  --s: 10px; /* size of the zig-zag */
+  --b: 2px; /* control the thickness */
 
-    background: var(--line-color);
-    height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
-    //width: 100%;
-    --_g: var(--s) repeat-x conic-gradient(from calc(var(--a) / -2) at bottom,
-      #0000, #000 1deg calc(var(--a) - 1deg), #0000 var(--a));
-    mask: 50% calc(-1*var(--b))/var(--_g) exclude, 50%/var(--_g);
-  }
+  background: var(--line-color);
+  height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
+  //width: 100%;
+  --_g: var(--s) repeat-x conic-gradient(from calc(var(--a) / -2) at bottom,
+    #0000, #000 1deg calc(var(--a) - 1deg), #0000 var(--a));
+  mask: 50% calc(-1*var(--b))/var(--_g) exclude, 50%/var(--_g);
 }

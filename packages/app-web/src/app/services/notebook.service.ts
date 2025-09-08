@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, ReplaySubject } from 'rxjs';
+import { map, Observable, ReplaySubject } from 'rxjs';
 import { Document } from 'flexsearch';
-import { AlertController } from '@ionic/angular/standalone';
-import { uniq } from 'lodash-es';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
+import { get, slice, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import { Completion } from '@codemirror/autocomplete';
@@ -16,7 +16,7 @@ import {
   GqlVertical,
   GqlVisibility,
 } from '../../generated/graphql';
-import { ArrayElement, isNonNull } from '../types';
+import { ArrayElement, isNonNull, NestedKeys, TypeAtPath } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
 import { isNullish } from '@apollo/client/cache/inmemory/helpers';
@@ -35,6 +35,7 @@ export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
     hashtags: string[];
     links: string[];
   };
+  pos?: number; // todo allow sorting
   parent?: string | undefined;
   repositoryId: string;
   isUpVoted: boolean;
@@ -48,51 +49,109 @@ export type AppAction = {
   callback: () => void;
 };
 
-export type NotebookSettings = {};
+export type NoteShortcutType = 'recent' | 'off' | 'pinned';
+
+export interface NotebookSettings {
+  // extends: 'https://foo.bar/untold-dark.json',
+  // storage: {
+  //   notesDirectory: './Notes',
+  //   extension: 'md',
+  // },
+  shortcuts: {
+    limit: number;
+    type: NoteShortcutType;
+  };
+  general: {
+    darkMode: boolean;
+    fontName: string;
+    fontSize: number;
+    hideInternalNotes: boolean;
+    //   theme: 'default',
+    startupNote: 'new' | 'blank' | 'lastChanged' | 'index' | 'none';
+    language: 'en';
+  };
+  editor: {
+    //   useMarkdown: true,
+    //   wysiwyg: true,
+    noteId: string;
+    newNoteTemplates: {
+      defaultTemplateName: string;
+      [templateName: string]: string;
+    };
+    size: 'maximized' | 'normal';
+    style: 'one-document' | 'fields';
+  };
+  // saving: {
+  //   mode: 'auto',
+  //   autoSaveInterval: 60,
+  //   manualSaveWithReview: false,
+  // },
+  // search: {
+  //   showNoteTree: true,
+  //   sortOrder: 'modified',
+  //   searchType: 'fuzzy',
+  //   maxResults: 20,
+  //   autocomplete: {
+  //     labels: true,
+  //     actions: true,
+  //   },
+  //      history: {
+  //        maxSize: number
+  //      }
+  // },
+  // hotkeys: {
+  //   createNewNote: 'Cmd+N',
+  //   searchNotes: 'Cmd+F',
+  // },
+  css?: {
+    dark: {
+      variables: {
+        [n: string]: string;
+      };
+    };
+    light: {
+      variables: {
+        [n: string]: string;
+      };
+    };
+  };
+}
 
 export const defaultSettings: NotebookSettings = {
-  extends: 'https://foo.bar/untold-dark.json',
-  storage: {
-    notesDirectory: './Notes',
-    extension: 'md',
-  },
-  editing: {
-    useMarkdown: true,
-    newNoteTemplate: '',
-  },
-  saving: {
-    mode: 'auto',
-    autoSaveInterval: 60,
-    manualSaveWithReview: false,
+  shortcuts: {
+    limit: 5,
+    type: 'pinned',
   },
   general: {
-    fontName: 'Menlo',
+    darkMode: false,
+    fontName: 'Serif',
     fontSize: 13,
-    theme: 'default',
-    startupNote: 'Scratchpad',
+    hideInternalNotes: false,
+    startupNote: 'index',
     language: 'en',
   },
-  search: {
-    showNoteTree: true,
-    sortOrder: 'modified',
-    searchType: 'fuzzy',
-    maxResults: 20,
-    autocomplete: {
-      labels: true,
-      actions: true,
+  editor: {
+    noteId: 'YYYYMMDDHHMM',
+    size: 'normal',
+    newNoteTemplates: {
+      defaultTemplateName: 'concept',
+      concept: `# {{title}}
+
+ID: {{noteId}}
+Parent: {{parentId}}
+Pinned: false
+Tags:
+
+---`,
+      fleeting: `# Fleeting Note – {{date}}
+
+- `,
     },
-  },
-  hotkeys: {
-    createNewNote: 'Cmd+N',
-    searchNotes: 'Cmd+F',
+    style: 'one-document',
   },
 };
 
 export type NoteId = string;
-
-// | 'isUpVoted'
-// | 'references:links'
-// | 'references:hashtags'
 
 type NoteDocument = {
   id: string;
@@ -120,6 +179,7 @@ export class NotebookService {
   private readonly recordService = inject(RecordService);
   private readonly authGuard = inject(AuthGuardService);
   private readonly router = inject(Router);
+  private readonly toastCtrl = inject(ToastController);
 
   private actions: AppAction[] = [
     {
@@ -143,6 +203,7 @@ export class NotebookService {
   systemBusyChanges = new ReplaySubject<boolean>(1);
   private index!: Document<NoteDocument>;
   private currentRepositoryId!: string;
+  private notebookJsonName: string = 'notebook.json';
 
   constructor() {
     this.init();
@@ -210,6 +271,21 @@ export class NotebookService {
     }
   }
 
+  async getSettingsValue<T extends NestedKeys<NotebookSettings>>(
+    path: T,
+  ): Promise<TypeAtPath<NotebookSettings, T>> {
+    const settings = await this.getSettingsOrDefault();
+    return get(settings, path) as TypeAtPath<NotebookSettings, T>;
+  }
+
+  async hasSettingsValue<
+    T extends NestedKeys<NotebookSettings>,
+    V extends TypeAtPath<NotebookSettings, T>,
+  >(path: T, value: V): Promise<boolean> {
+    const actualValue = await this.getSettingsValue(path);
+    return actualValue === value;
+  }
+
   async createNote(
     params: CreateNoteParams = {},
     triggerOpen: boolean = false,
@@ -275,7 +351,8 @@ export class NotebookService {
       this.createIndex();
 
       const notes = await notebookRepository.notes
-        .where({ repositoryId })
+        .where('repositoryId')
+        .equals(repositoryId)
         .toArray();
 
       notes.forEach((note) => this.index.add(this.toIndexDocument(note)));
@@ -544,7 +621,22 @@ export class NotebookService {
 
   async openNoteById(noteId: string) {
     const note = await notebookRepository.notes.get(`${noteId}`);
-    this.openNote(note);
+    if (note) {
+      this.openNote(note);
+    } else {
+      await this.showToast('No note with ID index found.', 'warning');
+    }
+  }
+
+  async showToast(message: string, color: 'light' | 'warning' = 'light') {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 3000,
+      color,
+      cssClass: 'toast-small',
+    });
+
+    await toast.present();
   }
 
   openNote(note: Note) {
@@ -582,6 +674,8 @@ export class NotebookService {
 
   async findAllRoots(): Promise<Note[]> {
     return notebookRepository.notes
+      .where('repositoryId')
+      .equals(this.currentRepositoryId)
       .filter((note) => isNullish(note.parent))
       .toArray();
   }
@@ -600,24 +694,44 @@ export class NotebookService {
         notebookRepository.notes
           .where('parent')
           .equals(id)
+          .filter((note) => note.repositoryId === this.currentRepositoryId)
           .limit(100)
           .toArray(),
       ),
-    );
+    ); // todo .pipe(map(notes => this.applySort(notes)));
   }
 
   countChildren(id: string): Observable<number> {
     return convertToRx<number>(
       liveQuery(() =>
-        notebookRepository.notes.where('parent').equals(id).count(),
+        notebookRepository.notes
+          .where('parent')
+          .equals(id)
+          .filter((note) => note.repositoryId === this.currentRepositoryId)
+          .count(),
       ),
     );
   }
 
+  async getSettingsOrDefault(): Promise<NotebookSettings> {
+    // todo activate
+    // const settingsNote = await this.getSettingsQuery().toArray();
+    // try {
+    //   if (settingsNote.length > 0) {
+    //     // todo fix
+    //     return JSON.parse(settingsNote[0].text);
+    //   } else {
+    //     return defaultSettings;
+    //   }
+    // } catch (e) {
+    //   console.error(e);
+    //   await this.showToast('Invalid notebook.json', 'warning');
+    return defaultSettings;
+    // }
+  }
+
   async openSettingsNote() {
-    const settingsQuery = notebookRepository.notes
-      .where('title')
-      .equals('notebook.json');
+    const settingsQuery = this.getSettingsQuery();
     const exists = await settingsQuery.count().then((count) => count === 1);
     if (exists) {
       console.log('Open settings');
@@ -630,13 +744,55 @@ export class NotebookService {
     }
   }
 
+  private getSettingsQuery() {
+    return notebookRepository.notes
+      .where('title')
+      .equals(this.notebookJsonName)
+      .filter((note) => note.repositoryId === this.currentRepositoryId)
+      .limit(1);
+  }
+
   private createSettingsNote() {
     return this.createNote(
       {
-        title: 'notebook.json',
+        title: this.notebookJsonName,
         text: JSON.stringify(defaultSettings, null, 2),
       },
       true,
+    );
+  }
+
+  findAllRecent(limit: number): Observable<Note[]> {
+    return convertToRx<Note[]>(
+      liveQuery(() =>
+        notebookRepository.notes
+          .where('repositoryId')
+          .equals(this.currentRepositoryId)
+          .sortBy('updatedAt')
+          .then((notes) =>
+            slice(
+              notes
+                .filter((note) => note.title !== this.notebookJsonName)
+                .reverse(),
+              0,
+              limit,
+            ),
+          ),
+      ),
+    );
+  }
+
+  findAllPinned(limit: number): Observable<Note[]> {
+    return convertToRx<Note[]>(
+      liveQuery(() =>
+        notebookRepository.notes
+          .where('repositoryId')
+          .equals(this.currentRepositoryId)
+          .sortBy('updatedAt')
+          .then((notes) =>
+            slice(notes.filter((note) => note.isUpVoted).reverse(), 0, limit),
+          ),
+      ),
     );
   }
 }

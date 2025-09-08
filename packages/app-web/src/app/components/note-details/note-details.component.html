@@ -10,8 +10,9 @@
       {{ changeAgo() }}
     </div>
 
-    <ul class="note-actions">
-      <li>
+    <div class="note-actions">
+      <ng-content></ng-content>
+      <div>
         <a (click)="toggleUpvote($event)" href="javascript:void(0)">
           @if (note().isUpVoted) {
             Unpin
@@ -19,13 +20,13 @@
             Pin
           }
         </a>
-      </li>
-      <li>
+      </div>
+      <div>
         <a (click)="extendNote($event)" href="javascript:void(0)">
           Extend
         </a>
-      </li>
-    </ul>
+      </div>
+    </div>
   </div>
 
 </div>
