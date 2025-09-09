@@ -147,14 +147,13 @@
             <div style="position: absolute; width: 100%">
               <cdk-tree [dataSource]="treeRoots" [trackBy]="trackByFn" [childrenAccessor]="childrenAccessor">
                 <cdk-nested-tree-node *cdkTreeNodeDef="let node;">
-                  <div class="branch">
+                  <div class="branch" draggable="true">
                     <div class="line"
                          (click)="node.expanded = !node.expanded"
                          [ngClass]="{'line--collapsed': node.collapsed}"></div>
                     <div style="display: flex; flex: 1; flex-direction: column">
                       <div class="leaf" [ngStyle]="{'--level': node.level}">
                         <div class="tree-node"
-                             draggable="true"
                              [ngClass]="{'tree-node--collapsed': node.collapsed}"
                              style="margin-left: 20px;">
                           @if (node.body.isUpVoted) {
@@ -183,7 +182,8 @@
             class="footer-toolbar">
             @if (currentEditorHandle) {
               <div
-                [ngClass]="{'note-editor--maximized': currentEditorHandle.maximized}"
+                [ngClass]="{'note-editor--maximized': !currentEditorHandle.minimized && currentEditorHandle.maximized,
+                'note-editor--minimized': currentEditorHandle.minimized}"
                 class="note-editor">
                 <div style="display: flex">
                   <div style="flex: 1; display: flex; align-items: center;">
@@ -196,20 +196,21 @@
                     </ion-button>
                     <ion-text>
                       <strong>
-                        Editor
+                        {{ currentEditorHandle.note.title }}
                       </strong>
                     </ion-text>
                   </div>
                   <ion-buttons>
                     <ion-button size="small"
-                                (click)="currentEditorHandle.toolbar = !currentEditorHandle.toolbar">
-                      @if (currentEditorHandle.toolbar) {
+                                (click)="currentEditorHandle.minimized = !currentEditorHandle.minimized">
+                      @if (currentEditorHandle.minimized) {
                         <ion-icon name="chevron-up-outline"></ion-icon>
                       } @else {
                         <ion-icon name="chevron-down-outline"></ion-icon>
                       }
                     </ion-button>
                     <ion-button size="small"
+                                class="hide-minimized"
                                 (click)="currentEditorHandle.maximized = !currentEditorHandle.maximized">
                       @if (currentEditorHandle.maximized) {
                         <ion-icon name="contract-outline"></ion-icon>
@@ -222,33 +223,47 @@
                     </ion-button>
                   </ion-buttons>
                 </div>
-                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {
-                  <ion-toolbar>
+                <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
+                <ion-toolbar class="hide-minimized"
+                             style="--background: transparent">
+                  @if (currentEditorHandle.toolbar) {
                     <ion-buttons>
                       <ion-button>
                         <ion-icon name="attach-outline" slot="start"></ion-icon>
                         File
                       </ion-button>
+                      <ion-button (click)="changeParent()">
+                        Move
+                      </ion-button>
                     </ion-buttons>
-                  </ion-toolbar>
-                }
+                  } @else {
+                    <ion-buttons>
+                      <ion-button (click)="currentEditorHandle.toolbar = !currentEditorHandle.toolbar">
+                        Tools
+                        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                      </ion-button>
+                    </ion-buttons>
+                  }
+                </ion-toolbar>
+
                 <app-code-editor
+                  class="hide-minimized"
                   (triggerQuery)="handleQuery($event)"
                   [autoSuggestionsProvider]="loadAutoSuggestions"
                   [formControl]="currentEditorHandle.formControl"
                   [extensions]="extensions"
                   [lineNumbers]="false"
                 ></app-code-editor>
-                <div style="display: flex">
+                <div style="display: flex" class="hide-minimized">
                   <div style="flex: 1; margin: 5px; align-items: center; display: flex">
                     <ion-buttons>
                       <ion-button (click)="createFollowUpNote()">
-                        <ion-icon name="return-up-forward-outline" slot="start"></ion-icon>
-                        Prepend
-                      </ion-button>
-                      <ion-button (click)="createFollowUpNote()">
                         <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
                         Follow-up
+                      </ion-button>
+                      <ion-button (click)="cloneNote()">
+                        <ion-icon name="copy-outline" slot="start"></ion-icon>
+                        Clone
                       </ion-button>
                     </ion-buttons>
                   </div>
@@ -270,7 +285,7 @@
                 </div>
               </div>
             } @else {
-              <ion-button color="white" (click)="createNote()">
+              <ion-button color="white" (click)="createNoteByParent()">
                 Create Note
               </ion-button>
             }

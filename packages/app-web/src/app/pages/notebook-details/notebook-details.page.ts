@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import {
   BehaviorSubject,
+  firstValueFrom,
   flatMap,
   from,
   map,
@@ -66,11 +67,13 @@ import { addIcons } from 'ionicons';
 import {
   attachOutline,
   chevronDownOutline,
+  chevronForwardOutline,
   chevronUpOutline,
   closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
   contractOutline,
+  copyOutline,
   ellipse,
   ellipseOutline,
   ellipsisVerticalOutline,
@@ -111,6 +114,7 @@ import { SessionService } from '../../services/session.service';
 export type EditorHandle = {
   maximized: boolean;
   toolbar: boolean;
+  minimized: boolean;
   note: Note;
   noteHandle: NoteHandle;
   formControl: FormControl<string>;
@@ -212,8 +216,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   shortcutValuePinned: NoteShortcutType = 'pinned';
   shortcutValueOff: NoteShortcutType = 'off';
 
-  private treeRootsData = new BehaviorSubject<NoteHandle[]>([]);
-  treeRoots: Observable<NoteHandle[]> = this.treeRootsData.asObservable();
+  treeRoots: Observable<NoteHandle[]> = from([]);
   private setSystemReady: (value: PromiseLike<void> | void) => void;
   private waitForReady: Promise<void> = new Promise(
     (resolve) => (this.setSystemReady = resolve),
@@ -233,7 +236,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       expandOutline,
       contractOutline,
       returnDownForwardOutline,
+      copyOutline,
       returnUpForwardOutline,
+      chevronForwardOutline,
       swapVerticalOutline,
       attachOutline,
       pinOutline,
@@ -354,6 +359,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     const editor: EditorHandle = {
       maximized: await this.hasSettingsValue('editor.size', 'maximized'),
       toolbar: false,
+      minimized: false,
       note,
       noteHandle: this.toNoteHandle(0)(note),
       // upVoteAnnotationId: upVoted?.id,
@@ -381,18 +387,18 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }, 1000);
   }
 
-  async hasSettingsValue<
+  hasSettingsValue<
     T extends NestedKeys<NotebookSettings>,
     V extends TypeAtPath<NotebookSettings, T>,
   >(path: T, value: V): Promise<boolean> {
-    return this.notebookService.hasSettingsValue(path, value);
+    return firstValueFrom(this.notebookService.hasSettingsValue(path, value));
   }
 
-  async getSettingsValue<
+  getSettingsValue<
     T extends NestedKeys<NotebookSettings>,
     V extends TypeAtPath<NotebookSettings, T>,
   >(path: T): Promise<V> {
-    return this.notebookService.getSettingsValue(path);
+    return firstValueFrom(this.notebookService.getSettingsValue(path));
   }
 
   private async setFocus(element: Focussable) {
@@ -405,7 +411,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  async createNote(parent: Nullable<string> = null) {
+  async createNoteByParent(parent: Nullable<string> = null) {
     const note = await this.notebookService.createNote({ parent }, true);
     return this.openNote(note);
   }
@@ -528,14 +534,11 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     return `${item.body.id}/${item.body.updatedAt}`;
   }
 
-  private async loadTree() {
+  private loadTree() {
     console.log('loadTree');
-    const treeRoots = await this.notebookService
+    this.treeRoots = this.notebookService
       .findAllRoots()
-      .then((roots) => {
-        return Promise.all(roots.map(this.toNoteHandle(0)));
-      });
-    this.treeRootsData.next(treeRoots);
+      .pipe(map((roots) => roots.map(this.toNoteHandle(0))));
     this.changeRef.detectChanges();
   }
 
@@ -582,7 +585,17 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   async createFollowUpNote() {
     const editor = this.currentEditorHandle;
     this.closeNote();
-    await this.createNote(editor.note.id);
+    await this.createNoteByParent(editor.note.id);
+  }
+
+  async changeParent() {
+    // todo implement
+  }
+
+  async cloneNote() {
+    const editor = this.currentEditorHandle;
+    this.closeNote();
+    await this.notebookService.createNote(editor.note, true);
   }
 
   private async focusEditor() {
@@ -600,7 +613,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private async handleShortcutValue(value: NoteShortcutType) {
     const toShortcutHandle = (notes: Note[]): NoteHandle[] =>
       notes.map<NoteHandle>((note) => this.toNoteHandle(0)(note));
-    const settings = await this.notebookService.getSettingsOrDefault();
+    const settings = await firstValueFrom(
+      this.notebookService.getSettingsOrDefault(),
+    );
     switch (value) {
       case 'pinned':
         this.shortcuts$ = this.notebookService
@@ -615,19 +630,15 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private async settings() {
-    return this.notebookService.getSettingsOrDefault();
-  }
-
-  private async loadSettings() {
-    const settings = await this.settings();
-    this.shortcutsFC.setValue(settings.shortcuts.type);
+  private async initShortcuts() {
+    this.shortcutsFC.setValue(await this.getSettingsValue('shortcuts.type'));
+    this.changeRef.markForCheck();
   }
 
   private async onReady() {
     this.setSystemReady();
-    await this.loadSettings();
-    await this.loadTree();
+    await this.initShortcuts();
+    this.loadTree();
 
     this.sessionService.setColorScheme(
       await this.hasSettingsValue('general.darkMode', true),

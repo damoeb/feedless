@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { map, Observable, ReplaySubject } from 'rxjs';
+import { combineLatest, from, map, Observable, of, ReplaySubject } from 'rxjs';
 import { Document } from 'flexsearch';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { get, slice, uniq } from 'lodash-es';
@@ -271,19 +271,21 @@ export class NotebookService {
     }
   }
 
-  async getSettingsValue<T extends NestedKeys<NotebookSettings>>(
+  getSettingsValue<T extends NestedKeys<NotebookSettings>>(
     path: T,
-  ): Promise<TypeAtPath<NotebookSettings, T>> {
-    const settings = await this.getSettingsOrDefault();
-    return get(settings, path) as TypeAtPath<NotebookSettings, T>;
+  ): Observable<TypeAtPath<NotebookSettings, T>> {
+    return this.getSettingsOrDefault().pipe(
+      map((settings) => get(settings, path) as TypeAtPath<NotebookSettings, T>),
+    );
   }
 
-  async hasSettingsValue<
+  hasSettingsValue<
     T extends NestedKeys<NotebookSettings>,
     V extends TypeAtPath<NotebookSettings, T>,
-  >(path: T, value: V): Promise<boolean> {
-    const actualValue = await this.getSettingsValue(path);
-    return actualValue === value;
+  >(path: T, value: V): Observable<boolean> {
+    return this.getSettingsValue(path).pipe(
+      map((actualValue) => actualValue === value),
+    );
   }
 
   async createNote(
@@ -672,12 +674,16 @@ export class NotebookService {
     notebookRepository.notes.clear();
   }
 
-  async findAllRoots(): Promise<Note[]> {
-    return notebookRepository.notes
-      .where('repositoryId')
-      .equals(this.currentRepositoryId)
-      .filter((note) => isNullish(note.parent))
-      .toArray();
+  findAllRoots(): Observable<Note[]> {
+    return convertToRx<Note[]>(
+      liveQuery(() =>
+        notebookRepository.notes
+          .where('repositoryId')
+          .equals(this.currentRepositoryId)
+          .filter((note) => isNullish(note.parent))
+          .toArray(),
+      ),
+    );
   }
 
   private toIndexDocument(note: Note): NoteDocument {
@@ -689,6 +695,22 @@ export class NotebookService {
   }
 
   findAllChildren(id: string): Observable<Note[]> {
+    const children$ = this.findAllChildrenById(id);
+    const hideInternalNotes$ = this.getSettingsValue(
+      'general.hideInternalNotes',
+    );
+    return combineLatest([children$, hideInternalNotes$]).pipe(
+      map(([children, hideInternalNotes]) => {
+        if (hideInternalNotes) {
+          return children; // todo apply filter
+        } else {
+          return children;
+        }
+      }),
+    );
+  }
+
+  private findAllChildrenById(id: string): Observable<Note[]> {
     return convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
@@ -698,7 +720,7 @@ export class NotebookService {
           .limit(100)
           .toArray(),
       ),
-    ); // todo .pipe(map(notes => this.applySort(notes)));
+    );
   }
 
   countChildren(id: string): Observable<number> {
@@ -713,7 +735,7 @@ export class NotebookService {
     );
   }
 
-  async getSettingsOrDefault(): Promise<NotebookSettings> {
+  getSettingsOrDefault(): Observable<NotebookSettings> {
     // todo activate
     // const settingsNote = await this.getSettingsQuery().toArray();
     // try {
@@ -726,7 +748,7 @@ export class NotebookService {
     // } catch (e) {
     //   console.error(e);
     //   await this.showToast('Invalid notebook.json', 'warning');
-    return defaultSettings;
+    return of(defaultSettings);
     // }
   }
 

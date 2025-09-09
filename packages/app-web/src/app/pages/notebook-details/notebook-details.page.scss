@@ -111,7 +111,6 @@ app-tree-view {
     //padding-right: 15px;
     //padding-bottom: 15px;
     max-height: 80vh;
-    min-height: 400px;
     display: flex;
     flex-direction: column;
     width: 80%;
@@ -124,6 +123,15 @@ app-tree-view {
     &.note-editor--maximized {
       width: 100%;
       height: 75vh;
+    }
+
+    &.note-editor--minimized {
+      .hide-minimized {
+        display: none !important;
+      }
+
+      width: 250px;
+      height: 50px;
     }
 
     app-code-editor {
