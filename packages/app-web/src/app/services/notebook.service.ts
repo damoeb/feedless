@@ -1,8 +1,17 @@
 import { inject, Injectable } from '@angular/core';
-import { combineLatest, from, map, Observable, of, ReplaySubject } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  map,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  zip,
+} from 'rxjs';
 import { Document } from 'flexsearch';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
-import { get, slice, uniq } from 'lodash-es';
+import { get, map as mapObj, slice, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import { Completion } from '@codemirror/autocomplete';
@@ -21,6 +30,8 @@ import { RecordService } from './record.service';
 import dayjs from 'dayjs';
 import { isNullish } from '@apollo/client/cache/inmemory/helpers';
 import { liveQuery } from 'dexie';
+import { EditorView } from '@codemirror/view';
+import { translations } from '../products/untold-notes/untold-notes-product.translations';
 
 export type CreateNoteParams = Partial<
   Pick<Note, 'title' | 'id' | 'text' | 'parent'>
@@ -30,6 +41,20 @@ export type Notebook = ArrayElement<
   GqlCreateRepositoriesMutation['createRepositories']
 > & { lastSyncedAt: Date };
 
+export enum NotebookActionId {
+  deleteNote = 'deleteNote',
+  cloneNote = 'cloneNote',
+  followupNote = 'followupNote',
+  moveNote = 'moveNote',
+  pinNote = 'pinNote',
+  attachFile = 'attachFileToNote',
+}
+
+export type NotebookAction = {
+  id: NotebookActionId;
+  label: string;
+};
+
 export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
   references: {
     hashtags: string[];
@@ -37,6 +62,7 @@ export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
   };
   pos?: number; // todo allow sorting
   parent?: string | undefined;
+  customId: string;
   repositoryId: string;
   isUpVoted: boolean;
   upVoteAnnotationId?: string;
@@ -48,6 +74,8 @@ export type AppAction = {
   hint?: string;
   callback: () => void;
 };
+
+export type UntoldLanguages = 'en' | 'de';
 
 export type NoteShortcutType = 'recent' | 'off' | 'pinned';
 
@@ -65,20 +93,20 @@ export interface NotebookSettings {
     darkMode: boolean;
     fontName: string;
     fontSize: number;
+    textAlignment: 'left' | 'right';
     hideInternalNotes: boolean;
     //   theme: 'default',
     startupNote: 'new' | 'blank' | 'lastChanged' | 'index' | 'none';
-    language: 'en';
+    language: UntoldLanguages;
   };
   editor: {
     //   useMarkdown: true,
     //   wysiwyg: true,
-    noteId: string;
-    newNoteTemplates: {
-      defaultTemplateName: string;
+    noteIdDatePattern: string;
+    useDefaultTemplates: boolean;
+    customNoteTemplates: {
       [templateName: string]: string;
     };
-    size: 'maximized' | 'normal';
     style: 'one-document' | 'fields';
   };
   // saving: {
@@ -124,29 +152,17 @@ export const defaultSettings: NotebookSettings = {
   },
   general: {
     darkMode: false,
-    fontName: 'Serif',
+    fontName: 'serif',
+    textAlignment: 'left',
     fontSize: 13,
     hideInternalNotes: false,
     startupNote: 'index',
     language: 'en',
   },
   editor: {
-    noteId: 'YYYYMMDDHHMM',
-    size: 'normal',
-    newNoteTemplates: {
-      defaultTemplateName: 'concept',
-      concept: `# {{title}}
-
-ID: {{noteId}}
-Parent: {{parentId}}
-Pinned: false
-Tags:
-
----`,
-      fleeting: `# Fleeting Note – {{date}}
-
-- `,
-    },
+    noteIdDatePattern: 'YYYYMMDDHHMM',
+    useDefaultTemplates: true,
+    customNoteTemplates: {},
     style: 'one-document',
   },
 };
@@ -244,8 +260,17 @@ export class NotebookService {
     //       },
     //     ];
     //   default:
-    return this.suggestNotes(query);
-    // }
+    const internalSuggestions = [
+      ...(await this.suggestCustomTemplates()),
+      ...(await this.suggestDefaultTemplates()),
+      ...(await this.suggestActions()),
+    ].filter(
+      (completion) =>
+        completion.label.toLowerCase().indexOf(query.toLowerCase().trim()) > -1,
+    );
+    const noteSuggestion = await this.suggestNotes(query);
+
+    return [...internalSuggestions, ...noteSuggestion];
   }
 
   async findAll(
@@ -295,8 +320,10 @@ export class NotebookService {
     console.log('create note params', params);
     const title = params.title ?? '';
     const now = new Date();
+    const technicalId = uuidv4();
     const note: Note = {
-      id: params.id ?? uuidv4(),
+      id: technicalId,
+      customId: params.id ?? (await this.createNoteId()),
       title: title,
       text: `# ${title}\n\n${params.text ?? ''}`.trim(),
       references: {
@@ -531,35 +558,108 @@ export class NotebookService {
   // }
 
   private async suggestNotes(query: string): Promise<Completion[]> {
-    if (query.length > 0) {
-      const results = this.index.search({
-        query,
-        limit: this.LIMIT,
-      });
-      return Promise.all(
-        results.flatMap((perField) => {
-          return perField.result.map((id) =>
-            notebookRepository.notes.get(id.toString()).then((note) => {
-              if (note) {
-                return {
-                  apply: `[${note.id}]`,
-                  // @ts-ignore
-                  label: `${note.title}: ${note[perField.field]}`,
-                  // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
-                };
-              }
-            }),
-          );
+    const results = this.index.search({
+      query,
+      limit: this.LIMIT,
+    });
+    return Promise.all(
+      results.flatMap((perField) => {
+        return perField.result.map((id) =>
+          notebookRepository.notes.get(id.toString()).then((note) => {
+            if (note) {
+              return {
+                apply: `[${note.id}]`,
+                // @ts-ignore
+                label: `${note.title}: ${note[perField.field]}`,
+                // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
+              };
+            }
+          }),
+        );
+      }),
+    );
+  }
+
+  private async suggestCustomTemplates(): Promise<Completion[]> {
+    const name2Template = await firstValueFrom(
+      this.getSettingsValue('editor.customNoteTemplates'),
+    );
+    return mapObj(name2Template, (value, key) => {
+      return {
+        label: `template-${key}`,
+        apply: value,
+      };
+    });
+  }
+
+  private async suggestDefaultTemplates(): Promise<Completion[]> {
+    return firstValueFrom(
+      zip(
+        this.getSettingsValue('editor.useDefaultTemplates'),
+        this.getSettingsValue('general.language'),
+      ).pipe(
+        map(([useDefaultTemplates, language]) => {
+          if (useDefaultTemplates) {
+            return translations[language].defaultTemplates.map<Completion>(
+              (template) => ({
+                label: template.label,
+                apply: template.templateValue,
+              }),
+            );
+          } else {
+            return [];
+          }
         }),
-      );
-    } else {
-      return [
-        {
-          label: 'New Note ID',
-          apply: `[${uuidv4()}]`,
-        },
-      ];
-    }
+      ),
+    );
+  }
+
+  private async suggestActions(): Promise<Completion[]> {
+    const newNoteId = await this.createNoteId();
+    const applyAction = (actionCallback: () => void) => {
+      return (
+        view: EditorView,
+        completion: Completion,
+        from: number,
+        to: number,
+      ) => {
+        actionCallback();
+        view.dispatch({
+          changes: {
+            from,
+            to,
+            insert: '',
+          },
+        });
+      };
+    };
+
+    return [
+      {
+        label: 'new-note-id',
+        apply: `[${newNoteId}]`,
+      },
+      {
+        label: 'delete-note',
+        apply: applyAction(() => console.log('detele')),
+      },
+      {
+        label: 'clone-note',
+        apply: applyAction(() => console.log('detele')),
+      },
+      {
+        label: 'followup-note',
+        apply: applyAction(() => console.log('followup')),
+      },
+      {
+        label: 'pin-note',
+        apply: applyAction(() => console.log('toggle pin')),
+      },
+      {
+        label: 'attach-file',
+        apply: applyAction(() => console.log('attach file')),
+      },
+    ];
   }
 
   private async init() {
@@ -592,6 +692,7 @@ export class NotebookService {
     }
 
     this.notebooksChanges.next(this.notebooks);
+    this.initActions();
   }
 
   existsById(noteId: string) {
@@ -752,20 +853,6 @@ export class NotebookService {
     // }
   }
 
-  async openSettingsNote() {
-    const settingsQuery = this.getSettingsQuery();
-    const exists = await settingsQuery.count().then((count) => count === 1);
-    if (exists) {
-      console.log('Open settings');
-      settingsQuery
-        .limit(1)
-        .toArray()
-        .then((settings) => this.openNote(settings[0]));
-    } else {
-      await this.createSettingsNote();
-    }
-  }
-
   private getSettingsQuery() {
     return notebookRepository.notes
       .where('title')
@@ -815,6 +902,28 @@ export class NotebookService {
             slice(notes.filter((note) => note.isUpVoted).reverse(), 0, limit),
           ),
       ),
+    );
+  }
+
+  private createNoteId(): Promise<string> {
+    return firstValueFrom(
+      this.getSettingsValue('editor.noteIdDatePattern').pipe(
+        map((noteIdDatePattern) => dayjs().format(noteIdDatePattern)),
+      ),
+    );
+  }
+
+  private async initActions() {
+    this.getSettingsValue('general.language').pipe(
+      map((lang) => {
+        notebookRepository.actions.clear();
+        for (const action in NotebookActionId) {
+          notebookRepository.actions.add({
+            id: action as NotebookActionId,
+            label: `${translations[lang].actions[action as keyof typeof NotebookActionId]}`,
+          });
+        }
+      }),
     );
   }
 }

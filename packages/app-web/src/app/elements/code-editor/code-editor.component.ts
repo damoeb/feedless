@@ -25,7 +25,7 @@ import {
   showTooltip,
   Tooltip,
 } from '@codemirror/view';
-import { defaultKeymap, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import {
   bracketMatching,
   foldGutter,
@@ -297,7 +297,7 @@ export class CodeEditorComponent
         },
       }),
       theme,
-      // history({ minDepth: 10 }),
+      history({ minDepth: 100 }),
       checkboxPlugin.extension,
       markdownDecorator,
       urlDecorator,

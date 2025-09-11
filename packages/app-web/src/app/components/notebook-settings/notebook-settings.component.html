@@ -1,0 +1,140 @@
+<ion-button id="open-notebook-settings-modal">
+  <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+</ion-button>
+
+<ion-popover
+  [showBackdrop]="true"
+  style="--min-width: 400px"
+  trigger="open-notebook-settings-modal"
+  triggerAction="click"
+>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Settings</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list>
+        <ion-item>
+          <ion-label>Font</ion-label>
+          <div>
+            <ion-button
+              (click)="readerOptions.font = 'serif'"
+              [color]="ifActiveOption('general.fontName', 'serif') | async"
+              class="font-serif"
+              size="medium"
+            >Serif
+            </ion-button>
+            <ion-button
+              (click)="changeOption('general.fontName', 'sans-serif')"
+              [color]="ifActiveOption('general.fontName', 'sans-serif')"
+              class="font-sans-serif"
+              size="medium"
+            >Sans-Serif
+            </ion-button>
+          </div>
+        </ion-item>
+        <ion-item-divider></ion-item-divider>
+        <ion-item>
+          <ion-label> Text</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label> Size</ion-label>
+          <div class="controls">
+            <ion-text class="ion-padding-horizontal"
+            >{{ getOption('general.fontSize') | async }}
+            </ion-text
+            >
+            <ion-button
+              (click)="changeNumOption('general.fontSize', -2, {min: 16, max: 24})"
+              color="light"
+              size="medium"
+            >-
+            </ion-button>
+            <ion-button
+              (click)="changeNumOption('general.fontSize', 2, {min: 16, max: 24})"
+              color="light"
+              size="medium"
+            >+
+            </ion-button>
+          </div>
+        </ion-item>
+        <ion-item>
+          <ion-label>Alignment</ion-label>
+          <div class="controls">
+            <ion-button
+              (click)="changeOption('general.textAlignment', 'left')"
+              [color]="ifActiveOption('general.textAlignment', 'left')"
+              size="medium"
+            >Left
+            </ion-button>
+            <ion-button
+              (click)="changeOption('general.textAlignment', 'right')"
+              [color]="ifActiveOption('general.textAlignment', 'right')"
+              size="medium"
+            >Right
+            </ion-button>
+          </div>
+        </ion-item>
+        <ion-item-divider></ion-item-divider>
+        <!--        <ion-item>-->
+        <!--          <ion-label>Link Target</ion-label>-->
+        <!--          <div>-->
+        <!--            <ion-button-->
+        <!--              (click)="changeOption('linkTarget', 'reader')"-->
+        <!--              [color]="ifActiveOption('linkTarget', 'reader')"-->
+        <!--              size="medium"-->
+        <!--            >Reader-->
+        <!--            </ion-button>-->
+        <!--            <ion-button-->
+        <!--              (click)="changeOption('linkTarget', 'blank')"-->
+        <!--              [color]="ifActiveOption('linkTarget', 'blank')"-->
+        <!--              size="medium"-->
+        <!--            >Blank-->
+        <!--            </ion-button>-->
+        <!--          </div>-->
+        <!--        </ion-item>-->
+        <ion-item>
+          <ion-label>Verbose Link</ion-label>
+          <div>
+            <ion-button
+              (click)="changeOption('verboseLink', true)"
+              [color]="ifActiveOption('verboseLink', true) | async"
+              size="medium"
+            >Yes
+            </ion-button>
+            <ion-button
+              (click)="changeOption('verboseLink', false)"
+              [color]="ifActiveOption('verboseLink', false) | async"
+              size="medium"
+            >No
+            </ion-button>
+          </div>
+        </ion-item>
+
+        <ion-item-divider></ion-item-divider>
+
+        <ion-item>
+          <ion-label>Theme</ion-label>
+          <div>
+            <ion-button
+              (click)="changeOption('general.darkMode', true)"
+              [color]="ifActiveOption('general.darkMode', true) | async"
+              size="medium"
+            >
+              Dark
+            </ion-button>
+            <ion-button
+              (click)="changeOption('general.darkMode', true)"
+              [color]="ifActiveOption('general.darkMode', false) | async"
+              size="medium"
+            >
+              Light
+            </ion-button>
+          </div>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-popover>

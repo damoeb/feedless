@@ -47,6 +47,7 @@ import {
   IonItem,
   IonLabel,
   IonMenu,
+  IonPopover,
   IonProgressBar,
   IonSegment,
   IonSegmentButton,
@@ -110,11 +111,16 @@ import {
 } from '@angular/cdk/tree';
 import { BubbleComponent } from '../../components/bubble/bubble.component';
 import { SessionService } from '../../services/session.service';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+} from '@angular/cdk/drag-drop';
+import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
 
 export type EditorHandle = {
-  maximized: boolean;
   toolbar: boolean;
-  minimized: boolean;
   note: Note;
   noteHandle: NoteHandle;
   formControl: FormControl<string>;
@@ -180,6 +186,11 @@ export type NoteHandle = {
     IonSegment,
     IonSegmentButton,
     AsyncPipe,
+    CdkDrag,
+    CdkDragHandle,
+    CdkDropList,
+    IonPopover,
+    NotebookSettingsComponent,
   ],
   standalone: true,
 })
@@ -233,8 +244,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       ellipsisVerticalOutline,
       closeOutline,
       trashOutline,
-      expandOutline,
-      contractOutline,
       returnDownForwardOutline,
       copyOutline,
       returnUpForwardOutline,
@@ -242,8 +251,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       swapVerticalOutline,
       attachOutline,
       pinOutline,
-      chevronUpOutline,
-      chevronDownOutline,
       ellipseOutline,
       ellipse,
     });
@@ -357,9 +364,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     console.log('openNote', note.title);
     const formControl = new FormControl(note.text);
     const editor: EditorHandle = {
-      maximized: await this.hasSettingsValue('editor.size', 'maximized'),
       toolbar: false,
-      minimized: false,
       note,
       noteHandle: this.toNoteHandle(0)(note),
       // upVoteAnnotationId: upVoted?.id,
@@ -606,10 +611,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  showSettingsNote() {
-    return this.notebookService.openSettingsNote();
-  }
-
   private async handleShortcutValue(value: NoteShortcutType) {
     const toShortcutHandle = (notes: Note[]): NoteHandle[] =>
       notes.map<NoteHandle>((note) => this.toNoteHandle(0)(note));
@@ -656,6 +657,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       // case 'lastChanged':
       //   return this.notebookService.openLastNote();
     }
+  }
+
+  onDrop(event: CdkDragDrop<any, any>) {
+    console.log(event);
   }
 }
 

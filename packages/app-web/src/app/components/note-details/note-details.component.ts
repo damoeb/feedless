@@ -37,13 +37,17 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.push(
       this.notebookService.openNoteChanges.subscribe((note) => {
-        this.isOpen = note.id === this.note().id;
+        const isIdEqual = note.id === this.note().id;
+        // const isParentIdEqual = note.parent === this.handle().body.parent;
+        this.isOpen = isIdEqual;
+        // this.handle().expanded = isIdEqual || !isParentIdEqual;
         this.changeRef.detectChanges();
       }),
       this.notebookService.closeNoteChanges.subscribe((note) => {
         if (note.id === this.note().id) {
           this.isOpen = false;
         }
+        this.handle().expanded = true;
         this.changeRef.detectChanges();
       }),
     );

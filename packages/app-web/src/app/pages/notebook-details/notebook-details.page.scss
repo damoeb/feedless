@@ -2,6 +2,7 @@
 
 ion-content.main-content::part(scroll) {
   display: flex;
+  flex: 1;
   flex-direction: column;
 }
 
@@ -99,40 +100,22 @@ app-tree-view {
 }
 
 .footer-toolbar {
-  position: absolute;
-  bottom: 0;
-  right: 0;
   display: flex;
-  width: 100%;
-  justify-content: flex-end;
+  justify-content: center;
 
   .note-editor {
     background: var(--background);
     //padding-right: 15px;
     //padding-bottom: 15px;
-    max-height: 80vh;
     display: flex;
     flex-direction: column;
-    width: 80%;
+    width: 600px;
     overflow: auto;
     height: 50vh;
+    box-shadow: 0px -2px 2px 0px rgb(208, 208, 208);
     border-top: 1px solid rgba(var(--app-foreground-rgb), 0.4);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-
-    &.note-editor--maximized {
-      width: 100%;
-      height: 75vh;
-    }
-
-    &.note-editor--minimized {
-      .hide-minimized {
-        display: none !important;
-      }
-
-      width: 250px;
-      height: 50px;
-    }
 
     app-code-editor {
       display: flex;
@@ -154,6 +137,10 @@ ion-accordion.accordion-expanded {
   --maxlevel: 6;
   --line-width: 10px;
   --line-marginright: 3px;
+
+  &[drop-active=true] {
+    --line-color: red;
+  }
 
   .line {
     cursor: pointer;

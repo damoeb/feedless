@@ -1,8 +1,13 @@
+<!--@if (isOpen) {-->
+<!--  <ul>-->
+<!--    <li>wefwef</li>-->
+<!--  </ul>-->
+<!--}-->
 <div class="note"
      [id]="getId()"
      [ngClass]="{'note--open': isOpen}">
   <div class="note-header" (click)="toggle()">
-    <div class="flex">
+    <div class="flex ion-nowrap">
       {{ note().title }}
     </div>
 
