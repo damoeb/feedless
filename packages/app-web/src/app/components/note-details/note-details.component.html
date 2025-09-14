@@ -5,7 +5,7 @@
 <!--}-->
 <div class="note"
      [id]="getId()"
-     [ngClass]="{'note--open': isOpen}">
+     [ngClass]="{'note--open': isOpen, 'note--disabled': handle().disabled}">
   <div class="note-header" (click)="toggle()">
     <div class="flex ion-nowrap">
       {{ note().title }}
@@ -15,23 +15,30 @@
       {{ changeAgo() }}
     </div>
 
-    <div class="note-actions">
-      <ng-content></ng-content>
-      <div>
-        <a (click)="toggleUpvote($event)" href="javascript:void(0)">
-          @if (note().isUpVoted) {
-            Unpin
-          } @else {
-            Pin
-          }
-        </a>
+    @if (isMove) {
+      <div class="note-actions">
+        Move here
       </div>
-      <div>
-        <a (click)="extendNote($event)" href="javascript:void(0)">
-          Extend
-        </a>
+    } @else {
+      <div class="note-actions">
+        <ng-content></ng-content>
+        <div>
+          <a (click)="toggleUpvote($event)" href="javascript:void(0)">
+            @if (note().isUpVoted) {
+              Unpin
+            } @else {
+              Pin
+            }
+          </a>
+        </div>
+        <div>
+          <a (click)="extendNote($event)" href="javascript:void(0)">
+            Extend
+          </a>
+        </div>
       </div>
-    </div>
+    }
+
   </div>
 
 </div>

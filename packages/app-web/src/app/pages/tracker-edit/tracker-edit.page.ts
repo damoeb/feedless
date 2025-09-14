@@ -33,6 +33,7 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonButton,
+  IonCheckbox,
   IonCol,
   IonContent,
   IonGrid,
@@ -65,10 +66,12 @@ import { SearchbarComponent } from '../../elements/searchbar/searchbar.component
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
 import { Nullable } from '../../types';
+import { createEmailFormControl } from '../../form-controls';
 
 type Email = string;
 
 type PageFragmentType = 'area' | 'page' | 'element';
+type BaselineControl = 'manual' | 'latest';
 
 @Component({
   selector: 'app-tracker-edit-page',
@@ -97,6 +100,7 @@ type PageFragmentType = 'area' | 'page' | 'element';
     IonIcon,
     IonReorder,
     IonInput,
+    IonCheckbox,
   ],
   standalone: true,
 })
@@ -136,7 +140,10 @@ export class TrackerEditPage
         Validators.min(0),
         Validators.max(1),
       ]),
-      // email: createEmailFormControl<Email>(''),
+      baseline: new FormControl<BaselineControl>('latest', [
+        Validators.required,
+      ]),
+      email: createEmailFormControl<Email>(''),
       // compareBy: new FormControl<PageFragmentType>('page', [
       //   Validators.required,
       // ]),
@@ -168,6 +175,8 @@ export class TrackerEditPage
   );
   // errorMessage: null;
   showErrors: boolean;
+  baselineManual: BaselineControl = 'manual';
+  baselineLatest: BaselineControl = 'latest';
   pageFragmentArea: PageFragmentType = 'area';
   pageFragmentPage: PageFragmentType = 'page';
   pageFragmentElement: PageFragmentType = 'element';
@@ -183,6 +192,10 @@ export class TrackerEditPage
 
   ngOnInit() {
     this.appConfig.setPageTitle('Tracker Builder');
+
+    this.formGroup.controls.email.disable();
+    this.formGroup.controls.baseline.disable();
+
     this.subscriptions.push(
       this.actionsFg.valueChanges
         .pipe(debounce(() => interval(800)))

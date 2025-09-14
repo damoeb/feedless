@@ -1,4 +1,5 @@
-<ion-split-pane contentId="main" style="--side-width: 300px">
+<ion-split-pane [when]="'10000'"
+                contentId="main" style="--side-width: 300px">
   <ion-menu side="start" contentId="main">
     <ion-header>
       <ion-toolbar style="--background: transparent; padding-left: 10px">
@@ -76,6 +77,7 @@
     <ion-header>
       <ion-toolbar style="--background: transparent">
         <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
           <ion-button routerLink="/">
             {{ notebook?.title }} Notes
           </ion-button>
@@ -209,28 +211,19 @@
                   </div>
                   <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
                   <ion-toolbar style="--background: transparent">
-                    @if (currentEditorHandle.toolbar) {
-                      <ion-buttons>
-                        <ion-button>
-                          <ion-icon name="attach-outline" slot="start"></ion-icon>
-                          File
-                        </ion-button>
-                        <ion-button (click)="changeParent()">
-                          Move
-                        </ion-button>
-                        <ion-button (click)="cloneNote()">
-                          <ion-icon name="copy-outline" slot="start"></ion-icon>
-                          Clone
-                        </ion-button>
-                      </ion-buttons>
-                    } @else {
-                      <ion-buttons>
-                        <ion-button (click)="currentEditorHandle.toolbar = !currentEditorHandle.toolbar">
-                          Tools
-                          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-                        </ion-button>
-                      </ion-buttons>
-                    }
+                    <ion-buttons>
+                      <ion-button>
+                        <ion-icon name="attach-outline" slot="start"></ion-icon>
+                        Attach
+                      </ion-button>
+                      <ion-button (click)="changeParent()">
+                        Move
+                      </ion-button>
+                      <ion-button (click)="cloneNote()">
+                        <ion-icon name="copy-outline" slot="start"></ion-icon>
+                        Clone
+                      </ion-button>
+                    </ion-buttons>
                   </ion-toolbar>
 
                   <app-code-editor

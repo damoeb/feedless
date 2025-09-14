@@ -7,7 +7,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Note, NotebookService } from '../../services/notebook.service';
+import { Note, NotebookService, NoteId } from '../../services/notebook.service';
 import { NgClass } from '@angular/common';
 import {
   createNoteHandleId,
@@ -30,7 +30,9 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
 
   readonly handle = input.required<NoteHandle>();
   isOpen: boolean = false;
+  isMove: boolean = false;
   private subscriptions: Subscription[] = [];
+  private noteIdMoved: NoteId;
 
   constructor() {}
 
@@ -50,6 +52,22 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
         this.handle().expanded = true;
         this.changeRef.detectChanges();
       }),
+      this.notebookService.moveStartChanges.subscribe((noteId) => {
+        if (noteId === this.note().id || this.isChild(noteId)) {
+          this.handle().disabled = true;
+        } else {
+          this.isMove = true;
+          this.noteIdMoved = noteId;
+        }
+        this.changeRef.detectChanges();
+      }),
+      this.notebookService.moveEndChanges.subscribe((noteId) => {
+        if (this.handle().disabled) {
+          this.handle().disabled = false;
+        }
+        this.isMove = false;
+        this.changeRef.detectChanges();
+      }),
     );
   }
 
@@ -58,7 +76,14 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   }
 
   toggle() {
-    return this.notebookService.openNoteById(this.handle().body.id);
+    if (this.isMove) {
+      this.notebookService.changeParentById(
+        this.noteIdMoved,
+        this.handle().body.id,
+      );
+    } else {
+      return this.notebookService.openNoteById(this.handle().body.id);
+    }
   }
 
   extendNote(event: Event) {
@@ -82,6 +107,10 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
 
   changeAgo() {
     return relativeTimeOrElse(this.note().updatedAt);
+  }
+
+  private isChild(noteId: string): boolean {
+    return false;
   }
 
   getId() {

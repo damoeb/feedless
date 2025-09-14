@@ -7,33 +7,20 @@ import {
   inject,
   OnDestroy,
   OnInit,
-  TrackByFunction,
   viewChild,
   viewChildren,
 } from '@angular/core';
-import {
-  BehaviorSubject,
-  firstValueFrom,
-  flatMap,
-  from,
-  map,
-  mergeMap,
-  Observable,
-  Subscription,
-} from 'rxjs';
+import { firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
-  ChangeModifier,
-  CreateNoteParams,
   Note,
   Notebook,
   NotebookService,
   NotebookSettings,
-  NoteId,
   NoteShortcutType,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { get, groupBy, isString, omit, uniq, without } from 'lodash-es';
+import { isString, orderBy } from 'lodash-es';
 import {
   AlertController,
   IonAccordion,
@@ -47,6 +34,7 @@ import {
   IonItem,
   IonLabel,
   IonMenu,
+  IonMenuButton,
   IonPopover,
   IonProgressBar,
   IonSegment,
@@ -67,18 +55,14 @@ import { AnnotationService } from '../../services/annotation.service';
 import { addIcons } from 'ionicons';
 import {
   attachOutline,
-  chevronDownOutline,
   chevronForwardOutline,
-  chevronUpOutline,
   closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
-  contractOutline,
   copyOutline,
   ellipse,
   ellipseOutline,
   ellipsisVerticalOutline,
-  expandOutline,
   pinOutline,
   returnDownForwardOutline,
   returnUpForwardOutline,
@@ -120,7 +104,6 @@ import {
 import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
 
 export type EditorHandle = {
-  toolbar: boolean;
   note: Note;
   noteHandle: NoteHandle;
   formControl: FormControl<string>;
@@ -135,6 +118,7 @@ enum Focussable {
 export type NoteHandle = {
   body: Note;
   expanded: boolean;
+  disabled: boolean;
   level: number;
   childrenCount: () => Observable<number>;
   scrollTo: (event: MouseEvent) => void;
@@ -171,15 +155,12 @@ export type NoteHandle = {
     IonLabel,
     NgClass,
     CodeEditorComponent,
-    IonCheckbox,
     IonSpinner,
     CdkTree,
     CdkNestedTreeNode,
     CdkTreeNode,
     CdkTreeNodeOutlet,
     CdkTreeNodeDef,
-    JsonPipe,
-    NgTemplateOutlet,
     NgStyle,
     BubbleComponent,
     IonText,
@@ -189,8 +170,8 @@ export type NoteHandle = {
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
-    IonPopover,
     NotebookSettingsComponent,
+    IonMenuButton,
   ],
   standalone: true,
 })
@@ -279,7 +260,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       this.notebookService.openNoteChanges.subscribe((note) =>
         this.openNote(note),
       ),
-      this.notebookService.notesChanges.subscribe(() => this.loadTree()),
+      this.notebookService.notesChanges
+        .asObservable()
+        .subscribe(() => this.loadTree()),
     );
   }
 
@@ -292,7 +275,11 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadAutoSuggestions(query: string, type: string): Promise<Completion[]> {
-    return this.notebookService.suggestByType(query, type);
+    return this.notebookService.suggestByType(
+      query,
+      type,
+      this.currentEditorHandle.note,
+    );
   }
 
   @HostListener('window:keydown.esc', ['$event'])
@@ -364,7 +351,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     console.log('openNote', note.title);
     const formControl = new FormControl(note.text);
     const editor: EditorHandle = {
-      toolbar: false,
       note,
       noteHandle: this.toNoteHandle(0)(note),
       // upVoteAnnotationId: upVoted?.id,
@@ -536,7 +522,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   trackByFn(index: number, item: NoteHandle) {
-    return `${item.body.id}/${item.body.updatedAt}`;
+    const trackId = `${item.body.id}/${item.body.updatedAt}`;
+    // const trackId = `${item.body.id}/${item.body.references.childrenCount}:${item.body.updatedAt}`;
+    // console.log(trackId);
+    return trackId;
   }
 
   private loadTree() {
@@ -552,6 +541,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       return {
         body: note,
         expanded: true,
+        disabled: false,
         level,
         scrollTo: (event) => {
           this.scrollTo(note);
@@ -563,9 +553,22 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
           this.notebookService.updateNote(note);
         },
         children: () => {
-          return this.notebookService
-            .findAllChildren(note.id)
-            .pipe(map((notes) => notes.map(this.toNoteHandle(level + 1))));
+          return zip([
+            this.notebookService.findAllChildren(note.id),
+            from(this.notebookService.findById(note.id)),
+          ]).pipe(
+            map(([notes, note]) => {
+              const embeddedIds = note.references.links;
+              return orderBy(
+                notes.map(this.toNoteHandle(level + 1)),
+                [
+                  (noteHandle) => embeddedIds.indexOf(noteHandle.body.id),
+                  (noteHandle) => noteHandle.body.createdAt,
+                ],
+                ['asc', 'asc'],
+              );
+            }),
+          );
         },
       };
     };
@@ -594,7 +597,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async changeParent() {
-    // todo implement
+    this.notebookService.moveStartChanges.next(
+      this.currentEditorHandle.note.id,
+    );
   }
 
   async cloneNote() {

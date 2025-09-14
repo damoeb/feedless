@@ -7,6 +7,8 @@ class NotebookRepository extends Dexie {
   notes!: Table<Note, string>;
   actions!: Table<NotebookAction, string>;
 
+  // attachments!: Table<NotebookAction, string>;
+
   constructor() {
     super('notebooks');
     this.version(1).stores({

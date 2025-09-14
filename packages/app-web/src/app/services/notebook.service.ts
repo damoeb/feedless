@@ -2,11 +2,15 @@ import { inject, Injectable } from '@angular/core';
 import {
   combineLatest,
   firstValueFrom,
+  forkJoin,
   map,
   merge,
   Observable,
   of,
+  OperatorFunction,
   ReplaySubject,
+  switchMap,
+  take,
   zip,
 } from 'rxjs';
 import { Document } from 'flexsearch';
@@ -55,11 +59,14 @@ export type NotebookAction = {
   label: string;
 };
 
+export type Hashtag = string;
+
 export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
   references: {
-    hashtags: string[];
+    hashtags: Hashtag[];
     links: string[];
   };
+  childrenCount?: number;
   pos?: number; // todo allow sorting
   parent?: string | undefined;
   customId: string;
@@ -155,7 +162,7 @@ export const defaultSettings: NotebookSettings = {
     fontName: 'serif',
     textAlignment: 'left',
     fontSize: 13,
-    hideInternalNotes: false,
+    hideInternalNotes: true,
     startupNote: 'index',
     language: 'en',
   },
@@ -212,6 +219,8 @@ export class NotebookService {
 
   private notebooks: Notebook[] = [];
 
+  moveStartChanges = new ReplaySubject<NoteId>(1);
+  moveEndChanges = new ReplaySubject<NoteId>(1);
   notebooksChanges = new ReplaySubject<Notebook[]>(1);
   openNoteChanges = new ReplaySubject<Note>(1);
   closeNoteChanges = new ReplaySubject<Note>(1);
@@ -223,6 +232,7 @@ export class NotebookService {
 
   constructor() {
     this.init();
+    this.filterInternalNotes = this.filterInternalNotes.bind(this);
   }
 
   async createNotebook(name: string) {
@@ -250,7 +260,11 @@ export class NotebookService {
     return notebook;
   }
 
-  async suggestByType(query: string, type: string): Promise<Completion[]> {
+  async suggestByType(
+    query: string,
+    type: string,
+    note: Note,
+  ): Promise<Completion[]> {
     // switch (type) {
     //   case 'Hashtag':
     //     return [
@@ -261,8 +275,8 @@ export class NotebookService {
     //     ];
     //   default:
     const internalSuggestions = [
-      ...(await this.suggestCustomTemplates()),
-      ...(await this.suggestDefaultTemplates()),
+      ...(await this.suggestCustomTemplates(note)),
+      ...(await this.suggestDefaultTemplates(note)),
       ...(await this.suggestActions()),
     ].filter(
       (completion) =>
@@ -348,11 +362,45 @@ export class NotebookService {
     this.notesChanges.next({ a: note.id, b: ChangeModifier.create });
     // await this.recordService.createRecords([this.covertNoteToRecord(note)]);
 
+    if (params.parent) {
+      const parentNote = await this.findById(params.parent);
+      await this.updateNote(parentNote, true);
+    }
+
     // this.findAllAsync(title);
     if (triggerOpen) {
       this.openNote(note);
     }
     return note;
+  }
+
+  private filterInternalNotes(note: Note): boolean {
+    return note.title.trim() !== this.notebookJsonName;
+  }
+
+  private filterInternalNotes$(): OperatorFunction<Note[], Note[]> {
+    return switchMap((notes) =>
+      this.getSettingsValue('general.hideInternalNotes').pipe(
+        map((hide) =>
+          hide ? notes.filter((root) => this.filterInternalNotes(root)) : notes,
+        ),
+      ),
+    );
+  }
+
+  private attachChildCount$(): OperatorFunction<Note[], Note[]> {
+    return map((notes) => notes);
+    // return switchMap((notes: Note[]) =>
+    //   forkJoin(
+    //     notes.map((note) =>
+    //       firstValueFrom(this.findAllChildren(note.id)).then((children) => {
+    //         console.log('wef');
+    //         note.childrenCount = children.length;
+    //         return note;
+    //       }),
+    //     ),
+    //   ),
+    // );
   }
 
   private covertNoteToRecord(note: Note): GqlCreateRecordInput {
@@ -486,10 +534,6 @@ export class NotebookService {
           { field: 'note:parent', tokenize: 'strict' },
           { field: 'note:text', tokenize: 'full' },
           { field: 'note:title', tokenize: 'full' },
-          // 'level',
-          // 'isUpVoted',
-          // 'references:links',
-          // 'references:hashtags',
         ],
       },
     });
@@ -503,7 +547,7 @@ export class NotebookService {
     // });
   }
 
-  async updateNote(note: Note) {
+  async updateNote(note: Note, syncOnly: boolean = false) {
     note.title =
       note.text
         .trimStart()
@@ -521,7 +565,10 @@ export class NotebookService {
       return matches;
     }
 
-    note.updatedAt = new Date();
+    if (!syncOnly) {
+      note.updatedAt = new Date();
+    }
+
     note.references = {
       hashtags: extractByRegExp(reHashtag),
       links: extractByRegExp(reLink),
@@ -580,38 +627,46 @@ export class NotebookService {
     );
   }
 
-  private async suggestCustomTemplates(): Promise<Completion[]> {
-    const name2Template = await firstValueFrom(
-      this.getSettingsValue('editor.customNoteTemplates'),
-    );
-    return mapObj(name2Template, (value, key) => {
-      return {
-        label: `template-${key}`,
-        apply: value,
-      };
-    });
+  private async suggestCustomTemplates(note: Note): Promise<Completion[]> {
+    if (this.isEmptyNote(note)) {
+      return [];
+    } else {
+      const name2Template = await firstValueFrom(
+        this.getSettingsValue('editor.customNoteTemplates'),
+      );
+      return mapObj(name2Template, (value, key) => {
+        return {
+          label: `template-${key}`,
+          apply: value,
+        };
+      });
+    }
   }
 
-  private async suggestDefaultTemplates(): Promise<Completion[]> {
-    return firstValueFrom(
-      zip(
-        this.getSettingsValue('editor.useDefaultTemplates'),
-        this.getSettingsValue('general.language'),
-      ).pipe(
-        map(([useDefaultTemplates, language]) => {
-          if (useDefaultTemplates) {
-            return translations[language].defaultTemplates.map<Completion>(
-              (template) => ({
-                label: template.label,
-                apply: template.templateValue,
-              }),
-            );
-          } else {
-            return [];
-          }
-        }),
-      ),
-    );
+  private async suggestDefaultTemplates(note: Note): Promise<Completion[]> {
+    if (this.isEmptyNote(note)) {
+      return [];
+    } else {
+      return firstValueFrom(
+        zip(
+          this.getSettingsValue('editor.useDefaultTemplates'),
+          this.getSettingsValue('general.language'),
+        ).pipe(
+          map(([useDefaultTemplates, language]) => {
+            if (useDefaultTemplates) {
+              return translations[language].defaultTemplates.map<Completion>(
+                (template) => ({
+                  label: template.label,
+                  apply: template.templateValue,
+                }),
+              );
+            } else {
+              return [];
+            }
+          }),
+        ),
+      );
+    }
   }
 
   private async suggestActions(): Promise<Completion[]> {
@@ -706,7 +761,7 @@ export class NotebookService {
     );
   }
 
-  findById(noteId: string) {
+  findById(noteId: string): Promise<Note> {
     const resultGroups = this.index.search({
       query: noteId,
       index: ['id'],
@@ -771,12 +826,11 @@ export class NotebookService {
   }
 
   deleteAll() {
-    // debugger;
     notebookRepository.notes.clear();
   }
 
   findAllRoots(): Observable<Note[]> {
-    return convertToRx<Note[]>(
+    const roots$ = convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
           .where('repositoryId')
@@ -785,6 +839,10 @@ export class NotebookService {
           .toArray(),
       ),
     );
+
+    return roots$
+      .pipe(this.filterInternalNotes$())
+      .pipe(this.attachChildCount$());
   }
 
   private toIndexDocument(note: Note): NoteDocument {
@@ -796,19 +854,11 @@ export class NotebookService {
   }
 
   findAllChildren(id: string): Observable<Note[]> {
+    console.log('findAllChildren');
     const children$ = this.findAllChildrenById(id);
-    const hideInternalNotes$ = this.getSettingsValue(
-      'general.hideInternalNotes',
-    );
-    return combineLatest([children$, hideInternalNotes$]).pipe(
-      map(([children, hideInternalNotes]) => {
-        if (hideInternalNotes) {
-          return children; // todo apply filter
-        } else {
-          return children;
-        }
-      }),
-    );
+    return children$
+      .pipe(this.filterInternalNotes$())
+      .pipe(this.attachChildCount$());
   }
 
   private findAllChildrenById(id: string): Observable<Note[]> {
@@ -925,6 +975,21 @@ export class NotebookService {
         }
       }),
     );
+  }
+
+  async changeParentById(noteId: string, parentId: string) {
+    const note = await this.findById(noteId);
+    const parentBefore = await this.findById(note.parent);
+    note.parent = parentId;
+    await this.updateNote(note);
+    await this.updateNote(parentBefore, true);
+    const parentAfter = await this.findById(parentId);
+    await this.updateNote(parentAfter, true);
+    this.moveEndChanges.next(noteId);
+  }
+
+  private isEmptyNote(note: Note) {
+    return note.text.replace(/[ \n\t#]+/g, '').length === 0;
   }
 }
 

@@ -450,6 +450,7 @@ enum Vertical {
   #  seed
   #  openRoadmap
   #  commentOn
+  #  tombstone
 }
 
 type Agent {

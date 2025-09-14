@@ -47,6 +47,10 @@
     margin-bottom: 20px;
     --app-border-color: var(--ion-color-primary);
   }
+
+  &.note--disabled {
+    opacity: 0.4;
+  }
 }
 
 .note-header {

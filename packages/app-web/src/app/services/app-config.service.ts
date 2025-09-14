@@ -97,8 +97,8 @@ export class AppConfigService {
     {
       id: 'untold',
       sideMenu: {
-        width: 200,
-        breakpoint: 'xl',
+        width: 150,
+        // breakpoint: 'xl',
       },
       routes: [
         {
