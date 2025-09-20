@@ -4,11 +4,17 @@ metadata:
   name: plausible-ingress
   annotations:
     app.kubernetes.io/name: plausible-ingress
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: plausible-basic-auth
-    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/auth-type: basic
+    traefik.ingress.kubernetes.io/auth-secret: plausible-basic-auth
+    traefik.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - plausible.feedless.org
+      secretName: feedless-org-tls
   rules:
     - host: plausible.feedless.org
       http:
