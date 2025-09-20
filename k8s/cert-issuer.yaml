@@ -53,6 +53,7 @@ spec:
     - api.develop.lokale.events
     - develop.lokale.events
     - api.lokale.events
+    - www.lokale.events
     - lokale.events
   issuerRef:
     name: letsencrypt

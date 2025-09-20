@@ -88,3 +88,13 @@ spec:
                 name: feedless-web
                 port:
                   number: 80
+    - host: www.lokale.events
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: feedless-web
+                port:
+                  number: 80
