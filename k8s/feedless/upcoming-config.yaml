@@ -1,4 +1,22 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: upcoming-config-json
+data:
+  config.json: |
+    {
+      "apiUrl": "https://api.lokale.events",
+      "product": "upcoming",
+      "eventRepositoryId": "TBD",
+      "operatorName": "TBD",
+      "operatorAddress": "TBD",
+      "operatorEmail": "TBD",
+      "offlineSupport": false
+    }
+
+---
+
+apiVersion: v1
 kind: Secret
 metadata:
   name: upcoming-tls
