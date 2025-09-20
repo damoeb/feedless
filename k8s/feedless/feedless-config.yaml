@@ -35,3 +35,13 @@ data:
   APP_TIMEZONE: "Europe/Berlin"
   APP_LOG_LEVEL: "info"
 
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: feedless-org-tls
+type: kubernetes.io/tls
+data:
+  tls.crt: "TBD"
+  tls.key: "TBD"

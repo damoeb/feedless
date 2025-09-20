@@ -32,8 +32,6 @@ spec:
     - rssproxy.feedless.org
     - api.visualdiff.feedless.org
     - visualdiff.feedless.org
-    - rssproxy-v1.migor.org
-    - rssproxy.migor.org
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
