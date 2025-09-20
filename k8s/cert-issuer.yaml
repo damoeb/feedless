@@ -50,8 +50,8 @@ spec:
   duration: 2160h  # 90d
   renewBefore: 360h  # 15d
   dnsNames:
-    - api.staging.lokale.events
-    - staging.lokale.events
+    - api.develop.lokale.events
+    - develop.lokale.events
     - api.lokale.events
     - lokale.events
   issuerRef:
