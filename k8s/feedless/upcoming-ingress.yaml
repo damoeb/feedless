@@ -1,0 +1,90 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: upcoming-rewrite
+spec:
+  replacePathRegex:
+    regex: ^/(config.json|index.html|robots.txt|sitemap.xml)$
+    replacement: /verticals-data/upcoming/$1
+
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: upcoming-root-rewrite
+spec:
+  replacePathRegex:
+    regex: ^/$
+    replacement: /verticals-data/upcoming/index.html
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: upcoming-route
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    # Handle `/`
+    - match: Host(`lokale.events`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: feedless-web
+          port: 80
+      middlewares:
+        - name: upcoming-root-rewrite
+
+    # Handle vertical configs
+    - match: Host(`lokale.events`) && (Path(`/config.json`) || Path(`/index.html`) || Path(`/robots.txt`) || Path(`/sitemap.xml`))
+      kind: Rule
+      services:
+        - name: feedless-web
+          port: 80
+      middlewares:
+        - name: upcoming-rewrite
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: upcoming-ingress
+  annotations:
+    app.kubernetes.io/name: upcoming-ingress
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - api.staging.lokale.events
+        - staging.lokale.events
+        - api.lokale.events
+        - lokale.events
+      secretName: upcoming-tls
+  rules:
+    - host: api.lokale.events
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: feedless-core
+                port:
+                  number: 8080
+    - host: lokale.events
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: feedless-web
+                port:
+                  number: 80
