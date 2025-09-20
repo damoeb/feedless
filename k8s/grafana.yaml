@@ -60,7 +60,7 @@ spec:
               path: /
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 10
+            initialDelaySeconds: 100
             periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 2
