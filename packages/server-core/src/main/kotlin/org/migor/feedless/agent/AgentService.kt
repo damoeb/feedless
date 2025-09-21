@@ -2,6 +2,7 @@ package org.migor.feedless.agent
 
 import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
@@ -39,7 +40,9 @@ import java.io.Serializable
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.coroutineContext
+
 
 class AgentResponse(private val scrapeResponse: String) : Serializable {
 
@@ -61,6 +64,12 @@ class AgentService(
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
+  private val agentCounter = AtomicInteger(0)
+
+  @PostConstruct
+  fun postConstruct() {
+    meterRegistry.gauge(AppMetrics.agentCounter, agentCounter)
+  }
 
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
@@ -199,7 +208,7 @@ class AgentService(
       agentRegistry.save(agent)
     }
 
-    meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
+    agentCounter.incrementAndGet();
   }
 
   @Transactional
@@ -212,7 +221,7 @@ class AgentService(
         agentRegistry.delete(it)
       }
     }
-    meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
+    agentCounter.decrementAndGet();
   }
 }
 

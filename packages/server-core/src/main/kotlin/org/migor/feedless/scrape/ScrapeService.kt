@@ -126,7 +126,7 @@ class ScrapeService {
           time = System.nanoTime().minus(startTime).div(1000000).toInt()
         )
       } catch (e: Exception) {
-        log.error("scrape failed" + e.message)
+        log.warn("scrape failed " + e.message)
         if (e !is ResumableHarvestException) {
           log.debug("[$corrId] scrape failed for source ${source.id} ${e.message}")
         }

@@ -1,7 +1,6 @@
 package org.migor.feedless
 
 object AppMetrics {
-  const val sourceHarvestDelay = "app_source_update_delay"
   const val sourceHarvestError = "app_source_update_error"
   const val createDocument = "app_create_document"
   const val userLogin = "app_user_login"
