@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PuppeteerModule } from './puppeteer.module';
 import { PuppeteerService } from './puppeteer.service';
+import { ScrapeEmit } from '../../generated/graphql';
 
 describe('PuppeteerService', () => {
   let service: PuppeteerService;
@@ -105,6 +106,7 @@ describe('PuppeteerService', () => {
             extract: {
               fragmentName: '',
               selectorBased: {
+                uniqueBy: ScrapeEmit.Html,
                 emit: [],
                 fragmentName: '',
                 max: 1,
