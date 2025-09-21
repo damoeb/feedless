@@ -174,7 +174,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
         },
         {
           icon: 'calendar-number-outline',
-          text: 'Calendar Import (iCal)',
+          text: 'Kalender Import (iCal)',
         },
         {
           icon: 'logo-rss',

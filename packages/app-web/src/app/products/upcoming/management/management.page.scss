@@ -8,12 +8,15 @@ p {
 
 .sources {
   display: flex;
+  //flex-direction: column;
   flex: 1;
+
   app-map {
     flex: 2;
   }
+
   div {
-    flex: 2;
+    flex: 4;
   }
 }
 

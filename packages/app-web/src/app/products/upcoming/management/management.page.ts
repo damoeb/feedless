@@ -89,7 +89,7 @@ export class ManagementPage implements OnInit {
             lat: (event.northEast.lat + event.southWest.lat) / 2,
             lng: (event.northEast.lng + event.northEast.lng) / 2,
           },
-          distanceKm: 10,
+          distanceKm: 150,
         },
       },
     };
