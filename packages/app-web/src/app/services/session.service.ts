@@ -145,8 +145,9 @@ export class SessionService {
     return this.session?.user?.id;
   }
 
-  isAuthenticated() {
-    return this.getUserId()?.length > 0;
+  isAuthenticated(): boolean {
+    let userId = this.getUserId();
+    return userId && userId?.length > 0;
   }
 
   async deleteUserSecret(data: GqlDeleteUserSecretInput) {

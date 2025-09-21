@@ -24,14 +24,14 @@
               [color]="ifActiveOption('general.fontName', 'serif') | async"
               class="font-serif"
               size="medium"
-              >Serif
+            >Serif
             </ion-button>
             <ion-button
               (click)="changeOption('general.fontName', 'sans-serif')"
               [color]="ifActiveOption('general.fontName', 'sans-serif')"
               class="font-sans-serif"
               size="medium"
-              >Sans-Serif
+            >Sans-Serif
             </ion-button>
           </div>
         </ion-item>
@@ -43,7 +43,7 @@
           <ion-label> Size</ion-label>
           <div class="controls">
             <ion-text class="ion-padding-horizontal"
-              >{{ getOption("general.fontSize") | async }}
+            >{{ getOption("general.fontSize") | async }}
             </ion-text>
             <ion-button
               (click)="
@@ -51,7 +51,7 @@
               "
               color="light"
               size="medium"
-              >-
+            >-
             </ion-button>
             <ion-button
               (click)="
@@ -59,7 +59,7 @@
               "
               color="light"
               size="medium"
-              >+
+            >+
             </ion-button>
           </div>
         </ion-item>
@@ -70,13 +70,13 @@
               (click)="changeOption('general.textAlignment', 'left')"
               [color]="ifActiveOption('general.textAlignment', 'left')"
               size="medium"
-              >Left
+            >Left
             </ion-button>
             <ion-button
               (click)="changeOption('general.textAlignment', 'right')"
               [color]="ifActiveOption('general.textAlignment', 'right')"
               size="medium"
-              >Right
+            >Right
             </ion-button>
           </div>
         </ion-item>
@@ -98,23 +98,23 @@
         <!--            </ion-button>-->
         <!--          </div>-->
         <!--        </ion-item>-->
-        <ion-item>
-          <ion-label>Verbose Link</ion-label>
-          <div>
-            <ion-button
-              (click)="changeOption('verboseLink', true)"
-              [color]="ifActiveOption('verboseLink', true) | async"
-              size="medium"
-              >Yes
-            </ion-button>
-            <ion-button
-              (click)="changeOption('verboseLink', false)"
-              [color]="ifActiveOption('verboseLink', false) | async"
-              size="medium"
-              >No
-            </ion-button>
-          </div>
-        </ion-item>
+        <!--        <ion-item>-->
+        <!--          <ion-label>Verbose Link</ion-label>-->
+        <!--          <div>-->
+        <!--            <ion-button-->
+        <!--              (click)="changeOption('verboseLink', true)"-->
+        <!--              [color]="ifActiveOption('verboseLink', true) | async"-->
+        <!--              size="medium"-->
+        <!--              >Yes-->
+        <!--            </ion-button>-->
+        <!--            <ion-button-->
+        <!--              (click)="changeOption('verboseLink', false)"-->
+        <!--              [color]="ifActiveOption('verboseLink', false) | async"-->
+        <!--              size="medium"-->
+        <!--              >No-->
+        <!--            </ion-button>-->
+        <!--          </div>-->
+        <!--        </ion-item>-->
 
         <ion-item-divider></ion-item-divider>
 

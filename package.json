@@ -2,16 +2,9 @@
   "name": "feedless",
   "private": true,
   "devDependencies": {
-    "@types/axios": "^0.14.4",
-    "@types/jest": "^29.5.14",
-    "axios": "^1.9.0",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^7.4.4",
-    "jest": "^29.7.0",
-    "mustache": "^4.2.0",
-    "ts-jest": "^29.3.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "mustache": "^4.2.0"
   },
   "scripts": {
     "updateReadme": "for pj in products/* .; do mustache packages/app-web/all-verticals.json $pj/README.mustache.md $pj/README.md; done",

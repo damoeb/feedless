@@ -33,7 +33,6 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonButton,
-  IonCheckbox,
   IonCol,
   IonContent,
   IonGrid,
@@ -100,7 +99,6 @@ type BaselineControl = 'manual' | 'latest';
     IonIcon,
     IonReorder,
     IonInput,
-    IonCheckbox,
   ],
   standalone: true,
 })

@@ -20,11 +20,9 @@ import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 
 import {
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonMenuButton,
   IonRouterOutlet,
   IonToolbar,
@@ -52,8 +50,6 @@ import { SelfHostingSetupPage } from './self-hosting-setup/self-hosting-setup.pa
     RouterLink,
     RepositoriesButtonComponent,
     AgentsButtonComponent,
-    IonButton,
-    IonIcon,
     DarkModeButtonComponent,
     LoginButtonComponent,
     IonContent,

@@ -27,7 +27,6 @@ import {
   IonAccordionGroup,
   IonButton,
   IonButtons,
-  IonCheckbox,
   IonContent,
   IonHeader,
   IonIcon,
@@ -35,7 +34,6 @@ import {
   IonLabel,
   IonMenu,
   IonMenuButton,
-  IonPopover,
   IonProgressBar,
   IonSegment,
   IonSegmentButton,
@@ -77,13 +75,7 @@ import {
   TypeheadComponent,
 } from '../../components/typeahead/typehead.component';
 import { NoteDetailsComponent } from '../../components/note-details/note-details.component';
-import {
-  AsyncPipe,
-  JsonPipe,
-  NgClass,
-  NgStyle,
-  NgTemplateOutlet,
-} from '@angular/common';
+import { AsyncPipe, NgClass, NgStyle } from '@angular/common';
 import { Completion } from '@codemirror/autocomplete';
 import { NestedKeys, Nullable, TypeAtPath } from '../../types';
 import {
@@ -95,12 +87,7 @@ import {
 } from '@angular/cdk/tree';
 import { BubbleComponent } from '../../components/bubble/bubble.component';
 import { SessionService } from '../../services/session.service';
-import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDragHandle,
-  CdkDropList,
-} from '@angular/cdk/drag-drop';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
 
 export type EditorHandle = {
@@ -158,8 +145,10 @@ export type NoteHandle = {
     IonSpinner,
     CdkTree,
     CdkNestedTreeNode,
+    // noinspection ES6UnusedImports
     CdkTreeNode,
     CdkTreeNodeOutlet,
+    // noinspection ES6UnusedImports
     CdkTreeNodeDef,
     NgStyle,
     BubbleComponent,
@@ -167,9 +156,6 @@ export type NoteHandle = {
     IonSegment,
     IonSegmentButton,
     AsyncPipe,
-    CdkDrag,
-    CdkDragHandle,
-    CdkDropList,
     NotebookSettingsComponent,
     IonMenuButton,
   ],

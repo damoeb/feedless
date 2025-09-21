@@ -75,8 +75,7 @@
               itemprop="startDate"
               [attr.datetime]="formatDate(event.startingAt, '')"
             >{{ formatDate(event.startingAt, '') }}
-            </time
-            >
+            </time>
             <ion-button (click)="downloadIcs()" class="ion-margin-start">
               <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
               Termin
@@ -101,5 +100,8 @@
     }
   </div>
 
-  <app-upcoming-footer [location]="location" [perimeter]="10"></app-upcoming-footer>
+  <app-upcoming-footer
+    [location]="location"
+    [perimeter]="10"
+  ></app-upcoming-footer>
 </ion-content>
